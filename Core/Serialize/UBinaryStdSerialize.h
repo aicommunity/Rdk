@@ -25,7 +25,7 @@ namespace RDK {
 
 //typedef UQueue<unsigned char> USerStorage;
 
-// Простые типы
+// РџСЂРѕСЃС‚С‹Рµ С‚РёРїС‹
 template<typename T>
 USerStorageBinary& USimpleToStorage (USerStorageBinary& storage, const T data)
 {
@@ -105,7 +105,7 @@ RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, long do
 
 RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, long double &data);
 
-// Указатели
+// РЈРєР°Р·Р°С‚РµР»Рё
 template<typename T>
 USerStorageBinary& operator << (USerStorageBinary& storage, const T *data)
 {
@@ -129,7 +129,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, T* &data)
  return storage;
 }
 
-// Пары
+// РџР°СЂС‹
 template<typename T1, typename T2>
 USerStorageBinary& operator << (USerStorageBinary& storage, const std::pair<T1,T2> &data)
 {
@@ -146,7 +146,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, std::pair<T1,T2> &da
  return storage;
 }
 
-// Map-ы
+// Map-С‹
 template<typename T1, typename T2>
 USerStorageBinary& operator << (USerStorageBinary& storage, const std::map<T1,T2> &data)
 {
@@ -188,7 +188,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, std::map<T1,T2> &dat
  return storage;
 }
 
-// Списки
+// РЎРїРёСЃРєРё
 template<typename T>
 USerStorageBinary& operator << (USerStorageBinary& storage, const std::list<T> &data)
 {
@@ -230,7 +230,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, std::list<T> &data)
  return storage;
 }
 
-// Вектора
+// Р’РµРєС‚РѕСЂР°
 
 RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const std::vector<bool> &data);
 RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, std::vector<bool> &data);
@@ -268,13 +268,13 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, std::vector<T> &data
  return storage;
 }
 
-// Строки
+// РЎС‚СЂРѕРєРё
 RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const std::string &data);
 
 RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, std::string &data);
 
 
-// Деревья
+// Р”РµСЂРµРІСЊСЏ
 template<typename T>
 USerStorageBinary& operator << (USerStorageBinary& storage, const UTree<T> &data)
 {

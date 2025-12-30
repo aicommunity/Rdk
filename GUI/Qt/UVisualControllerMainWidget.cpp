@@ -1,6 +1,9 @@
 #include "UVisualControllerMainWidget.h"
+#include "UGuiModelSnapshot.h"
+#include <QGuiApplication>
+#include <QScreen>
 
-// Флаг, сообщающий что идет расчет
+// Р¤Р»Р°Рі, СЃРѕРѕР±С‰Р°СЋС‰РёР№ С‡С‚Рѕ РёРґРµС‚ СЂР°СЃС‡РµС‚
 RDK::UELockVar<bool> UVisualControllerMainWidget::CalculationModeFlag(false);
 
 UVisualControllerMainWidget::UVisualControllerMainWidget(QWidget *parent, RDK::UApplication *app): QMainWindow(parent)
@@ -8,17 +11,18 @@ UVisualControllerMainWidget::UVisualControllerMainWidget(QWidget *parent, RDK::U
     application = app;
     UpdateInterfaceFlag=false;
     AlwaysUpdateFlag=false;
-    UpdateInterval=1000; // по умолчанию, интервал обновления виджета 1с.
+    UpdateInterval=1000; // РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ, РёРЅС‚РµСЂРІР°Р» РѕР±РЅРѕРІР»РµРЅРёСЏ РІРёРґР¶РµС‚Р° 1СЃ.
     CalculationStepUpdatedFlag=false;
     CheckModelFlag=true;
 
-    /// Время последнего обновления
+    /// Р’СЂРµРјСЏ РїРѕСЃР»РµРґРЅРµРіРѕ РѕР±РЅРѕРІР»РµРЅРёСЏ
     LastUpdateTime=0;
 
-    /// Время, потраченное на обновление интерфейса
+    /// Р’СЂРµРјСЏ, РїРѕС‚СЂР°С‡РµРЅРЅРѕРµ РЅР° РѕР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
     UpdateTime=0;
 
     RDK::UIVisualControllerStorage::AddInterface(this);
+    NMSDK::UGuiModelSnapshot::Instance().Start();
 }
 
 UVisualControllerMainWidget::~UVisualControllerMainWidget()
@@ -27,9 +31,9 @@ UVisualControllerMainWidget::~UVisualControllerMainWidget()
 }
 
 // -----------------------------
-// Методы управления визуальным интерфейсом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РІРёР·СѓР°Р»СЊРЅС‹Рј РёРЅС‚РµСЂС„РµР№СЃРѕРј
 // -----------------------------
-// Метод, вызываемый после загрузки проекта
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ Р·Р°РіСЂСѓР·РєРё РїСЂРѕРµРєС‚Р°
 void UVisualControllerMainWidget::AfterLoadProject(void)
 {
     try
@@ -38,15 +42,15 @@ void UVisualControllerMainWidget::AfterLoadProject(void)
     }
     catch (RDK::UException &exception)
     {
-        Log_LogMessage(exception.GetType(), (std::string("Core-AfterLoadProject Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(exception.GetType(), (std::string("Core-AfterLoadProject Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     catch (std::exception &exception)
     {
-        Log_LogMessage(RDK_EX_ERROR, (std::string("Core-AfterLoadProject Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("Core-AfterLoadProject Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     /*catch(Exception &exception)
     {
-        Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-AfterLoadProject Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-AfterLoadProject Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
     }*/
 }
 
@@ -55,8 +59,8 @@ void UVisualControllerMainWidget::AAfterLoadProject(void)
 //  throw RDK::UException();
 }
 
-/// Метод, вызываемый перед закрытием проекта
-/// \details Вызывает метод ABeforeCloseProject() в блоке обработки исключений
+/// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ Р·Р°РєСЂС‹С‚РёРµРј РїСЂРѕРµРєС‚Р°
+/// \details Р’С‹Р·С‹РІР°РµС‚ РјРµС‚РѕРґ ABeforeCloseProject() РІ Р±Р»РѕРєРµ РѕР±СЂР°Р±РѕС‚РєРё РёСЃРєР»СЋС‡РµРЅРёР№
 void UVisualControllerMainWidget::BeforeCloseProject(void)
 {
  try
@@ -65,15 +69,15 @@ void UVisualControllerMainWidget::BeforeCloseProject(void)
  }
  catch (RDK::UException &exception)
  {
-     Log_LogMessage(exception.GetType(), (std::string("Core-BeforeCloseProject Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+     RDK::Logging::SystemLog(exception.GetType(), (std::string("Core-BeforeCloseProject Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
  }
  catch (std::exception &exception)
  {
-     Log_LogMessage(RDK_EX_ERROR, (std::string("Core-BeforeCloseProject Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+     RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("Core-BeforeCloseProject Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
  }
  /*catch(Exception &exception)
  {
-     Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-BeforeCloseProject Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+     RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-BeforeCloseProject Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
  }*/
 }
 
@@ -82,7 +86,7 @@ void UVisualControllerMainWidget::ABeforeCloseProject(void)
 
 }
 
-// Метод, вызываемый перед сбросом модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ СЃР±СЂРѕСЃРѕРј РјРѕРґРµР»Рё
 void UVisualControllerMainWidget::BeforeReset(void)
 {
     try
@@ -91,15 +95,15 @@ void UVisualControllerMainWidget::BeforeReset(void)
     }
     catch (RDK::UException &exception)
     {
-        Log_LogMessage(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     catch (std::exception &exception)
     {
-        Log_LogMessage(RDK_EX_ERROR, (std::string("Core-BeforeReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("Core-BeforeReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     /*catch(Exception &exception)
     {
-        Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-BeforeReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-BeforeReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
     }*/
 }
 
@@ -108,7 +112,7 @@ void UVisualControllerMainWidget::ABeforeReset(void)
 
 }
 
-// Метод, вызываемый после сброса модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ СЃР±СЂРѕСЃР° РјРѕРґРµР»Рё
 void UVisualControllerMainWidget::AfterReset(void)
 {
     try
@@ -119,15 +123,15 @@ void UVisualControllerMainWidget::AfterReset(void)
     }
     catch (RDK::UException &exception)
     {
-        Log_LogMessage(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     catch (std::exception &exception)
     {
-        Log_LogMessage(RDK_EX_ERROR, (std::string("Core-BeforeReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("Core-BeforeReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     /*catch(Exception &exception)
     {
-        Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-AfterReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-AfterReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
     }*/
 }
 
@@ -136,7 +140,7 @@ void UVisualControllerMainWidget::AAfterReset(void)
 
 }
 
-// Метод, вызываемый перед шагом расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ С€Р°РіРѕРј СЂР°СЃС‡РµС‚Р°
 void UVisualControllerMainWidget::BeforeCalculate(void)
 {
     try
@@ -146,15 +150,15 @@ void UVisualControllerMainWidget::BeforeCalculate(void)
     }
     catch (RDK::UException &exception)
     {
-        Log_LogMessage(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     catch (std::exception &exception)
     {
-        Log_LogMessage(RDK_EX_ERROR, (std::string("Core-BeforeReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("Core-BeforeReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     /*catch(Exception &exception)
     {
-        Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-BeforeCalculate Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-BeforeCalculate Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
     }*/
 }
 
@@ -162,7 +166,7 @@ void UVisualControllerMainWidget::ABeforeCalculate(void)
 {
 }
 
-// Метод, вызываемый после шага расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ С€Р°РіР° СЂР°СЃС‡РµС‚Р°
 void UVisualControllerMainWidget::AfterCalculate(void)
 {
     try
@@ -171,15 +175,15 @@ void UVisualControllerMainWidget::AfterCalculate(void)
     }
     catch (RDK::UException &exception)
     {
-        Log_LogMessage(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(exception.GetType(), (std::string("Core-BeforeReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     catch (std::exception &exception)
     {
-        Log_LogMessage(RDK_EX_ERROR, (std::string("Core-BeforeReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("Core-BeforeReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     /*catch(Exception &exception)
     {
-        Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-BeforeReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-BeforeReset Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
     }*/
 }
 
@@ -187,7 +191,7 @@ void UVisualControllerMainWidget::AAfterCalculate(void)
 {
 }
 
-// Обновление интерфейса
+// РћР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
 void UVisualControllerMainWidget::UpdateInterface(bool force_update)
 {
     if(UpdateInterfaceFlag)
@@ -207,7 +211,7 @@ void UVisualControllerMainWidget::UpdateInterface(bool force_update)
                 //UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
                 return;
             }
-            //не обновляется если отец невидим и е проставлен AlwaysUpdateFlag
+            //РЅРµ РѕР±РЅРѕРІР»СЏРµС‚СЃСЏ РµСЃР»Рё РѕС‚РµС† РЅРµРІРёРґРёРј Рё Рµ РїСЂРѕСЃС‚Р°РІР»РµРЅ AlwaysUpdateFlag
             if(!parentWidget() || (!AlwaysUpdateFlag && !(parentWidget()->isVisible())) || (UpdateInterval<0 && CalculationModeFlag))
             {
                 //UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),current_time);
@@ -256,17 +260,17 @@ void UVisualControllerMainWidget::UpdateInterface(bool force_update)
     catch (RDK::UException &exception)
     {
         UpdateInterfaceFlag=false;
-        Log_LogMessage(exception.GetType(), (std::string("Core-UpdateInterface Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(exception.GetType(), (std::string("Core-UpdateInterface Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     catch (std::exception &exception)
     {
         UpdateInterfaceFlag=false;
-        Log_LogMessage(RDK_EX_ERROR, (std::string("Core-UpdateInterface Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("Core-UpdateInterface Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     /*catch(Exception &exception)
     {
         UpdateInterfaceFlag=false;
-        Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-UpdateInterface Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-UpdateInterface Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
     }*/
     catch(...)
     {
@@ -283,28 +287,28 @@ void UVisualControllerMainWidget::AUpdateInterface(void)
 
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void UVisualControllerMainWidget::ClearInterface(void)
 {
     try
     {
         AClearInterface();
         //ComponentControlName.clear();
-        //Длинное имя управляемого компонента модели (опционально)
-        //std::string ComponentControlName; - удалено из .h
+        //Р”Р»РёРЅРЅРѕРµ РёРјСЏ СѓРїСЂР°РІР»СЏРµРјРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° РјРѕРґРµР»Рё (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ)
+        //std::string ComponentControlName; - СѓРґР°Р»РµРЅРѕ РёР· .h
         UpdateInterface(true);
     }
     catch (RDK::UException &exception)
     {
-        Log_LogMessage(exception.GetType(), (std::string("Core-ClearInterface Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(exception.GetType(), (std::string("Core-ClearInterface Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     catch (std::exception &exception)
     {
-        Log_LogMessage(RDK_EX_ERROR, (std::string("Core-ClearInterface Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("Core-ClearInterface Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     /*catch(Exception &exception)
     {
-        Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-ClearInterface Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-ClearInterface Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
     }*/
 }
 
@@ -313,13 +317,13 @@ void UVisualControllerMainWidget::AClearInterface(void)
 
 }
 
-// Возвращает уникальное имя интерфейса
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРЅРёРєР°Р»СЊРЅРѕРµ РёРјСЏ РёРЅС‚РµСЂС„РµР№СЃР°
 std::string UVisualControllerMainWidget::GetName(void)
 {
     return accessibleName().toLocal8Bit().constData();
 }
 
-// Возвращает имя класса интерфейса
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєР»Р°СЃСЃР° РёРЅС‚РµСЂС„РµР№СЃР°
 std::string UVisualControllerMainWidget::GetClassName(void)
 {
     return typeid(this).name();
@@ -340,13 +344,13 @@ std::string UVisualControllerMainWidget::CalcFullName(void)
 }
 
 
-// Возвращает интервал обновления интерфейса
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅС‚РµСЂРІР°Р» РѕР±РЅРѕРІР»РµРЅРёСЏ РёРЅС‚РµСЂС„РµР№СЃР°
 long UVisualControllerMainWidget::GetUpdateInterval(void)
 {
     return UpdateInterval;
 }
 
-// Задает интервал обновления интерфейса
+// Р—Р°РґР°РµС‚ РёРЅС‚РµСЂРІР°Р» РѕР±РЅРѕРІР»РµРЅРёСЏ РёРЅС‚РµСЂС„РµР№СЃР°
 bool UVisualControllerMainWidget::SetUpdateInterval(long value)
 {
     if(value<0)
@@ -357,13 +361,13 @@ bool UVisualControllerMainWidget::SetUpdateInterval(long value)
 }
 
 
-// Возвращает флаг разрешения обновления интерфейса даже если он не виден
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С„Р»Р°Рі СЂР°Р·СЂРµС€РµРЅРёСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РёРЅС‚РµСЂС„РµР№СЃР° РґР°Р¶Рµ РµСЃР»Рё РѕРЅ РЅРµ РІРёРґРµРЅ
 bool UVisualControllerMainWidget::GetAlwaysUpdateFlag(void)
 {
     return AlwaysUpdateFlag;
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void UVisualControllerMainWidget::SaveParameters(RDK::USerStorageXML &xml)
 {
     try
@@ -380,15 +384,15 @@ void UVisualControllerMainWidget::SaveParameters(RDK::USerStorageXML &xml)
     }
     catch (RDK::UException &exception)
     {
-        Log_LogMessage(exception.GetType(), (std::string("Core-SaveParameters Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(exception.GetType(), (std::string("Core-SaveParameters Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     catch (std::exception &exception)
     {
-        Log_LogMessage(RDK_EX_ERROR, (std::string("Core-SaveParameters Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("Core-SaveParameters Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     /*catch(Exception &exception)
     {
-        Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-SaveParameters Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-SaveParameters Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
     }*/
 }
 
@@ -415,7 +419,7 @@ void UVisualControllerMainWidget::SaveFormPosition(RDK::USerStorageXML &xml)
     xml.SelectUp();
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void UVisualControllerMainWidget::LoadParameters(RDK::USerStorageXML &xml)
 {
     try
@@ -430,15 +434,15 @@ void UVisualControllerMainWidget::LoadParameters(RDK::USerStorageXML &xml)
     }
     catch (RDK::UException &exception)
     {
-        Log_LogMessage(exception.GetType(), (std::string("Core-LoadParameters Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(exception.GetType(), (std::string("Core-LoadParameters Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     catch (std::exception &exception)
     {
-        Log_LogMessage(RDK_EX_ERROR, (std::string("Core-LoadParameters Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("Core-LoadParameters Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     /*catch(Exception &exception)
     {
-        Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-LoadParameters Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-LoadParameters Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
     }*/
 }
 
@@ -450,10 +454,11 @@ void UVisualControllerMainWidget::LoadFormPosition(RDK::USerStorageXML &xml)
 {
     xml.SelectNodeForce("FormPosition");
  //   QRect Screen = QApplication::desktop()->availableGeometry();
-    int num_screens = QApplication::desktop()->numScreens();
+    auto screens = QGuiApplication::screens();
+    int num_screens = screens.size();
     std::vector<QRect> screen_sizes(num_screens);
     for(int i=0;i<int(screen_sizes.size());i++)
-       screen_sizes[i] = QApplication::desktop()->availableGeometry(i);
+       screen_sizes[i] = screens[i]->availableGeometry();
 
 
     int value_x=0, value_y=0;
@@ -489,7 +494,7 @@ void UVisualControllerMainWidget::LoadFormPosition(RDK::USerStorageXML &xml)
     setGeometry(value_x, value_y, width, height);
     resize(width,height);
 
-    // Если это не основная форма (основная форма всегда видна)
+    // Р•СЃР»Рё СЌС‚Рѕ РЅРµ РѕСЃРЅРѕРІРЅР°СЏ С„РѕСЂРјР° (РѕСЃРЅРѕРІРЅР°СЏ С„РѕСЂРјР° РІСЃРµРіРґР° РІРёРґРЅР°)
     if(!(accessibleName()=="UGEngineControllWidget"))
     {
         setVisible(xml.ReadBool("Visible", isVisible()));
@@ -499,8 +504,8 @@ void UVisualControllerMainWidget::LoadFormPosition(RDK::USerStorageXML &xml)
     xml.SelectUp();
 }
 
-// Управление длинным именем управляемого компонента
-// Длинное имя управляемого компонента модели (опционально)
+// РЈРїСЂР°РІР»РµРЅРёРµ РґР»РёРЅРЅС‹Рј РёРјРµРЅРµРј СѓРїСЂР°РІР»СЏРµРјРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
+// Р”Р»РёРЅРЅРѕРµ РёРјСЏ СѓРїСЂР°РІР»СЏРµРјРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° РјРѕРґРµР»Рё (РѕРїС†РёРѕРЅР°Р»СЊРЅРѕ)
 /*const std::string& UVisualControllerMainWidget::GetComponentControlName(void) const
 {
     return ComponentControlName;
@@ -516,26 +521,26 @@ void UVisualControllerMainWidget::LoadFormPosition(RDK::USerStorageXML &xml)
     return true;
 }*/
 
-// Служебные методы управления интерфейсом
-/// Сбрасывает флаг прошедшей перерисовки в этой итерации счета
+// РЎР»СѓР¶РµР±РЅС‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РёРЅС‚РµСЂС„РµР№СЃРѕРј
+/// РЎР±СЂР°СЃС‹РІР°РµС‚ С„Р»Р°Рі РїСЂРѕС€РµРґС€РµР№ РїРµСЂРµСЂРёСЃРѕРІРєРё РІ СЌС‚РѕР№ РёС‚РµСЂР°С†РёРё СЃС‡РµС‚Р°
 void UVisualControllerMainWidget::ResetCalculationStepUpdatedFlag(void)
 {
     CalculationStepUpdatedFlag=false;
 }
 
-/// Выставляет флаг прошедшей перерисовки в этой итерации счета
+/// Р’С‹СЃС‚Р°РІР»СЏРµС‚ С„Р»Р°Рі РїСЂРѕС€РµРґС€РµР№ РїРµСЂРµСЂРёСЃРѕРІРєРё РІ СЌС‚РѕР№ РёС‚РµСЂР°С†РёРё СЃС‡РµС‚Р°
 void UVisualControllerMainWidget::SetCalculationStepUpdatedFlag(void)
 {
     CalculationStepUpdatedFlag=true;
 }
 
-/// Возвращает состояние флага прошедшей перерисовки в этой итерации счета
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ С„Р»Р°РіР° РїСЂРѕС€РµРґС€РµР№ РїРµСЂРµСЂРёСЃРѕРІРєРё РІ СЌС‚РѕР№ РёС‚РµСЂР°С†РёРё СЃС‡РµС‚Р°
 bool UVisualControllerMainWidget::GetCalculationStepUpdatedFlag(void)
 {
     return CalculationStepUpdatedFlag;
 }
 
-/// Возвращает время обновления интерфейса (мс)
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РёРЅС‚РµСЂС„РµР№СЃР° (РјСЃ)
 unsigned long long UVisualControllerMainWidget::GetUpdateTime(void)
 {
     return UpdateTime;

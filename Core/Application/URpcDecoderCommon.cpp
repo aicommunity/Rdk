@@ -11,7 +11,7 @@
 namespace RDK {
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 URpcDecoderCommon::URpcDecoderCommon(void)
 {
@@ -25,16 +25,16 @@ URpcDecoderCommon::~URpcDecoderCommon(void)
 // --------------------------
 
 // --------------------------
-// Методы управления командами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РєРѕРјР°РЅРґР°РјРё
 // --------------------------
-/// Создает копию этого декодера
+/// РЎРѕР·РґР°РµС‚ РєРѕРїРёСЋ СЌС‚РѕРіРѕ РґРµРєРѕРґРµСЂР°
 URpcDecoderCommon* URpcDecoderCommon::New(void)
 {
  return new URpcDecoderCommon;
 }
 
-/// Проверяет, поддерживается ли команда диспетчером
-/// ожидает, что команда уже декодирована иначе всегда возвращает false
+/// РџСЂРѕРІРµСЂСЏРµС‚, РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ Р»Рё РєРѕРјР°РЅРґР° РґРёСЃРїРµС‚С‡РµСЂРѕРј
+/// РѕР¶РёРґР°РµС‚, С‡С‚Рѕ РєРѕРјР°РЅРґР° СѓР¶Рµ РґРµРєРѕРґРёСЂРѕРІР°РЅР° РёРЅР°С‡Рµ РІСЃРµРіРґР° РІРѕР·РІСЂР°С‰Р°РµС‚ false
 bool URpcDecoderCommon::IsCmdSupported(const UEPtr<URpcCommand> &command) const
 {
  if(!command || !command->IsDecoded)
@@ -217,21 +217,21 @@ bool URpcDecoderCommon::IsCmdSupported(const UEPtr<URpcCommand> &command) const
  return false;
 }
 
-/// Осуществляет декодирование и вызов команды по текущим данным
-/// Возвращает false если команда не поддерживается
+/// РћСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РґРµРєРѕРґРёСЂРѕРІР°РЅРёРµ Рё РІС‹Р·РѕРІ РєРѕРјР°РЅРґС‹ РїРѕ С‚РµРєСѓС‰РёРј РґР°РЅРЅС‹Рј
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ false РµСЃР»Рё РєРѕРјР°РЅРґР° РЅРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ
 bool URpcDecoderCommon::AProcessCommand(const UEPtr<URpcCommand> &command)
 {
  if(!command)
  {
-  // Ошибка - команда не задана
+  // РћС€РёР±РєР° - РєРѕРјР°РЅРґР° РЅРµ Р·Р°РґР°РЅР°
   return false;
  }
 
  UEPtr<URpcCommandInternal> cmd=dynamic_pointer_cast<URpcCommandInternal>(command);
  if(!cmd)
  {
-  // Ошибка - команда не поддерживается декодером
-  MLog_LogMessage(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Common Decoder : Command internal structure not supported. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command=")+command->FunctionName).c_str());
+  // РћС€РёР±РєР° - РєРѕРјР°РЅРґР° РЅРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ РґРµРєРѕРґРµСЂРѕРј
+  RDK::Logging::ChannelLog(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Common Decoder : Command internal structure not supported. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command=")+command->FunctionName).c_str());
   return false;
  }
 
@@ -246,7 +246,7 @@ bool URpcDecoderCommon::AProcessCommand(const UEPtr<URpcCommand> &command)
 
  if(cmd->ResponseStatus == 2001)
  {
-  MLog_LogMessage(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Common Decoder: Unknown command. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command=")+command->FunctionName).c_str());
+  RDK::Logging::ChannelLog(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Common Decoder: Unknown command. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command=")+command->FunctionName).c_str());
   return false;
  }
 
@@ -486,7 +486,7 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
     std::stringstream ss;
     ss<<rs<<"|-|"<<resp.c_str();
     response=ss.str();*/
-    //Формирует ответ такой:
+    //Р¤РѕСЂРјРёСЂСѓРµС‚ РѕС‚РІРµС‚ С‚Р°РєРѕР№:
     //"<calculation_state>|<capture_state>|<capture_frid>|<capture_maxfrid>|<capture_finished>|<message>"
     int calculation_state=-1;
     int capture_state=-1;
@@ -495,18 +495,18 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
     std::string message = "test state message";
 
 
-    //Проанализировать состояние расчета - а вдруг ошибка
-    /// Состояние тредов расчета
-    /// -1 - пустое состояние
-    /// 0 - запущен
-    /// 1 - расчет остановлен
-    /// 2 - расчет запущен, но не выполняется
-    /// 3 - ошибка найдена в логах
+    //РџСЂРѕР°РЅР°Р»РёР·РёСЂРѕРІР°С‚СЊ СЃРѕСЃС‚РѕСЏРЅРёРµ СЂР°СЃС‡РµС‚Р° - Р° РІРґСЂСѓРі РѕС€РёР±РєР°
+    /// РЎРѕСЃС‚РѕСЏРЅРёРµ С‚СЂРµРґРѕРІ СЂР°СЃС‡РµС‚Р°
+    /// -1 - РїСѓСЃС‚РѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
+    /// 0 - Р·Р°РїСѓС‰РµРЅ
+    /// 1 - СЂР°СЃС‡РµС‚ РѕСЃС‚Р°РЅРѕРІР»РµРЅ
+    /// 2 - СЂР°СЃС‡РµС‚ Р·Р°РїСѓС‰РµРЅ, РЅРѕ РЅРµ РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ
+    /// 3 - РѕС€РёР±РєР° РЅР°Р№РґРµРЅР° РІ Р»РѕРіР°С…
     int calc_state = GetApplication()->GetProjectDeployer()->GetCalculationState();
     if(calc_state>=0)
     {
         calculation_state = calc_state;
-        //Выгребаем логи, проверяем нет ли ошибок там:
+        //Р’С‹РіСЂРµР±Р°РµРј Р»РѕРіРё, РїСЂРѕРІРµСЂСЏРµРј РЅРµС‚ Р»Рё РѕС€РёР±РѕРє С‚Р°Рј:
         std::string log_err="";
         bool process_log_res = GetApplication()->GetProjectDeployer()->ProcessCalculationLog(log_err);
         if(!process_log_res)
@@ -597,8 +597,8 @@ const char* URpcDecoderCommon::RemoteCall(const char *request, int &return_value
     std::stringstream ss;
     ss<<rs<<"|-|"<<le;
     response = ss.str();
-    exit(0);
     return_value=0;
+    exit(0);
   }
  }
 

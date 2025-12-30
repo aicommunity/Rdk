@@ -8,32 +8,32 @@ namespace RDK {
 UTime DefaultTimeStep=(UTime)2000;
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UTimeControl::UTimeControl(void)
 {
- // Текущее время модели
+ // РўРµРєСѓС‰РµРµ РІСЂРµРјСЏ РјРѕРґРµР»Рё
  Time=0;
  DoubleTime=0;
 
- // Реальное время
+ // Р РµР°Р»СЊРЅРѕРµ РІСЂРµРјСЏ
  RealTime=0;
  DoubleRealTime=0;
 
- // Мгновенный шаг в реальном времени
+ // РњРіРЅРѕРІРµРЅРЅС‹Р№ С€Р°Рі РІ СЂРµР°Р»СЊРЅРѕРј РІСЂРµРјРµРЅРё
  RealTimeStep=1;
  DoubleRealTimeStep=1.0e-6;
 
- // Текущее время внешних источников данных в микросекундах
+ // РўРµРєСѓС‰РµРµ РІСЂРµРјСЏ РІРЅРµС€РЅРёС… РёСЃС‚РѕС‡РЅРёРєРѕРІ РґР°РЅРЅС‹С… РІ РјРёРєСЂРѕСЃРµРєСѓРЅРґР°С…
 // SourceTime=0;
 
- // Текущее время внешних источников данных в секундах
+ // РўРµРєСѓС‰РµРµ РІСЂРµРјСЏ РІРЅРµС€РЅРёС… РёСЃС‚РѕС‡РЅРёРєРѕРІ РґР°РЅРЅС‹С… РІ СЃРµРєСѓРЅРґР°С…
  DoubleSourceTime=0;
 
- // Мгновенный шаг во времени внешних источников данных в микросекундах
+ // РњРіРЅРѕРІРµРЅРЅС‹Р№ С€Р°Рі РІРѕ РІСЂРµРјРµРЅРё РІРЅРµС€РЅРёС… РёСЃС‚РѕС‡РЅРёРєРѕРІ РґР°РЅРЅС‹С… РІ РјРёРєСЂРѕСЃРµРєСѓРЅРґР°С…
 // SourceTimeStep=1;
 
- // Мгновенный шаг во времени внешних источников данных в секундах
+ // РњРіРЅРѕРІРµРЅРЅС‹Р№ С€Р°Рі РІРѕ РІСЂРµРјРµРЅРё РІРЅРµС€РЅРёС… РёСЃС‚РѕС‡РЅРёРєРѕРІ РґР°РЅРЅС‹С… РІ СЃРµРєСѓРЅРґР°С…
  DoubleSourceTimeStep=1.0e-6;
 
  SourceStartGlobalTime=0;
@@ -51,9 +51,9 @@ UTimeControl::~UTimeControl(void)
 // --------------------------
 
 // --------------------------
-// Методы управления глобальными свойствами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РіР»РѕР±Р°Р»СЊРЅС‹РјРё СЃРІРѕР№СЃС‚РІР°РјРё
 // --------------------------
-/// Время начала расчета в днях (по времени источника данных)
+/// Р’СЂРµРјСЏ РЅР°С‡Р°Р»Р° СЂР°СЃС‡РµС‚Р° РІ РґРЅСЏС… (РїРѕ РІСЂРµРјРµРЅРё РёСЃС‚РѕС‡РЅРёРєР° РґР°РЅРЅС‹С…)
 double UTimeControl::GetSourceStartGlobalTime(void) const
 {
  return SourceStartGlobalTime;
@@ -65,7 +65,7 @@ bool UTimeControl::SetSourceStartGlobalTime(double value)
  return true;
 }
 
-/// Текущее время источника данных в днях
+/// РўРµРєСѓС‰РµРµ РІСЂРµРјСЏ РёСЃС‚РѕС‡РЅРёРєР° РґР°РЅРЅС‹С… РІ РґРЅСЏС…
 double UTimeControl::GetSourceCurrentGlobalTime(void) const
 {
  return SourceCurrentGlobalTime;
@@ -77,7 +77,7 @@ bool UTimeControl::SetSourceCurrentGlobalTime(double value)
  return true;
 }
 
-/// Текущее время в днях
+/// РўРµРєСѓС‰РµРµ РІСЂРµРјСЏ РІ РґРЅСЏС…
 double UTimeControl::GetSourceStartLocalTime(void) const
 {
  return SourceStartLocalTime;
@@ -89,7 +89,7 @@ bool UTimeControl::SetSourceStartLocalTime(double value)
  return true;
 }
 
-/// Текущее время в днях
+/// РўРµРєСѓС‰РµРµ РІСЂРµРјСЏ РІ РґРЅСЏС…
 double UTimeControl::GetSourceCurrentLocalTime(void) const
 {
  return SourceCurrentLocalTime;
@@ -101,7 +101,7 @@ bool UTimeControl::SetSourceCurrentLocalTime(double value)
  return SetRealTime(ULongTime((SourceCurrentLocalTime-SourceStartLocalTime)*1000000.0));
 }
 
-/// Текущее время в миллисекундах
+/// РўРµРєСѓС‰РµРµ РІСЂРµРјСЏ РІ РјРёР»Р»РёСЃРµРєСѓРЅРґР°С…
 ULongTime UTimeControl::GetSourceCurrentLocalTimeMs(void) const
 {
  return ULongTime(SourceCurrentLocalTime*1000);
@@ -109,9 +109,9 @@ ULongTime UTimeControl::GetSourceCurrentLocalTimeMs(void) const
 // --------------------------
 
 // --------------------------
-// Методы управления глобальными свойствами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РіР»РѕР±Р°Р»СЊРЅС‹РјРё СЃРІРѕР№СЃС‚РІР°РјРё
 // --------------------------
-// Возвращает текущее время модели
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСѓС‰РµРµ РІСЂРµРјСЏ РјРѕРґРµР»Рё
 const ULongTime& UTimeControl::GetTime(void) const
 {
  return Time;
@@ -122,7 +122,7 @@ const double& UTimeControl::GetDoubleTime(void) const
  return DoubleTime;
 }
 
-// Устанавливает текущее время модели
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С‚РµРєСѓС‰РµРµ РІСЂРµРјСЏ РјРѕРґРµР»Рё
 bool UTimeControl::SetTime(ULongTime value)
 {
  if(Time == value)
@@ -133,20 +133,20 @@ bool UTimeControl::SetTime(ULongTime value)
  return true;
 }
 
-// Увеличивает время модели на заданную величину
+// РЈРІРµР»РёС‡РёРІР°РµС‚ РІСЂРµРјСЏ РјРѕРґРµР»Рё РЅР° Р·Р°РґР°РЅРЅСѓСЋ РІРµР»РёС‡РёРЅСѓ
 bool UTimeControl::IncreaseModelTime(ULongTime value)
 {
  return SetTime(UTimeControl::GetTime()+value);
 }
 
-// Увеличивает время модели на заданную величину при заданном шаге вычислений
-// в тысячных долях секунды
+// РЈРІРµР»РёС‡РёРІР°РµС‚ РІСЂРµРјСЏ РјРѕРґРµР»Рё РЅР° Р·Р°РґР°РЅРЅСѓСЋ РІРµР»РёС‡РёРЅСѓ РїСЂРё Р·Р°РґР°РЅРЅРѕРј С€Р°РіРµ РІС‹С‡РёСЃР»РµРЅРёР№
+// РІ С‚С‹СЃСЏС‡РЅС‹С… РґРѕР»СЏС… СЃРµРєСѓРЅРґС‹
 bool UTimeControl::IncreaseModelTimeByStep(ULongTime step)
 {
  return IncreaseModelTime(1000000/step);
 }
 
-// Возвращает реальное время
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂРµР°Р»СЊРЅРѕРµ РІСЂРµРјСЏ
 const ULongTime& UTimeControl::GetRealTime(void) const
 {
  return RealTime;
@@ -157,7 +157,7 @@ const double& UTimeControl::GetDoubleRealTime(void) const
  return DoubleRealTime;
 }
 
-// Устанавливает реальное время
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СЂРµР°Р»СЊРЅРѕРµ РІСЂРµРјСЏ
 bool UTimeControl::SetRealTime(ULongTime value)
 {
  RealTimeStep=value-RealTime;
@@ -171,13 +171,13 @@ bool UTimeControl::SetRealTime(ULongTime value)
  return true;
 }
 
-// Увеличивает реальное время на заданную величину
+// РЈРІРµР»РёС‡РёРІР°РµС‚ СЂРµР°Р»СЊРЅРѕРµ РІСЂРµРјСЏ РЅР° Р·Р°РґР°РЅРЅСѓСЋ РІРµР»РёС‡РёРЅСѓ
 bool UTimeControl::IncreaseRealTime(ULongTime value)
 {
  return SetRealTime(RealTime+value);
 }
 
-// Возвращает мгновенный шаг в реальном времени
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјРіРЅРѕРІРµРЅРЅС‹Р№ С€Р°Рі РІ СЂРµР°Р»СЊРЅРѕРј РІСЂРµРјРµРЅРё
 const ULongTime& UTimeControl::GetRealTimeStep(void) const
 {
  return RealTimeStep;
@@ -190,10 +190,10 @@ const double& UTimeControl::GetDoubleRealTimeStep(void) const
 // --------------------------
 
 // --------------------------
-/// Методы доступа к текущему времени расчета от начала времен в днях
+/// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє С‚РµРєСѓС‰РµРјСѓ РІСЂРµРјРµРЅРё СЂР°СЃС‡РµС‚Р° РѕС‚ РЅР°С‡Р°Р»Р° РІСЂРµРјРµРЅ РІ РґРЅСЏС…
 // --------------------------
-/// Возвращает текущее время от начала времен в днях
-/// Принимает аргументом текущее локальное время в секундах или миллисекундах
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСѓС‰РµРµ РІСЂРµРјСЏ РѕС‚ РЅР°С‡Р°Р»Р° РІСЂРµРјРµРЅ РІ РґРЅСЏС…
+/// РџСЂРёРЅРёРјР°РµС‚ Р°СЂРіСѓРјРµРЅС‚РѕРј С‚РµРєСѓС‰РµРµ Р»РѕРєР°Р»СЊРЅРѕРµ РІСЂРµРјСЏ РІ СЃРµРєСѓРЅРґР°С… РёР»Рё РјРёР»Р»РёСЃРµРєСѓРЅРґР°С…
 double UTimeControl::CalcCurrentGlobalTime(double current_local_time) const
 {
  return SourceCurrentGlobalTime+(current_local_time-SourceCurrentLocalTime)/86400.0;

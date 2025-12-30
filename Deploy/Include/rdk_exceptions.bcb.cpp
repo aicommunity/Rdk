@@ -20,7 +20,7 @@ DWORD SysExceptionCodes[]={EXCEPTION_ACCESS_VIOLATION,EXCEPTION_ARRAY_BOUNDS_EXC
 		EXCEPTION_ILLEGAL_INSTRUCTION,EXCEPTION_IN_PAGE_ERROR,EXCEPTION_INT_DIVIDE_BY_ZERO,EXCEPTION_INT_OVERFLOW,
 		EXCEPTION_INVALID_DISPOSITION,EXCEPTION_NONCONTINUABLE_EXCEPTION,EXCEPTION_PRIV_INSTRUCTION,EXCEPTION_SINGLE_STEP,EXCEPTION_STACK_OVERFLOW};
 
-// Формирует строку с описанием возникшего системного исключения
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ СЃ РѕРїРёСЃР°РЅРёРµРј РІРѕР·РЅРёРєС€РµРіРѕ СЃРёСЃС‚РµРјРЅРѕРіРѕ РёСЃРєР»СЋС‡РµРЅРёСЏ
 std::string GetSystemExceptionData(void)
 {
  PEXCEPTION_RECORD pExceptionRecord=RdkExceptionsPointers->ExceptionRecord;
@@ -50,7 +50,7 @@ std::string GetSystemExceptionData(void)
 }
 
 
-// Формирует строку с описанием возникшего системного исключения
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ СЃ РѕРїРёСЃР°РЅРёРµРј РІРѕР·РЅРёРєС€РµРіРѕ СЃРёСЃС‚РµРјРЅРѕРіРѕ РёСЃРєР»СЋС‡РµРЅРёСЏ
 std::string GetSystemExceptionData(System::Sysutils::Exception &exception)
 {
 #if !defined(_WIN64)

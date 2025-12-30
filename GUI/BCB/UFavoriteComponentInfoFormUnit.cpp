@@ -15,20 +15,20 @@ __fastcall TUFavoriteComponentInfoForm::TUFavoriteComponentInfoForm(TComponent* 
 {
 }
 
-// Обновляет интерфейс
+// РћР±РЅРѕРІР»СЏРµС‚ РёРЅС‚РµСЂС„РµР№СЃ
 void TUFavoriteComponentInfoForm::AUpdateInterface(void)
 {
 
 }
 
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TUFavoriteComponentInfoForm::AClearInterface(void)
 {
  ClearPages();
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TUFavoriteComponentInfoForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("PageCount",PageControl->PageCount);
@@ -40,7 +40,7 @@ void TUFavoriteComponentInfoForm::ASaveParameters(RDK::USerStorageXML &xml)
  xml.SelectUp();
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TUFavoriteComponentInfoForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  int count=xml.ReadInteger("PageCount",0);
@@ -57,23 +57,23 @@ void TUFavoriteComponentInfoForm::ALoadParameters(RDK::USerStorageXML &xml)
  xml.SelectUp();
 }
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 TUFavoriteComponentInfoForm* TUFavoriteComponentInfoForm::New(TComponent *owner)
 {
  return new TUFavoriteComponentInfoForm(owner);
 }
 
 // ------------------------------
-// Методы управления страницами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃС‚СЂР°РЅРёС†Р°РјРё
 // ------------------------------
-// Удаляет все лишние вкладки (оставляет 1 начальную)
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ Р»РёС€РЅРёРµ РІРєР»Р°РґРєРё (РѕСЃС‚Р°РІР»СЏРµС‚ 1 РЅР°С‡Р°Р»СЊРЅСѓСЋ)
 void TUFavoriteComponentInfoForm::ClearPages(void)
 {
  while(PageControl->PageCount > 1)
   delete PageControl->Pages[PageControl->PageCount-1];
 }
 
-// Добавляет страницу
+// Р”РѕР±Р°РІР»СЏРµС‚ СЃС‚СЂР°РЅРёС†Сѓ
 void TUFavoriteComponentInfoForm::AddPage(void)
 {
  TTabSheet* tab=new TTabSheet(PageControl);
@@ -87,7 +87,7 @@ void TUFavoriteComponentInfoForm::AddPage(void)
  tab->Caption=String("Page")+IntToStr(PageControl->PageCount);
 }
 
-// Удаляет страницу
+// РЈРґР°Р»СЏРµС‚ СЃС‚СЂР°РЅРёС†Сѓ
 void TUFavoriteComponentInfoForm::DelPage(int index)
 {
  if(index < PageControl->PageCount && index >= 0)
@@ -95,7 +95,7 @@ void TUFavoriteComponentInfoForm::DelPage(int index)
 
 }
 
-// Переименовывает заголовок страницы
+// РџРµСЂРµРёРјРµРЅРѕРІС‹РІР°РµС‚ Р·Р°РіРѕР»РѕРІРѕРє СЃС‚СЂР°РЅРёС†С‹
 void TUFavoriteComponentInfoForm::RenamePage(int index, String new_name)
 {
  if(index < PageControl->PageCount && index >= 0)

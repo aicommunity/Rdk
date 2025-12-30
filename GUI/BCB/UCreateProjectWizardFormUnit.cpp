@@ -12,7 +12,7 @@
 #pragma resource "*.dfm"
 TUCreateProjectWizardForm *UCreateProjectWizardForm;
 
-/// Экзепляр класса приложения
+/// Р­РєР·РµРїР»СЏСЂ РєР»Р°СЃСЃР° РїСЂРёР»РѕР¶РµРЅРёСЏ
 extern RDK::UApplication RdkApplication;
 
 
@@ -65,7 +65,7 @@ void TUCreateProjectWizardForm::UpdateInterface(void)
 
  DisableStopVideoSourcesCheckBox->Checked=ProjectConfig.DisableStopVideoSources;
 
- // Настраиваем список каналов
+ // РќР°СЃС‚СЂР°РёРІР°РµРј СЃРїРёСЃРѕРє РєР°РЅР°Р»РѕРІ
  int num_channels=ProjectConfig.NumChannels;
  ChannelsNumberLabeledEdit->Text=IntToStr(num_channels);
 
@@ -82,7 +82,7 @@ void TUCreateProjectWizardForm::UpdateInterface(void)
   ChannelsStringGrid->Row=channels_index;
 
 
- // Настраиваем состояние канала
+ // РќР°СЃС‚СЂР°РёРІР°РµРј СЃРѕСЃС‚РѕСЏРЅРёРµ РєР°РЅР°Р»Р°
  channels_index=ChannelsStringGrid->Row;
  if(channels_index>=0)
  {
@@ -148,7 +148,7 @@ void TUCreateProjectWizardForm::UpdateInterface(void)
  UpdateInterfaceFlag=false;
 }
 
-// Очистка визарда
+// РћС‡РёСЃС‚РєР° РІРёР·Р°СЂРґР°
 void TUCreateProjectWizardForm::ClearWizard(void)
 {
  RDK::TProjectConfig clean_config;
@@ -156,21 +156,21 @@ void TUCreateProjectWizardForm::ClearWizard(void)
  UpdateInterface();
 }
 
-// Очистить список вариантов предустановленных моделей
+// РћС‡РёСЃС‚РёС‚СЊ СЃРїРёСЃРѕРє РІР°СЂРёР°РЅС‚РѕРІ РїСЂРµРґСѓСЃС‚Р°РЅРѕРІР»РµРЅРЅС‹С… РјРѕРґРµР»РµР№
 void TUCreateProjectWizardForm::ClearPredefinedModels(void)
 {
  PredefinedModels.clear();
  PredefinedModels["<None>"]=0;
 }
 
-// Добавить вариант в список предустановленных моделей
+// Р”РѕР±Р°РІРёС‚СЊ РІР°СЂРёР°РЅС‚ РІ СЃРїРёСЃРѕРє РїСЂРµРґСѓСЃС‚Р°РЅРѕРІР»РµРЅРЅС‹С… РјРѕРґРµР»РµР№
 void TUCreateProjectWizardForm::AddPredefinedModel(const std::string &name, int index)
 {
  PredefinedModels[name]=index;
 }
 
 
-// Отображает визард для создания проекта
+// РћС‚РѕР±СЂР°Р¶Р°РµС‚ РІРёР·Р°СЂРґ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ РїСЂРѕРµРєС‚Р°
 int TUCreateProjectWizardForm::ShowCreateProject(int wizard_mode)
 {
  ProjectDirectoryLabeledEdit->Enabled=true;
@@ -185,7 +185,7 @@ int TUCreateProjectWizardForm::ShowCreateProject(int wizard_mode)
  return ShowModal();
 }
 
-// Отображает визард для модификации проекта
+// РћС‚РѕР±СЂР°Р¶Р°РµС‚ РІРёР·Р°СЂРґ РґР»СЏ РјРѕРґРёС„РёРєР°С†РёРё РїСЂРѕРµРєС‚Р°
 int TUCreateProjectWizardForm::ShowProjectOptions(void)
 {
  ProjectDirectoryLabeledEdit->Enabled=false;
@@ -198,7 +198,7 @@ int TUCreateProjectWizardForm::ShowProjectOptions(void)
 }
 
 
-/// Переключает параметры проекта в состояние wizard_mode
+/// РџРµСЂРµРєР»СЋС‡Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РїСЂРѕРµРєС‚Р° РІ СЃРѕСЃС‚РѕСЏРЅРёРµ wizard_mode
 void TUCreateProjectWizardForm::ApplyWizardMode(int wizard_mode)
 {
  switch(wizard_mode)

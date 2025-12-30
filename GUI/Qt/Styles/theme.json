@@ -1,0 +1,109 @@
+{
+  "name": "Modern Light",
+  "description": "Clean, professional light theme with subtle gradients",
+  
+  "node": {
+    "fill": "#FFFFFF",
+    "fillSelected": "#DBEAFE",
+    "border": "#5B8DEF",
+    "borderSelected": "#3B82F6",
+    "borderWidth": 2.0,
+    "cornerRadius": 10.0,
+    "gradientTop": "#FFFFFF",
+    "gradientBottom": "#F8FAFC"
+  },
+  
+  "port": {
+    "inputNormal": "#10B981",
+    "inputHover": "#34D399",
+    "outputNormal": "#5B8DEF",
+    "outputHover": "#93C5FD",
+    "radius": 5.0,
+    "hoverRadius": 7.0
+  },
+  
+  "link": {
+    "solid": "#5B8DEF",
+    "dashed": "#93C5FD",
+    "width": 2.5,
+    "arrowSize": 8.0
+  },
+  
+  "drag": {
+    "lineColor": "#5B8DEFC0",
+    "portHighlight": "#10B98180"
+  },
+  
+  "text": {
+    "primary": "#1F2937",
+    "secondary": "#6B7280",
+    "accent": "#5B8DEF",
+    "onAccent": "#FFFFFF"
+  },
+  
+  "general": {
+    "background": "#F8FAFC",
+    "backgroundAlt": "#FFFFFF",
+    "accent": "#5B8DEF",
+    "accentLight": "#DBEAFE",
+    "selection": "#DBEAFE",
+    "border": "#E2E8F0",
+    "borderFocus": "#5B8DEF"
+  },
+  
+  "chart": {
+    "background": "#FFFFFF",
+    "axis": "#374151",
+    "grid": "#F1F5F9",
+    "title": "#1F2937",
+    "label": "#6B7280",
+    "seriesColors": [
+      "#EF4444",
+      "#DC2626",
+      "#F59E0B",
+      "#D97706",
+      "#10B981",
+      "#059669",
+      "#06B6D4",
+      "#0891B2",
+      "#5B8DEF",
+      "#2563EB",
+      "#8B5CF6",
+      "#7C3AED",
+      "#6B7280",
+      "#4B5563",
+      "#1F2937"
+    ]
+  },
+  
+  "disabled": {
+    "text": "#9CA3AF",
+    "background": "#F3F4F6",
+    "border": "#E5E7EB"
+  },
+  
+  "effects": {
+    "shadowColor": "#0000001A",
+    "shadowBlur": 12.0,
+    "shadowOffsetX": 0.0,
+    "shadowOffsetY": 4.0,
+    "glowColor": "#5B8DEF40",
+    "glowRadius": 6.0
+  },
+  
+  "gradients": {
+    "nodeTop": "#FFFFFF",
+    "nodeBottom": "#F8FAFC",
+    "buttonTop": "#5B8DEF",
+    "buttonBottom": "#4F7BE8",
+    "dockTitleTop": "#5B8DEF",
+    "dockTitleBottom": "#4F7BE8",
+    "headerTop": "#F8FAFC",
+    "headerBottom": "#F1F5F9"
+  },
+  
+  "success": "#10B981",
+  "warning": "#F59E0B",
+  "error": "#EF4444",
+  "info": "#5B8DEF"
+}

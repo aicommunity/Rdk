@@ -23,41 +23,41 @@ See file license.txt for more information
 namespace RDK {
 
 // ------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // ------------------------
 UGEDescription::UGEDescription(void)
 {
- // Координаты элемента в пикселях
+ // РљРѕРѕСЂРґРёРЅР°С‚С‹ СЌР»РµРјРµРЅС‚Р° РІ РїРёРєСЃРµР»СЏС…
  Position=0;
 
- // Радиус элемента
+ // Р Р°РґРёСѓСЃ СЌР»РµРјРµРЅС‚Р°
  Width = 80; Height=25;
 
- // Цвет контура элемента
+ // Р¦РІРµС‚ РєРѕРЅС‚СѓСЂР° СЌР»РµРјРµРЅС‚Р°
  ContourColor = UColorT(0, 0, 0, 0);
 
- // Толщина контура элемента в пикселях
+ // РўРѕР»С‰РёРЅР° РєРѕРЅС‚СѓСЂР° СЌР»РµРјРµРЅС‚Р° РІ РїРёРєСЃРµР»СЏС…
  ContourWidth = 1;
 
  InactiveFontColor=UColorT(100,100,100,0);
 
- // Цвет заливки элемента
+ // Р¦РІРµС‚ Р·Р°Р»РёРІРєРё СЌР»РµРјРµРЅС‚Р°
  FillColor = UColorT(180, 180, 180, 0);
 
  InactiveFillColor=UColorT(210,210,210,0);
 
  LinkColor = UColorT(0, 0, 255, 0);
 
- // Толщина контура связи
+ // РўРѕР»С‰РёРЅР° РєРѕРЅС‚СѓСЂР° СЃРІСЏР·Рё
  LinkWidth = 1;
 
- // Одномерный индекс i
+ // РћРґРЅРѕРјРµСЂРЅС‹Р№ РёРЅРґРµРєСЃ i
  Index = 0;
 
- // 3D индекс (i,j,k)
+ // 3D РёРЅРґРµРєСЃ (i,j,k)
  Position=0;
 
- // Тип элемента
+ // РўРёРї СЌР»РµРјРµРЅС‚Р°
  Type = 0;
 
  Activity=true;
@@ -66,6 +66,10 @@ UGEDescription::UGEDescription(void)
  NumOutputs=0;
  Highlight=false;
 
+ // РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ РїРѕСЂС‚РѕРІ
+ ShowPorts=false;
+ PortHeight=14;
+ PortRadius=5;
 }
 
 UGEDescription::UGEDescription(const UGEDescription &copy)
@@ -101,6 +105,13 @@ UGEDescription& UGEDescription::operator = (const UGEDescription &copy)
  Indicators=copy.Indicators;
  InactiveFontColor=copy.InactiveFontColor;
 
+ // РљРѕРїРёСЂРѕРІР°РЅРёРµ РїРѕСЂС‚РѕРІ
+ InputPorts=copy.InputPorts;
+ OutputPorts=copy.OutputPorts;
+ ShowPorts=copy.ShowPorts;
+ PortHeight=copy.PortHeight;
+ PortRadius=copy.PortRadius;
+
  return *this;
 }
 
@@ -110,30 +121,30 @@ UGEDescription& UGEDescription::operator = (const UGEDescription &copy)
 
 /* ******************************************************************* */
 // ---------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // ---------------------------
 UDrawEngine::UDrawEngine(void)
 {
 // Net = 0;
  GEngine = 0;
 
- // Цвет фона
+ // Р¦РІРµС‚ С„РѕРЅР°
  BackgroundColor = UColorT(255, 255, 255, 255);
 
  BackgroundLineColor=UColorT(200, 200, 200, 0);
 
- // Цвет выделяемого элемента
+ // Р¦РІРµС‚ РІС‹РґРµР»СЏРµРјРѕРіРѕ СЌР»РµРјРµРЅС‚Р°
  SelectedColor = UColorT(128, 128, 128, 0);
 
  InactiveSelectedColor=UColorT(128, 128, 128, 0);
 
- // Цвет входящих линий
+ // Р¦РІРµС‚ РІС…РѕРґСЏС‰РёС… Р»РёРЅРёР№
  InputLinksColor=UColorT(255, 0, 0, 0);
 
- // Цвет исходящих линий
+ // Р¦РІРµС‚ РёСЃС…РѕРґСЏС‰РёС… Р»РёРЅРёР№
  OutputLinksColor=UColorT(0, 0, 255, 0);
 
- // Цвет линий по умолчанию
+ // Р¦РІРµС‚ Р»РёРЅРёР№ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
  DefaultLinksColor=UColorT(180, 180, 180, 0);
 
  BackgroundLineStep=10;
@@ -145,7 +156,7 @@ UDrawEngine::UDrawEngine(void)
 
  Origin=0;
 
- // Размеры элемента в пикселях по умолчанию
+ // Р Р°Р·РјРµСЂС‹ СЌР»РµРјРµРЅС‚Р° РІ РїРёРєСЃРµР»СЏС… РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
  RectWidth=80;
  RectHeight=25;
 
@@ -161,22 +172,22 @@ UDrawEngine::~UDrawEngine(void)
 // ---------------------------
 
 // ---------------------------
-// Методы управления параметрами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂР°РјРё
 // ---------------------------
-// Коэффициент зуммирования
-// Пиксельная координата X,Y=ZoomCoeff*Coord.X,Y
+// РљРѕСЌС„С„РёС†РёРµРЅС‚ Р·СѓРјРјРёСЂРѕРІР°РЅРёСЏ
+// РџРёРєСЃРµР»СЊРЅР°СЏ РєРѕРѕСЂРґРёРЅР°С‚Р° X,Y=ZoomCoeff*Coord.X,Y
 double UDrawEngine::GetZoomCoeff(void) const
 {
  return ZoomCoeff;
 }
 
-// Начало координат в канве
+// РќР°С‡Р°Р»Рѕ РєРѕРѕСЂРґРёРЅР°С‚ РІ РєР°РЅРІРµ
 MVector<double,3> UDrawEngine::GetOrigin(void) const
 {
  return Origin;
 }
 
-// Размеры элемента в пикселях по умолчанию
+// Р Р°Р·РјРµСЂС‹ СЌР»РµРјРµРЅС‚Р° РІ РїРёРєСЃРµР»СЏС… РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 int UDrawEngine::GetRectWidth(void) const
 {
  return RectWidth;
@@ -212,9 +223,9 @@ bool UDrawEngine::GetShowBackgroundLines(void) const
 // ---------------------------
 
 // ---------------------------
-// Методы доступа к данным
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј
 // ---------------------------
-// Возвращает указатель на НС
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РќРЎ
 /*UEPtr<UNet> UDrawEngine::GetNet(void)
 {
  return Net;
@@ -225,19 +236,19 @@ const USerStorageXML& UDrawEngine::GetNetXml(void) const
 }
 
 
-// Возвращает элемент таблицы соответствий
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЌР»РµРјРµРЅС‚ С‚Р°Р±Р»РёС†С‹ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёР№
 UGEDescription& UDrawEngine::GetDescription(const string &name)
 {
  return Descriptions[name];
 }
 
-// Возвращает всю таблицу соответсвий
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЃСЋ С‚Р°Р±Р»РёС†Сѓ СЃРѕРѕС‚РІРµС‚СЃРІРёР№
 const UDrawEngine::DescriptionsTableT& UDrawEngine::GetDescriptions(void)
 {
  return Descriptions;
 }
 
-// Возвращает указатель на движок отображения
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РґРІРёР¶РѕРє РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 UEPtr<UAGraphics> UDrawEngine::GetGEngine(void)
 {
  return GEngine;
@@ -250,8 +261,8 @@ bool UDrawEngine::SetNetXml(USerStorageXML &net_xml)
  return true;
 }
 
-// Связывает класс с новой НС
-// Если engine == 0 то возвращает false и не делеает ничего
+// РЎРІСЏР·С‹РІР°РµС‚ РєР»Р°СЃСЃ СЃ РЅРѕРІРѕР№ РќРЎ
+// Р•СЃР»Рё engine == 0 С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ false Рё РЅРµ РґРµР»РµР°РµС‚ РЅРёС‡РµРіРѕ
 bool UDrawEngine::SetEngine(UEPtr<UAGraphics> engine)
 {
  if (GEngine == engine)
@@ -265,12 +276,12 @@ bool UDrawEngine::SetEngine(UEPtr<UAGraphics> engine)
  return true;
 }
 
-// Обновляет таблицу соответствий
+// РћР±РЅРѕРІР»СЏРµС‚ С‚Р°Р±Р»РёС†Сѓ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёР№
 void UDrawEngine::UpdateDescriptions(void)
 {
 }
 
-// Выделяет заданный компонент, сбрасывая флаг выделения с остальных
+// Р’С‹РґРµР»СЏРµС‚ Р·Р°РґР°РЅРЅС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚, СЃР±СЂР°СЃС‹РІР°СЏ С„Р»Р°Рі РІС‹РґРµР»РµРЅРёСЏ СЃ РѕСЃС‚Р°Р»СЊРЅС‹С…
 void UDrawEngine::SelectSingleComponent(const string &name)
 {
  DescriptionsTableIteratorT I, J;
@@ -286,7 +297,7 @@ void UDrawEngine::SelectSingleComponent(const string &name)
  }
 }
 
-// Поиск объекта по заданным координатам в изображении
+// РџРѕРёСЃРє РѕР±СЉРµРєС‚Р° РїРѕ Р·Р°РґР°РЅРЅС‹Рј РєРѕРѕСЂРґРёРЅР°С‚Р°Рј РІ РёР·РѕР±СЂР°Р¶РµРЅРёРё
 std::string UDrawEngine::FindComponent(int x, int y)
 {
  DescriptionsTableIteratorT I, J;
@@ -300,7 +311,7 @@ std::string UDrawEngine::FindComponent(int x, int y)
 
 //  name=I->first;
   if(abs(int(x-I->second.Position[0]))<=I->second.Width && abs(int(y-I->second.Position[1]))<=I->second.Height)
-//  if(dist<=I->second.Height)// Заглушка!!
+//  if(dist<=I->second.Height)// Р—Р°РіР»СѓС€РєР°!!
    return I->first;
  }
 
@@ -308,7 +319,7 @@ std::string UDrawEngine::FindComponent(int x, int y)
 }
 
 
-// Перемещает компонента в заданные координаты, с некоторой зоной нечуствительности
+// РџРµСЂРµРјРµС‰Р°РµС‚ РєРѕРјРїРѕРЅРµРЅС‚Р° РІ Р·Р°РґР°РЅРЅС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹, СЃ РЅРµРєРѕС‚РѕСЂРѕР№ Р·РѕРЅРѕР№ РЅРµС‡СѓСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚Рё
 void UDrawEngine::MoveComponent(const string &name, int x, int y)
 {
  DescriptionsTableIteratorT I=Descriptions.find(name);
@@ -323,7 +334,7 @@ void UDrawEngine::MoveComponent(const string &name, int x, int y)
   descr.Position[1]+=(int(y-descr.Position[1])/BackgroundLineStep)*BackgroundLineStep;
 }
 
-// Обновляет размеры всех элементов в соответствии с размерами по умолчанию
+// РћР±РЅРѕРІР»СЏРµС‚ СЂР°Р·РјРµСЂС‹ РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ СЂР°Р·РјРµСЂР°РјРё РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 void UDrawEngine::UpdateAllElementsSize(void)
 {
  DescriptionsTableIteratorT I, J;
@@ -338,7 +349,7 @@ void UDrawEngine::UpdateAllElementsSize(void)
 }
 
 
-/// Возвращает рекомендуемый размер канвы
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂРµРєРѕРјРµРЅРґСѓРµРјС‹Р№ СЂР°Р·РјРµСЂ РєР°РЅРІС‹
 void UDrawEngine::CalcRecommendSize(int &width, int &height)
 {
  if(Descriptions.empty())
@@ -359,7 +370,7 @@ void UDrawEngine::CalcRecommendSize(int &width, int &height)
  }
 }
 
-/// Шрифты
+/// РЁСЂРёС„С‚С‹
 RDK::UBitmapFontCollection& UDrawEngine::GetFonts(void)
 {
  return Fonts;
@@ -372,17 +383,17 @@ void UDrawEngine::SetFonts(RDK::UBitmapFontCollection& value)
 // ---------------------------
 
 // ---------------------------
-// Методы размещения элементов по графическому полю
+// РњРµС‚РѕРґС‹ СЂР°Р·РјРµС‰РµРЅРёСЏ СЌР»РµРјРµРЅС‚РѕРІ РїРѕ РіСЂР°С„РёС‡РµСЃРєРѕРјСѓ РїРѕР»СЋ
 // ---------------------------
-// Метод автоматического распределения существующих элементов по полю
+// РњРµС‚РѕРґ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёС… СЌР»РµРјРµРЅС‚РѕРІ РїРѕ РїРѕР»СЋ
 void UDrawEngine::BuildDestinations(void)
 {
  Descriptions.clear();
  UpdateDestinations();
 }
 
-// Метод автоматического распределения нераспределенных элементов
-// (нераспределенные элементы имеют координаты -1,-1)
+// РњРµС‚РѕРґ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ РЅРµСЂР°СЃРїСЂРµРґРµР»РµРЅРЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ
+// (РЅРµСЂР°СЃРїСЂРµРґРµР»РµРЅРЅС‹Рµ СЌР»РµРјРµРЅС‚С‹ РёРјРµСЋС‚ РєРѕРѕСЂРґРёРЅР°С‚С‹ -1,-1)
 void UDrawEngine::UpdateDestinations(void)
 {
  NetXml.SelectRoot();
@@ -455,15 +466,15 @@ void UDrawEngine::UpdateDestinations(void)
  ParseLinks();
 }
 
-// Устанавливает координаты размещения элемента id
-// Возвращает false если элемент не найден или координаты некорректны
-// Метод не проверяет свободна-ли занимаемая область
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РєРѕРѕСЂРґРёРЅР°С‚С‹ СЂР°Р·РјРµС‰РµРЅРёСЏ СЌР»РµРјРµРЅС‚Р° id
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ false РµСЃР»Рё СЌР»РµРјРµРЅС‚ РЅРµ РЅР°Р№РґРµРЅ РёР»Рё РєРѕРѕСЂРґРёРЅР°С‚С‹ РЅРµРєРѕСЂСЂРµРєС‚РЅС‹
+// РњРµС‚РѕРґ РЅРµ РїСЂРѕРІРµСЂСЏРµС‚ СЃРІРѕР±РѕРґРЅР°-Р»Рё Р·Р°РЅРёРјР°РµРјР°СЏ РѕР±Р»Р°СЃС‚СЊ
 bool UDrawEngine::SetDestination(const string &name, int x, int y)
 {
  return true;
 }
 
-// Заполняет массивы связей компонент
+// Р—Р°РїРѕР»РЅСЏРµС‚ РјР°СЃСЃРёРІС‹ СЃРІСЏР·РµР№ РєРѕРјРїРѕРЅРµРЅС‚
 void UDrawEngine::ParseLinks(void)
 {
  DescriptionsTableIteratorT I,J;
@@ -505,9 +516,9 @@ void UDrawEngine::ParseLinks(void)
 // ---------------------------
 
 // ---------------------------
-// Основные методы отображения
+// РћСЃРЅРѕРІРЅС‹Рµ РјРµС‚РѕРґС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 // ---------------------------
-// Метод перерисовки всех элементов
+// РњРµС‚РѕРґ РїРµСЂРµСЂРёСЃРѕРІРєРё РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ
 void UDrawEngine::Draw(void)
 {
  CanvasWidth=GEngine->GetCWidth();
@@ -528,8 +539,8 @@ void UDrawEngine::Draw(void)
   return;
 }
 
-// Метод обновления изображения отдельного элемента сети
-// Возвращает false если элемент не найден
+// РњРµС‚РѕРґ РѕР±РЅРѕРІР»РµРЅРёСЏ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РѕС‚РґРµР»СЊРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р° СЃРµС‚Рё
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ false РµСЃР»Рё СЌР»РµРјРµРЅС‚ РЅРµ РЅР°Р№РґРµРЅ
 bool UDrawEngine::Draw(const string &name)
 {
  DescriptionsTableIteratorT I = Descriptions.find(name);
@@ -541,12 +552,12 @@ bool UDrawEngine::Draw(const string &name)
  return true;
 }
 
-// Метод отображения связей сети
-// links==true - отображает схему связей линиями
-// highlight==true - подсвечивает все компоненты связанные с этим
-// (сам нейрон подсвечивается в случае, если на него есть обратные связи)
-// contour==true - окружает контуром компоненты связанные с этим
-// (в контур могут попасть и не связанные компоненты)
+// РњРµС‚РѕРґ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃРІСЏР·РµР№ СЃРµС‚Рё
+// links==true - РѕС‚РѕР±СЂР°Р¶Р°РµС‚ СЃС…РµРјСѓ СЃРІСЏР·РµР№ Р»РёРЅРёСЏРјРё
+// highlight==true - РїРѕРґСЃРІРµС‡РёРІР°РµС‚ РІСЃРµ РєРѕРјРїРѕРЅРµРЅС‚С‹ СЃРІСЏР·Р°РЅРЅС‹Рµ СЃ СЌС‚РёРј
+// (СЃР°Рј РЅРµР№СЂРѕРЅ РїРѕРґСЃРІРµС‡РёРІР°РµС‚СЃСЏ РІ СЃР»СѓС‡Р°Рµ, РµСЃР»Рё РЅР° РЅРµРіРѕ РµСЃС‚СЊ РѕР±СЂР°С‚РЅС‹Рµ СЃРІСЏР·Рё)
+// contour==true - РѕРєСЂСѓР¶Р°РµС‚ РєРѕРЅС‚СѓСЂРѕРј РєРѕРјРїРѕРЅРµРЅС‚С‹ СЃРІСЏР·Р°РЅРЅС‹Рµ СЃ СЌС‚РёРј
+// (РІ РєРѕРЅС‚СѓСЂ РјРѕРіСѓС‚ РїРѕРїР°СЃС‚СЊ Рё РЅРµ СЃРІСЏР·Р°РЅРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚С‹)
 bool UDrawEngine::DrawLinks(bool links, bool highlight,
 	bool contour)
 {
@@ -571,7 +582,7 @@ bool UDrawEngine::DrawLinks(bool links, bool highlight,
  return true;
 }
 
-// Метод отображения фона
+// РњРµС‚РѕРґ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ С„РѕРЅР°
 bool UDrawEngine::DrawBackground(void)
 {
  GEngine->SetPenColor(BackgroundColor);
@@ -600,9 +611,9 @@ bool UDrawEngine::DrawBackground(void)
 // ---------------------------
 
 // ---------------------------
-// Вспомогательные методы отображения
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РјРµС‚РѕРґС‹ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 // ---------------------------
-// Отрисовывает элемент в заданной позиции
+// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ СЌР»РµРјРµРЅС‚ РІ Р·Р°РґР°РЅРЅРѕР№ РїРѕР·РёС†РёРё
 void UDrawEngine::Paint(UGEDescription &ndescr)
 {
  if (!GEngine)
@@ -619,14 +630,14 @@ void UDrawEngine::Paint(UGEDescription &ndescr)
  break;
  }
 
- // Отрисовываем индикаторы
+ // РћС‚СЂРёСЃРѕРІС‹РІР°РµРј РёРЅРґРёРєР°С‚РѕСЂС‹
  for(size_t i=0;i<ndescr.Indicators.size();i++)
   PaintIndicator(int(ndescr.Position[0]) - ndescr.Width,
 		int(ndescr.Position[1]) + ndescr.Height + ndescr.ContourWidth, ndescr.Width * 2,
 		ndescr.Height / 2, ndescr.Indicators[i], 1, (i<FullIndicatorColors.size())?FullIndicatorColors[i]:BackgroundColor,
 		(i<EmptyIndicatorColors.size())?EmptyIndicatorColors[i]:BackgroundColor);
 
- // Отрисовываем имя
+ // РћС‚СЂРёСЃРѕРІС‹РІР°РµРј РёРјСЏ
  UColorT font_color;
  if(ndescr.Activity)
   font_color=ndescr.ContourColor;
@@ -652,7 +663,7 @@ void UDrawEngine::Paint(UGEDescription &ndescr)
  }
 }
 
-// Отрисовывает конечный элемент (NAItem*) с центром в заданной позиции
+// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ РєРѕРЅРµС‡РЅС‹Р№ СЌР»РµРјРµРЅС‚ (NAItem*) СЃ С†РµРЅС‚СЂРѕРј РІ Р·Р°РґР°РЅРЅРѕР№ РїРѕР·РёС†РёРё
 void UDrawEngine::PaintItem(UGEDescription &ndescr)
 {
  UBRect rect;
@@ -700,7 +711,7 @@ void UDrawEngine::PaintItem(UGEDescription &ndescr)
  }
 }
 
-// Отрисовывает элемент-сеть (UNet*) с центром в заданной позиции
+// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ СЌР»РµРјРµРЅС‚-СЃРµС‚СЊ (UNet*) СЃ С†РµРЅС‚СЂРѕРј РІ Р·Р°РґР°РЅРЅРѕР№ РїРѕР·РёС†РёРё
 void UDrawEngine::PaintNet(UGEDescription &ndescr)
 {
  int shift=0;
@@ -747,12 +758,12 @@ void UDrawEngine::PaintNet(UGEDescription &ndescr)
  }
 }
 
-// Отрисовывает индикатор с заданными параметрами
-// Направление direction задается следующим образом
-// 1 - индикатор заполняется слева направо
-// 2 - индикатор заполняется справа налево
-// 3 - индикатор заполняется сверху вниз
-// 4 - индикатор заполняется снизу вверх
+// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ РёРЅРґРёРєР°С‚РѕСЂ СЃ Р·Р°РґР°РЅРЅС‹РјРё РїР°СЂР°РјРµС‚СЂР°РјРё
+// РќР°РїСЂР°РІР»РµРЅРёРµ direction Р·Р°РґР°РµС‚СЃСЏ СЃР»РµРґСѓСЋС‰РёРј РѕР±СЂР°Р·РѕРј
+// 1 - РёРЅРґРёРєР°С‚РѕСЂ Р·Р°РїРѕР»РЅСЏРµС‚СЃСЏ СЃР»РµРІР° РЅР°РїСЂР°РІРѕ
+// 2 - РёРЅРґРёРєР°С‚РѕСЂ Р·Р°РїРѕР»РЅСЏРµС‚СЃСЏ СЃРїСЂР°РІР° РЅР°Р»РµРІРѕ
+// 3 - РёРЅРґРёРєР°С‚РѕСЂ Р·Р°РїРѕР»РЅСЏРµС‚СЃСЏ СЃРІРµСЂС…Сѓ РІРЅРёР·
+// 4 - РёРЅРґРёРєР°С‚РѕСЂ Р·Р°РїРѕР»РЅСЏРµС‚СЃСЏ СЃРЅРёР·Сѓ РІРІРµСЂС…
 void UDrawEngine::PaintIndicator(int x, int y, int width, int height,
     double precent, int direction, UColorT full, UColorT empty)
 {
@@ -791,7 +802,7 @@ void UDrawEngine::PaintIndicator(int x, int y, int width, int height,
  }
 }
 
-// Отрисовывает связь
+// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ СЃРІСЏР·СЊ
 void UDrawEngine::PaintLink(UGEDescription &out, UGEDescription &in,
     bool links, bool highlight, bool contour)
 {
@@ -814,45 +825,66 @@ void UDrawEngine::PaintLink(UGEDescription &out, UGEDescription &in,
    GEngine->SetPenColor(DefaultLinksColor);
   }
 
-
-
   if(!out.Highlight && !in.Highlight)
    GEngine->SetPenColor(DefaultLinksColor);
 
   GEngine->SetPenWidth(out.LinkWidth);
-  RDK::MVector<double,3> &c_out=out.Position;
-  RDK::MVector<double,3> &c_in=in.Position;
-  double x_diff=fabs(c_out[0]-c_in[0]), y_diff=fabs(c_out[1]-c_in[1]);
-  if(c_out[0]<c_in[0] && x_diff>y_diff)
+
+  // Р•СЃР»Рё Сѓ РѕР±РѕРёС… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РІРєР»СЋС‡РµРЅ СЂРµР¶РёРј РїРѕРєР°Р·Р° РїРѕСЂС‚РѕРІ,
+  // СЃРѕРµРґРёРЅСЏРµРј РїРѕСЂС‚С‹ РЅР°РїСЂСЏРјСѓСЋ (РїРѕРєР° СѓРїСЂРѕС‰РµРЅРЅР°СЏ РІРµСЂСЃРёСЏ - РїРµСЂРІС‹Р№ РІС‹С…РѕРґ Рє РїРµСЂРІРѕРјСѓ РІС…РѕРґСѓ)
+  bool usePortConnection = out.ShowPorts && in.ShowPorts &&
+                           !out.OutputPorts.empty() && !in.InputPorts.empty();
+
+  if(usePortConnection)
   {
-   GEngine->Line(int(c_out[0]) + out.Width, int(c_out[1]), int(c_in[0]) - in.Width, int(c_in[1]));
-   GEngine->Rect(int(in.Position[0]) - in.Width - out.LinkWidth,
-			int(c_in[1]) - out.LinkWidth,
-			int(c_in[0]) - in.Width + out.LinkWidth, int(c_in[1]) + out.LinkWidth, true);
+   // РџРѕР»СѓС‡Р°РµРј РєРѕРѕСЂРґРёРЅР°С‚С‹ РїРµСЂРІРѕРіРѕ РІС‹С…РѕРґРЅРѕРіРѕ РїРѕСЂС‚Р° РёСЃС‚РѕС‡РЅРёРєР°
+   int outX, outY;
+   GetPortCenter(out, out.OutputPorts[0], outX, outY);
+
+   // РџРѕР»СѓС‡Р°РµРј РєРѕРѕСЂРґРёРЅР°С‚С‹ РїРµСЂРІРѕРіРѕ РІС…РѕРґРЅРѕРіРѕ РїРѕСЂС‚Р° РїСЂРёРµРјРЅРёРєР°
+   int inX, inY;
+   GetPortCenter(in, in.InputPorts[0], inX, inY);
+
+   // Р РёСЃСѓРµРј СЃРІСЏР·СЊ РјРµР¶РґСѓ РїРѕСЂС‚Р°РјРё
+   PaintLinkBetweenPorts(outX, outY, inX, inY, out.LinkWidth);
   }
   else
-  if(c_out[1]<c_in[1] && x_diff<=y_diff)
   {
-   GEngine->Line(int(c_out[0]), int(c_out[1]) + out.Height, int(c_in[0]), int(c_in[1]) - in.Height);
-   GEngine->Rect(int(in.Position[0]) - out.LinkWidth,
-			int(c_in[1]) - in.Height - out.LinkWidth,
-			int(c_in[0]) + out.LinkWidth, int(c_in[1]) - in.Height + out.LinkWidth, true);
-  }
-  else
-  if(c_out[0]>=c_in[0] && x_diff>y_diff)
-  {
-   GEngine->Line(int(c_out[0]) - out.Width, int(c_out[1]), int(c_in[0]) + in.Width, int(c_in[1]));
-   GEngine->Rect(int(in.Position[0]) + in.Width - out.LinkWidth,
-			int(c_in[1]) - out.LinkWidth,
-			int(c_in[0]) + in.Width + out.LinkWidth, int(c_in[1]) + out.LinkWidth, true);
-  }
-  else
-  if(c_out[1]>=c_in[1] && x_diff<=y_diff)
-  {
-   GEngine->Line(int(c_out[0]), int(c_out[1]) - out.Height, int(c_in[0]), int(c_in[1]) + in.Height);
-   GEngine->Rect(int(in.Position[0]) - out.LinkWidth,
-			int(c_in[1]) + in.Height - out.LinkWidth,
-			int(c_in[0]) + out.LinkWidth, int(c_in[1]) + in.Height + out.LinkWidth, true);
+   // РЎС‚Р°РЅРґР°СЂС‚РЅР°СЏ РѕС‚СЂРёСЃРѕРІРєР° СЃРІСЏР·РµР№ РјРµР¶РґСѓ С†РµРЅС‚СЂР°РјРё Р±Р»РѕРєРѕРІ
+   RDK::MVector<double,3> &c_out=out.Position;
+   RDK::MVector<double,3> &c_in=in.Position;
+   double x_diff=fabs(c_out[0]-c_in[0]), y_diff=fabs(c_out[1]-c_in[1]);
+   if(c_out[0]<c_in[0] && x_diff>y_diff)
+   {
+    GEngine->Line(int(c_out[0]) + out.Width, int(c_out[1]), int(c_in[0]) - in.Width, int(c_in[1]));
+    GEngine->Rect(int(in.Position[0]) - in.Width - out.LinkWidth,
+             int(c_in[1]) - out.LinkWidth,
+             int(c_in[0]) - in.Width + out.LinkWidth, int(c_in[1]) + out.LinkWidth, true);
+   }
+   else
+   if(c_out[1]<c_in[1] && x_diff<=y_diff)
+   {
+    GEngine->Line(int(c_out[0]), int(c_out[1]) + out.Height, int(c_in[0]), int(c_in[1]) - in.Height);
+    GEngine->Rect(int(in.Position[0]) - out.LinkWidth,
+             int(c_in[1]) - in.Height - out.LinkWidth,
+             int(c_in[0]) + out.LinkWidth, int(c_in[1]) - in.Height + out.LinkWidth, true);
+   }
+   else
+   if(c_out[0]>=c_in[0] && x_diff>y_diff)
+   {
+    GEngine->Line(int(c_out[0]) - out.Width, int(c_out[1]), int(c_in[0]) + in.Width, int(c_in[1]));
+    GEngine->Rect(int(in.Position[0]) + in.Width - out.LinkWidth,
+             int(c_in[1]) - out.LinkWidth,
+             int(c_in[0]) + in.Width + out.LinkWidth, int(c_in[1]) + out.LinkWidth, true);
+   }
+   else
+   if(c_out[1]>=c_in[1] && x_diff<=y_diff)
+   {
+    GEngine->Line(int(c_out[0]), int(c_out[1]) - out.Height, int(c_in[0]), int(c_in[1]) + in.Height);
+    GEngine->Rect(int(in.Position[0]) - out.LinkWidth,
+             int(c_in[1]) + in.Height - out.LinkWidth,
+             int(c_in[0]) + out.LinkWidth, int(c_in[1]) + in.Height + out.LinkWidth, true);
+   }
   }
  }
 /*
@@ -867,7 +899,191 @@ void UDrawEngine::PaintLink(UGEDescription &out, UGEDescription &in,
  }
   */
 }
-// Отрисовывает окружность
+
+// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ СЃРІСЏР·СЊ РјРµР¶РґСѓ РґРІСѓРјСЏ РїРѕСЂС‚Р°РјРё СЃ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµРј РєСЂРёРІС‹С… Р‘РµР·СЊРµ
+void UDrawEngine::PaintLinkBetweenPorts(int x1, int y1, int x2, int y2, int lineWidth)
+{
+ if(!GEngine)
+  return;
+
+ GEngine->SetPenWidth(lineWidth);
+
+ // Р’С‹С‡РёСЃР»СЏРµРј РєРѕРЅС‚СЂРѕР»СЊРЅС‹Рµ С‚РѕС‡РєРё РґР»СЏ РїР»Р°РІРЅРѕР№ РєСЂРёРІРѕР№
+ int dx = abs(x2 - x1);
+
+ // Р РёСЃСѓРµРј РєСЂРёРІСѓСЋ Р‘РµР·СЊРµ (СѓРїСЂРѕС‰РµРЅРЅРѕ - С‡РµСЂРµР· РЅРµСЃРєРѕР»СЊРєРѕ СЃРµРіРјРµРЅС‚РѕРІ)
+ // Р”Р»СЏ РїСЂРѕСЃС‚РѕС‚С‹ РёСЃРїРѕР»СЊР·СѓРµРј Р»РѕРјР°РЅСѓСЋ Р»РёРЅРёСЋ СЃ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅС‹РјРё РѕС‚СЂРµР·РєР°РјРё
+ if(dx > 50)
+ {
+  // Р“РѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅС‹Р№ РѕС‚СЂРµР·РѕРє РѕС‚ РёСЃС‚РѕС‡РЅРёРєР°
+  int midX = (x1 + x2) / 2;
+  GEngine->Line(x1, y1, midX, y1);
+  // Р’РµСЂС‚РёРєР°Р»СЊРЅС‹Р№ РїРµСЂРµС…РѕРґ
+  GEngine->Line(midX, y1, midX, y2);
+  // Р“РѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅС‹Р№ РѕС‚СЂРµР·РѕРє Рє РїСЂРёРµРјРЅРёРєСѓ
+  GEngine->Line(midX, y2, x2, y2);
+ }
+ else
+ {
+  // РџСЂСЏРјР°СЏ Р»РёРЅРёСЏ РґР»СЏ Р±Р»РёР·РєРёС… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ
+  GEngine->Line(x1, y1, x2, y2);
+ }
+
+ // Р РёСЃСѓРµРј РјР°СЂРєРµСЂ РЅР° РєРѕРЅС†Рµ СЃРІСЏР·Рё (СЃС‚СЂРµР»РєР° СѓРїСЂРѕС‰РµРЅРЅР°СЏ)
+ int arrowSize = 4;
+ GEngine->Rect(x2 - arrowSize, y2 - arrowSize/2, x2, y2 + arrowSize/2, true);
+}
+
+// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ РїРѕСЂС‚С‹ РєРѕРјРїРѕРЅРµРЅС‚Р°
+void UDrawEngine::PaintPorts(UGEDescription &ndescr)
+{
+ if(!GEngine || !ndescr.ShowPorts)
+  return;
+
+ // Р Р°СЃСЃС‡РёС‚С‹РІР°РµРј РїРѕР·РёС†РёРё РїРѕСЂС‚РѕРІ РµСЃР»Рё РµС‰Рµ РЅРµ СЃРґРµР»Р°РЅРѕ
+ CalcPortPositions(ndescr);
+
+ int baseX = int(ndescr.Position[0]);
+ int baseY = int(ndescr.Position[1]);
+
+ // РћС‚СЂРёСЃРѕРІС‹РІР°РµРј РІС…РѕРґРЅС‹Рµ РїРѕСЂС‚С‹ (СЃР»РµРІР°)
+ for(size_t i = 0; i < ndescr.InputPorts.size(); i++)
+ {
+  int portX = baseX - ndescr.Width;
+  int portY = baseY - ndescr.Height + ndescr.InputPorts[i].YOffset;
+  PaintPort(ndescr.InputPorts[i], portX, portY, ndescr.PortRadius, true);
+ }
+
+ // РћС‚СЂРёСЃРѕРІС‹РІР°РµРј РІС‹С…РѕРґРЅС‹Рµ РїРѕСЂС‚С‹ (СЃРїСЂР°РІР°)
+ for(size_t i = 0; i < ndescr.OutputPorts.size(); i++)
+ {
+  int portX = baseX + ndescr.Width;
+  int portY = baseY - ndescr.Height + ndescr.OutputPorts[i].YOffset;
+  PaintPort(ndescr.OutputPorts[i], portX, portY, ndescr.PortRadius, false);
+ }
+}
+
+// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ РѕРґРёРЅ РїРѕСЂС‚
+void UDrawEngine::PaintPort(const UGEPort &port, int x, int y, int radius, bool isInput)
+{
+ if(!GEngine)
+  return;
+
+ // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј С†РІРµС‚ РїРѕСЂС‚Р°
+ GEngine->SetPenColor(port.Color);
+
+ // Р РёСЃСѓРµРј РєСЂСѓРі РїРѕСЂС‚Р°
+ GEngine->Circle(x, y, radius, port.IsConnected);
+
+ // Р РёСЃСѓРµРј РёРјСЏ РїРѕСЂС‚Р°
+ if(!port.Name.empty())
+ {
+  GEngine->SetPenColor(UColorT(0, 0, 0));
+  int textX = isInput ? x + radius + 3 : x - radius - 3;
+  int textY = y - 5;
+
+  if(!isInput)
+  {
+   // Р”Р»СЏ РІС‹С…РѕРґРЅС‹С… РїРѕСЂС‚РѕРІ С‚РµРєСЃС‚ СЃРїСЂР°РІР° РѕС‚ РїРѕСЂС‚Р°, РІС‹СЂР°РІРЅРёРІР°РЅРёРµ РІРїСЂР°РІРѕ
+   // (СѓРїСЂРѕС‰РµРЅРЅС‹Р№ РІР°СЂРёР°РЅС‚ - РїСЂРѕСЃС‚Рѕ СЃРјРµС‰Р°РµРј РІР»РµРІРѕ)
+   textX = x - radius - 3 - static_cast<int>(port.Name.length()) * 6;
+  }
+
+  GEngine->Text(port.Name.c_str(), textX, textY);
+ }
+}
+
+// Р’С‹С‡РёСЃР»СЏРµС‚ РїРѕР·РёС†РёРё РїРѕСЂС‚РѕРІ РґР»СЏ РєРѕРјРїРѕРЅРµРЅС‚Р°
+void UDrawEngine::CalcPortPositions(UGEDescription &ndescr)
+{
+ int portSpacing = ndescr.PortHeight;
+ int startOffset = 10 + ndescr.PortRadius;
+
+ // Р’С‹С‡РёСЃР»СЏРµРј РїРѕР·РёС†РёРё РґР»СЏ РІС…РѕРґРЅС‹С… РїРѕСЂС‚РѕРІ
+ for(size_t i = 0; i < ndescr.InputPorts.size(); i++)
+ {
+  ndescr.InputPorts[i].YOffset = startOffset + static_cast<int>(i) * portSpacing;
+ }
+
+ // Р’С‹С‡РёСЃР»СЏРµРј РїРѕР·РёС†РёРё РґР»СЏ РІС‹С…РѕРґРЅС‹С… РїРѕСЂС‚РѕРІ
+ for(size_t i = 0; i < ndescr.OutputPorts.size(); i++)
+ {
+  ndescr.OutputPorts[i].YOffset = startOffset + static_cast<int>(i) * portSpacing;
+ }
+
+ // РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРё РїРѕРґСЃС‚СЂР°РёРІР°РµРј РІС‹СЃРѕС‚Сѓ РєРѕРјРїРѕРЅРµРЅС‚Р° РїРѕРґ РєРѕР»РёС‡РµСЃС‚РІРѕ РїРѕСЂС‚РѕРІ
+ int maxPorts = static_cast<int>(std::max(ndescr.InputPorts.size(), ndescr.OutputPorts.size()));
+ int requiredHeight = startOffset + maxPorts * portSpacing + ndescr.PortRadius;
+ if(requiredHeight > ndescr.Height && ndescr.ShowPorts)
+ {
+  ndescr.Height = requiredHeight;
+ }
+}
+
+// РџРѕРёСЃРє РїРѕСЂС‚Р° РїРѕ Р·Р°РґР°РЅРЅС‹Рј РєРѕРѕСЂРґРёРЅР°С‚Р°Рј
+UGEPort* UDrawEngine::FindPortAtPosition(int x, int y, std::string& out_component_name)
+{
+ for(DescriptionsTableIteratorT it = Descriptions.begin(); it != Descriptions.end(); ++it)
+ {
+  UGEDescription& desc = it->second;
+  if(!desc.ShowPorts)
+   continue;
+
+  int baseX = int(desc.Position[0]);
+  int baseY = int(desc.Position[1]);
+  int hitRadius = desc.PortRadius + 3; // РќРµРјРЅРѕРіРѕ СЂР°СЃС€РёСЂСЏРµРј Р·РѕРЅСѓ РїРѕРїР°РґР°РЅРёСЏ
+
+  // РџСЂРѕРІРµСЂСЏРµРј РІС…РѕРґРЅС‹Рµ РїРѕСЂС‚С‹
+  for(size_t i = 0; i < desc.InputPorts.size(); i++)
+  {
+   int portX = baseX - desc.Width;
+   int portY = baseY - desc.Height + desc.InputPorts[i].YOffset;
+
+   int dx = x - portX;
+   int dy = y - portY;
+   if(dx*dx + dy*dy <= hitRadius*hitRadius)
+   {
+    out_component_name = it->first;
+    return &desc.InputPorts[i];
+   }
+  }
+
+  // РџСЂРѕРІРµСЂСЏРµРј РІС‹С…РѕРґРЅС‹Рµ РїРѕСЂС‚С‹
+  for(size_t i = 0; i < desc.OutputPorts.size(); i++)
+  {
+   int portX = baseX + desc.Width;
+   int portY = baseY - desc.Height + desc.OutputPorts[i].YOffset;
+
+   int dx = x - portX;
+   int dy = y - portY;
+   if(dx*dx + dy*dy <= hitRadius*hitRadius)
+   {
+    out_component_name = it->first;
+    return &desc.OutputPorts[i];
+   }
+  }
+ }
+
+ out_component_name.clear();
+ return nullptr;
+}
+
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕРѕСЂРґРёРЅР°С‚С‹ С†РµРЅС‚СЂР° РїРѕСЂС‚Р°
+void UDrawEngine::GetPortCenter(const UGEDescription &ndescr, const UGEPort &port, int &x, int &y)
+{
+ int baseX = int(ndescr.Position[0]);
+ int baseY = int(ndescr.Position[1]);
+
+ if(port.IsInput)
+ {
+  x = baseX - ndescr.Width;
+ }
+ else
+ {
+  x = baseX + ndescr.Width;
+ }
+ y = baseY - ndescr.Height + port.YOffset;
+}
 // ---------------------------
 
 }

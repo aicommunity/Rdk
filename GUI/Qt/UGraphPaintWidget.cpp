@@ -2,10 +2,12 @@
 #include "ui_UGraphWidget.h"
 #include "ui_UGraphPaintWidget.h"
 #include <iostream>
+#include <QPen>
 
 UGraphPaintWidget::UGraphPaintWidget(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::UGraphPaintWidget)
+    ui(new Ui::UGraphPaintWidget),
+    pendingReplot(false)
 {
     ui->setupUi(this);
 }
@@ -15,21 +17,21 @@ UGraphPaintWidget::~UGraphPaintWidget()
     delete ui;
 }
 
-// Определяет границы графика по оси абсцисс
-// Подписывает наименование осей
+// РћРїСЂРµРґРµР»СЏРµС‚ РіСЂР°РЅРёС†С‹ РіСЂР°С„РёРєР° РїРѕ РѕСЃРё Р°Р±СЃС†РёСЃСЃ
+// РџРѕРґРїРёСЃС‹РІР°РµС‚ РЅР°РёРјРµРЅРѕРІР°РЅРёРµ РѕСЃРµР№
 void UGraphPaintWidget::mainStartGraphSettings (double leftLimit, double rightLimit,
                                            double lowerLimit, double upperLimit,
                                            const QString& nameX, const QString& nameY)
 {
     //std::cout<<"MainSettings"<<std::endl;
-    ui->widget->clearGraphs();//очищаем все графики
+    ui->widget->clearGraphs();//РѕС‡РёС‰Р°РµРј РІСЃРµ РіСЂР°С„РёРєРё
 
     leftLimitGraph=leftLimit;
     rightLimitGraph=rightLimit;
     lowerLimitGraph=lowerLimit;
     upperLimitGraph=upperLimit;
 
-    //Применем начальные параметры
+    //РџСЂРёРјРµРЅРµРј РЅР°С‡Р°Р»СЊРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹
     ui->widget->xAxis->setLabel(nameX);
     ui->widget->yAxis->setLabel(nameY);
     ui->widget->xAxis->setRange(leftLimitGraph, rightLimitGraph);
@@ -42,9 +44,9 @@ void UGraphPaintWidget::mainStartGraphSettings (double leftLimit, double rightLi
 }
 \
 
-// Изменяет параметры цвета и имени одного и графиков
-// Если график новый - добавляет его в вектор следующим элементом
-// Изменяет номер "активного" графика на изменяемый
+// РР·РјРµРЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ С†РІРµС‚Р° Рё РёРјРµРЅРё РѕРґРЅРѕРіРѕ Рё РіСЂР°С„РёРєРѕРІ
+// Р•СЃР»Рё РіСЂР°С„РёРє РЅРѕРІС‹Р№ - РґРѕР±Р°РІР»СЏРµС‚ РµРіРѕ РІ РІРµРєС‚РѕСЂ СЃР»РµРґСѓСЋС‰РёРј СЌР»РµРјРµРЅС‚РѕРј
+// РР·РјРµРЅСЏРµС‚ РЅРѕРјРµСЂ "Р°РєС‚РёРІРЅРѕРіРѕ" РіСЂР°С„РёРєР° РЅР° РёР·РјРµРЅСЏРµРјС‹Р№
 int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName, QColor myColor)
 {
     size_t myID=vectorGraph.size();
@@ -54,7 +56,8 @@ int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName, QC
     vectorGraph.push_back(newTSingleGraph);
     //std::cout<<"addGraph"<<std::endl;
     ui->widget->addGraph();
-    ui->widget->graph(0)->setPen(newTSingleGraph.t_graphColor);
+    ui->widget->graph(int(myID))->setPen(newTSingleGraph.t_graphColor);
+    pendingReplot = true;
     return int(myID);
 }
 
@@ -88,7 +91,8 @@ int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName, in
     vectorGraph.push_back(newTSingleGraph);
     //std::cout<<"addGraph"<<std::endl;
     ui->widget->addGraph();
-    ui->widget->graph(0)->setPen(newTSingleGraph.t_graphColor);
+    ui->widget->graph(int(myID))->setPen(newTSingleGraph.t_graphColor);
+    pendingReplot = true;
     return int(myID);
 }
 
@@ -101,7 +105,8 @@ int UGraphPaintWidget::addGraphVisualParameters(const std::string &graphName)
     vectorGraph.push_back(newTSingleGraph);
     //std::cout<<"addGraph"<<std::endl;
     ui->widget->addGraph();
-    ui->widget->graph(0)->setPen(newTSingleGraph.t_graphColor);
+    ui->widget->graph(int(myID))->setPen(newTSingleGraph.t_graphColor);
+    pendingReplot = true;
     return int(myID);
 }
 
@@ -109,12 +114,15 @@ void UGraphPaintWidget::setGraphDataSource(int graph_index, int channel_index, c
                                       const std::string &propertyName,
                                       const std::string &type, int jx, int jy)
 {
+    if (graph_index < 0 || graph_index >= int(vectorGraph.size()))
+        return;
     vectorGraph[graph_index].indexChannel=channel_index;
     vectorGraph[graph_index].nameComponent=componentName;
     vectorGraph[graph_index].nameProperty=propertyName;
     vectorGraph[graph_index].typeProperty=type;
     vectorGraph[graph_index].Jx=jx;
     vectorGraph[graph_index].Jy=jy;
+    vectorGraph[graph_index].Online=true;
 }
 
 
@@ -124,13 +132,14 @@ void UGraphPaintWidget::delAllGraph(void)
     ui->widget->clearGraphs();
     ui->widget->replot();
     currentItem=-1;
+    pendingReplot = false;
 }
 
-//Определяет форму графика (передает массивы)
+//РћРїСЂРµРґРµР»СЏРµС‚ С„РѕСЂРјСѓ РіСЂР°С„РёРєР° (РїРµСЂРµРґР°РµС‚ РјР°СЃСЃРёРІС‹)
 void UGraphPaintWidget::setData(int id, QVector<double> X, QVector<double> Y)
 {
-    ui->widget->graph(id)->setData(X,Y);
-    //currentItem=id;
+    updateSeries(id, X, Y);
+    commitFrame();
 }
 
 void UGraphPaintWidget::changeCurrentItem(void)
@@ -215,12 +224,50 @@ void UGraphPaintWidget::redrawGraph(void)
 {
     ui->widget->xAxis->setRange(leftLimitGraph, rightLimitGraph);
     ui->widget->yAxis->setRange(lowerLimitGraph, upperLimitGraph);
+    requestReplot();
+    commitFrame();
+}
+
+void UGraphPaintWidget::updateSeries(int id, const QVector<double> &X, const QVector<double> &Y)
+{
+    if (id < 0 || id >= ui->widget->graphCount())
+        return;
+    ui->widget->graph(id)->setData(X, Y);
+    pendingReplot = true;
+}
+
+void UGraphPaintWidget::setGraphAvailability(int id, bool online)
+{
+    if (id < 0 || id >= int(vectorGraph.size()) || id >= ui->widget->graphCount())
+        return;
+
+    if (vectorGraph[id].Online == online)
+        return;
+
+    vectorGraph[id].Online = online;
+    QPen pen = ui->widget->graph(id)->pen();
+    pen.setStyle(online ? Qt::SolidLine : Qt::DashLine);
+    pen.setColor(vectorGraph[id].t_graphColor);
+    ui->widget->graph(id)->setPen(pen);
+    pendingReplot = true;
+}
+
+void UGraphPaintWidget::requestReplot()
+{
+    pendingReplot = true;
+}
+
+void UGraphPaintWidget::commitFrame()
+{
+    if (!pendingReplot)
+        return;
+    pendingReplot = false;
     ui->widget->replot();
 }
 
 
 
-//---------------------------------------------------Выдача параметров
+//---------------------------------------------------Р’С‹РґР°С‡Р° РїР°СЂР°РјРµС‚СЂРѕРІ
 
 
 int  UGraphPaintWidget::getStructContent(int i, int* graphColor, std::string* graphName, std::string* nameComponent,
@@ -288,7 +335,7 @@ double UGraphPaintWidget::getLowerLimitGraph(void) const
     //std::cout<<lowerLimitGraph<<std::endl;
 }
 
-//---------------------------------------------------Занесение параметров
+//---------------------------------------------------Р—Р°РЅРµСЃРµРЅРёРµ РїР°СЂР°РјРµС‚СЂРѕРІ
 
 void UGraphPaintWidget::setCurrentItem(int myCurrentItem)
 {
@@ -345,6 +392,20 @@ void UGraphPaintWidget::setColorCurrentItem(int color)
     }
 }
 
+void UGraphPaintWidget::setGraphName(int graphIndex, const std::string &name)
+{
+    if (graphIndex >= 0 && graphIndex < int(vectorGraph.size()))
+    {
+        vectorGraph[graphIndex].t_graphName = name;
+        // РћР±РЅРѕРІРёРј Р»РµРіРµРЅРґСѓ, РµСЃР»Рё РѕРЅР° РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ
+        if (graphIndex < ui->widget->graphCount())
+        {
+            ui->widget->graph(graphIndex)->setName(QString::fromStdString(name));
+            pendingReplot = true;
+        }
+    }
+}
+
 void UGraphPaintWidget::setLables(QString lableX, QString lableY)
 {
     ui->widget->xAxis->setLabel(lableX);
@@ -359,9 +420,9 @@ int UGraphPaintWidget::delCurrentItemGraph()
     if (currentItem>=0)
     {
         ui->widget->removeGraph(currentItem);
-        //удаляем нужный жлемент структуры
+        //СѓРґР°Р»СЏРµРј РЅСѓР¶РЅС‹Р№ Р¶Р»РµРјРµРЅС‚ СЃС‚СЂСѓРєС‚СѓСЂС‹
         vectorGraph.erase(vectorGraph.begin()+currentItem);
-        //перестать выделять текущий график
+        //РїРµСЂРµСЃС‚Р°С‚СЊ РІС‹РґРµР»СЏС‚СЊ С‚РµРєСѓС‰РёР№ РіСЂР°С„РёРє
         if (vectorGraph.size()<1)
             currentItem=-1;
         else

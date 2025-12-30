@@ -46,9 +46,9 @@ struct RDK_LIB_TYPE UBmpHeader
 };
 
 // -----------------------
-// Функции ввода-вывода изображений
+// Р¤СѓРЅРєС†РёРё РІРІРѕРґР°-РІС‹РІРѕРґР° РёР·РѕР±СЂР°Р¶РµРЅРёР№
 // -----------------------
-// Сохраняет изображение в поток
+// РЎРѕС…СЂР°РЅСЏРµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІ РїРѕС‚РѕРє
 template <typename CharT>
 basic_ostream<CharT>& operator << (basic_ostream<CharT> &stream, const UBitmap &bmp)
 {
@@ -99,7 +99,7 @@ basic_ostream<CharT>& operator << (basic_ostream<CharT> &stream, const UBitmap &
  return stream;
 };
 
-// Загружает изображение из потока
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РёР· РїРѕС‚РѕРєР°
 template <typename CharT>
 basic_istream<CharT>& operator >> (basic_istream<CharT> &stream, UBitmap &bmp)
 {
@@ -143,7 +143,7 @@ basic_istream<CharT>& operator >> (basic_istream<CharT> &stream, UBitmap &bmp)
   unsigned char* img_pointer = bmp.GetData();
   if(!default_order)
    img_pointer+=bmp.GetByteLength()-bmp.GetLineByteLength();
-  vector <unsigned char> black_hole; /// Пустая область в конце каждой строки
+  vector <unsigned char> black_hole; /// РџСѓСЃС‚Р°СЏ РѕР±Р»Р°СЃС‚СЊ РІ РєРѕРЅС†Рµ РєР°Р¶РґРѕР№ СЃС‚СЂРѕРєРё
   int read_img_line = header.width * bmp.GetPixelByteLength();
   int read_bmp_line = bmp.GetLineByteLength();
   while (read_bmp_line % 4)
@@ -162,7 +162,7 @@ basic_istream<CharT>& operator >> (basic_istream<CharT> &stream, UBitmap &bmp)
 };
 
 
-// Сохраняет изображение в файл
+// РЎРѕС…СЂР°РЅСЏРµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІ С„Р°Р№Р»
 template <typename CharT>
 bool SaveBitmapToFile(const CharT *filename, const UBitmap &bmp)
 {
@@ -179,7 +179,7 @@ bool SaveBitmapToFile(const CharT *filename, const UBitmap &bmp)
  return true;
 };
 
-// Загружает изображение из файла
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РёР· С„Р°Р№Р»Р°
 template <typename CharT>
 bool LoadBitmapFromFile(const CharT *filename, UBitmap &bmp)
 {

@@ -9,8 +9,171 @@
 #endif
 
 #include "UApplication.h"
+
+#include <algorithm>
+#include <cctype>
+#include <cstdlib>
+#include <filesystem>
+#include <optional>
+#include <limits>
+#include <sstream>
+#include <system_error>
+#include <vector>
+#include <ctime>
+
+#include "../Engine/UGlogGuiSink.h"
+#include "../Engine/UGlogMirrorSink.h"
+#include "../Engine/UJsonLogSink.h"
+#include "../Engine/UExceptionLogger.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
+#include "../../Deploy/Include/rdk_logging.h"
 #include "../../../Rdk/Deploy/Include/rdk.h"
+#ifdef RDK_USE_GLOG
+#include <glog/logging.h>
+#endif
+
+namespace
+{
+
+std::string NormalizeLogDir(const std::string& dir)
+{
+ if(dir.empty())
+  return dir;
+
+ std::string normalized = dir;
+ std::replace(normalized.begin(), normalized.end(), '\\', '/');
+ if(!normalized.empty() && normalized.back() != '/')
+  normalized.push_back('/');
+ return normalized;
+}
+
+std::string RemoveSpaces(const std::string& str)
+{
+ std::string result;
+ result.reserve(str.size());
+ for(char c : str)
+ {
+  if(c != ' ')
+   result.push_back(c);
+ }
+ return result;
+}
+
+std::string EnsureDirectoryAndNormalize(const std::string& dir)
+{
+ if(dir.empty())
+  return dir;
+
+ std::string normalized = NormalizeLogDir(dir);
+ std::error_code ec;
+ std::filesystem::create_directories(normalized, ec);
+ return normalized;
+}
+
+std::string StripTrailingSeparators(std::string path)
+{
+ while(!path.empty())
+ {
+  char suffix = path.back();
+  if(suffix == '/' || suffix == '\\')
+  {
+   path.pop_back();
+   continue;
+  }
+  break;
+ }
+ return path;
+}
+
+std::string TrimCopy(const std::string& value)
+{
+ auto start = value.find_first_not_of(" \t");
+ if(start == std::string::npos)
+  return {};
+ auto end = value.find_last_not_of(" \t");
+ return value.substr(start, end - start + 1);
+}
+
+std::string ToLowerCopy(std::string value)
+{
+ std::transform(value.begin(), value.end(), value.begin(),
+                [](unsigned char ch){ return static_cast<char>(std::tolower(ch)); });
+ return value;
+}
+
+int ClampSeverityValue(int severity)
+{
+ if(severity < RDK_EX_FATAL)
+  return RDK_EX_FATAL;
+ if(severity > RDK_EX_DEBUG)
+  return RDK_EX_DEBUG;
+ return severity;
+}
+
+int ParseSeverityString(const std::string& token, int fallback)
+{
+ std::string normalized = ToLowerCopy(TrimCopy(token));
+ if(normalized.empty())
+  return fallback;
+
+ if(normalized == "fatal")
+  return RDK_EX_FATAL;
+ if(normalized == "error")
+  return RDK_EX_ERROR;
+ if(normalized == "warn" || normalized == "warning")
+  return RDK_EX_WARNING;
+ if(normalized == "info")
+  return RDK_EX_INFO;
+ if(normalized == "app")
+  return RDK_EX_APP;
+ if(normalized == "debug" || normalized == "trace")
+  return RDK_EX_DEBUG;
+
+ char* end_ptr = nullptr;
+ long numeric = std::strtol(normalized.c_str(), &end_ptr, 10);
+ if(end_ptr && *end_ptr == '\0')
+  return ClampSeverityValue(static_cast<int>(numeric));
+
+ return fallback;
+}
+
+int ParseVerbosityString(const std::string& token, int fallback)
+{
+ std::string trimmed = TrimCopy(token);
+ if(trimmed.empty())
+  return fallback;
+ char* end_ptr = nullptr;
+ long numeric = std::strtol(trimmed.c_str(), &end_ptr, 10);
+ if(end_ptr && *end_ptr == '\0')
+ {
+  if(numeric < 0)
+   return 0;
+  if(numeric > 10)
+   return 10;
+  return static_cast<int>(numeric);
+ }
+ return fallback;
+}
+
+int ParseChannelIdentifier(const std::string& token)
+{
+ std::string key = ToLowerCopy(TrimCopy(token));
+ if(key == "sys" || key == "system")
+  return RDK_SYS_MESSAGE;
+ if(key == "glob" || key == "global")
+  return RDK_GLOB_MESSAGE;
+ if(key == "default")
+  return RDK::Logging::kDefaultChannel.Index;
+
+ char* end_ptr = nullptr;
+ long numeric = std::strtol(key.c_str(), &end_ptr, 10);
+ if(end_ptr && *end_ptr == '\0')
+  return static_cast<int>(numeric);
+
+ return std::numeric_limits<int>::max();
+}
+
+}
 
 using namespace std;
 
@@ -19,7 +182,10 @@ using namespace std;
 //#include "Bcb/Application.bcb.cpp"
 #endif
 
-extern void ExceptionHandler(int channel_index); // TODO: Потом ее куда то убрать
+void ExceptionHandler(int channel_index)
+{
+ (void)channel_index;
+}
 
 namespace RDK {
 
@@ -31,7 +197,7 @@ po::variables_map CmdVariablesMap;
 #endif
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UApplication::UApplication(void)
 {
@@ -52,10 +218,15 @@ UApplication::UApplication(void)
  UserName="";
  UserId=-1;
  SetCoutLogMode(false);
+ MirrorLogsToWorkDirFlag=true;
+ LoggingInitialized=false;
+ GoogleLoggingInitialized=false;
  //SetStandartXMLInCatalog();
 
-
  // DebugMode=false;
+
+ LoadEnvLogOverrides();
+ CurrentLogSessionStart = std::time(nullptr);
 }
 
 UApplication::~UApplication(void)
@@ -65,9 +236,9 @@ UApplication::~UApplication(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј
 // --------------------------
-/// Название приложения
+/// РќР°Р·РІР°РЅРёРµ РїСЂРёР»РѕР¶РµРЅРёСЏ
 const std::string& UApplication::GetProgramName(void) const
 {
  return ProgramName;
@@ -76,9 +247,10 @@ const std::string& UApplication::GetProgramName(void) const
 void UApplication::SetProgramName(const std::string &value)
 {
  ProgramName = value;
+ CachedLogBaseName.clear();
 }
 
-/// Имя файла приложения
+/// РРјСЏ С„Р°Р№Р»Р° РїСЂРёР»РѕР¶РµРЅРёСЏ
 const std::string& UApplication::GetApplicationFileName(void) const
 {
  return ApplicationFileName;
@@ -92,7 +264,7 @@ bool UApplication::SetApplicationFileName(const std::string& value)
  return true;
 }
 
-/// Рабочий каталог
+/// Р Р°Р±РѕС‡РёР№ РєР°С‚Р°Р»РѕРі
 const std::string& UApplication::GetWorkDirectory(void) const
 {
  return WorkDirectory;
@@ -103,12 +275,11 @@ bool UApplication::SetWorkDirectory(const std::string& value)
  if(WorkDirectory == value)
   return true;
  WorkDirectory=value;
- if(FixedLogPath.empty())
-  UpdateLoggers();
+ UpdateLoggers();
  return true;
 }
 
-/// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
+/// РћС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Р№ РїСѓС‚СЊ РґРѕ РїР°РїРєРё СЃ С…СЂР°РЅРёР»РёС‰РµРј РєРѕРЅС„РёРіСѓСЂР°С†РёР№ (РѕР±С‹С‡РЅРѕ /Bin/Configs)
 const std::string& UApplication::GetConfigsMainPath(void) const
 {
  return ConfigsMainPath;
@@ -122,7 +293,7 @@ bool UApplication::SetConfigsMainPath(const std::string &value)
  return true;
 }
 
-/// Относительный путь до папки с библиотеками (в данном пути сформируется две папки - MockLibs, RTlibs)
+/// РћС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Р№ РїСѓС‚СЊ РґРѕ РїР°РїРєРё СЃ Р±РёР±Р»РёРѕС‚РµРєР°РјРё (РІ РґР°РЅРЅРѕРј РїСѓС‚Рё СЃС„РѕСЂРјРёСЂСѓРµС‚СЃСЏ РґРІРµ РїР°РїРєРё - MockLibs, RTlibs)
 const std::string& UApplication::GetLibrariesPath(void) const
 {
  return LibrariesPath;
@@ -136,7 +307,7 @@ bool UApplication::SetLibrariesPath(const std::string &value)
  return true;
 }
 
-/// Относительный путь до папки с описаниями классов
+/// РћС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Р№ РїСѓС‚СЊ РґРѕ РїР°РїРєРё СЃ РѕРїРёСЃР°РЅРёСЏРјРё РєР»Р°СЃСЃРѕРІ
 const std::string& UApplication::GetClDescPath(void) const
 {
  return ClDescPath;
@@ -150,7 +321,7 @@ bool UApplication::SetClDescPath(const std::string &value)
  return true;
 }
 
-/// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
+/// РћС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Р№ РїСѓС‚СЊ РґРѕ РїР°РїРєРё СЃ С…СЂР°РЅРёР»РёС‰РµРј РєРѕРЅС„РёРіСѓСЂР°С†РёР№ (РѕР±С‹С‡РЅРѕ /Bin/Configs)
 const std::string& UApplication::GetDatabaseMainPath(void) const
 {
  return DatabaseMainPath;
@@ -164,7 +335,7 @@ bool UApplication::SetDatabaseMainPath(const std::string &value)
  return true;
 }
 
-/// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
+/// РћС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Р№ РїСѓС‚СЊ РґРѕ РїР°РїРєРё СЃ С…СЂР°РЅРёР»РёС‰РµРј РєРѕРЅС„РёРіСѓСЂР°С†РёР№ (РѕР±С‹С‡РЅРѕ /Bin/Configs)
 const std::string& UApplication::GetStorageMountPoint(void) const
 {
  return StorageMountPoint;
@@ -179,7 +350,7 @@ bool UApplication::SetStorageMountPoint(const std::string &value)
 }
 
 
-/// Относительный путь до папки с хранилищем моделей  (обычно /Bin/Models)
+/// РћС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Р№ РїСѓС‚СЊ РґРѕ РїР°РїРєРё СЃ С…СЂР°РЅРёР»РёС‰РµРј РјРѕРґРµР»РµР№  (РѕР±С‹С‡РЅРѕ /Bin/Models)
 const std::string& UApplication::GetModelsMainPath(void) const
 {
  return ModelsMainPath;
@@ -220,7 +391,7 @@ bool UApplication::SetUserId(int value)
 }
 
 
-// Признак наличия открытого проекта
+// РџСЂРёР·РЅР°Рє РЅР°Р»РёС‡РёСЏ РѕС‚РєСЂС‹С‚РѕРіРѕ РїСЂРѕРµРєС‚Р°
 bool UApplication::GetProjectOpenFlag(void) const
 {
  return ProjectOpenFlag;
@@ -228,12 +399,18 @@ bool UApplication::GetProjectOpenFlag(void) const
 
 bool UApplication::SetProjectOpenFlag(bool value)
 {
+ if(ProjectOpenFlag == value)
+  return true;
+
  ProjectOpenFlag=value;
+ if(!ProjectOpenFlag)
+  MirrorLogsToWorkDirFlag=true;
  CalcAppCaption();
+ UpdateLoggers();
  return true;
 }
 
-// Путь до папки проекта
+// РџСѓС‚СЊ РґРѕ РїР°РїРєРё РїСЂРѕРµРєС‚Р°
 const std::string& UApplication::GetProjectPath(void) const
 {
  return ProjectPath;
@@ -244,14 +421,13 @@ bool UApplication::SetProjectPath(const std::string& value)
  if(ProjectPath == value)
   return true;
  ProjectPath=value;
- if(LogCreationMode == 0 || LogCreationMode == 1)
-  UpdateLoggers();
+ UpdateLoggers();
 // EngineControl->GetEngineStateThread()->CloseEventsLogFile();
  CalcAppCaption();
  return true;
 }
 
-// Имя файла проекта
+// РРјСЏ С„Р°Р№Р»Р° РїСЂРѕРµРєС‚Р°
 const std::string& UApplication::GetProjectFileName(void) const
 {
  return ProjectFileName;
@@ -266,7 +442,7 @@ bool UApplication::SetProjectFileName(const std::string& value)
  return true;
 }
 
-/// Список последних открытых проектов
+/// РЎРїРёСЃРѕРє РїРѕСЃР»РµРґРЅРёС… РѕС‚РєСЂС‹С‚С‹С… РїСЂРѕРµРєС‚РѕРІ
 const std::list<std::string>& UApplication::GetLastProjectsList(void) const
 {
  return LastProjectsList;
@@ -280,7 +456,7 @@ bool UApplication::SetLastProjectsList(const std::list<std::string>& value)
  return true;
 }
 
-/// Размер истории последних открытых проектов
+/// Р Р°Р·РјРµСЂ РёСЃС‚РѕСЂРёРё РїРѕСЃР»РµРґРЅРёС… РѕС‚РєСЂС‹С‚С‹С… РїСЂРѕРµРєС‚РѕРІ
 int UApplication::GetLastProjectsListMaxSize(void) const
 {
  return LastProjectsListMaxSize;
@@ -294,26 +470,26 @@ bool UApplication::SetLastProjectsListMaxSize(int value)
  return true;
 }
 
-/// Заголовок приложения
+/// Р—Р°РіРѕР»РѕРІРѕРє РїСЂРёР»РѕР¶РµРЅРёСЏ
 const std::string& UApplication::GetAppCaption(void) const
 {
  return AppCaption;
 }
 
-// Файл настроек проекта
+// Р¤Р°Р№Р» РЅР°СЃС‚СЂРѕРµРє РїСЂРѕРµРєС‚Р°
 const RDK::USerStorageXML& UApplication::GetProjectXml(void) const
 {
  return ProjectXml;
 }
 
-// Файл настроек интефрейса
+// Р¤Р°Р№Р» РЅР°СЃС‚СЂРѕРµРє РёРЅС‚РµС„СЂРµР№СЃР°
 const RDK::USerStorageXML& UApplication::GetInterfaceXml(void) const
 {
  return InterfaceXml;
 }
 
 
-/// Каталог логов
+/// РљР°С‚Р°Р»РѕРі Р»РѕРіРѕРІ
 std::string UApplication::GetLogDir(void) const
 {
  return Core_GetLogDir();
@@ -324,16 +500,15 @@ bool UApplication::SetLogDir(const std::string& value)
  if(value == Core_GetLogDir())
   return true;
 
-// LogDir=value;
  if(Core_SetLogDir(value.c_str()) == RDK_SUCCESS)
  {
-  UpdateLoggers();
+  SetFixedLogPath(value);
   return true;
  }
  return false;
 }
 
-/// Флаг включения отладочного режима логирования
+/// Р¤Р»Р°Рі РІРєР»СЋС‡РµРЅРёСЏ РѕС‚Р»Р°РґРѕС‡РЅРѕРіРѕ СЂРµР¶РёРјР° Р»РѕРіРёСЂРѕРІР°РЅРёСЏ
 bool UApplication::GetDebugMode(void) const
 {
  return Core_GetDebugMode();
@@ -349,67 +524,361 @@ bool UApplication::SetDebugMode(bool value)
 }
 
 
-/// Текущий каталог логов (с учетом переопределения в проекте)
+/// РўРµРєСѓС‰РёР№ РєР°С‚Р°Р»РѕРі Р»РѕРіРѕРІ (СЃ СѓС‡РµС‚РѕРј РїРµСЂРµРѕРїСЂРµРґРµР»РµРЅРёСЏ РІ РїСЂРѕРµРєС‚Рµ)
 std::string UApplication::CalcCurrentLogDir(void) const
 {
- std::string log_dir;
- switch(LogCreationMode)
- {
- case 0:
- case 1:
- {
-  if(Project && Project->GetConfig().OverrideLogParameters && !ProjectPath.empty())
-  {
-   log_dir=ProjectPath+"EventsLog/";
-  }
-  else
-  {
-   if(FixedLogPath.empty())
-   {
-    log_dir=Core_GetLogDir();
-    if(log_dir.empty())
-     log_dir=WorkDirectory+"EventsLog/";
-   }
-   else
-   {
-    log_dir=FixedLogPath;
-   }
-   if(!log_dir.empty() && log_dir.find_last_of("\\/") != log_dir.size()-1)
-    log_dir+="/";
-  }
- }
- break;
+ if(!ProjectPath.empty())
+  return ProjectPath + "EventsLog/";
 
- case 2:
- case 3:
- {
-  if(FixedLogPath.empty())
-  {
-   log_dir=Core_GetLogDir();
-   if(log_dir.empty())
-    log_dir=WorkDirectory+"EventsLog/";
-  }
-  else
-  {
-   log_dir=FixedLogPath;
-  }
-  if(!log_dir.empty() && log_dir.find_last_of("\\/") != log_dir.size()-1)
-   log_dir+="/";
- }
- break;
- }
+ if(!FixedLogPath.empty())
+  return FixedLogPath;
 
-
- return log_dir;
+ return GetWorkLogDir();
 }
 
-/// Флаг, выставляется если включен режим тестирования
+
+std::string UApplication::GetWorkLogDir(void) const
+{
+ if(WorkDirectory.empty())
+  return std::string("EventsLog/");
+
+ std::string base = WorkDirectory;
+ char last = base.empty() ? 0 : base.back();
+ if(last != '/' && last != '\\')
+  base.push_back('/');
+ base += "EventsLog/";
+ return base;
+}
+
+const std::string& UApplication::GetLogFileBaseName(void) const
+{
+ if(!CachedLogBaseName.empty())
+  return CachedLogBaseName;
+ 
+ std::string base_name;
+ if(!ProgramName.empty())
+  base_name = ProgramName;
+ else
+ {
+  base_name = std::string(RDK_APP_NAME);
+  // Р•СЃР»Рё RDK_APP_NAME РЅРµ РїРµСЂРµРѕРїСЂРµРґРµР»С‘РЅ (СЂР°РІРµРЅ "RDK"), РёСЃРїРѕР»СЊР·СѓРµРј "NeuroModeler" РєР°Рє fallback
+  if(base_name == "RDK")
+   base_name = "NeuroModeler";
+ }
+ CachedLogBaseName = RemoveSpaces(base_name);
+ // Р•СЃР»Рё РїРѕСЃР»Рµ СѓРґР°Р»РµРЅРёСЏ РїСЂРѕР±РµР»РѕРІ РїРѕР»СѓС‡РёР»РѕСЃСЊ "RDK", РёСЃРїРѕР»СЊР·СѓРµРј "NeuroModeler" РєР°Рє fallback
+ if(CachedLogBaseName == "RDK")
+  CachedLogBaseName = "NeuroModeler";
+ return CachedLogBaseName;
+}
+
+void UApplication::ApplyPrimaryLogDestination(const std::string& directory)
+{
+ std::string normalized = NormalizeLogDir(directory);
+ if(normalized.empty())
+  return;
+
+ UGlogGuiSink::Instance().AddDirectory(normalized);
+
+ if(Project)
+ {
+  ApplyLogRouting(Project->GetConfig());
+ }
+ else
+ {
+  TProjectConfig default_config;
+  ApplyLogRouting(default_config);
+ }
+
+ const char* json_path_env = std::getenv("RDK_LOG_JSON_PATH");
+ const std::string desired_json_path = json_path_env ? std::string(json_path_env) : std::string();
+ if(desired_json_path.empty())
+ {
+  if(JsonSinkHandle)
+  {
+   Logging::UnregisterLogSink(JsonSinkHandle);
+   JsonSinkHandle.reset();
+   ActiveJsonSinkPath.clear();
+  }
+ }
+ else if(desired_json_path != ActiveJsonSinkPath)
+ {
+  if(JsonSinkHandle)
+  {
+   Logging::UnregisterLogSink(JsonSinkHandle);
+   JsonSinkHandle.reset();
+  }
+  auto new_sink = UJsonLogSink::Create(desired_json_path);
+  if(new_sink)
+  {
+   JsonSinkHandle = new_sink;
+   ActiveJsonSinkPath = desired_json_path;
+   Logging::RegisterLogSink(JsonSinkHandle);
+  }
+ }
+
+ std::string work_dir_normalized = NormalizeLogDir(GetWorkLogDir());
+ 
+ // Ensure glog always writes to the working directory to prevent message loss
+#ifdef RDK_USE_GLOG
+ if(work_dir_normalized.empty())
+  FLAGS_log_dir.clear();
+ else
+  FLAGS_log_dir = StripTrailingSeparators(work_dir_normalized);
+#endif
+
+ bool is_project_dir = !ProjectPath.empty() &&
+                       normalized != work_dir_normalized;
+
+ if(is_project_dir)
+ {
+  if(!ProjectLogMirrorHandle)
+  {
+   ProjectLogMirrorHandle = std::shared_ptr<Logging::ILogSink>(&UGlogMirrorSink::Instance(), [](Logging::ILogSink*){});
+   Logging::RegisterLogSink(ProjectLogMirrorHandle);
+  }
+  UGlogMirrorSink::Instance().Configure(normalized, GetLogFileBaseName(), CurrentLogSessionStart);
+ }
+ else if(ProjectLogMirrorHandle)
+ {
+  Logging::UnregisterLogSink(ProjectLogMirrorHandle);
+  ProjectLogMirrorHandle.reset();
+  UGlogMirrorSink::Instance().Disable();
+ }
+}
+
+void UApplication::LoadEnvLogOverrides(void)
+{
+ EnvLogOverrides = {};
+
+ if(const char* level = std::getenv("RDK_LOG_LEVEL"))
+  EnvLogOverrides.GlobalLevel = ParseSeverityToken(level, EnvLogOverrides.GlobalLevel);
+
+ if(const char* sys_level = std::getenv("RDK_LOG_SYS_LEVEL"))
+  RegisterChannelOverrideToken(std::string("sys:") + sys_level, EnvLogOverrides);
+
+ if(const char* glob_level = std::getenv("RDK_LOG_GLOB_LEVEL"))
+  RegisterChannelOverrideToken(std::string("glob:") + glob_level, EnvLogOverrides);
+
+ if(const char* channels = std::getenv("RDK_LOG_CHANNELS"))
+ {
+  std::stringstream stream(channels);
+  std::string token;
+  while(std::getline(stream, token, ','))
+   RegisterChannelOverrideToken(token, EnvLogOverrides);
+ }
+
+ if(const char* verbosity = std::getenv("RDK_LOG_VERBOSITY"))
+  EnvLogOverrides.Verbosity = ParseVerbosityString(verbosity, EnvLogOverrides.Verbosity);
+}
+
+void UApplication::ApplyCliLogOverrides(const std::vector<std::string>& args)
+{
+ auto parse_inline = [&](const std::string& flag, const std::string& token) -> std::optional<std::string>
+ {
+  const std::string prefix = flag + "=";
+  if(token.rfind(prefix, 0) == 0)
+   return token.substr(prefix.size());
+  return std::nullopt;
+ };
+
+ for(size_t i=0; i<args.size(); ++i)
+ {
+  const std::string& token = args[i];
+
+  if(token == "--log-level" && i + 1 < args.size())
+  {
+   CliLogOverrides.GlobalLevel = ParseSeverityToken(args[++i], CliLogOverrides.GlobalLevel);
+   continue;
+  }
+  if(auto value = parse_inline("--log-level", token))
+  {
+   CliLogOverrides.GlobalLevel = ParseSeverityToken(*value, CliLogOverrides.GlobalLevel);
+   continue;
+  }
+
+  if(token == "--log-verbosity" && i + 1 < args.size())
+  {
+   CliLogOverrides.Verbosity = ParseVerbosityString(args[++i], CliLogOverrides.Verbosity);
+   continue;
+  }
+  if(auto value = parse_inline("--log-verbosity", token))
+  {
+   CliLogOverrides.Verbosity = ParseVerbosityString(*value, CliLogOverrides.Verbosity);
+   continue;
+  }
+
+  auto handle_channel_flag = [&](const std::string& flag, const std::string& channel_tag) -> bool
+  {
+   if(token == flag && i + 1 < args.size())
+   {
+    RegisterChannelOverrideToken(channel_tag + ":" + args[++i], CliLogOverrides);
+    return true;
+   }
+   if(auto value = parse_inline(flag, token))
+   {
+    RegisterChannelOverrideToken(channel_tag + ":" + *value, CliLogOverrides);
+    return true;
+   }
+   return false;
+  };
+
+  if(handle_channel_flag("--log-sys-level", "sys"))
+   continue;
+  if(handle_channel_flag("--log-glob-level", "glob"))
+   continue;
+
+  if(token == "--log-channel-level" && i + 1 < args.size())
+  {
+   RegisterChannelOverrideToken(args[++i], CliLogOverrides);
+   continue;
+  }
+  if(auto value = parse_inline("--log-channel-level", token))
+  {
+   RegisterChannelOverrideToken(*value, CliLogOverrides);
+   continue;
+  }
+ }
+}
+
+#ifndef __BORLANDC__
+void UApplication::ApplyCliLogOverrides(const boost::program_options::variables_map& vm)
+{
+ if(vm.count("log-level"))
+  CliLogOverrides.GlobalLevel = ParseSeverityToken(vm["log-level"].as<std::string>(), CliLogOverrides.GlobalLevel);
+
+ if(vm.count("log-verbosity"))
+  CliLogOverrides.Verbosity = ParseVerbosityString(std::to_string(vm["log-verbosity"].as<int>()), CliLogOverrides.Verbosity);
+
+ if(vm.count("log-sys-level"))
+  RegisterChannelOverrideToken(std::string("sys:") + vm["log-sys-level"].as<std::string>(), CliLogOverrides);
+
+ if(vm.count("log-glob-level"))
+  RegisterChannelOverrideToken(std::string("glob:") + vm["log-glob-level"].as<std::string>(), CliLogOverrides);
+
+ if(vm.count("log-channel-level"))
+ {
+  const auto values = vm["log-channel-level"].as<std::vector<std::string>>();
+  for(const auto& entry : values)
+   RegisterChannelOverrideToken(entry, CliLogOverrides);
+ }
+}
+#endif
+
+void UApplication::RegisterChannelOverrideToken(const std::string& token, LogRoutingOverrides& target)
+{
+ if(token.find(',') != std::string::npos)
+ {
+  std::stringstream stream(token);
+  std::string part;
+  while(std::getline(stream, part, ','))
+   RegisterChannelOverrideToken(part, target);
+  return;
+ }
+
+ const auto separator = token.find_first_of(":=");
+ if(separator == std::string::npos)
+  return;
+
+ const std::string channel_part = token.substr(0, separator);
+ const std::string level_part = token.substr(separator + 1);
+ const int channel_index = ParseChannelIdentifier(channel_part);
+ if(channel_index == std::numeric_limits<int>::max())
+  return;
+
+ const int severity = ParseSeverityToken(level_part, -1);
+ if(severity >= 0)
+  target.ChannelLevels[channel_index] = severity;
+}
+
+int UApplication::ParseSeverityToken(const std::string& token, int fallback) const
+{
+ return ParseSeverityString(token, fallback);
+}
+
+int UApplication::DetermineBaseLogLevel(bool events_log_mode, bool debug_mode) const
+{
+ if(debug_mode)
+  return RDK_EX_DEBUG;
+ if(events_log_mode)
+  return RDK_EX_INFO;
+ return RDK_EX_WARNING;
+}
+
+int UApplication::ResolveChannelLevel(int channel_index, int base_level) const
+{
+ int level = base_level;
+ if(EnvLogOverrides.GlobalLevel >= 0)
+  level = EnvLogOverrides.GlobalLevel;
+
+ auto apply_specific = [&](const LogRoutingOverrides& overrides)
+ {
+  const auto it = overrides.ChannelLevels.find(channel_index);
+  if(it != overrides.ChannelLevels.end())
+   level = it->second;
+ };
+
+ apply_specific(EnvLogOverrides);
+
+ if(CliLogOverrides.GlobalLevel >= 0)
+  level = CliLogOverrides.GlobalLevel;
+
+ apply_specific(CliLogOverrides);
+
+ return level;
+}
+
+int UApplication::ResolveVerbosityLevel(int base_level) const
+{
+ int verbosity = base_level;
+ if(EnvLogOverrides.Verbosity >= 0)
+  verbosity = EnvLogOverrides.Verbosity;
+ if(CliLogOverrides.Verbosity >= 0)
+  verbosity = CliLogOverrides.Verbosity;
+ if(verbosity < 0)
+  return 0;
+ return verbosity;
+}
+
+void UApplication::ApplyLogRouting(const TProjectConfig& config)
+{
+ const int base_system_level = DetermineBaseLogLevel(config.EventsLogMode, config.DebugMode);
+ const int base_default_level = base_system_level;
+ const int base_verbosity = ResolveVerbosityLevel(config.DebugMode ? 1 : 0);
+
+ RDK::Logging::ResetChannelRuntimeConfig(
+  RDK::Logging::ChannelRuntimeConfig{ResolveChannelLevel(RDK::Logging::kDefaultChannel.Index, base_default_level), base_verbosity});
+
+ RDK::Logging::SetChannelRuntimeConfig(
+  RDK_SYS_MESSAGE,
+  RDK::Logging::ChannelRuntimeConfig{ResolveChannelLevel(RDK_SYS_MESSAGE, base_system_level), base_verbosity});
+
+ RDK::Logging::SetChannelRuntimeConfig(
+  RDK_GLOB_MESSAGE,
+  RDK::Logging::ChannelRuntimeConfig{ResolveChannelLevel(RDK_GLOB_MESSAGE, base_system_level), base_verbosity});
+
+ const int num_channels = static_cast<int>(config.ChannelsConfig.size());
+ for(int i=0; i<num_channels; ++i)
+ {
+  const auto& channel_cfg = config.ChannelsConfig[i];
+  const bool channel_debug = channel_cfg.DebugMode || config.DebugMode;
+  const bool channel_info = channel_cfg.EventsLogMode || config.EventsLogMode;
+  const int base_channel_level = DetermineBaseLogLevel(channel_info, channel_debug);
+  const int channel_verbosity = ResolveVerbosityLevel(channel_debug ? 1 : 0);
+  RDK::Logging::SetChannelRuntimeConfig(
+   i,
+   RDK::Logging::ChannelRuntimeConfig{ResolveChannelLevel(i, base_channel_level), channel_verbosity});
+ }
+}
+
+
+/// Р¤Р»Р°Рі, РІС‹СЃС‚Р°РІР»СЏРµС‚СЃСЏ РµСЃР»Рё РІРєР»СЋС‡РµРЅ СЂРµР¶РёРј С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ
 bool UApplication::IsTestMode(void) const
 {
  return TestMode;
 }
 
-/// Имя файла с описанием тестов
+/// РРјСЏ С„Р°Р№Р»Р° СЃ РѕРїРёСЃР°РЅРёРµРј С‚РµСЃС‚РѕРІ
 const std::string& UApplication::GetTestsDescriptionFileName(void) const
 {
  return TestsDescriptionFileName;
@@ -422,19 +891,19 @@ void UApplication::SetTestsDescriptionFileName(const std::string& value)
  TestsDescriptionFileName=value;
 }
 
-/// Признак требования завершить работу приложения после тестирования
+/// РџСЂРёР·РЅР°Рє С‚СЂРµР±РѕРІР°РЅРёСЏ Р·Р°РІРµСЂС€РёС‚СЊ СЂР°Р±РѕС‚Сѓ РїСЂРёР»РѕР¶РµРЅРёСЏ РїРѕСЃР»Рµ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ
 bool UApplication::IsCloseAfterTest(void) const
 {
  return CloseAfterTest;
 }
 
-/// Приложение инициализированно
+/// РџСЂРёР»РѕР¶РµРЅРёРµ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅРЅРѕ
 bool UApplication::IsInit(void) const
 {
  return AppIsInit;
 }
 
-/// Фиксированный путь до логов
+/// Р¤РёРєСЃРёСЂРѕРІР°РЅРЅС‹Р№ РїСѓС‚СЊ РґРѕ Р»РѕРіРѕРІ
 const std::string& UApplication::GetFixedLogPath(void) const
 {
  return FixedLogPath;
@@ -446,14 +915,15 @@ bool UApplication::SetFixedLogPath(const std::string& value)
   return true;
 
  FixedLogPath=value;
+ UpdateLoggers();
  return true;
 }
 
-/// Режим записи логов
-/// 0 - запись по умолчанию (логи создаются заново при каждом вызове Reset в папке конфигурации)
-/// 1 - файл лога создается заново только при открытии каждой новой конфигурации. В папке конфигурации
-/// 2 - файл лога создается заново только при открытии каждой новой конфигурации. В системной папке
-/// 3 - файл лога создается единожды на весь период работы приложения в системной папке
+/// Р РµР¶РёРј Р·Р°РїРёСЃРё Р»РѕРіРѕРІ
+/// 0 - Р·Р°РїРёСЃСЊ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ (Р»РѕРіРё СЃРѕР·РґР°СЋС‚СЃСЏ Р·Р°РЅРѕРІРѕ РїСЂРё РєР°Р¶РґРѕРј РІС‹Р·РѕРІРµ Reset РІ РїР°РїРєРµ РєРѕРЅС„РёРіСѓСЂР°С†РёРё)
+/// 1 - С„Р°Р№Р» Р»РѕРіР° СЃРѕР·РґР°РµС‚СЃСЏ Р·Р°РЅРѕРІРѕ С‚РѕР»СЊРєРѕ РїСЂРё РѕС‚РєСЂС‹С‚РёРё РєР°Р¶РґРѕР№ РЅРѕРІРѕР№ РєРѕРЅС„РёРіСѓСЂР°С†РёРё. Р’ РїР°РїРєРµ РєРѕРЅС„РёРіСѓСЂР°С†РёРё
+/// 2 - С„Р°Р№Р» Р»РѕРіР° СЃРѕР·РґР°РµС‚СЃСЏ Р·Р°РЅРѕРІРѕ С‚РѕР»СЊРєРѕ РїСЂРё РѕС‚РєСЂС‹С‚РёРё РєР°Р¶РґРѕР№ РЅРѕРІРѕР№ РєРѕРЅС„РёРіСѓСЂР°С†РёРё. Р’ СЃРёСЃС‚РµРјРЅРѕР№ РїР°РїРєРµ
+/// 3 - С„Р°Р№Р» Р»РѕРіР° СЃРѕР·РґР°РµС‚СЃСЏ РµРґРёРЅРѕР¶РґС‹ РЅР° РІРµСЃСЊ РїРµСЂРёРѕРґ СЂР°Р±РѕС‚С‹ РїСЂРёР»РѕР¶РµРЅРёСЏ РІ СЃРёСЃС‚РµРјРЅРѕР№ РїР°РїРєРµ
 int UApplication::GetLogCreationMode(void) const
 {
  return LogCreationMode;
@@ -471,7 +941,7 @@ bool UApplication::SetLogCreationMode(int mode)
  return true;
 }
 
-/// Уровень сообщения в логгере при появлении которого осуществляется автоматический останов расчета
+/// РЈСЂРѕРІРµРЅСЊ СЃРѕРѕР±С‰РµРЅРёСЏ РІ Р»РѕРіРіРµСЂРµ РїСЂРё РїРѕСЏРІР»РµРЅРёРё РєРѕС‚РѕСЂРѕРіРѕ РѕСЃСѓС‰РµСЃС‚РІР»СЏРµС‚СЃСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРёР№ РѕСЃС‚Р°РЅРѕРІ СЂР°СЃС‡РµС‚Р°
 int UApplication::GetCalcStopLogLevel(void) const
 {
  return CalcStopLogLevel;
@@ -489,7 +959,7 @@ bool UApplication::SetCalcStopLogLevel(int log_level)
     return true;
 }
 
-/// Включение вывода сообщений в cout
+/// Р’РєР»СЋС‡РµРЅРёРµ РІС‹РІРѕРґР° СЃРѕРѕР±С‰РµРЅРёР№ РІ cout
 bool UApplication::GetCoutLogMode(void) const
 {
  return CoutLogMode;
@@ -500,15 +970,17 @@ bool UApplication::SetCoutLogMode(bool value)
  if(CoutLogMode == value)
   return true;
  CoutLogMode=value;
- GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetCoutLogMode(CoutLogMode);
+#ifdef RDK_USE_GLOG
+ FLAGS_alsologtostderr = CoutLogMode ? 1 : 0;
+#endif
  return true;
 }
 
 
-/// Установка необходимого режима сборки
+/// РЈСЃС‚Р°РЅРѕРІРєР° РЅРµРѕР±С…РѕРґРёРјРѕРіРѕ СЂРµР¶РёРјР° СЃР±РѕСЂРєРё
 void UApplication::SetStorageBuildMode(int mode)
 {
- // пересборка не нужна
+ // РїРµСЂРµСЃР±РѕСЂРєР° РЅРµ РЅСѓР¶РЅР°
  if(StorageBuildMode == mode)
      return;
 
@@ -524,13 +996,13 @@ void UApplication::SetStorageBuildMode(int mode)
  }
 }
 
-/// Получение текущего режима сборки
+/// РџРѕР»СѓС‡РµРЅРёРµ С‚РµРєСѓС‰РµРіРѕ СЂРµР¶РёРјР° СЃР±РѕСЂРєРё
 int UApplication::GetStorageBuildMode()
 {
  return StorageBuildMode;
 }
 // --------------------------
-/// Создание библиотек-заглушек из статических библиотек с сохранением файлов
+/// РЎРѕР·РґР°РЅРёРµ Р±РёР±Р»РёРѕС‚РµРє-Р·Р°РіР»СѓС€РµРє РёР· СЃС‚Р°С‚РёС‡РµСЃРєРёС… Р±РёР±Р»РёРѕС‚РµРє СЃ СЃРѕС…СЂР°РЅРµРЅРёРµРј С„Р°Р№Р»РѕРІ
 void UApplication::CreateSaveMockLibs()
 {
     RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock();
@@ -539,17 +1011,17 @@ void UApplication::CreateSaveMockLibs()
     storage->SaveMockLibs();
 }
 // --------------------------
-// Методы инициализации
+// РњРµС‚РѕРґС‹ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
 // --------------------------
-/// Предоставляет доступ к диспетчеру команд
+/// РџСЂРµРґРѕСЃС‚Р°РІР»СЏРµС‚ РґРѕСЃС‚СѓРї Рє РґРёСЃРїРµС‚С‡РµСЂСѓ РєРѕРјР°РЅРґ
 /*
 UEPtr<URpcDispatcher> UApplication::GetRpcDispatcher(void)
 {
  return RpcDispatcher;
 }
 
-/// Устанавливает новый диспетчер команд
-/// Ответственность за освобождение памяти диспетчера лежит на вызывающей стороне
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅРѕРІС‹Р№ РґРёСЃРїРµС‚С‡РµСЂ РєРѕРјР°РЅРґ
+/// РћС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚СЊ Р·Р° РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё РґРёСЃРїРµС‚С‡РµСЂР° Р»РµР¶РёС‚ РЅР° РІС‹Р·С‹РІР°СЋС‰РµР№ СЃС‚РѕСЂРѕРЅРµ
 bool UApplication::SetRpcDispatcher(const UEPtr<URpcDispatcher> &value)
 {
  if(RpcDispatcher == value)
@@ -562,14 +1034,14 @@ bool UApplication::SetRpcDispatcher(const UEPtr<URpcDispatcher> &value)
  return true;
 }
 */
-/// Предоставляет доступ к контроллеру движка
+/// РџСЂРµРґРѕСЃС‚Р°РІР»СЏРµС‚ РґРѕСЃС‚СѓРї Рє РєРѕРЅС‚СЂРѕР»Р»РµСЂСѓ РґРІРёР¶РєР°
 UEPtr<UEngineControl> UApplication::GetEngineControl(void)
 {
  return EngineControl;
 }
 
-/// Устанавливает новый контроллер движка
-/// Ответственность за освобождение памяти контроллера лежит на вызывающей стороне
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅРѕРІС‹Р№ РєРѕРЅС‚СЂРѕР»Р»РµСЂ РґРІРёР¶РєР°
+/// РћС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚СЊ Р·Р° РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё РєРѕРЅС‚СЂРѕР»Р»РµСЂР° Р»РµР¶РёС‚ РЅР° РІС‹Р·С‹РІР°СЋС‰РµР№ СЃС‚РѕСЂРѕРЅРµ
 bool UApplication::SetEngineControl(const UEPtr<UEngineControl> &value)
 {
  if(EngineControl == value)
@@ -586,57 +1058,56 @@ bool UApplication::SetEngineControl(const UEPtr<UEngineControl> &value)
  return true;
 }
 
-/// Предоставляет доступ к проекту
+/// РџСЂРµРґРѕСЃС‚Р°РІР»СЏРµС‚ РґРѕСЃС‚СѓРї Рє РїСЂРѕРµРєС‚Сѓ
 /*UEPtr<UProject> UApplication::GetProject(void)
 {
  return Project;
 } */
 
-/// Устанавливает новый проект
-/// Ответственность за освобождение памяти контроллера лежит на вызывающей стороне
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅРѕРІС‹Р№ РїСЂРѕРµРєС‚
+/// РћС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚СЊ Р·Р° РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё РєРѕРЅС‚СЂРѕР»Р»РµСЂР° Р»РµР¶РёС‚ РЅР° РІС‹Р·С‹РІР°СЋС‰РµР№ СЃС‚РѕСЂРѕРЅРµ
 bool UApplication::SetProject(const UEPtr<UProject> &value)
 {
  if(Project == value)
   return true;
 
- // TODO: Здесь какие-то завершающие действия со старым проектом.
+ // TODO: Р—РґРµСЃСЊ РєР°РєРёРµ-С‚Рѕ Р·Р°РІРµСЂС€Р°СЋС‰РёРµ РґРµР№СЃС‚РІРёСЏ СЃРѕ СЃС‚Р°СЂС‹Рј РїСЂРѕРµРєС‚РѕРј.
  Project=value;
  return true;
 }
 
-/// Возвращает конфигурацию проекта
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕРЅС„РёРіСѓСЂР°С†РёСЋ РїСЂРѕРµРєС‚Р°
 const TProjectConfig& UApplication::GetProjectConfig(void) const
 {
  return Project->GetConfig();
 }
 
-/// Устанавливает новую конфигурацию проекта
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅРѕРІСѓСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёСЋ РїСЂРѕРµРєС‚Р°
 bool UApplication::SetProjectConfig(const TProjectConfig& value)
 {
  if(!Project)
   return false;
  if(!Project->SetConfig(value))
   return false;
-
- GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(value.EventsLogFlag);
-// EngineControl->GetEngineStateThread()->SetLogFlag(value.EventsLogFlag);
+ MirrorLogsToWorkDirFlag=value.EventsLogFlag;
+ UpdateLoggers();
  return true;
 }
 
-/// Предоставляет доступ к контроллеру серверной части
+/// РџСЂРµРґРѕСЃС‚Р°РІР»СЏРµС‚ РґРѕСЃС‚СѓРї Рє РєРѕРЅС‚СЂРѕР»Р»РµСЂСѓ СЃРµСЂРІРµСЂРЅРѕР№ С‡Р°СЃС‚Рё
 UEPtr<UServerControl> UApplication::GetServerControl(void) const
 {
  return ServerControl;
 }
 
-/// Устанавливает новый контроллер сервера
-/// Ответственность за освобождение памяти контроллера лежит на вызывающей стороне
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅРѕРІС‹Р№ РєРѕРЅС‚СЂРѕР»Р»РµСЂ СЃРµСЂРІРµСЂР°
+/// РћС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚СЊ Р·Р° РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё РєРѕРЅС‚СЂРѕР»Р»РµСЂР° Р»РµР¶РёС‚ РЅР° РІС‹Р·С‹РІР°СЋС‰РµР№ СЃС‚РѕСЂРѕРЅРµ
 bool UApplication::SetServerControl(const UEPtr<UServerControl> &value)
 {
  if(ServerControl == value)
   return true;
 
- // TODO: Здесь какие-то завершающие действия со старым сервером
+ // TODO: Р—РґРµСЃСЊ РєР°РєРёРµ-С‚Рѕ Р·Р°РІРµСЂС€Р°СЋС‰РёРµ РґРµР№СЃС‚РІРёСЏ СЃРѕ СЃС‚Р°СЂС‹Рј СЃРµСЂРІРµСЂРѕРј
  if(ServerControl)
   ServerControl->SetApplication(0);
  ServerControl=value;
@@ -644,8 +1115,8 @@ bool UApplication::SetServerControl(const UEPtr<UServerControl> &value)
  return true;
 }
 
-/// Менеджер тестов
-/// Ответственность за освобождение памяти менеджера лежит на вызывающей стороне
+/// РњРµРЅРµРґР¶РµСЂ С‚РµСЃС‚РѕРІ
+/// РћС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚СЊ Р·Р° РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё РјРµРЅРµРґР¶РµСЂР° Р»РµР¶РёС‚ РЅР° РІС‹Р·С‹РІР°СЋС‰РµР№ СЃС‚РѕСЂРѕРЅРµ
 UEPtr<UTestManager> UApplication::GetTestManager(void)
 {
  return TestManager;
@@ -664,7 +1135,7 @@ bool UApplication::SetTestManager(const UEPtr<UTestManager> &value)
  return true;
 }
 
-/// Деплоер проекта (под кончретную задачу)
+/// Р”РµРїР»РѕРµСЂ РїСЂРѕРµРєС‚Р° (РїРѕРґ РєРѕРЅС‡СЂРµС‚РЅСѓСЋ Р·Р°РґР°С‡Сѓ)
 UEPtr<UProjectDeployer> UApplication::GetProjectDeployer(void)
 {
  return ProjectDeployer;
@@ -718,38 +1189,88 @@ bool UApplication::SetStandartXMLInCatalog(void)
     return true;
 }
 
-/// Инициализирует приложение
+/// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РїСЂРёР»РѕР¶РµРЅРёРµ
 bool UApplication::Init(void)
 {
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application initialization has been started.");
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Version: ")+GetCoreVersion().ToStringFull()).c_str());
- Core_SetBufObjectsMode(1);
-
  std::string font_path=extract_file_path(ApplicationFileName);
  Core_SetSystemDir(font_path.c_str());
  SetWorkDirectory(font_path);
+ CurrentLogSessionStart = std::time(nullptr);
+ // РРЅРёС†РёР°Р»РёР·РёСЂСѓРµРј РєСЌС€ РёРјРµРЅРё РїСЂРёР»РѕР¶РµРЅРёСЏ РґР»СЏ Р»РѕРіРѕРІ
+ GetLogFileBaseName();
+ std::string work_log_dir = EnsureDirectoryAndNormalize(GetWorkLogDir());
+ if(!work_log_dir.empty())
+ {
+  UGlogGuiSink::Instance().StartSession(work_log_dir, GetLogFileBaseName(), CurrentLogSessionStart);
+ }
+#ifdef RDK_USE_GLOG
+ std::string initial_log_dir = EnsureDirectoryAndNormalize(GetWorkLogDir());
+ FLAGS_logtostderr = false;
+ FLAGS_alsologtostderr = false;
+ FLAGS_log_prefix = true;
+ if(initial_log_dir.empty())
+  FLAGS_log_dir.clear();
+ else
+  FLAGS_log_dir = StripTrailingSeparators(initial_log_dir);
+
+google::InitGoogleLogging(GetLogFileBaseName().c_str());
+GoogleLoggingInitialized = true;
+ 
+ if(!initial_log_dir.empty())
+  UGlogGuiSink::Instance().AddDirectory(initial_log_dir);
+ 
+ // Set log level based on DebugMode
+ if(GetLogger() && GetLogger()->GetDebugMode())
+ {
+  FLAGS_minloglevel = google::GLOG_INFO;
+  FLAGS_v = 1; // Enable VLOG(1) for debug messages
+ }
+ else
+ {
+  FLAGS_minloglevel = google::GLOG_WARNING; // Only warnings and above
+  FLAGS_v = 0; // Disable VLOG
+ }
+ 
+// Install failure signal handler
+google::InstallFailureSignalHandler();
+#endif
+
+ LoggingInitialized=true;
+ UpdateLoggers();
+
+ RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Application initialization has been started.");
+ RLOG(RDK_EX_INFO, RDK_SYS_MESSAGE, "sys", std::string("Version: ") + GetCoreVersion().ToStringFull());
+ Core_SetBufObjectsMode(1);
+
 // SetLogDir(font_path);
  MLog_SetExceptionHandler(RDK_GLOB_MESSAGE,(void*)ExceptionHandler);
  MLog_SetExceptionHandler(RDK_SYS_MESSAGE,(void*)ExceptionHandler);
  Core_LoadFonts();
+
+ // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј С„Р»Р°Рі СЂРµР¶РёРјР° РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РїРµСЂРµРґ РёРЅРёС†РёР°Р»РёР·Р°С†РёРµР№ РґРІРёР¶РєР°
+ // С‡С‚РѕР±С‹ РїСЂРµРґРѕС‚РІСЂР°С‚РёС‚СЊ С„Р°С‚Р°Р»СЊРЅС‹Рµ РєСЂР°С€Рё РїСЂРё РѕР±СЂР°Р±РѕС‚РєРµ РёСЃРєР»СЋС‡РµРЅРёР№
+ RDK::UExceptionLogger::SetInitializationMode(true);
 
  EngineControl->Init();
  RDK::GetCoreLock()->SetLibrariesPath(LibrariesPath);
  RDK::GetCoreLock()->SetClDescPath(ClDescPath);
 
  UApplication::SetNumChannels(1);
+ 
+ // РЎР±СЂР°СЃС‹РІР°РµРј С„Р»Р°Рі СЂРµР¶РёРјР° РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РїРѕСЃР»Рµ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РєР°РЅР°Р»РѕРІ
+ RDK::UExceptionLogger::SetInitializationMode(false);
 // MCore_ChannelInit(0,0,(void*)ExceptionHandler);
 
  LoadProjectsHistory();
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application initialization has been finished.");
+ RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Application initialization has been finished.");
 
  /*if(CommandLineArgs.size()<2)
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Command line parameters not found.");
+  RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Command line parameters not found.");
  else
  {
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, (std::string("Parsing command line parameters: ")+concat_strings(CommandLineArgs,std::string(" "))).c_str());
+  RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Parsing command line parameters: ") + concat_strings(CommandLineArgs, std::string(" ")));
   ProcessCommandLineArgs();
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Finished parsing command line parameters");
+  RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Finished parsing command line parameters");
  }*/
  SetStandartXMLInCatalog();
 
@@ -757,10 +1278,10 @@ bool UApplication::Init(void)
  return true;
 }
 
-/// Деинициализирует приложение
+/// Р”РµРёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РїСЂРёР»РѕР¶РµРЅРёРµ
 bool UApplication::UnInit(void)
 {
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application uninitialization has been started.");
+ RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Application uninitialization has been started.");
  if(EngineControl)
  {
   EngineControl->PauseChannel(-1);
@@ -771,17 +1292,37 @@ bool UApplication::UnInit(void)
  EngineControl->UnInit();
  GetCoreLock()->Destroy();
 
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Application uninitialization has been finished.");
+ RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Application uninitialization has been finished.");
+ if(JsonSinkHandle)
+ {
+  Logging::UnregisterLogSink(JsonSinkHandle);
+  JsonSinkHandle.reset();
+  ActiveJsonSinkPath.clear();
+ }
+ if(ProjectLogMirrorHandle)
+ {
+  Logging::UnregisterLogSink(ProjectLogMirrorHandle);
+  ProjectLogMirrorHandle.reset();
+ }
+ UGlogMirrorSink::Instance().Disable();
+#ifdef RDK_USE_GLOG
+if (GoogleLoggingInitialized)
+{
+  google::ShutdownGoogleLogging();
+  GoogleLoggingInitialized = false;
+}
+#endif
+ LoggingInitialized=false;
  AppIsInit = false;
  return true;
 }
 
 
-/// Проводит тестирование приложения, если менеджер тестов инициализирован и
-/// тестовый режим включен
-/// Возвращает код ошибки тестирования.
-/// Если exit_request == true,
-/// то по завершении метода приложение должно быть закрыто с возвращенным кодом ошибки
+/// РџСЂРѕРІРѕРґРёС‚ С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ РїСЂРёР»РѕР¶РµРЅРёСЏ, РµСЃР»Рё РјРµРЅРµРґР¶РµСЂ С‚РµСЃС‚РѕРІ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅ Рё
+/// С‚РµСЃС‚РѕРІС‹Р№ СЂРµР¶РёРј РІРєР»СЋС‡РµРЅ
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕРґ РѕС€РёР±РєРё С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ.
+/// Р•СЃР»Рё exit_request == true,
+/// С‚Рѕ РїРѕ Р·Р°РІРµСЂС€РµРЅРёРё РјРµС‚РѕРґР° РїСЂРёР»РѕР¶РµРЅРёРµ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ Р·Р°РєСЂС‹С‚Рѕ СЃ РІРѕР·РІСЂР°С‰РµРЅРЅС‹Рј РєРѕРґРѕРј РѕС€РёР±РєРё
 int UApplication::Test(bool &exit_request)
 {
  exit_request=false;
@@ -793,27 +1334,29 @@ int UApplication::Test(bool &exit_request)
   {
    if(TestManager->LoadTests(TestsDescriptionFileName) != RDK_SUCCESS)
    {
-	MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Failed to load tests!");
+	RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Failed to load tests!");
 	test_result_code=1000;
 	ChangeTestModeState(false);
 	return test_result_code;
    }
 
-   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Testing started");
+   RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Testing started");
    test_result_code=TestManager->ProcessTests();
-   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, (std::string("Testing finished with code: ")+sntoa(test_result_code)).c_str());
+   RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Testing finished with code: ") + sntoa(test_result_code));
   }
  }
  ChangeTestModeState(false);
  return test_result_code;
 }
 
-/// Осуществляет парсинг командной строки и соответствующую настройку приложение
+/// РћСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РїР°СЂСЃРёРЅРі РєРѕРјР°РЅРґРЅРѕР№ СЃС‚СЂРѕРєРё Рё СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰СѓСЋ РЅР°СЃС‚СЂРѕР№РєСѓ РїСЂРёР»РѕР¶РµРЅРёРµ
 void UApplication::ProcessCommandLineArgs(std::vector<std::string> commandLineArgs)
 {
   InitCmdParser();
   if(commandLineArgs.empty())
     return;
+
+  ApplyCliLogOverrides(commandLineArgs);
 
   std::vector<std::string>::iterator I=find(commandLineArgs.begin(),commandLineArgs.end(),"--test");
   if(I != commandLineArgs.end())
@@ -839,10 +1382,12 @@ void UApplication::ProcessCommandLineArgs(std::vector<std::string> commandLineAr
     CloseAfterTest=true;
   else
     CloseAfterTest=false;
+
+  UpdateLoggers();
 }
 
 #ifndef __BORLANDC__
-/// Осуществляет парсинг командной строки и записывает результаты в CommandLineArgs
+/// РћСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РїР°СЂСЃРёРЅРі РєРѕРјР°РЅРґРЅРѕР№ СЃС‚СЂРѕРєРё Рё Р·Р°РїРёСЃС‹РІР°РµС‚ СЂРµР·СѓР»СЊС‚Р°С‚С‹ РІ CommandLineArgs
 void UApplication::ProcessCommandLineArgs(int argc, char **argv)
 {
   InitCmdParser();
@@ -854,7 +1399,7 @@ void UApplication::ProcessCommandLineArgs(int argc, char **argv)
   }
   catch(po::unknown_option &ex)
   {
-   MLog_LogMessage(RDK_GLOB_MESSAGE,RDK_EX_WARNING,ex.what());
+   RLOG(RDK_EX_WARNING, RDK_GLOB_MESSAGE, "glob", ex.what());
    throw ex;
    return;
   }
@@ -871,14 +1416,17 @@ void UApplication::ProcessCommandLineArgs(int argc, char **argv)
 	CloseAfterTest=false;
   else
 	CloseAfterTest=true;
+
+  ApplyCliLogOverrides(CmdVariablesMap);
+  UpdateLoggers();
 }
 #endif
 // --------------------------
 
 // --------------------------
-// Методы управления проектом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїСЂРѕРµРєС‚РѕРј
 // --------------------------
-/// Создает проект (через сохранение и открытие)
+/// РЎРѕР·РґР°РµС‚ РїСЂРѕРµРєС‚ (С‡РµСЂРµР· СЃРѕС…СЂР°РЅРµРЅРёРµ Рё РѕС‚РєСЂС‹С‚РёРµ)
 bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConfig &project_config)
 {
  CloseProject();
@@ -914,8 +1462,9 @@ bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConf
   }
  }
 
- ProjectOpenFlag=true;
- ProjectPath=extract_file_path(file_name);
+ SetProjectPath(extract_file_path(file_name));
+ MirrorLogsToWorkDirFlag=project_config.EventsLogFlag;
+ SetProjectOpenFlag(true);
  Project->SetConfig(project_config);
  Project->SetForceNewConfigFilesStructure(true);
  Project->SetProjectPath(ProjectPath);
@@ -965,19 +1514,19 @@ bool UApplication::CreateProject(const std::string &file_name, const std::string
  return CreateProject(file_name,project_config);
 }
 
-/// Обновляет проект по новой конфигурации
+/// РћР±РЅРѕРІР»СЏРµС‚ РїСЂРѕРµРєС‚ РїРѕ РЅРѕРІРѕР№ РєРѕРЅС„РёРіСѓСЂР°С†РёРё
 bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
 {
  if(!ProjectOpenFlag)
   return false;
 
- // Если необходима перезагрузка конфигурации, то выполняем перезагрузку
+ // Р•СЃР»Рё РЅРµРѕР±С…РѕРґРёРјР° РїРµСЂРµР·Р°РіСЂСѓР·РєР° РєРѕРЅС„РёРіСѓСЂР°С†РёРё, С‚Рѕ РІС‹РїРѕР»РЅСЏРµРј РїРµСЂРµР·Р°РіСЂСѓР·РєСѓ
  bool is_reload_needed(false);
 
  const TProjectConfig old_project_config=Project->GetConfig();
  Project->SetConfig(project_config);
 
- // Первый проход. Определяем необходима ли перезагрузка конфигурации
+ // РџРµСЂРІС‹Р№ РїСЂРѕС…РѕРґ. РћРїСЂРµРґРµР»СЏРµРј РЅРµРѕР±С…РѕРґРёРјР° Р»Рё РїРµСЂРµР·Р°РіСЂСѓР·РєР° РєРѕРЅС„РёРіСѓСЂР°С†РёРё
 
  if(old_project_config.ProjectName != project_config.ProjectName)
  {
@@ -1001,6 +1550,8 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
 
  if(old_project_config.EventsLogFlag != project_config.EventsLogFlag)
  {
+  MirrorLogsToWorkDirFlag=project_config.EventsLogFlag;
+  UpdateLoggers();
  }
 
  if(old_project_config.ProjectMode != project_config.ProjectMode)
@@ -1181,7 +1732,7 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
 
  }
 
- // Если необходима перезагрузка конфигурации то выполняем
+ // Р•СЃР»Рё РЅРµРѕР±С…РѕРґРёРјР° РїРµСЂРµР·Р°РіСЂСѓР·РєР° РєРѕРЅС„РёРіСѓСЂР°С†РёРё С‚Рѕ РІС‹РїРѕР»РЅСЏРµРј
  if(is_reload_needed)
  {
   if(!SaveProject())
@@ -1193,7 +1744,7 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
   return true;
  }
 
- // ... иначе применяем отдельные настройки
+ // ... РёРЅР°С‡Рµ РїСЂРёРјРµРЅСЏРµРј РѕС‚РґРµР»СЊРЅС‹Рµ РЅР°СЃС‚СЂРѕР№РєРё
  if(old_project_config.ProjectName != project_config.ProjectName)
  {
  }
@@ -1214,24 +1765,19 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
  {
  }
 
- if(old_project_config.EventsLogFlag != project_config.EventsLogFlag)
- {
-  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(project_config.EventsLogFlag);
- }
-
  if(old_project_config.ProjectMode != project_config.ProjectMode)
  {
-  // нет действий - приводит к повторному открытию конфигурации ранее
+  // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
  }
 
  if(old_project_config.ProjectType != project_config.ProjectType)
  {
-  // нет действий - приводит к повторному открытию конфигурации ранее
+  // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
  }
 
  if(old_project_config.MultiThreadingMode != project_config.MultiThreadingMode)
  {
-  // нет действий - приводит к повторному открытию конфигурации ранее
+  // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
  }
 
  if(old_project_config.CalcSourceTimeMode != project_config.CalcSourceTimeMode)
@@ -1340,45 +1886,45 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
 
  if(old_project_config.InterfaceFileName != project_config.InterfaceFileName)
  {
-  // нет действий - приводит к повторному открытию конфигурации ранее
+  // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
  }
 
  if(old_project_config.NumChannels != project_config.NumChannels)
  {
-  // нет действий - приводит к повторному открытию конфигурации ранее
+  // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
  }
 
- // обработка каналов
+ // РѕР±СЂР°Р±РѕС‚РєР° РєР°РЅР°Р»РѕРІ
  for(int i=0;i<project_config.NumChannels;i++)
  {
   if(old_project_config.ChannelsConfig[i].ModelMode != project_config.ChannelsConfig[i].ModelMode)
   {
-   // нет действий - приводит к повторному открытию конфигурации ранее
+   // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
   }
 
   if(old_project_config.ChannelsConfig[i].PredefinedStructure != project_config.ChannelsConfig[i].PredefinedStructure)
   {
-   // нет действий - приводит к повторному открытию конфигурации ранее
+   // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
   }
 
   if(old_project_config.ChannelsConfig[i].ModelFileName != project_config.ChannelsConfig[i].ModelFileName)
   {
-   // нет действий - приводит к повторному открытию конфигурации ранее
+   // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
   }
 
   if(old_project_config.ChannelsConfig[i].ParametersFileName != project_config.ChannelsConfig[i].ParametersFileName)
   {
-   // нет действий - приводит к повторному открытию конфигурации ранее
+   // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
   }
 
   if(old_project_config.ChannelsConfig[i].StatesFileName != project_config.ChannelsConfig[i].StatesFileName)
   {
-   // нет действий - приводит к повторному открытию конфигурации ранее
+   // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
   }
 
   if(old_project_config.ChannelsConfig[i].ClassName != project_config.ChannelsConfig[i].ClassName)
   {
-   // нет действий - приводит к повторному открытию конфигурации ранее
+   // РЅРµС‚ РґРµР№СЃС‚РІРёР№ - РїСЂРёРІРѕРґРёС‚ Рє РїРѕРІС‚РѕСЂРЅРѕРјСѓ РѕС‚РєСЂС‹С‚РёСЋ РєРѕРЅС„РёРіСѓСЂР°С†РёРё СЂР°РЅРµРµ
   }
 
   if(old_project_config.ChannelsConfig[i].GlobalTimeStep != project_config.ChannelsConfig[i].GlobalTimeStep)
@@ -1430,11 +1976,6 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
    MLog_SetDebuggerMessageFlag(i,project_config.ChannelsConfig[i].DebuggerMessageFlag);
   }
 
-  if(old_project_config.ChannelsConfig[i].EventsLogMode != project_config.ChannelsConfig[i].EventsLogMode)
-  {
-   MLog_SetEventsLogMode(i,project_config.ChannelsConfig[i].EventsLogMode);
-  }
-
   if(old_project_config.ChannelsConfig[i].ChannelName != project_config.ChannelsConfig[i].ChannelName)
   {
   }
@@ -1454,7 +1995,7 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
  return SaveProject();
 }
 
-/// Открывает проект
+/// РћС‚РєСЂС‹РІР°РµС‚ РїСЂРѕРµРєС‚
 bool UApplication::OpenProject(const std::string &filename)
 {
  CloseProject();
@@ -1462,12 +2003,12 @@ bool UApplication::OpenProject(const std::string &filename)
  bool is_loaded(false);
  if(!ProjectXml.LoadFromFile(filename,""))
  {
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_WARNING, (std::string("Can't read project file ")+filename).c_str());
+  RLOG(RDK_EX_WARNING, RDK_SYS_MESSAGE, "sys", std::string("Can't read project file ") + filename);
   return false;
  }
 
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Open configuration ")+filename+"...").c_str());
- ProjectPath=extract_file_path(filename);
+RLOG(RDK_EX_INFO, RDK_SYS_MESSAGE, "sys", std::string("Open configuration ") + filename + "...");
+ SetProjectPath(extract_file_path(filename));
  ProjectFileName=extract_file_name(filename);
  Project->SetProjectPath(ProjectPath);
  Project->ReadFromXml(ProjectXml);
@@ -1475,9 +2016,6 @@ bool UApplication::OpenProject(const std::string &filename)
   UpdateLoggers();
 
  TProjectConfig config=Project->GetConfig();
- GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(config.EventsLogFlag);
- if(LogCreationMode != 3)
-  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->Clear();
 // EngineControl->GetEngineStateThread()->SetLogFlag(config.EventsLogFlag);
 // EngineControl->GetEngineStateThread()->CloseEventsLogFile();
 // EngineControl->GetEngineStateThread()->SetLogDir(ProjectPath);
@@ -1496,7 +2034,8 @@ try{
 
  if(LoadFile(ProjectPath+config.DescriptionFileName,config.ProjectDescription))
  {
-  Project->SetConfig(config);
+ Project->SetConfig(config);
+ MirrorLogsToWorkDirFlag=config.EventsLogFlag;
   Project->ResetModified();
  }
 
@@ -1518,12 +2057,11 @@ try{
 	RDK_ASSERT_LOG(MEnv_Init(i));
    }
 
-   // TODO: Реалиовать загрузку описаний классов
-   // Загрузка описаний классов
+   // TODO: Р РµР°Р»РёРѕРІР°С‚СЊ Р·Р°РіСЂСѓР·РєСѓ РѕРїРёСЃР°РЅРёР№ РєР»Р°СЃСЃРѕРІ
+   // Р—Р°РіСЂСѓР·РєР° РѕРїРёСЃР°РЅРёР№ РєР»Р°СЃСЃРѕРІ
    Model_SetDefaultTimeStep(channel_config.DefaultTimeStep);
    Log_SetDebugMode(config.DebugMode);
    Log_SetDebugSysEventsMask(config.DebugSysEventsMask);
-   Log_SetEventsLogMode(config.EventsLogMode);
    Log_SetDebuggerMessageFlag(config.DebuggerMessageFlag);
    Env_SetCurrentDataDir(ProjectPath.c_str());
    Env_CreateStructure();
@@ -1539,7 +2077,7 @@ try{
 	 is_loaded=LoadModelFromFile(i,channel_config.ModelFileName);
 
 	if(!is_loaded)
-	 MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-OpenProject: Can't open model file: ")+channel_config.ModelFileName).c_str());
+	 RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-OpenProject: Can't open model file: ") + channel_config.ModelFileName);
    }
 
 
@@ -1551,7 +2089,7 @@ try{
 	 is_loaded=LoadParametersFromFile(i,channel_config.ParametersFileName);
 
  	if(!is_loaded)
-	 MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-OpenProject: Can't open parameters file: ")+channel_config.ParametersFileName).c_str());
+	 RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-OpenProject: Can't open parameters file: ") + channel_config.ParametersFileName);
    }
 
    if(config.ProjectAutoSaveStatesFlag)
@@ -1564,7 +2102,7 @@ try{
 	  is_loaded=LoadStatesFromFile(i,channel_config.StatesFileName);
 
 	 if(!is_loaded)
-	  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-OpenProject: Can't open states file: ")+channel_config.StatesFileName).c_str());
+	  RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-OpenProject: Can't open states file: ") + channel_config.StatesFileName);
 	}
    }
 
@@ -1584,7 +2122,7 @@ try{
   }
   catch(RDK::UException &exception)
   {
-   MLog_LogMessage(RDK_SYS_MESSAGE, exception.GetType(), (std::string("Core-OpenProject(Load Channel) Exception: (Name=")+std::string(Name.c_str())+std::string(") ")+exception.what()).c_str());
+   RLOG(exception.GetType(), RDK_SYS_MESSAGE, "sys", std::string("Core-OpenProject(Load Channel) Exception: (Name=") + std::string(Name.c_str()) + std::string(") ") + exception.what());
   }
   Sleep(0);
  }
@@ -1605,7 +2143,7 @@ try{
    is_loaded=InterfaceXml.LoadFromFile(config.InterfaceFileName,"Interfaces");
 
   if(!is_loaded)
-   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-OpenProject: Can't open interface file: ")+config.InterfaceFileName).c_str());
+   RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-OpenProject: Can't open interface file: ") + config.InterfaceFileName);
 
   InterfaceXml.SelectNodeRoot(std::string("Interfaces"));
  }
@@ -1613,7 +2151,7 @@ try{
 
  RDK::UIVisualControllerStorage::LoadParameters(InterfaceXml);
 
- ProjectOpenFlag=true;
+ SetProjectOpenFlag(true);
  EngineControl->StartEngineStateThread();
 
  RDK::UIVisualControllerStorage::UpdateInterface();
@@ -1622,7 +2160,7 @@ try{
 catch(RDK::UException &exception)
 {
 // UShowProgressBarForm->Hide();
- MLog_LogMessage(RDK_SYS_MESSAGE, exception.GetType(), (std::string("Core-OpenProject Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
+RLOG(exception.GetType(), RDK_SYS_MESSAGE, "sys", std::string("Core-OpenProject Exception: (Name=") + Name + std::string(") ") + exception.what());
 }
 
  std::list<std::string> last_list=LastProjectsList;
@@ -1637,11 +2175,11 @@ catch(RDK::UException &exception)
 
  SaveProjectsHistory();
 
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Configuration ")+filename+" has been opened.").c_str());
+RLOG(RDK_EX_INFO, RDK_SYS_MESSAGE, "sys", std::string("Configuration ") + filename + " has been opened.");
  return true;
 }
 
-/// Сохраняет проект
+/// РЎРѕС…СЂР°РЅСЏРµС‚ РїСЂРѕРµРєС‚
 bool UApplication::SaveProject(void)
 {
  if(!ProjectOpenFlag)
@@ -1680,7 +2218,7 @@ try
  }
 
  if(!is_saved)
-  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save interface file: ")+config.InterfaceFileName).c_str());
+ RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-SaveProject: Can't save interface file: ") + config.InterfaceFileName);
 
  for(int i=0;i<config.NumChannels;i++)
  {
@@ -1693,7 +2231,7 @@ try
    is_saved=SaveModelToFile(i, channel_config.ModelFileName);
 
   if(!is_saved)
-   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save model file: ")+channel_config.ModelFileName).c_str());
+   RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-SaveProject: Can't save model file: ") + channel_config.ModelFileName);
 
   if(extract_file_path(channel_config.ParametersFileName).empty())
    is_saved=SaveParametersToFile(i, ProjectPath+channel_config.ParametersFileName);
@@ -1701,7 +2239,7 @@ try
    is_saved=SaveParametersToFile(i,channel_config.ParametersFileName);
 
   if(!is_saved)
-   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save parameters file: ")+channel_config.ParametersFileName).c_str());
+   RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-SaveProject: Can't save parameters file: ") + channel_config.ParametersFileName);
 
   channel_config.UseIndTimeStepFlag=GetEnvironmentLock()->GetUseIndTimeStepFlag();
 
@@ -1713,7 +2251,7 @@ try
 	is_saved=SaveStatesToFile(i, channel_config.StatesFileName);
 
    if(!is_saved)
-    MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save states file: ")+channel_config.StatesFileName).c_str());
+    RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-SaveProject: Can't save states file: ") + channel_config.StatesFileName);
   }
 
 
@@ -1726,27 +2264,27 @@ try
  is_saved=ProjectXml.SaveToFile(ProjectPath+ProjectFileName);
 
  if(!is_saved)
-  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save configuration: ")+ProjectFileName).c_str());
+  RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-SaveProject: Can't save configuration: ") + ProjectFileName);
  else
  {
   std::string filename=ProjectPath+ProjectFileName;
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Configuration ")+filename+" has been saved.").c_str());
+  RLOG(RDK_EX_INFO, RDK_SYS_MESSAGE, "sys", std::string("Configuration ") + filename + " has been saved.");
  }
 
  is_saved=HistoryXml.SaveToFile(ProjectPath+"History.xml");
 
  if(!is_saved)
-  MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save history file: ")+ProjectFileName).c_str());
+  RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-SaveProject: Can't save history file: ") + ProjectFileName);
  else
  {
   std::string filename=ProjectPath+"history.xml";
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("History file ")+filename+" has been saved.").c_str());
+  RLOG(RDK_EX_INFO, RDK_SYS_MESSAGE, "sys", std::string("History file ") + filename + " has been saved.");
  }
 
 }
 catch(RDK::UException &exception)
 {
- MLog_LogMessage(RDK_SYS_MESSAGE, exception.GetType(), (std::string("Core-SaveProject Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
+RLOG(exception.GetType(), RDK_SYS_MESSAGE, "sys", std::string("Core-SaveProject Exception: (Name=") + Name + std::string(") ") + exception.what());
 }
 
  return true;
@@ -1757,7 +2295,7 @@ bool UApplication::SaveProjectAs(const std::string &filename)
  return true;
 }
 
-/// Закрывает проект
+/// Р—Р°РєСЂС‹РІР°РµС‚ РїСЂРѕРµРєС‚
 bool UApplication::CloseProject(void)
 {
  if(!ProjectOpenFlag)
@@ -1797,17 +2335,17 @@ bool UApplication::CloseProject(void)
   Storage_FreeObjectsStorage();
  }
 
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_INFO, (std::string("Configuration ")+filename+" has been closed.").c_str());
+RLOG(RDK_EX_INFO, RDK_SYS_MESSAGE, "sys", std::string("Configuration ") + filename + " has been closed.");
  return true;
 }
 
-/// Клонирует проект в новое расположение
+/// РљР»РѕРЅРёСЂСѓРµС‚ РїСЂРѕРµРєС‚ РІ РЅРѕРІРѕРµ СЂР°СЃРїРѕР»РѕР¶РµРЅРёРµ
 bool UApplication::CloneProject(const std::string &filename)
 {
  return true;
 }
 
-/// Переименовывает папку проекта
+/// РџРµСЂРµРёРјРµРЅРѕРІС‹РІР°РµС‚ РїР°РїРєСѓ РїСЂРѕРµРєС‚Р°
 bool UApplication::RenameProject(const std::string &filename)
 {
  if(!ProjectOpenFlag)
@@ -1817,8 +2355,6 @@ bool UApplication::RenameProject(const std::string &filename)
   return false;
 
  PauseChannel(-1);
- bool events_log_mode=GetProjectConfig().EventsLogFlag;
-  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(false);
 
  std::string resfilename=filename;
 
@@ -1827,7 +2363,6 @@ bool UApplication::RenameProject(const std::string &filename)
  if(filename.find_last_of("\\/") != filename.size()-1)
   resfilename+="/";
 
- GetCore()->GetLogger(RDK_GLOB_MESSAGE)->SetEventsLogMode(events_log_mode);
  if(res == 0)
  {
   SetProjectPath(resfilename);
@@ -1893,7 +2428,7 @@ bool UApplication::CopyProject(const std::string &new_path)
  return true;
 }
 
-/// Сохраняет только файл настроек проекта
+/// РЎРѕС…СЂР°РЅСЏРµС‚ С‚РѕР»СЊРєРѕ С„Р°Р№Р» РЅР°СЃС‚СЂРѕРµРє РїСЂРѕРµРєС‚Р°
 bool UApplication::SaveProjectConfig(void)
 {
  if(!ProjectOpenFlag)
@@ -1914,11 +2449,11 @@ bool UApplication::SaveProjectConfig(void)
 
   is_saved=ProjectXml.SaveToFile(ProjectPath+ProjectFileName);
   if(!is_saved)
-   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_ERROR, (std::string("Core-SaveProject: Can't save project config file: ")+ProjectFileName).c_str());
+  RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-SaveProject: Can't save project config file: ") + ProjectFileName);
  }
  catch(RDK::UException &exception)
  {
-  MLog_LogMessage(RDK_SYS_MESSAGE, exception.GetType(), (std::string("Core-SaveProjectConfig Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
+ RLOG(exception.GetType(), RDK_SYS_MESSAGE, "sys", std::string("Core-SaveProjectConfig Exception: (Name=") + Name + std::string(") ") + exception.what());
  }
 
  return true;
@@ -1927,9 +2462,9 @@ bool UApplication::SaveProjectConfig(void)
 
 
 // --------------------------
-// Методы управления движком
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґРІРёР¶РєРѕРј
 // --------------------------
-/// Управление числом каналов
+/// РЈРїСЂР°РІР»РµРЅРёРµ С‡РёСЃР»РѕРј РєР°РЅР°Р»РѕРІ
 int UApplication::GetNumChannels(void) const
 {
  return EngineControl->GetNumChannels();
@@ -1986,7 +2521,7 @@ if (index == 0)
  return true;
 }
 
-/// Клонирует канал source_id в cloned_id
+/// РљР»РѕРЅРёСЂСѓРµС‚ РєР°РЅР°Р» source_id РІ cloned_id
 bool UApplication::CloneChannel(int source_id, int cloned_id)
 {
  if(source_id<0 || cloned_id <0)
@@ -2006,7 +2541,7 @@ bool UApplication::CloneChannel(int source_id, int cloned_id)
   TProjectChannelConfig &source_channel=config.ChannelsConfig[source_id];
   TProjectChannelConfig &cloned_channel=config.ChannelsConfig[cloned_id];
 
-  // Меняем номера индексов в именах файлов модели, параметров и состояний
+  // РњРµРЅСЏРµРј РЅРѕРјРµСЂР° РёРЅРґРµРєСЃРѕРІ РІ РёРјРµРЅР°С… С„Р°Р№Р»РѕРІ РјРѕРґРµР»Рё, РїР°СЂР°РјРµС‚СЂРѕРІ Рё СЃРѕСЃС‚РѕСЏРЅРёР№
   if(cloned_id>0)
    cloned_channel.ModelFileName=std::string("model_")+sntoa(cloned_id+1)+".xml";
   else
@@ -2033,7 +2568,6 @@ bool UApplication::CloneChannel(int source_id, int cloned_id)
    Model_SetDefaultTimeStep(cloned_channel.DefaultTimeStep);
    Log_SetDebugMode(config.DebugMode);
    Log_SetDebugSysEventsMask(config.DebugSysEventsMask);
-   Log_SetEventsLogMode(config.EventsLogMode);
    Log_SetDebuggerMessageFlag(config.DebuggerMessageFlag);
    Env_SetCurrentDataDir(ProjectPath.c_str());
    Env_CreateStructure();
@@ -2099,7 +2633,7 @@ bool UApplication::CloneChannel(int source_id, int cloned_id)
 }
 catch(RDK::UException &exception)
 {
- MLog_LogMessage(RDK_SYS_MESSAGE, exception.GetType(), (std::string("Core-OpenCloneChannel Exception: (Name=")+Name+std::string(") ")+exception.what()).c_str());
+RLOG(exception.GetType(), RDK_SYS_MESSAGE, "sys", std::string("Core-OpenCloneChannel Exception: (Name=") + Name + std::string(") ") + exception.what());
 }
 catch(...)
 {
@@ -2113,33 +2647,33 @@ catch(...)
 // --------------------------
 
 // --------------------------
-// Методы управления счетом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃС‡РµС‚РѕРј
 // --------------------------
-/// Запускает аналитику выбранного канала, или всех, если channel_index == -1
+/// Р—Р°РїСѓСЃРєР°РµС‚ Р°РЅР°Р»РёС‚РёРєСѓ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°, РёР»Рё РІСЃРµС…, РµСЃР»Рё channel_index == -1
 void UApplication::StartChannel(int channel_index)
 {
  EngineControl->StartChannel(channel_index);
 }
 
-/// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
+/// РћСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р°РЅР°Р»РёС‚РёРєСѓ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°, РёР»Рё РІСЃРµС…, РµСЃР»Рё channel_index == -1
 void UApplication::PauseChannel(int channel_index)
 {
  EngineControl->PauseChannel(channel_index);
 }
 
-/// Сбрасывает аналитику выбранного канала, или всех, если channel_index == -1
+/// РЎР±СЂР°СЃС‹РІР°РµС‚ Р°РЅР°Р»РёС‚РёРєСѓ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°, РёР»Рё РІСЃРµС…, РµСЃР»Рё channel_index == -1
 void UApplication::ResetChannel(int channel_index)
 {
  EngineControl->ResetChannel(channel_index);
 }
 
-/// Делает шаг расчета выбранного канала, или всех, если channel_index == -1
+/// Р”РµР»Р°РµС‚ С€Р°Рі СЂР°СЃС‡РµС‚Р° РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°, РёР»Рё РІСЃРµС…, РµСЃР»Рё channel_index == -1
 void UApplication::StepChannel(int channel_index)
 {
  EngineControl->StepChannel(channel_index);
 }
 
-/// Возвращает true если канал запущен
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ true РµСЃР»Рё РєР°РЅР°Р» Р·Р°РїСѓС‰РµРЅ
 bool UApplication::IsChannelStarted(int channel_index)
 {
  if(!EngineControl)
@@ -2147,7 +2681,7 @@ bool UApplication::IsChannelStarted(int channel_index)
  return (EngineControl->CheckCalcState(channel_index) == UEngineControl::csRunning);
 }
 
-/// Проверяет состояние расчета по id канала
+/// РџСЂРѕРІРµСЂСЏРµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ СЂР°СЃС‡РµС‚Р° РїРѕ id РєР°РЅР°Р»Р°
 UEngineControl::UCalcState UApplication::CheckCalcState(int channel_id) const
 {
  if(!EngineControl)
@@ -2157,7 +2691,7 @@ UEngineControl::UCalcState UApplication::CheckCalcState(int channel_id) const
 // --------------------------
 
 // --------------------------
-// Методы загрузки сохранения данных в файл
+// РњРµС‚РѕРґС‹ Р·Р°РіСЂСѓР·РєРё СЃРѕС…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С… РІ С„Р°Р№Р»
 // --------------------------
 bool UApplication::LoadModelFromFile(int channel_index, const std::string &file_name)
 {
@@ -2167,7 +2701,7 @@ bool UApplication::LoadModelFromFile(int channel_index, const std::string &file_
  std::string data;
  if(!LoadFile(file_name,data))
  {
-  MLog_LogMessage(channel_index,RDK_EX_ERROR,(std::string("Failed to load model file: ")+file_name).c_str());
+  RLOG(RDK_EX_ERROR, channel_index, nullptr, std::string("Failed to load model file: ") + file_name);
   return false;
  }
 
@@ -2193,14 +2727,14 @@ bool UApplication::SaveModelToFile(int channel_index, const std::string &file_na
   Engine_FreeBufString(p_buf);
   if(SaveBuffer.empty())
   {
-   MLog_LogMessage(channel_index,RDK_EX_ERROR,(std::string("SaveModelToFile in")+file_name+" error: model size iz zero! File not changed.").c_str());
+   RLOG(RDK_EX_ERROR, channel_index, nullptr, std::string("SaveModelToFile in") + file_name + " error: model size iz zero! File not changed.");
    return false;
   }
 
   if(SaveBuffer[0]!='<')
   {
    SaveBuffer[0]='<';
-   MLog_LogMessage(channel_index,RDK_EX_WARNING,(std::string("SaveModelToFile in")+file_name+" warning: first symbol INVALID. Fixed.").c_str());
+   RLOG(RDK_EX_WARNING, channel_index, nullptr, std::string("SaveModelToFile in") + file_name + " warning: first symbol INVALID. Fixed.");
   }
 
   res=SaveFileSafe(file_name,SaveBuffer,"save.tmp",3);
@@ -2216,7 +2750,7 @@ bool UApplication::LoadParametersFromFile(int channel_index, const std::string &
  std::string data;
  if(!LoadFile(file_name,data))
  {
-  MLog_LogMessage(channel_index,RDK_EX_ERROR,(std::string("Failed to load parameters file: ")+file_name).c_str());
+  RLOG(RDK_EX_ERROR, channel_index, nullptr, std::string("Failed to load parameters file: ") + file_name);
   return false;
  }
 
@@ -2241,14 +2775,14 @@ bool UApplication::SaveParametersToFile(int channel_index, const std::string &fi
   Engine_FreeBufString(p_buf);
   if(SaveBuffer.empty())
   {
-   MLog_LogMessage(channel_index,RDK_EX_ERROR,(std::string("SaveParametersToFile in")+file_name+" error: model size iz zero! File not changed.").c_str());
+   RLOG(RDK_EX_ERROR, channel_index, nullptr, std::string("SaveParametersToFile in") + file_name + " error: model size iz zero! File not changed.");
    return false;
   }
 
   if(SaveBuffer[0]!='<')
   {
    SaveBuffer[0]='<';
-   MLog_LogMessage(channel_index,RDK_EX_WARNING,(std::string("SaveParametersToFile in")+file_name+" warning: first symbol INVALID. Fixed.").c_str());
+   RLOG(RDK_EX_WARNING, channel_index, nullptr, std::string("SaveParametersToFile in") + file_name + " warning: first symbol INVALID. Fixed.");
   }
 
   res=SaveFileSafe(file_name,SaveBuffer,"save.tmp",3);
@@ -2363,7 +2897,7 @@ bool UApplication::SaveCommonClassesDescriptionsToFile(const std::string &file_n
  return res;
 }
 
-/// Загружает историю проектов из файла
+/// Р—Р°РіСЂСѓР¶Р°РµС‚ РёСЃС‚РѕСЂРёСЋ РїСЂРѕРµРєС‚РѕРІ РёР· С„Р°Р№Р»Р°
 void UApplication::LoadProjectsHistory(void)
 {
  std::string opt_name=extract_file_name(ApplicationFileName);
@@ -2385,7 +2919,7 @@ void UApplication::LoadProjectsHistory(void)
  }
 }
 
-/// Сохраняет историю проектов в файл
+/// РЎРѕС…СЂР°РЅСЏРµС‚ РёСЃС‚РѕСЂРёСЋ РїСЂРѕРµРєС‚РѕРІ РІ С„Р°Р№Р»
 void UApplication::SaveProjectsHistory(void)
 {
  RDK::UIniFile<char> history_ini;
@@ -2404,7 +2938,7 @@ void UApplication::SaveProjectsHistory(void)
  history_ini.SaveToFile(WorkDirectory+opt_name);
 }
 
-/// Флаг принудительного сохранения конфигураций в старом формате
+/// Р¤Р»Р°Рі РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ РєРѕРЅС„РёРіСѓСЂР°С†РёР№ РІ СЃС‚Р°СЂРѕРј С„РѕСЂРјР°С‚Рµ
 bool UApplication::IsUseNewXmlFormatProjectFile(void) const
 {
  return UseNewXmlFormatProjectFile;
@@ -2421,8 +2955,8 @@ bool UApplication::ChangeUseNewXmlFormatProjectFile(bool value)
  return true;
 }
 
-/// Флаг включения нового представления файловой структуры конфигурации
-/// (только при сохранении данных конфигурации в новом формате)
+/// Р¤Р»Р°Рі РІРєР»СЋС‡РµРЅРёСЏ РЅРѕРІРѕРіРѕ РїСЂРµРґСЃС‚Р°РІР»РµРЅРёСЏ С„Р°Р№Р»РѕРІРѕР№ СЃС‚СЂСѓРєС‚СѓСЂС‹ РєРѕРЅС„РёРіСѓСЂР°С†РёРё
+/// (С‚РѕР»СЊРєРѕ РїСЂРё СЃРѕС…СЂР°РЅРµРЅРёРё РґР°РЅРЅС‹С… РєРѕРЅС„РёРіСѓСЂР°С†РёРё РІ РЅРѕРІРѕРј С„РѕСЂРјР°С‚Рµ)
 bool UApplication::IsUseNewProjectFilesStructure(void) const
 {
  return UseNewProjectFilesStructure;
@@ -2441,9 +2975,9 @@ bool UApplication::ChangeUseNewProjectFilesStructure(bool value)
 // --------------------------
 
 // --------------------------
-// Вспомогательные методы управления счетом
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃС‡РµС‚РѕРј
 // --------------------------
-/// Сохраняет точки в истории изменений конфигурации
+/// РЎРѕС…СЂР°РЅСЏРµС‚ С‚РѕС‡РєРё РІ РёСЃС‚РѕСЂРёРё РёР·РјРµРЅРµРЅРёР№ РєРѕРЅС„РёРіСѓСЂР°С†РёРё
 bool UApplication::FixSavePoint(USerStorageXML &xml)
 {
     xml.SelectNodeRoot("History");
@@ -2470,7 +3004,7 @@ bool UApplication::FixSavePoint(USerStorageXML &xml)
     return true;
 }
 
-/// Включает и выключает тестовый режим
+/// Р’РєР»СЋС‡Р°РµС‚ Рё РІС‹РєР»СЋС‡Р°РµС‚ С‚РµСЃС‚РѕРІС‹Р№ СЂРµР¶РёРј
 void UApplication::ChangeTestModeState(bool state)
 {
  if(TestMode == state)
@@ -2478,13 +3012,13 @@ void UApplication::ChangeTestModeState(bool state)
 
  TestMode=state;
  if(TestMode == true)
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Test mode is ON.");
+  RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Test mode is ON.");
  else
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_DEBUG, "Test mode is OFF.");
+  RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Test mode is OFF.");
 }
 
 
-/// Инициализация парсера командной строки
+/// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїР°СЂСЃРµСЂР° РєРѕРјР°РЅРґРЅРѕР№ СЃС‚СЂРѕРєРё
 void UApplication::InitCmdParser(void)
 {
 #ifndef __BORLANDC__
@@ -2499,6 +3033,11 @@ void UApplication::InitCmdParser(void)
     ("mask", po::value<unsigned>(), "Property mask")
     ("save_model_bmp", po::value<string>(), "Component name")
     ("session", po::value<unsigned>(), "Session Id")
+    ("log-level", po::value<string>(), "Global log severity (fatal|error|warning|info|debug)")
+    ("log-verbosity", po::value<int>(), "Maximum verbosity for debug logging (VLOG level)")
+    ("log-channel-level", po::value<std::vector<std::string>>()->composing(), "Channel overrides in the form index:level")
+    ("log-sys-level", po::value<string>(), "System channel log severity override")
+    ("log-glob-level", po::value<string>(), "Global channel log severity override")
 ;
 #endif
 }
@@ -2520,29 +3059,34 @@ int UApplication::ParseArgs(const std::vector<std::string> &args, std::map<std::
 } */
 
 
-/// Вычисляет заголовок приложения
+/// Р’С‹С‡РёСЃР»СЏРµС‚ Р·Р°РіРѕР»РѕРІРѕРє РїСЂРёР»РѕР¶РµРЅРёСЏ
 void UApplication::CalcAppCaption(void)
 {
  AppCaption=std::string("[")+Project->GetConfig().ProjectName+std::string(": ")+ProjectPath+ProjectFileName+"]";
 }
 
-/// Обновляет состояние средств логгирования
+/// РћР±РЅРѕРІР»СЏРµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ СЃСЂРµРґСЃС‚РІ Р»РѕРіРіРёСЂРѕРІР°РЅРёСЏ
 void UApplication::UpdateLoggers(void)
 {
- RdkCoreManager.SetLogDir(CalcCurrentLogDir().c_str());
- if(EngineControl && EngineControl->GetEngineStateThread())
- {
-  GetCore()->GetLogger(RDK_GLOB_MESSAGE)->RecreateEventsLogFile();
- }
-//  EngineControl->GetEngineStateThread()->RecreateEventsLogFile();
+ std::string primary_dir = EnsureDirectoryAndNormalize(CalcCurrentLogDir());
+ if(primary_dir.empty())
+  return;
+
+ PendingPrimaryLogDir = primary_dir;
+ RdkCoreManager.SetLogDir(primary_dir.c_str());
+
+ if(!LoggingInitialized)
+  return;
+
+ ApplyPrimaryLogDestination(primary_dir);
 }
 
 
 
 
-/// Сохраняет файл из строки, через временный файл. Делает n_pass попыток сохранить с чтением результата и сразвнением с оригиналом.
-/// Если сохранение не удалось, то старый файл остается как был.
-/// Если сохранение удалось, то временный файл заменяет старый
+/// РЎРѕС…СЂР°РЅСЏРµС‚ С„Р°Р№Р» РёР· СЃС‚СЂРѕРєРё, С‡РµСЂРµР· РІСЂРµРјРµРЅРЅС‹Р№ С„Р°Р№Р». Р”РµР»Р°РµС‚ n_pass РїРѕРїС‹С‚РѕРє СЃРѕС…СЂР°РЅРёС‚СЊ СЃ С‡С‚РµРЅРёРµРј СЂРµР·СѓР»СЊС‚Р°С‚Р° Рё СЃСЂР°Р·РІРЅРµРЅРёРµРј СЃ РѕСЂРёРіРёРЅР°Р»РѕРј.
+/// Р•СЃР»Рё СЃРѕС…СЂР°РЅРµРЅРёРµ РЅРµ СѓРґР°Р»РѕСЃСЊ, С‚Рѕ СЃС‚Р°СЂС‹Р№ С„Р°Р№Р» РѕСЃС‚Р°РµС‚СЃСЏ РєР°Рє Р±С‹Р».
+/// Р•СЃР»Рё СЃРѕС…СЂР°РЅРµРЅРёРµ СѓРґР°Р»РѕСЃСЊ, С‚Рѕ РІСЂРµРјРµРЅРЅС‹Р№ С„Р°Р№Р» Р·Р°РјРµРЅСЏРµС‚ СЃС‚Р°СЂС‹Р№
 bool UApplication::SaveFileSafe(const std::string &file_name, const std::string &buffer, const std::string &temp_file_name, int n_pass)
 {
  if(temp_file_name.empty())
@@ -2561,7 +3105,7 @@ bool UApplication::SaveFileSafe(const std::string &file_name, const std::string 
   bool is_saved=SaveFile(temp_file_name,buffer);
   if(!is_saved)
   {
-   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_ERROR, std::string(std::string("SaveFileSafe file: ")+file_name+std::string(" as ")+temp_file_name+std::string(" save attepmt #")+sntoa(i+1)+" FAILED.").c_str());
+   RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("SaveFileSafe file: ") + file_name + std::string(" as ") + temp_file_name + std::string(" save attepmt #") + sntoa(i + 1) + " FAILED.");
    continue;
   }
 
@@ -2569,13 +3113,13 @@ bool UApplication::SaveFileSafe(const std::string &file_name, const std::string 
   bool is_loaded=LoadFile(temp_file_name,temp_buffer);
   if(!is_loaded)
   {
-   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_ERROR, std::string(std::string("SaveFileSafe file: ")+file_name+std::string(" as ")+temp_file_name+std::string(" test load attepmt #")+sntoa(i+1)+" FAILED.").c_str());
+   RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("SaveFileSafe file: ") + file_name + std::string(" as ") + temp_file_name + std::string(" test load attepmt #") + sntoa(i + 1) + " FAILED.");
    continue;
   }
 
   if(buffer != temp_buffer)
   {
-   MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_ERROR, std::string(std::string("SaveFileSafe file: ")+file_name+std::string(" as ")+temp_file_name+std::string(" compare attepmt #")+sntoa(i+1)+" FAILED.").c_str());
+   RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("SaveFileSafe file: ") + file_name + std::string(" as ") + temp_file_name + std::string(" compare attepmt #") + sntoa(i + 1) + " FAILED.");
    continue;
   }
   is_temp_saved=true;
@@ -2584,7 +3128,7 @@ bool UApplication::SaveFileSafe(const std::string &file_name, const std::string 
 
  if(!is_temp_saved)
  {
-  MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_ERROR, std::string(std::string("SaveFileSafe file: ")+file_name+std::string(" as ")+temp_file_name+std::string(" all ")+sntoa(n_pass)+" attepmts FAILED.").c_str());
+  RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("SaveFileSafe file: ") + file_name + std::string(" as ") + temp_file_name + std::string(" all ") + sntoa(n_pass) + " attepmts FAILED.");
   return false;
  }
 
@@ -2593,7 +3137,7 @@ bool UApplication::SaveFileSafe(const std::string &file_name, const std::string 
  if(!copy_error)
   return true;
 
- MLog_LogMessage(RDK_SYS_MESSAGE,RDK_EX_ERROR, std::string(std::string("SaveFileSafe file: ")+temp_file_name+std::string(" copy to ")+file_name+std::string(" FAILED with error code ")+sntoa(copy_error)).c_str());
+RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("SaveFileSafe file: ") + temp_file_name + std::string(" copy to ") + file_name + std::string(" FAILED with error code ") + sntoa(copy_error));
  return false;
 }
 // --------------------------

@@ -173,10 +173,19 @@ USerStorageXML& operator >> (USerStorageXML& storage, UELockVar<T> &data)
 }
 
 class UNet;
+struct UPropertyAlias;
 
 USerStorageXML& operator << (USerStorageXML& storage, const RDK::UNet* data);
 
 USerStorageXML& operator >> (USerStorageXML& storage, RDK::UNet *data);
+
+// UPropertyAlias serialization
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const UPropertyAlias &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, UPropertyAlias &data);
+
+// PropertyAlias map serialization
+RDK_LIB_TYPE USerStorageXML& operator << (USerStorageXML& storage, const std::map<std::string, UPropertyAlias> &data);
+RDK_LIB_TYPE USerStorageXML& operator >> (USerStorageXML& storage, std::map<std::string, UPropertyAlias> &data);
 
 }
 #endif

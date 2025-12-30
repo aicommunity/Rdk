@@ -32,6 +32,10 @@ See file license.txt for more information
 #include "UComponent.h"
 #include "../System/rdk_system.h"
 
+#ifdef _MSC_VER
+#pragma warning(disable:4172)
+#endif
+
 namespace RDK {
 
 namespace detail
@@ -68,72 +72,76 @@ using namespace std;
 #pragma warning( disable : 4700)
 #endif
 
-// Класс - база для свойств
+// РљР»Р°СЃСЃ - Р±Р°Р·Р° РґР»СЏ СЃРІРѕР№СЃС‚РІ
 template<typename T>
 class UVBaseDataProperty: public UIPropertyOutput
 {
-protected: // Данные
-// Тип входа
+protected: // Р”Р°РЅРЅС‹Рµ
+// РўРёРї РІС…РѕРґР°
 int IoType;
 
-protected: // Данные синхронизации
-/// Мьютекс этого свойства
+protected: // Р”Р°РЅРЅС‹Рµ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё
+/// РњСЊСЋС‚РµРєСЃ СЌС‚РѕРіРѕ СЃРІРѕР№СЃС‚РІР°
 UGenericMutex *Mutex;
 
-/// Время обновления свойства (мс)
+/// Р’СЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ СЃРІРѕР№СЃС‚РІР° (РјСЃ)
 mutable ULongTime UpdateTime;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
-//Конструктор инициализации.
-explicit UVBaseDataProperty(T * const pdata)
- : IoType(ipSingle | ipData), Mutex(UCreateMutex()), UpdateTime(0)
+//РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё.
+// Constructor with optional mutex creation
+explicit UVBaseDataProperty(T * const pdata, bool needs_mutex = false)
+ : IoType(static_cast<unsigned int>(ipSingle) | static_cast<unsigned int>(ipData)), Mutex(needs_mutex ? UCreateMutex() : nullptr), UpdateTime(0)
 {
 }
 
 virtual ~UVBaseDataProperty(void)
 {
- UDestroyMutex(Mutex);
- Mutex=0;
+ if(Mutex)
+ {
+  UDestroyMutex(Mutex);
+  Mutex=0;
+ }
 }
 // -----------------------------
 
 // -----------------------------
-// Методы сериализации
-// -----------------------------
-// Возвращает ссылку на данные
+// Р¤СѓРЅРєС†РёРё РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј
+// РњРѕРґРёС„РёС†РёСЂСѓРµС‚ РґР°РЅРЅС‹Рµ
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РґР°РЅРЅС‹Рµ РёР· СЃРІРѕР№СЃС‚РІР°
 virtual const T& GetData(void) const=0;
 
-// Модифицирует данные
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РґР°РЅРЅС‹Рµ
 virtual void SetData(const T& data)=0;
 
-// Возвращает языковой тип хранимого свойства
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РёРї РґР°РЅРЅС‹С… РґР»СЏ СЃРІРѕР№СЃС‚РІР° СЃРІРѕР№СЃС‚РІР°
 virtual const type_info& GetLanguageType(void) const
 {
  return typeid(T);
 }
 
-// Метод сравнивает тип этого свойства с другим свойством
+// РЎСЂР°РІРЅРёРІР°РµС‚ С‚РёРї РґР»СЏ СЌС‚РѕРіРѕ СЃРІРѕР№СЃС‚РІР° РІ РґСЂСѓРіРѕРј СЃРІРѕР№СЃС‚РІРµ
 virtual bool CompareLanguageType(const UIProperty &dt) const
 {
  return GetLanguageType() == dt.GetLanguageType();
 }
 
-// Возвращает языковой тип хранимого свойства для одного элемента
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РёРї РґР°РЅРЅС‹С… РґР»СЏ СЃРІРѕР№СЃС‚РІР° СЌР»РµРјРµРЅС‚Р° РґР»СЏ РјР°СЃСЃРёРІР° СЌР»РµРјРµРЅС‚РѕРІ
 virtual const type_info& GetElemLanguageType(void) const
 {
  return typeid(T);
 }
 
-// Метод сравнивает тип этого свойства с другим свойством (по одному элементу)
+// РЎСЂР°РІРЅРёРІР°РµС‚ С‚РёРї РґР»СЏ СЌС‚РѕРіРѕ СЌР»РµРјРµРЅС‚Р° РІ РґСЂСѓРіРѕРј СЃРІРѕР№СЃС‚РІРµ (РґР»СЏ РјР°СЃСЃРёРІР° СЌР»РµРјРµРЅС‚РѕРІ)
 virtual bool CompareElemLanguageType(const UIProperty &dt) const
 {
  return GetElemLanguageType() == dt.GetElemLanguageType();
 }
 
-// Метод записывает значение свойства в поток
+// РњРµС‚РѕРґ СЃРѕС…СЂР°РЅРµРЅРёСЏ Р·РЅР°С‡РµРЅРёСЏ СЃРІРѕР№СЃС‚РІР° РІ РїРѕС‚РѕРє
 virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
 {
 /*
@@ -178,7 +186,7 @@ virtual bool Save(UEPtr<USerStorage>  storage, bool simplemode=false)
  return false;
 }
 
-// Метод читает значение свойства из потока
+// Method reads property value from stream
 virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
 {
  T temp;
@@ -232,15 +240,15 @@ virtual bool Load(UEPtr<USerStorage>  storage, bool simplemode=false)
  return false;
 }
 
-// Метод возвращает указатель на область памяти, содержащую данные свойства
+// РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РѕР±Р»Р°СЃС‚СЊ РїР°РјСЏС‚Рё, СЃРѕРґРµСЂР¶Р°С‰СѓСЋ РґР°РЅРЅС‹Рµ СЃРІРѕР№СЃС‚РІР°
 virtual const void* GetMemoryArea(void)
 {
  return &GetData();
 }
 
-// Метод копирует значение данных свойства из области памяти
-// штатными средствами копирования реального типа данных
-// входной указатель приводится к указателю на необходимый тип данных
+// РњРµС‚РѕРґ С‡С‚РµРЅРёСЏ Р·РЅР°С‡РµРЅРёСЏ СЃРІРѕР№СЃС‚РІР° РґР°РЅРЅС‹С… СЃРІРѕР№СЃС‚РІР° РёР· РѕР±Р»Р°СЃС‚Рё РїР°РјСЏС‚Рё
+// Р§РёС‚Р°РµС‚ РґР°РЅРЅС‹Рµ РёР· РїРµСЂРµРґР°РЅРЅРѕР№ РѕР±Р»Р°СЃС‚Рё РїР°РјСЏС‚Рё РґР»СЏ СЃРІРѕР№СЃС‚РІР° СЃРІРѕР№СЃС‚РІР°
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓСЃРїРµС€РЅРѕСЃС‚СЊ РѕРїРµСЂР°С†РёРё С‡С‚РµРЅРёСЏ Рё СѓСЃС‚Р°РЅРѕРІРєРё Р·РЅР°С‡РµРЅРёСЏ РґР»СЏ СЃРІРѕР№СЃС‚РІР°
 bool ReadFromMemory(const void *buffer)
 {
  if(!buffer)
@@ -250,12 +258,12 @@ bool ReadFromMemory(const void *buffer)
  SetData(*temp);
  return true;
 }
-// -----------------------------
+// --------------------------
 
 // --------------------------
-// Методы управления данными
+// Р¤СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃРѕ РІСЂРµРјРµРЅРµРј
 // --------------------------
-// Тип
+// РўРёРї
 virtual int GetIoType(void) const
 {
  return IoType;
@@ -272,10 +280,10 @@ virtual void SetUpdateTime(ULongTime value)
 // UGenericLocker locker(Mutex);
  UpdateTime=value;
 }
-// --------------------------
+// -----------------------------
 
 // -----------------------------
-// Привязка внешней ссылки как источника данных
+// Р¤СѓРЅРєС†РёРё РІСЂРµРјРµРЅРё РѕР±РЅРѕРІР»РµРЅРёСЏ РґР»СЏ СЃРІРѕР№СЃС‚РІР° СЃРІРѕР№СЃС‚РІР°
 // -----------------------------
 virtual bool AttachTo(UVBaseDataProperty<T>* prop)
 {
@@ -285,43 +293,43 @@ virtual bool AttachTo(UVBaseDataProperty<T>* prop)
 virtual void DetachFrom(void)
 {
 }
-// -----------------------------
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё
 
 protected:
 // --------------------------
-// Скрытые методы управления данными
+// Р¤СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃРѕ РІСЂРµРјРµРЅРµРј РѕР±РЅРѕРІР»РµРЅРёСЏ
 // --------------------------
-/// Обновляет время изменения данных свойства
+/// РћР±РЅРѕРІР»СЏРµС‚ РІСЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ СЃРІРѕР№СЃС‚РІР° СЃРІРѕР№СЃС‚РІР°
 void RenewUpdateTime(void)
 {
  UpdateTime=GetCurrentStartupTime();
 }
 
-/// Сбрасывает время обновления до нуля
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РЅР° РЅРѕР»СЊ
 void ResetUpdateTime(void)
 {
  UpdateTime=0;
 }
-// --------------------------
+// РљР»Р°СЃСЃ - Р±Р°Р·Р° РґР»СЏ СЃРІРѕР№СЃС‚РІ
 };
 
 
-// Класс - база для свойств
+// Р”Р°РЅРЅС‹Рµ
 template<typename T,class OwnerT>
 class UVBaseProperty: public UVBaseDataProperty<T>
 {
-protected: // Данные
-// Владелец свойства
+protected: // РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РёС‚РµСЂР°С‚РѕСЂ-С…СЂР°РЅРёР»РёС‰Рµ РґР°РЅРЅС‹С… РѕР± СЌС‚РѕРј СЃРІРѕР№СЃС‚РІРµ РІ СЂРѕРґРёС‚РµР»СЊСЃРєРѕРј РєРѕРјРїРѕРЅРµРЅС‚Рµ
+// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РІР»Р°РґРµР»СЊС†Р°
 OwnerT* Owner;
 
-// Указатель на итератор-хранилище данных об этом свойстве в родительском компоненте
+// --------------------------
 UComponent::VariableMapCIteratorT Variable;
 
-public: // Методы
+public: //РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё.
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
-//Конструктор инициализации.
+//РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚.
 explicit UVBaseProperty(OwnerT * const owner) :
   UVBaseDataProperty<T>(0), Owner(owner)
 {
@@ -337,93 +345,114 @@ UVBaseProperty(OwnerT * const owner, T * const pdata) :
 }
 // -----------------------------
 
+// СЃРІРѕР№СЃС‚РІРµ РІ СЂРѕРґРёС‚РµР»СЊСЃРєРѕРј РєРѕРјРїРѕРЅРµРЅС‚Рµ
+// РњРµС‚РѕРґ СѓСЃС‚Р°РЅРѕРІРєРё РїРµСЂРµРјРµРЅРЅРѕР№
 // -----------------------------
-// Методы сериализации
-// -----------------------------
-// Метод устанавливает значение указателя на итератор-хранилище данных об этом
-// свойстве в родительском компоненте
+// РњРµС‚РѕРґ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ СЃРІРѕР№СЃС‚РІР° РёР· РёС‚РµСЂР°С‚РѕСЂР°-С…СЂР°РЅРёР»РёС‰Р° РґР°РЅРЅС‹С… РЅР° РёРјСЏ
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµРµ Р·РЅР°С‡РµРЅРёРµ
 virtual void SetVariable(UComponent::VariableMapCIteratorT &var)
 {
  Variable=var;
 }
 
-// Метод возвращает указатель компонента-владельца свойства
+// РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РєРѕРјРїРѕРЅРµРЅС‚Р°-С…СЂР°РЅРёР»РёС‰Р° РґР°РЅРЅС‹С…
 virtual UContainer* GetOwner(void) const
 {
  return dynamic_cast<UContainer*>(Owner);
 }
 
-// Метод возвращает строковое имя свойства
+// РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РёРјСЏ СЃРІРѕР№СЃС‚РІР°
 virtual const std::string& GetName(void) const
 {
  return Variable->first;
 }
 
-// Метод возвращает тип свойства
+// РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ С‚РёРї СЃРІРѕР№СЃС‚РІР°
 virtual unsigned int GetType(void) const
 {
  return Variable->second.Type;
 }
 
-// Метод возвращает строковое имя компонента-владельца свойства
+// РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РёРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°-С…СЂР°РЅРёР»РёС‰Р° РґР°РЅРЅС‹С…
 virtual std::string GetOwnerName(void) const
 {
  return (Owner)?Owner->GetName():std::string("");
 }
 
-// Метод возвращает строковое имя класса-владельца свойства
+// РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РёРјСЏ РєР»Р°СЃСЃР°-С…СЂР°РЅРёР»РёС‰Р° РґР°РЅРЅС‹С…
 virtual std::string GetOwnerClassName(void) const
 {
  return typeid(Owner).name();
 }
-// -----------------------------
+// РќРµ СЃРѕРґРµСЂР¶РёС‚ РґР°РЅРЅРѕРіРѕ РІРЅСѓС‚СЂРё СЃРµР±СЏ
 };
 
-// Класс - виртуальное свойство
-// Не содержит данного внутри себя
+// РњРµС‚РѕРґ - РґСЂСѓР¶РµСЃС‚РІРµРЅРЅС‹Р№ РєР»Р°СЃСЃ
+//friend class OwnerT;
 template<typename T,class OwnerT>
-class UVProperty: public UVBaseProperty<T,OwnerT>
+class UVProperty: public UVBaseDataProperty<T>
 {
 //friend class OwnerT;
-public: // Типы методов ввода-вывода
+public: // Р”Р°РЅРЅС‹Рµ
 typedef const T& (OwnerT::*GetterRT)(void) const;
 typedef bool (OwnerT::*SetterRT)(const T&);
 
-protected: // Данные
-// Методы ввода-вывода
+protected: // РЈРєР°Р·Р°С‚РµР»СЊ
+// РЈРєР°Р·Р°С‚РµР»СЊ РіРµС‚С‚РµСЂ-СѓРєР°Р·Р°С‚РµР»СЊ
 GetterRT GetterR;
 SetterRT SetterR;
 
+protected: // Owner and variable (from UVBaseProperty)
+/// Р¤Р»Р°Рі РЅР°Р»РёС‡РёСЏ РїРѕРґРєР»СЋС‡РµРЅРёСЏ
+OwnerT* Owner;
+
+/// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РїРѕРґРєР»СЋС‡РµРЅРЅС‹Р№ РІС‹С…РѕРґ
+UComponent::VariableMapCIteratorT Variable;
+
 protected:
-/// Ссылка на внешнее свойство-источник данных
+// --------------------------
 UVBaseDataProperty<T>* ExternalDataSource;
 
 protected:
-/// Флаг наличия подключения
+/*Getter(0), Setter(0), */
 bool IsConnectedFlag;
 
-/// Указатель на подключенный выход
+/// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РїРѕРґРєР»СЋС‡РµРЅРЅС‹Рµ РІС‹С…РѕРґС‹
 std::vector<UIPropertyOutput*> ConnectedOutputs;
 
-public: // Методы
+/*Getter(0), Setter(0), */
+mutable UVBaseDataProperty<T>* CachedConnectedOutput;
+
+protected: // Local storage (from UPropertyLocal)
+// -----------------------------
+bool CheckEqualsFlag;
+
+// РџСЂРёРІСЏР·РєР° РІРЅРµС€РЅРµР№ СЃСЃС‹Р»РєРё РєР°Рє РёСЃС‚РѕС‡РЅРёРєР° РґР°РЅРЅС‹С…
+mutable T v;
+
+public: // РЈРєР°Р·Р°С‚РµР»СЊ
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UVProperty(OwnerT * const owner, SetterRT setmethod , GetterRT getmethod) :
-  UVBaseProperty<T,OwnerT>(owner), /*Getter(0), Setter(0), */GetterR(getmethod), SetterR(setmethod), ExternalDataSource(0)
+  UVBaseDataProperty<T>(0), Owner(owner), GetterR(getmethod), SetterR(setmethod), ExternalDataSource(0),
+  IsConnectedFlag(false), CachedConnectedOutput(0), CheckEqualsFlag(true), v()
 {
-    IsConnectedFlag=false;
+ if(Owner)
+  Variable=Owner->FindPropertyVariable(this);
 }
 
 UVProperty(OwnerT * const owner, T * const pdata, SetterRT setmethod=0) :
-  UVBaseProperty<T,OwnerT>(owner,pdata), /*Getter(0), Setter(0), */GetterR(0), SetterR(setmethod), ExternalDataSource(0)
+  UVBaseDataProperty<T>(pdata), Owner(owner), GetterR(0), SetterR(setmethod), ExternalDataSource(0),
+  IsConnectedFlag(false), CachedConnectedOutput(0), CheckEqualsFlag(true), v()
 {
-    IsConnectedFlag=false;
+ if(Owner)
+  Variable=Owner->FindPropertyVariable(this);
 }
 // -----------------------------
 
-// -----------------------------
-// Привязка внешней ссылки как источника данных
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РїРѕРґРєР»СЋС‡РµРЅРЅРѕРіРѕ РІС‹С…РѕРґР°
+// Р¤СѓРЅРєС†РёРё РІСЂРµРјРµРЅРё РѕР±РЅРѕРІР»РµРЅРёСЏ РґР»СЏ СЃРІРѕР№СЃС‚РІР° СЃРІРѕР№СЃС‚РІР°
 // -----------------------------
 bool AttachTo(UVBaseDataProperty<T>* prop)
 {
@@ -442,45 +471,86 @@ void DetachFrom(void)
 // -----------------------------
 
 // -----------------------------
-// Методы управления подклчаемым выходом
+// Property information methods (from UVBaseProperty)
 // -----------------------------
-/// Возвращает имя подключенного компонента
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ true, РµСЃР»Рё РЅР° РїРѕРґРєР»СЋС‡РµРЅРЅРѕРј РІС‹С…РѕРґРµ РЅРѕРІС‹Рµ РґР°РЅРЅС‹Рµ
+virtual void SetVariable(UComponent::VariableMapCIteratorT &var)
+{
+ Variable=var;
+}
+
+/// Get owner component as UContainer
+virtual UContainer* GetOwner(void) const
+{
+ return dynamic_cast<UContainer*>(Owner);
+}
+
+/// Get property name
+virtual const std::string& GetName(void) const
+{
+ return Variable->first;
+}
+
+/// Get property type
+virtual unsigned int GetType(void) const
+{
+ return Variable->second.Type;
+}
+
+/// Get owner component name
+virtual std::string GetOwnerName(void) const
+{
+ return (Owner)?Owner->GetName():std::string("");
+}
+
+/// Get owner component class name
+virtual std::string GetOwnerClassName(void) const
+{
+ return typeid(Owner).name();
+}
+// -----------------------------
+
+// -----------------------------
+//  
+// -----------------------------
+///  
 virtual UItem* GetItem(int index=0);
 
-/// Возвращает имя подключенного выхода
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РґР»СЏ РїРѕРґРєР»СЋС‡РµРЅРЅРѕРіРѕ РІС‹С…РѕРґР°
 virtual std::string GetItemOutputName(int index=0) const;
 
-/// Возвращает имя подключенного компонента
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РґР»СЏ РїРѕРґРєР»СЋС‡РµРЅРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 virtual std::string GetItemName(int index=0) const;
 
-/// Возвращает полное имя подключенного компонента
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ РґР»СЏ РїРѕРґРєР»СЋС‡РµРЅРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 virtual std::string GetItemFullName(int index=0) const;
 
-/// Применяет время выхода к входу
+/// РћР±РЅРѕРІР»СЏРµС‚ РІСЂРµРјСЏ РІС‹С…РѕРґР° РІ Р»РѕРі
 void ApplyOutputUpdateTime(void) const
 {
- if(!ConnectedOutputs.empty())
+ // Lazy update: only update if connected output's time is newer
+ if(IsConnectedFlag && ConnectedOutputs[0]->GetUpdateTime() > this->UpdateTime)
   this->UpdateTime=ConnectedOutputs[0]->GetUpdateTime();
 }
 
-// Возвращает true если вход имеет подключение
+/* ************************************************************************* */
 bool IsConnected(void) const
 {
  return IsConnectedFlag;
 }
 
-/// Возвращает true, если на подключенном выходе новые данные
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ true, РµСЃР»Рё РІ РїРѕРґРєР»СЋС‡РµРЅРЅРѕРј РІС‹С…РѕРґРµ РµСЃС‚СЊ РЅРѕРІС‹Рµ РґР°РЅРЅС‹Рµ
 virtual bool IsNewData(void) const
 {
  return (!ConnectedOutputs.empty())?this->ConnectedOutputs[0]->GetUpdateTime()>this->UpdateTime:true;
 }
-// -----------------------------
+//protected:
 
 
 // -----------------------------
-// Методы управления
-// -----------------------------
-operator T (void) const
+// Р¤СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹
+// --------------------------
+inline operator T (void) const
 {
  ApplyOutputUpdateTime();
  return this->GetData();
@@ -492,37 +562,114 @@ const T& operator () (void) const
  return this->GetData();
 }
 
-T* operator -> (void)
+inline T* operator -> (void)
 {
  ApplyOutputUpdateTime();
  return const_cast<T*>(&this->GetData());
 }
 
-const T* operator -> (void) const
+inline const T* operator -> (void) const
 {
  ApplyOutputUpdateTime();
  return &this->GetData();
 }
 
-T& operator * (void)
+inline T& operator * (void)
 {
  ApplyOutputUpdateTime();
  return const_cast<T&>(this->GetData());
 }
 
-const T& operator * (void) const
+inline const T& operator * (void) const
 {
  ApplyOutputUpdateTime();
  return this->GetData();
 }
 
-// Оператор присваивания
-UVProperty<T,OwnerT>& operator = (const T &value)
+// РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
+inline UVProperty<T,OwnerT>& operator = (const T &value)
 {
  this->SetData(value);
  return *this;
 }
 // -----------------------------
+
+// -----------------------------
+// Check equals flag methods (from UPropertyLocal)
+// -----------------------------
+/// Check if value equals check is enabled
+bool IsCheckEquals(void) const
+{
+ return CheckEqualsFlag;
+}
+
+/// Set value equals check flag
+void SetCheckEquals(bool value)
+{
+ CheckEqualsFlag=value;
+}
+// -----------------------------
+
+// -----------------------------
+// Data access methods (from UPropertyLocal)
+// -----------------------------
+/// Get data implementation (from UPropertyLocal)
+inline const T& GetData(void) const
+{
+ // Fast path for unconnected properties
+ if(!IsConnectedFlag && !this->ExternalDataSource)
+  return v;
+
+ if(this->ExternalDataSource)
+  return this->ExternalDataSource->GetData();
+
+ if(IsConnectedFlag)
+ {
+  //  this->PData=const_cast<T*>(&this->ExternalDataSource->GetData());
+  if(!CachedConnectedOutput && !ConnectedOutputs.empty())
+   CachedConnectedOutput = dynamic_cast<UVBaseDataProperty<T>*>(ConnectedOutputs[0]);
+  
+  if(CachedConnectedOutput)
+  {
+   // Cache data with update time check to avoid unnecessary copies
+   ULongTime outputTime = CachedConnectedOutput->GetUpdateTime();
+   if(outputTime > this->UpdateTime)
+   {
+    v = CachedConnectedOutput->GetData();
+    this->UpdateTime = outputTime;
+   }
+  }
+ }
+
+ return v;
+}
+
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РґР°РЅРЅС‹Рµ РІС…РѕРґР°
+virtual void SetData(const T &value)
+{
+ if(this->ExternalDataSource)
+ {
+  this->ExternalDataSource->SetData(value);
+  return;
+ }
+
+ if(IsConnectedFlag)
+  return;
+
+ if(CheckEqualsFlag && value == v)
+  return;
+
+ if(this->Owner)
+ {
+  if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
+   throw UIProperty::EPropertySetterFail(this->GetOwnerName(),this->GetName());
+ }
+
+ v=value;
+ this->RenewUpdateTime();
+ return;
+}
+/* ************************************************************************* */
 };
 
 class UItem;
@@ -530,24 +677,24 @@ class UConnector;
 class UContainer;
 
 /* ************************************************************************* */
-// Класс - свойство с значением внутри
+// РњРµС‚РѕРґ - СЃРІРѕР№СЃС‚РІРѕ РІ РєРѕРјРїРѕРЅРµРЅС‚Рµ РјРѕРґРµР»Рё
 /* ************************************************************************* */
 template<typename T,class OwnerT, unsigned int type>
 class UPropertyLocal: public UVProperty<T,OwnerT>
 {
 protected:
-/// Флаг проверки значения свойства на равенство присваевому значению
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 bool CheckEqualsFlag;
 
 public:
 //protected:
-// Данные
+// Р—РЅР°С‡РµРЅРёРµ
 mutable T v;
 
 public:
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
+// -----------------------------
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
+// -----------------------------
 public:
 UPropertyLocal(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UVProperty<T,OwnerT>(owner, setmethod, 0), CheckEqualsFlag(true), v()
@@ -558,9 +705,9 @@ UPropertyLocal(const string &name, OwnerT * const owner, typename UVProperty<T,O
 // -----------------------------
 
 // -----------------------------
-// Метод управления параметрами
+// РњРµС‚РѕРґ РїСЂРѕРІРµСЂРєРё СЂР°РІРµРЅСЃС‚РІР°
 // -----------------------------
-/// Флаг проверки значения свойства на равенство присваевому значению
+/// Р¤Р»Р°Рі РїСЂРѕРІРµСЂРєРё Р·РЅР°С‡РµРЅРёСЏ СЃРІРѕР№СЃС‚РІР° РґР°РЅРЅС‹С… РЅР° СЂР°РІРµРЅСЃС‚РІРѕ РїРµСЂРµРґР°РЅРЅРѕРјСѓ Р·РЅР°С‡РµРЅРёСЋ
 bool IsCheckEquals(void) const
 {
  return CheckEqualsFlag;
@@ -573,16 +720,31 @@ void SetCheckEquals(bool value)
 // -----------------------------
 
 // -----------------------------
-// Операторы доступа
 // -----------------------------
-// Возврат значения
+// -----------------------------
+// Р¤СѓРЅРєС†РёРё РґРѕСЃС‚СѓРїР°
 virtual const T& GetData(void) const
 {
  if(this->ExternalDataSource)
   return this->ExternalDataSource->GetData();
 
  if(UVProperty<T,OwnerT>::IsConnectedFlag)
-  v = dynamic_cast<UVBaseDataProperty<T>*>(this->ConnectedOutputs[0])->GetData();
+ {
+  // РўРёРїС‹ РјРµС‚РѕРґРѕРІ РІРІРѕРґР°-РІС‹РІРѕРґР°
+  if(!UVProperty<T,OwnerT>::CachedConnectedOutput && !UVProperty<T,OwnerT>::ConnectedOutputs.empty())
+   UVProperty<T,OwnerT>::CachedConnectedOutput = dynamic_cast<UVBaseDataProperty<T>*>(UVProperty<T,OwnerT>::ConnectedOutputs[0]);
+  
+  if(UVProperty<T,OwnerT>::CachedConnectedOutput)
+  {
+   // Cache data with update time check to avoid unnecessary copies
+   ULongTime outputTime = UVProperty<T,OwnerT>::CachedConnectedOutput->GetUpdateTime();
+   if(outputTime > this->UpdateTime)
+   {
+    v = UVProperty<T,OwnerT>::CachedConnectedOutput->GetData();
+    this->UpdateTime = outputTime;
+   }
+  }
+ }
 
  return v;
 }
@@ -604,7 +766,7 @@ virtual void SetData(const T &value)
  if(this->Owner)
  {
   if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
-   throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
+   throw UIProperty::EPropertySetterFail(this->GetOwnerName(),this->GetName());
  }
 
  v=value;
@@ -614,7 +776,7 @@ virtual void SetData(const T &value)
 // -----------------------------
 
 // -----------------------------
-// Методы управления подклчаемым выходом
+// Р¤СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ РїРѕРґРєР»СЋС‡РµРЅРЅС‹РјРё РІС‹С…РѕРґР°РјРё
 // -----------------------------
 bool AttachTo(UVBaseDataProperty<T>* prop)
 {
@@ -631,32 +793,36 @@ void DetachFrom(void)
 {
 // this->PData=&v;
  UVProperty<T,OwnerT>::IsConnectedFlag=false;
+ UVProperty<T,OwnerT>::CachedConnectedOutput = 0; // Clear cache
  UVProperty<T,OwnerT>::DetachFrom();
 }
 
-// Число указателей на данные
+// РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ СѓРєР°Р·Р°С‚РµР»РµР№
 int GetNumPointers(void) const
 {
  return int(this->ConnectedOutputs.size());
 }
 
-// Устанавливает указатель на данные входа
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ РІС‹С…РѕРґ
 bool SetPointer(int index, UIPropertyOutput* property)
 {
  //this->PData=const_cast<T*>(&dynamic_cast<UVBaseDataProperty<T>*>(property)->GetData());
  UVProperty<T,OwnerT>::IsConnectedFlag=true;
+ // Cache typed pointer for optimization
+ UVProperty<T,OwnerT>::CachedConnectedOutput = dynamic_cast<UVBaseDataProperty<T>*>(property);
  UVProperty<T,OwnerT>::ConnectedOutputs.assign(1,property);
  this->ResetUpdateTime();
  return true;
 }
 
-/// Сбрасывает указатель на данные
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ
 bool ResetPointer(int index, UIPropertyOutput* property)
 {
  if(!this->ConnectedOutputs.empty() && this->ConnectedOutputs[0] == property)
  {
 //  this->PData=&v;
   UVProperty<T,OwnerT>::IsConnectedFlag=false;
+  UVProperty<T,OwnerT>::CachedConnectedOutput = 0; // Clear cache
   UVProperty<T,OwnerT>::ConnectedOutputs.clear();
   return true;
  }
@@ -668,7 +834,7 @@ bool ResetPointer(int index, UIPropertyOutput* property)
 /* ************************************************************************* */
 
 
-/// Конечный класс свойства со значением внутри
+/// РњРµС‚РѕРґ С‡С‚РµРЅРёСЏ Р·РЅР°С‡РµРЅРёСЏ СЃРІРѕР№СЃС‚РІР° РёР· РїРѕРґРєР»СЋС‡РµРЅРЅРѕРіРѕ РІС‹С…РѕРґР°
 /// https://stackoverflow.com/questions/60608588/specializing-a-template-for-a-container-of-type-t
 template<typename T,class OwnerT, unsigned int type, bool = is_iterable<T>::value>
 class UProperty;
@@ -679,9 +845,9 @@ class UProperty<T, OwnerT, type, false>: public UPropertyLocal<T,OwnerT,type>
 {
 public:
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
-//Конструктор инициализации
+//РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚
 UProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
     : UPropertyLocal<T,OwnerT,type>(name, owner, setmethod)
 { }
@@ -691,10 +857,10 @@ UProperty(const UProperty<T,OwnerT,type> &v) {}
 // -----------------------------
 
 // -----------------------------
-// Операторы
+// Р’С‹С…РѕРґ Р·Р° РіСЂР°РЅРёС†С‹ РјР°СЃСЃРёРІР° C (container) property
 // -----------------------------
 public:
-// Оператор присваивания
+// РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
 UProperty& operator = (const T &value)
 {
  this->SetData(value);
@@ -721,42 +887,42 @@ const T& operator () (void) const
 
 
 /* ************************************************************************* */
-// Класс - свойство-контейнер со значением внутри
+// РњРµС‚РѕРґ - СЃРІРѕР№СЃС‚РІРѕ-РєРѕРЅС‚РµР№РЅРµСЂ РЅР° РїРѕРґРєР»СЋС‡РµРЅРЅРѕРј РІС‹С…РѕРґРµ
 /* ************************************************************************* */
 template<typename T, typename OwnerT, unsigned int type>
 class UProperty<T, OwnerT, type, true>: public UPropertyLocal<T,OwnerT,type>
 {
-public: // Типы методов ввода-вывода
+public: // Р•СЃР»Рё СЃРІРѕР№СЃС‚РІРѕ РІРµРєС‚РѕСЂ-СѓРєР°Р·Р°С‚РµР»СЊ
 typedef typename T::value_type TV;
 typedef bool (OwnerT::*VSetterRT)(const TV&);
 
-protected: // Данные
-// Методы ввода-вывода
+protected: // РЈРєР°Р·Р°С‚РµР»СЊ
+// РЈРєР°Р·Р°С‚РµР»СЊ РІРµРєС‚РѕСЂ-СѓРєР°Р·Р°С‚РµР»СЊ
 VSetterRT VSetterR;
 
 public:
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 public:
 UProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
  : UPropertyLocal<T,OwnerT,type>(name, owner, setmethod), VSetterR(0)
 {
- this->IoType = ipRange | ipData;
+ this->IoType = static_cast<unsigned int>(ipRange) | static_cast<unsigned int>(ipData);
 }
 
 UProperty(const string &name, OwnerT * const owner, typename UProperty<T,OwnerT,type>::VSetterRT setmethod)
  : UPropertyLocal<T,OwnerT,type>(name, owner,(typename UVProperty<T,OwnerT>::SetterRT)0)
 {
- this->IoType = ipRange | ipData;
+ this->IoType = static_cast<unsigned int>(ipRange) | static_cast<unsigned int>(ipData);
  VSetterR=setmethod;
 }
 // -----------------------------
 
 // -----------------------------
-// Операторы доступа
+// Р¤СѓРЅРєС†РёРё РґРѕСЃС‚СѓРїР°
 // -----------------------------
-// Возврат значения
+// Р¤СѓРЅРєС†РёРё РґРѕСЃС‚СѓРїР°
 virtual const T& GetData(void) const
 {
  if(this->ExternalDataSource)
@@ -791,7 +957,7 @@ virtual void SetData(const T &value)
    while(I != J)
    {
     if(!(this->Owner->*VSetterR)(*I))
-     throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
+     throw UIProperty::EPropertySetterFail(this->GetOwnerName(),this->GetName());
 
     ++I;
    }
@@ -799,7 +965,7 @@ virtual void SetData(const T &value)
   else
   {
    if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
-    throw UIProperty::EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
+    throw UIProperty::EPropertySetterFail(this->GetOwnerName(),this->GetName());
   }
  }
 
@@ -809,7 +975,7 @@ virtual void SetData(const T &value)
 // -----------------------------
 
 // -----------------------------
-// Устанавливает указатель на данные входа
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ РІС‹С…РѕРґ
 bool SetPointer(int index, UIPropertyOutput* property)
 {
  if(index<0)
@@ -829,7 +995,7 @@ bool SetPointer(int index, UIPropertyOutput* property)
  return true;
 }
 
-/// Сбрасывает указатель на данные
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ
 bool ResetPointer(int index, UIPropertyOutput* property)
 {
  if(int(this->v.size())>index && index >=0)
@@ -839,10 +1005,10 @@ bool ResetPointer(int index, UIPropertyOutput* property)
   this->v.erase(it);
  }
 
- if(int(this->ConnectedOutputs.size())>index && index >= 0)
+ if(int(UVProperty<T,OwnerT>::ConnectedOutputs.size())>index && index >= 0)
  {
-  this->ConnectedOutputs.erase(this->ConnectedOutputs.begin()+index);
-  if(this->ConnectedOutputs.empty())
+  UVProperty<T,OwnerT>::ConnectedOutputs.erase(UVProperty<T,OwnerT>::ConnectedOutputs.begin()+index);
+  if(UVProperty<T,OwnerT>::ConnectedOutputs.empty())
    UVProperty<T,OwnerT>::IsConnectedFlag=false;
   return true;
  }
@@ -851,9 +1017,9 @@ bool ResetPointer(int index, UIPropertyOutput* property)
 }
 // -----------------------------
 
-public: // Исключения
+public: // РћС€РёР±РєР°
 
-// Выход за границы массива C (container) property
+// РњРµС‚РѕРґ РґР»СЏ РѕС€РёР±РєРё РѕС€РёР±РєРё C (container) property
 struct EPropertyRangeError: public UIProperty::EPropertyError
 {
 int MinValue, MaxValue, ErrorValue;
@@ -863,7 +1029,7 @@ EPropertyRangeError(const std::string &owner_name, const std::string &property_n
    MinValue(min_value), MaxValue(max_value), ErrorValue(error_value) {}
 
 
-// Формирует строку лога об исключении
+// РЎРѕР·РґР°РµС‚ СЃС‚СЂРѕРєСѓ СЃРѕРѕР±С‰РµРЅРёСЏ РґР»СЏ РѕС€РёР±РєРё
 virtual std::string CreateLogMessage(void) const
 {
  return UIProperty::EPropertyError::CreateLogMessage()+std::string(" MinValue=")+
@@ -874,30 +1040,47 @@ virtual std::string CreateLogMessage(void) const
 
 public:
 // -----------------------------
-// Операторы доступа
+// Р¤СѓРЅРєС†РёРё РґРѕСЃС‚СѓРїР°
 // -----------------------------
-// Чтение элемента контейнера
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёРµ СЌР»РµРјРµРЅС‚Р° РјР°СЃСЃРёРІР°
 const typename UProperty<T, OwnerT, type, true>::TV& operator () (size_t i) const
 {
- const T& data = GetData();
- if(i>=data.size())
-  throw EPropertyRangeError(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName(),
-                               0,int(data.size()),int(i));
+ const T& data_ref = this->GetData();
+ if(i>=data_ref.size())
+  throw EPropertyRangeError(this->GetOwnerName(),this->GetName(),
+                               0,int(data_ref.size()),int(i));
 
- return data[i];
+ // GetData() returns reference to member 'v', not a temporary
+ // For std::vector<bool>, operator[] returns a proxy object, not a direct reference
+ // This is safe because the proxy object is valid as long as the vector exists
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-local-addr"
+#endif
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4172)
+#endif
+ return data_ref[i];
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 }
 
-// Запись элемента контейнера
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ СЌР»РµРјРµРЅС‚Р° РјР°СЃСЃРёРІР°
 bool operator () (size_t i, const typename UProperty<T, OwnerT, type, true>::TV &value)
 {
  if(UVProperty<T,OwnerT>::VSetterR && !(this->Owner->*(UVProperty<T,OwnerT>::VSetterR)(value)))
-  throw EPropertySetterFail(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName());
+  throw EPropertySetterFail(this->GetOwnerName(),this->GetName());
 
  if(this->IsConnectedFlag)
   return false;
 
  if(i>=this->v.size())
-  throw EPropertyRangeError(UVBaseProperty<T,OwnerT>::GetOwnerName(),UVBaseProperty<T,OwnerT>::GetName(),
+  throw EPropertyRangeError(this->GetOwnerName(),this->GetName(),
                                0,int(this->v.size()),int(i));
 
  this->v[i]=value;
@@ -934,7 +1117,7 @@ typename UProperty<T, OwnerT, type, true>::TV& operator [] (size_t i)
 const typename UProperty<T, OwnerT, type, true>::TV& operator [] (size_t i) const
 { return (*this)(i); }
 
-// Оператор присваивания
+// РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
 UProperty& operator = (const T &value)
 {
  this->SetData(value);
@@ -1027,9 +1210,9 @@ void assign(size_t size, const TV &val)
 }
 
 // --------------------------
-// Методы управления входами
+// Р¤СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃРѕ РІСЂРµРјРµРЅРµРј
 // --------------------------
-// Метод сравнивает тип этого свойства с другим свойством (по одному элементу)
+// РњРµС‚РѕРґ СЃСЂР°РІРЅРёРІР°РµС‚ С‚РёРї РґР»СЏ СЌС‚РѕРіРѕ СЌР»РµРјРµРЅС‚Р° РІ РґСЂСѓРіРѕРј СЃРІРѕР№СЃС‚РІРµ (РґР»СЏ РјР°СЃСЃРёРІР° СЌР»РµРјРµРЅС‚РѕРІ)
 virtual bool CompareElemLanguageType(const UIProperty &dt) const
 {
  return (this->GetElemLanguageType() == dt.GetElemLanguageType()) || (typeid(TV) == dt.GetElemLanguageType());
@@ -1037,13 +1220,13 @@ virtual bool CompareElemLanguageType(const UIProperty &dt) const
 // --------------------------
 
 protected:
-const T& UpdateLocalInputData(T& data) const
+ const T& UpdateLocalInputData(T& data) const
 {
- data.resize(this->ConnectedOutputs.size());
+ data.resize(UVProperty<T,OwnerT>::ConnectedOutputs.size());
  size_t i=0;
  for(auto I=data.begin();I != data.end();I++)
  {
-  *I = dynamic_cast<const UVBaseDataProperty<TV>*>(this->ConnectedOutputs[i])->GetData();
+  *I = dynamic_cast<const UVBaseDataProperty<TV>*>(UVProperty<T,OwnerT>::ConnectedOutputs[i])->GetData();
   ++i;
  }
  return data;
@@ -1058,7 +1241,7 @@ class UProperty<std::string, OwnerT, type, true>
   using base::base;
 
 public:
- // Оператор присваивания
+ // РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
  UProperty& operator = (const std::string &value)
  {
   this->SetData(value);
@@ -1072,26 +1255,9 @@ public:
  }
 };
 
-template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
-using ULProperty = UProperty<T, OwnerT, type>;
-
-template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
-using UCProperty = UProperty<T, OwnerT, type>;
-
-template<typename T, typename OwnerT, unsigned int type=ptPubParameter>
-using UCLProperty = UProperty<T, OwnerT, type>;
-
-template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-using UPropertyOutputData = UProperty<T, OwnerT, type>;
-
-template<typename T, typename OwnerT, unsigned int type=ptPubOutput>
-using UPropertyOutputCData = UProperty<std::vector<T>, OwnerT, type>;
-
-template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-using UPropertyInputData = UProperty<T, OwnerT, type>;
-
-template<typename T, typename OwnerT, unsigned int type=ptPubInput>
-using UPropertyInputCData = UProperty<std::vector<T>, OwnerT, type>;
+// Deprecated aliases have been removed. Use UProperty<T, OwnerT, type> directly.
+// All property types (Parameters, States, Inputs, Outputs) now use unified UProperty.
+// For container properties, use UProperty<std::vector<T>, OwnerT, type>.
 
 
 

@@ -3,7 +3,7 @@
 #include "rdk_exceptions.ansi.h"
 namespace RDK {                                  
 
-// Формирует строку с описанием возникшего системного исключения
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ СЃ РѕРїРёСЃР°РЅРёРµРј РІРѕР·РЅРёРєС€РµРіРѕ СЃРёСЃС‚РµРјРЅРѕРіРѕ РёСЃРєР»СЋС‡РµРЅРёСЏ
 std::string GetSystemExceptionData(void)
 {
  return std::string("additional information about SEH exception isn't available");

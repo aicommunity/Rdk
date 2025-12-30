@@ -54,23 +54,23 @@ bool ConnectionEstablishedFlag;
 RDK::ULongTime LastSentTimeStamp;
 
 // --------------------------
-// Методы управления фреймом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ С„СЂРµР№РјРѕРј
 // --------------------------
 void ABeforeCalculate(void);
 void AAfterCalculate(void);
 
 void AUpdateInterface(void);
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 virtual void AClearInterface(void);
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 virtual void ASaveParameters(RDK::USerStorageXML &xml);
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 virtual void ALoadParameters(RDK::USerStorageXML &xml);
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 TIdHttpResultBroadcasterFrame* New(TComponent *owner);
 // --------------------------
 };

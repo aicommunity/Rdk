@@ -22,9 +22,9 @@ __fastcall TUSeriesControlForm::TUSeriesControlForm(TComponent* Owner)
                                   * StringGrid1->Font->PixelsPerInch / 72+5;
 
  StringGrid1->Cells[0][0]="#";
- StringGrid1->Cells[1][0]="Легенда";
+ StringGrid1->Cells[1][0]="Р›РµРіРµРЅРґР°";
  StringGrid2->Cells[0][0]="#";
- StringGrid2->Cells[1][0]="Легенда";
+ StringGrid2->Cells[1][0]="Р›РµРіРµРЅРґР°";
 
  GrSender=0;
 
@@ -36,22 +36,22 @@ __fastcall TUSeriesControlForm::TUSeriesControlForm(TComponent* Owner)
  LineWidthChanged=false;
 }
 //---------------------------------------------------------------------------
-// Вспомогательные методы
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РјРµС‚РѕРґС‹
 // ------------------------
-// Методы управления процессами добавления/удаления точек наблюдения
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїСЂРѕС†РµСЃСЃР°РјРё РґРѕР±Р°РІР»РµРЅРёСЏ/СѓРґР°Р»РµРЅРёСЏ С‚РѕС‡РµРє РЅР°Р±Р»СЋРґРµРЅРёСЏ
 // ------------------------
 
-// Обновление списков данных
+// РћР±РЅРѕРІР»РµРЅРёРµ СЃРїРёСЃРєРѕРІ РґР°РЅРЅС‹С…
 void __fastcall TUSeriesControlForm::UpdateDataLists(void)
 {
 // map<int,TUWatchInfo>::iterator I,listI;
 // TUWatchInfo* og;
 
- // Обновление списков...
+ // РћР±РЅРѕРІР»РµРЅРёРµ СЃРїРёСЃРєРѕРІ...
  GrSender->GetVisibleList(WatchList);
 
  GrSender->GetInvisibleList(PossibleWatchList);
- // ...обновление списков завершено
+ // ...РѕР±РЅРѕРІР»РµРЅРёРµ СЃРїРёСЃРєРѕРІ Р·Р°РІРµСЂС€РµРЅРѕ
 
  Edit1->Text=GrSender->GetXLabelTitle();
  if(Edit1->Text == "")
@@ -94,7 +94,7 @@ void __fastcall TUSeriesControlForm::UpdateDataLists(void)
  ComboBox3->ItemIndex=GrSender->GetLegendPosition();
 }
 
-// Обновляет информацию в окнах и состояние всех элементов управления
+// РћР±РЅРѕРІР»СЏРµС‚ РёРЅС„РѕСЂРјР°С†РёСЋ РІ РѕРєРЅР°С… Рё СЃРѕСЃС‚РѕСЏРЅРёРµ РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ СѓРїСЂР°РІР»РµРЅРёСЏ
 void __fastcall TUSeriesControlForm::UpdateInfo(void)
 {
  map<int,TUWatchInfo>::iterator I;
@@ -174,7 +174,7 @@ void __fastcall TUSeriesControlForm::UpdateInfo(void)
 }
 
 
-// Обновляет информацию по выбранной наблюдаемой точки съёма
+// РћР±РЅРѕРІР»СЏРµС‚ РёРЅС„РѕСЂРјР°С†РёСЋ РїРѕ РІС‹Р±СЂР°РЅРЅРѕР№ РЅР°Р±Р»СЋРґР°РµРјРѕР№ С‚РѕС‡РєРё СЃСЉС‘РјР°
 void __fastcall TUSeriesControlForm::UpdateSelectedWatch(void)
 {
  if(StringGrid2->Row < 1 || (StringGrid2->Row == 1 && StringGrid2->Cells[0][1] == ""))
@@ -202,11 +202,11 @@ void __fastcall TUSeriesControlForm::UpdateSelectedWatch(void)
 }
 // ------------------------
 
-// Методы
+// РњРµС‚РѕРґС‹
 // ------------------------
-// Методы управления формой
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ С„РѕСЂРјРѕР№
 // ------------------------
-// Метод, который должен быть вызван для открытия диалога
+// РњРµС‚РѕРґ, РєРѕС‚РѕСЂС‹Р№ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ РІС‹Р·РІР°РЅ РґР»СЏ РѕС‚РєСЂС‹С‚РёСЏ РґРёР°Р»РѕРіР°
 void __fastcall TUSeriesControlForm::Execute(TUWatchFrame* grsender)
 {
  if(Visible)
@@ -216,7 +216,7 @@ void __fastcall TUSeriesControlForm::Execute(TUWatchFrame* grsender)
   return;
 
  GrSender=grsender;
- UpdateDataLists(); // Обновление списков
+ UpdateDataLists(); // РћР±РЅРѕРІР»РµРЅРёРµ СЃРїРёСЃРєРѕРІ
  UpdateInfo();
 
  GraphChanged=false;
@@ -377,7 +377,7 @@ void __fastcall TUSeriesControlForm::Edit3DblClick(TObject *Sender)
  string s;
  vector<string> listvals;
 
- // Подготовка формы запроса легенды
+ // РџРѕРґРіРѕС‚РѕРІРєР° С„РѕСЂРјС‹ Р·Р°РїСЂРѕСЃР° Р»РµРіРµРЅРґС‹
  UListInputForm->PresentSelect=false;
  UListInputForm->MustInput=true;
  UListInputForm->Sort=false;
@@ -395,10 +395,10 @@ void __fastcall TUSeriesControlForm::Edit3DblClick(TObject *Sender)
    ++I;
   }
 
- s="Подпись для ";
+ s="РџРѕРґРїРёСЃСЊ РґР»СЏ ";
  s+=AnsiString(StringGrid2->Cells[1][StringGrid2->Row]).c_str();
  UListInputForm->Init(s,listvals,"");
- // ...подготовка формы запроса легенды завершена
+ // ...РїРѕРґРіРѕС‚РѕРІРєР° С„РѕСЂРјС‹ Р·Р°РїСЂРѕСЃР° Р»РµРіРµРЅРґС‹ Р·Р°РІРµСЂС€РµРЅР°
  if(UListInputForm->ShowModal() != mrOk)
   return;
 

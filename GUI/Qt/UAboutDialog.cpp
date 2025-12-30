@@ -33,6 +33,12 @@ UAboutDialog::UAboutDialog(QWidget *parent, RDK::UApplication *app) :
 
     ui->label_4->setText(build_version);
 
+#ifndef RDK_APP_URL
+#define RDK_APP_URL ""
+#endif
+#ifndef RDK_APP_LICENSE
+#define RDK_APP_LICENSE ""
+#endif
     ui->labelUrl->setText(RDK_APP_URL);
     ui->labelLicense->setText(RDK_APP_LICENSE);
 }

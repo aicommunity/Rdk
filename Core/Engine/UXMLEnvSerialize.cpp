@@ -17,6 +17,7 @@ See file license.txt for more information
 #include "UXMLEnvSerialize.h"
 #include "../Serialize/UXMLStdSerialize.h"
 #include "UNet.h"
+#include "UComponent.h"
 
 namespace RDK {
 
@@ -69,7 +70,7 @@ USerStorageXML& operator >> (USerStorageXML& storage, UIdVector &data)
 //  return storage;
 
  int size=0;
- std::string str=storage.GetNodeAttribute("Size"); // TODO: заменить
+ std::string str=storage.GetNodeAttribute("Size"); // TODO: Р·Р°РјРµРЅРёС‚СЊ
  if(!str.empty())
   size=atoi(str);
 
@@ -298,6 +299,82 @@ USerStorageXML& operator << (USerStorageXML& storage, const RDK::UNet* data)
 
 USerStorageXML& operator >> (USerStorageXML& storage, RDK::UNet *data)
 {
+    return storage;
+}
+
+// UPropertyAlias serialization
+USerStorageXML& operator << (USerStorageXML& storage, const UPropertyAlias &data)
+{
+    storage.SetNodeAttribute("Type", "UPropertyAlias");
+    storage.SetNodeAttribute("AliasName", data.AliasName);
+    storage.SetNodeAttribute("ComponentPath", data.ComponentPath);
+    storage.SetNodeAttribute("PropertyName", data.PropertyName);
+    storage.SetNodeAttribute("PropertyType", sntoa(data.PropertyType));
+
+    return storage;
+}
+
+USerStorageXML& operator >> (USerStorageXML& storage, UPropertyAlias &data)
+{
+    if(storage.GetNodeAttribute("Type") != "UPropertyAlias")
+        return storage;
+
+    data.AliasName = storage.GetNodeAttribute("AliasName");
+    data.ComponentPath = storage.GetNodeAttribute("ComponentPath");
+    data.PropertyName = storage.GetNodeAttribute("PropertyName");
+    std::string propTypeStr = storage.GetNodeAttribute("PropertyType");
+    if(!propTypeStr.empty())
+        data.PropertyType = static_cast<unsigned int>(RDK::atoi(propTypeStr));
+    else
+        data.PropertyType = 0;
+
+    return storage;
+}
+
+// PropertyAlias map serialization
+USerStorageXML& operator << (USerStorageXML& storage, const std::map<std::string, UPropertyAlias> &data)
+{
+    storage.SetNodeAttribute("Type", "PropertyAliasMap");
+    storage.SetNodeAttribute("Size", sntoa(static_cast<unsigned int>(data.size())));
+
+    if(data.empty())
+        return storage;
+
+    for(std::map<std::string, UPropertyAlias>::const_iterator it = data.begin();
+        it != data.end(); ++it)
+    {
+        storage.AddNode("Alias");
+        storage << it->second;
+        storage.SelectUp();
+    }
+
+    return storage;
+}
+
+USerStorageXML& operator >> (USerStorageXML& storage, std::map<std::string, UPropertyAlias> &data)
+{
+    data.clear();
+
+    if(storage.GetNodeAttribute("Type") != "PropertyAliasMap")
+        return storage;
+
+    int num_aliases = storage.GetNumNodes("Alias");
+
+    for(int i = 0; i < num_aliases; i++)
+    {
+        if(!storage.SelectNode("Alias", i))
+            continue;
+
+        UPropertyAlias alias;
+        storage >> alias;
+        if(!alias.AliasName.empty())
+        {
+            data[alias.AliasName] = alias;
+        }
+
+        storage.SelectUp();
+    }
+
     return storage;
 }
 

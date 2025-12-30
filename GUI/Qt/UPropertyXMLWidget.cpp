@@ -72,6 +72,6 @@ void UPropertyXMLWidget::defaultAllProperty()
 {
     if(!isInit) return;
     Env_Default(componentName.toLocal8Bit(), false);
-    //Env_Reset(selectedComponentLongName.toLocal8Bit()); //тут вопрос о сбросе вложенных компонент (как в билдере)
+    //Env_Reset(selectedComponentLongName.toLocal8Bit()); //С‚СѓС‚ РІРѕРїСЂРѕСЃ Рѕ СЃР±СЂРѕСЃРµ РІР»РѕР¶РµРЅРЅС‹С… РєРѕРјРїРѕРЅРµРЅС‚ (РєР°Рє РІ Р±РёР»РґРµСЂРµ)
     reloadProperty();
 }

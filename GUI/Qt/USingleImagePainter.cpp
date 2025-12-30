@@ -55,7 +55,7 @@ bool USingleImagePainter::isDrawable() const
   return drawable;
 }
 
-void USingleImagePainter::setPolygons(const QList<UDrawablePolygon> &polygons)
+void USingleImagePainter::setPolygons(const QList<UDrawablePolygon> &polygonsList)
 {
   if(isPolygonModified)
   {
@@ -65,7 +65,7 @@ void USingleImagePainter::setPolygons(const QList<UDrawablePolygon> &polygons)
   }
   else
   {
-    this->polygons = polygons;
+    this->polygons = polygonsList;
   }
 }
 
@@ -151,7 +151,7 @@ void USingleImagePainter::paintEvent(QPaintEvent *)
   if(!dispImage || !loaderMutex) return;
   QPainter painter(this);
 
-  // защищённая зона - отрисовка изображения
+  // Р·Р°С‰РёС‰С‘РЅРЅР°СЏ Р·РѕРЅР° - РѕС‚СЂРёСЃРѕРІРєР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
   loaderMutex->lock();
   const QSize imgSize = dispImage->size();
   const QPair<int, int> dxdy = calcImgShift(size(), imgSize);
@@ -161,11 +161,11 @@ void USingleImagePainter::paintEvent(QPaintEvent *)
   painter.drawImage(imgRect, *dispImage);
   loaderMutex->unlock();
 
-  // отрисовка всех полигонов
+  // РѕС‚СЂРёСЃРѕРІРєР° РІСЃРµС… РїРѕР»РёРіРѕРЅРѕРІ
   selectedPolygon = NULL;
   for(QList<UDrawablePolygon>::iterator i = polygons.begin(); i != polygons.end(); ++i)
   {
-    // перевод полигона из относительных координат в экранные
+    // РїРµСЂРµРІРѕРґ РїРѕР»РёРіРѕРЅР° РёР· РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹С… РєРѕРѕСЂРґРёРЅР°С‚ РІ СЌРєСЂР°РЅРЅС‹Рµ
     UDrawablePolygon drawablePolygon = *i;
 
     for(QPolygonF::iterator pointIterator = drawablePolygon.polygon.begin();
@@ -175,10 +175,10 @@ void USingleImagePainter::paintEvent(QPaintEvent *)
       pointIterator->setY(pointIterator->y() * imgSize.height() + dxdy.second);
     }
 
-    // проверка полигона, если он выбран selectedPolygon то устанавливаем желтую кисть,
-    // отдельно отрисовываем каждую вершинку и запоминаем указатель на выбранный ролигон
+    // РїСЂРѕРІРµСЂРєР° РїРѕР»РёРіРѕРЅР°, РµСЃР»Рё РѕРЅ РІС‹Р±СЂР°РЅ selectedPolygon С‚Рѕ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р¶РµР»С‚СѓСЋ РєРёСЃС‚СЊ,
+    // РѕС‚РґРµР»СЊРЅРѕ РѕС‚СЂРёСЃРѕРІС‹РІР°РµРј РєР°Р¶РґСѓСЋ РІРµСЂС€РёРЅРєСѓ Рё Р·Р°РїРѕРјРёРЅР°РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РІС‹Р±СЂР°РЅРЅС‹Р№ СЂРѕР»РёРіРѕРЅ
     //
-    // если полиг рисуется drawMode, просто отрисовываем вершины полигона
+    // РµСЃР»Рё РїРѕР»РёРі СЂРёСЃСѓРµС‚СЃСЏ drawMode, РїСЂРѕСЃС‚Рѕ РѕС‚СЂРёСЃРѕРІС‹РІР°РµРј РІРµСЂС€РёРЅС‹ РїРѕР»РёРіРѕРЅР°
     if( selectedPolygonId == drawablePolygon.id || drawablePolygon.id == -2)
     {
       if(selectedPolygonId == drawablePolygon.id)
@@ -205,7 +205,7 @@ void USingleImagePainter::paintEvent(QPaintEvent *)
     painter.drawPolygon(drawablePolygon.polygon);
   }
 
-  // отрисовка прямоугольников
+  // РѕС‚СЂРёСЃРѕРІРєР° РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєРѕРІ
   painter.setPen(QPen(Qt::green, 3));
   QRectF rect(rectangles.first.x() * imgSize.width() + dxdy.first,
               rectangles.first.y() * imgSize.height() + dxdy.second,
@@ -213,7 +213,7 @@ void USingleImagePainter::paintEvent(QPaintEvent *)
               rectangles.first.height() * imgSize.height());
   painter.drawRect(rect);
 
-  //Как дельфевый SkyBlye, взято отсюда http://docwiki.embarcadero.com/RADStudio/Tokyo/en/Colors_in_the_VCL
+  //РљР°Рє РґРµР»СЊС„РµРІС‹Р№ SkyBlye, РІР·СЏС‚Рѕ РѕС‚СЃСЋРґР° http://docwiki.embarcadero.com/RADStudio/Tokyo/en/Colors_in_the_VCL
   painter.setPen(QPen(QColor::fromRgb(166, 202, 240), 3));
   rect.setRect(rectangles.second.x() * imgSize.width() + dxdy.first,
                rectangles.second.y() * imgSize.height() + dxdy.second,
@@ -230,7 +230,7 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
 
   const QSize imgSize = dispImage->size();
   const QPair<int, int> dxdy = calcImgShift(size(), imgSize);
-  // текущая точка в относительных координатах
+  // С‚РµРєСѓС‰Р°СЏ С‚РѕС‡РєР° РІ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹С… РєРѕРѕСЂРґРёРЅР°С‚Р°С…
   const QPointF point(
         static_cast<qreal>(event->x() - dxdy.first) / imgSize.width(),
         static_cast<qreal>(event->y() - dxdy.second) / imgSize.height());
@@ -238,7 +238,7 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
   if(event->button() == Qt::LeftButton)
   {
 
-    // если активен режим рисования, добавляем точку фигуре
+    // РµСЃР»Рё Р°РєС‚РёРІРµРЅ СЂРµР¶РёРј СЂРёСЃРѕРІР°РЅРёСЏ, РґРѕР±Р°РІР»СЏРµРј С‚РѕС‡РєСѓ С„РёРіСѓСЂРµ
     if(drawable)
     {
       if(drawMode)
@@ -254,7 +254,7 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
     else
     {
 
-      // если есть выбранный полигон, проверяем не попали ли мы в вершину полигона
+      // РµСЃР»Рё РµСЃС‚СЊ РІС‹Р±СЂР°РЅРЅС‹Р№ РїРѕР»РёРіРѕРЅ, РїСЂРѕРІРµСЂСЏРµРј РЅРµ РїРѕРїР°Р»Рё Р»Рё РјС‹ РІ РІРµСЂС€РёРЅСѓ РїРѕР»РёРіРѕРЅР°
       if(selectedPolygon)
       {
         QRectF arroundPoint(point.x() - 5.0 / imgSize.width(),
@@ -265,7 +265,7 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
         {
           if(arroundPoint.contains(*pointIterator))
           {
-            // если нашли точку, берем на неё укзатель
+            // РµСЃР»Рё РЅР°С€Р»Рё С‚РѕС‡РєСѓ, Р±РµСЂРµРј РЅР° РЅРµС‘ СѓРєР·Р°С‚РµР»СЊ
             movingPoint = &(*pointIterator);
             return;
           }
@@ -273,7 +273,7 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
       }
 
 
-      // выделение полигона
+      // РІС‹РґРµР»РµРЅРёРµ РїРѕР»РёРіРѕРЅР°
       for(QList<UDrawablePolygon>::iterator polygonsIterator = polygons.begin();
           polygonsIterator != polygons.end(); ++polygonsIterator)
       {
@@ -292,7 +292,7 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
       }
 
 
-      // рисование прямоугольников
+      // СЂРёСЃРѕРІР°РЅРёРµ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєРѕРІ
       if(drawableRect)
       {
         drawRectMode = LMBRect;
@@ -306,7 +306,7 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
     if(event->button() == Qt::RightButton)
     {
 
-      // завершение рисования нового полигона
+      // Р·Р°РІРµСЂС€РµРЅРёРµ СЂРёСЃРѕРІР°РЅРёСЏ РЅРѕРІРѕРіРѕ РїРѕР»РёРіРѕРЅР°
       if(drawMode)
       {
         drawMode = false;
@@ -315,7 +315,7 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
       }
 
 
-      // если есть выбранный полигон, проверяем не попали ли мы в вершину полигона
+      // РµСЃР»Рё РµСЃС‚СЊ РІС‹Р±СЂР°РЅРЅС‹Р№ РїРѕР»РёРіРѕРЅ, РїСЂРѕРІРµСЂСЏРµРј РЅРµ РїРѕРїР°Р»Рё Р»Рё РјС‹ РІ РІРµСЂС€РёРЅСѓ РїРѕР»РёРіРѕРЅР°
       if(selectedPolygon)
       {
         QRectF arroundPoint(point.x() - 5.0 / imgSize.width(),
@@ -326,7 +326,7 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
         {
           if(arroundPoint.contains(*pointIterator))
           {
-            // если нашли точку, берем на неё укзатель
+            // РµСЃР»Рё РЅР°С€Р»Рё С‚РѕС‡РєСѓ, Р±РµСЂРµРј РЅР° РЅРµС‘ СѓРєР·Р°С‚РµР»СЊ
             deletePointIterator = pointIterator;
             pointMenu->exec(event->globalPos());
 
@@ -336,7 +336,7 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
       }
 
 
-      // добавление точки на линию
+      // РґРѕР±Р°РІР»РµРЅРёРµ С‚РѕС‡РєРё РЅР° Р»РёРЅРёСЋ
       if(selectedPolygon && selectedPolygon->polygon.size() > 1)
       {
         const QLineF pointHLine(
@@ -354,8 +354,8 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
         {
           const QLineF polyLine(*firstPI, *secondPI);
 
-          if(QLineF::BoundedIntersection == polyLine.intersect(pointHLine, NULL)
-             || QLineF::BoundedIntersection == polyLine.intersect(pointVLine, NULL))
+          if(QLineF::BoundedIntersection == polyLine.intersects(pointHLine, nullptr)
+             || QLineF::BoundedIntersection == polyLine.intersects(pointVLine, nullptr))
           {
             additionPoint.first = secondPI;
             additionPoint.second = point;
@@ -373,7 +373,7 @@ void USingleImagePainter::mousePressEvent(QMouseEvent *event)
       }
 
 
-      // рисование прямоугольников
+      // СЂРёСЃРѕРІР°РЅРёРµ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєРѕРІ
       if(drawableRect)
       {
         drawRectMode = RMBRect;
@@ -404,7 +404,7 @@ void USingleImagePainter::mouseMoveEvent(QMouseEvent *event)
 {
   QWidget::mouseMoveEvent(event);
 
-  // если захвачена вершина полигона, двигаем точку
+  // РµСЃР»Рё Р·Р°С…РІР°С‡РµРЅР° РІРµСЂС€РёРЅР° РїРѕР»РёРіРѕРЅР°, РґРІРёРіР°РµРј С‚РѕС‡РєСѓ
   if(dispImage && (movingPoint || drawableRect))
   {
     const QSize imgSize = dispImage->size();

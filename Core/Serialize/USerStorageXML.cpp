@@ -21,11 +21,11 @@ See file license.txt for more information
 
 namespace RDK {
 
-// Методы
+// РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
-// Создает пустую очередь
+// РЎРѕР·РґР°РµС‚ РїСѓСЃС‚СѓСЋ РѕС‡РµСЂРµРґСЊ
 USerStorageXML::USerStorageXML(void)
 #ifdef RDK_UNICODE_RUN
 : Locale("")
@@ -40,9 +40,9 @@ USerStorageXML::~USerStorageXML(void)
 // --------------------------
 
 // --------------------------
-// Методы загрузки xml
+// РњРµС‚РѕРґС‹ Р·Р°РіСЂСѓР·РєРё xml
 // --------------------------
-// Создает новый xml в корневом узле уничтожая старые данные
+// РЎРѕР·РґР°РµС‚ РЅРѕРІС‹Р№ xml РІ РєРѕСЂРЅРµРІРѕРј СѓР·Р»Рµ СѓРЅРёС‡С‚РѕР¶Р°СЏ СЃС‚Р°СЂС‹Рµ РґР°РЅРЅС‹Рµ
 bool USerStorageXML::Create(const std::string &rootname)
 {
  CurrentNode.deleteNodeContent();
@@ -58,7 +58,7 @@ bool USerStorageXML::Create(const std::string &rootname)
  return true;
 }
 
-// Уничтожает xml
+// РЈРЅРёС‡С‚РѕР¶Р°РµС‚ xml
 bool USerStorageXML::Destroy(void)
 {
  RootNode.deleteNodeContent();
@@ -67,7 +67,7 @@ bool USerStorageXML::Destroy(void)
  return true;
 }
 
-// Загружает xml из строки
+// Р—Р°РіСЂСѓР¶Р°РµС‚ xml РёР· СЃС‚СЂРѕРєРё
 bool USerStorageXML::Load(const std::string &str, const std::string &root)
 {
  CurrentNode.deleteNodeContent();
@@ -120,7 +120,7 @@ bool USerStorageXML::LoadFieldsToNode(USerStorageXML &node, bool node_clear)
  return true;
 }
 
-// Сохраняет xml в строку
+// РЎРѕС…СЂР°РЅСЏРµС‚ xml РІ СЃС‚СЂРѕРєСѓ
 bool USerStorageXML::Save(std::string &str) const
 {
 #ifdef RDK_UNICODE_RUN
@@ -169,8 +169,8 @@ bool USerStorageXML::SaveFromNode(std::string &str)
  return true;
 }
 
-// Прочесть файл с диска
-// Метод не делает ничего, если FileName == ""
+// РџСЂРѕС‡РµСЃС‚СЊ С„Р°Р№Р» СЃ РґРёСЃРєР°
+// РњРµС‚РѕРґ РЅРµ РґРµР»Р°РµС‚ РЅРёС‡РµРіРѕ, РµСЃР»Рё FileName == ""
 bool USerStorageXML::LoadFromFile(const std::string &file_name, const std::string &root)
 {
  string result;
@@ -182,8 +182,8 @@ bool USerStorageXML::LoadFromFile(const std::string &file_name, const std::strin
  return true;
 };
 
-// Обновить файл на диске
-// Метод не делает ничего, если FileName == ""
+// РћР±РЅРѕРІРёС‚СЊ С„Р°Р№Р» РЅР° РґРёСЃРєРµ
+// РњРµС‚РѕРґ РЅРµ РґРµР»Р°РµС‚ РЅРёС‡РµРіРѕ, РµСЃР»Рё FileName == ""
 bool USerStorageXML::SaveToFile(const std::string &file_name)
 {
  std::string result;
@@ -193,15 +193,15 @@ bool USerStorageXML::SaveToFile(const std::string &file_name)
 // --------------------------
 
 // --------------------------
-// Методы управления позицией текущего узла
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕР·РёС†РёРµР№ С‚РµРєСѓС‰РµРіРѕ СѓР·Р»Р°
 // --------------------------
-// Позиционируется на корневой узел
+// РџРѕР·РёС†РёРѕРЅРёСЂСѓРµС‚СЃСЏ РЅР° РєРѕСЂРЅРµРІРѕР№ СѓР·РµР»
 void USerStorageXML::SelectRoot(void)
 {
  CurrentNode=RootNode;
 }
 
-// Позиционируется на родительский узел
+// РџРѕР·РёС†РёРѕРЅРёСЂСѓРµС‚СЃСЏ РЅР° СЂРѕРґРёС‚РµР»СЊСЃРєРёР№ СѓР·РµР»
 void USerStorageXML::SelectUp(void)
 {
  XMLNode node=CurrentNode.getParentNode();
@@ -210,7 +210,7 @@ void USerStorageXML::SelectUp(void)
  CurrentNode=node;
 }
 
-// Возвращает число узлов с заданным именем
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ СѓР·Р»РѕРІ СЃ Р·Р°РґР°РЅРЅС‹Рј РёРјРµРЅРµРј
 int USerStorageXML::GetNumNodes(const std::string &name)
 {
 #ifdef RDK_UNICODE_RUN
@@ -220,16 +220,16 @@ int USerStorageXML::GetNumNodes(const std::string &name)
 #endif
 }
 
-// Возвращает число узлов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ СѓР·Р»РѕРІ
 int USerStorageXML::GetNumNodes(void)
 {
  return CurrentNode.nChildNode();
 }
 
-// Если узел с таким именем и индексом существует в текущем узле то позиционируемся на него.
-// index указвает на номер повторяющегося элемента
-// Если с таким именем и индексом не существует, но существует узел с таким
-// именем и индексом меньшим на 1 - то создаем узел
+// Р•СЃР»Рё СѓР·РµР» СЃ С‚Р°РєРёРј РёРјРµРЅРµРј Рё РёРЅРґРµРєСЃРѕРј СЃСѓС‰РµСЃС‚РІСѓРµС‚ РІ С‚РµРєСѓС‰РµРј СѓР·Р»Рµ С‚Рѕ РїРѕР·РёС†РёРѕРЅРёСЂСѓРµРјСЃСЏ РЅР° РЅРµРіРѕ.
+// index СѓРєР°Р·РІР°РµС‚ РЅР° РЅРѕРјРµСЂ РїРѕРІС‚РѕСЂСЏСЋС‰РµРіРѕСЃСЏ СЌР»РµРјРµРЅС‚Р°
+// Р•СЃР»Рё СЃ С‚Р°РєРёРј РёРјРµРЅРµРј Рё РёРЅРґРµРєСЃРѕРј РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚, РЅРѕ СЃСѓС‰РµСЃС‚РІСѓРµС‚ СѓР·РµР» СЃ С‚Р°РєРёРј
+// РёРјРµРЅРµРј Рё РёРЅРґРµРєСЃРѕРј РјРµРЅСЊС€РёРј РЅР° 1 - С‚Рѕ СЃРѕР·РґР°РµРј СѓР·РµР»
 bool USerStorageXML::SelectNode(const std::string &name, int index)
 {
 #ifdef RDK_UNICODE_RUN
@@ -252,9 +252,9 @@ bool USerStorageXML::SelectNode(int index)
  return true;
 }
 
-// Если узел с таким именем существует в текущем узле то позиционируемся на него.
-// иначе создаем такой узел
-// Всегда позиционируется на 0 узел!
+// Р•СЃР»Рё СѓР·РµР» СЃ С‚Р°РєРёРј РёРјРµРЅРµРј СЃСѓС‰РµСЃС‚РІСѓРµС‚ РІ С‚РµРєСѓС‰РµРј СѓР·Р»Рµ С‚Рѕ РїРѕР·РёС†РёРѕРЅРёСЂСѓРµРјСЃСЏ РЅР° РЅРµРіРѕ.
+// РёРЅР°С‡Рµ СЃРѕР·РґР°РµРј С‚Р°РєРѕР№ СѓР·РµР»
+// Р’СЃРµРіРґР° РїРѕР·РёС†РёРѕРЅРёСЂСѓРµС‚СЃСЏ РЅР° 0 СѓР·РµР»!
 bool USerStorageXML::SelectNodeForce(const std::string &name)
 {
  if(!SelectNode(name))
@@ -263,8 +263,8 @@ bool USerStorageXML::SelectNodeForce(const std::string &name)
  return true;
 }
 
-// Аналогично SelectNodeForce, но позиционируется всегда от корневого узла,
-// и поддерживает составное именование узла, с разделителем в виде '/'
+// РђРЅР°Р»РѕРіРёС‡РЅРѕ SelectNodeForce, РЅРѕ РїРѕР·РёС†РёРѕРЅРёСЂСѓРµС‚СЃСЏ РІСЃРµРіРґР° РѕС‚ РєРѕСЂРЅРµРІРѕРіРѕ СѓР·Р»Р°,
+// Рё РїРѕРґРґРµСЂР¶РёРІР°РµС‚ СЃРѕСЃС‚Р°РІРЅРѕРµ РёРјРµРЅРѕРІР°РЅРёРµ СѓР·Р»Р°, СЃ СЂР°Р·РґРµР»РёС‚РµР»РµРј РІ РІРёРґРµ '/'
 bool USerStorageXML::SelectNodeRoot(const std::string &name)
 {
  std::vector<std::string> nodes;
@@ -285,7 +285,7 @@ bool USerStorageXML::SelectNodeRoot(const std::string &name)
  return true;
 }
 
-// Возвращает имя узла
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ СѓР·Р»Р°
 const std::string USerStorageXML::GetNodeName(void) const
 {
  std::string str;
@@ -302,7 +302,7 @@ const std::string USerStorageXML::GetNodeName(void) const
  return str;
 }
 
-// Создает новый узел с заданным именем и позиционируется на него
+// РЎРѕР·РґР°РµС‚ РЅРѕРІС‹Р№ СѓР·РµР» СЃ Р·Р°РґР°РЅРЅС‹Рј РёРјРµРЅРµРј Рё РїРѕР·РёС†РёРѕРЅРёСЂСѓРµС‚СЃСЏ РЅР° РЅРµРіРѕ
 bool USerStorageXML::AddNode(const std::string &name)
 {
  if(CurrentNode.isEmpty())
@@ -320,7 +320,7 @@ bool USerStorageXML::AddNode(const std::string &name)
  return true;
 }
 
-// Переименовывает текущий узел и продолжает указывать на него
+// РџРµСЂРµРёРјРµРЅРѕРІС‹РІР°РµС‚ С‚РµРєСѓС‰РёР№ СѓР·РµР» Рё РїСЂРѕРґРѕР»Р¶Р°РµС‚ СѓРєР°Р·С‹РІР°С‚СЊ РЅР° РЅРµРіРѕ
 void USerStorageXML::RenameNode(const std::string &newname)
 {
  if(CurrentNode.isEmpty())
@@ -333,7 +333,7 @@ void USerStorageXML::RenameNode(const std::string &newname)
 #endif
 }
 
-// Удаляет текущий узел и устанавливает указатель уровнем выше
+// РЈРґР°Р»СЏРµС‚ С‚РµРєСѓС‰РёР№ СѓР·РµР» Рё СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ СѓСЂРѕРІРЅРµРј РІС‹С€Рµ
 void USerStorageXML::DelNode(void)
 {
  if(CurrentNode.isEmpty())
@@ -346,13 +346,13 @@ void USerStorageXML::DelNode(void)
  CurrentNode=tmp;
 }
 
-// Удаляет содержимое узла
+// РЈРґР°Р»СЏРµС‚ СЃРѕРґРµСЂР¶РёРјРѕРµ СѓР·Р»Р°
 void USerStorageXML::DelNodeContent(void)
 {
  CurrentNode.deleteNodeContent();
 }
 
-// Удаляет содержимое узла сохраняя сам узел
+// РЈРґР°Р»СЏРµС‚ СЃРѕРґРµСЂР¶РёРјРѕРµ СѓР·Р»Р° СЃРѕС…СЂР°РЅСЏСЏ СЃР°Рј СѓР·РµР»
 void USerStorageXML::DelNodeInternalContent(void)
 {
  int num_nodes=CurrentNode.nChildNode();
@@ -365,9 +365,9 @@ void USerStorageXML::DelNodeInternalContent(void)
 // --------------------------
 
 // --------------------------
-// Методы управления данными текущего элемента
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё С‚РµРєСѓС‰РµРіРѕ СЌР»РµРјРµРЅС‚Р°
 // --------------------------
-// Устанавливает значение атрибута узла
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ Р°С‚СЂРёР±СѓС‚Р° СѓР·Р»Р°
 bool USerStorageXML::SetNodeAttribute(const std::string &name, const std::string &value)
 {
 #ifdef RDK_UNICODE_RUN
@@ -392,7 +392,7 @@ bool USerStorageXML::SetNodeAttribute(const std::string &name, const std::string
  return true;
 }
 
-// Возвращает значение атрибута узла
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёРµ Р°С‚СЂРёР±СѓС‚Р° СѓР·Р»Р°
 const std::string USerStorageXML::GetNodeAttribute(const std::string &name) const
 {
  std::string str;
@@ -410,7 +410,7 @@ const std::string USerStorageXML::GetNodeAttribute(const std::string &name) cons
  return str;
 }
 
-// Удаляет заданный атрибут
+// РЈРґР°Р»СЏРµС‚ Р·Р°РґР°РЅРЅС‹Р№ Р°С‚СЂРёР±СѓС‚
 void USerStorageXML::DelNodeAttribute(const std::string &name)
 {
 #ifdef RDK_UNICODE_RUN
@@ -420,7 +420,7 @@ void USerStorageXML::DelNodeAttribute(const std::string &name)
 #endif
 }
 
-// Устанавливает текст узла
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С‚РµРєСЃС‚ СѓР·Р»Р°
 bool USerStorageXML::SetNodeText(const std::string &text)
 {
 #ifdef RDK_UNICODE_RUN
@@ -431,7 +431,7 @@ bool USerStorageXML::SetNodeText(const std::string &text)
  return true;
 }
 
-// Возвращает значение узла
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёРµ СѓР·Р»Р°
 const std::string USerStorageXML::GetNodeText(void) const
 {
  if(!CurrentNode.getText())
@@ -446,10 +446,10 @@ const std::string USerStorageXML::GetNodeText(void) const
 // --------------------------
 
 // --------------------------
-// Дополнительные методы управления данными текущего элемента как ini-файлом
+// Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅС‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё С‚РµРєСѓС‰РµРіРѕ СЌР»РµРјРµРЅС‚Р° РєР°Рє ini-С„Р°Р№Р»РѕРј
 // --------------------------
-// Считывает данные как соответствующий тип, если данное не найдено или не приводимо в
-// ожидаемый тип - оно инициализируется значением по умолчанию
+// РЎС‡РёС‚С‹РІР°РµС‚ РґР°РЅРЅС‹Рµ РєР°Рє СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ С‚РёРї, РµСЃР»Рё РґР°РЅРЅРѕРµ РЅРµ РЅР°Р№РґРµРЅРѕ РёР»Рё РЅРµ РїСЂРёРІРѕРґРёРјРѕ РІ
+// РѕР¶РёРґР°РµРјС‹Р№ С‚РёРї - РѕРЅРѕ РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚СЃСЏ Р·РЅР°С‡РµРЅРёРµРј РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 const std::string USerStorageXML::ReadString(const std::string &name, const std::string &default_value)
 {
  if(!SelectNode(name))
@@ -615,7 +615,7 @@ bool USerStorageXML::ReadBool(int node_index, bool default_value)
  return res;
 }
 
-// Записывает данные как соответствующий тип
+// Р—Р°РїРёСЃС‹РІР°РµС‚ РґР°РЅРЅС‹Рµ РєР°Рє СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ С‚РёРї
 void USerStorageXML::WriteString(const std::string &name, const std::string &value)
 {
  if(!SelectNode(name))
@@ -670,7 +670,7 @@ void USerStorageXML::WriteBool(const std::string &name, bool value)
 
 
 // --------------------------
-// Скрытые методы управления данными
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё
 // --------------------------
 // --------------------------
 }

@@ -10,40 +10,40 @@ namespace RDK {
 
 /* *************************************************************************** */
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
 {
     std::string comp_name = serstorage->GetNodeName();
     serstorage->SelectNode(comp_name);
 
-    // Имя компонента
+    // РРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°
     this->SetName(comp_name);
     std::string class_name = serstorage->GetNodeAttribute("Class");
 
-    // Установка хранилище и логера
+    // РЈСЃС‚Р°РЅРѕРІРєР° С…СЂР°РЅРёР»РёС‰Рµ Рё Р»РѕРіРµСЂР°
     SetStorage(storage);
     SetLogger(storage->GetLogger());
 
-    // Вызов всех добавленных функций создания свойств
+    // Р’С‹Р·РѕРІ РІСЃРµС… РґРѕР±Р°РІР»РµРЅРЅС‹С… С„СѓРЅРєС†РёР№ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІ
     std::list<funcCrPropMock> funcs = GetStorage()->GetFunctionsCrPropMock();
     for (std::list<funcCrPropMock>::iterator f = funcs.begin(); f != funcs.end(); ++f)
     {
-        // Вызов функций создания свойств по очереди
+        // Р’С‹Р·РѕРІ С„СѓРЅРєС†РёР№ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІ РїРѕ РѕС‡РµСЂРµРґРё
         (*f)(serstorage, this);
     }
 
-    // Список сфомированных свойств текущей заглушки
-    std::map<NameT,UVariable> CreatedProps = this->GetPropertiesList();
+    // РЎРїРёСЃРѕРє СЃС„РѕРјРёСЂРѕРІР°РЅРЅС‹С… СЃРІРѕР№СЃС‚РІ С‚РµРєСѓС‰РµР№ Р·Р°РіР»СѓС€РєРё
+    VariableMapT CreatedProps = this->GetPropertiesList();
 
-    // Список свойств из xml-ки
+    // РЎРїРёСЃРѕРє СЃРІРѕР№СЃС‚РІ РёР· xml-РєРё
     std::vector<std::pair<std::string,std::string> > PropsNames;
 
-    // Проход по всем свойствам для формирования списка свойств
+    // РџСЂРѕС…РѕРґ РїРѕ РІСЃРµРј СЃРІРѕР№СЃС‚РІР°Рј РґР»СЏ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ СЃРїРёСЃРєР° СЃРІРѕР№СЃС‚РІ
     for(int i =0, params = serstorage->GetNumNodes(); i <params; i++)
     {
         serstorage->SelectNode(i);
-        // Если дошли до секции компонентов и связей
+        // Р•СЃР»Рё РґРѕС€Р»Рё РґРѕ СЃРµРєС†РёРё РєРѕРјРїРѕРЅРµРЅС‚РѕРІ Рё СЃРІСЏР·РµР№
         if(serstorage->GetNodeName() == "Components" || serstorage->GetNodeName() == "Links")
         {
             serstorage->SelectUp();
@@ -63,10 +63,10 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
         serstorage->SelectUp();
     }
 
-    // Сравнение списков свойств
+    // РЎСЂР°РІРЅРµРЅРёРµ СЃРїРёСЃРєРѕРІ СЃРІРѕР№СЃС‚РІ
     for(std::vector<std::pair<std::string,std::string> >::iterator p = PropsNames.begin(); p != PropsNames.end(); ++p)
     {
-        // Свойство не найдено - то есть не было создано
+        // РЎРІРѕР№СЃС‚РІРѕ РЅРµ РЅР°Р№РґРµРЅРѕ - С‚Рѕ РµСЃС‚СЊ РЅРµ Р±С‹Р»Рѕ СЃРѕР·РґР°РЅРѕ
         if(CreatedProps.find((*p).first) == CreatedProps.end())
         {
             if(std::find(UBasePropCreatorTempl::GetForbiddenInputs().begin(),  UBasePropCreatorTempl::GetForbiddenInputs().end(),  (*p).first) != UBasePropCreatorTempl::GetForbiddenInputs().end())
@@ -81,7 +81,7 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
         }
     }
 
-    // Сохранение собственного описания в XML
+    // РЎРѕС…СЂР°РЅРµРЅРёРµ СЃРѕР±СЃС‚РІРµРЅРЅРѕРіРѕ РѕРїРёСЃР°РЅРёСЏ РІ XML
     ClassDesriptionXML.Destroy();
 
     std::string temp;
@@ -89,7 +89,7 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
     ClassDesriptionXML.Load(temp,"");
 
 
-    // Загрузка внутренних компонентов и связей
+    // Р—Р°РіСЂСѓР·РєР° РІРЅСѓС‚СЂРµРЅРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ Рё СЃРІСЏР·РµР№
     if(!this->LoadComponent(&ClassDesriptionXML,true))
     {
         LogMessageEx(RDK_EX_WARNING, __FUNCTION__,
@@ -98,8 +98,8 @@ UMockUNet::UMockUNet(RDK::USerStorageXML *serstorage, UStorage* storage)
 
 }
 
-// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
-// переменные состояния из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РІСЃРµ РІРЅСѓС‚СЂРµРЅРЅРёРµ РґР°РЅРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚Р°, Рё РІСЃРµС… РµРіРѕ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚, РёСЃРєР»СЋС‡Р°СЏ
+// РїРµСЂРµРјРµРЅРЅС‹Рµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РёР· xml
 bool UMockUNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
 {
     if(!serstorage)
@@ -124,8 +124,8 @@ bool UMockUNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
       {
        if(SetComponentProperties(serstorage))
        {
-        std::string name;
-        LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetComponentProperties failed: ")+GetFullName(name));
+        std::string full_name;
+        LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetComponentProperties failed: ")+GetFullName(full_name));
   //	  return false;
        }
       }
@@ -156,7 +156,7 @@ bool UMockUNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
       UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
       if(!newcont)
        continue;
-      if(FindStaticComponent(name,nodename) == 0) // Это НЕ уже существующий статический компонент
+      if(FindStaticComponent(name,nodename) == 0) // Р­С‚Рѕ РќР• СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёР№ СЃС‚Р°С‚РёС‡РµСЃРєРёР№ РєРѕРјРїРѕРЅРµРЅС‚
       {
        if(AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
        {

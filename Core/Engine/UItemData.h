@@ -18,7 +18,7 @@ See file license.txt for more information
 #include "../Serialize/Serialize.h"
 #include "../Math/MDMatrix.h"
 
-// Отключение предупреждений в VS
+// РћС‚РєР»СЋС‡РµРЅРёРµ РїСЂРµРґСѓРїСЂРµР¶РґРµРЅРёР№ РІ VS
 //#pragma warning( disable : 4355)
 //#pragma warning( disable : 4800)
 

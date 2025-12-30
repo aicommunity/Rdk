@@ -5,6 +5,16 @@
 #include <QDrag>
 #include <QDebug>
 #include <QPushButton>
+#include <QBrush>
+#include <QHash>
+#include "../../Core/Engine/UStorage.h"
+#include "../../Core/Engine/UContainerDescription.h"
+#include "../../../Libraries/Nmsdk-PulseLib/Core/NPulseNeuron.h"
+#include "../../../Libraries/Nmsdk-PulseLib/Core/NPulseSynapseCommon.h"
+#include "../../../Libraries/Nmsdk-PulseLib/Core/NPulseMembraneCommon.h"
+#include "../../../Libraries/Nmsdk-PulseLib/Core/NPulseChannelCommon.h"
+#include "../../../Libraries/Nmsdk-PulseLib/Core/NConstGenerator.h"
+#include "../../../Libraries/Nmsdk-PulseLib/Core/NPulseLTZoneCommon.h"
 
 UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) :
     UVisualControllerWidget(parent, app), ModelScheme(nullptr),
@@ -12,23 +22,23 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
 {
     ui->setupUi(this);
 
-    UpdateInterval = 0; // Ó·ÌÓ‚ÎÂÌËÂ ÔÓ ÒËÒÚÂÏÌ˚Ï ÚËÍ‡Ï ÌÂ ÔÓËÒıÓ‰ËÚ
-    setAccessibleName("UClassesListWidget"); // ËÏˇ ÍÎ‡ÒÒ‡ ‰Îˇ ÒÂË‡ÎËÁ‡ˆËË
+    UpdateInterval = 0; // –æ–±–Ω–æ–≤–ª–µ–Ω–∏–µ –ø–æ —Å–∏—Å—Ç–µ–º–Ω—ã–º —Ç–∏–∫–∞–º –Ω–µ –ø—Ä–æ–∏—Å—Ö–æ–¥–∏—Ç
+    setAccessibleName("UClassesListWidget"); // –∏–º—è –∫–ª–∞—Å—Å–∞ –¥–ª—è —Å–µ—Ä–∏–∞–ª–∏–∑–∞—Ü–∏–∏
 
-    // —ÔËÒÓÍ RT ·Ë·ÎËÓÚÂÍ
+    // –°–ø–∏—Å–æ–∫ RT –±–∏–±–ª–∏–æ—Ç–µ–∫
     auto storage = RDK::GetStorageLock();
     std::string buff;
     storage->GetLibsNameListByType(buff,2);
     QStringList RTlibsNames = QString(buff.c_str()).split(",");
 
-    // —ÔËÒÓÍ ‚ÒÂı ÍÓÏÔÓÌÂÌÚÓ‚ ËÁ RT ·Ë·ÎËÓÚÂÍ
+    // –°–ø–∏—Å–æ–∫ –≤—Å–µ—Ö –∫–æ–º–ø–æ–Ω–µ–Ω—Ç–æ–≤ –∏–∑ RT –±–∏–±–ª–∏–æ—Ç–µ–∫
     QStringList RTclassesNames;
     QString str;
     foreach(str, RTlibsNames)
     {
         const char * stringBuff;
         stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
-        // ≈ÒÎË ÌÂÚ ÍÎ‡ÒÒÓ‚
+        // –ï—Å–ª–∏ –Ω–µ—Ç –∫–ª–∞—Å—Å–æ–≤
         if((stringBuff[0] == '\0'))
         {
             Engine_FreeBufString(stringBuff);
@@ -39,7 +49,7 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
         RTclassesNames += libClasses;
     }
 
-    //ËÌËˆË‡ÎËÁ‡ˆËˇ ÒÔËÒÍ‡ ÔÓ ‚ÒÂÏ ÍÎ‡ÒÒ‡Ï
+    //–∏–Ω–∏—Ü–∏–∞–ª–∏–∑–∞—Ü–∏—è —Å–ø–∏—Å–∫–∞ –ø–æ –≤—Å–µ–º –∫–ª–∞—Å—Å–∞–º
     const char * stringBuff = Storage_GetClassesNameList();
     QStringList componentNames = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);
@@ -47,63 +57,30 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
     {
         QListWidgetItem* item = new QListWidgetItem(ui->listWidgetStorageByName);
         if(RTclassesNames.indexOf(str)!=-1)
-            item->setTextColor(Qt::darkCyan);
+            item->setForeground(QBrush(Qt::darkCyan));
         item->setText(str);
         ui->listWidgetStorageByName->addItem(item);
     }
     ui->listWidgetStorageByName->sortItems(Qt::AscendingOrder);
 
-    //ËÌËˆË‡ÎËÁ‡ˆËˇ ‰Â‚Ó‚Ë‰ÌÓ„Ó ÒÔËÒÍ‡ ÔÓ ·Ë·ÎËÓÚÂÍ‡Ï
-    stringBuff = Storage_GetClassLibrariesList();
-    componentNames = QString(stringBuff).split(",");
-    Engine_FreeBufString(stringBuff);
-    bool isRTlib = false;
-    foreach(str, componentNames)
-    {
-        if(str != "")
-        {
-            isRTlib = false;
-            // ≈ÒÎË ˝ÚÓ RT ·Ë·ÎËÓÚÂÍ‡
-            if(RTlibsNames.indexOf(str)!=-1)
-                isRTlib = true;
-            QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidgetStorageByLibs);
-            item->setExpanded(true);
-            item->setText(0, str);
-            if(isRTlib)
-                item->setTextColor(0,Qt::darkBlue);
-            stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
-            QStringList libClasses = QString(stringBuff).split(",");
-            Engine_FreeBufString(stringBuff);
-            QString className;
-            foreach(className, libClasses)
-            {
-                if(className != "")
-                {
-                     QTreeWidgetItem* classItem = new QTreeWidgetItem(item);
-                     classItem->setText(0, className);
-                     if(isRTlib)
-                         classItem->setTextColor(0,Qt::darkCyan);
-                }
-            }
-        }
-    }
-    ui->treeWidgetStorageByLibs->sortItems(0, Qt::AscendingOrder);
+    //–∏–Ω–∏—Ü–∏–∞–ª–∏–∑–∞—Ü–∏—è –¥—Ä–µ–≤–æ–≤–∏–¥–Ω–æ–≥–æ —Å–ø–∏—Å–∫–∞ –ø–æ –±–∏–±–ª–∏–æ—Ç–µ–∫–∞–º (—Å –∏—Å–ø–æ–ª—å–∑–æ–≤–∞–Ω–∏–µ–º BuildGroupedTree)
+    BuildGroupedTree("");
 
-    //ËÌËˆË‡ÎËÁ‡ˆËˇ runtime-·Ë·ÎËÓÚÂÍ
+    //–∏–Ω–∏—Ü–∏–∞–ª–∏–∑–∞—Ü–∏—è runtime-–±–∏–±–ª–∏–æ—Ç–µ–∫
     ui->listWidgetRTlibs->addItems(RTlibsNames);
     ui->listWidgetRTlibs->sortItems(Qt::AscendingOrder);
 
-    //Ò‚ˇÁ¸ Ì‡Ê‡ÚËˇ Ì‡ ÍÓÏÔÓÌÂÌÚ ‰Îˇ ÒÓ·˚ÚËˇ ÔÂÂÚ‡ÒÍË‚‡ÌËˇ
+    //—Å–≤—è–∑—å –Ω–∞–∂–∞—Ç–∏—è –Ω–∞ –∫–æ–º–ø–æ–Ω–µ–Ω—Ç –¥–ª—è —Å–æ–±—ã—Ç–∏—è –ø–µ—Ä–µ—Ç–∞—Å–∫–∏–≤–∞–Ω–∏—è
     connect(ui->treeWidgetStorageByLibs, SIGNAL(pressed(QModelIndex)), this, SLOT(dragEvent(QModelIndex)));
     connect(ui->listWidgetStorageByName, SIGNAL(pressed(QModelIndex)), this, SLOT(dragEvent(QModelIndex)));
     connect(ui->listWidgetRTlibClasses, SIGNAL(pressed(QModelIndex)), this, SLOT(dragEvent(QModelIndex)));
 
 
-    //Ò‚ˇÁË Ì‡ ‚ÌÂ¯ÌËÈ ÒË„Ì‡Î ËÁÏÂÌÂÌËˇ ‚˚‰ÂÎÂÌËˇ ÍÓÏÔÓÌÂÌÚ‡
+    //—Å–≤—è–∑–∏ –Ω–∞ –≤–Ω–µ—à–Ω–∏–π —Å–∏–≥–Ω–∞–ª –∏–∑–º–µ–Ω–µ–Ω–∏—è –≤—ã–¥–µ–ª–µ–Ω–∏—è –∫–æ–º–ø–æ–Ω–µ–Ω—Ç–∞
     connect(ui->treeWidgetStorageByLibs, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SIGNAL(classSelectionChanged()));
     connect(ui->listWidgetStorageByName, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SIGNAL(classSelectionChanged()));
 
-    // ÃÂÌ˛ Ó·Î‡ÒÚË ÒÔËÒÍ‡ ·Ë·ÎËÓÚÂÍ
+    // –ú–µ–Ω—é –æ–±–ª–∞—Å—Ç–∏ —Å–ø–∏—Å–∫–∞ –±–∏–±–ª–∏–æ—Ç–µ–∫
     ui->listWidgetRTlibs->addAction(ui->actionCreateRuntimeLibrary);
     ui->listWidgetRTlibs->addAction(ui->actionDeleteRuntimeLibrary);
     ui->listWidgetRTlibs->setContextMenuPolicy(Qt::ActionsContextMenu);
@@ -113,7 +90,7 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
 
     ui->listWidgetRTlibs->setContextMenuPolicy(Qt::ActionsContextMenu);
 
-    // ÃÂÌ˛ Ó·Î‡ÒÚË ÒÔËÒÍ‡ ÍÓÏÔÓÌÂÌÚÓ‚
+    // –ú–µ–Ω—é –æ–±–ª–∞—Å—Ç–∏ —Å–ø–∏—Å–∫–∞ –∫–æ–º–ø–æ–Ω–µ–Ω—Ç–æ–≤
     ui->listWidgetRTlibClasses->addAction(ui->actionAddNewClass);
     ui->listWidgetRTlibClasses->addAction(ui->actionDeleteClass);
 
@@ -132,6 +109,15 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
     ui->treeWidgetStorageByLibs->setContextMenuPolicy(Qt::ActionsContextMenu);
 
     connect(action_display_class_description, SIGNAL(triggered()), this, SLOT(on_action_cl_desc_triggered()));
+
+    // –ò–Ω–∏—Ü–∏–∞–ª–∏–∑–∞—Ü–∏—è combobox –¥–ª—è –≤—ã–±–æ—Ä–∞ –º–µ—Ç–æ–¥–∞ –≥—Ä—É–ø–ø–∏—Ä–æ–≤–∫–∏
+    ui->comboBoxGroupingMethod->addItem("No Grouping", static_cast<int>(GroupingMethod::None));
+    ui->comboBoxGroupingMethod->addItem("By Description", static_cast<int>(GroupingMethod::ByDescription));
+    ui->comboBoxGroupingMethod->addItem("By Inheritance", static_cast<int>(GroupingMethod::ByInheritance));
+    ui->comboBoxGroupingMethod->addItem("By Base Component", static_cast<int>(GroupingMethod::ByBaseComponent));
+    ui->comboBoxGroupingMethod->setCurrentIndex(0); // –ü–æ —É–º–æ–ª—á–∞–Ω–∏—é –±–µ–∑ –≥—Ä—É–ø–ø–∏—Ä–æ–≤–∫–∏
+    
+    connect(ui->comboBoxGroupingMethod, SIGNAL(currentIndexChanged(int)), this, SLOT(on_comboBoxGroupingMethod_currentIndexChanged(int)));
 
     setAcceptDrops(true);
 }
@@ -154,11 +140,23 @@ QString UClassesListWidget::selctedClass() const
         return ui->listWidgetStorageByName->currentItem()->text();
     break;
     case 1:
-      if (ui->treeWidgetStorageByLibs->currentItem() && ui->treeWidgetStorageByLibs->currentItem()->childCount() == 0)
-        return ui->treeWidgetStorageByLibs->currentItem()->text(0);
+    {
+      QTreeWidgetItem* currentItem = ui->treeWidgetStorageByLibs->currentItem();
+      if (currentItem)
+      {
+        // –ö–ª–∞—Å—Å - —ç—Ç–æ —ç–ª–µ–º–µ–Ω—Ç –±–µ–∑ –¥–µ—Ç–µ–π (–ª–∏—Å—Ç –¥–µ—Ä–µ–≤–∞)
+        // –í —Ç—Ä–µ—Ö—É—Ä–æ–≤–Ω–µ–≤–æ–π —Å—Ç—Ä—É–∫—Ç—É—Ä–µ: –ë–∏–±–ª–∏–æ—Ç–µ–∫–∞ -> –ì—Ä—É–ø–ø–∞ -> –ö–ª–∞—Å—Å
+        // –í –¥–≤—É—Ö—É—Ä–æ–≤–Ω–µ–≤–æ–π —Å—Ç—Ä—É–∫—Ç—É—Ä–µ: –ë–∏–±–ª–∏–æ—Ç–µ–∫–∞ -> –ö–ª–∞—Å—Å
+        if (currentItem->childCount() == 0)
+        {
+          return currentItem->text(0);
+        }
+      }
+    }
     break;
     case 2:
-      return ui->listWidgetRTlibClasses->currentItem()->text();
+      if(ui->listWidgetRTlibClasses->currentItem())
+        return ui->listWidgetRTlibClasses->currentItem()->text();
     break;
     default:
       return QString();
@@ -168,7 +166,7 @@ QString UClassesListWidget::selctedClass() const
 
 void UClassesListWidget::AUpdateLibsView(QString lib_name)
 {
-    // Ó·ÌÓ‚ÎÂÌËÂ runtime-·Ë·ÎËÓÚÂÍ
+    // –æ–±–Ω–æ–≤–ª–µ–Ω–∏–µ runtime-–±–∏–±–ª–∏–æ—Ç–µ–∫
     // Storage
     RDK::UELockPtr<RDK::UStorage> storage=RDK::GetStorageLock();
     if(!storage)
@@ -200,7 +198,7 @@ void UClassesListWidget::dropEvent(QDropEvent *event)
     dataStream >> compname;
     */
 
-    // ŒÔÂ‰ÂÎÂÌËÂ ÍÓÓ‰ËÌ‡Ú ‰ÓÔ‡ ‚ ÒËÒÚÂÏÛ ÍÓÓ‰ËÌ‡Ú ÒÔËÒÍ‡ ·Ë·ÎËÓÚÂÍ
+    // –û–ø—Ä–µ–¥–µ–ª–µ–Ω–∏–µ –∫–æ–æ—Ä–¥–∏–Ω–∞—Ç –¥—Ä–æ–ø–∞ –≤ —Å–∏—Å—Ç–µ–º—É –∫–æ–æ—Ä–¥–∏–Ω–∞—Ç —Å–ø–∏—Å–∫–∞ –±–∏–±–ª–∏–æ—Ç–µ–∫
     QString lib = "";
     QPoint globalPos = this->mapToGlobal(event->pos());
     QPoint RTlibsPos = ui->listWidgetRTlibs->mapFromGlobal(globalPos);
@@ -266,7 +264,7 @@ void UClassesListWidget::on_listWidgetRTlibs_itemSelectionChanged()
         return;
     QString lib_name = item->text();
 
-    // «‡ÔÓÎÌÂÌËÂ ÒÔËÒÍ‡ ÍÓÏÔÓÌÂÌÚÓ‚ ·Ë·ÎËÓÚÂÍË
+    // –ó–∞–ø–æ–ª–Ω–µ–Ω–∏–µ —Å–ø–∏—Å–∫–∞ –∫–æ–º–ø–æ–Ω–µ–Ω—Ç–æ–≤ –±–∏–±–ª–∏–æ—Ç–µ–∫–∏
     const char* stringBuff = Storage_GetLibraryClassNames(lib_name.toLocal8Bit());
     QStringList libClasses = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);
@@ -282,25 +280,25 @@ void UClassesListWidget::on_listWidgetRTlibs_itemSelectionChanged()
     }
 }
 
-// œÓËÒÍ ÍÓÏÔÓÌÂÌÚÓ‚ ‚ ‡ÁÌ˚ı ÔÓÎˇı
+// –ü–æ–∏—Å–∫ –∫–æ–º–ø–æ–Ω–µ–Ω—Ç–æ–≤ –≤ —Ä–∞–∑–Ω—ã—Ö –ø–æ–ª—è—Ö
 void UClassesListWidget::tab0_textChanged(const QString &arg1)
 {
     ui->listWidgetStorageByName->clear();
 
-    // —ÔËÒÓÍ RT ·Ë·ÎËÓÚÂÍ
+    // –°–ø–∏—Å–æ–∫ RT –±–∏–±–ª–∏–æ—Ç–µ–∫
     auto storage = RDK::GetStorageLock();
     std::string buff;
     storage->GetLibsNameListByType(buff,2);
     QStringList RTlibsNames = QString(buff.c_str()).split(",");
 
-    // —ÔËÒÓÍ ‚ÒÂı ÍÓÏÔÓÌÂÌÚÓ‚ ËÁ RT ·Ë·ÎËÓÚÂÍ
+    // –°–ø–∏—Å–æ–∫ –≤—Å–µ—Ö –∫–æ–º–ø–æ–Ω–µ–Ω—Ç–æ–≤ –∏–∑ RT –±–∏–±–ª–∏–æ—Ç–µ–∫
     QStringList RTclassesNames;
     QString str;
     foreach(str, RTlibsNames)
     {
         const char * stringBuff;
         stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
-        // ≈ÒÎË ÌÂÚ ÍÎ‡ÒÒÓ‚
+        // –ï—Å–ª–∏ –Ω–µ—Ç –∫–ª–∞—Å—Å–æ–≤
         if((stringBuff[0] == '\0'))
         {
             Engine_FreeBufString(stringBuff);
@@ -311,18 +309,18 @@ void UClassesListWidget::tab0_textChanged(const QString &arg1)
         RTclassesNames += libClasses;
     }
 
-    // —ÔËÒÓÍ Mock ·Ë·ÎËÓÚÂÍ
+    // –°–ø–∏—Å–æ–∫ Mock –±–∏–±–ª–∏–æ—Ç–µ–∫
     storage->GetLibsNameListByType(buff,3);
     QStringList MockLibsNames = QString(buff.c_str()).split(",");
 
-    // —ÔËÒÓÍ ‚ÒÂı ÍÓÏÔÓÌÂÌÚÓ‚ ËÁ Mock ·Ë·ÎËÓÚÂÍ
+    // –°–ø–∏—Å–æ–∫ –≤—Å–µ—Ö –∫–æ–º–ø–æ–Ω–µ–Ω—Ç–æ–≤ –∏–∑ Mock –±–∏–±–ª–∏–æ—Ç–µ–∫
     QStringList MockClassesNames;
 
     foreach(str, MockLibsNames)
     {
         const char * stringBuff;
         stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
-        // ≈ÒÎË ÌÂÚ ÍÎ‡ÒÒÓ‚
+        // –ï—Å–ª–∏ –Ω–µ—Ç –∫–ª–∞—Å—Å–æ–≤
         if((stringBuff[0] == '\0'))
         {
             Engine_FreeBufString(stringBuff);
@@ -334,7 +332,7 @@ void UClassesListWidget::tab0_textChanged(const QString &arg1)
     }
 
 
-    // ÒÔËÒÓÍ ‚ÒÂı ÍÎ‡ÒÒÓ‚
+    // —Å–ø–∏—Å–æ–∫ –≤—Å–µ—Ö –∫–ª–∞—Å—Å–æ–≤
     const char * stringBuff = Storage_GetClassesNameList();
     QStringList componentNames = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);
@@ -348,10 +346,10 @@ void UClassesListWidget::tab0_textChanged(const QString &arg1)
                 QListWidgetItem* item = new QListWidgetItem(ui->listWidgetStorageByName);
 
                 if(MockClassesNames.indexOf(str)!=-1)
-                    item->setTextColor(Qt::darkYellow);
+                    item->setForeground(QBrush(Qt::darkYellow));
 
                 if(RTclassesNames.indexOf(str)!=-1)
-                    item->setTextColor(Qt::darkCyan);
+                    item->setForeground(QBrush(Qt::darkCyan));
                 item->setText(str);
                 ui->listWidgetStorageByName->addItem(item);
             }
@@ -362,149 +360,15 @@ void UClassesListWidget::tab0_textChanged(const QString &arg1)
 
 void UClassesListWidget::tab1_textChanged(const QString &arg1)
 {
-    ui->treeWidgetStorageByLibs->clear();
-
-    // —ÔËÒÓÍ RT ·Ë·ÎËÓÚÂÍ
-    auto storage = RDK::GetStorageLock();
-    std::string buff;
-    storage->GetLibsNameListByType(buff,2);
-    QStringList RTlibsNames = QString(buff.c_str()).split(",");
-
-    // —ÔËÒÓÍ ‚ÒÂı ÍÓÏÔÓÌÂÌÚÓ‚ ËÁ RT ·Ë·ÎËÓÚÂÍ
-    QStringList RTclassesNames;
-    QString str;
-    foreach(str, RTlibsNames)
-    {
-        const char * stringBuff;
-        stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
-        // ≈ÒÎË ÌÂÚ ÍÎ‡ÒÒÓ‚
-        if((stringBuff[0] == '\0'))
-        {
-            Engine_FreeBufString(stringBuff);
-            continue;
-        }
-        QStringList libClasses = QString(stringBuff).split(",");
-        Engine_FreeBufString(stringBuff);
-        RTclassesNames += libClasses;
-    }
-
-
-    // —ÔËÒÓÍ Mock ·Ë·ÎËÓÚÂÍ
-    storage->GetLibsNameListByType(buff,3);
-    QStringList MockLibsNames = QString(buff.c_str()).split(",");
-
-    // —ÔËÒÓÍ ‚ÒÂı ÍÓÏÔÓÌÂÌÚÓ‚ ËÁ Mock ·Ë·ÎËÓÚÂÍ
-    QStringList MockClassesNames;
-
-    foreach(str, MockLibsNames)
-    {
-        const char * stringBuff;
-        stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
-        // ≈ÒÎË ÌÂÚ ÍÎ‡ÒÒÓ‚
-        if((stringBuff[0] == '\0'))
-        {
-            Engine_FreeBufString(stringBuff);
-            continue;
-        }
-        QStringList libClasses = QString(stringBuff).split(",");
-        Engine_FreeBufString(stringBuff);
-        MockClassesNames += libClasses;
-    }
-
-
-    //ËÌËˆË‡ÎËÁ‡ˆËˇ ‰Â‚Ó‚Ë‰ÌÓ„Ó ÒÔËÒÍ‡ ÔÓ ·Ë·ÎËÓÚÂÍ‡Ï
-    const char * stringBuff = Storage_GetClassLibrariesList();
-    QStringList componentNames = QString(stringBuff).split(",");
-    Engine_FreeBufString(stringBuff);
-
-    bool isRTlib = false;
-    bool isMocklib = false;
-    foreach(str, componentNames)
-    {
-        if(str != "")
-        {
-            isMocklib = false;
-            isRTlib = false;
-
-            // ≈ÒÎË ˝ÚÓ Mock ·Ë·ÎËÓÚÂÍ‡
-            if(MockLibsNames.indexOf(str)!=-1)
-                isMocklib = true;
-
-            // ≈ÒÎË ˝ÚÓ RT ·Ë·ÎËÓÚÂÍ‡
-            if(RTlibsNames.indexOf(str)!=-1)
-                isRTlib = true;
-
-            if (str.contains(arg1, Qt::CaseInsensitive))
-            {
-                QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidgetStorageByLibs);
-                item->setExpanded(true);
-                item->setText(0, str);
-                if(isMocklib)
-                    item->setTextColor(0,Qt::darkMagenta);
-                if(isRTlib)
-                    item->setTextColor(0,Qt::darkBlue);
-                stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
-                QStringList libClasses = QString(stringBuff).split(",");
-                Engine_FreeBufString(stringBuff);
-                QString className;
-                foreach(className, libClasses)
-                {
-                    if(className != "")
-                    {
-                         QTreeWidgetItem* classItem = new QTreeWidgetItem(item);
-                         classItem->setText(0, className);
-                         if(isMocklib)
-                             classItem->setTextColor(0,Qt::darkYellow);
-                         if(isRTlib)
-                             classItem->setTextColor(0,Qt::darkCyan);
-                    }
-                }
-
-            }
-            else
-            {
-                QTreeWidgetItem* item = new QTreeWidgetItem(ui->treeWidgetStorageByLibs);
-                bool isLibFind = false;
-                item->setExpanded(true);
-                item->setText(0, str);
-                if(isMocklib)
-                    item->setTextColor(0,Qt::darkMagenta);
-                if(isRTlib)
-                    item->setTextColor(0,Qt::darkBlue);
-                stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
-                QStringList libClasses = QString(stringBuff).split(",");
-                Engine_FreeBufString(stringBuff);
-                QString className;
-                foreach(className, libClasses)
-                {
-                    if(className != "" && ((className.contains(arg1, Qt::CaseInsensitive))))
-                    {
-                         isLibFind = true;
-                         QTreeWidgetItem* classItem = new QTreeWidgetItem(item);
-                         classItem->setText(0, className);
-                         if(isMocklib)
-                             classItem->setTextColor(0,Qt::darkYellow);
-                         if(isRTlib)
-                             classItem->setTextColor(0,Qt::darkCyan);
-                    }
-                }
-                if (!isLibFind)
-                {
-                    delete item;
-                }
-
-            }
-
-        }
-    }
-    ui->treeWidgetStorageByLibs->sortItems(0, Qt::AscendingOrder);
+    // –ò—Å–ø–æ–ª—å–∑—É–µ–º BuildGroupedTree –¥–ª—è –ø–æ—Å—Ç—Ä–æ–µ–Ω–∏—è –¥–µ—Ä–µ–≤–∞ —Å —É—á–µ—Ç–æ–º –ø–æ–∏—Å–∫–∞
+    BuildGroupedTree(arg1);
 }
 
 void UClassesListWidget::tab2_textChanged(const QString &arg1)
 {
     ui->listWidgetRTlibs->clear();
 
-    // ÔÓËÒÍ ËÏÂÌ runtime-·Ë·ÎËÓÚÂÍ
+    // –ø–æ–∏—Å–∫ –∏–º–µ–Ω runtime-–±–∏–±–ª–∏–æ—Ç–µ–∫
     auto storage = RDK::GetStorageLock();
     std::string buff;
     storage->GetLibsNameListByType(buff,2);
@@ -575,7 +439,7 @@ void UClassesListWidget::CreateRTlibrary()
 
 void UClassesListWidget::DeleteRTlibrary()
 {
-    // ≈ÒÎË ÌËÍ‡Í‡ˇ ·Ë·ÎËÓÚÂÍ‡ ÌÂ ‚˚·‡Ì‡
+    // –ï—Å–ª–∏ –Ω–∏–∫–∞–∫–∞—è –±–∏–±–ª–∏–æ—Ç–µ–∫–∞ –Ω–µ –≤—ã–±—Ä–∞–Ω–∞
     if(ui->listWidgetRTlibs->selectedItems().size() == 0)
         return;
 
@@ -584,11 +448,11 @@ void UClassesListWidget::DeleteRTlibrary()
     if(!storage)
         return;
 
-    // »Ïˇ ·Ë·ËÓÚÂÍË
+    // –ò–º—è –±–∏–±–∏–æ—Ç–µ–∫–∏
     QListWidgetItem* item = ui->listWidgetRTlibs->currentItem();
     QString lib_name = item->text().toUtf8().data();
 
-    // ƒË‡ÎÓ„Ó‚ÓÂ ÓÍÌÓ Û‰‡ÎÂÌËˇ
+    // –î–∏–∞–ª–æ–≥–æ–≤–æ–µ –æ–∫–Ω–æ —É–¥–∞–ª–µ–Ω–∏—è
     QString message = "Deleting library \""+ lib_name + "\"";
 
     DeleteDialog* dialog = new DeleteDialog("Delete Library", message);
@@ -611,18 +475,18 @@ void UClassesListWidget::AddNewClass(QString cur_lib)
 {
     RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLock();
 
-    // ≈ÒÎË ÌÂÚ ÏÓ‰ÂÎË
+    // –ï—Å–ª–∏ –Ω–µ—Ç –º–æ–¥–µ–ª–∏
     if(!engine || !engine->GetModel() || !engine->GetModel()->GetStorage())
          return;
 
-    // ¬˚‰ÂÎÂÌÌ˚È ÍÓÏÔÓÌÂÌÚ
+    // –í—ã–¥–µ–ª–µ–Ω–Ω—ã–π –∫–æ–º–ø–æ–Ω–µ–Ω—Ç
     RDK::UEPtr<RDK::UContainer> container = engine->GetModel()
                                 ->GetComponentL(ModelScheme->GetLongName(), true);
-    // ≈ÒÎË ÍÓÏÔÓÌÂÌÚ ÌÂ ‚˚‰ÂÎÂÌ
+    // –ï—Å–ª–∏ –∫–æ–º–ø–æ–Ω–µ–Ω—Ç –Ω–µ –≤—ã–¥–µ–ª–µ–Ω
     if(!container)
         return;
 
-    // »Ïˇ ÚÂÍÛ˘ÂÈ ‚˚·‡ÌÌÓÈ ·Ë·ÎËÓÚÂÍË (ÂÒÎË ‚˚·‡Ì‡)
+    // –ò–º—è —Ç–µ–∫—É—â–µ–π –≤—ã–±—Ä–∞–Ω–Ω–æ–π –±–∏–±–ª–∏–æ—Ç–µ–∫–∏ (–µ—Å–ª–∏ –≤—ã–±—Ä–∞–Ω–∞)
     QString lib_name = cur_lib;
     if(ui->listWidgetRTlibs->currentItem() && lib_name.isEmpty())
         lib_name  = ui->listWidgetRTlibs->currentItem()->text();
@@ -650,7 +514,7 @@ void UClassesListWidget::AddNewClass(QString cur_lib)
 
 void UClassesListWidget::DeleteClass()
 {
-    // ≈ÒÎË ÌËÍ‡Í‡ˇ ·Ë·ÎËÓÚÂÍ‡ ÌÂ ‚˚·‡Ì‡ ËÎË ÌËÍ‡ÍÓÈ ÍÎ‡ÒÒ ÌÂ ‚˚·‡Ì
+    // –ï—Å–ª–∏ –Ω–∏–∫–∞–∫–∞—è –±–∏–±–ª–∏–æ—Ç–µ–∫–∞ –Ω–µ –≤—ã–±—Ä–∞–Ω–∞ –∏–ª–∏ –Ω–∏–∫–∞–∫–æ–π –∫–ª–∞—Å—Å –Ω–µ –≤—ã–±—Ä–∞–Ω
     if(ui->listWidgetRTlibs->selectedItems().empty() || ui->listWidgetRTlibClasses->selectedItems().empty())
         return;
 
@@ -659,15 +523,15 @@ void UClassesListWidget::DeleteClass()
     if(!storage)
         return;
 
-    // »Ïˇ ·Ë·ÎËÓÚÂÍË
+    // –ò–º—è –±–∏–±–ª–∏–æ—Ç–µ–∫–∏
     QListWidgetItem* item = ui->listWidgetRTlibs->currentItem();
     QString lib_name = item->text();
 
-    // »Ïˇ ÍÎ‡ÒÒ‡
+    // –ò–º—è –∫–ª–∞—Å—Å–∞
     item = ui->listWidgetRTlibClasses->currentItem();
     QString class_name = item->text();
 
-    // ƒË‡ÎÓ„Ó‚ÓÂ ÓÍÌÓ Û‰‡ÎÂÌËˇ
+    // –î–∏–∞–ª–æ–≥–æ–≤–æ–µ –æ–∫–Ω–æ —É–¥–∞–ª–µ–Ω–∏—è
     QString message = "Deleting class \""+ class_name + "\" from library \"" + lib_name + "\"";
 
     DeleteDialog* dialog = new DeleteDialog("Delete Class", message);
@@ -685,7 +549,7 @@ void UClassesListWidget::DeleteClass()
     delete dialog;
 }
 
-// ƒË‡ÎÓ„Ó‚ÓÂ ÓÍÌÓ ‰Îˇ ÒÓÁ‰‡ÌËˇ ·Ë·ÎËÓÚÂÍË
+// –î–∏–∞–ª–æ–≥–æ–≤–æ–µ –æ–∫–Ω–æ –¥–ª—è —Å–æ–∑–¥–∞–Ω–∏—è –±–∏–±–ª–∏–æ—Ç–µ–∫–∏
 CrLibDialog::CrLibDialog(QWidget* pwgt)
 {
     setWindowTitle("Create New Library");
@@ -714,7 +578,7 @@ CrLibDialog::CrLibDialog(QWidget* pwgt)
 
 void CrLibDialog::ProcessInput()
 {
-    // ≈ÒÎË ‚‚Ó‰ ÔÛÒÚÓÈ
+    // –ï—Å–ª–∏ –≤–≤–æ–¥ –ø—É—Å—Ç–æ–π
     if(InputLibName->text().isEmpty())
     {
         Message->setText("Enter Library Name");
@@ -729,7 +593,7 @@ void CrLibDialog::ProcessInput()
     if(!storage)
         return;
 
-    // ≈ÒÎË ·Ë·ÎËÓÚÂÍË Ò Ú‡ÍËÏ ËÏÂÌÂÏ ÌÂÚ
+    // –ï—Å–ª–∏ –±–∏–±–ª–∏–æ—Ç–µ–∫–∏ —Å —Ç–∞–∫–∏–º –∏–º–µ–Ω–µ–º –Ω–µ—Ç
     if(!storage->GetCollection(lib_name))
     {
         Message->setText("Enter Library name");
@@ -749,18 +613,18 @@ const std::string CrLibDialog::GetLibName() const
     return InputLibName->text().toUtf8().data();
 }
 
-// ƒË‡ÎÓ„Ó‚ÓÂ ÓÍÌÓ ‰Îˇ ÒÓÁ‰‡ÌËˇ ÍÎ‡ÒÒ‡
+// –î–∏–∞–ª–æ–≥–æ–≤–æ–µ –æ–∫–Ω–æ –¥–ª—è —Å–æ–∑–¥–∞–Ω–∏—è –∫–ª–∞—Å—Å–∞
 CrClassDialog::CrClassDialog(QStringList libs, QString cur_lib, QString cur_comp_name, QWidget* pwgt)
 {
     setWindowTitle("Add New Class");
 
     MessageLib = new QLabel("Select the library where to add the component");
 
-    // —ÔËÒÓÍ ·Ë·ÎËÓÚÂÍ Ë ÛÒÚ‡ÌÓ‚Í‡ ÚÂÍÛ˘ÂÈ ÚÓÈ, ÍÓÚÓ‡ˇ ‚˚·‡Ì‡ ‚ ÓÍÌÂ ·Ë·ÎËÓÚÂÍ (ÂÒÎË ‚˚·‡Ì‡)
+    // –°–ø–∏—Å–æ–∫ –±–∏–±–ª–∏–æ—Ç–µ–∫ –∏ —É—Å—Ç–∞–Ω–æ–≤–∫–∞ —Ç–µ–∫—É—â–µ–π —Ç–æ–π, –∫–æ—Ç–æ—Ä–∞—è –≤—ã–±—Ä–∞–Ω–∞ –≤ –æ–∫–Ω–µ –±–∏–±–ª–∏–æ—Ç–µ–∫ (–µ—Å–ª–∏ –≤—ã–±—Ä–∞–Ω–∞)
     Libraries = new QComboBox;
     Libraries->addItems(libs);
     int index = Libraries->findText(cur_lib);
-    if ( index != -1 ) { // -1 ≈ÒÎË ÌÂ Ì‡È‰ÂÌÓ
+    if ( index != -1 ) { // -1 –ï—Å–ª–∏ –Ω–µ –Ω–∞–π–¥–µ–Ω–æ
        Libraries->setCurrentIndex(index);
     }
 
@@ -801,7 +665,7 @@ CrClassDialog::CrClassDialog(QStringList libs, QString cur_lib, QString cur_comp
 
 void CrClassDialog::ProcessInput()
 {
-    // ≈ÒÎË ‚‚Ó‰ ÔÛÒÚÓÈ
+    // –ï—Å–ª–∏ –≤–≤–æ–¥ –ø—É—Å—Ç–æ–π
     if(InputClassName->text().isEmpty() || InputCompName->text().isEmpty())
     {
         MessageClass->setText("Enter Class Name");
@@ -817,7 +681,7 @@ void CrClassDialog::ProcessInput()
 
     QString class_name = InputClassName->text();
 
-    // ≈ÒÎË ‚‚Ó‰ ÔÛÒÚÓÈ
+    // –ï—Å–ª–∏ –≤–≤–æ–¥ –ø—É—Å—Ç–æ–π
     if(class_name.isEmpty())
         return;
 
@@ -826,13 +690,13 @@ void CrClassDialog::ProcessInput()
     if(!storage)
         return;
 
-    // ≈ÒÎË ÍÎ‡ÒÒ ÌÂ ÒÛ˘ÂÒÚ‚ÛÂÚ -> ÒÓÁ‰‡ÌËÂ ÍÎ‡ÒÒ‡
+    // –ï—Å–ª–∏ –∫–ª–∞—Å—Å –Ω–µ —Å—É—â–µ—Å—Ç–≤—É–µ—Ç -> —Å–æ–∑–¥–∞–Ω–∏–µ –∫–ª–∞—Å—Å–∞
     if(!storage->CheckClass(class_name.toUtf8().data()))
     {
         MessageClass->setText("Enter Class Name");
         AddButton->setEnabled(true);
     }
-    else// ≈ÒÎË ÒÛ˘ÂÒÚ‚ÛÂÚ - ÔÂ‰ÛÔÂÊ‰ÂÌËÂ
+    else// –ï—Å–ª–∏ —Å—É—â–µ—Å—Ç–≤—É–µ—Ç - –ø—Ä–µ–¥—É–ø—Ä–µ–∂–¥–µ–Ω–∏–µ
     {
         std::string lib_name = storage->FindCollection(class_name.toUtf8().data())->GetName();
         MessageClass->setText("Class \"" + class_name +"\" already exists in \"" + QString::fromStdString(lib_name) + "\" library");
@@ -843,13 +707,13 @@ void CrClassDialog::ProcessInput()
 
 void CrClassDialog::ReplaceClicked()
 {
-    // ƒË‡ÎÓ„Ó‚ÓÂ ÓÍÌÓ ÔÓ‰Ú‚ÂÊ‰ÂÌËˇ Á‡ÏÂÌ˚ ÍÎ‡ÒÒ‡
+    // –î–∏–∞–ª–æ–≥–æ–≤–æ–µ –æ–∫–Ω–æ –ø–æ–¥—Ç–≤–µ—Ä–∂–¥–µ–Ω–∏—è –∑–∞–º–µ–Ω—ã –∫–ª–∞—Å—Å–∞
     QString message =  MessageClass->text() +
                        "\n" + "You are going to replace class \"" + InputClassName->text() + "\"";
 
     DeleteDialog* dialog = new DeleteDialog("Replacing class", message);
 
-    // œË ÔÓ‰Ú‚Â‰ÊÂÌËË Á‡ÏÂÌ˚ ÍÎ‡ÒÒ‡
+    // –ü—Ä–∏ –ø–æ–¥—Ç–≤–µ—Ä–¥–∂–µ–Ω–∏–∏ –∑–∞–º–µ–Ω—ã –∫–ª–∞—Å—Å–∞
     if(dialog->exec() == QDialog::Accepted)
     {
         accept();
@@ -878,7 +742,7 @@ const std::string CrClassDialog::GetLibName() const
     return Libraries->currentText().toUtf8().data();
 }
 
-// ƒË‡ÎÓ„ ‰Îˇ Û‰‡ÎÂÌËˇ ·Ë·ÎËÓÚÂÍË/ÍÎ‡ÒÒ‡
+// –î–∏–∞–ª–æ–≥ –¥–ª—è —É–¥–∞–ª–µ–Ω–∏—è –±–∏–±–ª–∏–æ—Ç–µ–∫–∏/–∫–ª–∞—Å—Å–∞
 DeleteDialog::DeleteDialog(QString title, QString message, QWidget* pwgt)
 {
     setWindowTitle(title);
@@ -923,9 +787,10 @@ void UClassesListWidget::on_action_cl_desc_triggered()
             QTreeWidgetItem* item = ui->treeWidgetStorageByLibs->currentItem();
             if(!item)
                 return;
-            // ≈ÒÎË ÂÒÚ¸ Ó‰ËÚÂÎ¸ - ÁÌ‡˜ËÚ ˝ÎÂÏÂÌÚ ÍÎ‡ÒÒ‡ (Ú.Í. Û ˝ÎÂÏÂÌÚ‡ ÍÎ‡ÒÒ‡ - Ó‰ËÚÂÎ¸ ˝ÎÂÏÂÌÚ ·Ë·ËÎÓÚÂÍË)
-            // Û ˝ÎÂÏÂÌÚ‡ ·Ë·ÎËÓÚÂÍË ÓÚÒÛÚÒÚ‚ÛÂÚ Ó‰ËÚÂÎ¸ÒÍËÈ ˝ÎÂÏÂÌÚ
-            if(item->parent())
+            // –ö–ª–∞—Å—Å - —ç—Ç–æ —ç–ª–µ–º–µ–Ω—Ç –±–µ–∑ –¥–µ—Ç–µ–π (–ª–∏—Å—Ç –¥–µ—Ä–µ–≤–∞)
+            // –í —Ç—Ä–µ—Ö—É—Ä–æ–≤–Ω–µ–≤–æ–π —Å—Ç—Ä—É–∫—Ç—É—Ä–µ: –ë–∏–±–ª–∏–æ—Ç–µ–∫–∞ -> –ì—Ä—É–ø–ø–∞ -> –ö–ª–∞—Å—Å
+            // –í –¥–≤—É—Ö—É—Ä–æ–≤–Ω–µ–≤–æ–π —Å—Ç—Ä—É–∫—Ç—É—Ä–µ: –ë–∏–±–ª–∏–æ—Ç–µ–∫–∞ -> –ö–ª–∞—Å—Å
+            if(item->childCount() == 0)
                 ModelScheme->classDescription(item->text(0).toStdString());
             break;
         }
@@ -975,5 +840,429 @@ void UClassesListWidget::on_listWidgetStorageByName_itemDoubleClicked(QListWidge
 void UClassesListWidget::on_listWidgetRTlibClasses_itemDoubleClicked(QListWidgetItem *item)
 {
     on_action_cl_desc_triggered();
+}
+
+// –†–µ–∞–ª–∏–∑–∞—Ü–∏—è –º–µ—Ç–æ–¥–æ–≤ –≥—Ä—É–ø–ø–∏—Ä–æ–≤–∫–∏
+
+GroupingMethod UClassesListWidget::GetCurrentGroupingMethod() const
+{
+    int index = ui->comboBoxGroupingMethod->currentIndex();
+    if (index >= 0 && index < ui->comboBoxGroupingMethod->count())
+    {
+        return static_cast<GroupingMethod>(ui->comboBoxGroupingMethod->itemData(index).toInt());
+    }
+    return GroupingMethod::None;
+}
+
+QString UClassesListWidget::GetClassGroup(const QString& className, GroupingMethod method) const
+{
+    // –ü—Ä–æ–≤–µ—Ä–∫–∞ –∫—ç—à–∞
+    QString cacheKey = QString("%1_%2").arg(className).arg(static_cast<int>(method));
+    if (GroupingCache.contains(cacheKey))
+    {
+        return GroupingCache[cacheKey];
+    }
+    
+    QString group;
+    switch (method)
+    {
+        case GroupingMethod::ByDescription:
+            group = GroupByDescription(className);
+            break;
+        case GroupingMethod::ByInheritance:
+            group = GroupByInheritance(className);
+            break;
+        case GroupingMethod::ByBaseComponent:
+            group = GroupByBaseComponent(className);
+            break;
+        case GroupingMethod::None:
+        default:
+            group = "";
+            break;
+    }
+    
+    // –°–æ—Ö—Ä–∞–Ω–µ–Ω–∏–µ –≤ –∫—ç—à
+    GroupingCache[cacheKey] = group;
+    return group;
+}
+
+QString UClassesListWidget::GroupByDescription(const QString& className) const
+{
+    auto storage = RDK::GetStorageLock();
+    if (!storage)
+        return "Other";
+    
+    RDK::UEPtr<RDK::UContainerDescription> desc = storage->GetClassDescription(className.toStdString(), true);
+    if (!desc)
+        return "Other";
+    
+    QString header = QString::fromStdString(desc->GetHeader()).toLower();
+    QString description = QString::fromStdString(desc->GetDescription()).toLower();
+    QString combined = header + " " + description;
+    
+    // –ü–æ–∏—Å–∫ –∫–ª—é—á–µ–≤—ã—Ö —Å–ª–æ–≤
+    if (combined.contains("–Ω–µ–π—Ä–æ–Ω", Qt::CaseInsensitive) || combined.contains("neuron", Qt::CaseInsensitive))
+        return "Neurons";
+    if (combined.contains("—Å–∏–Ω–∞–ø—Å", Qt::CaseInsensitive) || combined.contains("synapse", Qt::CaseInsensitive))
+        return "Synapses";
+    if (combined.contains("–º–µ–º–±—Ä–∞–Ω–∞", Qt::CaseInsensitive) || combined.contains("membrane", Qt::CaseInsensitive))
+        return "Membranes";
+    if (combined.contains("–∫–∞–Ω–∞–ª", Qt::CaseInsensitive) || combined.contains("channel", Qt::CaseInsensitive))
+        return "Channels";
+    if (combined.contains("–≥–µ–Ω–µ—Ä–∞—Ç–æ—Ä", Qt::CaseInsensitive) || combined.contains("generator", Qt::CaseInsensitive))
+        return "Generators";
+    if (combined.contains("–∑–æ–Ω–∞", Qt::CaseInsensitive) || combined.contains("zone", Qt::CaseInsensitive))
+        return "Zones";
+    if (combined.contains("—Å–ª–æ–π", Qt::CaseInsensitive) || combined.contains("layer", Qt::CaseInsensitive))
+        return "Layers";
+    if (combined.contains("–º–æ–¥–µ–ª—å", Qt::CaseInsensitive) || combined.contains("model", Qt::CaseInsensitive))
+        return "Models";
+    if (combined.contains("—Å–µ—Ç—å", Qt::CaseInsensitive) || combined.contains("net", Qt::CaseInsensitive))
+        return "Networks";
+    
+    return "Other";
+}
+
+QString UClassesListWidget::GroupByInheritance(const QString& className) const
+{
+    // –ò—Å–ø–æ–ª—å–∑—É–µ–º –∞–Ω–∞–ª–∏–∑ –∏–º–µ–Ω–∏ –∫–ª–∞—Å—Å–∞ –≤–º–µ—Å—Ç–æ —Å–æ–∑–¥–∞–Ω–∏—è –æ–±—ä–µ–∫—Ç–∞
+    // –≠—Ç–æ –±–µ–∑–æ–ø–∞—Å–Ω–µ–µ, —Ç–∞–∫ –∫–∞–∫ –Ω–µ —Ç—Ä–µ–±—É–µ—Ç –∏–Ω–∏—Ü–∏–∞–ª–∏–∑–∞—Ü–∏–∏ –æ–±—ä–µ–∫—Ç–∞ –∏ –µ–≥–æ —Å–≤—è–∑–µ–π
+    QString classNameLower = className.toLower();
+    
+    // –ê–Ω–∞–ª–∏–∑ –∏–º–µ–Ω –∫–ª–∞—Å—Å–æ–≤ –∏–∑ NPulseLib –∏ –¥—Ä—É–≥–∏—Ö –±–∏–±–ª–∏–æ—Ç–µ–∫
+    // –ù–µ–π—Ä–æ–Ω—ã
+    if (classNameLower.contains("neuron", Qt::CaseInsensitive) || 
+        classNameLower.contains("–Ω–µ–π—Ä–æ–Ω", Qt::CaseInsensitive))
+    {
+        // –ò—Å–∫–ª—é—á–∞–µ–º –º–µ–º–±—Ä–∞–Ω—ã –Ω–µ–π—Ä–æ–Ω–æ–≤ –∏ –¥—Ä—É–≥–∏–µ –∫–æ–º–ø–æ–Ω–µ–Ω—Ç—ã
+        if (!classNameLower.contains("membrane", Qt::CaseInsensitive) &&
+            !classNameLower.contains("–º–µ–º–±—Ä–∞–Ω–∞", Qt::CaseInsensitive))
+        {
+            return "Neurons";
+        }
+    }
+    
+    // –°–∏–Ω–∞–ø—Å—ã
+    if (classNameLower.contains("synapse", Qt::CaseInsensitive) || 
+        classNameLower.contains("—Å–∏–Ω–∞–ø—Å", Qt::CaseInsensitive))
+    {
+        return "Synapses";
+    }
+    
+    // –ú–µ–º–±—Ä–∞–Ω—ã
+    if (classNameLower.contains("membrane", Qt::CaseInsensitive) || 
+        classNameLower.contains("–º–µ–º–±—Ä–∞–Ω–∞", Qt::CaseInsensitive))
+    {
+        return "Membranes";
+    }
+    
+    // –ö–∞–Ω–∞–ª—ã
+    if (classNameLower.contains("channel", Qt::CaseInsensitive) || 
+        classNameLower.contains("–∫–∞–Ω–∞–ª", Qt::CaseInsensitive))
+    {
+        return "Channels";
+    }
+    
+    // –ì–µ–Ω–µ—Ä–∞—Ç–æ—Ä—ã
+    if (classNameLower.contains("generator", Qt::CaseInsensitive) || 
+        classNameLower.contains("–≥–µ–Ω–µ—Ä–∞—Ç–æ—Ä", Qt::CaseInsensitive))
+    {
+        return "Generators";
+    }
+    
+    // –ó–æ–Ω—ã
+    if (classNameLower.contains("zone", Qt::CaseInsensitive) || 
+        classNameLower.contains("–∑–æ–Ω–∞", Qt::CaseInsensitive) ||
+        classNameLower.contains("ltzone", Qt::CaseInsensitive))
+    {
+        return "Zones";
+    }
+    
+    // –°–ª–æ–∏
+    if (classNameLower.contains("layer", Qt::CaseInsensitive) || 
+        classNameLower.contains("—Å–ª–æ–π", Qt::CaseInsensitive))
+    {
+        return "Layers";
+    }
+    
+    // –ü–æ–ø—ã—Ç–∫–∞ –æ–ø—Ä–µ–¥–µ–ª–∏—Ç—å —á–µ—Ä–µ–∑ –ø–∞—Ç—Ç–µ—Ä–Ω—ã –∏–º–µ–Ω –∫–ª–∞—Å—Å–æ–≤ –∏–∑ –∏–∑–≤–µ—Å—Ç–Ω—ã—Ö –±–∏–±–ª–∏–æ—Ç–µ–∫
+    // NPulseLib –ø–∞—Ç—Ç–µ—Ä–Ω—ã
+    if (classNameLower.startsWith("np") || classNameLower.startsWith("nc"))
+    {
+        // NP - –æ–±—ã—á–Ω–æ –Ω–µ–π—Ä–æ–Ω—ã –≤ PulseLib
+        if (classNameLower.startsWith("np") && 
+            (classNameLower.contains("neuron") || 
+             classNameLower.contains("hebb") ||
+             classNameLower.contains("afferent")))
+        {
+            return "Neurons";
+        }
+        // NC - –æ–±—ã—á–Ω–æ –∫–æ–º–ø–æ–Ω–µ–Ω—Ç—ã –∫–∞–±–µ–ª–µ–π
+        if (classNameLower.startsWith("nc"))
+        {
+            if (classNameLower.contains("synapse") || classNameLower.contains("syn"))
+                return "Synapses";
+            if (classNameLower.contains("membrane") || classNameLower.contains("mem"))
+                return "Membranes";
+            if (classNameLower.contains("channel") || classNameLower.contains("chan"))
+                return "Channels";
+            if (classNameLower.contains("generator") || classNameLower.contains("gen"))
+                return "Generators";
+            if (classNameLower.contains("neuron"))
+                return "Neurons";
+        }
+    }
+    
+    return "Other";
+}
+
+QString UClassesListWidget::GroupByBaseComponent(const QString& className) const
+{
+    // –ê–Ω–∞–ª–∏–∑ –∏–º–µ–Ω–∏ –∫–ª–∞—Å—Å–∞ –∏ –±–∏–±–ª–∏–æ—Ç–µ–∫–∏ –¥–ª—è –æ–ø—Ä–µ–¥–µ–ª–µ–Ω–∏—è –±–∞–∑–æ–≤–æ–≥–æ –∫–æ–º–ø–æ–Ω–µ–Ω—Ç–∞
+    QString classNameLower = className.toLower();
+    
+    // –î–ª—è NPulseLib: –∞–Ω–∞–ª–∏–∑ –ø–∞—Ç—Ç–µ—Ä–Ω–æ–≤ –∏–º–µ–Ω
+    if (classNameLower.contains("neuron", Qt::CaseInsensitive) || 
+        classNameLower.contains("–Ω–µ–π—Ä–æ–Ω", Qt::CaseInsensitive))
+    {
+        // –ü—Ä–æ–≤–µ—Ä—è–µ–º, –Ω–µ —è–≤–ª—è–µ—Ç—Å—è –ª–∏ —ç—Ç–æ –∫–æ–Ω–∫—Ä–µ—Ç–Ω—ã–º —Ç–∏–ø–æ–º –Ω–µ–π—Ä–æ–Ω–∞
+        if (classNameLower.contains("hebb", Qt::CaseInsensitive))
+            return "Neurons";
+        if (classNameLower.contains("afferent", Qt::CaseInsensitive))
+            return "Neurons";
+        if (classNameLower.startsWith("np") || classNameLower.startsWith("nc"))
+            return "Neurons";
+    }
+    
+    if (classNameLower.contains("synapse", Qt::CaseInsensitive) || 
+        classNameLower.contains("—Å–∏–Ω–∞–ø—Å", Qt::CaseInsensitive))
+    {
+        return "Synapses";
+    }
+    
+    if (classNameLower.contains("membrane", Qt::CaseInsensitive) || 
+        classNameLower.contains("–º–µ–º–±—Ä–∞–Ω–∞", Qt::CaseInsensitive))
+    {
+        return "Membranes";
+    }
+    
+    if (classNameLower.contains("channel", Qt::CaseInsensitive) || 
+        classNameLower.contains("–∫–∞–Ω–∞–ª", Qt::CaseInsensitive))
+    {
+        return "Channels";
+    }
+    
+    if (classNameLower.contains("generator", Qt::CaseInsensitive) || 
+        classNameLower.contains("–≥–µ–Ω–µ—Ä–∞—Ç–æ—Ä", Qt::CaseInsensitive))
+    {
+        return "Generators";
+    }
+    
+    if (classNameLower.contains("zone", Qt::CaseInsensitive) || 
+        classNameLower.contains("–∑–æ–Ω–∞", Qt::CaseInsensitive))
+    {
+        return "Zones";
+    }
+    
+    if (classNameLower.contains("layer", Qt::CaseInsensitive) || 
+        classNameLower.contains("—Å–ª–æ–π", Qt::CaseInsensitive))
+    {
+        return "Layers";
+    }
+    
+    // –ü–æ–ø—ã—Ç–∫–∞ –æ–ø—Ä–µ–¥–µ–ª–∏—Ç—å —á–µ—Ä–µ–∑ –±–∏–±–ª–∏–æ—Ç–µ–∫—É
+    auto storage = RDK::GetStorageLock();
+    if (storage)
+    {
+        RDK::UEPtr<RDK::ULibrary> lib = storage->FindCollection(className.toStdString());
+        if (lib)
+        {
+            QString libName = QString::fromStdString(lib->GetName()).toLower();
+            // –î–ª—è –∏–∑–≤–µ—Å—Ç–Ω—ã—Ö –±–∏–±–ª–∏–æ—Ç–µ–∫ –º–æ–∂–Ω–æ –¥–æ–±–∞–≤–∏—Ç—å —Å–ø–µ—Ü–∏–∞–ª—å–Ω—É—é –ª–æ–≥–∏–∫—É
+            if (libName.contains("pulse", Qt::CaseInsensitive))
+            {
+                // –î–æ–ø–æ–ª–Ω–∏—Ç–µ–ª—å–Ω—ã–π –∞–Ω–∞–ª–∏–∑ –¥–ª—è PulseLib
+                if (classNameLower.startsWith("np") && 
+                    (classNameLower.contains("neuron") || classNameLower.contains("neuron")))
+                {
+                    return "Neurons";
+                }
+            }
+        }
+    }
+    
+    return "Other";
+}
+
+void UClassesListWidget::on_comboBoxGroupingMethod_currentIndexChanged(int index)
+{
+    Q_UNUSED(index);
+    // –û—á–∏—â–∞–µ–º –∫—ç—à –ø—Ä–∏ –∏–∑–º–µ–Ω–µ–Ω–∏–∏ –º–µ—Ç–æ–¥–∞ –≥—Ä—É–ø–ø–∏—Ä–æ–≤–∫–∏
+    GroupingCache.clear();
+    // –ü–µ—Ä–µ—Å—Ç—Ä–∞–∏–≤–∞–µ–º –¥–µ—Ä–µ–≤–æ
+    BuildGroupedTree(ui->lineEditSearch->text());
+}
+
+void UClassesListWidget::BuildGroupedTree(const QString& searchText)
+{
+    ui->treeWidgetStorageByLibs->clear();
+    
+    GroupingMethod method = GetCurrentGroupingMethod();
+    
+    // –°–ø–∏—Å–æ–∫ RT –±–∏–±–ª–∏–æ—Ç–µ–∫
+    auto storage = RDK::GetStorageLock();
+    std::string buff;
+    storage->GetLibsNameListByType(buff, 2);
+    QStringList RTlibsNames = QString(buff.c_str()).split(",");
+    
+    // –°–ø–∏—Å–æ–∫ –≤—Å–µ—Ö –∫–æ–º–ø–æ–Ω–µ–Ω—Ç–æ–≤ –∏–∑ RT –±–∏–±–ª–∏–æ—Ç–µ–∫
+    QStringList RTclassesNames;
+    QString str;
+    foreach(str, RTlibsNames)
+    {
+        const char * stringBuff;
+        stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
+        if((stringBuff[0] == '\0'))
+        {
+            Engine_FreeBufString(stringBuff);
+            continue;
+        }
+        QStringList libClasses = QString(stringBuff).split(",");
+        Engine_FreeBufString(stringBuff);
+        RTclassesNames += libClasses;
+    }
+    
+    // –°–ø–∏—Å–æ–∫ Mock –±–∏–±–ª–∏–æ—Ç–µ–∫
+    storage->GetLibsNameListByType(buff, 3);
+    QStringList MockLibsNames = QString(buff.c_str()).split(",");
+    
+    // –°–ø–∏—Å–æ–∫ –≤—Å–µ—Ö –∫–æ–º–ø–æ–Ω–µ–Ω—Ç–æ–≤ –∏–∑ Mock –±–∏–±–ª–∏–æ—Ç–µ–∫
+    QStringList MockClassesNames;
+    foreach(str, MockLibsNames)
+    {
+        const char * stringBuff;
+        stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
+        if((stringBuff[0] == '\0'))
+        {
+            Engine_FreeBufString(stringBuff);
+            continue;
+        }
+        QStringList libClasses = QString(stringBuff).split(",");
+        Engine_FreeBufString(stringBuff);
+        MockClassesNames += libClasses;
+    }
+    
+    // –ü–æ–ª—É—á–µ–Ω–∏–µ —Å–ø–∏—Å–∫–∞ –≤—Å–µ—Ö –±–∏–±–ª–∏–æ—Ç–µ–∫
+    const char * stringBuff = Storage_GetClassLibrariesList();
+    QStringList libraryNames = QString(stringBuff).split(",");
+    Engine_FreeBufString(stringBuff);
+    
+    bool isRTlib = false;
+    bool isMocklib = false;
+    
+    foreach(str, libraryNames)
+    {
+        if(str == "")
+            continue;
+        
+        isMocklib = false;
+        isRTlib = false;
+        
+        if(MockLibsNames.indexOf(str) != -1)
+            isMocklib = true;
+        if(RTlibsNames.indexOf(str) != -1)
+            isRTlib = true;
+        
+        // –ü–æ–ª—É—á–µ–Ω–∏–µ –∫–ª–∞—Å—Å–æ–≤ –±–∏–±–ª–∏–æ—Ç–µ–∫–∏
+        stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
+        QStringList libClasses = QString(stringBuff).split(",");
+        Engine_FreeBufString(stringBuff);
+        
+        // –§–∏–ª—å—Ç—Ä–∞—Ü–∏—è –ø–æ –ø–æ–∏—Å–∫–æ–≤–æ–º—É –∑–∞–ø—Ä–æ—Å—É
+        QStringList filteredClasses;
+        bool libMatchesSearch = str.contains(searchText, Qt::CaseInsensitive);
+        
+        foreach(QString className, libClasses)
+        {
+            if(className == "")
+                continue;
+            
+            bool classMatchesSearch = className.contains(searchText, Qt::CaseInsensitive);
+            
+            if(searchText.isEmpty() || libMatchesSearch || classMatchesSearch)
+            {
+                filteredClasses.append(className);
+            }
+        }
+        
+        // –ï—Å–ª–∏ –Ω–µ—Ç –∫–ª–∞—Å—Å–æ–≤ –ø–æ—Å–ª–µ —Ñ–∏–ª—å—Ç—Ä–∞—Ü–∏–∏, –ø—Ä–æ–ø—É—Å–∫–∞–µ–º –±–∏–±–ª–∏–æ—Ç–µ–∫—É
+        if(filteredClasses.isEmpty() && !libMatchesSearch)
+            continue;
+        
+        // –°–æ–∑–¥–∞–Ω–∏–µ —ç–ª–µ–º–µ–Ω—Ç–∞ –±–∏–±–ª–∏–æ—Ç–µ–∫–∏
+        QTreeWidgetItem* libItem = new QTreeWidgetItem(ui->treeWidgetStorageByLibs);
+        libItem->setExpanded(true);
+        libItem->setText(0, str);
+        if(isMocklib)
+            libItem->setForeground(0, QBrush(Qt::darkMagenta));
+        if(isRTlib)
+            libItem->setForeground(0, QBrush(Qt::darkBlue));
+        
+        if(method == GroupingMethod::None)
+        {
+            // –ë–µ–∑ –≥—Ä—É–ø–ø–∏—Ä–æ–≤–∫–∏ - –¥–≤—É—Ö—É—Ä–æ–≤–Ω–µ–≤–∞—è —Å—Ç—Ä—É–∫—Ç—É—Ä–∞
+            foreach(QString className, filteredClasses)
+            {
+                QTreeWidgetItem* classItem = new QTreeWidgetItem(libItem);
+                classItem->setText(0, className);
+                if(isMocklib)
+                    classItem->setForeground(0, QBrush(Qt::darkYellow));
+                if(isRTlib)
+                    classItem->setForeground(0, QBrush(Qt::darkCyan));
+            }
+        }
+        else
+        {
+            // –° –≥—Ä—É–ø–ø–∏—Ä–æ–≤–∫–æ–π - —Ç—Ä–µ—Ö—É—Ä–æ–≤–Ω–µ–≤–∞—è —Å—Ç—Ä—É–∫—Ç—É—Ä–∞
+            QHash<QString, QStringList> groups;
+            
+            foreach(QString className, filteredClasses)
+            {
+                QString group = GetClassGroup(className, method);
+                if(group.isEmpty())
+                    group = "Other";
+                
+                if(!groups.contains(group))
+                    groups[group] = QStringList();
+                groups[group].append(className);
+            }
+            
+            // –°–æ–∑–¥–∞–Ω–∏–µ –≥—Ä—É–ø–ø –∏ –∫–ª–∞—Å—Å–æ–≤
+            QStringList groupNames = groups.keys();
+            groupNames.sort();
+            
+            foreach(QString groupName, groupNames)
+            {
+                QTreeWidgetItem* groupItem = new QTreeWidgetItem(libItem);
+                groupItem->setExpanded(true);
+                groupItem->setText(0, groupName);
+                
+                QStringList classesInGroup = groups[groupName];
+                classesInGroup.sort();
+                
+                foreach(QString className, classesInGroup)
+                {
+                    QTreeWidgetItem* classItem = new QTreeWidgetItem(groupItem);
+                    classItem->setText(0, className);
+                    if(isMocklib)
+                        classItem->setForeground(0, QBrush(Qt::darkYellow));
+                    if(isRTlib)
+                        classItem->setForeground(0, QBrush(Qt::darkCyan));
+                }
+            }
+        }
+    }
+    
+    ui->treeWidgetStorageByLibs->sortItems(0, Qt::AscendingOrder);
 }
 

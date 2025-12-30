@@ -158,7 +158,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, long double &data)
  return USimpleFromStorage(storage,data);
 }
 
-// Вектора
+// Р’РµРєС‚РѕСЂР°
 USerStorageBinary& operator << (USerStorageBinary& storage, const std::vector<bool> &data)
 {
  size_t size=data.size();
@@ -192,7 +192,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, std::vector<bool> &d
  return storage;
 }
 
-// Строки
+// РЎС‚СЂРѕРєРё
 //template<typename T>
 USerStorageBinary& operator << (USerStorageBinary& storage, const std::string &data)
 {

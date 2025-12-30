@@ -23,11 +23,11 @@ __fastcall TUShowProgressBarForm::TUShowProgressBarForm(TComponent* Owner)
 {
 }
 //---------------------------------------------------------------------------
-// Методы
+// РњРµС‚РѕРґС‹
 // ------------------------------------------
-// Методы управления окном статуса выполнения
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РѕРєРЅРѕРј СЃС‚Р°С‚СѓСЃР° РІС‹РїРѕР»РЅРµРЅРёСЏ
 // ------------------------------------------
-// Возвращает заголовок окна
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р·Р°РіРѕР»РѕРІРѕРє РѕРєРЅР°
 String __fastcall TUShowProgressBarForm::GetWinTitle(void)
 {
 // if(!Visible)
@@ -37,7 +37,7 @@ String __fastcall TUShowProgressBarForm::GetWinTitle(void)
 }
 
 
-// Устанавливает заголовок окна
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·Р°РіРѕР»РѕРІРѕРє РѕРєРЅР°
 void __fastcall TUShowProgressBarForm::SetWinTitle(String title)
 {
 // if(!Visible)
@@ -47,7 +47,7 @@ void __fastcall TUShowProgressBarForm::SetWinTitle(String title)
  Repaint();
 }
 
-// Возвращает заголовки полос состояния
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р·Р°РіРѕР»РѕРІРєРё РїРѕР»РѕСЃ СЃРѕСЃС‚РѕСЏРЅРёСЏ
 String __fastcall TUShowProgressBarForm::GetBarHeader(unsigned int num)
 {
 // if(!Visible)
@@ -64,7 +64,7 @@ String __fastcall TUShowProgressBarForm::GetBarHeader(unsigned int num)
  return ""; 
 }
 
-// Устанавливает заголовки полос состояния
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·Р°РіРѕР»РѕРІРєРё РїРѕР»РѕСЃ СЃРѕСЃС‚РѕСЏРЅРёСЏ
 void __fastcall TUShowProgressBarForm::SetBarHeader(unsigned int num, String title)
 {
 // if(!Visible)
@@ -83,7 +83,7 @@ void __fastcall TUShowProgressBarForm::SetBarHeader(unsigned int num, String tit
  Repaint();
 }
 
-// Возвращает состояние конкретной полосы
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ РєРѕРЅРєСЂРµС‚РЅРѕР№ РїРѕР»РѕСЃС‹
 int __fastcall TUShowProgressBarForm::GetBarStatus(unsigned int num)
 {
 // if(!Visible)
@@ -101,7 +101,7 @@ int __fastcall TUShowProgressBarForm::GetBarStatus(unsigned int num)
  return 0; 
 }
 
-// Увеличивает состояние конкретной полосы
+// РЈРІРµР»РёС‡РёРІР°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ РєРѕРЅРєСЂРµС‚РЅРѕР№ РїРѕР»РѕСЃС‹
 void __fastcall TUShowProgressBarForm::IncBarStatus(unsigned int num, int val)
 {
 // if(!Visible)
@@ -123,7 +123,7 @@ void __fastcall TUShowProgressBarForm::IncBarStatus(unsigned int num, int val)
  ProgressBar2->Update();
 }
 
-// Уменьшает состояние конкретной полосы
+// РЈРјРµРЅСЊС€Р°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ РєРѕРЅРєСЂРµС‚РЅРѕР№ РїРѕР»РѕСЃС‹
 void __fastcall TUShowProgressBarForm::DecBarStatus(unsigned int num, int val)
 {
 // if(!Visible)
@@ -145,7 +145,7 @@ void __fastcall TUShowProgressBarForm::DecBarStatus(unsigned int num, int val)
  ProgressBar2->Update();
 }
 
-// Сбрасывает состояние конкретной полосы
+// РЎР±СЂР°СЃС‹РІР°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ РєРѕРЅРєСЂРµС‚РЅРѕР№ РїРѕР»РѕСЃС‹
 void __fastcall TUShowProgressBarForm::ResetBarStatus(unsigned int num, int currvalue, int total)
 {
 // if(!Visible)

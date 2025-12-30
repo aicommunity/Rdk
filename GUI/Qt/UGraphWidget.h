@@ -6,6 +6,8 @@
 #include "qcustomplot.h"
 #include "UGraphPaintWidget.h"
 #include "UComponentPropertySelectionWidget.h"
+#include "UGuiModelSnapshot.h"
+#include <vector>
 
 
 namespace Ui {
@@ -16,88 +18,100 @@ class UGraphWidget : public UVisualControllerWidget
 {
         Q_OBJECT
 
-        /// Вектор X, в которых хранятся массивы точек, по которым строятся графики
-        std::vector<QVector<double> > masX;
+        struct GraphSeriesBuffer
+        {
+            QVector<double> X;
+            QVector<double> Y;
+            bool Available;
 
-        /// Вектор Y, в которых хранятся массивы точек, по которым строятся графики
-        std::vector<QVector<double> > masY;
+            GraphSeriesBuffer()
+                : Available(true)
+            {
+                X.reserve(1024);
+                Y.reserve(1024);
+            }
 
-        /// Флаг обновления правой границы графика
-        /// Если он -1, то не обновляется
-        /// если 1 - обновляется
+            void Append(double xValue, double yValue, int capacity);
+        };
+
+        std::vector<GraphSeriesBuffer> SeriesBuffers;
+
+        /// Р¤Р»Р°Рі РѕР±РЅРѕРІР»РµРЅРёСЏ РїСЂР°РІРѕР№ РіСЂР°РЅРёС†С‹ РіСЂР°С„РёРєР°
+        /// Р•СЃР»Рё РѕРЅ -1, С‚Рѕ РЅРµ РѕР±РЅРѕРІР»СЏРµС‚СЃСЏ
+        /// РµСЃР»Рё 1 - РѕР±РЅРѕРІР»СЏРµС‚СЃСЏ
         int flagUpdateBordersX;
         int flagUpdateBordersMaxY;
         int flagUpdateBordersMinY;
 
-        /// Флаг говорит о том, что должны указываться последние
-        /// Н-элементов по оси Х
-        /// Если число -1, то график должен
+        /// Р¤Р»Р°Рі РіРѕРІРѕСЂРёС‚ Рѕ С‚РѕРј, С‡С‚Рѕ РґРѕР»Р¶РЅС‹ СѓРєР°Р·С‹РІР°С‚СЊСЃСЏ РїРѕСЃР»РµРґРЅРёРµ
+        /// Рќ-СЌР»РµРјРµРЅС‚РѕРІ РїРѕ РѕСЃРё РҐ
+        /// Р•СЃР»Рё С‡РёСЃР»Рѕ -1, С‚Рѕ РіСЂР°С„РёРє РґРѕР»Р¶РµРЅ
         int lastNElements;
 
-        ///Подпись оси х
+        ///РџРѕРґРїРёСЃСЊ РѕСЃРё С…
         QString lableX;
-        ///Подпись оси х
+        ///РџРѕРґРїРёСЃСЊ РѕСЃРё С…
         QString lableY;
 
     public:
-        /// Конструктор
-        /// Задает врем обновления графика
-        /// Создает в себе Виджет графика
-        /// Связывает кнопки с действиями Виджета графика
-        /// Определяет начальные параметры: размеры СК, подписи осей
+        /// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ
+        /// Р—Р°РґР°РµС‚ РІСЂРµРј РѕР±РЅРѕРІР»РµРЅРёСЏ РіСЂР°С„РёРєР°
+        /// РЎРѕР·РґР°РµС‚ РІ СЃРµР±Рµ Р’РёРґР¶РµС‚ РіСЂР°С„РёРєР°
+        /// РЎРІСЏР·С‹РІР°РµС‚ РєРЅРѕРїРєРё СЃ РґРµР№СЃС‚РІРёСЏРјРё Р’РёРґР¶РµС‚Р° РіСЂР°С„РёРєР°
+        /// РћРїСЂРµРґРµР»СЏРµС‚ РЅР°С‡Р°Р»СЊРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹: СЂР°Р·РјРµСЂС‹ РЎРљ, РїРѕРґРїРёСЃРё РѕСЃРµР№
         explicit UGraphWidget(QWidget *parent = NULL, RDK::UApplication* app = NULL);
 
-        /// Деструктор
+        /// Р”РµСЃС‚СЂСѓРєС‚РѕСЂ
         ~UGraphWidget();
 
-        /// Передача значений, по которым строить график
-        /// Параметры номер графика, координаты X, координаты Y
+        /// РџРµСЂРµРґР°С‡Р° Р·РЅР°С‡РµРЅРёР№, РїРѕ РєРѕС‚РѕСЂС‹Рј СЃС‚СЂРѕРёС‚СЊ РіСЂР°С„РёРє
+        /// РџР°СЂР°РјРµС‚СЂС‹ РЅРѕРјРµСЂ РіСЂР°С„РёРєР°, РєРѕРѕСЂРґРёРЅР°С‚С‹ X, РєРѕРѕСЂРґРёРЅР°С‚С‹ Y
         void addDataToGraph(size_t id, std::vector<double> X1, std::vector<double> Y1);
         void addDataToGraph(size_t id, double X1, double Y1);
 
-        /// Добавляет на СК основные начальные параметры пааметры
-        /// Границы СК, подписи осей
+        /// Р”РѕР±Р°РІР»СЏРµС‚ РЅР° РЎРљ РѕСЃРЅРѕРІРЅС‹Рµ РЅР°С‡Р°Р»СЊРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹ РїР°Р°РјРµС‚СЂС‹
+        /// Р“СЂР°РЅРёС†С‹ РЎРљ, РїРѕРґРїРёСЃРё РѕСЃРµР№
         void mainGraphSettings (double leftLimit, double rightLimit,double lowerLimit, double upperLimit,
                                      const QString& nameX, const QString& nameY);
 
-        /// Указывает параметры структуры, характеризующие вид графика (цвет, имя)
-        /// Возвращает индекс
+        /// РЈРєР°Р·С‹РІР°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ СЃС‚СЂСѓРєС‚СѓСЂС‹, С…Р°СЂР°РєС‚РµСЂРёР·СѓСЋС‰РёРµ РІРёРґ РіСЂР°С„РёРєР° (С†РІРµС‚, РёРјСЏ)
+        /// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅРґРµРєСЃ
         int addGraphParameters(const std::string &graphName, int myColor);
         int addGraphParameters(const std::string &graphName);
 
-        /// По индексу добавляет источник данных для конкретного графика
+        /// РџРѕ РёРЅРґРµРєСЃСѓ РґРѕР±Р°РІР»СЏРµС‚ РёСЃС‚РѕС‡РЅРёРє РґР°РЅРЅС‹С… РґР»СЏ РєРѕРЅРєСЂРµС‚РЅРѕРіРѕ РіСЂР°С„РёРєР°
         void setGraphDataSource(int graph_index, int channel_index, const std::string &componentName,
                                 const std::string &propertyName, const std::string &type, int jx, int jy);
 
-        ///Выставляет нужное значение currentItem
+        ///Р’С‹СЃС‚Р°РІР»СЏРµС‚ РЅСѓР¶РЅРѕРµ Р·РЅР°С‡РµРЅРёРµ currentItem
         void setCurrentItem(int myCurrentItem);
 
-        ///Возвращает указатель на private OtherWindow
+        ///Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° private OtherWindow
         UGraphPaintWidget *getGraphPainter() const;
 
-        ///Обновляет график
-        ///Обращаемся к ядру, берем матрицу
-        ///Ее данные положим на этот график
+        ///РћР±РЅРѕРІР»СЏРµС‚ РіСЂР°С„РёРє
+        ///РћР±СЂР°С‰Р°РµРјСЃСЏ Рє СЏРґСЂСѓ, Р±РµСЂРµРј РјР°С‚СЂРёС†Сѓ
+        ///Р•Рµ РґР°РЅРЅС‹Рµ РїРѕР»РѕР¶РёРј РЅР° СЌС‚РѕС‚ РіСЂР°С„РёРє
         virtual void AUpdateInterface();
 
-        /// Запись файла настроек
-        virtual void ASaveParameters();
-        /// Считывание файла настроек
-        virtual void ALoadParameters();
+        /// РЎРѕС…СЂР°РЅРµРЅРёРµ РїР°СЂР°РјРµС‚СЂРѕРІ РІ Interface.xml
+        void ASaveParameters(RDK::USerStorageXML &xml) override;
+        /// Р—Р°РіСЂСѓР·РєР° РїР°СЂР°РјРµС‚СЂРѕРІ РёР· Interface.xml
+        void ALoadParameters(RDK::USerStorageXML &xml) override;
 
 signals:
 
-        ///Сигнал от кнопки delAllButton
+        ///РЎРёРіРЅР°Р» РѕС‚ РєРЅРѕРїРєРё delAllButton
         void delAllButtonSignal();
 
-        ///Сигнал рисовалке, что нужно нарисовать
-        ///В графике id по точкам X и Y продолжение графика
+        ///РЎРёРіРЅР°Р» СЂРёСЃРѕРІР°Р»РєРµ, С‡С‚Рѕ РЅСѓР¶РЅРѕ РЅР°СЂРёСЃРѕРІР°С‚СЊ
+        ///Р’ РіСЂР°С„РёРєРµ id РїРѕ С‚РѕС‡РєР°Рј X Рё Y РїСЂРѕРґРѕР»Р¶РµРЅРёРµ РіСЂР°С„РёРєР°
         void transferDataSignal(int id, QVector<double> X, QVector<double> Y);
 
-        ///Сигнал от кнопки changeColor
+        ///РЎРёРіРЅР°Р» РѕС‚ РєРЅРѕРїРєРё changeColor
         void changeColorSignal();
 
-        ///Сигнал от кнопки сhangeCurrentItem
+        ///РЎРёРіРЅР°Р» РѕС‚ РєРЅРѕРїРєРё СЃhangeCurrentItem
         void changeCurrentItemSignal();
 
 public slots:
@@ -105,10 +119,29 @@ public slots:
         void slotActionDeleteCurrentItem();
         void slotActionSettings();
 
+private slots:
+        /// Handle snapshot property value updates (lock-free)
+        void onPropertyValuesUpdated(NMSDK::UGuiSnapshotPtr snapshot);
 
 private:
         Ui::UGraphWidget* ui;
         UGraphPaintWidget* graphPainter;
+        void ensureBuffer(size_t index);
+        int maxBufferLength() const;
+
+        void SaveLegacySettings() const;
+        bool LoadLegacySettings();
+        void SaveXmlSnapshot(RDK::USerStorageXML &xml) const;
+        bool LoadFromXml(RDK::USerStorageXML &xml);
+
+        /// Register property subscriptions for all graph data sources
+        void updatePropertySubscriptions();
+
+        /// Unsubscribe from all properties
+        void clearPropertySubscriptions();
+
+        /// Build property key from graph data source
+        NMSDK::UGuiPropertyKey buildPropertyKey(const TSingleGraph& graph) const;
 };
 
 #endif // U_GRAPH_WIDGET_H

@@ -13,13 +13,13 @@ class TImageFrame;
 
 enum TVideoCaptureThreadCommands { tvcNone=0, tvcStart=1, tvcStop=2, tvcTerminate=3, tvcRecreate=4, tvcHalt=5 };
 
-/// Описание команды
+/// РћРїРёСЃР°РЅРёРµ РєРѕРјР°РЅРґС‹
 struct TVideoCaptureThreadCmdDescr
 {
-/// Идентификатор команды
+/// РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєРѕРјР°РЅРґС‹
 TVideoCaptureThreadCommands Id;
 
-/// Ожидаемое время исполнения команды
+/// РћР¶РёРґР°РµРјРѕРµ РІСЂРµРјСЏ РёСЃРїРѕР»РЅРµРЅРёСЏ РєРѕРјР°РЅРґС‹
 double ExecTime;
 
 TVideoCaptureThreadCmdDescr(void);
@@ -38,19 +38,19 @@ class TVideoOutputFrame;
 class TVideoCaptureThread: public TThread
 {
 private:
-/// Очередь команд управления тредом
-/// <временная метка команды, ID команды>
+/// РћС‡РµСЂРµРґСЊ РєРѕРјР°РЅРґ СѓРїСЂР°РІР»РµРЅРёСЏ С‚СЂРµРґРѕРј
+/// <РІСЂРµРјРµРЅРЅР°СЏ РјРµС‚РєР° РєРѕРјР°РЅРґС‹, ID РєРѕРјР°РЅРґС‹>
 std::list<std::pair<double,TVideoCaptureThreadCmdDescr> > CommandQueue;
 
-/// Мьютекс для разделения доступа к командам
+/// РњСЊСЋС‚РµРєСЃ РґР»СЏ СЂР°Р·РґРµР»РµРЅРёСЏ РґРѕСЃС‚СѓРїР° Рє РєРѕРјР°РЅРґР°Рј
 //TMutex* CommandMutex;
 
-protected: // Параметры
-/// Желаемый FPS
-/// Если 0, то FPS источника
+protected: // РџР°СЂР°РјРµС‚СЂС‹
+/// Р–РµР»Р°РµРјС‹Р№ FPS
+/// Р•СЃР»Рё 0, С‚Рѕ FPS РёСЃС‚РѕС‡РЅРёРєР°
 RDK::UELockVar<double> Fps;
 
-/// Источник видео
+/// РСЃС‚РѕС‡РЅРёРє РІРёРґРµРѕ
 /// 0 - bmp
 /// 1 - avi
 /// 2 - camera
@@ -60,217 +60,217 @@ RDK::UELockVar<double> Fps;
 /// 6 - shared memory
 RDK::UELockVar<int> SourceMode;
 
-/// Индекс канала в библиотеке аналитики, управляемый тредом
+/// РРЅРґРµРєСЃ РєР°РЅР°Р»Р° РІ Р±РёР±Р»РёРѕС‚РµРєРµ Р°РЅР°Р»РёС‚РёРєРё, СѓРїСЂР°РІР»СЏРµРјС‹Р№ С‚СЂРµРґРѕРј
 RDK::UELockVar<int> ChannelIndex;
 
-/// Режим синхронизации с расчетом
-/// 0 - Нет сихнронизации с расчетом
-/// 1 - Синхронизация с расчетом включена
+/// Р РµР¶РёРј СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё СЃ СЂР°СЃС‡РµС‚РѕРј
+/// 0 - РќРµС‚ СЃРёС…РЅСЂРѕРЅРёР·Р°С†РёРё СЃ СЂР°СЃС‡РµС‚РѕРј
+/// 1 - РЎРёРЅС…СЂРѕРЅРёР·Р°С†РёСЏ СЃ СЂР°СЃС‡РµС‚РѕРј РІРєР»СЋС‡РµРЅР°
 RDK::UELockVar<int> SyncMode;
 
-/// Флаг повтора воспроизведения сначала после завершения
+/// Р¤Р»Р°Рі РїРѕРІС‚РѕСЂР° РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ СЃРЅР°С‡Р°Р»Р° РїРѕСЃР»Рµ Р·Р°РІРµСЂС€РµРЅРёСЏ
 RDK::UELockVar<bool> RepeatFlag;
 
-/// Режим восстановления после сбоя захвата
-/// 0 - не делать ничего
-/// 1 - попытаться восстановить захват
-/// 2 - вызвать метод останова захвата
+/// Р РµР¶РёРј РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёСЏ РїРѕСЃР»Рµ СЃР±РѕСЏ Р·Р°С…РІР°С‚Р°
+/// 0 - РЅРµ РґРµР»Р°С‚СЊ РЅРёС‡РµРіРѕ
+/// 1 - РїРѕРїС‹С‚Р°С‚СЊСЃСЏ РІРѕСЃСЃС‚Р°РЅРѕРІРёС‚СЊ Р·Р°С…РІР°С‚
+/// 2 - РІС‹Р·РІР°С‚СЊ РјРµС‚РѕРґ РѕСЃС‚Р°РЅРѕРІР° Р·Р°С…РІР°С‚Р°
 RDK::UELockVar<int> RestartMode;
 
-/// Интервал между последним стартом и рестартом, мс
+/// РРЅС‚РµСЂРІР°Р» РјРµР¶РґСѓ РїРѕСЃР»РµРґРЅРёРј СЃС‚Р°СЂС‚РѕРј Рё СЂРµСЃС‚Р°СЂС‚РѕРј, РјСЃ
 RDK::UELockVar<int> RestartInterval;
 
-/// Максимально допустимый интервал между захватами кадра,
-/// после которого мы считаем, что произошла потеря соединения, мс
+/// РњР°РєСЃРёРјР°Р»СЊРЅРѕ РґРѕРїСѓСЃС‚РёРјС‹Р№ РёРЅС‚РµСЂРІР°Р» РјРµР¶РґСѓ Р·Р°С…РІР°С‚Р°РјРё РєР°РґСЂР°,
+/// РїРѕСЃР»Рµ РєРѕС‚РѕСЂРѕРіРѕ РјС‹ СЃС‡РёС‚Р°РµРј, С‡С‚Рѕ РїСЂРѕРёР·РѕС€Р»Р° РїРѕС‚РµСЂСЏ СЃРѕРµРґРёРЅРµРЅРёСЏ, РјСЃ
 RDK::UELockVar<int> MaxInterstepInterval;
 
-/// Желаемое разрешение захвата
+/// Р–РµР»Р°РµРјРѕРµ СЂР°Р·СЂРµС€РµРЅРёРµ Р·Р°С…РІР°С‚Р°
 RDK::UELockVar<int> DesiredWidth;
 RDK::UELockVar<int> DesiredHeight;
 
-/// Флаг включения выбора желаемого разрешения захвата
+/// Р¤Р»Р°Рі РІРєР»СЋС‡РµРЅРёСЏ РІС‹Р±РѕСЂР° Р¶РµР»Р°РµРјРѕРіРѕ СЂР°Р·СЂРµС€РµРЅРёСЏ Р·Р°С…РІР°С‚Р°
 RDK::UELockVar<bool> DesiredResolutionFlag;
 
-protected: // Данные
-/// Флаг состояния треда
-/// 0 - остановлен
-/// 1 - Запущен
+protected: // Р”Р°РЅРЅС‹Рµ
+/// Р¤Р»Р°Рі СЃРѕСЃС‚РѕСЏРЅРёСЏ С‚СЂРµРґР°
+/// 0 - РѕСЃС‚Р°РЅРѕРІР»РµРЅ
+/// 1 - Р—Р°РїСѓС‰РµРЅ
 //RDK::UELockVar<int> ThreadState;
 
-/// Реальное состояние соединения с источником видео
-/// 0 - состояние неизвестно
-/// 1 - источник отключен
-/// 2 - источник запущен
-/// 10 - источник в процессе подключения
+/// Р РµР°Р»СЊРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ СЃРѕРµРґРёРЅРµРЅРёСЏ СЃ РёСЃС‚РѕС‡РЅРёРєРѕРј РІРёРґРµРѕ
+/// 0 - СЃРѕСЃС‚РѕСЏРЅРёРµ РЅРµРёР·РІРµСЃС‚РЅРѕ
+/// 1 - РёСЃС‚РѕС‡РЅРёРє РѕС‚РєР»СЋС‡РµРЅ
+/// 2 - РёСЃС‚РѕС‡РЅРёРє Р·Р°РїСѓС‰РµРЅ
+/// 10 - РёСЃС‚РѕС‡РЅРёРє РІ РїСЂРѕС†РµСЃСЃРµ РїРѕРґРєР»СЋС‡РµРЅРёСЏ
 RDK::UELockVar<int> ConnectionState;
 
-/// Последняя попытка запуска захвата
+/// РџРѕСЃР»РµРґРЅСЏСЏ РїРѕРїС‹С‚РєР° Р·Р°РїСѓСЃРєР° Р·Р°С…РІР°С‚Р°
 RDK::UELockVar<double> LastStartTime;
 
-/// Временная метка последнего кадра в данных реального времени
+/// Р’СЂРµРјРµРЅРЅР°СЏ РјРµС‚РєР° РїРѕСЃР»РµРґРЅРµРіРѕ РєР°РґСЂР° РІ РґР°РЅРЅС‹С… СЂРµР°Р»СЊРЅРѕРіРѕ РІСЂРµРјРµРЅРё
 RDK::UELockVar<double> RealLastTimeStamp;
 
 
 private:
-/// Временная метка последнего кадра
+/// Р’СЂРµРјРµРЅРЅР°СЏ РјРµС‚РєР° РїРѕСЃР»РµРґРЅРµРіРѕ РєР°РґСЂР°
 double LastTimeStamp;
 
-/// Данные изображения
+/// Р”Р°РЅРЅС‹Рµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 RDK::UBitmap Source[2];
 
-/// Указатель на текущее изображение для чтения
+/// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµРєСѓС‰РµРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РґР»СЏ С‡С‚РµРЅРёСЏ
 RDK::UBitmap* ReadSource;
 
-/// Указатель на текущее изображение для записи
+/// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµРєСѓС‰РµРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РґР»СЏ Р·Р°РїРёСЃРё
 RDK::UBitmap* WriteSource;
 
-/// Указатель на владельца
+/// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РІР»Р°РґРµР»СЊС†Р°
 TVideoOutputFrame *Frame;
 
-protected: // События
-/// Снимается на время захвата кадра
+protected: // РЎРѕР±С‹С‚РёСЏ
+/// РЎРЅРёРјР°РµС‚СЃСЏ РЅР° РІСЂРµРјСЏ Р·Р°С…РІР°С‚Р° РєР°РґСЂР°
 HANDLE FrameNotInProgress;
 
-/// Выставлено всегда. Сбрасывается на время доступа к изображению
+/// Р’С‹СЃС‚Р°РІР»РµРЅРѕ РІСЃРµРіРґР°. РЎР±СЂР°СЃС‹РІР°РµС‚СЃСЏ РЅР° РІСЂРµРјСЏ РґРѕСЃС‚СѓРїР° Рє РёР·РѕР±СЂР°Р¶РµРЅРёСЋ
 HANDLE SourceUnlock;
 HANDLE SourceWriteUnlock;
 
-/// Выставляется на время работы видеозахвата
+/// Р’С‹СЃС‚Р°РІР»СЏРµС‚СЃСЏ РЅР° РІСЂРµРјСЏ СЂР°Р±РѕС‚С‹ РІРёРґРµРѕР·Р°С…РІР°С‚Р°
 HANDLE CaptureEnabled;
 
-/// Сбрасывается на время ожидания расчета
+/// РЎР±СЂР°СЃС‹РІР°РµС‚СЃСЏ РЅР° РІСЂРµРјСЏ РѕР¶РёРґР°РЅРёСЏ СЂР°СЃС‡РµС‚Р°
 HANDLE CalcCompleteEvent;
 
-/// Событие блокировки очереди
+/// РЎРѕР±С‹С‚РёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РѕС‡РµСЂРµРґРё
 HANDLE CommandUnlockMutex;
 
 public:
-/// Глобальное событие блокировки запуска видеозахвата
+/// Р“Р»РѕР±Р°Р»СЊРЅРѕРµ СЃРѕР±С‹С‚РёРµ Р±Р»РѕРєРёСЂРѕРІРєРё Р·Р°РїСѓСЃРєР° РІРёРґРµРѕР·Р°С…РІР°С‚Р°
 static HANDLE GlobalStartUnlockMutex;
 
-/// Локальное событие информаирования о запуске видеозахвата
+/// Р›РѕРєР°Р»СЊРЅРѕРµ СЃРѕР±С‹С‚РёРµ РёРЅС„РѕСЂРјР°РёСЂРѕРІР°РЅРёСЏ Рѕ Р·Р°РїСѓСЃРєРµ РІРёРґРµРѕР·Р°С…РІР°С‚Р°
 HANDLE StartInProgressEvent;
 
 public:
 
-/// Выставляется как PulseEvent по завершении источника
+/// Р’С‹СЃС‚Р°РІР»СЏРµС‚СЃСЏ РєР°Рє PulseEvent РїРѕ Р·Р°РІРµСЂС€РµРЅРёРё РёСЃС‚РѕС‡РЅРёРєР°
 HANDLE SourceStoppedEvent;
 
-// Методы
+// РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 __fastcall TVideoCaptureThread(TVideoOutputFrame *frame, bool CreateSuspended);
 virtual __fastcall ~TVideoCaptureThread(void);
 // --------------------------
 
 // --------------------------
-// Управление командами
+// РЈРїСЂР°РІР»РµРЅРёРµ РєРѕРјР°РЅРґР°РјРё
 // --------------------------
 protected:
-/// Добавляет команду в очередь
+/// Р”РѕР±Р°РІР»СЏРµС‚ РєРѕРјР°РЅРґСѓ РІ РѕС‡РµСЂРµРґСЊ
 void AddCommand(TVideoCaptureThreadCmdDescr value);
 
-/// Очищает очередь
+/// РћС‡РёС‰Р°РµС‚ РѕС‡РµСЂРµРґСЊ
 void ClearCommandQueue(void);
 
-/// Осуществляет обработку очередной команды из очереди
+/// РћСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РѕР±СЂР°Р±РѕС‚РєСѓ РѕС‡РµСЂРµРґРЅРѕР№ РєРѕРјР°РЅРґС‹ РёР· РѕС‡РµСЂРµРґРё
 void ProcessCommandQueue(void);
 // --------------------------
 
 // --------------------------
-// Управление параметрами
+// РЈРїСЂР°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
 public:
-/// Источник видео
+/// РСЃС‚РѕС‡РЅРёРє РІРёРґРµРѕ
 int GetSourceMode(void) const;
 
-/// Индекс канала в библиотеке аналитики, управляемый тредом
+/// РРЅРґРµРєСЃ РєР°РЅР°Р»Р° РІ Р±РёР±Р»РёРѕС‚РµРєРµ Р°РЅР°Р»РёС‚РёРєРё, СѓРїСЂР°РІР»СЏРµРјС‹Р№ С‚СЂРµРґРѕРј
 int GetChannelIndex(void) const;
 bool SetChannelIndex(int value);
 
-/// Режим синхронизации с расчетом
+/// Р РµР¶РёРј СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРё СЃ СЂР°СЃС‡РµС‚РѕРј
 int GetSyncMode(void) const;
 bool SetSyncMode(int mode);
 
-/// Возвращает число изображений в последовательности
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РёР·РѕР±СЂР°Р¶РµРЅРёР№ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 virtual long long GetNumBitmaps(void) const=0;
 
-/// Устанавливает текущую позицию в последовательности
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С‚РµРєСѓС‰СѓСЋ РїРѕР·РёС†РёСЋ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 virtual long long GetPosition(void) const=0;
 virtual bool SetPosition(long long index)=0;
 
-/// Флаг повтора воспроизведения сначала после завершения
+/// Р¤Р»Р°Рі РїРѕРІС‚РѕСЂР° РІРѕСЃРїСЂРѕРёР·РІРµРґРµРЅРёСЏ СЃРЅР°С‡Р°Р»Р° РїРѕСЃР»Рµ Р·Р°РІРµСЂС€РµРЅРёСЏ
 virtual bool GetRepeatFlag(void) const;
 virtual bool SetRepeatFlag(bool value);
 
-/// Устанавливает значение FPS
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ FPS
 virtual double GetFps(void) const;
 virtual bool SetFps(double fps);
 
-/// Интервал между последним стартом и рестартом, мс
+/// РРЅС‚РµСЂРІР°Р» РјРµР¶РґСѓ РїРѕСЃР»РµРґРЅРёРј СЃС‚Р°СЂС‚РѕРј Рё СЂРµСЃС‚Р°СЂС‚РѕРј, РјСЃ
 virtual int GetRestartInterval(void) const;
 virtual bool SetRestartInterval(int value);
 
-/// Желаемое разрешение захвата
+/// Р–РµР»Р°РµРјРѕРµ СЂР°Р·СЂРµС€РµРЅРёРµ Р·Р°С…РІР°С‚Р°
 virtual int GetDesiredWidth(void) const;
 virtual bool SetDesiredWidth(int value);
 virtual int GetDesiredHeight(void) const;
 virtual bool SetDesiredHeight(int value);
 
-/// Флаг включения выбора желаемого разрешения захвата
+/// Р¤Р»Р°Рі РІРєР»СЋС‡РµРЅРёСЏ РІС‹Р±РѕСЂР° Р¶РµР»Р°РµРјРѕРіРѕ СЂР°Р·СЂРµС€РµРЅРёСЏ Р·Р°С…РІР°С‚Р°
 virtual bool GetDesiredResolutionFlag(void) const;
 virtual bool SetDesiredResolutionFlag(bool value);
 // --------------------------
 
 // --------------------------
-// Управление данными
+// РЈРїСЂР°РІР»РµРЅРёРµ РґР°РЅРЅС‹РјРё
 // --------------------------
-/// Флаг состояния треда
-/// 0 - остановлен
-/// 1 - Запущен
+/// Р¤Р»Р°Рі СЃРѕСЃС‚РѕСЏРЅРёСЏ С‚СЂРµРґР°
+/// 0 - РѕСЃС‚Р°РЅРѕРІР»РµРЅ
+/// 1 - Р—Р°РїСѓС‰РµРЅ
 //int GetThreadState(void) const;
 
-/// Указатель на владельца
+/// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РІР»Р°РґРµР»СЊС†Р°
 TVideoOutputFrame *GetFrame(void) const;
 bool SetFrame(TVideoOutputFrame * frame);
 
-/// Возвращает разрешение потока
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂР°Р·СЂРµС€РµРЅРёРµ РїРѕС‚РѕРєР°
 virtual int GetWidth(void);
 virtual int GetHeight(void);
 
-/// Создает копию этого потока
+/// РЎРѕР·РґР°РµС‚ РєРѕРїРёСЋ СЌС‚РѕРіРѕ РїРѕС‚РѕРєР°
 virtual RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended)=0;
 
-/// Сохранение настроек в xml
+/// РЎРѕС…СЂР°РЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РІ xml
 virtual bool SaveParameters(RDK::USerStorageXML &xml);
 virtual bool SaveParametersEx(RDK::USerStorageXML &xml);
 virtual bool ASaveParameters(RDK::USerStorageXML &xml);
 
-/// Загрузка и применение настроек из xml
+/// Р—Р°РіСЂСѓР·РєР° Рё РїСЂРёРјРµРЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РёР· xml
 virtual bool LoadParameters(RDK::USerStorageXML &xml);
 virtual bool LoadParametersEx(RDK::USerStorageXML &xml);
 virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 
 // --------------------------
-// Управление событиями
+// РЈРїСЂР°РІР»РµРЅРёРµ СЃРѕР±С‹С‚РёСЏРјРё
 // --------------------------
-/// Выставляется по завершении захвата нового кадра
+/// Р’С‹СЃС‚Р°РІР»СЏРµС‚СЃСЏ РїРѕ Р·Р°РІРµСЂС€РµРЅРёРё Р·Р°С…РІР°С‚Р° РЅРѕРІРѕРіРѕ РєР°РґСЂР°
 HANDLE GetFrameNotInProgress(void) const;
 
-/// Выставлено всегда. Сбрасывается на время доступа к изображению
+/// Р’С‹СЃС‚Р°РІР»РµРЅРѕ РІСЃРµРіРґР°. РЎР±СЂР°СЃС‹РІР°РµС‚СЃСЏ РЅР° РІСЂРµРјСЏ РґРѕСЃС‚СѓРїР° Рє РёР·РѕР±СЂР°Р¶РµРЅРёСЋ
 //HANDLE GetSourceUnlock(void) const;
 
-/// Выставляется на время работы видеозахвата
+/// Р’С‹СЃС‚Р°РІР»СЏРµС‚СЃСЏ РЅР° РІСЂРµРјСЏ СЂР°Р±РѕС‚С‹ РІРёРґРµРѕР·Р°С…РІР°С‚Р°
 HANDLE GetCaptureEnabled(void) const;
 
-/// Сбрасывается на время ожидания расчета
+/// РЎР±СЂР°СЃС‹РІР°РµС‚СЃСЏ РЅР° РІСЂРµРјСЏ РѕР¶РёРґР°РЅРёСЏ СЂР°СЃС‡РµС‚Р°
 HANDLE GetCalcCompleteEvent(void) const;
 // --------------------------
 
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
 virtual void __fastcall Start(double time);
 
@@ -286,30 +286,30 @@ virtual void __fastcall Execute(void);
 virtual void __fastcall ExecuteCaptureInit(void);
 virtual void __fastcall ExecuteCaptureUnInit(void);
 
-/// Возвращает копию изображения с блокировкой
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕРїРёСЋ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ СЃ Р±Р»РѕРєРёСЂРѕРІРєРѕР№
 bool ReadSourceSafe(RDK::UBitmap& dest, double &time_stamp, bool reflect);
 
-/// Записывает изображение в тред с блокировкой
+/// Р—Р°РїРёСЃС‹РІР°РµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІ С‚СЂРµРґ СЃ Р±Р»РѕРєРёСЂРѕРІРєРѕР№
 bool WriteSourceSafe(const RDK::UBitmap& src, double time_stamp, bool reflect);
 bool WriteSourceSafe(Graphics::TBitmap *src, double time_stamp, bool reflect);
 
-// Меняет временную метку с блокировкой
+// РњРµРЅСЏРµС‚ РІСЂРµРјРµРЅРЅСѓСЋ РјРµС‚РєСѓ СЃ Р±Р»РѕРєРёСЂРѕРІРєРѕР№
 virtual bool SetLastTimeStampSafe(double time_stamp);
 
-// Считывает временную метку с блокировкой
+// РЎС‡РёС‚С‹РІР°РµС‚ РІСЂРµРјРµРЅРЅСѓСЋ РјРµС‚РєСѓ СЃ Р±Р»РѕРєРёСЂРѕРІРєРѕР№
 virtual double GetLastTimeStampSafe(void) const;
 
-/// Возвращает 0 если если состояние не определено
-/// Возвращает 1 если если нет подключения к источнику
-/// Возвращает 2 если если есть подключение к источнику
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ 0 РµСЃР»Рё РµСЃР»Рё СЃРѕСЃС‚РѕСЏРЅРёРµ РЅРµ РѕРїСЂРµРґРµР»РµРЅРѕ
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ 1 РµСЃР»Рё РµСЃР»Рё РЅРµС‚ РїРѕРґРєР»СЋС‡РµРЅРёСЏ Рє РёСЃС‚РѕС‡РЅРёРєСѓ
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ 2 РµСЃР»Рё РµСЃР»Рё РµСЃС‚СЊ РїРѕРґРєР»СЋС‡РµРЅРёРµ Рє РёСЃС‚РѕС‡РЅРёРєСѓ
 virtual int CheckConnection(void) const;
 
-/// Возвращает 0 если захват не работает и 1 если активен
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ 0 РµСЃР»Рё Р·Р°С…РІР°С‚ РЅРµ СЂР°Р±РѕС‚Р°РµС‚ Рё 1 РµСЃР»Рё Р°РєС‚РёРІРµРЅ
 virtual int CheckCaptureThreadState(void) const;
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления потоком
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕС‚РѕРєРѕРј
 // --------------------------
 protected:
 virtual bool __fastcall RunCapture(void);
@@ -318,7 +318,7 @@ virtual void __fastcall ARunCapture(void)=0;
 virtual bool __fastcall StopCapture(void);
 virtual void __fastcall AStopCapture(void)=0;
 
-/// Останавливает фактический захват не меняя статуса треда
+/// РћСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С„Р°РєС‚РёС‡РµСЃРєРёР№ Р·Р°С…РІР°С‚ РЅРµ РјРµРЅСЏСЏ СЃС‚Р°С‚СѓСЃР° С‚СЂРµРґР°
 virtual bool __fastcall HaltCapture(void);
 
 virtual bool __fastcall RecreateCapture(void);
@@ -330,61 +330,61 @@ virtual void __fastcall ARecreateCapture(void);
 
 class TVideoCaptureThreadBmp: public TVideoCaptureThread
 {
-protected: // Параметры
-/// Имя файла изображения
+protected: // РџР°СЂР°РјРµС‚СЂС‹
+/// РРјСЏ С„Р°Р№Р»Р° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 RDK::UELockVar<std::string> FileName;
 
 //double Fps;
 
-protected: // Временные изображения
+protected: // Р’СЂРµРјРµРЅРЅС‹Рµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 RDK::UBitmap TempSource;
 Graphics::TBitmap* TempBitmap;
 
 RDK::UELockVar<double> CurrentTimeStamp;
 
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 __fastcall TVideoCaptureThreadBmp(TVideoOutputFrame *frame, bool CreateSuspended);
 virtual __fastcall ~TVideoCaptureThreadBmp(void);
 // --------------------------
 
 // --------------------------
-// Управление параметрами
+// РЈРїСЂР°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
-/// Имя файла изображения
+/// РРјСЏ С„Р°Р№Р»Р° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 std::string GetFileName(void) const;
 bool SetFileName(const std::string& value);
 
-/// Возвращает число изображений в последовательности
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РёР·РѕР±СЂР°Р¶РµРЅРёР№ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 virtual long long GetNumBitmaps(void) const;
 
-/// Устанавливает текущую позицию в последовательности
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С‚РµРєСѓС‰СѓСЋ РїРѕР·РёС†РёСЋ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 virtual long long GetPosition(void) const;
 virtual bool SetPosition(long long index);
 
-/// Устанавливает значение FPS
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ FPS
 double GetFps(void) const;
 bool SetFps(double fps);
 // --------------------------
 
 // --------------------------
-// Управление данными
+// РЈРїСЂР°РІР»РµРЅРёРµ РґР°РЅРЅС‹РјРё
 // --------------------------
-/// Создает копию этого потока
+/// РЎРѕР·РґР°РµС‚ РєРѕРїРёСЋ СЌС‚РѕРіРѕ РїРѕС‚РѕРєР°
 RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
 
-/// Сохранение настроек в xml
+/// РЎРѕС…СЂР°РЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РІ xml
 virtual bool ASaveParameters(RDK::USerStorageXML &xml);
 
-/// Загрузка и применение настроек из xml
+/// Р—Р°РіСЂСѓР·РєР° Рё РїСЂРёРјРµРЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РёР· xml
 virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
 virtual void __fastcall BeforeCalculate(void);
 
@@ -394,7 +394,7 @@ virtual void __fastcall Calculate(void);
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления потоком
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕС‚РѕРєРѕРј
 // --------------------------
 protected:
 virtual void __fastcall ARunCapture(void);
@@ -407,15 +407,15 @@ virtual void __fastcall ARecreateCapture(void);
 
 class TVideoCaptureThreadBmpSequence: public TVideoCaptureThread
 {
-protected: // Параметры
-/// Имя пути до файлов изображения
+protected: // РџР°СЂР°РјРµС‚СЂС‹
+/// РРјСЏ РїСѓС‚Рё РґРѕ С„Р°Р№Р»РѕРІ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 RDK::UELockVar<std::string> PathName;
 
-protected: // Временные изображения
-// Массив изображений для режима последовательности картинок
+protected: // Р’СЂРµРјРµРЅРЅС‹Рµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+// РњР°СЃСЃРёРІ РёР·РѕР±СЂР°Р¶РµРЅРёР№ РґР»СЏ СЂРµР¶РёРјР° РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё РєР°СЂС‚РёРЅРѕРє
 std::vector<std::string> BmpSequenceNames;
 
-// Текущий кадр в последовательности картинок
+// РўРµРєСѓС‰РёР№ РєР°РґСЂ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё РєР°СЂС‚РёРЅРѕРє
 RDK::UELockVar<int> CurrentBmpSequenceIndex;
 
 RDK::UELockVar<int> LastReadSequenceIndex;
@@ -429,62 +429,62 @@ Graphics::TBitmap* TempBitmap;
 
 RDK::UELockVar<double> CurrentTimeStamp;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 __fastcall TVideoCaptureThreadBmpSequence(TVideoOutputFrame *frame, bool CreateSuspended);
 virtual __fastcall ~TVideoCaptureThreadBmpSequence(void);
 // --------------------------
 
 // --------------------------
-// Управление параметрами
+// РЈРїСЂР°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
-/// Имя пути до файлов изображения
+/// РРјСЏ РїСѓС‚Рё РґРѕ С„Р°Р№Р»РѕРІ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 std::string GetPathName(void) const;
 bool SetPathName(const std::string& value);
 
-/// Возвращает число изображений в последовательности
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РёР·РѕР±СЂР°Р¶РµРЅРёР№ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 long long GetNumBitmaps(void) const;
 
-/// Устанавливает текущую позицию в последовательности
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С‚РµРєСѓС‰СѓСЋ РїРѕР·РёС†РёСЋ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 long long GetPosition(void) const;
 bool SetPosition(long long index);
 
-/// Устанавливает значение FPS
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ FPS
 double GetFps(void) const;
 bool SetFps(double fps);
 // --------------------------
 
 // --------------------------
-// Управление данными
+// РЈРїСЂР°РІР»РµРЅРёРµ РґР°РЅРЅС‹РјРё
 // --------------------------
-/// Создает копию этого потока
+/// РЎРѕР·РґР°РµС‚ РєРѕРїРёСЋ СЌС‚РѕРіРѕ РїРѕС‚РѕРєР°
 RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
 
-/// Сохранение настроек в xml
+/// РЎРѕС…СЂР°РЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РІ xml
 virtual bool ASaveParameters(RDK::USerStorageXML &xml);
 
-/// Загрузка и применение настроек из xml
+/// Р—Р°РіСЂСѓР·РєР° Рё РїСЂРёРјРµРЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РёР· xml
 virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
 virtual void __fastcall AfterCalculate(void);
 
 virtual void __fastcall Calculate(void);
 
-// Загружает выбранную картинку по индеку в массиве имен
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РІС‹Р±СЂР°РЅРЅСѓСЋ РєР°СЂС‚РёРЅРєСѓ РїРѕ РёРЅРґРµРєСѓ РІ РјР°СЃСЃРёРІРµ РёРјРµРЅ
 bool LoadImageFromSequence(int index, RDK::UBitmap &bmp);
 
-// Меняет временную метку с блокировкой
+// РњРµРЅСЏРµС‚ РІСЂРµРјРµРЅРЅСѓСЋ РјРµС‚РєСѓ СЃ Р±Р»РѕРєРёСЂРѕРІРєРѕР№
 //virtual bool SetLastTimeStampSafe(double time_stamp);
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления потоком
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕС‚РѕРєРѕРј
 // --------------------------
 protected:
 virtual void __fastcall ARunCapture(void);
@@ -497,58 +497,58 @@ virtual void __fastcall ARecreateCapture(void);
 
 class TVideoCaptureThreadHttpServer: public TVideoCaptureThread
 {
-protected: // Параметры
-/// Порт сервера
+protected: // РџР°СЂР°РјРµС‚СЂС‹
+/// РџРѕСЂС‚ СЃРµСЂРІРµСЂР°
 RDK::UELockVar<int> ListenPort;
 
-protected: // Временные переменные
+protected: // Р’СЂРµРјРµРЅРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ
 TUHttpServerFrame *UHttpServerFrame;
 
 RDK::UBitmap TempSource;
 Graphics::TBitmap* TempBitmap;
 
-protected: // События
-/// Выставляется при получении очередного кадра
+protected: // РЎРѕР±С‹С‚РёСЏ
+/// Р’С‹СЃС‚Р°РІР»СЏРµС‚СЃСЏ РїСЂРё РїРѕР»СѓС‡РµРЅРёРё РѕС‡РµСЂРµРґРЅРѕРіРѕ РєР°РґСЂР°
 HANDLE HttpServerCompleted;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 __fastcall TVideoCaptureThreadHttpServer(TVideoOutputFrame *frame, bool CreateSuspended);
 virtual __fastcall ~TVideoCaptureThreadHttpServer(void);
 // --------------------------
 
 // --------------------------
-// Управление параметрами
+// РЈРїСЂР°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
-/// Имя файла изображения
+/// РРјСЏ С„Р°Р№Р»Р° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 int GetListenPort(void) const;
 bool SetListenPort(int value);
 
-/// Возвращает число изображений в последовательности
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РёР·РѕР±СЂР°Р¶РµРЅРёР№ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 virtual long long GetNumBitmaps(void) const;
 
-/// Устанавливает текущую позицию в последовательности
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С‚РµРєСѓС‰СѓСЋ РїРѕР·РёС†РёСЋ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 virtual long long GetPosition(void) const;
 virtual bool SetPosition(long long index);
 // --------------------------
 
 // --------------------------
-// Управление данными
+// РЈРїСЂР°РІР»РµРЅРёРµ РґР°РЅРЅС‹РјРё
 // --------------------------
-/// Создает копию этого потока
+/// РЎРѕР·РґР°РµС‚ РєРѕРїРёСЋ СЌС‚РѕРіРѕ РїРѕС‚РѕРєР°
 RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
 
-/// Сохранение настроек в xml
+/// РЎРѕС…СЂР°РЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РІ xml
 virtual bool ASaveParameters(RDK::USerStorageXML &xml);
 
-/// Загрузка и применение настроек из xml
+/// Р—Р°РіСЂСѓР·РєР° Рё РїСЂРёРјРµРЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РёР· xml
 virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
 virtual void __fastcall BeforeCalculate(void);
 
@@ -561,7 +561,7 @@ void __fastcall IdHTTPServerCommandGet(TIdContext *AContext, TIdHTTPRequestInfo 
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления потоком
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕС‚РѕРєРѕРј
 // --------------------------
 protected:
 virtual void __fastcall ARunCapture(void);
@@ -575,90 +575,90 @@ virtual void __fastcall ARecreateCapture(void);
 
 class TVideoCaptureThreadVideoGrabber: public TVideoCaptureThread
 {
-protected: // Параметры
-/// Таймаут соединения с камерой
+protected: // РџР°СЂР°РјРµС‚СЂС‹
+/// РўР°Р№РјР°СѓС‚ СЃРѕРµРґРёРЅРµРЅРёСЏ СЃ РєР°РјРµСЂРѕР№
 RDK::UELockVar<int> ConnectionTimeout;
 
-/// Таймаут захвата
+/// РўР°Р№РјР°СѓС‚ Р·Р°С…РІР°С‚Р°
 RDK::UELockVar<int> CaptureTimeout;
 
-/// Режим масштабирования отображения на экране
-/// 0 - Изображение выводится оригинального размера
-/// 1 - Изображение масштабируется пропорционально, по границам окна
-/// 2 - Изображение масштабиуется с растяжением по всем сторонам
+/// Р РµР¶РёРј РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёСЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РЅР° СЌРєСЂР°РЅРµ
+/// 0 - РР·РѕР±СЂР°Р¶РµРЅРёРµ РІС‹РІРѕРґРёС‚СЃСЏ РѕСЂРёРіРёРЅР°Р»СЊРЅРѕРіРѕ СЂР°Р·РјРµСЂР°
+/// 1 - РР·РѕР±СЂР°Р¶РµРЅРёРµ РјР°СЃС€С‚Р°Р±РёСЂСѓРµС‚СЃСЏ РїСЂРѕРїРѕСЂС†РёРѕРЅР°Р»СЊРЅРѕ, РїРѕ РіСЂР°РЅРёС†Р°Рј РѕРєРЅР°
+/// 2 - РР·РѕР±СЂР°Р¶РµРЅРёРµ РјР°СЃС€С‚Р°Р±РёСѓРµС‚СЃСЏ СЃ СЂР°СЃС‚СЏР¶РµРЅРёРµРј РїРѕ РІСЃРµРј СЃС‚РѕСЂРѕРЅР°Рј
 RDK::UELockVar<int> AutoScaleMode;
 
-protected: // Данные
+protected: // Р”Р°РЅРЅС‹Рµ
 TVideoGrabberFrame *VideoGrabberFrame;
 TVideoGrabber* VideoGrabber;
 
 Graphics::TBitmap* ConvertBitmap;
 
-/// Маска для OSD
+/// РњР°СЃРєР° РґР»СЏ OSD
 Graphics::TBitmap* OverlayMaskBitmap;
 
 RDK::UBitmap ConvertUBitmap,ConvertResult;
 
 RDK::UELockVar<double> ConvertTimeStamp;
 
-/// Хендл окна в которое необходимо выводить данные захвата
+/// РҐРµРЅРґР» РѕРєРЅР° РІ РєРѕС‚РѕСЂРѕРµ РЅРµРѕР±С…РѕРґРёРјРѕ РІС‹РІРѕРґРёС‚СЊ РґР°РЅРЅС‹Рµ Р·Р°С…РІР°С‚Р°
 TWinControl* OverlayHandle;
 
-public: // События
-/// Выставляется при получении очередного кадра
+public: // РЎРѕР±С‹С‚РёСЏ
+/// Р’С‹СЃС‚Р°РІР»СЏРµС‚СЃСЏ РїСЂРё РїРѕР»СѓС‡РµРЅРёРё РѕС‡РµСЂРµРґРЅРѕРіРѕ РєР°РґСЂР°
 HANDLE VideoGrabberCompleted;
 
-/// Событие блокировки изображения для конвертации
+/// РЎРѕР±С‹С‚РёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РґР»СЏ РєРѕРЅРІРµСЂС‚Р°С†РёРё
 HANDLE ConvertMutex;
 
-/// Событие блокировки OSD изображения
+/// РЎРѕР±С‹С‚РёРµ Р±Р»РѕРєРёСЂРѕРІРєРё OSD РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 HANDLE OSDMutex;
 
 
-protected: // Временные переменные
+protected: // Р’СЂРµРјРµРЅРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ
 
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 __fastcall TVideoCaptureThreadVideoGrabber(TVideoOutputFrame *frame, bool CreateSuspended);
 virtual __fastcall ~TVideoCaptureThreadVideoGrabber(void);
 // --------------------------
 // --------------------------
-// Управление параметрами
+// РЈРїСЂР°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
-/// Устанавливает значение FPS
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ FPS
 double GetFps(void) const;
 bool SetFps(double fps);
 
-/// Таймаут соединения с камерой
+/// РўР°Р№РјР°СѓС‚ СЃРѕРµРґРёРЅРµРЅРёСЏ СЃ РєР°РјРµСЂРѕР№
 int GetConnectionTimeout(void) const;
 bool SetConnectionTimeout(int value);
 
-/// Таймаут захвата
+/// РўР°Р№РјР°СѓС‚ Р·Р°С…РІР°С‚Р°
 int GetCaptureTimeout(void) const;
 bool SetCaptureTimeout(int value);
 // --------------------------
-// Управление данными
+// РЈРїСЂР°РІР»РµРЅРёРµ РґР°РЅРЅС‹РјРё
 // --------------------------
-/// Сохранение настроек в xml
+/// РЎРѕС…СЂР°РЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РІ xml
 virtual bool ASaveParameters(RDK::USerStorageXML &xml);
 
-/// Загрузка и применение настроек из xml
+/// Р—Р°РіСЂСѓР·РєР° Рё РїСЂРёРјРµРЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РёР· xml
 virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 
-/// Хендл окна в которое необходимо выводить данные захвата
+/// РҐРµРЅРґР» РѕРєРЅР° РІ РєРѕС‚РѕСЂРѕРµ РЅРµРѕР±С…РѕРґРёРјРѕ РІС‹РІРѕРґРёС‚СЊ РґР°РЅРЅС‹Рµ Р·Р°С…РІР°С‚Р°
 virtual TWinControl* GetOverlayHandle(void) const;
 virtual bool SetOverlayHandle(TWinControl* value, bool forced=false);
 
-/// Управление маской для OSD
+/// РЈРїСЂР°РІР»РµРЅРёРµ РјР°СЃРєРѕР№ РґР»СЏ OSD
 virtual Graphics::TBitmap* GetOverlayMaskBitmap(void);
 virtual bool SetOverlayMaskBitmap(Graphics::TBitmap* value);
 // --------------------------
 
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
 virtual void __fastcall TvgExecuteCaptureInit(void);
 virtual void __fastcall TvgExecuteCaptureUnInit(void);
@@ -692,22 +692,22 @@ virtual void __fastcall BeforeCalculate(void);
 
 virtual void __fastcall AfterCalculate(void);
 
-/// Возвращает число изображений в последовательности
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РёР·РѕР±СЂР°Р¶РµРЅРёР№ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 virtual long long GetNumBitmaps(void) const;
 
-/// Устанавливает текущую позицию в последовательности
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С‚РµРєСѓС‰СѓСЋ РїРѕР·РёС†РёСЋ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 virtual long long GetPosition(void) const;
 virtual bool SetPosition(long long index);
 
-/// Возвращает 0 если если состояние не определено
-/// Возвращает 1 если если нет подключения к источнику
-/// Возвращает 2 если если есть подключение к источнику
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ 0 РµСЃР»Рё РµСЃР»Рё СЃРѕСЃС‚РѕСЏРЅРёРµ РЅРµ РѕРїСЂРµРґРµР»РµРЅРѕ
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ 1 РµСЃР»Рё РµСЃР»Рё РЅРµС‚ РїРѕРґРєР»СЋС‡РµРЅРёСЏ Рє РёСЃС‚РѕС‡РЅРёРєСѓ
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ 2 РµСЃР»Рё РµСЃР»Рё РµСЃС‚СЊ РїРѕРґРєР»СЋС‡РµРЅРёРµ Рє РёСЃС‚РѕС‡РЅРёРєСѓ
 virtual int CheckConnection(void) const;
 
-/// Режим масштабирования отображения на экране
-/// 0 - Изображение выводится оригинального размера
-/// 1 - Изображение масштабируется пропорционально, по границам окна
-/// 2 - Изображение масштабиуется с растяжением по всем сторонам
+/// Р РµР¶РёРј РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёСЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РЅР° СЌРєСЂР°РЅРµ
+/// 0 - РР·РѕР±СЂР°Р¶РµРЅРёРµ РІС‹РІРѕРґРёС‚СЃСЏ РѕСЂРёРіРёРЅР°Р»СЊРЅРѕРіРѕ СЂР°Р·РјРµСЂР°
+/// 1 - РР·РѕР±СЂР°Р¶РµРЅРёРµ РјР°СЃС€С‚Р°Р±РёСЂСѓРµС‚СЃСЏ РїСЂРѕРїРѕСЂС†РёРѕРЅР°Р»СЊРЅРѕ, РїРѕ РіСЂР°РЅРёС†Р°Рј РѕРєРЅР°
+/// 2 - РР·РѕР±СЂР°Р¶РµРЅРёРµ РјР°СЃС€С‚Р°Р±РёСѓРµС‚СЃСЏ СЃ СЂР°СЃС‚СЏР¶РµРЅРёРµРј РїРѕ РІСЃРµРј СЃС‚РѕСЂРѕРЅР°Рј
 virtual int GetAutoScaleMode(void) const;
 virtual bool SetAutoScaleMode(int value, bool forced=true);
 // --------------------------
@@ -715,24 +715,24 @@ virtual bool SetAutoScaleMode(int value, bool forced=true);
 
 class TVideoCaptureThreadVideoGrabberAvi: public TVideoCaptureThreadVideoGrabber
 {
-protected: // Параметры
-/// Имя файла
+protected: // РџР°СЂР°РјРµС‚СЂС‹
+/// РРјСЏ С„Р°Р№Р»Р°
 RDK::UELockVar<std::string> FileName;
 
 RDK::UELockVar<bool> ProcessAllFramesFlag;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 __fastcall TVideoCaptureThreadVideoGrabberAvi(TVideoOutputFrame *frame, bool CreateSuspended);
 virtual __fastcall ~TVideoCaptureThreadVideoGrabberAvi(void);
 // --------------------------
 
 // --------------------------
-// Управление параметрами
+// РЈРїСЂР°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
-/// Имя канала общей памяти
+/// РРјСЏ РєР°РЅР°Р»Р° РѕР±С‰РµР№ РїР°РјСЏС‚Рё
 std::string GetFileName(void) const;
 bool SetFileName(const std::string& value);
 
@@ -741,32 +741,32 @@ bool SetProcessAllFramesFlag(bool value);
 // --------------------------
 
 // --------------------------
-// Управление данными
+// РЈРїСЂР°РІР»РµРЅРёРµ РґР°РЅРЅС‹РјРё
 // --------------------------
-/// Создает копию этого потока
+/// РЎРѕР·РґР°РµС‚ РєРѕРїРёСЋ СЌС‚РѕРіРѕ РїРѕС‚РѕРєР°
 RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
 
-/// Сохранение настроек в xml
+/// РЎРѕС…СЂР°РЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РІ xml
 virtual bool ASaveParameters(RDK::USerStorageXML &xml);
 
-/// Загрузка и применение настроек из xml
+/// Р—Р°РіСЂСѓР·РєР° Рё РїСЂРёРјРµРЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РёР· xml
 virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
 virtual void __fastcall TvgExecuteCaptureInit(void);
 
 
-// Меняет временную метку с блокировкой
+// РњРµРЅСЏРµС‚ РІСЂРµРјРµРЅРЅСѓСЋ РјРµС‚РєСѓ СЃ Р±Р»РѕРєРёСЂРѕРІРєРѕР№
 virtual bool SetLastTimeStampSafe(double time_stamp);
 
 void __fastcall AfterCalculate(void);
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления потоком
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕС‚РѕРєРѕРј
 // --------------------------
 protected:
 virtual bool __fastcall RecreateCapture(void);
@@ -781,7 +781,7 @@ virtual void __fastcall AStopCapture(void);
 
 class TVideoCaptureThreadVideoGrabberCamera: public TVideoCaptureThreadVideoGrabber
 {
-protected: // Параметры
+protected: // РџР°СЂР°РјРµС‚СЂС‹
 RDK::UELockVar<int> CameraIndex;
 RDK::UELockVar<int> InputIndex;
 RDK::UELockVar<int> SizeIndex;
@@ -792,16 +792,16 @@ RDK::UELockVar<int> TVTunerCountryCode;
 RDK::UELockVar<int> TVTunerMode;
 RDK::UELockVar<int> TVTunerInputType;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 __fastcall TVideoCaptureThreadVideoGrabberCamera(TVideoOutputFrame *frame, bool CreateSuspended);
 virtual __fastcall ~TVideoCaptureThreadVideoGrabberCamera(void);
 // --------------------------
 
 // --------------------------
-// Управление параметрами
+// РЈРїСЂР°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
 int GetCameraIndex(void) const;
 int GetInputIndex(void) const;
@@ -818,27 +818,27 @@ bool Init(int camera_index, int input_index, int size_index, int subtype_index, 
 // --------------------------
 
 // --------------------------
-// Управление данными
+// РЈРїСЂР°РІР»РµРЅРёРµ РґР°РЅРЅС‹РјРё
 // --------------------------
-/// Создает копию этого потока
+/// РЎРѕР·РґР°РµС‚ РєРѕРїРёСЋ СЌС‚РѕРіРѕ РїРѕС‚РѕРєР°
 RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
 
-/// Сохранение настроек в xml
+/// РЎРѕС…СЂР°РЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РІ xml
 virtual bool ASaveParameters(RDK::USerStorageXML &xml);
 
-/// Загрузка и применение настроек из xml
+/// Р—Р°РіСЂСѓР·РєР° Рё РїСЂРёРјРµРЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РёР· xml
 virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
 virtual void __fastcall TvgExecuteCaptureInit(void);
 // --------------------------
 
 
 // --------------------------
-// Скрытые методы управления потоком
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕС‚РѕРєРѕРј
 // --------------------------
 protected:
 virtual void __fastcall ARunCapture(void);
@@ -850,61 +850,61 @@ virtual void __fastcall AStopCapture(void);
 
 class TVideoCaptureThreadVideoGrabberIpCamera: public TVideoCaptureThreadVideoGrabber
 {
-protected: // Параметры
-/// Имя камеры
+protected: // РџР°СЂР°РјРµС‚СЂС‹
+/// РРјСЏ РєР°РјРµСЂС‹
 RDK::UELockVar<String> Url;
 
-/// Имя пользователя
+/// РРјСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
 RDK::UELockVar<String> UserName;
 
-/// Пароль
+/// РџР°СЂРѕР»СЊ
 RDK::UELockVar<String> Password;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 __fastcall TVideoCaptureThreadVideoGrabberIpCamera(TVideoOutputFrame *frame, bool CreateSuspended);
 virtual __fastcall ~TVideoCaptureThreadVideoGrabberIpCamera(void);
 // --------------------------
 
 // --------------------------
-// Управление параметрами
+// РЈРїСЂР°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
-/// Имя камеры
+/// РРјСЏ РєР°РјРµСЂС‹
 String GetUrl(void) const;
 
-/// Имя пользователя
+/// РРјСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
 String GetUserName(void) const;
 
-/// Пароль
+/// РџР°СЂРѕР»СЊ
 String GetPassword(void) const;
 
 bool Init(const String camera_url, const String user_name, const String user_password);
 // --------------------------
 
 // --------------------------
-// Управление данными
+// РЈРїСЂР°РІР»РµРЅРёРµ РґР°РЅРЅС‹РјРё
 // --------------------------
-/// Создает копию этого потока
+/// РЎРѕР·РґР°РµС‚ РєРѕРїРёСЋ СЌС‚РѕРіРѕ РїРѕС‚РѕРєР°
 RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
 
-/// Сохранение настроек в xml
+/// РЎРѕС…СЂР°РЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РІ xml
 virtual bool ASaveParameters(RDK::USerStorageXML &xml);
 
-/// Загрузка и применение настроек из xml
+/// Р—Р°РіСЂСѓР·РєР° Рё РїСЂРёРјРµРЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РёР· xml
 virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
 virtual void __fastcall TvgExecuteCaptureInit(void);
 // --------------------------
 
 
 // --------------------------
-// Скрытые методы управления потоком
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕС‚РѕРєРѕРј
 // --------------------------
 protected:
 virtual void __fastcall ARunCapture(void);
@@ -917,65 +917,65 @@ virtual void __fastcall AStopCapture(void);
 
 class TVideoCaptureThreadSharedMemory: public TVideoCaptureThread
 {
-protected: // Параметры
-/// Индекс канала общей памяти
+protected: // РџР°СЂР°РјРµС‚СЂС‹
+/// РРЅРґРµРєСЃ РєР°РЅР°Р»Р° РѕР±С‰РµР№ РїР°РјСЏС‚Рё
 RDK::UELockVar<int> PipeIndex;
 
-/// Имя канала общей памяти
+/// РРјСЏ РєР°РЅР°Р»Р° РѕР±С‰РµР№ РїР°РјСЏС‚Рё
 RDK::UELockVar<std::string> PipeName;
 
-/// Размер канала общей памяти
+/// Р Р°Р·РјРµСЂ РєР°РЅР°Р»Р° РѕР±С‰РµР№ РїР°РјСЏС‚Рё
 RDK::UELockVar<int> SharedMemoryPipeSize;
 
-protected: // Данные
-/// Буфер приема данных из канала
+protected: // Р”Р°РЅРЅС‹Рµ
+/// Р‘СѓС„РµСЂ РїСЂРёРµРјР° РґР°РЅРЅС‹С… РёР· РєР°РЅР°Р»Р°
 std::vector<char> PipeBuffer;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 __fastcall TVideoCaptureThreadSharedMemory(TVideoOutputFrame *frame, bool CreateSuspended);
 virtual __fastcall ~TVideoCaptureThreadSharedMemory(void);
 // --------------------------
 
 // --------------------------
-// Управление параметрами
+// РЈРїСЂР°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
-/// Индекс канала общей памяти
+/// РРЅРґРµРєСЃ РєР°РЅР°Р»Р° РѕР±С‰РµР№ РїР°РјСЏС‚Рё
 int GetPipeIndex(void) const;
 bool SetPipeIndex(int value);
 
-/// Имя канала общей памяти
+/// РРјСЏ РєР°РЅР°Р»Р° РѕР±С‰РµР№ РїР°РјСЏС‚Рё
 std::string GetPipeName(void) const;
 bool SetPipeName(const std::string& value);
 
-/// Размер канала общей памяти
+/// Р Р°Р·РјРµСЂ РєР°РЅР°Р»Р° РѕР±С‰РµР№ РїР°РјСЏС‚Рё
 int GetSharedMemoryPipeSize(void) const;
 
-/// Возвращает число изображений в последовательности
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РёР·РѕР±СЂР°Р¶РµРЅРёР№ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 virtual long long GetNumBitmaps(void) const;
 
-/// Устанавливает текущую позицию в последовательности
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С‚РµРєСѓС‰СѓСЋ РїРѕР·РёС†РёСЋ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 virtual long long GetPosition(void) const;
 virtual bool SetPosition(long long index);
 // --------------------------
 
 // --------------------------
-// Управление данными
+// РЈРїСЂР°РІР»РµРЅРёРµ РґР°РЅРЅС‹РјРё
 // --------------------------
-/// Создает копию этого потока
+/// РЎРѕР·РґР°РµС‚ РєРѕРїРёСЋ СЌС‚РѕРіРѕ РїРѕС‚РѕРєР°
 RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
 
-/// Сохранение настроек в xml
+/// РЎРѕС…СЂР°РЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РІ xml
 virtual bool ASaveParameters(RDK::USerStorageXML &xml);
 
-/// Загрузка и применение настроек из xml
+/// Р—Р°РіСЂСѓР·РєР° Рё РїСЂРёРјРµРЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РёР· xml
 virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
 virtual void __fastcall BeforeCalculate(void);
 
@@ -987,7 +987,7 @@ virtual void __fastcall UnsafeInit(void);
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления потоком
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕС‚РѕРєРѕРј
 // --------------------------
 protected:
 virtual void __fastcall ARunCapture(void);
@@ -999,9 +999,9 @@ virtual void __fastcall AStopCapture(void);
 
 class TVideoCaptureThreadNewVideoGrabber: public TVideoCaptureThread
 {
-protected: // Параметры
+protected: // РџР°СЂР°РјРµС‚СЂС‹
 
-protected: // Временные изображения
+protected: // Р’СЂРµРјРµРЅРЅС‹Рµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 RDK::UBitmap TempSource;
 Graphics::TBitmap* TempBitmap;
 
@@ -1015,70 +1015,70 @@ RDK::UELockVar<double> CurrentTimeStamp;
 
 Graphics::TBitmap* ConvertBitmap;
 
-/// Маска для OSD
+/// РњР°СЃРєР° РґР»СЏ OSD
 Graphics::TBitmap* OverlayMaskBitmap;
 
 RDK::UBitmap ConvertUBitmap,ConvertResult;
 
 RDK::UELockVar<double> ConvertTimeStamp;
 
-/// Хендл окна в которое необходимо выводить данные захвата
+/// РҐРµРЅРґР» РѕРєРЅР° РІ РєРѕС‚РѕСЂРѕРµ РЅРµРѕР±С…РѕРґРёРјРѕ РІС‹РІРѕРґРёС‚СЊ РґР°РЅРЅС‹Рµ Р·Р°С…РІР°С‚Р°
 TWinControl* OverlayHandle;
 
-protected: // События
-/// Выставляется при получении очередного кадра
+protected: // РЎРѕР±С‹С‚РёСЏ
+/// Р’С‹СЃС‚Р°РІР»СЏРµС‚СЃСЏ РїСЂРё РїРѕР»СѓС‡РµРЅРёРё РѕС‡РµСЂРµРґРЅРѕРіРѕ РєР°РґСЂР°
 HANDLE VideoGrabberCompleted;
 
-/// Событие блокировки изображения для конвертации
+/// РЎРѕР±С‹С‚РёРµ Р±Р»РѕРєРёСЂРѕРІРєРё РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РґР»СЏ РєРѕРЅРІРµСЂС‚Р°С†РёРё
 HANDLE ConvertMutex;
 
-/// Событие блокировки OSD изображения
+/// РЎРѕР±С‹С‚РёРµ Р±Р»РѕРєРёСЂРѕРІРєРё OSD РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 HANDLE OSDMutex;
 
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 __fastcall TVideoCaptureThreadNewVideoGrabber(TVideoOutputFrame *frame, bool CreateSuspended);
 virtual __fastcall ~TVideoCaptureThreadNewVideoGrabber(void);
 // --------------------------
 
 // --------------------------
-// Управление параметрами
+// РЈРїСЂР°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
 virtual bool SetSourceMode(int mode);
-/// Имя файла изображения
+/// РРјСЏ С„Р°Р№Р»Р° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 //std::string GetFileName(void) const;
 //bool SetFileName(const std::string& value);
 
-/// Возвращает число изображений в последовательности
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РёР·РѕР±СЂР°Р¶РµРЅРёР№ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 virtual long long GetNumBitmaps(void) const;
 
-/// Устанавливает текущую позицию в последовательности
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ С‚РµРєСѓС‰СѓСЋ РїРѕР·РёС†РёСЋ РІ РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕСЃС‚Рё
 virtual long long GetPosition(void) const;
 virtual bool SetPosition(long long index);
 
-/// Устанавливает значение FPS
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ FPS
 double GetFps(void) const;
 bool SetFps(double fps);
 // --------------------------
 
 // --------------------------
-// Управление данными
+// РЈРїСЂР°РІР»РµРЅРёРµ РґР°РЅРЅС‹РјРё
 // --------------------------
-/// Создает копию этого потока
+/// РЎРѕР·РґР°РµС‚ РєРѕРїРёСЋ СЌС‚РѕРіРѕ РїРѕС‚РѕРєР°
 RDK::UEPtr<TVideoCaptureThread> New(TVideoOutputFrame *frame, bool create_suspended);
 
-/// Сохранение настроек в xml
+/// РЎРѕС…СЂР°РЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РІ xml
 virtual bool ASaveParameters(RDK::USerStorageXML &xml);
 
-/// Загрузка и применение настроек из xml
+/// Р—Р°РіСЂСѓР·РєР° Рё РїСЂРёРјРµРЅРµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РёР· xml
 virtual bool ALoadParameters(RDK::USerStorageXML &xml);
 // --------------------------
 
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
 virtual void __fastcall BeforeCalculate(void);
 
@@ -1088,7 +1088,7 @@ virtual void __fastcall Calculate(void);
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления потоком
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїРѕС‚РѕРєРѕРј
 // --------------------------
 protected:
 virtual void __fastcall ARunCapture(void);

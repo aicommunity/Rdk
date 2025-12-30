@@ -1,5 +1,6 @@
 #include "UStatusPanel.h"
 #include "ui_UStatusPanel.h"
+#include "UGuiModelSnapshot.h"
 
 #include <QMessageBox>
 
@@ -59,7 +60,13 @@ void UStatusPanel::AUpdateInterface()
   }
 
   int num_objects = Storage_CalcNumObjects();
-  int num_model_components = RDK::GetModelLock()->GetNumAllComponents();
+
+  // Use lock-free snapshot to get component count instead of blocking GetModelLock
+  int num_model_components = 0;
+  NMSDK::UGuiSnapshotPtr snapshot = NMSDK::UGuiModelSnapshot::Instance().CurrentSnapshot();
+  if (snapshot) {
+    num_model_components = snapshot->Components.size();
+  }
 
   ui->labelObjects->setText("Objects: "+  QString::fromLocal8Bit(RDK::sntoa(num_model_components).c_str()) + "/" + QString::fromLocal8Bit(RDK::sntoa(num_objects).c_str()));
 }

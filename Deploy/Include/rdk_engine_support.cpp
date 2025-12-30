@@ -5,13 +5,205 @@
 #include "rdk_cpp_initdll.h"
 #include "rdk_error_codes.h"
 #include "rdk_exceptions.h"
+#include "rdk_logging.h"
 
-// Экземпляр менеджера
+#include <algorithm>
+#include <ctime>
+#include <memory>
+#include <mutex>
+#include <unordered_map>
+#include <vector>
+
+namespace
+{
+
+std::mutex gChannelConfigMutex;
+RDK::Logging::ChannelRuntimeConfig gDefaultChannelConfig{RDK_EX_WARNING, 0};
+std::unordered_map<int, RDK::Logging::ChannelRuntimeConfig> gChannelConfigs;
+
+#ifdef RDK_USE_GLOG
+class FanoutSink: public google::LogSink
+{
+public:
+  static FanoutSink& Instance()
+  {
+    static FanoutSink instance;
+    return instance;
+  }
+
+  void Register(const std::shared_ptr<RDK::Logging::ILogSink>& sink)
+  {
+    if(!sink)
+      return;
+    std::lock_guard<std::mutex> lock(Mutex);
+    auto it = std::find(Sinks.begin(), Sinks.end(), sink);
+    if(it == Sinks.end())
+    {
+      Sinks.push_back(sink);
+      AttachIfNeededLocked();
+    }
+  }
+
+  void Unregister(const std::shared_ptr<RDK::Logging::ILogSink>& sink)
+  {
+    if(!sink)
+      return;
+    std::lock_guard<std::mutex> lock(Mutex);
+    auto it = std::remove(Sinks.begin(), Sinks.end(), sink);
+    if(it != Sinks.end())
+    {
+      Sinks.erase(it, Sinks.end());
+      DetachIfNeededLocked();
+    }
+  }
+
+  void send(google::LogSeverity severity,
+            const char* full_filename,
+            const char* base_filename,
+            int line,
+            const struct ::tm* tm_time,
+            const char* message,
+            size_t message_len) override
+  {
+    RDK::Logging::LogItem item;
+    item.Severity = severity;
+    item.Verbosity = 0;
+    item.BaseFilename = base_filename ? base_filename : "";
+    item.Line = line;
+    if(tm_time)
+    {
+      std::tm tm_copy = *tm_time;
+      item.Timestamp = std::mktime(&tm_copy);
+    }
+    else
+    {
+      item.Timestamp = std::time(nullptr);
+    }
+    if(message && message_len > 0)
+      item.Message.assign(message, message_len);
+
+    std::vector<std::shared_ptr<RDK::Logging::ILogSink>> sinks_snapshot;
+    {
+      std::lock_guard<std::mutex> lock(Mutex);
+      sinks_snapshot = Sinks;
+    }
+    for(const auto& sink : sinks_snapshot)
+      sink->Consume(item);
+  }
+
+  void WaitTillSent() override
+  {
+    std::vector<std::shared_ptr<RDK::Logging::ILogSink>> sinks_snapshot;
+    {
+      std::lock_guard<std::mutex> lock(Mutex);
+      sinks_snapshot = Sinks;
+    }
+    for(const auto& sink : sinks_snapshot)
+      sink->Flush();
+  }
+
+private:
+  void AttachIfNeededLocked()
+  {
+    if(!Attached && !Sinks.empty())
+    {
+      google::AddLogSink(this);
+      Attached = true;
+    }
+  }
+
+  void DetachIfNeededLocked()
+  {
+    if(Attached && Sinks.empty())
+    {
+      google::RemoveLogSink(this);
+      Attached = false;
+    }
+  }
+
+  std::mutex Mutex;
+  std::vector<std::shared_ptr<RDK::Logging::ILogSink>> Sinks;
+  bool Attached = false;
+};
+#endif
+
+int NormalizeSeverityValue(int msg_level)
+{
+  if(msg_level == RDK_EX_APP)
+    return RDK_EX_INFO;
+  if(msg_level == RDK_EX_UNKNOWN)
+    return RDK_EX_INFO;
+  if(msg_level < RDK_EX_FATAL)
+    return RDK_EX_FATAL;
+  if(msg_level > RDK_EX_DEBUG)
+    return RDK_EX_DEBUG;
+  return msg_level;
+}
+
+RDK::Logging::ChannelRuntimeConfig ResolveChannelConfig(int channel_index)
+{
+  std::lock_guard<std::mutex> lock(gChannelConfigMutex);
+  auto it = gChannelConfigs.find(channel_index);
+  if(it != gChannelConfigs.end())
+    return it->second;
+  return gDefaultChannelConfig;
+}
+
+} // namespace
+
+namespace RDK::Logging
+{
+
+void ResetChannelRuntimeConfig(const ChannelRuntimeConfig& default_config)
+{
+  std::lock_guard<std::mutex> lock(gChannelConfigMutex);
+  gDefaultChannelConfig = default_config;
+  gChannelConfigs.clear();
+}
+
+void SetChannelRuntimeConfig(int channel_index, const ChannelRuntimeConfig& config)
+{
+  std::lock_guard<std::mutex> lock(gChannelConfigMutex);
+  gChannelConfigs[channel_index] = config;
+}
+
+void RegisterLogSink(const std::shared_ptr<ILogSink>& sink)
+{
+#ifdef RDK_USE_GLOG
+  FanoutSink::Instance().Register(sink);
+#else
+  (void)sink;
+#endif
+}
+
+void UnregisterLogSink(const std::shared_ptr<ILogSink>& sink)
+{
+#ifdef RDK_USE_GLOG
+  FanoutSink::Instance().Unregister(sink);
+#else
+  (void)sink;
+#endif
+}
+
+bool ChannelFilterAllows(const ChannelDescriptor& channel, int msg_level, int verbose_level)
+{
+  const auto cfg = ResolveChannelConfig(channel.Index);
+  const int normalized = NormalizeSeverityValue(msg_level);
+  if(normalized > cfg.MinSeverity)
+    return false;
+  if(normalized == RDK_EX_DEBUG && verbose_level > cfg.MaxVerbosity)
+    return false;
+  return true;
+}
+
+} // namespace RDK::Logging
+
+// Р­РєР·РµРјРїР»СЏСЂ РјРµРЅРµРґР¶РµСЂР°
 URdkCoreManager RdkCoreManager;
 
-// Менеджер DLL
+// РњРµРЅРµРґР¶РµСЂ DLL
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 URdkCoreManager::URdkCoreManager(void)
 {
@@ -30,7 +222,6 @@ URdkCoreManager::URdkCoreManager(void)
  GlobalLogger.SetChannelIndex(RDK_GLOB_MESSAGE);
  GlobalLogger.SetDebugMode(DebugMode);
  GlobalLogger.SetDebuggerMessageFlag(false);
- GlobalLogger.SetEventsLogMode(true);
  SystemLogger.RegisterGlobalLogger(&GlobalLogger);
  SystemLogger.SetChannelIndex(RDK_SYS_MESSAGE);
  SystemLogger.SetDebugMode(DebugMode);
@@ -51,53 +242,53 @@ URdkCoreManager::~URdkCoreManager(void)
 // --------------------------
 
 // --------------------------
-// Методы управления данными
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё
 // --------------------------
 
-// Установка необходимого режима сборки
+// РЈСЃС‚Р°РЅРѕРІРєР° РЅРµРѕР±С…РѕРґРёРјРѕРіРѕ СЂРµР¶РёРјР° СЃР±РѕСЂРєРё
 void URdkCoreManager::SetStorageBuildMode(int mode)
 {
     StorageBuildMode = mode;
 }
 
-// Получение текущего режима сборки
+// РџРѕР»СѓС‡РµРЅРёРµ С‚РµРєСѓС‰РµРіРѕ СЂРµР¶РёРјР° СЃР±РѕСЂРєРё
 int URdkCoreManager::GetStorageBuildMode()
 {
     return StorageBuildMode;
 }
 
-// Установка пути к папкам библиотек
+// РЈСЃС‚Р°РЅРѕРІРєР° РїСѓС‚Рё Рє РїР°РїРєР°Рј Р±РёР±Р»РёРѕС‚РµРє
 void URdkCoreManager::SetLibrariesPath(const std::string& value)
 {
     LibrariesPath = value;
 }
 
-// Получение пути к папкам библиотек
+// РџРѕР»СѓС‡РµРЅРёРµ РїСѓС‚Рё Рє РїР°РїРєР°Рј Р±РёР±Р»РёРѕС‚РµРє
 const std::string URdkCoreManager::GetLibrariesPath(void) const
 {
  return LibrariesPath;
 }
 
-// Установка пути к папке с описаниями классов
+// РЈСЃС‚Р°РЅРѕРІРєР° РїСѓС‚Рё Рє РїР°РїРєРµ СЃ РѕРїРёСЃР°РЅРёСЏРјРё РєР»Р°СЃСЃРѕРІ
 void URdkCoreManager::SetClDescPath(const std::string &value)
 {
     ClDescPath = value;
 }
 
-// Получение пути к папке с описаниями классов
+// РџРѕР»СѓС‡РµРЅРёРµ РїСѓС‚Рё Рє РїР°РїРєРµ СЃ РѕРїРёСЃР°РЅРёСЏРјРё РєР»Р°СЃСЃРѕРІ
 const std::string URdkCoreManager::GetClDescPath(void) const
 {
  return ClDescPath;
 }
 
-// Возвращает имя каталога бинарных файлов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєР°С‚Р°Р»РѕРіР° Р±РёРЅР°СЂРЅС‹С… С„Р°Р№Р»РѕРІ
 const char* URdkCoreManager::GetSystemDir(void)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
  return SystemDir.c_str();
 }
 
-// Устанавливает имя каталога бинарных файлов
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РёРјСЏ РєР°С‚Р°Р»РѕРіР° Р±РёРЅР°СЂРЅС‹С… С„Р°Р№Р»РѕРІ
 int URdkCoreManager::SetSystemDir(const char *dir)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
@@ -105,22 +296,21 @@ int URdkCoreManager::SetSystemDir(const char *dir)
  return RDK_SUCCESS;
 }
 
-// Возвращает имя каталога логов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєР°С‚Р°Р»РѕРіР° Р»РѕРіРѕРІ
 const char* URdkCoreManager::GetLogDir(void)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
  return LogDir.c_str();
 }
 
-// Устанавливает имя каталога логов
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РёРјСЏ РєР°С‚Р°Р»РѕРіР° Р»РѕРіРѕРІ
 int URdkCoreManager::SetLogDir(const char *dir)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
 
  if(LogDir == dir)
   return RDK_SUCCESS;
- if(GlobalLogger.IsLogFileCreated())
-  SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Changing log directory to ")+dir);
+ RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Changing log directory to ") + dir);
  LogDir=dir;
  for(size_t i=0;i<LoggerList.size();i++)
  {
@@ -133,7 +323,7 @@ int URdkCoreManager::SetLogDir(const char *dir)
  return RDK_SUCCESS;
 }
 
-/// Флаг режима отладки
+/// Р¤Р»Р°Рі СЂРµР¶РёРјР° РѕС‚Р»Р°РґРєРё
 bool URdkCoreManager::GetDebugMode(void) const
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
@@ -221,14 +411,14 @@ int URdkCoreManager::SetBufObjectsMode(int value)
  return res;
 }
 
-// Очищает коллекцию глобальных шрифтов
+// РћС‡РёС‰Р°РµС‚ РєРѕР»Р»РµРєС†РёСЋ РіР»РѕР±Р°Р»СЊРЅС‹С… С€СЂРёС„С‚РѕРІ
 int URdkCoreManager::ClearFonts(void)
 {
  Fonts.DelAllFonts();
  return RDK_SUCCESS;
 }
 
-// Загружает глобальные шрифты
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РіР»РѕР±Р°Р»СЊРЅС‹Рµ С€СЂРёС„С‚С‹
 int URdkCoreManager::LoadFonts(void)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -236,20 +426,20 @@ int URdkCoreManager::LoadFonts(void)
  {
   try
   {
-   // Грузим шрифты
+   // Р“СЂСѓР·РёРј С€СЂРёС„С‚С‹
    std::vector<std::string> font_names;
    std::string font_path=SystemDir+"Fonts/";
    RDK::FindFilesList(font_path, "*.fnt", true, font_names);
-   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Loading fonts form ")+font_path);
+   RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Loading fonts form ") + font_path);
 
    ClearFonts();
    RDK::UBitmapFont font;
    for(size_t i=0;i<font_names.size();i++)
    {
     if(AddFont(font_path+font_names[i]))
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Loaded font ")+font_names[i]);
+     RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Loaded font ") + font_names[i]);
     else
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Failed to load font ")+font_names[i]);
+     RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Failed to load font ") + font_names[i]);
    }
    res=RDK_SUCCESS;
   }
@@ -273,7 +463,7 @@ int URdkCoreManager::LoadFonts(void)
  return res;
 }
 
-// Загружает новый глобальный шрифт
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РЅРѕРІС‹Р№ РіР»РѕР±Р°Р»СЊРЅС‹Р№ С€СЂРёС„С‚
 bool URdkCoreManager::AddFont(const std::string &font_file_name)
 {
  //int res=RDK_SUCCESS;
@@ -316,14 +506,14 @@ bool URdkCoreManager::AddFont(const std::string &font_file_name)
  return false;
 }
 
-// Возвращает ссылку на коллекцию шрифтов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° РєРѕР»Р»РµРєС†РёСЋ С€СЂРёС„С‚РѕРІ
 RDK::UBitmapFontCollection& URdkCoreManager::GetFonts(void)
 {
  return Fonts;
 }
 
 
-// Имя файла описаний параметров классов
+// РРјСЏ С„Р°Р№Р»Р° РѕРїРёСЃР°РЅРёР№ РїР°СЂР°РјРµС‚СЂРѕРІ РєР»Р°СЃСЃРѕРІ
 const std::string& URdkCoreManager::GetClassesDescriptionFileName(void) const
 {
  return ClassesDescriptionFileName;
@@ -338,7 +528,7 @@ bool URdkCoreManager::SetClassesDescriptionFileName(const std::string& value)
  return true;
 }
 
-// Имя файла описаний общих параметров классов
+// РРјСЏ С„Р°Р№Р»Р° РѕРїРёСЃР°РЅРёР№ РѕР±С‰РёС… РїР°СЂР°РјРµС‚СЂРѕРІ РєР»Р°СЃСЃРѕРІ
 const std::string& URdkCoreManager::GetCommonClassesDescriptionFileName(void) const
 {
  return CommonClassesDescriptionFileName;
@@ -353,7 +543,7 @@ bool URdkCoreManager::SetCommonClassesDescriptionFileName(const std::string& val
  return true;
 }
 
-/// Возвращет версию ядра
+/// Р’РѕР·РІСЂР°С‰РµС‚ РІРµСЂСЃРёСЋ СЏРґСЂР°
 const RDK::UVersion& URdkCoreManager::GetVersion(void) const
 {
  return RDK::GetGlobalVersion();
@@ -361,7 +551,7 @@ const RDK::UVersion& URdkCoreManager::GetVersion(void) const
 // --------------------------
 
 // --------------------------
-// Методы управления созданием каналов
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃРѕР·РґР°РЅРёРµРј РєР°РЅР°Р»РѕРІ
 // --------------------------
 bool URdkCoreManager::SetCoreElementsCreationFunctions(PCreateNewStorage fCreateNewStorage,
 							PCreateNewEnvironment fCreateNewEnvironment,
@@ -374,13 +564,13 @@ bool URdkCoreManager::SetCoreElementsCreationFunctions(PCreateNewStorage fCreate
  return true;
 }
 
-/// Возвращает число движков
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РґРІРёР¶РєРѕРІ
 int URdkCoreManager::GetNumChannels(void) const
 {
  return NumChannels;
 }
 
-/// Создает требуемое число пустых движков
+/// РЎРѕР·РґР°РµС‚ С‚СЂРµР±СѓРµРјРѕРµ С‡РёСЃР»Рѕ РїСѓСЃС‚С‹С… РґРІРёР¶РєРѕРІ
 int URdkCoreManager::SetNumChannels(int num)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -442,7 +632,7 @@ int URdkCoreManager::SetNumChannels(int num)
  return res;
 }
 
-/// Делает текущим канал с заданным индексом
+/// Р”РµР»Р°РµС‚ С‚РµРєСѓС‰РёРј РєР°РЅР°Р» СЃ Р·Р°РґР°РЅРЅС‹Рј РёРЅРґРµРєСЃРѕРј
 int URdkCoreManager::SelectChannel(int index)
 {
  if(index<0 || index>=NumChannels)
@@ -485,14 +675,14 @@ int URdkCoreManager::SelectChannel(int index)
  return res;
 }
 
-/// Возвращает индекс текущего выбраного канала
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅРґРµРєСЃ С‚РµРєСѓС‰РµРіРѕ РІС‹Р±СЂР°РЅРѕРіРѕ РєР°РЅР°Р»Р°
 int URdkCoreManager::GetSelectedChannelIndex(void) const
 {
  return SelectedChannelIndex;
 }
 
-/// Добавляет новый движок в позицию index
-/// Если index <0 или >= NumChannels то добавляет в конец
+/// Р”РѕР±Р°РІР»СЏРµС‚ РЅРѕРІС‹Р№ РґРІРёР¶РѕРє РІ РїРѕР·РёС†РёСЋ index
+/// Р•СЃР»Рё index <0 РёР»Рё >= NumChannels С‚Рѕ РґРѕР±Р°РІР»СЏРµС‚ РІ РєРѕРЅРµС†
 int URdkCoreManager::Add(int index)
 {
  if(index<0 || index >= GetNumChannels())
@@ -541,7 +731,7 @@ int URdkCoreManager::Add(int index)
  return RDK_SUCCESS;
 }
 
-/// Удаляет движок из позиции index
+/// РЈРґР°Р»СЏРµС‚ РґРІРёР¶РѕРє РёР· РїРѕР·РёС†РёРё index
 int URdkCoreManager::Del(int index)
 {
  if(index<0 || index >= GetNumChannels())
@@ -613,8 +803,8 @@ int URdkCoreManager::Del(int index)
  return res;
 }
 
-/// Создаает требуемый канал
-/// (если канал уже инициализирован, то не делает ничего
+/// РЎРѕР·РґР°Р°РµС‚ С‚СЂРµР±СѓРµРјС‹Р№ РєР°РЅР°Р»
+/// (РµСЃР»Рё РєР°РЅР°Р» СѓР¶Рµ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅ, С‚Рѕ РЅРµ РґРµР»Р°РµС‚ РЅРёС‡РµРіРѕ
 int URdkCoreManager::ChannelCreate(int index)
 {
  if(index<0 || index>=GetNumChannels())
@@ -628,11 +818,10 @@ int URdkCoreManager::ChannelCreate(int index)
  {
   try
   {
-   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Preparing to create channel ")+RDK::sntoa(index));
-   // TODO: здесь инициализация параметров логгера и его запуск
-   LoggerList[index]=new RDK::ULoggerEnv;
+   RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Preparing to create channel ") + RDK::sntoa(index));
+   // TODO: Р·РґРµСЃСЊ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ Р»РѕРіРіРµСЂР° Рё РµРіРѕ Р·Р°РїСѓСЃРє
+   LoggerList[index]=new RDK::UExceptionLogger;
    LoggerList[index]->RegisterGlobalLogger(&GlobalLogger);
-   LoggerList[index]->SetMaxExceptionsLogSize(0);
    LoggerList[index]->SetLogDir(LogDir);
    LoggerList[index]->SetDebugMode(GlobalLogger.GetDebugMode());
    LoggerList[index]->SetDebuggerMessageFlag(GetDebuggerMessageFlag());
@@ -678,14 +867,14 @@ int URdkCoreManager::ChannelCreate(int index)
 
    {
     UGenericMutexExclusiveLocker lock(GlobalMutex);
-    /// Данные текущего выбранного канала
+    /// Р”Р°РЅРЅС‹Рµ С‚РµРєСѓС‰РµРіРѕ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°
     Engine=EngineList[SelectedChannelIndex];
     Environment=EnvironmentList[SelectedChannelIndex];
     Storage=StorageList[SelectedChannelIndex];
     Logger=LoggerList[SelectedChannelIndex];
    }
 
-   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Channel ")+RDK::sntoa(index)+" has been created");
+   RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Channel ") + RDK::sntoa(index) + " has been created");
    res=RDK_SUCCESS;
   }
   catch (RDK::UException &exception)
@@ -708,8 +897,8 @@ int URdkCoreManager::ChannelCreate(int index)
  return res;
 }
 
-/// Уничтожает требуемый движок
-/// (если движок уже уничтожен, то не делает ничего
+/// РЈРЅРёС‡С‚РѕР¶Р°РµС‚ С‚СЂРµР±СѓРµРјС‹Р№ РґРІРёР¶РѕРє
+/// (РµСЃР»Рё РґРІРёР¶РѕРє СѓР¶Рµ СѓРЅРёС‡С‚РѕР¶РµРЅ, С‚Рѕ РЅРµ РґРµР»Р°РµС‚ РЅРёС‡РµРіРѕ
 int URdkCoreManager::ChannelDestroy(int index)
 {
  if(index<0 || index>=GetNumChannels())
@@ -746,8 +935,8 @@ int URdkCoreManager::ChannelDestroy(int index)
  return RDK_SUCCESS;
 }
 
-// Инициализирует канал (функция должна быть вызвана первой!)
-// Upd: Функция может быть вызвана после SetNumChannels и SelectChannel
+// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РєР°РЅР°Р» (С„СѓРЅРєС†РёСЏ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РІС‹Р·РІР°РЅР° РїРµСЂРІРѕР№!)
+// Upd: Р¤СѓРЅРєС†РёСЏ РјРѕР¶РµС‚ Р±С‹С‚СЊ РІС‹Р·РІР°РЅР° РїРѕСЃР»Рµ SetNumChannels Рё SelectChannel
 int URdkCoreManager::ChannelInit(int channel_index, int predefined_structure, void* exception_handler)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -758,7 +947,7 @@ int URdkCoreManager::ChannelInit(int channel_index, int predefined_structure, vo
    if(channel_index<0 || channel_index>=NumChannels)
     return RDK_E_CORE_CHANNEL_NOT_FOUND;
 
-   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Preparing to initialize channel ")+RDK::sntoa(channel_index));
+   RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Preparing to initialize channel ") + RDK::sntoa(channel_index));
    res=RDK_ASSERT_LOG(ChannelUnInit(channel_index));
    if(res != RDK_SUCCESS)
    {
@@ -784,7 +973,7 @@ int URdkCoreManager::ChannelInit(int channel_index, int predefined_structure, vo
    res=RDK_ASSERT_LOG(MEnv_Init(channel_index));
    if(res != RDK_SUCCESS)
     return res;
-   SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Channel ")+RDK::sntoa(channel_index)+" has been initialized successfully");
+   RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Channel ") + RDK::sntoa(channel_index) + " has been initialized successfully");
   }
   catch (RDK::UException &exception)
   {
@@ -806,7 +995,7 @@ int URdkCoreManager::ChannelInit(int channel_index, int predefined_structure, vo
  return res;
 }
 
-// Деинициализирует канал (функция автоматически вызывается при вызове инициализации)
+// Р”РµРёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РєР°РЅР°Р» (С„СѓРЅРєС†РёСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё РІС‹Р·РѕРІРµ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё)
 int URdkCoreManager::ChannelUnInit(int channel_index)
 {
  if(channel_index<0 || channel_index>=NumChannels)
@@ -847,16 +1036,16 @@ int URdkCoreManager::ChannelUnInit(int channel_index)
  return res;
 }
 
-/// Уничтожает все
+/// РЈРЅРёС‡С‚РѕР¶Р°РµС‚ РІСЃРµ
 void URdkCoreManager::Destroy(void)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
 
  for(int i=0;i<NumChannels;i++)
  {
-  SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Prepearing to Uninitialize channel ")+RDK::sntoa(i));
+  RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Prepearing to Uninitialize channel ") + RDK::sntoa(i));
   ChannelUnInit(i);
-  SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Channel ")+RDK::sntoa(i)+std::string(" has been successfully uninitialized"));
+  RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Channel ") + RDK::sntoa(i) + std::string(" has been successfully uninitialized"));
  }
 
  RDK_SYS_TRY
@@ -866,7 +1055,7 @@ void URdkCoreManager::Destroy(void)
    for(size_t i=0;i<EnvironmentList.size();i++)
 	if(EnvironmentList[i])
     {
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted environment ")+RDK::sntoa(i));
+     RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Deleting previously undeleted environment ") + RDK::sntoa(i));
      delete EnvironmentList[i];
     }
 
@@ -875,7 +1064,7 @@ void URdkCoreManager::Destroy(void)
    for(size_t i=0;i<StorageList.size();i++)
 	if(StorageList[i])
     {
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted storage ")+RDK::sntoa(i));
+     RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Deleting previously undeleted storage ") + RDK::sntoa(i));
      delete StorageList[i];
     }
 
@@ -884,7 +1073,7 @@ void URdkCoreManager::Destroy(void)
    for(size_t i=0;i<EngineList.size();i++)
 	if(EngineList[i])
     {
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted engine ")+RDK::sntoa(i));
+     RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Deleting previously undeleted engine ") + RDK::sntoa(i));
      delete EngineList[i];
     }
 
@@ -893,7 +1082,7 @@ void URdkCoreManager::Destroy(void)
    for(size_t i=0;i<LoggerList.size();i++)
 	if(LoggerList[i])
     {
-     SystemLogger.LogMessage(RDK_EX_DEBUG, std::string("Deleting previously undeleted channel logger ")+RDK::sntoa(i));
+     RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", std::string("Deleting previously undeleted channel logger ") + RDK::sntoa(i));
      delete LoggerList[i];
     }
    LoggerList.resize(0);
@@ -924,9 +1113,9 @@ void URdkCoreManager::Destroy(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к каналам
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РєР°РЅР°Р»Р°Рј
 // --------------------------
-// Возвращает ссылку на указатель управляющего ядра
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ СѓРїСЂР°РІР»СЏСЋС‰РµРіРѕ СЏРґСЂР°
 RDK::UEPtr<RDK::UEngine>& URdkCoreManager::GetEngine(void)
 {
  return Engine;
@@ -940,7 +1129,7 @@ RDK::UEPtr<RDK::UEngine> URdkCoreManager::GetEngine(int channel_index)
  return EngineList[channel_index];
 }
 
-// Возвращает ссылку на указатель среды выполнения
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ СЃСЂРµРґС‹ РІС‹РїРѕР»РЅРµРЅРёСЏ
 RDK::UEPtr<RDK::UEnvironment>& URdkCoreManager::GetEnvironment(void)
 {
  return Environment;
@@ -954,7 +1143,7 @@ RDK::UEPtr<RDK::UEnvironment> URdkCoreManager::GetEnvironment(int channel_index)
  return EnvironmentList[channel_index];
 }
 
-// Возвращает ссылку на указатель хранилища
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ С…СЂР°РЅРёР»РёС‰Р°
 RDK::UEPtr<RDK::UStorage>& URdkCoreManager::GetStorage(void)
 {
  return Storage;
@@ -968,7 +1157,7 @@ RDK::UEPtr<RDK::UStorage> URdkCoreManager::GetStorage(int channel_index)
  return StorageList[channel_index];
 }
 
-// Возвращает указатель на текущую модель
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµРєСѓС‰СѓСЋ РјРѕРґРµР»СЊ
 RDK::UEPtr<RDK::UContainer> URdkCoreManager::GetModel(void)
 {
  if(Environment)
@@ -992,15 +1181,15 @@ RDK::UEPtr<RDK::UContainer> URdkCoreManager::GetModel(int channel_index)
 
 
 // --------------------------
-// Методы доступа к каналам с блокировками
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РєР°РЅР°Р»Р°Рј СЃ Р±Р»РѕРєРёСЂРѕРІРєР°РјРё
 // --------------------------
-/// Метод доступа к глобальному мьютексу
+/// РњРµС‚РѕРґ РґРѕСЃС‚СѓРїР° Рє РіР»РѕР±Р°Р»СЊРЅРѕРјСѓ РјСЊСЋС‚РµРєСЃСѓ
 UGenericMutex* URdkCoreManager::GetGlobalMutex(void)
 {
  return GlobalMutex;
 }
 
-/// Метод доступ к мьютексу
+/// РњРµС‚РѕРґ РґРѕСЃС‚СѓРї Рє РјСЊСЋС‚РµРєСЃСѓ
 UGenericMutex* URdkCoreManager::GetEngineMutex(void)
 {
  if(MutexList.empty())
@@ -1016,7 +1205,7 @@ UGenericMutex* URdkCoreManager::GetEngineMutex(int index)
  return MutexList[index];
 }
 
-// Возвращает ссылку на указатель управляющего ядра
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ СѓРїСЂР°РІР»СЏСЋС‰РµРіРѕ СЏРґСЂР°
 RDK::UELockPtr<RDK::UEngine> URdkCoreManager::GetEngineLock(void)
 {
 #ifdef RDK_ENGINE_UNLOCKED
@@ -1058,7 +1247,7 @@ RDK::UELockPtr<RDK::UEngine> URdkCoreManager::GetEngineLockTimeout(int channel_i
 #endif
 }
 
-// Возвращает ссылку на указатель среды выполнения
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ СЃСЂРµРґС‹ РІС‹РїРѕР»РЅРµРЅРёСЏ
 RDK::UELockPtr<RDK::UEnvironment> URdkCoreManager::GetEnvironmentLock(void)
 {
 #ifdef RDK_ENGINE_UNLOCKED
@@ -1080,7 +1269,7 @@ RDK::UELockPtr<RDK::UEnvironment> URdkCoreManager::GetEnvironmentLock(int channe
 #endif
 }
 
-// Возвращает ссылку на указатель хранилища
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ С…СЂР°РЅРёР»РёС‰Р°
 RDK::UELockPtr<RDK::UStorage> URdkCoreManager::GetStorageLock(void)
 {
 #ifdef RDK_ENGINE_UNLOCKED
@@ -1102,7 +1291,7 @@ RDK::UELockPtr<RDK::UStorage> URdkCoreManager::GetStorageLock(int channel_index)
 #endif
 }
 
-// Возвращает указатель на текущую модель
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµРєСѓС‰СѓСЋ РјРѕРґРµР»СЊ
 RDK::UELockPtr<RDK::UContainer> URdkCoreManager::GetModelLock(void)
 {
 #ifdef RDK_ENGINE_UNLOCKED
@@ -1144,7 +1333,39 @@ RDK::UELockPtr<RDK::UContainer> URdkCoreManager::GetModelLockTimeout(int channel
 #endif
 }
 
-/// Метод прямой блокировки канала
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµРєСѓС‰СѓСЋ РјРѕРґРµР»СЊ СЃ shared (read-only) Р±Р»РѕРєРёСЂРѕРІРєРѕР№
+RDK::UESharedLockPtr<RDK::UContainer> URdkCoreManager::GetModelReadLock(void)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UESharedLockPtr<RDK::UContainer>(0,GetModel());
+#else
+ return RDK::UESharedLockPtr<RDK::UContainer>(MutexList[SelectedChannelIndex],GetModel());
+#endif
+}
+
+RDK::UESharedLockPtr<RDK::UContainer> URdkCoreManager::GetModelReadLock(int channel_index)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UESharedLockPtr<RDK::UContainer>(0,GetModel(channel_index));
+#else
+ if(channel_index<0 || channel_index>=int(MutexList.size()))
+  return RDK::UESharedLockPtr<RDK::UContainer>(0,0);
+ return RDK::UESharedLockPtr<RDK::UContainer>(MutexList[channel_index],GetModel(channel_index));
+#endif
+}
+
+RDK::UESharedLockPtr<RDK::UContainer> URdkCoreManager::GetModelReadLockTimeout(int channel_index, unsigned timeout)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UESharedLockPtr<RDK::UContainer>(0,GetModel(channel_index));
+#else
+ if(channel_index<0 || channel_index>=int(MutexList.size()))
+  return RDK::UESharedLockPtr<RDK::UContainer>(0,0);
+ return RDK::UESharedLockPtr<RDK::UContainer>(MutexList[channel_index],GetModel(channel_index), timeout);
+#endif
+}
+
+/// РњРµС‚РѕРґ РїСЂСЏРјРѕР№ Р±Р»РѕРєРёСЂРѕРІРєРё РєР°РЅР°Р»Р°
 int URdkCoreManager::LockChannel(int index)
 {
  if(RdkCoreManager.LockerList[index])
@@ -1156,7 +1377,7 @@ int URdkCoreManager::LockChannel(int index)
  return RDK_SUCCESS;
 }
 
-/// Метод снятия прямой блокировки канала
+/// РњРµС‚РѕРґ СЃРЅСЏС‚РёСЏ РїСЂСЏРјРѕР№ Р±Р»РѕРєРёСЂРѕРІРєРё РєР°РЅР°Р»Р°
 int URdkCoreManager::UnLockChannel(int index)
 {
  if(!RdkCoreManager.LockerList[index])
@@ -1172,15 +1393,15 @@ int URdkCoreManager::UnLockChannel(int index)
 // --------------------------
 
 // --------------------------
-/// Средства логгирования
+/// РЎСЂРµРґСЃС‚РІР° Р»РѕРіРіРёСЂРѕРІР°РЅРёСЏ
 // --------------------------
-// Возвращает ссылку на указатель на логгер
-RDK::UEPtr<RDK::ULoggerEnv>& URdkCoreManager::GetLogger(void)
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ РЅР° Р»РѕРіРіРµСЂ
+RDK::UEPtr<RDK::UExceptionLogger>& URdkCoreManager::GetLogger(void)
 {
  return Logger;
 }
 
-RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetLogger(int channel_index)
+RDK::UEPtr<RDK::UExceptionLogger> URdkCoreManager::GetLogger(int channel_index)
 {
  if(channel_index == RDK_SYS_MESSAGE)
   return &SystemLogger;
@@ -1191,23 +1412,23 @@ RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetLogger(int channel_index)
  return LoggerList[channel_index];
 }
 
-/// Возвращает ссылку на системный логгер
-RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetSystemLogger(void)
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СЃРёСЃС‚РµРјРЅС‹Р№ Р»РѕРіРіРµСЂ
+RDK::UEPtr<RDK::UExceptionLogger> URdkCoreManager::GetSystemLogger(void)
 {
  return &SystemLogger;
 }
 
-/// Возвращает указатель  на глобальный логгер (интегрирует информацию со всех логгеров)
-RDK::UEPtr<RDK::ULoggerEnv> URdkCoreManager::GetGlobalLogger(void)
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ  РЅР° РіР»РѕР±Р°Р»СЊРЅС‹Р№ Р»РѕРіРіРµСЂ (РёРЅС‚РµРіСЂРёСЂСѓРµС‚ РёРЅС„РѕСЂРјР°С†РёСЋ СЃРѕ РІСЃРµС… Р»РѕРіРіРµСЂРѕРІ)
+RDK::UEPtr<RDK::UExceptionLogger> URdkCoreManager::GetGlobalLogger(void)
 {
  return &GlobalLogger;
 }
 // --------------------------
 
 // --------------------------
-// Вспомогательные методы управления
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-/// Меняет текущий выбраный канал
+/// РњРµРЅСЏРµС‚ С‚РµРєСѓС‰РёР№ РІС‹Р±СЂР°РЅС‹Р№ РєР°РЅР°Р»
 bool URdkCoreManager::SetSelectedChannelIndex(int channel_index)
 {
 // UGenericMutexExclusiveLocker lock(GlobalMutex);
@@ -1216,7 +1437,7 @@ bool URdkCoreManager::SetSelectedChannelIndex(int channel_index)
 
  SelectedChannelIndex=channel_index;
 // ::SelectedEngineIndex=SelectedChannelIndex;
- /// Данные текущего выбранного канала
+ /// Р”Р°РЅРЅС‹Рµ С‚РµРєСѓС‰РµРіРѕ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°
  Engine=EngineList[channel_index];
  Environment=EnvironmentList[channel_index];
  Storage=StorageList[channel_index];

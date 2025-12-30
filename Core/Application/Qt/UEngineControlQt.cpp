@@ -4,7 +4,7 @@
 
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UEngineControlQt::UEngineControlQt(void)
 {
@@ -18,22 +18,22 @@ UEngineControlQt::~UEngineControlQt(void)
 // --------------------------
 
 // --------------------------
-// Методы управления
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-/// Создание нового треда расчета
+/// РЎРѕР·РґР°РЅРёРµ РЅРѕРІРѕРіРѕ С‚СЂРµРґР° СЂР°СЃС‡РµС‚Р°
 //RDK::UEngineControlThread* UEngineControlQt::CreateEngineThread(RDK::UEngineControl* engine_control, int channel_index)
 //{
 // return new TEngineThread(engine_control, channel_index);
 //}
 
 
-/// Создание нового треда расчета
+/// РЎРѕР·РґР°РЅРёРµ РЅРѕРІРѕРіРѕ С‚СЂРµРґР° СЂР°СЃС‡РµС‚Р°
 //RDK::UEngineStateThread* UEngineControlQt::CreateEngineStateThread(RDK::UEngineControl* engine_control)
 //{
 // return new TEngineMonitorThread(engine_control);
 //}
 
-/// Запускает аналитику выбранного канала, или всех, если channel_index == -1
+/// Р—Р°РїСѓСЃРєР°РµС‚ Р°РЅР°Р»РёС‚РёРєСѓ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°, РёР»Рё РІСЃРµС…, РµСЃР»Рё channel_index == -1
 void UEngineControlQt::StartChannel(int channel_index)
 {
  RDK::UEngineControl::StartChannel(channel_index);
@@ -56,7 +56,7 @@ void UEngineControlQt::StartChannel(int channel_index)
 
 }
 
-/// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
+/// РћСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р°РЅР°Р»РёС‚РёРєСѓ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°, РёР»Рё РІСЃРµС…, РµСЃР»Рё channel_index == -1
 void UEngineControlQt::PauseChannel(int channel_index)
 {
  RDK::UEngineControl::PauseChannel(channel_index);
@@ -85,15 +85,15 @@ void UEngineControlQt::TimerTimer(void)
  }
  catch(RDK::UException &ex)
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControlQt::TimerTimer - ")+ex.what()).c_str());
+  RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControlQt::TimerTimer - ")+ex.what()).c_str());
  }
  catch(std::exception &ex)
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControlQt::TimerTimer - ")+ex.what()).c_str());
+  RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControlQt::TimerTimer - ")+ex.what()).c_str());
  }
  catch(...)
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "UEngineControlQt::TimerTimer - unhandled exception");
+  RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "UEngineControlQt::TimerTimer - unhandled exception");
  }
 }
 

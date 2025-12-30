@@ -18,6 +18,7 @@ See file license.txt for more information
 #include "UEnvironment.h"
 #include "UComponentDescription.h"
 #include "UEnvException.h"
+#include "UContainer.h"
 
 namespace RDK {
 
@@ -27,17 +28,17 @@ UIProperty::~UIProperty()
 }
 
 
-/// Заглушка, возвращаемая в случае остутствия доступа к Environment::Time
+/// Р—Р°РіР»СѓС€РєР°, РІРѕР·РІСЂР°С‰Р°РµРјР°СЏ РІ СЃР»СѓС‡Р°Рµ РѕСЃС‚СѓС‚СЃС‚РІРёСЏ РґРѕСЃС‚СѓРїР° Рє Environment::Time
 //UELockVar<UTimeControl> UComponent::DummyTime;
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UVariable::UVariable(void)
 {
  Property=0;
  DelEnable=true;
- Type=ptParameter & pgPublic;
+ Type=static_cast<unsigned int>(ptParameter) & static_cast<unsigned int>(pgPublic);
 }
 
 UVariable::UVariable(UEPtr<UIProperty> prop, unsigned int type)
@@ -52,6 +53,16 @@ UVariable::UVariable(const UVariable &copy)
  Type=copy.Type;
 }
 
+UVariable& UVariable::operator=(const UVariable& copy)
+{
+ if(this != &copy)
+ {
+  Property=copy.Property;
+  DelEnable=copy.DelEnable;
+  Type=copy.Type;
+ }
+ return *this;
+}
 
 UVariable::~UVariable(void)
 {
@@ -59,21 +70,21 @@ UVariable::~UVariable(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј
 // --------------------------
-// Возвращает только маску типа свойства
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РѕР»СЊРєРѕ РјР°СЃРєСѓ С‚РёРїР° СЃРІРѕР№СЃС‚РІР°
 unsigned int UVariable::GetPropertyType(void) const
 {
  return Type & 0x000000FF;
 }
 
-// Возвращает только маску группы свойства
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РѕР»СЊРєРѕ РјР°СЃРєСѓ РіСЂСѓРїРїС‹ СЃРІРѕР№СЃС‚РІР°
 unsigned int UVariable::GetPropertyGroup(void) const
 {
  return Type & 0xFFFFFF00;
 }
 
-// Возвращает строковое имя типа свойства по заданному типу
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєРѕРІРѕРµ РёРјСЏ С‚РёРїР° СЃРІРѕР№СЃС‚РІР° РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ С‚РёРїСѓ
 std::string UVariable::GetPropertyTypeNameByType(unsigned int type)
 {
  switch (type & 0x000000FF)
@@ -96,7 +107,7 @@ std::string UVariable::GetPropertyTypeNameByType(unsigned int type)
  }
 }
 
-// Возвращает тип свойства по строковому имени
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РёРї СЃРІРѕР№СЃС‚РІР° РїРѕ СЃС‚СЂРѕРєРѕРІРѕРјСѓ РёРјРµРЅРё
 unsigned int UVariable::GetPropertyTypeByTypeName(const std::string &name)
 {
  if(name == "Properties")
@@ -115,13 +126,13 @@ unsigned int UVariable::GetPropertyTypeByTypeName(const std::string &name)
  return 0;
 }
 
-// Возвращает строковое имя типа свойства
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєРѕРІРѕРµ РёРјСЏ С‚РёРїР° СЃРІРѕР№СЃС‚РІР°
 std::string UVariable::GetPropertyTypeName(void) const
 {
  return GetPropertyTypeNameByType(GetPropertyType());
 }
 
-// Проверяет соответствие типа и группы свойства маске
+// РџСЂРѕРІРµСЂСЏРµС‚ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРµ С‚РёРїР° Рё РіСЂСѓРїРїС‹ СЃРІРѕР№СЃС‚РІР° РјР°СЃРєРµ
 bool UVariable::CheckMask(unsigned int mask) const
 {
  return (GetPropertyType() & mask) && (GetPropertyGroup() & mask);
@@ -131,7 +142,7 @@ bool UVariable::CheckMask(unsigned int mask) const
 
 //class UComponent
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UComponent::UComponent(void)
 : StaticFlag(false)
@@ -147,10 +158,10 @@ UComponent::~UComponent(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к свойствам
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє СЃРІРѕР№СЃС‚РІР°Рј
 // --------------------------
-// Возвращает флаг, определяющий компонент является статическим
-// или динамическим
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С„Р»Р°Рі, РѕРїСЂРµРґРµР»СЏСЋС‰РёР№ РєРѕРјРїРѕРЅРµРЅС‚ СЏРІР»СЏРµС‚СЃСЏ СЃС‚Р°С‚РёС‡РµСЃРєРёРј
+// РёР»Рё РґРёРЅР°РјРёС‡РµСЃРєРёРј
 bool UComponent::GetStaticFlag(void) const
 {
  return StaticFlag;
@@ -162,11 +173,24 @@ bool UComponent::SetStaticFlag(bool value)
   return true;
 
  StaticFlag=value;
+ 
+ // Invalidate active components cache in parent container
+ // Note: Static flag changes are rare, so full cache invalidation is acceptable
+ // Incremental updates are used for more frequent operations (add/remove components)
+ if(Owner)
+ {
+  UEPtr<UContainer> owner_container = dynamic_pointer_cast<UContainer>(Owner);
+  if(owner_container)
+  {
+   owner_container->InvalidateActiveComponentsCache();
+  }
+ }
+ 
  return true;
 }
 
 
-// Возвращает владелца этого объекта.
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІР»Р°РґРµР»С†Р° СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°.
 UEPtr<UComponent> const UComponent::GetOwner(void) const
 {
  return Owner;
@@ -182,7 +206,7 @@ bool UComponent::SetOwner(UEPtr<UComponent> owner)
 }
 
 
-// Возвращает указатель на главного владельца этим объектом
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РіР»Р°РІРЅРѕРіРѕ РІР»Р°РґРµР»СЊС†Р° СЌС‚РёРј РѕР±СЉРµРєС‚РѕРј
 UEPtr<UComponent> const UComponent::GetMainOwner(void) const
 {
  return MainOwner;
@@ -197,7 +221,7 @@ void UComponent::SetMainOwner(UEPtr<UComponent> mainowner)
  }
 }
 
-// Возвращает хранилище компонент этого объекта
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С…СЂР°РЅРёР»РёС‰Рµ РєРѕРјРїРѕРЅРµРЅС‚ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°
 UEPtr<UStorage> const UComponent::GetStorage(void) const
 {
  return Storage;
@@ -213,7 +237,7 @@ bool UComponent::SetStorage(UEPtr<UStorage> storage)
  return true;
 }
 
-// Возвращает среду выполнения этого объекта
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЂРµРґСѓ РІС‹РїРѕР»РЅРµРЅРёСЏ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°
 UEPtr<UEnvironment> const UComponent::GetEnvironment(void) const
 {
  return Environment;
@@ -229,13 +253,13 @@ bool UComponent::SetEnvironment(UEPtr<UEnvironment> environment)
  return true;
 }
 
-// Указатель на логгер
-UEPtr<ULoggerEnv> const UComponent::GetLogger(void) const
+// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° Р»РѕРіРіРµСЂ
+UEPtr<UExceptionLogger> const UComponent::GetLogger(void) const
 {
  return Logger;
 }
 
-bool UComponent::SetLogger(UEPtr<ULoggerEnv> logger)
+bool UComponent::SetLogger(UEPtr<UExceptionLogger> logger)
 {
  if(Logger == logger)
   return true;
@@ -246,8 +270,8 @@ bool UComponent::SetLogger(UEPtr<ULoggerEnv> logger)
 }
 
 
-/// Возвращает ссылку на класс управления времени из Environment.
-/// Если Environment отсутствует то возвращает указатель на заглушку
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° РєР»Р°СЃСЃ СѓРїСЂР°РІР»РµРЅРёСЏ РІСЂРµРјРµРЅРё РёР· Environment.
+/// Р•СЃР»Рё Environment РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° Р·Р°РіР»СѓС€РєСѓ
 /// DummyTime
 const UTimeControl& UComponent::GetTime(void) const
 {
@@ -258,7 +282,7 @@ const UTimeControl& UComponent::GetTime(void) const
 }
 
 
-/// Возвращает указатель на шрифт по умолчанию
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С€СЂРёС„С‚ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 UAFont* UComponent::GetDefaultFont(void)
 {
  if(!Environment)
@@ -267,7 +291,7 @@ UAFont* UComponent::GetDefaultFont(void)
  return Environment->GetFonts().GetDefaultFont();
 }
 
-/// Возвращает заданный шрифт
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р·Р°РґР°РЅРЅС‹Р№ С€СЂРёС„С‚
 UAFont* UComponent::GetFont(const string &name, int size)
 {
  if(!Environment)
@@ -279,9 +303,9 @@ UAFont* UComponent::GetFont(const string &name, int size)
 
 
 // --------------------------
-// Методы управления данными
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё
 // --------------------------
-// Идентификатор класса
+// РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєР»Р°СЃСЃР°
 UId UComponent::GetClass(void) const
 {
  return Class;
@@ -296,7 +320,7 @@ bool UComponent::SetClass(UId value)
  return true;
 }
 
-// Возвращает имя класса компоненты
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєР»Р°СЃСЃР° РєРѕРјРїРѕРЅРµРЅС‚С‹
 const NameT UComponent::GetCompClassName(void) const
 {
  return Storage->FindClassName(Class);
@@ -306,9 +330,9 @@ const NameT UComponent::GetCompClassName(void) const
 
 
 // --------------------------
-// Методы управления счетом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃС‡РµС‚РѕРј
 // --------------------------
-// Создает экземпляр описания класса
+// РЎРѕР·РґР°РµС‚ СЌРєР·РµРјРїР»СЏСЂ РѕРїРёСЃР°РЅРёСЏ РєР»Р°СЃСЃР°
 UContainerDescription* UComponent::NewDescription(void)
 {
  UContainerDescription* result=new UContainerDescription;
@@ -335,14 +359,14 @@ UContainerDescription* UComponent::ANewDescription(UComponentDescription* descri
  return result;
 }
 
-// Уничтожение этого объекта
+// РЈРЅРёС‡С‚РѕР¶РµРЅРёРµ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°
 void UComponent::Free(void)
 {
  if(!StaticFlag)
   delete this;
 }
 
-/// Осуществляет обновление внутренних данных компонента, обеспечивающих его целостность
+/// РћСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РѕР±РЅРѕРІР»РµРЅРёРµ РІРЅСѓС‚СЂРµРЅРЅРёС… РґР°РЅРЅС‹С… РєРѕРјРїРѕРЅРµРЅС‚Р°, РѕР±РµСЃРїРµС‡РёРІР°СЋС‰РёС… РµРіРѕ С†РµР»РѕСЃС‚РЅРѕСЃС‚СЊ
 void UComponent::UpdateInternalData(void)
 {
  AUpdateInternalData();
@@ -355,14 +379,14 @@ void UComponent::AUpdateInternalData(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к параметрам
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РїР°СЂР°РјРµС‚СЂР°Рј
 // --------------------------
-// Возвращает указатель на данные свойства
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РґР°РЅРЅС‹Рµ СЃРІРѕР№СЃС‚РІР°
 const UEPtr<UIProperty> UComponent::FindProperty(const NameT &name) const
 {
  VariableMapCIteratorT I=PropertiesLookupTable.end();
 
- // TODO: Сначала проверяем алиасы
+ // TODO: РЎРЅР°С‡Р°Р»Р° РїСЂРѕРІРµСЂСЏРµРј Р°Р»РёР°СЃС‹
  if(CheckAlias(name))
   I=PropertiesLookupTable.find(GetPropertyNameByAlias(name));
  else
@@ -378,7 +402,7 @@ UEPtr<UIProperty> UComponent::FindProperty(const NameT &name)
 {
  VariableMapCIteratorT I=PropertiesLookupTable.end();
 
- // TODO: Сначала проверяем алиасы
+ // TODO: РЎРЅР°С‡Р°Р»Р° РїСЂРѕРІРµСЂСЏРµРј Р°Р»РёР°СЃС‹
  if(CheckAlias(name))
   I=PropertiesLookupTable.find(GetPropertyNameByAlias(name));
  else
@@ -418,7 +442,7 @@ std::string& UComponent::GetPropertyValue(const NameT &name, std::string &values
  return values;
 }
 
-// Устанавливает значение параметра по имени 'name'
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР° РїРѕ РёРјРµРЅРё 'name'
 void UComponent::SetProperty(const NameT &name, UEPtr<UVariableData> values)
 {
  UEPtr<UIProperty> property=FindProperty(name);
@@ -454,8 +478,8 @@ const UComponent::VariableMapT& UComponent::GetPropertiesList(void) const
  return PropertiesLookupTable;
 }
 
-// Копирует все параметры этого объекта в объект 'comp', если возможно.
-// копируются только свойства типа type
+// РљРѕРїРёСЂСѓРµС‚ РІСЃРµ РїР°СЂР°РјРµС‚СЂС‹ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р° РІ РѕР±СЉРµРєС‚ 'comp', РµСЃР»Рё РІРѕР·РјРѕР¶РЅРѕ.
+// РєРѕРїРёСЂСѓСЋС‚СЃСЏ С‚РѕР»СЊРєРѕ СЃРІРѕР№СЃС‚РІР° С‚РёРїР° type
 void UComponent::CopyProperties(UEPtr<UComponent> comp, unsigned int type) const
 {
  USerStorageXML databuffer;
@@ -471,7 +495,7 @@ void UComponent::CopyProperties(UEPtr<UComponent> comp, unsigned int type) const
  }
 }
 
-// Ищет имя свойства по указателю на него
+// РС‰РµС‚ РёРјСЏ СЃРІРѕР№СЃС‚РІР° РїРѕ СѓРєР°Р·Р°С‚РµР»СЋ РЅР° РЅРµРіРѕ
 const NameT& UComponent::FindPropertyName(UEPtr<const UIProperty> prop) const
 {
   for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
@@ -483,7 +507,7 @@ const NameT& UComponent::FindPropertyName(UEPtr<const UIProperty> prop) const
  return ForbiddenName;
 }
 
-// Ищет переменную свойства в таблице по указателю на него
+// РС‰РµС‚ РїРµСЂРµРјРµРЅРЅСѓСЋ СЃРІРѕР№СЃС‚РІР° РІ С‚Р°Р±Р»РёС†Рµ РїРѕ СѓРєР°Р·Р°С‚РµР»СЋ РЅР° РЅРµРіРѕ
 UComponent::VariableMapCIteratorT UComponent::FindPropertyVariable(UEPtr<const UIProperty> prop) const
 {
   for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
@@ -495,7 +519,7 @@ UComponent::VariableMapCIteratorT UComponent::FindPropertyVariable(UEPtr<const U
  return PropertiesLookupTable.end();
 }
 
-// Ищет тип свойства по указателю на него
+// РС‰РµС‚ С‚РёРї СЃРІРѕР№СЃС‚РІР° РїРѕ СѓРєР°Р·Р°С‚РµР»СЋ РЅР° РЅРµРіРѕ
 unsigned int UComponent::FindPropertyType(UEPtr<const UIProperty> prop) const
 {
   for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
@@ -509,25 +533,31 @@ unsigned int UComponent::FindPropertyType(UEPtr<const UIProperty> prop) const
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления параметрами
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
-// Добавляет параметр с именем 'name' в таблицу соотвествий
-// параметров и назначает ему корректный индекс
-// Должна вызываться в конструкторах классов
+// Р”РѕР±Р°РІР»СЏРµС‚ РїР°СЂР°РјРµС‚СЂ СЃ РёРјРµРЅРµРј 'name' РІ С‚Р°Р±Р»РёС†Сѓ СЃРѕРѕС‚РІРµСЃС‚РІРёР№
+// РїР°СЂР°РјРµС‚СЂРѕРІ Рё РЅР°Р·РЅР°С‡Р°РµС‚ РµРјСѓ РєРѕСЂСЂРµРєС‚РЅС‹Р№ РёРЅРґРµРєСЃ
+// Р”РѕР»Р¶РЅР° РІС‹Р·С‹РІР°С‚СЊСЃСЏ РІ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂР°С… РєР»Р°СЃСЃРѕРІ
 void UComponent::AddLookupProperty(const NameT &name, unsigned int type, UEPtr<UIProperty> property, bool delenable)
 {
  if(PropertiesLookupTable.find(name) != PropertiesLookupTable.end())
   RDK_RAW_THROW(EPropertyNameAlreadyExist(name));
 
+ // Clear cache when adding new property
+ CachedPropertyName.clear();
+ CachedProperty = UEPtr<UIProperty>(0);
+
  UVariable P(property);
  P.DelEnable=delenable;
  P.Type=type;
 
- pair<VariableMapCIteratorT, bool> res=PropertiesLookupTable.insert(make_pair(name,P));
- P.Property->SetVariable(res.first);
+ auto res=PropertiesLookupTable.insert(make_pair(name,P));
+ // Find iterator after insert (SetVariable needs const_iterator reference)
+ VariableMapCIteratorT it = PropertiesLookupTable.find(name);
+ P.Property->SetVariable(it);
 }
 
-// Изменяет тип параметра
+// РР·РјРµРЅСЏРµС‚ С‚РёРї СЃРІРѕР№СЃС‚РІР°
 bool UComponent::ChangeLookupPropertyType(const NameT &name, unsigned int type)
 {
  VariableMapIteratorT I=PropertiesLookupTable.find(name);
@@ -539,14 +569,21 @@ bool UComponent::ChangeLookupPropertyType(const NameT &name, unsigned int type)
  return true;
 }
 
-// Удаляет параметр с именем 'name' из таблицы соотвествий
-// параметров
+// РЈРґР°Р»СЏРµС‚ СЃРІРѕР№СЃС‚РІРѕ РёР· С‚Р°Р±Р»РёС†С‹ 'name' РїРѕ РёРјРµРЅРё СЃРІРѕР№СЃС‚РІР°
+// РЈРґР°Р»СЏРµС‚
 void UComponent::DelLookupProperty(const NameT &name)
 {
  VariableMapIteratorT I=PropertiesLookupTable.find(name);
 
  if(I == PropertiesLookupTable.end())
   RDK_RAW_THROW(EPropertyNameNotExist(name));
+
+ // Clear cache if deleting cached property
+ if(CachedPropertyName == name)
+ {
+  CachedPropertyName.clear();
+  CachedProperty = UEPtr<UIProperty>(0);
+ }
 
  UIProperty *prop=I->second.Property;
  bool del_enable=I->second.DelEnable;
@@ -569,7 +606,7 @@ void UComponent::DelLookupProperty(const NameT &name)
  }
 }
 
-// Удаляет всю таблицу соответствий
+// РћС‡РёС‰Р°РµС‚ РІСЃСЋ С‚Р°Р±Р»РёС†Сѓ СЃРІРѕР№СЃС‚РІ
 void UComponent::ClearLookupPropertyTable(void)
 {
  while(PropertiesLookupTable.begin() != PropertiesLookupTable.end())
@@ -586,11 +623,11 @@ void UComponent::ClearLookupPropertyTable(void)
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления общими свойствами
+// Р¤СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ С‚Р°Р±Р»РёС†РµР№ СЃРІРѕР№СЃС‚РІ СЃРІРѕР№СЃС‚РІ
 // --------------------------
-// Добавляет общее свойство параметр с именем 'name' в таблицу соотвествий
-// общих свойств и назначает ему корректный индекс
-// Должна вызываться в конструкторах классов
+// Р”РѕР±Р°РІР»СЏРµС‚ РЅРѕРІРѕРµ СЃРІРѕР№СЃС‚РІРѕ СЃРІРѕР№СЃС‚РІР° РІ С‚Р°Р±Р»РёС†Сѓ 'name' РїРѕ РёРјРµРЅРё СЃРІРѕР№СЃС‚РІР°
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РІ С‚Р°Р±Р»РёС†Рµ РґР»СЏ РґРѕР±Р°РІР»РµРЅРЅРѕРіРѕ СЃРІРѕР№СЃС‚РІР°
+// --------------------------
 UId UComponent::AddLookupShare(const NameT &name, UEPtr<UIShare> property)
 {
  ShareMapIteratorT I=ShareLookupTable.end();
@@ -606,9 +643,9 @@ UId UComponent::AddLookupShare(const NameT &name, UEPtr<UIShare> property)
 // --------------------------
 
 // --------------------------
-// Методы управления алиасами
+// Р¤СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ Р°Р»РёР°СЃР°РјРё
 // --------------------------
-/// Добавление алисаса
+/// РЈРґР°Р»РµРЅРёРµ Р°Р»РёСЃР°СЃР°
 bool UComponent::AddAlias(const std::string &alias, const std::string &property_name)
 {
  if(CheckAlias(alias))
@@ -621,7 +658,7 @@ bool UComponent::AddAlias(const std::string &alias, const std::string &property_
  return true;
 }
 
-/// Удаление алисаса
+/// РЈРґР°Р»СЏРµС‚ Р°Р»РёР°СЃ
 void UComponent::DelAlias(const std::string &alias)
 {
  std::map<std::string, std::string>::iterator I=Aliases.find(alias);
@@ -630,16 +667,27 @@ void UComponent::DelAlias(const std::string &alias)
  Aliases.erase(I);
 }
 
-/// Проверка наличия алиаса
+/// РџСЂРѕРІРµСЂСЏРµС‚ РЅР°Р»РёС‡РёРµ Р°Р»РёР°СЃР°
 bool UComponent::CheckAlias(const std::string &alias) const
 {
- std::map<std::string, std::string>::const_iterator I=Aliases.find(alias);
+ // Use cache for repeated lookups
+ if(CachedAliasName == alias)
+  return true;
+ 
+ auto I=Aliases.find(alias);
  if(I == Aliases.end())
+ {
+  CachedAliasName.clear();
   return false;
+ }
+ 
+ // Cache the result
+ CachedAliasName = alias;
+ CachedAliasValue = I->second;
  return true;
 }
 
-/// Получение имени свойства по алиасу
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ СЃРІРѕР№СЃС‚РІР° РїРѕ Р°Р»РёР°СЃСѓ
 const std::string& UComponent::GetPropertyNameByAlias(const std::string &alias) const
 {
  std::map<std::string, std::string>::const_iterator I=Aliases.find(alias);

@@ -21,17 +21,17 @@ See file license.txt for more information
 namespace RDK {
 
 /* *************************************************************************** */
-// Описание подключаемого элемента "UConnectedITEM"
+// РћРїРёСЃР°РЅРёРµ РїРѕРґРєР»СЋС‡Р°РµРјРѕРіРѕ СЌР»РµРјРµРЅС‚Р° "UConnectedITEM"
 //struct UCItem
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UCItem::UCItem(void)
 {
- // Подключаемый элемент
+ // РџРѕРґРєР»СЋС‡Р°РµРјС‹Р№ СЌР»РµРјРµРЅС‚
  Item=0;
 
- // Индекс выхода
+ // РРЅРґРµРєСЃ РІС‹С…РѕРґР°
  Index=0;
 }
 
@@ -44,7 +44,7 @@ UCItem::UCItem(const UCItem &copy)
 // --------------------------
 
 // --------------------------
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 // --------------------------
 bool UCItem::operator == (const UCItem &value)
 {
@@ -60,14 +60,14 @@ bool UCItem::operator != (const UCItem &value)
 /* *************************************************************************** */
 
 /* *************************************************************************** */
-// Описание входящей связи с заданным item "UConnectedLINK"
+// РћРїРёСЃР°РЅРёРµ РІС…РѕРґСЏС‰РµР№ СЃРІСЏР·Рё СЃ Р·Р°РґР°РЅРЅС‹Рј item "UConnectedLINK"
 //struct UCLink: public UCItem
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UCLink::UCLink(void)
 {
- // Индекс входа
+ // РРЅРґРµРєСЃ РІС…РѕРґР°
  Input=Output=-1;
 }
 
@@ -82,20 +82,20 @@ UCLink::UCLink(const UCLink &copy)
 /* *************************************************************************** */
 
 /* *************************************************************************** */
-// Контейнер - список указателей на подключенные элементы
+// РљРѕРЅС‚РµР№РЅРµСЂ - СЃРїРёСЃРѕРє СѓРєР°Р·Р°С‚РµР»РµР№ РЅР° РїРѕРґРєР»СЋС‡РµРЅРЅС‹Рµ СЌР»РµРјРµРЅС‚С‹
 // class UCItemList
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UCItemList::UCItemList(void)
 {
- // Размер контейнера
+ // Р Р°Р·РјРµСЂ РєРѕРЅС‚РµР№РЅРµСЂР°
  Size=0;
 
- // Массив элементов
+ // РњР°СЃСЃРёРІ СЌР»РµРјРµРЅС‚РѕРІ
  Data=0;
 
- // Реальный размер контейнера
+ // Р РµР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ РєРѕРЅС‚РµР№РЅРµСЂР°
  RealSize=0;
 }
 
@@ -112,9 +112,9 @@ UCItemList::~UCItemList(void)
 // --------------------------
 
 // --------------------------
-// Методы управления
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-// Очищает контейнер
+// РћС‡РёС‰Р°РµС‚ РєРѕРЅС‚РµР№РЅРµСЂ
 void UCItemList::Clear(void)
 {
  if(Data)
@@ -125,7 +125,7 @@ void UCItemList::Clear(void)
  Size=RealSize=0;
 }
 
-// Меняет размер контейнера с сохранением элементов
+// РњРµРЅСЏРµС‚ СЂР°Р·РјРµСЂ РєРѕРЅС‚РµР№РЅРµСЂР° СЃ СЃРѕС…СЂР°РЅРµРЅРёРµРј СЌР»РµРјРµРЅС‚РѕРІ
 void UCItemList::Resize(int newsize)
 {
  if(Size == newsize)
@@ -154,8 +154,8 @@ void UCItemList::Resize(int newsize)
  }
 }
 
-// Ищет в контейнере первый заданный элемент начиная с индекса index
-// и возвращает его описание
+// РС‰РµС‚ РІ РєРѕРЅС‚РµР№РЅРµСЂРµ РїРµСЂРІС‹Р№ Р·Р°РґР°РЅРЅС‹Р№ СЌР»РµРјРµРЅС‚ РЅР°С‡РёРЅР°СЏ СЃ РёРЅРґРµРєСЃР° index
+// Рё РІРѕР·РІСЂР°С‰Р°РµС‚ РµРіРѕ РѕРїРёСЃР°РЅРёРµ
 UCItem UCItemList::Find(const UEPtr<UItem> &item, int index) const
 {
  return Find(item.Get(),index);
@@ -172,8 +172,8 @@ UCItem UCItemList::Find(const UItem *const item, int index) const
  return UCItem();
 }
 
-// Ищет в контейнере первый заданный элемент начиная с индекса index
-// и возвращает его индекс или -1 если элемент не найден
+// РС‰РµС‚ РІ РєРѕРЅС‚РµР№РЅРµСЂРµ РїРµСЂРІС‹Р№ Р·Р°РґР°РЅРЅС‹Р№ СЌР»РµРјРµРЅС‚ РЅР°С‡РёРЅР°СЏ СЃ РёРЅРґРµРєСЃР° index
+// Рё РІРѕР·РІСЂР°С‰Р°РµС‚ РµРіРѕ РёРЅРґРµРєСЃ РёР»Рё -1 РµСЃР»Рё СЌР»РµРјРµРЅС‚ РЅРµ РЅР°Р№РґРµРЅ
 int UCItemList::Find(const UCItem &item, int index) const
 {
  UCItem *pdata=Data;
@@ -185,15 +185,15 @@ int UCItemList::Find(const UCItem &item, int index) const
  return -1;
 }
 
-// Добавляет в конец контейнера элемент
+// Р”РѕР±Р°РІР»СЏРµС‚ РІ РєРѕРЅРµС† РєРѕРЅС‚РµР№РЅРµСЂР° СЌР»РµРјРµРЅС‚
 void UCItemList::Add(const UCItem &item)
 {
  Resize(Size+1);
  Data[Size-1]=item;
 }
 
-// Добавляет в конец контейнера элемент только если таких элементов еще нет
-// Возвращает true в случае успешного добавления
+// Р”РѕР±Р°РІР»СЏРµС‚ РІ РєРѕРЅРµС† РєРѕРЅС‚РµР№РЅРµСЂР° СЌР»РµРјРµРЅС‚ С‚РѕР»СЊРєРѕ РµСЃР»Рё С‚Р°РєРёС… СЌР»РµРјРµРЅС‚РѕРІ РµС‰Рµ РЅРµС‚
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ true РІ СЃР»СѓС‡Р°Рµ СѓСЃРїРµС€РЅРѕРіРѕ РґРѕР±Р°РІР»РµРЅРёСЏ
 bool UCItemList::AddUnique(const UCItem &item)
 {
  if(Find(item)>=0)
@@ -203,7 +203,7 @@ bool UCItemList::AddUnique(const UCItem &item)
  return true;
 }
 
-// Удаляет элемент по индексу
+// РЈРґР°Р»СЏРµС‚ СЌР»РµРјРµРЅС‚ РїРѕ РёРЅРґРµРєСЃСѓ
 void UCItemList::Del(int index)
 {
  if(index<0 || index >= Size)
@@ -213,7 +213,7 @@ void UCItemList::Del(int index)
  Resize(Size-1);
 }
 
-// Удаляет элемент по указателю
+// РЈРґР°Р»СЏРµС‚ СЌР»РµРјРµРЅС‚ РїРѕ СѓРєР°Р·Р°С‚РµР»СЋ
 void UCItemList::Del(UCItem *item)
 {
  int index=Find(*item);
@@ -222,9 +222,9 @@ void UCItemList::Del(UCItem *item)
 // --------------------------
 
 // --------------------------
-// Методы доступа
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР°
 // --------------------------
-// Оператор присваивания
+// РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
 UCItemList& UCItemList::operator = (const UCItemList &copy)
 {
  Resize(copy.Size);
@@ -234,7 +234,7 @@ UCItemList& UCItemList::operator = (const UCItemList &copy)
  return *this;
 }
 
-// Оператор доступа к элементу
+// РћРїРµСЂР°С‚РѕСЂ РґРѕСЃС‚СѓРїР° Рє СЌР»РµРјРµРЅС‚Сѓ
 UCItem& UCItemList::operator [] (int index)
 {
  return Data[index];
@@ -245,13 +245,13 @@ const UCItem& UCItemList::operator [] (int index) const
  return Data[index];
 }
 
-// Оператор доступа к массиву
+// РћРїРµСЂР°С‚РѕСЂ РґРѕСЃС‚СѓРїР° Рє РјР°СЃСЃРёРІСѓ
 UCItem* UCItemList::GetData(void)
 {
  return Data;
 }
 
-// Оператор доступа к размеру
+// РћРїРµСЂР°С‚РѕСЂ РґРѕСЃС‚СѓРїР° Рє СЂР°Р·РјРµСЂСѓ
 int UCItemList::GetSize(void) const
 {
  return Size;
@@ -261,7 +261,7 @@ int UCItemList::GetSize(void) const
 
 /* *************************************************************************** */
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UConnector::UConnector(void)
 {
@@ -277,15 +277,15 @@ UConnector::~UConnector(void)
 
 
 // --------------------------
-// Методы управления общедоступными свойствами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РѕР±С‰РµРґРѕСЃС‚СѓРїРЅС‹РјРё СЃРІРѕР№СЃС‚РІР°РјРё
 // --------------------------
-/// Возвращает число реально подключенных элементов
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ СЂРµР°Р»СЊРЅРѕ РїРѕРґРєР»СЋС‡РµРЅРЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ
 int UConnector::GetNumActiveInputs(void) const
 {
  return int(ConnectedItemList.size());
 }
 
-/// Возвращает число реально подключенных элементов к заданному свойству
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ СЂРµР°Р»СЊРЅРѕ РїРѕРґРєР»СЋС‡РµРЅРЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ Рє Р·Р°РґР°РЅРЅРѕРјСѓ СЃРІРѕР№СЃС‚РІСѓ
 int UConnector::GetNumActiveInputs(const NameT &connector_property_name) const
 {
  std::map<std::string, std::vector<UCItem> >::const_iterator I=ConnectedItemList.find(connector_property_name);
@@ -297,10 +297,10 @@ int UConnector::GetNumActiveInputs(const NameT &connector_property_name) const
 // --------------------------
 
 // --------------------------
-// Системные методы управления объектом
+// РЎРёСЃС‚РµРјРЅС‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РѕР±СЉРµРєС‚РѕРј
 // --------------------------
-// Осуществляет освобождение этого объекта в его хранилище
-// или вызов деструктора, если Storage == 0
+// РћСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р° РІ РµРіРѕ С…СЂР°РЅРёР»РёС‰Рµ
+// РёР»Рё РІС‹Р·РѕРІ РґРµСЃС‚СЂСѓРєС‚РѕСЂР°, РµСЃР»Рё Storage == 0
 void UConnector::Free(void)
 {
  DisconnectAllItems();
@@ -309,9 +309,9 @@ void UConnector::Free(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј
 // --------------------------
-// Возвращает подключенный к этому коннектору объект по индексу
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїРѕРґРєР»СЋС‡РµРЅРЅС‹Р№ Рє СЌС‚РѕРјСѓ РєРѕРЅРЅРµРєС‚РѕСЂСѓ РѕР±СЉРµРєС‚ РїРѕ РёРЅРґРµРєСЃСѓ
 const UCItem& UConnector::GetCItem(const NameT &connector_property_name, int index) const
 {
  std::map<std::string, std::vector<UCItem> >::const_iterator I=ConnectedItemList.find(connector_property_name);
@@ -349,8 +349,8 @@ void UConnector::GetCItem(const NameT &connector_property_name, std::vector<UCIt
 }
 
 
-// Возвращает информацию об индексах связей с этим item или -1, -1
-// если такая связь отсутствует
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅС„РѕСЂРјР°С†РёСЋ РѕР± РёРЅРґРµРєСЃР°С… СЃРІСЏР·РµР№ СЃ СЌС‚РёРј item РёР»Рё -1, -1
+// РµСЃР»Рё С‚Р°РєР°СЏ СЃРІСЏР·СЊ РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚
 void UConnector::GetCLink(const UEPtr<UItem> &item, std::vector<UCLink> &buffer) const
 {
  UCLink indexes;
@@ -392,16 +392,16 @@ void UConnector::GetCLink(const UItem* const item, std::vector<UCLink> &buffer) 
 // --------------------------
 
 // --------------------------
-// Методы доступа к описанию входов и выходов
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РѕРїРёСЃР°РЅРёСЋ РІС…РѕРґРѕРІ Рё РІС‹С…РѕРґРѕРІ
 // --------------------------
-/// Ищет свойство-вход по заданному индексу
+/// РС‰РµС‚ СЃРІРѕР№СЃС‚РІРѕ-РІС…РѕРґ РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ
 void UConnector::FindInputProperty(const NameT &connector_property_name, UIPropertyInput* &property) const
 {
- // Ищем указатель на входные данные
+ // РС‰РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РІС…РѕРґРЅС‹Рµ РґР°РЅРЅС‹Рµ
  property=0;
 
  VariableMapCIteratorT I=PropertiesLookupTable.find(connector_property_name);
-// // TODO: Сначала проверяем алиасы
+// // TODO: РЎРЅР°С‡Р°Р»Р° РїСЂРѕРІРµСЂСЏРµРј Р°Р»РёР°СЃС‹
 // VariableMapCIteratorT I=PropertiesLookupTable.end();
 // if(CheckAlias(connector_property_name))
 //  I=PropertiesLookupTable.find(GetPropertyNameByAlias(connector_property_name));
@@ -419,9 +419,9 @@ void UConnector::FindInputProperty(const NameT &connector_property_name, UIPrope
 // --------------------------
 
 // ----------------------
-// Коммуникационные методы
+// РљРѕРјРјСѓРЅРёРєР°С†РёРѕРЅРЅС‹Рµ РјРµС‚РѕРґС‹
 // ----------------------
-// Устанавливает связь с элементом сети 'na'.
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СЃРІСЏР·СЊ СЃ СЌР»РµРјРµРЅС‚РѕРј СЃРµС‚Рё 'na'.
 bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
 {
  if(!na)
@@ -495,8 +495,8 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
 
  //i_conn_property->Init(na,item_property_name);
 
- // TODO: Этот код не будет работать в случае, если c_index будет подаваться на
- // вход не по возрастанию
+ // TODO: Р­С‚РѕС‚ РєРѕРґ РЅРµ Р±СѓРґРµС‚ СЂР°Р±РѕС‚Р°С‚СЊ РІ СЃР»СѓС‡Р°Рµ, РµСЃР»Рё c_index Р±СѓРґРµС‚ РїРѕРґР°РІР°С‚СЊСЃСЏ РЅР°
+ // РІС…РѕРґ РЅРµ РїРѕ РІРѕР·СЂР°СЃС‚Р°РЅРёСЋ
  UCItem item;
  item.Item=na;
  item.Index=-1;
@@ -507,7 +507,7 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
  return AConnectToItem(na, item_property_name, connector_property_name);
 }
 
-/// Разрывает все связи с элементом сети 'na'
+/// Р Р°Р·СЂС‹РІР°РµС‚ РІСЃРµ СЃРІСЏР·Рё СЃ СЌР»РµРјРµРЅС‚РѕРј СЃРµС‚Рё 'na'
 void UConnector::DisconnectFromItem(UEPtr<UItem> na)
 {
  if(!na)
@@ -527,7 +527,7 @@ void UConnector::DisconnectFromItem(UEPtr<UItem> na)
  }
 }
 
-/// Разрывает связь с элементом сети 'na', подключенную от i_index
+/// Р Р°Р·СЂС‹РІР°РµС‚ СЃРІСЏР·СЊ СЃ СЌР»РµРјРµРЅС‚РѕРј СЃРµС‚Рё 'na', РїРѕРґРєР»СЋС‡РµРЅРЅСѓСЋ РѕС‚ i_index
 void UConnector::DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name)
 {
  if(!na)
@@ -540,14 +540,14 @@ void UConnector::DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_
   while(i<int(I->second.size()))
   {
    if(I->second[i].Item == na && I->second[i].Name == item_property_name)
-    DisconnectFromIndex(I->first,I->second[i].Name,i); // TODO индекс не определен
+    DisconnectFromIndex(I->first,I->second[i].Name,i); // TODO РёРЅРґРµРєСЃ РЅРµ РѕРїСЂРµРґРµР»РµРЅ
    else
     ++i;
   }
  }
 }
 
-/// Разрывает связь с элементом сети 'na', подключенную от i_index к c_index
+/// Р Р°Р·СЂС‹РІР°РµС‚ СЃРІСЏР·СЊ СЃ СЌР»РµРјРµРЅС‚РѕРј СЃРµС‚Рё 'na', РїРѕРґРєР»СЋС‡РµРЅРЅСѓСЋ РѕС‚ i_index Рє c_index
 void UConnector::DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index)
 {
  if(!na)
@@ -563,14 +563,14 @@ void UConnector::DisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_
  while(i<int(I->second.size()))
  {
   if(I->second[i].Item == na && I->second[i].Name == item_property_name)
-   DisconnectFromIndex(connector_property_name,I->second[i].Name,i); // TODO: индекс не определен
+   DisconnectFromIndex(connector_property_name,I->second[i].Name,i); // TODO: РёРЅРґРµРєСЃ РЅРµ РѕРїСЂРµРґРµР»РµРЅ
   else
    ++i;
  }*/
- DisconnectFromIndex(connector_property_name,I->second[connected_c_index].Name,connected_c_index); // TODO индекс не определен
+ DisconnectFromIndex(connector_property_name,I->second[connected_c_index].Name,connected_c_index); // TODO РёРЅРґРµРєСЃ РЅРµ РѕРїСЂРµРґРµР»РµРЅ
 }
 
-// Разрывает связь с элементом сети подключенным ко входу 'index'
+// Р Р°Р·СЂС‹РІР°РµС‚ СЃРІСЏР·СЊ СЃ СЌР»РµРјРµРЅС‚РѕРј СЃРµС‚Рё РїРѕРґРєР»СЋС‡РµРЅРЅС‹Рј РєРѕ РІС…РѕРґСѓ 'index'
 void UConnector::DisconnectFromIndex(const NameT &connector_property_name, const NameT &item_property_name, int index)
 {
  std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.find(connector_property_name);
@@ -598,7 +598,7 @@ void UConnector::DisconnectFromIndex(const NameT &connector_property_name, const
      LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("connector ")+connector_property_name+" not found");
     }
 
-    //	if(i_conn_property->CheckRange(index)) // TODO: тут возможно что-то другое
+    //	if(i_conn_property->CheckRange(index)) // TODO: С‚СѓС‚ РІРѕР·РјРѕР¶РЅРѕ С‡С‚Рѕ-С‚Рѕ РґСЂСѓРіРѕРµ
        UIPropertyOutput* output_property=dynamic_pointer_cast<UIPropertyOutput>(I->second[index].Item->FindProperty(item_property_name));
     if(output_property && i_conn_property)
     {
@@ -628,7 +628,7 @@ void UConnector::DisconnectFromIndex(const NameT &connector_property_name)
   {
    UIPropertyInput* i_conn_property=0;
    FindInputProperty(connector_property_name,i_conn_property);
-  //	if(i_conn_property->CheckRange(i)) // TODO: воозможно тут что то другое
+  //	if(i_conn_property->CheckRange(i)) // TODO: РІРѕРѕР·РјРѕР¶РЅРѕ С‚СѓС‚ С‡С‚Рѕ С‚Рѕ РґСЂСѓРіРѕРµ
   /* UIPropertyInput* input_prop=dynamic_cast<UIPropertyInput*>(i_conn_property);
    if(input_prop)
    {
@@ -652,18 +652,18 @@ void UConnector::DisconnectFromIndex(const NameT &connector_property_name)
 }
 
 
-// Выполняет действия после физически установленой связи
+// Р’С‹РїРѕР»РЅСЏРµС‚ РґРµР№СЃС‚РІРёСЏ РїРѕСЃР»Рµ С„РёР·РёС‡РµСЃРєРё СѓСЃС‚Р°РЅРѕРІР»РµРЅРѕР№ СЃРІСЏР·Рё
 bool UConnector::AConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name)
 {
  return true;
 }
 
-// Выполняет действия после физически разорваной связи
+// Р’С‹РїРѕР»РЅСЏРµС‚ РґРµР№СЃС‚РІРёСЏ РїРѕСЃР»Рµ С„РёР·РёС‡РµСЃРєРё СЂР°Р·РѕСЂРІР°РЅРѕР№ СЃРІСЏР·Рё
 void UConnector::ADisconnectFromItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name)
 {
 }
 
-// Разрывает все текущие связи
+// Р Р°Р·СЂС‹РІР°РµС‚ РІСЃРµ С‚РµРєСѓС‰РёРµ СЃРІСЏР·Рё
 void UConnector::DisconnectAllItems(void)
 {
  std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.begin();
@@ -677,9 +677,9 @@ void UConnector::DisconnectAllItems(void)
  }
 }
 
-// Разрывает все связи объекта
-// исключая его внутренние связи и обратные связи
-// brklevel - объект, относительно которого связи считаются внутренними
+// Р Р°Р·СЂС‹РІР°РµС‚ РІСЃРµ СЃРІСЏР·Рё РѕР±СЉРµРєС‚Р°
+// РёСЃРєР»СЋС‡Р°СЏ РµРіРѕ РІРЅСѓС‚СЂРµРЅРЅРёРµ СЃРІСЏР·Рё Рё РѕР±СЂР°С‚РЅС‹Рµ СЃРІСЏР·Рё
+// brklevel - РѕР±СЉРµРєС‚, РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РєРѕС‚РѕСЂРѕРіРѕ СЃРІСЏР·Рё СЃС‡РёС‚Р°СЋС‚СЃСЏ РІРЅСѓС‚СЂРµРЅРЅРёРјРё
 void UConnector::DisconnectByObject(UEPtr<UContainer> brklevel)
 {
  std::map<std::string, std::vector<UCItem> >::iterator I=ConnectedItemList.begin();
@@ -696,14 +696,14 @@ void UConnector::DisconnectByObject(UEPtr<UContainer> brklevel)
  }
 }
 /*
-// Проверяет, допустимо ли подключение заданного item к этому коннектору
+// РџСЂРѕРІРµСЂСЏРµС‚, РґРѕРїСѓСЃС‚РёРјРѕ Р»Рё РїРѕРґРєР»СЋС‡РµРЅРёРµ Р·Р°РґР°РЅРЅРѕРіРѕ item Рє СЌС‚РѕРјСѓ РєРѕРЅРЅРµРєС‚РѕСЂСѓ
 bool UConnector::CheckItem(UEPtr<UItem> item, const NameT &item_property_name, const NameT &connector_property_name)
 {
  return true;
 }*/
 
 
-// Проверяет, существует ли связь с заданным коннектором
+// РџСЂРѕРІРµСЂСЏРµС‚, СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё СЃРІСЏР·СЊ СЃ Р·Р°РґР°РЅРЅС‹Рј РєРѕРЅРЅРµРєС‚РѕСЂРѕРј
 bool UConnector::CheckLink(const UEPtr<UItem> &item) const
 {
  std::vector<UCLink> buffer;
@@ -718,7 +718,7 @@ bool UConnector::CheckLink(const UEPtr<UItem> &item) const
  return false;
 }
 
-// Проверяет, существует ли связь с заданным коннектором и конкретным входом
+// РџСЂРѕРІРµСЂСЏРµС‚, СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё СЃРІСЏР·СЊ СЃ Р·Р°РґР°РЅРЅС‹Рј РєРѕРЅРЅРµРєС‚РѕСЂРѕРј Рё РєРѕРЅРєСЂРµС‚РЅС‹Рј РІС…РѕРґРѕРј
 bool UConnector::CheckLink(const UEPtr<UItem> &item, const NameT &item_property_name) const
 {
  std::vector<UCLink> buffer;
@@ -735,7 +735,7 @@ bool UConnector::CheckLink(const UEPtr<UItem> &item, const NameT &item_property_
  return false;
 }
 
-// Проверяет, существует ли связь с заданным коннектором и конкретным входом
+// РџСЂРѕРІРµСЂСЏРµС‚, СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё СЃРІСЏР·СЊ СЃ Р·Р°РґР°РЅРЅС‹Рј РєРѕРЅРЅРµРєС‚РѕСЂРѕРј Рё РєРѕРЅРєСЂРµС‚РЅС‹Рј РІС…РѕРґРѕРј
 bool UConnector::CheckLink(const UEPtr<UItem> &item, const NameT &item_property_name, const NameT &connector_property_name) const
 {
  std::vector<UCLink> buffer;
@@ -755,18 +755,18 @@ bool UConnector::CheckLink(const UEPtr<UItem> &item, const NameT &item_property_
 // ----------------------
 
 // --------------------------
-// Методы управления счетом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃС‡РµС‚РѕРј
 // --------------------------
-// Восстановление настроек по умолчанию и сброс процесса счета
+// Р’РѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ Рё СЃР±СЂРѕСЃ РїСЂРѕС†РµСЃСЃР° СЃС‡РµС‚Р°
 bool UConnector::Default(void)
 {
  return UContainer::Default();
 }
 
-// Обеспечивает сборку внутренней структуры объекта
-// после настройки параметров
-// Автоматически вызывает метод Reset() и выставляет Ready в true
-// в случае успешной сборки
+// РћР±РµСЃРїРµС‡РёРІР°РµС‚ СЃР±РѕСЂРєСѓ РІРЅСѓС‚СЂРµРЅРЅРµР№ СЃС‚СЂСѓРєС‚СѓСЂС‹ РѕР±СЉРµРєС‚Р°
+// РїРѕСЃР»Рµ РЅР°СЃС‚СЂРѕР№РєРё РїР°СЂР°РјРµС‚СЂРѕРІ
+// РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРё РІС‹Р·С‹РІР°РµС‚ РјРµС‚РѕРґ Reset() Рё РІС‹СЃС‚Р°РІР»СЏРµС‚ Ready РІ true
+// РІ СЃР»СѓС‡Р°Рµ СѓСЃРїРµС€РЅРѕР№ СЃР±РѕСЂРєРё
 bool UConnector::Build(void)
 {
  return UContainer::Build();
@@ -776,7 +776,7 @@ bool UConnector::Build(void)
 /* *************************************************************************** */
 
 //class UIPropertyInput: public UIPropertyIO
-/// Конструкторы и деструкторы
+/// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 UIPropertyInput::UIPropertyInput(void)
 {
 }
@@ -785,20 +785,20 @@ UIPropertyInput::~UIPropertyInput(void)
 {
 }
 /*
-// Устанавливает указатель на данные входа
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РґР°РЅРЅС‹Рµ РІС…РѕРґР°
 bool UIPropertyInput::SetPointer(int index, UIPropertyOutput* property)
 {
  return false;
 }
 
-/// Сбрасывает указатель на данные
+/// РЎР±СЂР°СЃС‹РІР°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РґР°РЅРЅС‹Рµ
 bool UIPropertyInput::ResetPointer(int index, UIPropertyOutput* property)
 {
  return false;
 }*/
 
 //class UIPropertyOutput: public UIPropertyIO
-/// Конструкторы и деструкторы
+/// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 UIPropertyOutput::UIPropertyOutput(void)
 {
 }
@@ -809,26 +809,26 @@ UIPropertyOutput::~UIPropertyOutput(void)
  ConnectorInputNames.clear();
 }
 
-// Возвращает число подключенных входов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РїРѕРґРєР»СЋС‡РµРЅРЅС‹С… РІС…РѕРґРѕРІ
 size_t UIPropertyOutput::GetNumConnectors(void) const
 {
  return Connectors.size();
 }
 
-// Возвращает указатель на компонент-приемник
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РєРѕРјРїРѕРЅРµРЅС‚-РїСЂРёРµРјРЅРёРє
 UConnector* UIPropertyOutput::GetConnector(int index)
 {
  return Connectors[index];
 }
 
-// Возвращает имя подключенного входа компонента-приемника
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РїРѕРґРєР»СЋС‡РµРЅРЅРѕРіРѕ РІС…РѕРґР° РєРѕРјРїРѕРЅРµРЅС‚Р°-РїСЂРёРµРјРЅРёРєР°
 std::string UIPropertyOutput::GetConnectorInputName(int index) const
 {
  return ConnectorInputNames[index];
 }
 
 
-/// Возвращает указатель на свойство подключенного входа компонента-приемника
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЃРІРѕР№СЃС‚РІРѕ РїРѕРґРєР»СЋС‡РµРЅРЅРѕРіРѕ РІС…РѕРґР° РєРѕРјРїРѕРЅРµРЅС‚Р°-РїСЂРёРµРјРЅРёРєР°
 UIPropertyInput* UIPropertyOutput::GetConnectorProperty(int index)
 {
  if(index<0 || index>=int(Connectors.size()))

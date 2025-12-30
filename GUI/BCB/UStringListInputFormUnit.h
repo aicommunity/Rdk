@@ -13,10 +13,10 @@
 
 struct TUParameterDescription
 {
-/// Имя параметра
+/// РРјСЏ РїР°СЂР°РјРµС‚СЂР°
 std::string Name;
 
-/// Значение параметра
+/// Р—РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°
 std::string Value;
 
 TUParameterDescription(void);
@@ -55,23 +55,23 @@ public:		// User declarations
 
 	std::string DummyString;
 
-/// Число параметров
+/// Р§РёСЃР»Рѕ РїР°СЂР°РјРµС‚СЂРѕРІ
 int GetNumParameters(void);
 bool SetNumParameters(int value);
 
-/// Имя параметра с заданным индексом
+/// РРјСЏ РїР°СЂР°РјРµС‚СЂР° СЃ Р·Р°РґР°РЅРЅС‹Рј РёРЅРґРµРєСЃРѕРј
 const std::string& GetParameterName(int index);
 bool SetParameterName(int index, const std::string &value);
 
-/// Значение параметра с заданным индексом
+/// Р—РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР° СЃ Р·Р°РґР°РЅРЅС‹Рј РёРЅРґРµРєСЃРѕРј
 const std::string& GetParameterValue(int index);
 bool SetParameterValue(int index, const std::string &value, bool as_default);
 
-/// Заголовок окна
+/// Р—Р°РіРѕР»РѕРІРѕРє РѕРєРЅР°
 std::string GetCaption(void);
 bool SetCaption(const std::string &value);
 
-/// Обновляет интерфейс
+/// РћР±РЅРѕРІР»СЏРµС‚ РёРЅС‚РµСЂС„РµР№СЃ
 void AUpdateInterface(void);
 
 };

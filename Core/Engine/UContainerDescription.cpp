@@ -2,6 +2,7 @@
 #define UCONTAINER_DESCRIPTION_CPP
 
 #include <map>
+#include <unordered_map>
 #include <string>
 #include "UContainerDescription.h"
 #include "UXMLEnvSerialize.h"
@@ -15,11 +16,11 @@ UPropertyDescription::UPropertyDescription(void)
 
 }
 
-// Описания общих свойств
+// РћРїРёСЃР°РЅРёСЏ РѕР±С‰РёС… СЃРІРѕР№СЃС‚РІ
 //std::map<std::string, UPropertyDescription> UContainerDescription::CommonProperties;
 
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
-// Конструкторы и деструкторы
 // --------------------------
 UContainerDescription::UContainerDescription(void)
 {
@@ -39,16 +40,16 @@ UContainerDescription::~UContainerDescription(void)
 }
 // --------------------------
 
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РѕР±С‰РёРјРё СЃРІРѕР№СЃС‚РІР°РјРё
 // --------------------------
-// Методы управления общими свойствами
 // --------------------------
 /*
-// Описание общего свойства
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РѕРїРёСЃР°РЅРёРµ СЃРІРѕР№СЃС‚РІР°
 const UPropertyDescription& UContainerDescription::GetCommonProperty(const std::string &name)
 {
  std::map<std::string, UPropertyDescription>::const_iterator I=CommonProperties.find(name);
 
- // Заглушка! Здесь исключение если не найдено
+ // Р’РЅРёРјР°РЅРёРµ! РќСѓР¶РЅРѕ РїСЂРѕРІРµСЂРёС‚СЊ С‡С‚Рѕ РµСЃС‚СЊ РІ РјР°СЃСЃРёРІРµ
 
  return I->second;
 }
@@ -60,7 +61,7 @@ bool UContainerDescription::SetCommonProperty(const std::string &name, const UPr
  return true;
 }
 
-// Проверяет наличие общего свойства с заданным именем
+// РџСЂРѕРІРµСЂСЏРµС‚ РЅР°Р»РёС‡РёРµ РѕРїРёСЃР°РЅРёСЏ СЃРІРѕР№СЃС‚РІР° РІ РјР°СЃСЃРёРІРµ СЃРІРѕР№СЃС‚РІ
 bool UContainerDescription::CheckCommonProperty(const std::string &name)
 {
  std::map<std::string, UPropertyDescription>::const_iterator I=CommonProperties.find(name);
@@ -70,17 +71,17 @@ bool UContainerDescription::CheckCommonProperty(const std::string &name)
 // --------------------------
 
 
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё
 // --------------------------
-// Методы управления данными
-// --------------------------
-// Описание свойства
+// РћРїРёСЃР°РЅРёРµ СЃРІРѕР№СЃС‚РІР°
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РѕРїРёСЃР°РЅРёРµ
 const UPropertyDescription& UContainerDescription::GetPropertyDescription(const std::string &name)
 {
  std::map<std::string, UPropertyDescription>::const_iterator I=Properties.find(name);
 
  if(I == Properties.end())
  {
-//  I=CommonProperties.find(name);
+//  if(I == CommonProperties.end())
 //  if(I == CommonProperties.end())
   {
    UPropertyDescription descr;
@@ -93,7 +94,7 @@ const UPropertyDescription& UContainerDescription::GetPropertyDescription(const 
 
 bool UContainerDescription::SetPropertyDescription(const std::string &name, const UPropertyDescription& value, bool force)
 {
-// if(CheckCommonProperty(name) && !force)
+//  return true;
 //  return true;
 
  Properties[name]=value;
@@ -102,10 +103,10 @@ bool UContainerDescription::SetPropertyDescription(const std::string &name, cons
 }
 
 
-// Удаляет свойство из этого описания, если он есть в общих описаниях
-bool UContainerDescription::RemoveCommonDuplicatesDescription(const std::map<std::string, UPropertyDescription> &common_descriptions, const std::string &name)
+// РЈРґР°Р»СЏРµС‚ РѕРїРёСЃР°РЅРёРµ РёР· СЃРїРёСЃРєР° СЃРІРѕР№СЃС‚РІ, РµСЃР»Рё РѕРЅРѕ РµСЃС‚СЊ РІ СЃРїРёСЃРєРµ РѕР±С‰РёС…
+bool UContainerDescription::RemoveCommonDuplicatesDescription(const std::unordered_map<std::string, UPropertyDescription> &common_descriptions, const std::string &name)
 {
- std::map<std::string, UPropertyDescription>::const_iterator I=common_descriptions.find(name);
+ auto I=common_descriptions.find(name);
 
  if(I != common_descriptions.begin())
   Properties.erase(name);
@@ -113,15 +114,14 @@ bool UContainerDescription::RemoveCommonDuplicatesDescription(const std::map<std
  return true;
 }
 
-// Удаляет все свойства из этого описания, если они есть в общих описаниях
-bool UContainerDescription::RemoveCommonDuplicatesDescriptions(const std::map<std::string, UPropertyDescription> &common_descriptions)
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ РѕРїРёСЃР°РЅРёСЏ РёР· СЃРїРёСЃРєР° СЃРІРѕР№СЃС‚РІ, РµСЃР»Рё РѕРЅРё РµСЃС‚СЊ РІ СЃРїРёСЃРєРµ РѕР±С‰РёС…
+bool UContainerDescription::RemoveCommonDuplicatesDescriptions(const std::unordered_map<std::string, UPropertyDescription> &common_descriptions)
 {
- std::map<std::string, UPropertyDescription>::iterator I,J;
- for(J=Properties.begin();J != Properties.end();)
+ for(auto J=Properties.begin();J != Properties.end();)
  {
   if(common_descriptions.find(J->first) != common_descriptions.end())
   {
-   I=J; ++I;
+   auto I=J; ++I;
    Properties.erase(J);
    J=I;
   }
@@ -131,7 +131,7 @@ bool UContainerDescription::RemoveCommonDuplicatesDescriptions(const std::map<st
  return true;
 }
 
-// Обновление данных свойств (вызов к хранилищу)
+// РћР±РЅРѕРІР»РµРЅРёРµ РґР°РЅРЅС‹С… СЃРІРѕР№СЃС‚РІ (РІС‹Р·РѕРІ Рє С…СЂР°РЅРёР»РёС‰Сѓ)
 void UContainerDescription::CreateProperties()
 {
     RDK::UEPtr<RDK::UContainer> cont;
@@ -143,7 +143,7 @@ void UContainerDescription::CreateProperties()
     {
         RDK::UComponent::VariableMapT varMap = cont->GetPropertiesList();
 
-        for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end(); ++i)
+        for(RDK::UComponent::VariableMapIteratorT i = varMap.begin(); i != varMap.end(); ++i)
         {
             if(i->first.empty())
                 continue;
@@ -217,12 +217,92 @@ void UContainerDescription::DeleteFavorite(const std::string &name)
     Favorites.erase(name);
 }
 
+bool UContainerDescription::IsFavoriteAlias(const std::string& name) const
+{
+    auto it = Favorites.find(name);
+    if (it == Favorites.end())
+        return false;
+    
+    const std::string& path = it->second;
+    // РђР»РёР°СЃ РѕРїСЂРµРґРµР»СЏРµС‚СЃСЏ РЅР°Р»РёС‡РёРµРј С‚РѕС‡РєРё РІ РїСѓС‚Рё (СѓРєР°Р·С‹РІР°РµС‚ РЅР° РІР»РѕР¶РµРЅРЅРѕРµ СЃРІРѕР№СЃС‚РІРѕ)
+    // РР»Рё РЅР°Р»РёС‡РёРµРј РґРІРѕРµС‚РѕС‡РёСЏ СЃ РїРѕСЃР»РµРґСѓСЋС‰РµР№ С‚РѕС‡РєРѕР№
+    return path.find('.') != std::string::npos;
+}
+
+bool UContainerDescription::ParseFavoritePath(const std::string& path, 
+                                               std::string& componentPath, 
+                                               std::string& propertyName) const
+{
+    // Р¤РѕСЂРјР°С‚: "ComponentPath.PropertyName" РёР»Рё "{CompName}:ComponentPath.PropertyName"
+    std::string workingPath = path;
+    
+    // РЈР±РёСЂР°РµРј {CompName}: РµСЃР»Рё РµСЃС‚СЊ
+    size_t colonPos = workingPath.find(':');
+    if (colonPos != std::string::npos)
+    {
+        workingPath = workingPath.substr(colonPos + 1);
+    }
+    
+    // РС‰РµРј РїРѕСЃР»РµРґРЅСЋСЋ С‚РѕС‡РєСѓ (СЂР°Р·РґРµР»РёС‚РµР»СЊ РјРµР¶РґСѓ РїСѓС‚РµРј РєРѕРјРїРѕРЅРµРЅС‚Р° Рё РёРјРµРЅРµРј СЃРІРѕР№СЃС‚РІР°)
+    size_t dotPos = workingPath.rfind('.');
+    if (dotPos == std::string::npos)
+    {
+        // РќРµС‚ С‚РѕС‡РєРё - СЌС‚Рѕ РЅРµ РїСѓС‚СЊ Рє РІР»РѕР¶РµРЅРЅРѕРјСѓ СЃРІРѕР№СЃС‚РІСѓ
+        return false;
+    }
+    
+    componentPath = workingPath.substr(0, dotPos);
+    propertyName = workingPath.substr(dotPos + 1);
+    
+    return !componentPath.empty() && !propertyName.empty();
+}
+
+void UContainerDescription::AddPropertyAlias(const std::string& aliasName, 
+                                               const std::string& componentPath,
+                                               const std::string& propertyName, 
+                                               unsigned int propertyType)
+{
+    // Р¤РѕСЂРјРёСЂСѓРµРј РїСѓС‚СЊ РІ С„РѕСЂРјР°С‚Рµ Favorite: "ComponentPath.PropertyName"
+    std::string path = componentPath;
+    if (!path.empty() && !propertyName.empty())
+    {
+        path += "." + propertyName;
+    }
+    else if (!propertyName.empty())
+    {
+        path = propertyName;
+    }
+    
+    // Р”РѕР±Р°РІР»СЏРµРј РІ Favorites
+    Favorites[aliasName] = path;
+}
+
+std::vector<std::pair<std::string, std::string>> UContainerDescription::GetPropertyAliases() const
+{
+    std::vector<std::pair<std::string, std::string>> aliases;
+    
+    for (const auto& fav : Favorites)
+    {
+        if (IsFavoriteAlias(fav.first))
+        {
+            std::string componentPath, propertyName;
+            if (ParseFavoritePath(fav.second, componentPath, propertyName))
+            {
+                // Р’РѕР·РІСЂР°С‰Р°РµРј РїР°СЂСѓ: (РёРјСЏ Р°Р»РёР°СЃР°, РїРѕР»РЅС‹Р№ РїСѓС‚СЊ)
+                aliases.push_back(std::make_pair(fav.first, fav.second));
+            }
+        }
+    }
+    
+    return aliases;
+}
+
 // --------------------------
 
 // --------------------------
-// Методы ввода вывода данными
+// РњРµС‚РѕРґС‹ РІРІРѕРґР° РІС‹РІРѕРґР° РґР°РЅРЅС‹РјРё
 // --------------------------
-// Сохраняет данные класса в XML
+// РЎРѕС…СЂР°РЅСЏРµС‚ РґР°РЅРЅС‹Рµ РєР»Р°СЃСЃР° РІ XML
 bool UContainerDescription::Save(USerStorageXML &xml)
 {
  if(!UComponentDescription::Save(xml))
@@ -264,7 +344,7 @@ bool UContainerDescription::Save(USerStorageXML &xml)
  return true;
 }
 
-// Загружает данные класса из XML
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РґР°РЅРЅС‹Рµ РєР»Р°СЃСЃР° РёР· XML
 bool UContainerDescription::Load(USerStorageXML &xml)
 {
  if(!UComponentDescription::Load(xml))
@@ -320,10 +400,10 @@ bool UContainerDescription::Load(USerStorageXML &xml)
 
 
 // --------------------------
-// Методы ввода вывода общих данных
+// РњРµС‚РѕРґС‹ РІРІРѕРґР° РІС‹РІРѕРґР° РѕР±С‰РёС… РґР°РЅРЅС‹С…
 // --------------------------
 /*
-// Сохраняет данные класса в XML
+// РЎРѕС…СЂР°РЅСЏРµС‚ РґР°РЅРЅС‹Рµ РєР»Р°СЃСЃР° РІ XML
 bool UContainerDescription::SaveCommon(USerStorageXML &xml)
 {
  xml.AddNode("Properties");
@@ -343,7 +423,7 @@ bool UContainerDescription::SaveCommon(USerStorageXML &xml)
  return true;
 }
 
-// Загружает данные класса из XML
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РґР°РЅРЅС‹Рµ РєР»Р°СЃСЃР° РёР· XML
 bool UContainerDescription::LoadCommon(USerStorageXML &xml)
 {
  if(!xml.SelectNode("Properties"))

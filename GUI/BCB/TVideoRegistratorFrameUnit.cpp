@@ -17,11 +17,11 @@
 #pragma resource "*.dfm"
 TTVideoRegistratorFrame *TVideoRegistratorFrame;
 
-/// Экзепляр класса приложения
+/// Р­РєР·РµРїР»СЏСЂ РєР»Р°СЃСЃР° РїСЂРёР»РѕР¶РµРЅРёСЏ
 extern RDK::UApplication RdkApplication;
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 __fastcall TVideoGetBitmapFrameThread::TVideoGetBitmapFrameThread(TTVideoRegistratorFrame *frame, bool CreateSuspended)
 : Frame(frame), TThread(CreateSuspended)
@@ -44,15 +44,15 @@ __fastcall TVideoGetBitmapFrameThread::~TVideoGetBitmapFrameThread(void)
  CloseHandle(CalcCompleteEvent);
 }
 // --------------------------
-// Управление параметрами
+// РЈРїСЂР°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
-/// Источник видео
+/// РСЃС‚РѕС‡РЅРёРє РІРёРґРµРѕ
 int TVideoGetBitmapFrameThread::GetSourceMode(void) const
 {
  return SourceMode;
 }
 
-/// Индекс канала в библиотеке аналитики, управляемый тредом
+/// РРЅРґРµРєСЃ РєР°РЅР°Р»Р° РІ Р±РёР±Р»РёРѕС‚РµРєРµ Р°РЅР°Р»РёС‚РёРєРё, СѓРїСЂР°РІР»СЏРµРјС‹Р№ С‚СЂРµРґРѕРј
 int TVideoGetBitmapFrameThread::GetChannelIndex(void) const
 {
  return ChannelIndex;
@@ -69,9 +69,9 @@ bool TVideoGetBitmapFrameThread::SetChannelIndex(int value)
 // --------------------------
 
 // --------------------------
-// Управление данными
+// РЈРїСЂР°РІР»РµРЅРёРµ РґР°РЅРЅС‹РјРё
 // --------------------------
-/// Указатель на владельца
+/// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РІР»Р°РґРµР»СЊС†Р°
 TTVideoRegistratorFrame* TVideoGetBitmapFrameThread::GetFrame(void) const
 {
  return Frame;
@@ -86,27 +86,27 @@ bool TVideoGetBitmapFrameThread::SetFrame(TTVideoRegistratorFrame * frame)
  return true;
 }
 // --------------------------
-// Управление событиями
+// РЈРїСЂР°РІР»РµРЅРёРµ СЃРѕР±С‹С‚РёСЏРјРё
 // --------------------------
-/// Выставляется по завершении захвата нового кадра
+/// Р’С‹СЃС‚Р°РІР»СЏРµС‚СЃСЏ РїРѕ Р·Р°РІРµСЂС€РµРЅРёРё Р·Р°С…РІР°С‚Р° РЅРѕРІРѕРіРѕ РєР°РґСЂР°
 HANDLE TVideoGetBitmapFrameThread::GetFrameNotInProgress(void) const
 {
  return FrameNotInProgress;
 }
 
-/// Выставлено всегда. Сбрасывается на время доступа к изображению
+/// Р’С‹СЃС‚Р°РІР»РµРЅРѕ РІСЃРµРіРґР°. РЎР±СЂР°СЃС‹РІР°РµС‚СЃСЏ РЅР° РІСЂРµРјСЏ РґРѕСЃС‚СѓРїР° Рє РёР·РѕР±СЂР°Р¶РµРЅРёСЋ
 HANDLE TVideoGetBitmapFrameThread::GetSourceUnlock(void) const
 {
  return SourceUnlock;
 }
 
-/// Сбрасывается на время ожидания расчета
+/// РЎР±СЂР°СЃС‹РІР°РµС‚СЃСЏ РЅР° РІСЂРµРјСЏ РѕР¶РёРґР°РЅРёСЏ СЂР°СЃС‡РµС‚Р°
 HANDLE TVideoGetBitmapFrameThread::GetCalcCompleteEvent(void) const
 {
  return CalcCompleteEvent;
 }
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
 void __fastcall TVideoGetBitmapFrameThread::Start(void)
 {
@@ -143,7 +143,7 @@ void __fastcall TVideoGetBitmapFrameThread::Execute(void)
   SetEvent(FrameNotInProgress);
  }
 }
-/// Возвращает копию изображения с блокировкой
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕРїРёСЋ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ СЃ Р±Р»РѕРєРёСЂРѕРІРєРѕР№
 bool TVideoGetBitmapFrameThread::ReadSourceSafe(RDK::UBitmap& dest, bool reflect)
 {
  if(WaitForSingleObject(SourceUnlock,30) == WAIT_TIMEOUT)
@@ -174,7 +174,7 @@ bool TVideoGetBitmapFrameThread::ReadSourceSafe(Graphics::TBitmap *dest, bool re
  return true;
 }
 
-/// Записывает изображение в тред с блокировкой
+/// Р—Р°РїРёСЃС‹РІР°РµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІ С‚СЂРµРґ СЃ Р±Р»РѕРєРёСЂРѕРІРєРѕР№
 bool TVideoGetBitmapFrameThread::WriteSourceSafe(const RDK::UBitmap& src, bool reflect)
 {
  if(WaitForSingleObject(SourceWriteUnlock,100) == WAIT_TIMEOUT)
@@ -214,7 +214,7 @@ bool TVideoGetBitmapFrameThread::WriteSourceSafe(Graphics::TBitmap *src, bool re
 }
 //---------------------------------------------------------------------------
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 __fastcall TVideoGetBitmapFrameFromVideoThread::TVideoGetBitmapFrameFromVideoThread(TTVideoRegistratorFrame *frame, bool CreateSuspended)
 : TVideoGetBitmapFrameThread(frame, CreateSuspended)
@@ -229,7 +229,7 @@ __fastcall TVideoGetBitmapFrameFromVideoThread::~TVideoGetBitmapFrameFromVideoTh
 // --------------------------
 
 // --------------------------
-// Управление параметрами
+// РЈРїСЂР°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
 bool TVideoGetBitmapFrameFromVideoThread::SetFrameIndex(const int &value)
 {
@@ -259,7 +259,7 @@ TVideoOutputFrame* TVideoGetBitmapFrameFromVideoThread::GetVideoFrame(void) cons
  return VideoOutputFrame;
 }
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
 void __fastcall TVideoGetBitmapFrameFromVideoThread::Start(void)
 {
@@ -300,7 +300,7 @@ void __fastcall TVideoGetBitmapFrameFromVideoThread::Calculate(void)
  }
 }
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 __fastcall TVideoGetBitmapFrameFromComponentThread::TVideoGetBitmapFrameFromComponentThread(TTVideoRegistratorFrame *frame, bool CreateSuspended)
 : TVideoGetBitmapFrameThread(frame, CreateSuspended)
@@ -315,7 +315,7 @@ __fastcall TVideoGetBitmapFrameFromComponentThread::~TVideoGetBitmapFrameFromCom
 // --------------------------
 
 // --------------------------
-// Управление параметрами
+// РЈРїСЂР°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
 bool TVideoGetBitmapFrameFromComponentThread::SetComponentName(const std::string &comp_name)
 {
@@ -346,7 +346,7 @@ const std::string TVideoGetBitmapFrameFromComponentThread::GetPropertyName(void)
 }
 
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
 void __fastcall TVideoGetBitmapFrameFromComponentThread::Start(void)
 {
@@ -391,10 +391,10 @@ void __fastcall TVideoGetBitmapFrameFromComponentThread::Calculate(void)
 __fastcall TTVideoRegistratorFrame::TTVideoRegistratorFrame(TComponent* Owner)
 	: TUVisualControllerFrame(Owner)
 {
- // Заполнение массива ошибок
+ // Р—Р°РїРѕР»РЅРµРЅРёРµ РјР°СЃСЃРёРІР° РѕС€РёР±РѕРє
  FillErrorsArray();
 
- // Загрузка списка компонент
+ // Р—Р°РіСЂСѓР·РєР° СЃРїРёСЃРєР° РєРѕРјРїРѕРЅРµРЅС‚
  MyComponentsListForm=new TUComponentsListForm(this);
 }
 //---------------------------------------------------------------------------
@@ -413,7 +413,7 @@ __fastcall TTVideoRegistratorFrame::~TTVideoRegistratorFrame(void)
   delete MyComponentsListForm;
 }
 //---------------------------------------------------------------------------
-// Методы
+// РњРµС‚РѕРґС‹
 void __fastcall TTVideoRegistratorFrame::AssignListToComboBox (TComboBox* ComboBox, String List, int Index)
 {
  ComboBox->Items->Text = List;
@@ -422,7 +422,7 @@ void __fastcall TTVideoRegistratorFrame::AssignListToComboBox (TComboBox* ComboB
   ComboBox->ItemIndex = Index;
  }
 }
-// Заполнение массива ошибок
+// Р—Р°РїРѕР»РЅРµРЅРёРµ РјР°СЃСЃРёРІР° РѕС€РёР±РѕРє
 void TTVideoRegistratorFrame::FillErrorsArray(void)
 {
  Errors[XCAMSNOTFOUND]="Cameras not found";
@@ -441,7 +441,7 @@ void TTVideoRegistratorFrame::FillErrorsArray(void)
  FrameIndex=0;
 }
 //---------------------------------------------------------------------------
-// Обновление доступного интерфеса
+// РћР±РЅРѕРІР»РµРЅРёРµ РґРѕСЃС‚СѓРїРЅРѕРіРѕ РёРЅС‚РµСЂС„РµСЃР°
 void __fastcall TTVideoRegistratorFrame::RefreshDeviceControls(void)
 {
  bool CanUseCompressors=(RecordingMethodComboBox->ItemIndex != 0) && (RecordingMethodComboBox->ItemIndex != 8);
@@ -466,19 +466,19 @@ void __fastcall TTVideoRegistratorFrame::RefreshDeviceControls(void)
 
 }
 //---------------------------------------------------------------------------
-// Логгирование ошибок
+// Р›РѕРіРіРёСЂРѕРІР°РЅРёРµ РѕС€РёР±РѕРє
 bool TTVideoRegistratorFrame::WriteLogMessage(const int &err)
 {
  if(Errors[err] != "")
  {
-  Log_LogMessage(RDK_EX_DEBUG, Errors[err].c_str());
+  RDK::Logging::SystemLog(RDK_EX_DEBUG, Errors[err].c_str());
   return false;
  }
 
  return true;
 }
 //---------------------------------------------------------------------------
-// Установка флага показа preview
+// РЈСЃС‚Р°РЅРѕРІРєР° С„Р»Р°РіР° РїРѕРєР°Р·Р° preview
 bool TTVideoRegistratorFrame::SetPreviewFlag(const bool &value)
 {
  if(PreviewFlag == value)
@@ -488,10 +488,10 @@ bool TTVideoRegistratorFrame::SetPreviewFlag(const bool &value)
  return true;
 }
 //---------------------------------------------------------------------------
-// Инициализирует DLL
+// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ DLL
 int TTVideoRegistratorFrame::Init(void)
 {
- // Формат сжатия
+ // Р¤РѕСЂРјР°С‚ СЃР¶Р°С‚РёСЏ
  VideoCompressorComboBox->Items->Clear();
  AssignListToComboBox(VideoCompressorComboBox, VideoGrabber->VideoCompressors, VideoGrabber->VideoCompressor);
 
@@ -501,14 +501,14 @@ int TTVideoRegistratorFrame::Init(void)
  return 0;
 }
 //---------------------------------------------------------------------------
-// Деинициализирует DLL
+// Р”РµРёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ DLL
 int TTVideoRegistratorFrame::UnInit(void)
 {
  //
  return 0;
 }
 //---------------------------------------------------------------------------
-// Инициализирует настройки direct network streaming TVideoGrabber
+// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РЅР°СЃС‚СЂРѕР№РєРё direct network streaming TVideoGrabber
 int TTVideoRegistratorFrame::InitStreamingSettings(void)
 {
  VideoGrabber->ASFVideoMaxKeyFrameSpacing = StrToIntDef(MaxKeyFrameSpacingLabeledEdit->Text, 100);
@@ -525,7 +525,7 @@ int TTVideoRegistratorFrame::InitStreamingSettings(void)
  return 0;
 }
 //---------------------------------------------------------------------------
-// Инициализирует настройки записи в файл TVideoGrabber
+// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РЅР°СЃС‚СЂРѕР№РєРё Р·Р°РїРёСЃРё РІ С„Р°Р№Р» TVideoGrabber
 int TTVideoRegistratorFrame::InitRecordingSettings(void)
 {
  VideoGrabber->ASFVideoWidth = StrToIntDef(RecordWidthLabeledEdit->Text, 320);
@@ -555,7 +555,7 @@ int TTVideoRegistratorFrame::InitRecordingSettings(void)
   VideoGrabber->CompressionMode = (TCompressionMode)0;
  }
 
- // Запись по таймеру
+ // Р—Р°РїРёСЃСЊ РїРѕ С‚Р°Р№РјРµСЂСѓ
  if(RecordingModeComboBox->ItemIndex != 0)
  {
   int recTimerMode=RecordingModeComboBox->ItemIndex;
@@ -598,7 +598,7 @@ int TTVideoRegistratorFrame::GetBitmapFrame(void)
  return 0;
 }
 
-// Создание и подготовка TBitmap для хранения кадра с камеры
+// РЎРѕР·РґР°РЅРёРµ Рё РїРѕРґРіРѕС‚РѕРІРєР° TBitmap РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РєР°РґСЂР° СЃ РєР°РјРµСЂС‹
 int TTVideoRegistratorFrame::PrepareBitmapFrame(void)
 {
  if(InputFrameBitmap)
@@ -633,7 +633,7 @@ int TTVideoRegistratorFrame::PrepareBitmapFrame(void)
  return 0;
 }
 //---------------------------------------------------------------------------
-// Установка фрейма источника при работе от фрейма
+// РЈСЃС‚Р°РЅРѕРІРєР° С„СЂРµР№РјР° РёСЃС‚РѕС‡РЅРёРєР° РїСЂРё СЂР°Р±РѕС‚Рµ РѕС‚ С„СЂРµР№РјР°
 bool TTVideoRegistratorFrame::SetVideoFrameSource(TVideoOutputFrame* sourceFrame)
 {
  if(BitmapFrameThread && Mode==1)
@@ -690,11 +690,11 @@ void __fastcall TTVideoRegistratorFrame::NetworkStreamingButtonClick(TObject *Se
  VideoGrabber->StartPreview();
  if(VideoGrabber->StreamingURL!="")
  {
-  Log_LogMessage(RDK_EX_INFO, (std::string("Network streaming started: ")+AnsiString(VideoGrabber->StreamingURL).c_str()).c_str());
+  RDK::Logging::SystemLog(RDK_EX_INFO, (std::string("Network streaming started: ")+AnsiString(VideoGrabber->StreamingURL).c_str()).c_str());
  }
 
  else
-  Log_LogMessage(RDK_EX_INFO, (std::string("Network streaming not running")).c_str());
+  RDK::Logging::SystemLog(RDK_EX_INFO, (std::string("Network streaming not running")).c_str());
 }
 //---------------------------------------------------------------------------
 
@@ -705,7 +705,7 @@ void __fastcall TTVideoRegistratorFrame::StopNetworkStreamingButtonClick(TObject
 
  VideoGrabber->NetworkStreaming=ns_Disabled;
  VideoGrabber->StopPreview();
-  Log_LogMessage(RDK_EX_INFO, (std::string("Network streaming stopped")).c_str());
+  RDK::Logging::SystemLog(RDK_EX_INFO, (std::string("Network streaming stopped")).c_str());
 
  if(BitmapFrameThread)
  {
@@ -734,10 +734,10 @@ void __fastcall TTVideoRegistratorFrame::VideoGrabberVideoFromBitmapsNextFrameNe
 void __fastcall TTVideoRegistratorFrame::GetStreamingHostButtonClick(TObject *Sender)
 {
  if(VideoGrabber->StreamingURL != "")
-  Log_LogMessage(RDK_EX_INFO, (AnsiString(VideoGrabber->StreamingURL)).c_str());
+  RDK::Logging::SystemLog(RDK_EX_INFO, (AnsiString(VideoGrabber->StreamingURL)).c_str());
 
  else
-  Log_LogMessage(RDK_EX_INFO, (std::string("Network streaming not running").c_str()));
+  RDK::Logging::SystemLog(RDK_EX_INFO, (std::string("Network streaming not running").c_str()));
 }
 //---------------------------------------------------------------------------
 void __fastcall TTVideoRegistratorFrame::InitButtonClick(TObject *Sender)
@@ -793,11 +793,11 @@ void __fastcall TTVideoRegistratorFrame::StartRecordingButtonClick(TObject *Send
 
  if(VideoGrabber->StartRecording())
  {
-  Log_LogMessage(RDK_EX_INFO, (std::string("Recording started").c_str()));
+  RDK::Logging::SystemLog(RDK_EX_INFO, (std::string("Recording started").c_str()));
  }
  else
  {
-  Log_LogMessage(RDK_EX_INFO, (std::string("Recording not started").c_str()));
+  RDK::Logging::SystemLog(RDK_EX_INFO, (std::string("Recording not started").c_str()));
  }
 }
 //---------------------------------------------------------------------------
@@ -805,7 +805,7 @@ void __fastcall TTVideoRegistratorFrame::StartRecordingButtonClick(TObject *Send
 void __fastcall TTVideoRegistratorFrame::StopRecordingButtonClick(TObject *Sender)
 {
  VideoGrabber->StopRecording();
- Log_LogMessage(RDK_EX_INFO, (std::string("Recording stopped").c_str()));
+ RDK::Logging::SystemLog(RDK_EX_INFO, (std::string("Recording stopped").c_str()));
 
  if(BitmapFrameThread)
  {
@@ -858,14 +858,14 @@ void __fastcall TTVideoRegistratorFrame::StartPreviewButtonClick(TObject *Sender
 
  VideoGrabber->FrameRate = StrToIntDef(FrameRateLabeledEdit->Text, 30);
  if(VideoGrabber->StartPreview())
-  Log_LogMessage(RDK_EX_INFO, (std::string("Preview started").c_str()));
+  RDK::Logging::SystemLog(RDK_EX_INFO, (std::string("Preview started").c_str()));
 }
 //---------------------------------------------------------------------------
 
 void __fastcall TTVideoRegistratorFrame::StopButtonClick(TObject *Sender)
 {
  VideoGrabber->StopPreview();
- Log_LogMessage(RDK_EX_INFO, (std::string("Preview stopped").c_str()));
+ RDK::Logging::SystemLog(RDK_EX_INFO, (std::string("Preview stopped").c_str()));
 
  if(BitmapFrameThread)
  {
@@ -877,34 +877,34 @@ void __fastcall TTVideoRegistratorFrame::StopButtonClick(TObject *Sender)
  }
 }
 // -----------------------------
-// Методы управления визуальным интерфейсом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РІРёР·СѓР°Р»СЊРЅС‹Рј РёРЅС‚РµСЂС„РµР№СЃРѕРј
 // -----------------------------
-// Метод, вызываемый перед шагом расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ С€Р°РіРѕРј СЂР°СЃС‡РµС‚Р°
 void TTVideoRegistratorFrame::ABeforeCalculate(void)
 {
 
 }
 
-// Метод, вызываемый перед сбросом
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ СЃР±СЂРѕСЃРѕРј
 void TTVideoRegistratorFrame::ABeforeReset(void)
 {
 
 }
 
-// Метод, вызываемый после шага расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ С€Р°РіР° СЂР°СЃС‡РµС‚Р°
 void TTVideoRegistratorFrame::AAfterCalculate(void)
 {
 
 }
 
 
-// Обновление интерфейса
+// РћР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
 void TTVideoRegistratorFrame::AUpdateInterface(void)
 {
 
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TTVideoRegistratorFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
  // Network Streaming
@@ -938,7 +938,7 @@ void TTVideoRegistratorFrame::ASaveParameters(RDK::USerStorageXML &xml)
 
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TTVideoRegistratorFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
   // Network Streaming

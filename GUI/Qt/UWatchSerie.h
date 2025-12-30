@@ -15,17 +15,23 @@ public:
     UWatchSerie();
     //~UWatchSerie();
 
-    //данные об источнике данных
-    int indexChannel;      //Индекс канала
-    QString nameComponent; //Имя компонента
-    QString nameProperty;  //Имя свойства
-    QString typeProperty;  //Тип компонента
+    //РґР°РЅРЅС‹Рµ РѕР± РёСЃС‚РѕС‡РЅРёРєРµ РґР°РЅРЅС‹С…
+    int indexChannel;      //РРЅРґРµРєСЃ РєР°РЅР°Р»Р°
+    QString nameComponent; //РРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°
+    QString nameProperty;  //РРјСЏ СЃРІРѕР№СЃС‚РІР°
+    QString typeProperty;  //РўРёРї РєРѕРјРїРѕРЅРµРЅС‚Р°
     double YShift;
-    // вектор DataReader-ов
+    // РІРµРєС‚РѕСЂ DataReader-РѕРІ
     RDK::UControllerDataReader * data_reader;
-    //координаты элемента матрицы
+    //РєРѕРѕСЂРґРёРЅР°С‚С‹ СЌР»РµРјРµРЅС‚Р° РјР°С‚СЂРёС†С‹
     int Jx;
     int Jy;
+
+    // РЎС‚Р°С‚СѓСЃ СЃРµСЂРёРё (Р°РєС‚РёРІРЅР°/РЅРµР°РєС‚РёРІРЅР°)
+    bool isOnline = true;
+
+    // РЈСЃС‚Р°РЅРѕРІРёС‚СЊ СЃС‚Р°С‚СѓСЃ СЃРµСЂРёРё (РІР»РёСЏРµС‚ РЅР° РІРёР·СѓР°Р»СЊРЅРѕРµ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ)
+    void setOnlineStatus(bool online);
 };
 
 #endif // UWATCHSERIE_H

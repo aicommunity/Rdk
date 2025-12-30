@@ -23,7 +23,7 @@ namespace RDK {
 using namespace std;
 //---------------------------------------------------------------------------
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 NCC2D::NCC2D(void)
 {
@@ -32,19 +32,19 @@ NCC2D::NCC2D(void)
  ISumAverage=0;
  Result=0;
 
- // Длина массива Template
+ // Р”Р»РёРЅР° РјР°СЃСЃРёРІР° Template
  TemplateSize=0;
 
- // Длина массива ISumAverage
+ // Р”Р»РёРЅР° РјР°СЃСЃРёРІР° ISumAverage
  ISumAverageSize=0;
 
- // Длина массива Result
+ // Р”Р»РёРЅР° РјР°СЃСЃРёРІР° Result
  ResultSize=0;
 
- // Массив значений шага вычисления корреляции в проходах уточнения
+ // РњР°СЃСЃРёРІ Р·РЅР°С‡РµРЅРёР№ С€Р°РіР° РІС‹С‡РёСЃР»РµРЅРёСЏ РєРѕСЂСЂРµР»СЏС†РёРё РІ РїСЂРѕС…РѕРґР°С… СѓС‚РѕС‡РЅРµРЅРёСЏ
  PassCStep=0;
 
- // Длина массива PassCStep;
+ // Р”Р»РёРЅР° РјР°СЃСЃРёРІР° PassCStep;
  PassCStepSize=0;
 
  CStep=1;
@@ -93,9 +93,9 @@ NCC2D::~NCC2D(void)
 // --------------------------
 
 // --------------------------
-// Методы управления параметрами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
-// Размеры входного изображения
+// Р Р°Р·РјРµСЂС‹ РІС…РѕРґРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 int NCC2D::GetIWidth(void) const
 {
  return IWidth;
@@ -122,7 +122,7 @@ bool NCC2D::SetIRes(int width, int height)
  return true;
 }
 
-// Габариты рабочей области во входном изображении
+// Р“Р°Р±Р°СЂРёС‚С‹ СЂР°Р±РѕС‡РµР№ РѕР±Р»Р°СЃС‚Рё РІРѕ РІС…РѕРґРЅРѕРј РёР·РѕР±СЂР°Р¶РµРЅРёРё
 int NCC2D::GetWorkIX(void) const
 {
  return WorkIX;
@@ -187,7 +187,7 @@ bool NCC2D::SetWorkIHeight(int value)
  return true;
 }
 
-// Размеры шаблона
+// Р Р°Р·РјРµСЂС‹ С€Р°Р±Р»РѕРЅР°
 int NCC2D::GetTWidth(void) const
 {
  return TWidth;
@@ -215,7 +215,7 @@ bool NCC2D::SetTRes(int width, int height)
  return true;
 }
 
-// Шаг корреляции
+// РЁР°Рі РєРѕСЂСЂРµР»СЏС†РёРё
 int NCC2D::GetCStep(void) const
 {
  return CStep;
@@ -236,7 +236,7 @@ bool NCC2D::SetCStep(int step)
  return true;
 }
 
-// Флаг разрешения вычитания среднего
+// Р¤Р»Р°Рі СЂР°Р·СЂРµС€РµРЅРёСЏ РІС‹С‡РёС‚Р°РЅРёСЏ СЃСЂРµРґРЅРµРіРѕ
 bool NCC2D::GetSubAverageFlag(void) const
 {
  return SubAverageFlag;
@@ -254,7 +254,7 @@ bool NCC2D::SetSubAverageFlag(bool value)
  return true;
 }
 
-// Число проходов уточнения корреляции
+// Р§РёСЃР»Рѕ РїСЂРѕС…РѕРґРѕРІ СѓС‚РѕС‡РЅРµРЅРёСЏ РєРѕСЂСЂРµР»СЏС†РёРё
 int NCC2D::GetNumCalcPasses(void) const
 {
  return NumCalcPasses;
@@ -273,7 +273,7 @@ bool NCC2D::SetNumCalcPasses(int value)
  return true;
 }
 
-// Флаг автоматического вычисления параметров проходов уточнения корреляции
+// Р¤Р»Р°Рі Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ РІС‹С‡РёСЃР»РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ РїСЂРѕС…РѕРґРѕРІ СѓС‚РѕС‡РЅРµРЅРёСЏ РєРѕСЂСЂРµР»СЏС†РёРё
 bool NCC2D::GetAutoPassParametersFlag(void) const
 {
  return AutoPassParametersFlag;
@@ -289,9 +289,9 @@ bool NCC2D::SetAutoPassParametersFlag(bool value)
  return true;
 }
 
-// Режим вычисления корреляции
-// 0 - простой расчет
-// 1 - многопроходовый расчет
+// Р РµР¶РёРј РІС‹С‡РёСЃР»РµРЅРёСЏ РєРѕСЂСЂРµР»СЏС†РёРё
+// 0 - РїСЂРѕСЃС‚РѕР№ СЂР°СЃС‡РµС‚
+// 1 - РјРЅРѕРіРѕРїСЂРѕС…РѕРґРѕРІС‹Р№ СЂР°СЃС‡РµС‚
 int NCC2D::GetCalcMode(void) const
 {
  return CalcMode;
@@ -313,9 +313,9 @@ bool NCC2D::SetCalcMode(int value)
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј
 // --------------------------
-// Разрешение матрицы корреляций
+// Р Р°Р·СЂРµС€РµРЅРёРµ РјР°С‚СЂРёС†С‹ РєРѕСЂСЂРµР»СЏС†РёР№
 int NCC2D::GetCWidth(void) const
 {
  return CWidth;
@@ -326,8 +326,8 @@ int NCC2D::GetCHeight(void) const
  return CHeight;
 }
 
-// Нормированный шаблон
-// (без среднего)
+// РќРѕСЂРјРёСЂРѕРІР°РЅРЅС‹Р№ С€Р°Р±Р»РѕРЅ
+// (Р±РµР· СЃСЂРµРґРЅРµРіРѕ)
 const int* NCC2D::GetTemplate(void) const
 {
  return &Template[0];
@@ -346,7 +346,7 @@ bool NCC2D::SetTemplate(const int* buffer, int size)
 }
 
 
-// Суммарная норма шаблона
+// РЎСѓРјРјР°СЂРЅР°СЏ РЅРѕСЂРјР° С€Р°Р±Р»РѕРЅР°
 long long NCC2D::GetTSumNorm(void) const
 {
  return TSumNorm;
@@ -362,8 +362,8 @@ bool NCC2D::SetTSumNorm(long long value)
 }
 
 
-// Сумма среднего шаблона
-// Среднее вычисляется как сумма/(TWidth*THeight)
+// РЎСѓРјРјР° СЃСЂРµРґРЅРµРіРѕ С€Р°Р±Р»РѕРЅР°
+// РЎСЂРµРґРЅРµРµ РІС‹С‡РёСЃР»СЏРµС‚СЃСЏ РєР°Рє СЃСѓРјРјР°/(TWidth*THeight)
 long long NCC2D::GetTSumAverage(void) const
 {
  return TSumAverage;
@@ -378,26 +378,26 @@ bool NCC2D::SetTSumAverage(long long value)
  return true;
 }
 
-// Входное изображение в форме градаций серого
+// Р’С…РѕРґРЅРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІ С„РѕСЂРјРµ РіСЂР°РґР°С†РёР№ СЃРµСЂРѕРіРѕ
 const unsigned char* NCC2D::GetInputData(void) const
 {
  return Input;
 }
 
-// Сумма среднего входного изображения
-// для каждого элемента матрицы корреляций
+// РЎСѓРјРјР° СЃСЂРµРґРЅРµРіРѕ РІС…РѕРґРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+// РґР»СЏ РєР°Р¶РґРѕРіРѕ СЌР»РµРјРµРЅС‚Р° РјР°С‚СЂРёС†С‹ РєРѕСЂСЂРµР»СЏС†РёР№
 long long NCC2D::GetISumAverage(int x, int y) const
 {
  return ISumAverage[y*CWidth+x];
 }
 
-// Результат расчета корреляций
+// Р РµР·СѓР»СЊС‚Р°С‚ СЂР°СЃС‡РµС‚Р° РєРѕСЂСЂРµР»СЏС†РёР№
 double NCC2D::GetResult(int x, int y) const
 {
  return Result[y*CWidth+x];
 }
 
-// Максимум и минимум корреляции
+// РњР°РєСЃРёРјСѓРј Рё РјРёРЅРёРјСѓРј РєРѕСЂСЂРµР»СЏС†РёРё
 double NCC2D::GetMaxResult(void) const
 {
  return MaxResult;
@@ -408,8 +408,8 @@ double NCC2D::GetMinResult(void) const
  return MinResult;
 }
 
-// Координаты результатов расчета
-// x,y в исходном изображении
+// РљРѕРѕСЂРґРёРЅР°С‚С‹ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ СЂР°СЃС‡РµС‚Р°
+// x,y РІ РёСЃС…РѕРґРЅРѕРј РёР·РѕР±СЂР°Р¶РµРЅРёРё
 int NCC2D::GetMaxResX(void) const
 {
  return MaxResX;
@@ -432,17 +432,17 @@ int NCC2D::GetMinResY(void) const
 // --------------------------
 
 // --------------------------
-// Методы счета
+// РњРµС‚РѕРґС‹ СЃС‡РµС‚Р°
 // --------------------------
-// Задает новые данные шаблона
+// Р—Р°РґР°РµС‚ РЅРѕРІС‹Рµ РґР°РЅРЅС‹Рµ С€Р°Р±Р»РѕРЅР°
 void NCC2D::SetTemplate(const unsigned char *buffer)
 {
  if(!Build())
   return;
 
- // Считаем параметры шаблона
+ // РЎС‡РёС‚Р°РµРј РїР°СЂР°РјРµС‚СЂС‹ С€Р°Р±Р»РѕРЅР°
 
- // Считаем среднее
+ // РЎС‡РёС‚Р°РµРј СЃСЂРµРґРЅРµРµ
  TSumAverage=0;
  TSumNorm=0;
  int size=TWidth*THeight;
@@ -474,7 +474,7 @@ void NCC2D::SetTemplate(const unsigned char *buffer)
  }
 }
 
-// Входное изображение в форме градаций серого
+// Р’С…РѕРґРЅРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІ С„РѕСЂРјРµ РіСЂР°РґР°С†РёР№ СЃРµСЂРѕРіРѕ
 bool NCC2D::SetInput(unsigned char *input)
 {
  if(Input == input)
@@ -493,9 +493,9 @@ bool NCC2D::SetInput(unsigned char *input)
 
 
 // --------------------------
-// Скрытые методы управления счетом
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃС‡РµС‚РѕРј
 // --------------------------
-// Восстановление настроек по умолчанию и сброс процесса счета
+// Р’РѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ Рё СЃР±СЂРѕСЃ РїСЂРѕС†РµСЃСЃР° СЃС‡РµС‚Р°
 bool NCC2D::ADefault(void)
 {
  SetCStep(1);
@@ -513,26 +513,26 @@ bool NCC2D::ADefault(void)
  return true;
 }
 
-// Обеспечивает сборку внутренней структуры объекта
-// после настройки параметров
-// Автоматически вызывает метод Reset() и выставляет Ready в true
-// в случае успешной сборки
+// РћР±РµСЃРїРµС‡РёРІР°РµС‚ СЃР±РѕСЂРєСѓ РІРЅСѓС‚СЂРµРЅРЅРµР№ СЃС‚СЂСѓРєС‚СѓСЂС‹ РѕР±СЉРµРєС‚Р°
+// РїРѕСЃР»Рµ РЅР°СЃС‚СЂРѕР№РєРё РїР°СЂР°РјРµС‚СЂРѕРІ
+// РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРё РІС‹Р·С‹РІР°РµС‚ РјРµС‚РѕРґ Reset() Рё РІС‹СЃС‚Р°РІР»СЏРµС‚ Ready РІ true
+// РІ СЃР»СѓС‡Р°Рµ СѓСЃРїРµС€РЅРѕР№ СЃР±РѕСЂРєРё
 bool NCC2D::ABuild(void)
 {
  if(IWidth<TWidth || IHeight<THeight || CStep <=0 ||
     IWidth <= 0 || IHeight <= 0 || TWidth <= 0 || THeight <= 0)
   return false;
 
- // Разрешение матрицы корреляций
+ // Р Р°Р·СЂРµС€РµРЅРёРµ РјР°С‚СЂРёС†С‹ РєРѕСЂСЂРµР»СЏС†РёР№
  int fullcwidth=(IWidth-TWidth)+1;
  int fullcheight=(IHeight-THeight)+1;
 
- // Габариты рабочей области во входном изображении
+ // Р“Р°Р±Р°СЂРёС‚С‹ СЂР°Р±РѕС‡РµР№ РѕР±Р»Р°СЃС‚Рё РІРѕ РІС…РѕРґРЅРѕРј РёР·РѕР±СЂР°Р¶РµРЅРёРё
  //WorkIX, WorkIY, WorkIWidth, WorkIHeight;
  Input=0;
 
- // Нормированный шаблон
- // (без среднего)
+ // РќРѕСЂРјРёСЂРѕРІР°РЅРЅС‹Р№ С€Р°Р±Р»РѕРЅ
+ // (Р±РµР· СЃСЂРµРґРЅРµРіРѕ)
  if(!Template || TemplateSize<TWidth*THeight)
  {
   delete []Template;
@@ -540,15 +540,15 @@ bool NCC2D::ABuild(void)
   TemplateSize=TWidth*THeight;
  }
 
- // Суммарная норма шаблона
+ // РЎСѓРјРјР°СЂРЅР°СЏ РЅРѕСЂРјР° С€Р°Р±Р»РѕРЅР°
  TSumNorm=0;
 
- // Сумма среднего шаблона
- // Среднее вычисляется как сумма/(TWidth*THeight)
+ // РЎСѓРјРјР° СЃСЂРµРґРЅРµРіРѕ С€Р°Р±Р»РѕРЅР°
+ // РЎСЂРµРґРЅРµРµ РІС‹С‡РёСЃР»СЏРµС‚СЃСЏ РєР°Рє СЃСѓРјРјР°/(TWidth*THeight)
  TSumAverage=0;
 
- // Сумма среднего входного изображения
- // для каждого элемента матрицы корреляций
+ // РЎСѓРјРјР° СЃСЂРµРґРЅРµРіРѕ РІС…РѕРґРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+ // РґР»СЏ РєР°Р¶РґРѕРіРѕ СЌР»РµРјРµРЅС‚Р° РјР°С‚СЂРёС†С‹ РєРѕСЂСЂРµР»СЏС†РёР№
  if(!ISumAverage || ISumAverageSize<fullcwidth*fullcheight)
   delete []ISumAverage;
  if(SubAverageFlag)
@@ -563,7 +563,7 @@ bool NCC2D::ABuild(void)
  else
   ISumAverage=0;
 
- // Результат расчета корреляций
+ // Р РµР·СѓР»СЊС‚Р°С‚ СЂР°СЃС‡РµС‚Р° РєРѕСЂСЂРµР»СЏС†РёР№
  if(!Result || ResultSize<fullcwidth*fullcheight)
  {
   delete []Result;
@@ -596,14 +596,14 @@ bool NCC2D::ABuild(void)
  return true;
 }
 
-// Сброс процесса счета.
+// РЎР±СЂРѕСЃ РїСЂРѕС†РµСЃСЃР° СЃС‡РµС‚Р°.
 bool NCC2D::AReset(void)
 {
 
  return true;
 }
 
-// Выполняет расчет этого объекта
+// Р’С‹РїРѕР»РЅСЏРµС‚ СЂР°СЃС‡РµС‚ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°
 bool NCC2D::ACalculate(void)
 {
  if(!Input)
@@ -619,17 +619,16 @@ bool NCC2D::ACalculate(void)
  return false;
 }
 
-// Выполняет расчет объекта для случая простого вычисления корреляции
+// Р’С‹РїРѕР»РЅСЏРµС‚ СЂР°СЃС‡РµС‚ РѕР±СЉРµРєС‚Р° РґР»СЏ СЃР»СѓС‡Р°СЏ РїСЂРѕСЃС‚РѕРіРѕ РІС‹С‡РёСЃР»РµРЅРёСЏ РєРѕСЂСЂРµР»СЏС†РёРё
 bool NCC2D::SimpleCalculate(void)
 {
  int k;
 
  int size=TWidth*THeight;
 
- // Считаем среднее входного изображения для всех u,v
+ // РЎС‡РёС‚Р°РµРј СЃСЂРµРґРЅРµРµ РІС…РѕРґРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РґР»СЏ РІСЃРµС… u,v
  k=0;
  int sum=0;
- long long res=0;
 
 
  unsigned char *pInput=Input;
@@ -649,7 +648,7 @@ bool NCC2D::SimpleCalculate(void)
   ++k;
   for(int j=0;j<CHeight;j++)
   {
-   if(j%2 == 0) // Идем вправо
+   if(j%2 == 0) // РРґРµРј РІРїСЂР°РІРѕ
    {
     for(int i=1;i<CWidth;i++)
     {
@@ -672,7 +671,7 @@ bool NCC2D::SimpleCalculate(void)
      ++k;
     }
    }
-   else // Идем влево
+   else // РРґРµРј РІР»РµРІРѕ
    {
     for(int i=CWidth-2;i>=0;i--)
     {
@@ -695,10 +694,10 @@ bool NCC2D::SimpleCalculate(void)
     }
    }
 
-   // Здесь смещаемся на 1 строку
+   // Р—РґРµСЃСЊ СЃРјРµС‰Р°РµРјСЃСЏ РЅР° 1 СЃС‚СЂРѕРєСѓ
    if(j < CHeight-1)
    {
-    if(j%2 == 0)// Если шли вправо
+    if(j%2 == 0)// Р•СЃР»Рё С€Р»Рё РІРїСЂР°РІРѕ
     {
      pInput=Input+((j+1)*CStep+THeight-1)*IWidth+(TWidth-1)*CStep;
      for(int m=0;m<TWidth;m++,pInput++)
@@ -711,7 +710,7 @@ bool NCC2D::SimpleCalculate(void)
      ISumAverage[k]=sum;
      --k;
     }
-    else // Если шли влево
+    else // Р•СЃР»Рё С€Р»Рё РІР»РµРІРѕ
     {
      pInput=Input+((j+1)*CStep+THeight-1)*IWidth;
      for(int m=0;m<TWidth;m++,pInput++)
@@ -728,7 +727,7 @@ bool NCC2D::SimpleCalculate(void)
    }
   }
 
- // Считаем корреляцию
+ // РЎС‡РёС‚Р°РµРј РєРѕСЂСЂРµР»СЏС†РёСЋ
  MaxResult=-1;
  MinResult=1;
  MaxResX=MaxResY=MinResX=MinResY-1;
@@ -739,7 +738,7 @@ bool NCC2D::SimpleCalculate(void)
   {
    Result[k]=-1;
    long long iSumNorm=0;
-   long long res=0;
+   long long corr_res=0;
    long long isumaverage;
    if(SubAverageFlag)
     isumaverage=ISumAverage[k];
@@ -749,23 +748,23 @@ bool NCC2D::SimpleCalculate(void)
    int* ttemplate=&Template[0];
 
 
-   unsigned char *pInput=Input+j*CStep*IWidth+i*CStep;
+   unsigned char *pInputLocal=Input+j*CStep*IWidth+i*CStep;
    for(int n=j*CStep;n<THeight+j*CStep;n++)
    {
-    for(int m=i*CStep;m<TWidth+i*CStep;m++,pInput++)
+    for(int m=i*CStep;m<TWidth+i*CStep;m++,pInputLocal++)
     {
-     long long sub=(*pInput)*size-isumaverage;
-     res+=sub*(*ttemplate);
+     long long sub=(*pInputLocal)*size-isumaverage;
+     corr_res+=sub*(*ttemplate);
      iSumNorm+=sub*sub;
 
      ++ttemplate;
     }
-    pInput+=IWidth-TWidth;
+    pInputLocal+=IWidth-TWidth;
    }
 
    double sq1=double(iSumNorm),sq2=double(TSumNorm);
    if(sq1 != 0 && sq2 != 0)
-    Result[k]=double(res)/sqrtl(sq1*sq2);
+    Result[k]=static_cast<double>(corr_res)/static_cast<double>(sqrtl(sq1*sq2));
    else
     Result[k]=1;
    if(MaxResult<Result[k])
@@ -786,7 +785,7 @@ bool NCC2D::SimpleCalculate(void)
   return true;
  }
 
- // Считаем корреляцию
+ // РЎС‡РёС‚Р°РµРј РєРѕСЂСЂРµР»СЏС†РёСЋ
  MaxResult=-1;
  MinResult=1;
  MaxResX=MaxResY=MinResX=MinResY-1;
@@ -797,27 +796,27 @@ bool NCC2D::SimpleCalculate(void)
   {
    Result[k]=-1;
    int iSumNorm=0;
-//   int res=0;
+   long long corr_res=0;
    int diffwidth=IWidth-TWidth;
 
    int* ttemplate=&Template[0];
 
 
-   unsigned char *pInput=Input+WorkIY*IWidth+j*CStep*IWidth+i*CStep+WorkIX;
+   unsigned char *pInputLocal2=Input+WorkIY*IWidth+j*CStep*IWidth+i*CStep+WorkIX;
    for(int n=0;n<THeight;++n)
    {
-    for(int m=0;m<TWidth;++m,++pInput,++ttemplate)
+    for(int m=0;m<TWidth;++m,++pInputLocal2,++ttemplate)
     {
-     iSumNorm+=int(*pInput)*int(*pInput);
-     res+=int(*pInput)*(*ttemplate);
+     iSumNorm+=int(*pInputLocal2)*int(*pInputLocal2);
+     corr_res+=int(*pInputLocal2)*(*ttemplate);
     }
-    pInput+=diffwidth;
+    pInputLocal2+=diffwidth;
    }
 
    double sq1=double(iSumNorm),sq2=double(TSumNorm);
    if(sq1 != 0 && sq2 != 0)
    {
-    Result[k]=double(res)/sqrtl(fabs(sq1*sq2));
+    Result[k]=static_cast<double>(corr_res)/static_cast<double>(sqrtl(fabs(sq1*sq2)));
    }
    else
     Result[k]=1;
@@ -839,10 +838,10 @@ bool NCC2D::SimpleCalculate(void)
  return true;
 }
 
-// Выполняет расчет объекта для случая многопроходового вычисления корреляции
+// Р’С‹РїРѕР»РЅСЏРµС‚ СЂР°СЃС‡РµС‚ РѕР±СЉРµРєС‚Р° РґР»СЏ СЃР»СѓС‡Р°СЏ РјРЅРѕРіРѕРїСЂРѕС…РѕРґРѕРІРѕРіРѕ РІС‹С‡РёСЃР»РµРЅРёСЏ РєРѕСЂСЂРµР»СЏС†РёРё
 bool NCC2D::PassCalculate(void)
 {
- int tx=0,ty=0; // Временные координаты максимума на данном шаге
+ int tx=0,ty=0; // Р’СЂРµРјРµРЅРЅС‹Рµ РєРѕРѕСЂРґРёРЅР°С‚С‹ РјР°РєСЃРёРјСѓРјР° РЅР° РґР°РЅРЅРѕРј С€Р°РіРµ
  double res=-1;
 
  SetWorkIX(0);

@@ -7,23 +7,23 @@
 namespace RDK {
 
 
-/// Указатель c подсчетом ссылок (слабый аналог shared_ptr)
+/// РЈРєР°Р·Р°С‚РµР»СЊ c РїРѕРґСЃС‡РµС‚РѕРј СЃСЃС‹Р»РѕРє (СЃР»Р°Р±С‹Р№ Р°РЅР°Р»РѕРі shared_ptr)
 template<typename T>
 class UESharedPtr
 {
-public: // Исключения
+public: // РСЃРєР»СЋС‡РµРЅРёСЏ
 class EUsingZeroPtr: public EFatal {};//T::IException {};
 
 //////////////////////////
 protected:
 T* PData;
 
-// Счетчик ссылок
+// РЎС‡РµС‚С‡РёРє СЃСЃС‹Р»РѕРє
 long* Counter;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UESharedPtr(void);
 explicit UESharedPtr(T* pdata);
@@ -39,7 +39,7 @@ virtual ~UESharedPtr(void);
 // --------------------------
 
 // --------------------------
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 // --------------------------
 UESharedPtr<T>& operator = (const UESharedPtr<T> &p);
 
@@ -67,57 +67,57 @@ T& operator * (void);
 operator T* (void) const;
 
 
-// Возвращает число ссылок на объект
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ СЃСЃС‹Р»РѕРє РЅР° РѕР±СЉРµРєС‚
 long GetCounter(void) const;
 
 long* GetPCounter(void) const;
 
-// Очищает указатель от текущего  объекта
+// РћС‡РёС‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РѕС‚ С‚РµРєСѓС‰РµРіРѕ  РѕР±СЉРµРєС‚Р°
 void Clear(void);
 
 T* Get(void) const;
 
-// Инициализирует умный указатель
+// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ СѓРјРЅС‹Р№ СѓРєР°Р·Р°С‚РµР»СЊ
 UESharedPtr<T>& Init(long* counter, T* pdata);
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
 protected:
 // --------------------------
 };
 
-/* Простой указатель (слабый аналог weak_ptr) */
+/* РџСЂРѕСЃС‚РѕР№ СѓРєР°Р·Р°С‚РµР»СЊ (СЃР»Р°Р±С‹Р№ Р°РЅР°Р»РѕРі weak_ptr) */
 template<typename T>
 class UEPtr
 {
 protected:
 T* PData;
 
-public: // Исключения
+public: // РСЃРєР»СЋС‡РµРЅРёСЏ
 class EUsingZeroPtr: public EFatal {};//T::IException {};
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UEPtr(void);
 UEPtr(T* pdata);
 UEPtr(const UEPtr<T> &p);
-// не константная ссылка придет сюда
+// РЅРµ РєРѕРЅСЃС‚Р°РЅС‚РЅР°СЏ СЃСЃС‹Р»РєР° РїСЂРёРґРµС‚ СЃСЋРґР°
 template<typename Y> UEPtr(UEPtr<Y> &p) : PData(dynamic_cast<T*>(p.Get())){}
 virtual ~UEPtr(void);
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј
 // --------------------------
 T* Get(void) const;
 // --------------------------
 
 // --------------------------
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 // --------------------------
 UEPtr<T>& operator = (UEPtr<T> &p);
 
@@ -138,7 +138,7 @@ operator T* (void) const;
 
 /* class UEPtr */
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 template<typename T>
 UEPtr<T>::UEPtr(void)
@@ -166,7 +166,7 @@ UEPtr<T>::~UEPtr(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј
 // --------------------------
 template<typename T>
 T* UEPtr<T>::Get(void) const
@@ -176,7 +176,7 @@ T* UEPtr<T>::Get(void) const
 // --------------------------
 
 // --------------------------
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 // --------------------------
 template<typename T>
 UEPtr<T>& UEPtr<T>::operator = (UEPtr<T> &p)
@@ -224,7 +224,7 @@ UEPtr<T>::operator T* (void) const
 
 // Class UESharedPtr
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 template<typename T>
 UESharedPtr<T>::UESharedPtr(void)
@@ -262,7 +262,7 @@ UESharedPtr<T>::~UESharedPtr(void)
 // --------------------------
 
 // --------------------------
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 // --------------------------
 template<typename T>
 UESharedPtr<T>& UESharedPtr<T>::operator = (const UESharedPtr<T> &p)
@@ -357,7 +357,7 @@ UESharedPtr<T>::operator T* (void) const
 }
 
 
-// Возвращает число ссылок на объект
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ СЃСЃС‹Р»РѕРє РЅР° РѕР±СЉРµРєС‚
 template<typename T>
 long UESharedPtr<T>::GetCounter(void) const
 { return *Counter; };
@@ -366,7 +366,7 @@ template<typename T>
 long* UESharedPtr<T>::GetPCounter(void) const
 { return Counter; };
 
-// Очищает указатель от текущего  объекта
+// РћС‡РёС‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РѕС‚ С‚РµРєСѓС‰РµРіРѕ  РѕР±СЉРµРєС‚Р°
 template<typename T>
 void UESharedPtr<T>::Clear(void)
 {
@@ -386,7 +386,7 @@ T* UESharedPtr<T>::Get(void) const
 }
 
 
-// Инициализирует умный указатель
+// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ СѓРјРЅС‹Р№ СѓРєР°Р·Р°С‚РµР»СЊ
 template<typename T>
 UESharedPtr<T>& UESharedPtr<T>::Init(long* counter, T* pdata)
 {
@@ -400,7 +400,7 @@ UESharedPtr<T>& UESharedPtr<T>::Init(long* counter, T* pdata)
 
 
 // -----------------------------------------------------------
-// Приведение  типов
+// РџСЂРёРІРµРґРµРЅРёРµ  С‚РёРїРѕРІ
 // -----------------------------------------------------------
 template<class T, class U>
 UESharedPtr<T> static_pointer_cast(UESharedPtr<U> const & r)

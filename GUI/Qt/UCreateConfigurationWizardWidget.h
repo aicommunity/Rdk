@@ -100,19 +100,19 @@ private slots:
 private:
   Ui::UCreateConfigurationWizardWidget *ui;
 
-  /// Конфигурация сервера
+  /// РљРѕРЅС„РёРіСѓСЂР°С†РёСЏ СЃРµСЂРІРµСЂР°
   RDK::TProjectConfig ProjectConfig;
 
-  /// id текущего канала
+  /// id С‚РµРєСѓС‰РµРіРѕ РєР°РЅР°Р»Р°
   int channelNumber;
 
-  /// Мапа моделей, которые необходимо загрузить из файла
+  /// РњР°РїР° РјРѕРґРµР»РµР№, РєРѕС‚РѕСЂС‹Рµ РЅРµРѕР±С…РѕРґРёРјРѕ Р·Р°РіСЂСѓР·РёС‚СЊ РёР· С„Р°Р№Р»Р°
   QMap<int, QString> modelsFromFile;
 
-  // Данные для списка predefined structures
+  // Р”Р°РЅРЅС‹Рµ РґР»СЏ СЃРїРёСЃРєР° predefined structures
   QStringList PredefinedStructuresData;
   QStringListModel stringListModelPredefinedStructures;
-  //Данные для списка Models from file
+  //Р”Р°РЅРЅС‹Рµ РґР»СЏ СЃРїРёСЃРєР° Models from file
   QStringList ModelsFromFileData;
   QStringListModel stringListModelsFromFile;
 

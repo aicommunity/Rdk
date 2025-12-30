@@ -18,9 +18,9 @@ public:
   explicit UCreateTestWidget(QWidget *parent = 0, RDK::UApplication *app = NULL);
   ~UCreateTestWidget();
 
-  /// запись файла настроек
+  /// Р·Р°РїРёСЃСЊ С„Р°Р№Р»Р° РЅР°СЃС‚СЂРѕРµРє
   virtual void ASaveParameters();
-  /// считывание файла настроек
+  /// СЃС‡РёС‚С‹РІР°РЅРёРµ С„Р°Р№Р»Р° РЅР°СЃС‚СЂРѕРµРє
   virtual void ALoadParameters();
 
 public slots:

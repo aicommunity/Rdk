@@ -197,12 +197,18 @@
           <property name="text">
            <string>  Y axis max:</string>
           </property>
+          <property name="toolTip">
+           <string>Upper bound of Y axis</string>
+          </property>
          </widget>
         </item>
         <item row="3" column="0">
          <widget class="QLabel" name="label_14">
           <property name="text">
            <string>  Y axis min:</string>
+          </property>
+          <property name="toolTip">
+           <string>Lower bound of Y axis</string>
           </property>
          </widget>
         </item>
@@ -243,31 +249,152 @@
           </property>
          </widget>
         </item>
+        <item row="6" column="0" colspan="2">
+         <layout class="QHBoxLayout" name="axisYButtonsLayout">
+          <item>
+           <widget class="QPushButton" name="axisAutoButton">
+            <property name="text">
+             <string>Auto</string>
+            </property>
+            <property name="toolTip">
+             <string>Fit Y axis to current data</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="axisResetButton">
+            <property name="text">
+             <string>Reset</string>
+            </property>
+            <property name="toolTip">
+             <string>Restore initial Y axis range</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="axisApplyAllButton">
+            <property name="text">
+             <string>Apply to all charts</string>
+            </property>
+            <property name="toolTip">
+             <string>Apply current Y axis range to all charts on this tab</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
         <item row="2" column="1">
-         <widget class="QDoubleSpinBox" name="axisYmaxSB">
-          <property name="decimals">
-           <number>14</number>
-          </property>
-          <property name="minimum">
-           <double>-99999999999.000000000000000</double>
-          </property>
-          <property name="maximum">
-           <double>99999999999.000000000000000</double>
-          </property>
-         </widget>
+         <layout class="QVBoxLayout" name="axisYmaxLayout">
+          <item>
+           <widget class="QLineEdit" name="axisYmaxEdit">
+            <property name="placeholderText">
+             <string>Enter Y max</string>
+            </property>
+            <property name="toolTip">
+             <string>Type precise Y max value</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="axisYmaxSlider">
+            <property name="minimum">
+             <number>-10000</number>
+            </property>
+            <property name="maximum">
+             <number>10000</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="toolTip">
+             <string>Adjust Y max using slider</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="axisMultiplierLayout">
+            <item>
+             <widget class="QLabel" name="labelMultiplier">
+              <property name="text">
+               <string>Multiplier:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="axisYMultiplierCombo">
+              <property name="toolTip">
+               <string>Scaling factor for slider adjustments</string>
+              </property>
+              <item>
+               <property name="text">
+                <string>1e-6</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1e-4</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1e-2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>10</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>100</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>1000</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
         </item>
         <item row="3" column="1">
-         <widget class="QDoubleSpinBox" name="axisYminSB">
-          <property name="decimals">
-           <number>14</number>
-          </property>
-          <property name="minimum">
-           <double>-99999999999.000000000000000</double>
-          </property>
-          <property name="maximum">
-           <double>99999999999.000000000000000</double>
-          </property>
-         </widget>
+         <layout class="QVBoxLayout" name="axisYminLayout">
+          <item>
+           <widget class="QLineEdit" name="axisYminEdit">
+            <property name="placeholderText">
+             <string>Enter Y min</string>
+            </property>
+            <property name="toolTip">
+             <string>Type precise Y min value</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSlider" name="axisYminSlider">
+            <property name="minimum">
+             <number>-10000</number>
+            </property>
+            <property name="maximum">
+             <number>10000</number>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="toolTip">
+             <string>Adjust Y min using slider</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>
@@ -344,6 +471,9 @@
             <property name="text">
              <string>Name:</string>
             </property>
+            <property name="toolTip">
+             <string>Display name of the series</string>
+            </property>
            </widget>
           </item>
           <item row="1" column="0">
@@ -364,15 +494,20 @@
             <property name="text">
              <string>Color:</string>
             </property>
+            <property name="toolTip">
+             <string>Line color of the series</string>
+            </property>
            </widget>
           </item>
           <item row="4" column="1">
-           <widget class="QComboBox" name="serieColor">
+           <layout class="QHBoxLayout" name="colorLayout">
             <item>
-             <property name="text">
-              <string>red</string>
-             </property>
-            </item>
+             <widget class="QComboBox" name="serieColor">
+              <item>
+               <property name="text">
+                <string>red</string>
+               </property>
+              </item>
             <item>
              <property name="text">
               <string>dark red</string>
@@ -449,6 +584,33 @@
              </property>
             </item>
            </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="serieColorPreview">
+              <property name="minimumSize">
+               <size>
+                <width>24</width>
+                <height>24</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>24</width>
+                <height>24</height>
+               </size>
+              </property>
+              <property name="frameShape">
+               <enum>QFrame::Box</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Raised</enum>
+              </property>
+              <property name="toolTip">
+               <string>Color preview</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
           <item row="5" column="0">
            <spacer name="verticalSpacer_2">
@@ -467,6 +629,9 @@
            <widget class="QLabel" name="label_2">
             <property name="text">
              <string>Line width:</string>
+            </property>
+            <property name="toolTip">
+             <string>Width of the series line (1-6 pixels)</string>
             </property>
            </widget>
           </item>
@@ -522,6 +687,9 @@
             <property name="text">
              <string>Line type:</string>
             </property>
+            <property name="toolTip">
+             <string>Style of the series line (solid, dot, dash, etc.)</string>
+            </property>
            </widget>
           </item>
           <item row="8" column="1">
@@ -549,12 +717,19 @@
            </widget>
           </item>
           <item row="0" column="1">
-           <widget class="QLineEdit" name="serieName"/>
+           <widget class="QLineEdit" name="serieName">
+            <property name="toolTip">
+             <string>Display name of the series</string>
+            </property>
+           </widget>
           </item>
           <item row="2" column="0">
            <widget class="QLabel" name="label_5">
             <property name="text">
              <string>Y-shift:</string>
+            </property>
+            <property name="toolTip">
+             <string>Vertical offset for the series data</string>
             </property>
            </widget>
           </item>
@@ -579,6 +754,128 @@
             <property name="maximum">
              <double>99999999999.000000000000000</double>
             </property>
+            <property name="toolTip">
+             <string>Vertical offset for the series data</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0" colspan="2">
+           <widget class="QGroupBox" name="dataSourceGroupBox">
+            <property name="title">
+             <string>Data Source</string>
+            </property>
+            <layout class="QFormLayout" name="dataSourceLayout">
+             <item row="0" column="0">
+              <widget class="QLabel" name="labelComponent">
+               <property name="text">
+                <string>Component:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QLineEdit" name="serieComponentName">
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+               <property name="toolTip">
+                <string>Component providing data for this series</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="labelProperty">
+               <property name="text">
+                <string>Property:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLineEdit" name="seriePropertyName">
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+               <property name="toolTip">
+                <string>Property providing data for this series</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="labelIndices">
+               <property name="text">
+                <string>Indices [Jx, Jy]:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <layout class="QHBoxLayout" name="indicesLayout">
+               <item>
+                <widget class="QSpinBox" name="serieJx">
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                 <property name="minimum">
+                  <number>0</number>
+                 </property>
+                 <property name="maximum">
+                  <number>9999</number>
+                 </property>
+                 <property name="toolTip">
+                  <string>X index for matrix property</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QSpinBox" name="serieJy">
+                 <property name="readOnly">
+                  <bool>true</bool>
+                 </property>
+                 <property name="minimum">
+                  <number>0</number>
+                 </property>
+                 <property name="maximum">
+                  <number>9999</number>
+                 </property>
+                 <property name="toolTip">
+                  <string>Y index for matrix property</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="labelChannel">
+               <property name="text">
+                <string>Channel:</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QSpinBox" name="serieChannelIndex">
+               <property name="readOnly">
+                <bool>true</bool>
+               </property>
+               <property name="minimum">
+                <number>0</number>
+               </property>
+               <property name="maximum">
+                <number>99</number>
+               </property>
+               <property name="toolTip">
+                <string>Calculation channel index</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0" colspan="2">
+              <widget class="QPushButton" name="changeDataSourceButton">
+               <property name="text">
+                <string>Change Data Source...</string>
+               </property>
+               <property name="toolTip">
+                <string>Change the component and property providing data for this series</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </widget>
           </item>
          </layout>

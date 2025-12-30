@@ -18,39 +18,39 @@ __fastcall TUClassRegistryFrame::TUClassRegistryFrame(TComponent* Owner)
 }
 //---------------------------------------------------------------------------
 // -----------------------
-// Методы доступа к физическим данным
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє С„РёР·РёС‡РµСЃРєРёРј РґР°РЅРЅС‹Рј
 // -----------------------
-// Возвращает указатель на текущий реестр
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµРєСѓС‰РёР№ СЂРµРµСЃС‚СЂ
 RDK::UClassRegistry* TUClassRegistryFrame::GetRegistry(void)
 {
  return Registry;
 }
 
-// Возвращает указатель на изменения реестра
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РёР·РјРµРЅРµРЅРёСЏ СЂРµРµСЃС‚СЂР°
 RDK::UClassRegistry* TUClassRegistryFrame::GetDiffRegistry(void)
 {
  return &DiffRegistry;
 }
 
-// Возвращает указатель на выбранный узел
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РІС‹Р±СЂР°РЅРЅС‹Р№ СѓР·РµР»
 RDK::UClassRegistry* TUClassRegistryFrame::GetCurrentSubTree(void)
 {
  return CurrentSubTree;
 }
 
-// Возвращает флаг запрета редактирования дерева узлов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С„Р»Р°Рі Р·Р°РїСЂРµС‚Р° СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ РґРµСЂРµРІР° СѓР·Р»РѕРІ
 bool TUClassRegistryFrame::GetTreeReadOnlyFlag(void)
 {
  return TreeReadOnlyFlag;
 }
 
-// Возвращает флаг запрета редактирования параметров
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С„Р»Р°Рі Р·Р°РїСЂРµС‚Р° СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ
 bool TUClassRegistryFrame::GetParamReadOnlyFlag(void)
 {
  return ParamReadOnlyFlag;
 }
 
-// Возвращает признак наличия изменений в данных
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїСЂРёР·РЅР°Рє РЅР°Р»РёС‡РёСЏ РёР·РјРµРЅРµРЅРёР№ РІ РґР°РЅРЅС‹С…
 bool TUClassRegistryFrame::GetRegistryModified(void)
 {
  return RegistryModified;
@@ -59,7 +59,7 @@ bool TUClassRegistryFrame::GetRegistryModified(void)
 
 
 // -----------------------
-// Методы управления физическими данными
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ С„РёР·РёС‡РµСЃРєРёРјРё РґР°РЅРЅС‹РјРё
 // -----------------------
 void __fastcall TUClassRegistryFrame::SetRegistry(RDK::UClassRegistry *reg)
 {
@@ -100,7 +100,7 @@ void __fastcall TUClassRegistryFrame::SetRegistry(RDK::UClassRegistry *reg)
  RegistryModified=false;
 }
 
-// Очищает список изменений реестра
+// РћС‡РёС‰Р°РµС‚ СЃРїРёСЃРѕРє РёР·РјРµРЅРµРЅРёР№ СЂРµРµСЃС‚СЂР°
 void __fastcall TUClassRegistryFrame::ClearDiffRegistry(void)
 {
  DiffRegistry.Clear();
@@ -132,10 +132,10 @@ void __fastcall TUClassRegistryFrame::SetRegistryModified(bool flag)
 // -----------------------
 
 // -----------------------
-// Методы доступа к виртуальным данным
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РІРёСЂС‚СѓР°Р»СЊРЅС‹Рј РґР°РЅРЅС‹Рј
 // -----------------------
-// Возвращает указатель на список параметров выделенного узла
-// или 0, если не выделено ничего
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЃРїРёСЃРѕРє РїР°СЂР°РјРµС‚СЂРѕРІ РІС‹РґРµР»РµРЅРЅРѕРіРѕ СѓР·Р»Р°
+// РёР»Рё 0, РµСЃР»Рё РЅРµ РІС‹РґРµР»РµРЅРѕ РЅРёС‡РµРіРѕ
 RDK::UClassRegData* __fastcall TUClassRegistryFrame::GetSelectedData(void)
 {
  if(CurrentSubTree)
@@ -147,16 +147,16 @@ RDK::UClassRegData* __fastcall TUClassRegistryFrame::GetSelectedData(void)
 
 
 // -----------------------
-// Методы управления
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // -----------------------
-// Обновляет весь интерфейс
+// РћР±РЅРѕРІР»СЏРµС‚ РІРµСЃСЊ РёРЅС‚РµСЂС„РµР№СЃ
 void __fastcall TUClassRegistryFrame::UpdateInterface(void)
 {
  UpdateComponentList();
  UpdateParams();
 }
 
-// Перерисовывает список компонент
+// РџРµСЂРµСЂРёСЃРѕРІС‹РІР°РµС‚ СЃРїРёСЃРѕРє РєРѕРјРїРѕРЅРµРЅС‚
 void __fastcall TUClassRegistryFrame::UpdateComponentList(void)
 {
  return;
@@ -171,7 +171,7 @@ void __fastcall TUClassRegistryFrame::UpdateComponentList(void)
  UpdatePath();
 }
 
-// Перерисовывает список параметров
+// РџРµСЂРµСЂРёСЃРѕРІС‹РІР°РµС‚ СЃРїРёСЃРѕРє РїР°СЂР°РјРµС‚СЂРѕРІ
 void __fastcall TUClassRegistryFrame::UpdateParams(void)
 {
  if(!CurrentSubTree)
@@ -183,7 +183,7 @@ void __fastcall TUClassRegistryFrame::UpdateParams(void)
  UpdateParams(CurrentSubTree->operator ~());
 }
 
-// Перерисовывает путь до текущего узла
+// РџРµСЂРµСЂРёСЃРѕРІС‹РІР°РµС‚ РїСѓС‚СЊ РґРѕ С‚РµРєСѓС‰РµРіРѕ СѓР·Р»Р°
 void __fastcall TUClassRegistryFrame::UpdatePath(void)
 {
  UpdateInterfaceFlag=true;
@@ -213,9 +213,9 @@ void __fastcall TUClassRegistryFrame::UpdatePath(void)
 
 
 // -----------------------
-// Скрытые методы управления
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // -----------------------
-// Перерисовывает список компонент
+// РџРµСЂРµСЂРёСЃРѕРІС‹РІР°РµС‚ СЃРїРёСЃРѕРє РєРѕРјРїРѕРЅРµРЅС‚
 void __fastcall TUClassRegistryFrame::UpdateComponentList(RDK::UClassRegistry &root)
 {
  return;
@@ -262,7 +262,7 @@ void __fastcall TUClassRegistryFrame::UpdateComponentList(RDK::UClassRegistry &r
  UpdateInterfaceFlag=false;
 }
 
-// Перерисовывает список параметров
+// РџРµСЂРµСЂРёСЃРѕРІС‹РІР°РµС‚ СЃРїРёСЃРѕРє РїР°СЂР°РјРµС‚СЂРѕРІ
 void __fastcall TUClassRegistryFrame::UpdateParams(RDK::UClassRegData &data)
 {
  RDK::UClassRegDataIterator I;
@@ -280,7 +280,7 @@ void __fastcall TUClassRegistryFrame::UpdateParams(RDK::UClassRegData &data)
 
  currrow=ListView->ItemIndex;
 
- // Подготовка списка
+ // РџРѕРґРіРѕС‚РѕРІРєР° СЃРїРёСЃРєР°
  int itemscount=ListView->Groups->Count;
  for(int i=ListView->Groups->Count-1;i>=int(data.size());i--)
   ListView->Groups->Delete(i);
@@ -288,7 +288,7 @@ void __fastcall TUClassRegistryFrame::UpdateParams(RDK::UClassRegData &data)
  for(int i=0;i<int(data.size())-itemscount;i++)
   ListView->Groups->Add();
 
- int numitems=0; // Число реально добавленых элементов в список
+ int numitems=0; // Р§РёСЃР»Рѕ СЂРµР°Р»СЊРЅРѕ РґРѕР±Р°РІР»РµРЅС‹С… СЌР»РµРјРµРЅС‚РѕРІ РІ СЃРїРёСЃРѕРє
  I=data.begin();
  while(I != data.end())
  {
@@ -306,7 +306,7 @@ void __fastcall TUClassRegistryFrame::UpdateParams(RDK::UClassRegData &data)
   item->SubItems->Add("");
  }
 
- // Собствено заполнение списка
+ // РЎРѕР±СЃС‚РІРµРЅРѕ Р·Р°РїРѕР»РЅРµРЅРёРµ СЃРїРёСЃРєР°
  int groupid=0;
  int itemid=0;
  I=data.begin();

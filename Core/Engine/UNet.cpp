@@ -14,12 +14,13 @@ See file license.txt for more information
 
 #include "UNet.h"
 #include "UXMLEnvSerialize.h"
+#include "UComponent.h"
 
 namespace RDK {
 
 /* *************************************************************************** */
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UNet::UNet(void)
 {
@@ -31,35 +32,47 @@ UNet::~UNet(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к компонентам
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РєРѕРјРїРѕРЅРµРЅС‚Р°Рј
 // --------------------------
-// Метод проверяет на допустимость объекта данного типа
-// в качестве компоненты данного объекта
-// Метод возвращает 'true' в случае допустимости
-// и 'false' в случае некорректного типа
+// РњРµС‚РѕРґ РїСЂРѕРІРµСЂСЏРµС‚ РЅР° РґРѕРїСѓСЃС‚РёРјРѕСЃС‚СЊ РѕР±СЉРµРєС‚Р° РґР°РЅРЅРѕРіРѕ С‚РёРїР°
+// РІ РєР°С‡РµСЃС‚РІРµ РєРѕРјРїРѕРЅРµРЅС‚С‹ РґР°РЅРЅРѕРіРѕ РѕР±СЉРµРєС‚Р°
+// РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ 'true' РІ СЃР»СѓС‡Р°Рµ РґРѕРїСѓСЃС‚РёРјРѕСЃС‚Рё
+// Рё 'false' РІ СЃР»СѓС‡Р°Рµ РЅРµРєРѕСЂСЂРµРєС‚РЅРѕРіРѕ С‚РёРїР°
 bool UNet::CheckComponentType(UEPtr<UContainer> comp) const
 {
  return (dynamic_pointer_cast<UItem>(comp) ||
  dynamic_pointer_cast<UNet>(comp) || dynamic_pointer_cast<UConnector>(comp))?true:false;
 }
+
+bool UNet::ABuild(void)
+{
+    // Р’С‹Р·С‹РІР°РµРј Р±Р°Р·РѕРІСѓСЋ СЂРµР°Р»РёР·Р°С†РёСЋ
+    if (!UModule::ABuild())
+        return false;
+    
+    // Р—Р°РіСЂСѓР¶Р°РµРј Р°Р»РёР°СЃС‹ СЃРІРѕР№СЃС‚РІ РёР· РѕРїРёСЃР°РЅРёСЏ РєР»Р°СЃСЃР°
+    LoadPropertyAliasesFromDescription();
+    
+    return true;
+}
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления компонентами
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°РјРё
 // --------------------------
-// Выполняет завершающие пользовательские действия
-// при добавлении дочернего компонента в этот объект
-// Метод будет вызван только если comp был
-// успешно добавлен в список компонент
+// Р’С‹РїРѕР»РЅСЏРµС‚ Р·Р°РІРµСЂС€Р°СЋС‰РёРµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРёРµ РґРµР№СЃС‚РІРёСЏ
+// РїСЂРё РґРѕР±Р°РІР»РµРЅРёРё РґРѕС‡РµСЂРЅРµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° РІ СЌС‚РѕС‚ РѕР±СЉРµРєС‚
+// РњРµС‚РѕРґ Р±СѓРґРµС‚ РІС‹Р·РІР°РЅ С‚РѕР»СЊРєРѕ РµСЃР»Рё comp Р±С‹Р»
+// СѓСЃРїРµС€РЅРѕ РґРѕР±Р°РІР»РµРЅ РІ СЃРїРёСЃРѕРє РєРѕРјРїРѕРЅРµРЅС‚
 bool UNet::AAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 {
  return true;
 }
 
-// Выполняет предварительные пользовательские действия
-// при удалении дочернего компонента из этого объекта
-// Метод будет вызван только если comp
-// существует в списке компонент
+// Р’С‹РїРѕР»РЅСЏРµС‚ РїСЂРµРґРІР°СЂРёС‚РµР»СЊРЅС‹Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРёРµ РґРµР№СЃС‚РІРёСЏ
+// РїСЂРё СѓРґР°Р»РµРЅРёРё РґРѕС‡РµСЂРЅРµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° РёР· СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°
+// РњРµС‚РѕРґ Р±СѓРґРµС‚ РІС‹Р·РІР°РЅ С‚РѕР»СЊРєРѕ РµСЃР»Рё comp
+// СЃСѓС‰РµСЃС‚РІСѓРµС‚ РІ СЃРїРёСЃРєРµ РєРѕРјРїРѕРЅРµРЅС‚
 bool UNet::ADelComponent(UEPtr<UContainer> comp)
 {
  if(!comp->IsMoving())
@@ -75,17 +88,17 @@ bool UNet::ADelComponent(UEPtr<UContainer> comp)
 // --------------------------
 
 // --------------------------
-// Системные методы управления объектом
+// РЎРёСЃС‚РµРјРЅС‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РѕР±СЉРµРєС‚РѕРј
 // --------------------------
 UContainer* UNet::New(void)
 {
  return new UNet;
 }
 
-// Копирует этот объект в 'target' с сохранением всех компонент
-// и значений параметров
-// Если 'stor' == 0, то создание объектов осуществляется
-// в том же хранилище где располагается этот объект
+// РљРѕРїРёСЂСѓРµС‚ СЌС‚РѕС‚ РѕР±СЉРµРєС‚ РІ 'target' СЃ СЃРѕС…СЂР°РЅРµРЅРёРµРј РІСЃРµС… РєРѕРјРїРѕРЅРµРЅС‚
+// Рё Р·РЅР°С‡РµРЅРёР№ РїР°СЂР°РјРµС‚СЂРѕРІ
+// Р•СЃР»Рё 'stor' == 0, С‚Рѕ СЃРѕР·РґР°РЅРёРµ РѕР±СЉРµРєС‚РѕРІ РѕСЃСѓС‰РµСЃС‚РІР»СЏРµС‚СЃСЏ
+// РІ С‚РѕРј Р¶Рµ С…СЂР°РЅРёР»РёС‰Рµ РіРґРµ СЂР°СЃРїРѕР»Р°РіР°РµС‚СЃСЏ СЌС‚РѕС‚ РѕР±СЉРµРєС‚
 bool UNet::Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor, bool copystate) const
 {
  ULinksList linkslist;
@@ -105,8 +118,8 @@ bool UNet::Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor, bool copystate) 
  return false;
 }
 
-// Осуществляет освобождение этого объекта в его хранилище
-// или вызов деструктора, если Storage == 0
+// РћСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р° РІ РµРіРѕ С…СЂР°РЅРёР»РёС‰Рµ
+// РёР»Рё РІС‹Р·РѕРІ РґРµСЃС‚СЂСѓРєС‚РѕСЂР°, РµСЃР»Рё Storage == 0
 void UNet::Free(void)
 {
  UItem::Free();
@@ -114,7 +127,7 @@ void UNet::Free(void)
 // --------------------------
 
 // ----------------------
-// Методы управления связями
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃРІСЏР·СЏРјРё
 // ----------------------
 bool UNet::CreateLink(const NameT &item, const NameT &item_index,
 						const NameT &connector, const NameT &connector_index, int connector_c_index, bool forced_connect_same_item)
@@ -122,8 +135,8 @@ bool UNet::CreateLink(const NameT &item, const NameT &item_index,
  return CreateLink(UStringLinkSide(item,item_index),UStringLinkSide(connector,connector_index, connector_c_index), forced_connect_same_item);
 }
 
-// Разрывает все связи между выходом элемента сети, 'itemid'
-// и коннектором 'connectorid'
+// Р Р°Р·СЂС‹РІР°РµС‚ РІСЃРµ СЃРІСЏР·Рё РјРµР¶РґСѓ РІС‹С…РѕРґРѕРј СЌР»РµРјРµРЅС‚Р° СЃРµС‚Рё, 'itemid'
+// Рё РєРѕРЅРЅРµРєС‚РѕСЂРѕРј 'connectorid'
 bool UNet::BreakLink(const NameT &itemname, const NameT &connectorname)
 {
  UEPtr<UItem> item;
@@ -143,7 +156,7 @@ bool UNet::BreakLink(const NameT &itemname, const NameT &connectorname)
  return true;
 }
 
-// Разрывает все связи между выходом элемента сети и любыми коннекторами
+// Р Р°Р·СЂС‹РІР°РµС‚ РІСЃРµ СЃРІСЏР·Рё РјРµР¶РґСѓ РІС‹С…РѕРґРѕРј СЌР»РµРјРµРЅС‚Р° СЃРµС‚Рё Рё Р»СЋР±С‹РјРё РєРѕРЅРЅРµРєС‚РѕСЂР°РјРё
 bool UNet::BreakAllOutgoingLinks(const NameT &itemname)
 {
  UEPtr<UItem> item;
@@ -180,9 +193,9 @@ bool UNet::BreakLink(const NameT &itemname, const NameT &item_property_name,
  return BreakLink(UStringLinkSide(itemname,item_property_name), UStringLinkSide(connectorname,connector_property_name, connector_c_index));
 }
 
-// Разрывает все связи сети
-// исключая ее внутренние связи и обратные связи
-// brklevel - объект, относительно которого связи считаются внутренними
+// Р Р°Р·СЂС‹РІР°РµС‚ РІСЃРµ СЃРІСЏР·Рё СЃРµС‚Рё
+// РёСЃРєР»СЋС‡Р°СЏ РµРµ РІРЅСѓС‚СЂРµРЅРЅРёРµ СЃРІСЏР·Рё Рё РѕР±СЂР°С‚РЅС‹Рµ СЃРІСЏР·Рё
+// brklevel - РѕР±СЉРµРєС‚, РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РєРѕС‚РѕСЂРѕРіРѕ СЃРІСЏР·Рё СЃС‡РёС‚Р°СЋС‚СЃСЏ РІРЅСѓС‚СЂРµРЅРЅРёРјРё
 void UNet::BreakLinks(UEPtr<UContainer> brklevel)
 {
  for(int i=0;i<NumComponents;i++)
@@ -195,7 +208,7 @@ void UNet::BreakLinks(UEPtr<UContainer> brklevel)
   }
 }
 
-// Разрывает заданные связи сети
+// Р Р°Р·СЂС‹РІР°РµС‚ Р·Р°РґР°РЅРЅС‹Рµ СЃРІСЏР·Рё СЃРµС‚Рё
 bool UNet::BreakLinks(const ULinksList &linkslist)
 {
  bool res=true;
@@ -206,7 +219,7 @@ bool UNet::BreakLinks(const ULinksList &linkslist)
  return res;
 }
 
-// Разрывает все внутренние связи сети.
+// Р Р°Р·СЂС‹РІР°РµС‚ РІСЃРµ РІРЅСѓС‚СЂРµРЅРЅРёРµ СЃРІСЏР·Рё СЃРµС‚Рё.
 void UNet::BreakLinks(void)
 {
  for(int i=0;i<NumComponents;i++)
@@ -224,7 +237,7 @@ void UNet::BreakLinks(void)
  DisconnectAllItems();
 }
 /*
-// Разрывает связь ко входу connector_index коннектора 'connectorid'
+// Р Р°Р·СЂС‹РІР°РµС‚ СЃРІСЏР·СЊ РєРѕ РІС…РѕРґСѓ connector_index РєРѕРЅРЅРµРєС‚РѕСЂР° 'connectorid'
 void UNet::BreakConnectorLink(const NameT &connectorname, int connector_index)
 {
  UEPtr<UItem> connector;
@@ -290,7 +303,7 @@ void UNet::BreakConnectorLink(const NameT &connectorname, const NameT &connector
  }
 }
 */
-// Проверяет, существует ли заданная связь
+// РџСЂРѕРІРµСЂСЏРµС‚, СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё Р·Р°РґР°РЅРЅР°СЏ СЃРІСЏР·СЊ
 /*bool UNet::CheckLink(const ULongId &item_id, int item_index, const ULongId &conn_id, int conn_index)
 {
  return CheckLink(ULinkSide(item_id,item_index),ULinkSide(conn_id,conn_index));
@@ -415,9 +428,9 @@ bool UNet::SwitchOutputLinks(const NameT &itemname1, const NameT &output_name1,
 
 
 // --------------------------
-// Методы сериализации компонент
+// РњРµС‚РѕРґС‹ СЃРµСЂРёР°Р»РёР·Р°С†РёРё РєРѕРјРїРѕРЅРµРЅС‚
 // --------------------------
-// Возвращает свойства компонента по идентификатору
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРІРѕР№СЃС‚РІР° РєРѕРјРїРѕРЅРµРЅС‚Р° РїРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ
 bool UNet::GetComponentProperties(RDK::USerStorageXML *serstorage, unsigned int type_mask)
 {
   if(!serstorage)
@@ -456,8 +469,8 @@ bool UNet::GetComponentProperties(RDK::USerStorageXML *serstorage, unsigned int 
  return true;
 }
 
-// Возвращает выборочные свойства компонента по идентификатору
-// Память для buffer должна быть выделена!
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІС‹Р±РѕСЂРѕС‡РЅС‹Рµ СЃРІРѕР№СЃС‚РІР° РєРѕРјРїРѕРЅРµРЅС‚Р° РїРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ
+// РџР°РјСЏС‚СЊ РґР»СЏ buffer РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РІС‹РґРµР»РµРЅР°!
 bool UNet::GetComponentSelectedProperties(RDK::USerStorageXML *serstorage)
 {
   if(!serstorage)
@@ -466,8 +479,8 @@ bool UNet::GetComponentSelectedProperties(RDK::USerStorageXML *serstorage)
  return true;
 }
 
-// Возвращает свойства компонента по идентификатору с описаниями
-// Память для buffer должна быть выделена!
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРІРѕР№СЃС‚РІР° РєРѕРјРїРѕРЅРµРЅС‚Р° РїРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ СЃ РѕРїРёСЃР°РЅРёСЏРјРё
+// РџР°РјСЏС‚СЊ РґР»СЏ buffer РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РІС‹РґРµР»РµРЅР°!
 bool UNet::GetComponentPropertiesEx(RDK::USerStorageXML *serstorage, unsigned int type_mask)
 {
   if(!serstorage)
@@ -514,7 +527,7 @@ bool UNet::GetComponentPropertiesEx(RDK::USerStorageXML *serstorage, unsigned in
 }
 
 
-// устанавливает свойства компонента по идентификатору
+// СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СЃРІРѕР№СЃС‚РІР° РєРѕРјРїРѕРЅРµРЅС‚Р° РїРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ
 int UNet::SetComponentProperties(RDK::USerStorageXML *serstorage)
 {
   if(!serstorage)
@@ -586,8 +599,8 @@ int UNet::SetComponentProperties(RDK::USerStorageXML *serstorage)
 }
 
 
-// Сохраняет все внутренние данные компонента, и всех его дочерних компонент, исключая
-// переменные состояния в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РІСЃРµ РІРЅСѓС‚СЂРµРЅРЅРёРµ РґР°РЅРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚Р°, Рё РІСЃРµС… РµРіРѕ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚, РёСЃРєР»СЋС‡Р°СЏ
+// РїРµСЂРµРјРµРЅРЅС‹Рµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РІ xml
 bool UNet::SaveComponent(RDK::USerStorageXML *serstorage, bool links, unsigned int params_type_mask)
 {
   if(!serstorage)
@@ -634,6 +647,14 @@ bool UNet::SaveComponent(RDK::USerStorageXML *serstorage, bool links, unsigned i
    serstorage->SelectUp();
   }
 
+  // РЎРѕС…СЂР°РЅСЏРµРј Р°Р»РёР°СЃС‹ СЃРІРѕР№СЃС‚РІ
+  if(!PropertyAliases.empty())
+  {
+   serstorage->AddNode("PropertyAliases");
+   *serstorage << PropertyAliases;
+   serstorage->SelectUp();
+  }
+
   serstorage->AddNode("Components");
   for(int i=0;i<GetNumComponents();i++)
   {
@@ -651,7 +672,7 @@ bool UNet::SaveComponent(RDK::USerStorageXML *serstorage, bool links, unsigned i
  return true;
 }
 
-/// Сохраняет полную структуру компонента
+/// РЎРѕС…СЂР°РЅСЏРµС‚ РїРѕР»РЅСѓСЋ СЃС‚СЂСѓРєС‚СѓСЂСѓ РєРѕРјРїРѕРЅРµРЅС‚Р°
 bool UNet::SaveComponentStructure(RDK::USerStorageXML *serstorage, bool links, unsigned int type_mask)
 {
   if(!serstorage)
@@ -715,8 +736,8 @@ bool UNet::SaveComponentStructure(RDK::USerStorageXML *serstorage, bool links, u
  return true;
 }
 
-// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
-// переменные состояния из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РІСЃРµ РІРЅСѓС‚СЂРµРЅРЅРёРµ РґР°РЅРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚Р°, Рё РІСЃРµС… РµРіРѕ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚, РёСЃРєР»СЋС‡Р°СЏ
+// РїРµСЂРµРјРµРЅРЅС‹Рµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РёР· xml
 bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
 {
   if(!serstorage)
@@ -741,8 +762,8 @@ bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
 	{
 	 if(SetComponentProperties(serstorage))
 	 {
-	  std::string name;
-	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetComponentProperties failed: ")+GetFullName(name));
+	  std::string full_name;
+	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetComponentProperties failed: ")+GetFullName(full_name));
 //	  return false;
 	 }
 	}
@@ -773,7 +794,7 @@ bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
 	UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
 	if(!newcont)
 	 continue;
-	if(FindStaticComponent(name,nodename) == 0) // Это НЕ уже существующий статический компонент
+	if(FindStaticComponent(name,nodename) == 0) // Р­С‚Рѕ РќР• СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёР№ СЃС‚Р°С‚РёС‡РµСЃРєРёР№ РєРѕРјРїРѕРЅРµРЅС‚
 	{
 	 if(AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
 	 {
@@ -805,11 +826,18 @@ bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
    serstorage->SelectUp();
   }
 
+  // Р—Р°РіСЂСѓР¶Р°РµРј Р°Р»РёР°СЃС‹ СЃРІРѕР№СЃС‚РІ
+  if(serstorage->SelectNode("PropertyAliases"))
+  {
+   *serstorage >> PropertyAliases;
+   serstorage->SelectUp();
+  }
+
  return true;
 }
 
 
-// Сохраняет все свойства компонента и его дочерних компонент в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РІСЃРµ СЃРІРѕР№СЃС‚РІР° РєРѕРјРїРѕРЅРµРЅС‚Р° Рё РµРіРѕ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚ РІ xml
 bool UNet::SaveComponentProperties(RDK::USerStorageXML *serstorage, unsigned int type_mask)
 {
   if(!serstorage)
@@ -862,7 +890,7 @@ bool UNet::SaveComponentProperties(RDK::USerStorageXML *serstorage, unsigned int
  return true;
 }
 
-// Загружает все свойства компонента и его дочерних компонент из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РІСЃРµ СЃРІРѕР№СЃС‚РІР° РєРѕРјРїРѕРЅРµРЅС‚Р° Рё РµРіРѕ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚ РёР· xml
 bool UNet::LoadComponentProperties(RDK::USerStorageXML *serstorage)
 {
   if(!serstorage)
@@ -884,8 +912,8 @@ bool UNet::LoadComponentProperties(RDK::USerStorageXML *serstorage)
 	{
 	 if(SetComponentProperties(serstorage))
 	 {
-	  std::string name;
-	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetComponentProperties failed: ")+GetFullName(name));
+	  std::string full_name;
+	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("SetComponentProperties failed: ")+GetFullName(full_name));
 //	  return false;
 	 }
 	}
@@ -907,8 +935,8 @@ bool UNet::LoadComponentProperties(RDK::USerStorageXML *serstorage)
    {
 	if(!dynamic_pointer_cast<RDK::UNet>(GetComponentByIndex(i))->LoadComponentProperties(serstorage))
 	{
-	 std::string name;
-	 LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("LoadComponentProperties failed: ")+GetFullName(name));
+	 std::string full_name;
+	 LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("LoadComponentProperties failed: ")+GetFullName(full_name));
 //	 return false;
 	}
    }
@@ -923,8 +951,8 @@ bool UNet::LoadComponentProperties(RDK::USerStorageXML *serstorage)
  return true;
 }
 
-// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
-// включая этот компонент
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ СЃРІРѕР№СЃС‚РІР° РІСЃРµРј РґРѕС‡РµСЂРЅРёРј РєРѕРјРїРѕРЅРµРЅС‚Р°Рј РєРѕРјРїРѕРЅРµРЅС‚Р° stringid, РїСЂРѕРёР·РІРѕРґРЅС‹Рј РѕС‚ РєР»Р°СЃСЃР° class_stringid
+// РІРєР»СЋС‡Р°СЏ СЌС‚РѕС‚ РєРѕРјРїРѕРЅРµРЅС‚
 void UNet::SetGlobalComponentPropertyValue(UId classid, const char *paramname, const char *buffer)
 {
   if(classid == ForbiddenId)
@@ -948,8 +976,8 @@ void UNet::SetGlobalComponentPropertyValue(UId classid, const char *paramname, c
   }
 }
 
-// Устанавливает значение свойства всем дочерним компонентам компонента stringid, производным от класса class_stringid
-// и владельцем, производным от класса 'class_owner_stringid' включая этот компонент
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ СЃРІРѕР№СЃС‚РІР° РІСЃРµРј РґРѕС‡РµСЂРЅРёРј РєРѕРјРїРѕРЅРµРЅС‚Р°Рј РєРѕРјРїРѕРЅРµРЅС‚Р° stringid, РїСЂРѕРёР·РІРѕРґРЅС‹Рј РѕС‚ РєР»Р°СЃСЃР° class_stringid
+// Рё РІР»Р°РґРµР»СЊС†РµРј, РїСЂРѕРёР·РІРѕРґРЅС‹Рј РѕС‚ РєР»Р°СЃСЃР° 'class_owner_stringid' РІРєР»СЋС‡Р°СЏ СЌС‚РѕС‚ РєРѕРјРїРѕРЅРµРЅС‚
 void UNet::SetGlobalOwnerComponentPropertyValue(UId classid, UId owner_classid, const char *paramname, const char *buffer)
 {
   if(classid == ForbiddenId)
@@ -973,9 +1001,9 @@ void UNet::SetGlobalOwnerComponentPropertyValue(UId classid, UId owner_classid, 
   }
 }
 
-// Возращает все связи внутри компонента stringid в виде xml в буфер buffer
-// Имена формируются до уровня компонента owner_level
-// Если owner_level не задан, то имена формируются до уровня текущего компонента
+// Р’РѕР·СЂР°С‰Р°РµС‚ РІСЃРµ СЃРІСЏР·Рё РІРЅСѓС‚СЂРё РєРѕРјРїРѕРЅРµРЅС‚Р° stringid РІ РІРёРґРµ xml РІ Р±СѓС„РµСЂ buffer
+// РРјРµРЅР° С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° owner_level
+// Р•СЃР»Рё owner_level РЅРµ Р·Р°РґР°РЅ, С‚Рѕ РёРјРµРЅР° С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ С‚РµРєСѓС‰РµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 int UNet::GetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
 {
   if(!serstorage)
@@ -992,9 +1020,9 @@ int UNet::GetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
  return 0;
 }
 
-// Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
-// Имена применяются до уровня компонента owner_level
-// Если owner_level не задан, то имена применяются до уровня текущего компонента
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІСЃРµ СЃРІСЏР·Рё РІРЅСѓС‚СЂРё РєРѕРјРїРѕРЅРµРЅС‚Р° stringid РёР· СЃС‚СЂРѕРєРё xml РІ Р±СѓС„РµСЂРµ buffer
+// РРјРµРЅР° РїСЂРёРјРµРЅСЏСЋС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° owner_level
+// Р•СЃР»Рё owner_level РЅРµ Р·Р°РґР°РЅ, С‚Рѕ РёРјРµРЅР° РїСЂРёРјРµРЅСЏСЋС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ С‚РµРєСѓС‰РµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 int UNet::SetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
 {
   if(!serstorage)
@@ -1009,14 +1037,14 @@ int UNet::SetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
  return true;
 }
 
-// Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
-// если 'sublevel' == -2, то возвращает связи всех элементов включая
-// все вложенные сети и сам опрашиваемый компонент.
-// если 'sublevel' == -1, то возвращает связи всех подсетей включая
-// все вложенные сети.
-// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
-// Имена формируются до уровня компонента owner_level
-// Если owner_level не задан, то имена формируются до уровня текущего компонента
+// Р’РѕР·СЂР°С‰Р°РµС‚ РІСЃРµ РІС…РѕРґРЅС‹Рµ СЃРІСЏР·Рё Рє РєРѕРјРїРѕРЅРµРЅС‚Сѓ stringid РІ РІРёРґРµ xml РІ Р±СѓС„РµСЂ buffer
+// РµСЃР»Рё 'sublevel' == -2, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ СЃРІСЏР·Рё РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ РІРєР»СЋС‡Р°СЏ
+// РІСЃРµ РІР»РѕР¶РµРЅРЅС‹Рµ СЃРµС‚Рё Рё СЃР°Рј РѕРїСЂР°С€РёРІР°РµРјС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚.
+// РµСЃР»Рё 'sublevel' == -1, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ СЃРІСЏР·Рё РІСЃРµС… РїРѕРґСЃРµС‚РµР№ РІРєР»СЋС‡Р°СЏ
+// РІСЃРµ РІР»РѕР¶РµРЅРЅС‹Рµ СЃРµС‚Рё.
+// РµСЃР»Рё 'sublevel' == 0, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ СЃРІСЏР·Рё РїРѕРґСЃРµС‚РµР№ С‚РѕР»СЊРєРѕ СЌС‚РѕР№ СЃРµС‚Рё
+// РРјРµРЅР° С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° owner_level
+// Р•СЃР»Рё owner_level РЅРµ Р·Р°РґР°РЅ, С‚Рѕ РёРјРµРЅР° С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ С‚РµРєСѓС‰РµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 int UNet::GetComponentInputLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel)
 {
   if(!serstorage)
@@ -1029,14 +1057,14 @@ int UNet::GetComponentInputLinks(RDK::USerStorageXML *serstorage, RDK::UNet* own
  return 0;
 }
 
-// Возращает все выходные связи из компонента stringid в виде xml в буфер buffer
-// если 'sublevel' == -2, то возвращает связи всех элементов включая
-// все вложенные сети и сам опрашиваемый компонент.
-// если 'sublevel' == -1, то возвращает связи всех подсетей включая
-// все вложенные сети.
-// если 'sublevel' == 0, то возвращает связи подсетей только этой сети
-// Имена формируются до уровня компонента owner_level
-// Если owner_level не задан, то имена формируются до уровня текущего компонента
+// Р’РѕР·СЂР°С‰Р°РµС‚ РІСЃРµ РІС‹С…РѕРґРЅС‹Рµ СЃРІСЏР·Рё РёР· РєРѕРјРїРѕРЅРµРЅС‚Р° stringid РІ РІРёРґРµ xml РІ Р±СѓС„РµСЂ buffer
+// РµСЃР»Рё 'sublevel' == -2, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ СЃРІСЏР·Рё РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ РІРєР»СЋС‡Р°СЏ
+// РІСЃРµ РІР»РѕР¶РµРЅРЅС‹Рµ СЃРµС‚Рё Рё СЃР°Рј РѕРїСЂР°С€РёРІР°РµРјС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚.
+// РµСЃР»Рё 'sublevel' == -1, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ СЃРІСЏР·Рё РІСЃРµС… РїРѕРґСЃРµС‚РµР№ РІРєР»СЋС‡Р°СЏ
+// РІСЃРµ РІР»РѕР¶РµРЅРЅС‹Рµ СЃРµС‚Рё.
+// РµСЃР»Рё 'sublevel' == 0, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ СЃРІСЏР·Рё РїРѕРґСЃРµС‚РµР№ С‚РѕР»СЊРєРѕ СЌС‚РѕР№ СЃРµС‚Рё
+// РРјРµРЅР° С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° owner_level
+// Р•СЃР»Рё owner_level РЅРµ Р·Р°РґР°РЅ, С‚Рѕ РёРјРµРЅР° С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ С‚РµРєСѓС‰РµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 int UNet::GetComponentOutputLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, int sublevel)
 {
   if(!serstorage)
@@ -1049,10 +1077,10 @@ int UNet::GetComponentOutputLinks(RDK::USerStorageXML *serstorage, RDK::UNet* ow
  return 0;
 }
 
-// Возращает все внешние связи c компонентом и его дочерними компонентами в виде xml в буфер buffer
-// Информация о связях формируется относительно владельца компонента cont!
-// Имена формируются до уровня компонента owner_level
-// Если owner_level не задан, то имена формируются до уровня текущего компонента
+// Р’РѕР·СЂР°С‰Р°РµС‚ РІСЃРµ РІРЅРµС€РЅРёРµ СЃРІСЏР·Рё c РєРѕРјРїРѕРЅРµРЅС‚РѕРј Рё РµРіРѕ РґРѕС‡РµСЂРЅРёРјРё РєРѕРјРїРѕРЅРµРЅС‚Р°РјРё РІ РІРёРґРµ xml РІ Р±СѓС„РµСЂ buffer
+// РРЅС„РѕСЂРјР°С†РёСЏ Рѕ СЃРІСЏР·СЏС… С„РѕСЂРјРёСЂСѓРµС‚СЃСЏ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РІР»Р°РґРµР»СЊС†Р° РєРѕРјРїРѕРЅРµРЅС‚Р° cont!
+// РРјРµРЅР° С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° owner_level
+// Р•СЃР»Рё owner_level РЅРµ Р·Р°РґР°РЅ, С‚Рѕ РёРјРµРЅР° С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РґРѕ СѓСЂРѕРІРЅСЏ С‚РµРєСѓС‰РµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 int UNet::GetComponentPersonalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
 {
   if(!serstorage)
@@ -1068,8 +1096,8 @@ int UNet::GetComponentPersonalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
  return 0;
 }
 
-// Сохраняет внутренние данные компонента, и его _непосредственных_ дочерних компонент, исключая
-// переменные состояния в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РІРЅСѓС‚СЂРµРЅРЅРёРµ РґР°РЅРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚Р°, Рё РµРіРѕ _РЅРµРїРѕСЃСЂРµРґСЃС‚РІРµРЅРЅС‹С…_ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚, РёСЃРєР»СЋС‡Р°СЏ
+// РїРµСЂРµРјРµРЅРЅС‹Рµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РІ xml
 bool UNet::SaveComponentDrawInfo(RDK::USerStorageXML *serstorage)
 {
   if(!serstorage)
@@ -1116,6 +1144,278 @@ bool UNet::SaveComponentDrawInfo(RDK::USerStorageXML *serstorage)
  return true;
 }
 // --------------------------
+
+// ----------------------
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ Р°Р»РёР°СЃР°РјРё СЃРІРѕР№СЃС‚РІ РІР»РѕР¶РµРЅРЅС‹С… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ
+// ----------------------
+bool UNet::AddPropertyAlias(const std::string& alias, const std::string& component_path,
+                            const std::string& property_name, unsigned int property_type)
+{
+ // РџСЂРѕРІРµСЂСЏРµРј, РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё СѓР¶Рµ С‚Р°РєРѕР№ Р°Р»РёР°СЃ
+ if(CheckPropertyAlias(alias))
+ {
+  LogMessageEx(RDK_EX_WARNING, __FUNCTION__, std::string("Property alias already exists: ") + alias);
+  return false;
+ }
+
+ // Р•СЃР»Рё С‚РёРї РЅРµ СѓРєР°Р·Р°РЅ, РїС‹С‚Р°РµРјСЃСЏ РѕРїСЂРµРґРµР»РёС‚СЊ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё
+ unsigned int detected_type = property_type;
+ if(detected_type == 0)
+ {
+  detected_type = DetectPropertyType(component_path, property_name);
+  if(detected_type == 0)
+  {
+   LogMessageEx(RDK_EX_WARNING, __FUNCTION__,
+                std::string("Cannot detect property type for alias: ") + alias +
+                std::string(" (") + component_path + "." + property_name + ")");
+   return false;
+  }
+ }
+
+ // РЎРѕР·РґР°РµРј Рё РґРѕР±Р°РІР»СЏРµРј Р°Р»РёР°СЃ
+ UPropertyAlias new_alias(alias, component_path, property_name, detected_type);
+ PropertyAliases[alias] = new_alias;
+
+ return true;
+}
+
+void UNet::DelPropertyAlias(const std::string& alias)
+{
+ PropertyAliasMapIteratorT it = PropertyAliases.find(alias);
+ if(it != PropertyAliases.end())
+ {
+  PropertyAliases.erase(it);
+ }
+}
+
+void UNet::ClearPropertyAliases(void)
+{
+ PropertyAliases.clear();
+}
+
+bool UNet::CheckPropertyAlias(const std::string& alias) const
+{
+ return PropertyAliases.find(alias) != PropertyAliases.end();
+}
+
+const UPropertyAlias* UNet::GetPropertyAlias(const std::string& alias) const
+{
+ PropertyAliasMapCIteratorT it = PropertyAliases.find(alias);
+ if(it != PropertyAliases.end())
+ {
+  return &(it->second);
+ }
+ return nullptr;
+}
+
+const UNet::PropertyAliasMapT& UNet::GetPropertyAliases(void) const
+{
+ return PropertyAliases;
+}
+
+void UNet::LoadPropertyAliasesFromDescription()
+{
+    if (!Storage)
+        return;
+    
+    // РџРѕР»СѓС‡Р°РµРј РѕРїРёСЃР°РЅРёРµ РєР»Р°СЃСЃР°
+    std::string className = Storage->FindClassName(GetClass());
+    if (className.empty())
+        return;
+    
+    UEPtr<UContainerDescription> descr = Storage->GetClassDescription(className, true);
+    if (!descr)
+        return;
+    
+    // РџРѕР»СѓС‡Р°РµРј РІСЃРµ Р°Р»РёР°СЃС‹ РёР· Favorites
+    std::vector<std::pair<std::string, std::string>> aliases = descr->GetPropertyAliases();
+    
+    // Р”РѕР±Р°РІР»СЏРµРј Р°Р»РёР°СЃС‹ РІ UNet
+    for (const auto& aliasPair : aliases)
+    {
+        const std::string& aliasName = aliasPair.first;
+        const std::string& fullPath = aliasPair.second;
+        
+        // Р Р°Р·Р±РёСЂР°РµРј РїСѓС‚СЊ РЅР° РєРѕРјРїРѕРЅРµРЅС‚ Рё СЃРІРѕР№СЃС‚РІРѕ
+        std::string componentPath, propertyName;
+        if (descr->ParseFavoritePath(fullPath, componentPath, propertyName))
+        {
+            // РћРїСЂРµРґРµР»СЏРµРј С‚РёРї СЃРІРѕР№СЃС‚РІР° Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё
+            unsigned int propertyType = DetectPropertyType(componentPath, propertyName);
+            
+            // Р”РѕР±Р°РІР»СЏРµРј Р°Р»РёР°СЃ (РјРµС‚РѕРґ РїСЂРѕРІРµСЂРёС‚, РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё СѓР¶Рµ С‚Р°РєРѕР№ Р°Р»РёР°СЃ)
+            AddPropertyAlias(aliasName, componentPath, propertyName, propertyType);
+        }
+    }
+}
+
+std::vector<UPropertyAlias> UNet::GetPropertyAliasesByType(unsigned int type_mask) const
+{
+ std::vector<UPropertyAlias> result;
+ for(PropertyAliasMapCIteratorT it = PropertyAliases.begin(); it != PropertyAliases.end(); ++it)
+ {
+  if((it->second.PropertyType & type_mask) != 0)
+  {
+   result.push_back(it->second);
+  }
+ }
+ return result;
+}
+
+bool UNet::CreateLinkByAlias(const std::string& item_alias, const std::string& connector_alias)
+{
+ // Р Р°Р·СЂРµС€Р°РµРј Р°Р»РёР°СЃС‹ РІ РїРѕР»РЅС‹Рµ РїСѓС‚Рё
+ std::string item_path = ResolveAlias(item_alias);
+ std::string connector_path = ResolveAlias(connector_alias);
+
+ // РџРѕР»СѓС‡Р°РµРј Р°Р»РёР°СЃС‹ РґР»СЏ РѕРїСЂРµРґРµР»РµРЅРёСЏ РёРјРµРЅ СЃРІРѕР№СЃС‚РІ
+ const UPropertyAlias* item_alias_ptr = GetPropertyAlias(item_alias);
+ const UPropertyAlias* connector_alias_ptr = GetPropertyAlias(connector_alias);
+
+ std::string item_comp_path, item_prop_name;
+ std::string conn_comp_path, conn_prop_name;
+
+ if(item_alias_ptr)
+ {
+  item_comp_path = item_alias_ptr->ComponentPath;
+  item_prop_name = item_alias_ptr->PropertyName;
+ }
+ else
+ {
+  // Р•СЃР»Рё Р°Р»РёР°СЃ РЅРµ РЅР°Р№РґРµРЅ, РїСЂРѕР±СѓРµРј СЂР°Р·Р±РёС‚СЊ РєР°Рє "component.property"
+  size_t dot_pos = item_path.rfind('.');
+  if(dot_pos != std::string::npos)
+  {
+   item_comp_path = item_path.substr(0, dot_pos);
+   item_prop_name = item_path.substr(dot_pos + 1);
+  }
+  else
+  {
+   item_prop_name = item_path;
+  }
+ }
+
+ if(connector_alias_ptr)
+ {
+  conn_comp_path = connector_alias_ptr->ComponentPath;
+  conn_prop_name = connector_alias_ptr->PropertyName;
+ }
+ else
+ {
+  // Р•СЃР»Рё Р°Р»РёР°СЃ РЅРµ РЅР°Р№РґРµРЅ, РїСЂРѕР±СѓРµРј СЂР°Р·Р±РёС‚СЊ РєР°Рє "component.property"
+  size_t dot_pos = connector_path.rfind('.');
+  if(dot_pos != std::string::npos)
+  {
+   conn_comp_path = connector_path.substr(0, dot_pos);
+   conn_prop_name = connector_path.substr(dot_pos + 1);
+  }
+  else
+  {
+   conn_prop_name = connector_path;
+  }
+ }
+
+ return CreateLink(item_comp_path, item_prop_name, conn_comp_path, conn_prop_name);
+}
+
+bool UNet::BreakLinkByAlias(const std::string& item_alias, const std::string& connector_alias)
+{
+ // РџРѕР»СѓС‡Р°РµРј Р°Р»РёР°СЃС‹ РґР»СЏ РѕРїСЂРµРґРµР»РµРЅРёСЏ РёРјРµРЅ СЃРІРѕР№СЃС‚РІ
+ const UPropertyAlias* item_alias_ptr = GetPropertyAlias(item_alias);
+ const UPropertyAlias* connector_alias_ptr = GetPropertyAlias(connector_alias);
+
+ std::string item_comp_path, item_prop_name;
+ std::string conn_comp_path, conn_prop_name;
+
+ if(item_alias_ptr)
+ {
+  item_comp_path = item_alias_ptr->ComponentPath;
+  item_prop_name = item_alias_ptr->PropertyName;
+ }
+ else
+ {
+  std::string item_path = item_alias;
+  size_t dot_pos = item_path.rfind('.');
+  if(dot_pos != std::string::npos)
+  {
+   item_comp_path = item_path.substr(0, dot_pos);
+   item_prop_name = item_path.substr(dot_pos + 1);
+  }
+  else
+  {
+   item_prop_name = item_path;
+  }
+ }
+
+ if(connector_alias_ptr)
+ {
+  conn_comp_path = connector_alias_ptr->ComponentPath;
+  conn_prop_name = connector_alias_ptr->PropertyName;
+ }
+ else
+ {
+  std::string connector_path = connector_alias;
+  size_t dot_pos = connector_path.rfind('.');
+  if(dot_pos != std::string::npos)
+  {
+   conn_comp_path = connector_path.substr(0, dot_pos);
+   conn_prop_name = connector_path.substr(dot_pos + 1);
+  }
+  else
+  {
+   conn_prop_name = connector_path;
+  }
+ }
+
+ return BreakLink(item_comp_path, item_prop_name, conn_comp_path, conn_prop_name);
+}
+
+std::string UNet::ResolveAlias(const std::string& alias) const
+{
+ const UPropertyAlias* alias_ptr = GetPropertyAlias(alias);
+ if(alias_ptr)
+ {
+  return alias_ptr->GetFullPropertyPath();
+ }
+ return alias;
+}
+
+unsigned int UNet::DetectPropertyType(const std::string& component_path, const std::string& property_name) const
+{
+ // РџРѕР»СѓС‡Р°РµРј РєРѕРјРїРѕРЅРµРЅС‚ РїРѕ РїСѓС‚Рё
+ UEPtr<UContainer> comp;
+ if(component_path.empty())
+ {
+  comp = const_cast<UNet*>(this);
+ }
+ else
+ {
+  comp = GetComponentL(component_path, true);
+ }
+
+ if(!comp)
+ {
+  return 0;
+ }
+
+ // РС‰РµРј СЃРІРѕР№СЃС‚РІРѕ РІ РєРѕРјРїРѕРЅРµРЅС‚Рµ
+ UEPtr<UIProperty> prop = comp->FindProperty(property_name);
+ if(!prop)
+ {
+  return 0;
+ }
+
+ // РџРѕР»СѓС‡Р°РµРј С‚РёРї СЃРІРѕР№СЃС‚РІР° РёР· С‚Р°Р±Р»РёС†С‹ СЃРІРѕР№СЃС‚РІ
+ const UContainer::VariableMapT& props = comp->GetPropertiesList();
+ UContainer::VariableMapCIteratorT it = props.find(property_name);
+ if(it != props.end())
+ {
+  return it->second.Type;
+ }
+
+ return 0;
+}
+// ----------------------
 
 
 }

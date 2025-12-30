@@ -4,6 +4,7 @@
 #include "UVisualControllerWidget.h"
 #include "UDrawEngineImageWidget.h"
 #include "UClassesListWidget.h"
+#include "UModernDiagramWidget.h"
 
 #include <rdk_application.h>
 
@@ -13,9 +14,9 @@ namespace Ui {
 class UDrawEngineWidget;
 }
 
-/// UDrawEngineWidget class - виджет отрисовки схемы со списком компонентов хранилища.
+/// UDrawEngineWidget class - РІРёРґР¶РµС‚ РѕС‚СЂРёСЃРѕРІРєРё СЃС…РµРјС‹ СЃРѕ СЃРїРёСЃРєРѕРј РєРѕРјРїРѕРЅРµРЅС‚РѕРІ С…СЂР°РЅРёР»РёС‰Р°.
 ///
-/// Содержит один объект UDrawEngineImageWidget и один объект UClassesListWidget
+/// РЎРѕРґРµСЂР¶РёС‚ РѕРґРёРЅ РѕР±СЉРµРєС‚ UDrawEngineImageWidget Рё РѕРґРёРЅ РѕР±СЉРµРєС‚ UClassesListWidget
 
 class UDrawEngineWidget : public UVisualControllerWidget
 {
@@ -27,12 +28,12 @@ public:
 
     void AUpdateInterface();
 
-    /// запись файла настроек
+    /// Р·Р°РїРёСЃСЊ С„Р°Р№Р»Р° РЅР°СЃС‚СЂРѕРµРє
     virtual void ASaveParameters();
-    /// считывание файла настроек
+    /// СЃС‡РёС‚С‹РІР°РЅРёРµ С„Р°Р№Р»Р° РЅР°СЃС‚СЂРѕРµРє
     virtual void ALoadParameters();
 
-    //расширение схемы при ресайзе
+    //СЂР°СЃС€РёСЂРµРЅРёРµ СЃС…РµРјС‹ РїСЂРё СЂРµСЃР°Р№Р·Рµ
     void resizeEvent(QResizeEvent*);
 
 public slots:
@@ -55,6 +56,7 @@ signals:
 private:
 
     UDrawEngineImageWidget *modelScheme;
+    UModernDiagramWidget *modernScheme;
     UClassesListWidget *classesList;
 
     Ui::UDrawEngineWidget *ui;

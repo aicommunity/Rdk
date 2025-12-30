@@ -16,7 +16,7 @@ UClassDescriptionDisplay::UClassDescriptionDisplay(std::string class_name, QWidg
 
     ui->lineEditStep->setValidator(new QRegExpValidator(QRegExp("[+-]?\\d*\\.?\\d+"), this));
 
-    // actions äëÿ ñïèñêà èçáğàííûõ
+    // actions Ğ´Ğ»Ñ ÑĞ¿Ğ¸ÑĞºĞ° Ğ¸Ğ·Ğ±Ñ€Ğ°Ğ½Ğ½Ñ‹Ñ…
     QAction * createNewFavorite = new QAction("Create New", this);
     QAction * deleteFavorite =    new QAction("Delete", this);
 
@@ -47,7 +47,7 @@ void UClassDescriptionDisplay::SaveDescription()
   if(!storage)
     return;
 
-  // Åñëè îïèñàíèÿ íå ñóùåñòâîâàëî
+  // Ğ•ÑĞ»Ğ¸ Ğ¾Ğ¿Ğ¸ÑĞ°Ğ½Ğ¸Ñ Ğ½Ğµ ÑÑƒÑ‰ĞµÑÑ‚Ğ²Ğ¾Ğ²Ğ°Ğ»Ğ¾
   if(!storage->GetClassDescription(ClassName, true))
   {
     if(QMessageBox::question(this, "Information",
@@ -55,7 +55,7 @@ void UClassDescriptionDisplay::SaveDescription()
                              QMessageBox::Yes|QMessageBox::No) == QMessageBox::No)
       return;
   }
-  // Åñëè ñóùåñòâîâàëî, ïğîñòî ñîõğàíÿåì
+  // Ğ•ÑĞ»Ğ¸ ÑÑƒÑ‰ĞµÑÑ‚Ğ²Ğ¾Ğ²Ğ°Ğ»Ğ¾, Ğ¿Ñ€Ğ¾ÑÑ‚Ğ¾ ÑĞ¾Ñ…Ñ€Ğ°Ğ½ÑĞµĞ¼
   else
   {
     if(QMessageBox::question(this, "Information",
@@ -68,7 +68,7 @@ void UClassDescriptionDisplay::SaveDescription()
   storage->SaveClassDescriptionToFile(ClassName);
 }
 
-// Çàêğûòèå
+// Ğ—Ğ°ĞºÑ€Ñ‹Ñ‚Ğ¸Ğµ
 void UClassDescriptionDisplay::CloseForm()
 {
   close();
@@ -82,7 +82,7 @@ void UClassDescriptionDisplay::ChangeClassDescription(const std::string& class_n
   if(ClassName == class_name)
     return;
 
-  // Åñëè ïğåäûäóùåå îïèñàíèå íå ñîõğàíåíî â õğàíèëèùå
+  // Ğ•ÑĞ»Ğ¸ Ğ¿Ñ€ĞµĞ´Ñ‹Ğ´ÑƒÑ‰ĞµĞµ Ğ¾Ğ¿Ğ¸ÑĞ°Ğ½Ğ¸Ğµ Ğ½Ğµ ÑĞ¾Ñ…Ñ€Ğ°Ğ½ĞµĞ½Ğ¾ Ğ² Ñ…Ñ€Ğ°Ğ½Ğ¸Ğ»Ğ¸Ñ‰Ğµ
   if(!ClassName.empty() && !(storage->GetClassDescription(ClassName, true)))
   {
     storage->SetClassDescription(ClassName, ClassDescription);
@@ -204,17 +204,17 @@ void UClassDescriptionDisplay::DefaultGUIState()
 
 void UClassDescriptionDisplay::UpdateDataSelectionType(int type)
 {
-    // 0 - ïğîèçâîëüíûå äàííûå
+    // 0 - Ğ¿Ñ€Ğ¾Ğ¸Ğ·Ğ²Ğ¾Ğ»ÑŒĞ½Ñ‹Ğµ Ğ´Ğ°Ğ½Ğ½Ñ‹Ğµ
     // 1 - Checkbox
-    // 2 - Äèàïàçîí
-    // 3 - Ñïèñîê âàğèàíòîâ
-    // 4 - Äèàïàçîí ñ çàäàííûì øàãîì
+    // 2 - Ğ”Ğ¸Ğ°Ğ¿Ğ°Ğ·Ğ¾Ğ½
+    // 3 - Ğ¡Ğ¿Ğ¸ÑĞ¾Ğº Ğ²Ğ°Ñ€Ğ¸Ğ°Ğ½Ñ‚Ğ¾Ğ²
+    // 4 - Ğ”Ğ¸Ğ°Ğ¿Ğ°Ğ·Ğ¾Ğ½ Ñ Ğ·Ğ°Ğ´Ğ°Ğ½Ğ½Ñ‹Ğ¼ ÑˆĞ°Ğ³Ğ¾Ğ¼
     ui->spinBoxDataSelecType->setValue(type);
 
     CurrentProp.second.DataSelectionType = ui->spinBoxDataSelecType->value();
     ClassDescription->SetPropertyDescription(CurrentProp.first, CurrentProp.second);
 
-    // Îòêëş÷àåì ââîä â switch âêëş÷àåì íåîáõîäèìîå
+    // ĞÑ‚ĞºĞ»ÑÑ‡Ğ°ĞµĞ¼ Ğ²Ğ²Ğ¾Ğ´ Ğ² switch Ğ²ĞºĞ»ÑÑ‡Ğ°ĞµĞ¼ Ğ½ĞµĞ¾Ğ±Ñ…Ğ¾Ğ´Ğ¸Ğ¼Ğ¾Ğµ
     ui->lineEditValList->setEnabled(false);
     ui->lineEditStep->setEnabled(false);
 

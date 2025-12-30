@@ -22,7 +22,7 @@ UComponentPropertyChanger::UComponentPropertyChanger(QWidget *parent, RDK::UAppl
   ui->splitter->setStretchFactor(0, 10);
   ui->splitter->setStretchFactor(1, 1);
 
-  //êíîïêè óïðàâëåíèÿ äëÿ ôèêñàöèè Property êîìïîíåíòà
+  //ÐºÐ½Ð¾Ð¿ÐºÐ¸ ÑƒÐ¿Ñ€Ð°Ð²Ð»ÐµÐ½Ð¸Ñ Ð´Ð»Ñ Ñ„Ð¸ÐºÑÐ°Ñ†Ð¸Ð¸ Property ÐºÐ¾Ð¼Ð¿Ð¾Ð½ÐµÐ½Ñ‚Ð°
   //Property tab
   QMenu *setPropertyMenu = new QMenu(this);
   setPropertyMenu->addAction(ui->actionSetGlobal);
@@ -31,6 +31,8 @@ UComponentPropertyChanger::UComponentPropertyChanger(QWidget *parent, RDK::UAppl
   setProperty->setText("Set");
   setProperty->setMenu(setPropertyMenu);
   setProperty->setPopupMode(QToolButton::MenuButtonPopup);
+  // Ð£Ð²ÐµÐ»Ð¸Ñ‡Ð¸Ð²Ð°ÐµÐ¼ ÑˆÐ¸Ñ€Ð¸Ð½Ñƒ ÐºÐ½Ð¾Ð¿ÐºÐ¸ Ð² 2 Ñ€Ð°Ð·Ð°
+  setProperty->setMinimumWidth(setProperty->sizeHint().width() * 1.5);
   ui->toolBarControll->addWidget(setProperty);
   ui->toolBarControll->addAction(ui->actionReload);
   ui->toolBarControll->addAction(ui->actionShowXML);
@@ -89,7 +91,7 @@ void UComponentPropertyChanger::actionSetGlobal()
   if(emptySeletion())
     return;
 
-  //ñîçäàåì îêíî äëÿ âûáîðà èñòî÷íèêà äàííûõ
+  //ÑÐ¾Ð·Ð´Ð°ÐµÐ¼ Ð¾ÐºÐ½Ð¾ Ð´Ð»Ñ Ð²Ñ‹Ð±Ð¾Ñ€Ð° Ð¸ÑÑ‚Ð¾Ñ‡Ð½Ð¸ÐºÐ° Ð´Ð°Ð½Ð½Ñ‹Ñ…
   UComponentPropertySelectionWidget dialog(this, 3, application);
   QString selected_component_name;
   dialog.setModal(true);
@@ -118,7 +120,7 @@ void UComponentPropertyChanger::actionSetGlobalOwner()
   if(emptySeletion())
     return;
 
-  //ñîçäàåì îêíî äëÿ âûáîðà èñòî÷íèêà äàííûõ
+  //ÑÐ¾Ð·Ð´Ð°ÐµÐ¼ Ð¾ÐºÐ½Ð¾ Ð´Ð»Ñ Ð²Ñ‹Ð±Ð¾Ñ€Ð° Ð¸ÑÑ‚Ð¾Ñ‡Ð½Ð¸ÐºÐ° Ð´Ð°Ð½Ð½Ñ‹Ñ…
   UComponentPropertySelectionWidget dialog(this, 3, application);
   QString selected_component_name;
   dialog.setModal(true);
@@ -146,7 +148,7 @@ void UComponentPropertyChanger::actionSetGlobalOwner()
   Model_SetGlobalOwnerComponentPropertyValue(
               selected_component_name.toLocal8Bit(),
               className.c_str(),
-              ownerClassName.c_str(), //òóò âîïðîñ î âëàäåëüöå
+              ownerClassName.c_str(), //Ñ‚ÑƒÑ‚ Ð²Ð¾Ð¿Ñ€Ð¾Ñ Ð¾ Ð²Ð»Ð°Ð´ÐµÐ»ÑŒÑ†Ðµ
               propertyName.toLocal8Bit(),
               ui->plainTextEditValue->toPlainText().toLocal8Bit());
 

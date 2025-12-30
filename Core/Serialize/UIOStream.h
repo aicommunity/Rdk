@@ -25,10 +25,10 @@ namespace RDK {
 
 //extern std::string LineBuffer;
 
-// Переопределение методов потокового ввода вывода для переменных и контейнеров
+// РџРµСЂРµРѕРїСЂРµРґРµР»РµРЅРёРµ РјРµС‚РѕРґРѕРІ РїРѕС‚РѕРєРѕРІРѕРіРѕ РІРІРѕРґР° РІС‹РІРѕРґР° РґР»СЏ РїРµСЂРµРјРµРЅРЅС‹С… Рё РєРѕРЅС‚РµР№РЅРµСЂРѕРІ
 
-// Пары
-// обозначение в потоке значение,значение
+// РџР°СЂС‹
+// РѕР±РѕР·РЅР°С‡РµРЅРёРµ РІ РїРѕС‚РѕРєРµ Р·РЅР°С‡РµРЅРёРµ,Р·РЅР°С‡РµРЅРёРµ
 template<typename CharT, typename T1, typename T2>
 std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const std::pair<T1,T2> &data)
 {
@@ -49,12 +49,12 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, std::
  std::string LineBuffer;
  std::getline(stream, LineBuffer,',');
  stream>>data.second;
- ch=stream.get(); // Считали завершающий '}'
+ ch=stream.get(); // РЎС‡РёС‚Р°Р»Рё Р·Р°РІРµСЂС€Р°СЋС‰РёР№ '}'
 
  return stream;
 }
 
-// Вектора
+// Р’РµРєС‚РѕСЂР°
 template<typename CharT, typename T>
 std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const std::vector<T> &data)
 {
@@ -80,13 +80,16 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, std::
 {
  size_t size=data.size();
  int i=0;
+ typename std::basic_istream<CharT>::int_type chInt;
  CharT ch;
 
- ch=stream.get();
+ chInt = stream.get();
+ ch = static_cast<CharT>(chInt);
  if(ch != '{')
   return stream;
 
- ch=stream.get();
+ chInt = stream.get();
+ ch = static_cast<CharT>(chInt);
  if(ch == '}')
   return stream;
  else
@@ -102,7 +105,8 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, std::
    data.push_back(temp);
   }
   ++i;
-  ch=stream.get();
+ chInt = stream.get();
+ ch = static_cast<CharT>(chInt);
  } while(ch != '}');
 
  data.resize(i);
@@ -216,7 +220,7 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, std::
  return stream;
 }
 
-// Строки
+// РЎС‚СЂРѕРєРё
 template<typename CharT>
 std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const std::basic_string<CharT> &data)
 {
@@ -237,7 +241,7 @@ std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, std::
  return stream;
 }
 /*
-// C-массивы
+// C-РјР°СЃСЃРёРІС‹
 template<typename CharT, typename T, int Size>
 std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const T data[Size])
 {

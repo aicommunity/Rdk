@@ -6,7 +6,7 @@
 #include "UGEngineControlWidget.h"
 
 
-/// Ýêçåïëÿð êëàññà ïðèëîæåíèÿ
+/// Ð­ÐºÐ·ÐµÐ¿Ð»ÑÑ€ ÐºÐ»Ð°ÑÑÐ° Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ñ
 extern RDK::UApplication RdkApplication;
 
 //==========================================================================================
@@ -30,7 +30,7 @@ UTcpServerControlWidget::UTcpServerControlWidget(QWidget *parent, RDK::UApplicat
   tcpServerRestartTimer = new QTimer(this);
   tcpServerRestartTimer->setInterval(1000);
   connect(tcpServerRestartTimer, SIGNAL(timeout()), this, SLOT(TcpServerRestartTimerTick()));
-  tcpServerRestartTimer->setSingleShot(false);//Çäåñü íå óâåðåí
+  tcpServerRestartTimer->setSingleShot(false);//Ð—Ð´ÐµÑÑŒ Ð½Ðµ ÑƒÐ²ÐµÑ€ÐµÐ½
 
   connect(ui->pushButtonReset, SIGNAL(clicked()), this, SLOT(PushButtonResetClicked()));
   connect(ui->pushButtonApply, SIGNAL(clicked()), this, SLOT(PushButtonApplyClicked()));
@@ -92,15 +92,15 @@ void UTcpServerControlWidget::TcpCommandTimerTick()
  }
  catch(...)
  {
-  Log_LogMessage(RDK_EX_WARNING, "UTcpServerControlWidget::TcpCommandTimerTick() Global catcher error");
+  RDK::Logging::SystemLog(RDK_EX_WARNING, "UTcpServerControlWidget::TcpCommandTimerTick() Global catcher error");
  }
 }
 */
 
 void UTcpServerControlWidget::TcpServerRestartTimerTick()
 {
- //Âîò òóò äîëæíà áûòü åùå ïðîâåðêà íà òî ÷òî âñå óæå çàïóùåíî
- //íî òàê êàê âñå ïåðååõàëî â êëàññ - îíà äá òàì
+ //Ð’Ð¾Ñ‚ Ñ‚ÑƒÑ‚ Ð´Ð¾Ð»Ð¶Ð½Ð° Ð±Ñ‹Ñ‚ÑŒ ÐµÑ‰Ðµ Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐºÐ° Ð½Ð° Ñ‚Ð¾ Ñ‡Ñ‚Ð¾ Ð²ÑÐµ ÑƒÐ¶Ðµ Ð·Ð°Ð¿ÑƒÑ‰ÐµÐ½Ð¾
+ //Ð½Ð¾ Ñ‚Ð°Ðº ÐºÐ°Ðº Ð²ÑÐµ Ð¿ÐµÑ€ÐµÐµÑ…Ð°Ð»Ð¾ Ð² ÐºÐ»Ð°ÑÑ - Ð¾Ð½Ð° Ð´Ð± Ñ‚Ð°Ð¼
 
  if(application->GetServerControl()->GetAutoStartFlag())
      PushButtonServerStartClicked();
@@ -108,7 +108,7 @@ void UTcpServerControlWidget::TcpServerRestartTimerTick()
 
 
 
-/// îáíîâëåíèå èíòåðôåéñà
+/// Ð¾Ð±Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ðµ Ð¸Ð½Ñ‚ÐµÑ€Ñ„ÐµÐ¹ÑÐ°
 void UTcpServerControlWidget::AUpdateInterface()
 {
  std::string addr = application->GetServerControl()->GetServerTransport()->GetServerBindingInterfaceAddress();

@@ -2,6 +2,10 @@
 #define UGRAPHCONTROLDIALOG_H
 
 #include <QDialog>
+#include <QColor>
+#include <QString>
+
+class UGraphPaintWidget;
 
 namespace Ui {
 class UGraphControlDialog;
@@ -12,91 +16,135 @@ class UGraphControlDialog : public QDialog
     Q_OBJECT
 
 public:
+    ///РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РѕРєРЅР° РЅР°СЃС‚СЂРѕР№РєРё
+    explicit UGraphControlDialog(QWidget *parent = 0, UGraphPaintWidget *graphPainter = nullptr);
 
-    /// Признак изменения цвета
-    /// Если цвет изменился в настройках, то индекс в массиве
-    /// Если нет, то -1
-    int color;
-
-    /// Нажималась ли кнопка удаления графика
-    /// Если нет false
-    /// Если да true
-    bool click;
-
-    ///Конструктор окна настройки
-    explicit UGraphControlDialog(QWidget *parent = 0);
-
-    ///Деструктор окна настройки
+    ///Р”РµСЃС‚СЂСѓРєС‚РѕСЂ РѕРєРЅР° РЅР°СЃС‚СЂРѕР№РєРё
     ~UGraphControlDialog();
 
 
 
-    //**********************************************************Выдача изменяемых параметров
-    /// Выдать диапазон оси Х, за которым будет происходить слежение
-    int getDoubleSpinBoxData() const;
+    //**********************************************************Р’С‹РґР°С‡Р° РёР·РјРµРЅСЏРµРјС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ
+    /// Р’С‹РґР°С‚СЊ РґРёР°РїР°Р·РѕРЅ РѕСЃРё РҐ, Р·Р° РєРѕС‚РѕСЂС‹Рј Р±СѓРґРµС‚ РїСЂРѕРёСЃС…РѕРґРёС‚СЊ СЃР»РµР¶РµРЅРёРµ
+    double getDisplayInterval() const;
 
-    /// Выдать решение об изменениии границы по оси Х
+    /// Р’С‹РґР°С‚СЊ СЂРµС€РµРЅРёРµ РѕР± РёР·РјРµРЅРµРЅРёРёРё РіСЂР°РЅРёС†С‹ РїРѕ РѕСЃРё РҐ
     int getAxisXChangeData(void) const;
 
-    /// Выдать решение об изменениии границы по оси У вверх
+    /// Р’С‹РґР°С‚СЊ СЂРµС€РµРЅРёРµ РѕР± РёР·РјРµРЅРµРЅРёРёРё РіСЂР°РЅРёС†С‹ РїРѕ РѕСЃРё РЈ РІРІРµСЂС…
     int getAxisMaxYChangeData(void) const;
 
-    /// Выдать решение об изменениии границы по оси У вниз
+    /// Р’С‹РґР°С‚СЊ СЂРµС€РµРЅРёРµ РѕР± РёР·РјРµРЅРµРЅРёРёРё РіСЂР°РЅРёС†С‹ РїРѕ РѕСЃРё РЈ РІРЅРёР·
     int getAxisMinYChangeData(void) const;
 
-    /// Выдать выбранный цвет
-    int getColor (void) const;
+    /// Р’С‹РґР°С‚СЊ РІС‹Р±СЂР°РЅРЅС‹Р№ С†РІРµС‚ (РёРЅРґРµРєСЃ РІ РјР°СЃСЃРёРІРµ)
+    int getColorIndex(void) const;
 
-    /// Выдать подпись по оси Х
-    QString getLableX(void) const;
+    /// Р’С‹РґР°С‚СЊ РІС‹Р±СЂР°РЅРЅС‹Р№ С†РІРµС‚ (QColor)
+    QColor getColor(void) const;
 
-    /// Выдать подпись по оси У
-    QString getLableY(void) const;
+    /// Р’С‹РґР°С‚СЊ РїРѕРґРїРёСЃСЊ РїРѕ РѕСЃРё РҐ
+    QString getLabelX(void) const;
 
-    /// Выдать решение об удалении текущего графика
-    bool getDelInf(void) const;
+    /// Р’С‹РґР°С‚СЊ РїРѕРґРїРёСЃСЊ РїРѕ РѕСЃРё РЈ
+    QString getLabelY(void) const;
+
+    /// Р’С‹РґР°С‚СЊ РёРЅРґРµРєСЃ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РіСЂР°С„РёРєР°
+    int getSelectedGraphIndex() const;
+
+    /// Р’С‹РґР°С‚СЊ РЅРѕРІРѕРµ РёРјСЏ РіСЂР°С„РёРєР° (РµСЃР»Рё Р±С‹Р»Рѕ РёР·РјРµРЅРµРЅРѕ)
+    QString getGraphName() const;
+
+    /// Р‘С‹Р»Рѕ Р»Рё РёР·РјРµРЅРµРЅРѕ РёРјСЏ РіСЂР°С„РёРєР°
+    bool isGraphNameChanged() const;
+
+    /// Р‘С‹Р»Рѕ Р»Рё РёР·РјРµРЅРµРЅРѕ РёРјСЏ РіСЂР°С„РёРєР°
+    bool isGraphDataSourceChanged() const;
+
+    /// Р’С‹РґР°С‚СЊ РЅРѕРІС‹Р№ РёСЃС‚РѕС‡РЅРёРє РґР°РЅРЅС‹С… (РµСЃР»Рё Р±С‹Р» РёР·РјРµРЅРµРЅ)
+    void getGraphDataSource(int &channelIndex, QString &componentName, QString &propertyName, int &jx, int &jy) const;
+
+    /// Р’С‹РґР°С‚СЊ СЂРµС€РµРЅРёРµ РѕР± СѓРґР°Р»РµРЅРёРё С‚РµРєСѓС‰РµРіРѕ РіСЂР°С„РёРєР°
+    bool shouldDeleteGraph(void) const;
+
+    /// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ С„Р»Р°Рі СѓРґР°Р»РµРЅРёСЏ РіСЂР°С„РёРєР°
+    void setDeleteRequested(bool requested);
     //**********************************************************
 
 
-    //**********************************************************Установка исходных параметров окна
-    /// Установить наличие изменениий границ по оси Х
-    void setAxisXChangeData(int axisX) const;
+    //**********************************************************РЈСЃС‚Р°РЅРѕРІРєР° РёСЃС…РѕРґРЅС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ РѕРєРЅР°
+    /// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РІРёРґР¶РµС‚ РіСЂР°С„РёРєР° РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ РёРЅС„РѕСЂРјР°С†РёРё
+    void setGraphPainter(UGraphPaintWidget *painter);
 
-    ///Установить наличие изменениий границ по оси У вверх
-    void setAxisMaxYChangeData(int axisY) const;
+    /// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РЅР°Р»РёС‡РёРµ РёР·РјРµРЅРµРЅРёРёР№ РіСЂР°РЅРёС† РїРѕ РѕСЃРё РҐ
+    void setAxisXChangeData(int axisX);
 
-    ///Установить наличие изменениий границ по оси У вниз
-    void setAxisMinYChangeData(int axisY) const;
+    ///РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РЅР°Р»РёС‡РёРµ РёР·РјРµРЅРµРЅРёРёР№ РіСЂР°РЅРёС† РїРѕ РѕСЃРё РЈ РІРІРµСЂС…
+    void setAxisMaxYChangeData(int axisY);
 
-    /// Установить количество знаков после запятой
-    /// у диапазона оси Х, за которым происходит слежение
-    void setDecimalPlaces (int i) const;
+    ///РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РЅР°Р»РёС‡РёРµ РёР·РјРµРЅРµРЅРёРёР№ РіСЂР°РЅРёС† РїРѕ РѕСЃРё РЈ РІРЅРёР·
+    void setAxisMinYChangeData(int axisY);
 
-    ///Установить диапазон оси Х, за которым происходит слежение
-    void setDisplayInterval (int i) const;
+    /// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РєРѕР»РёС‡РµСЃС‚РІРѕ Р·РЅР°РєРѕРІ РїРѕСЃР»Рµ Р·Р°РїСЏС‚РѕР№
+    /// Сѓ РґРёР°РїР°Р·РѕРЅР° РѕСЃРё РҐ, Р·Р° РєРѕС‚РѕСЂС‹Рј РїСЂРѕРёСЃС…РѕРґРёС‚ СЃР»РµР¶РµРЅРёРµ
+    void setDecimalPlaces (int i);
 
-    /// Установить подпись по оси Х
-    void setLableX (QString lableX) const;
+    ///РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РґРёР°РїР°Р·РѕРЅ РѕСЃРё РҐ, Р·Р° РєРѕС‚РѕСЂС‹Рј РїСЂРѕРёСЃС…РѕРґРёС‚ СЃР»РµР¶РµРЅРёРµ
+    void setDisplayInterval (double value);
 
-    /// Установить подпись по оси У
-    void setLableY (QString lableY) const;
+    /// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РїРѕРґРїРёСЃСЊ РїРѕ РѕСЃРё РҐ
+    void setLabelX (const QString &labelX);
+
+    /// РЈСЃС‚Р°РЅРѕРІРёС‚СЊ РїРѕРґРїРёСЃСЊ РїРѕ РѕСЃРё РЈ
+    void setLabelY (const QString &labelY);
+
+    /// РћР±РЅРѕРІРёС‚СЊ СЃРїРёСЃРѕРє РіСЂР°С„РёРєРѕРІ Рё РІС‹Р±СЂР°С‚СЊ С‚РµРєСѓС‰РёР№
+    void refreshGraphsList(int currentGraphIndex = -1);
     //**********************************************************
 
 private slots:
+    /// Р•СЃР»Рё РЅР°Р¶Р°Р»Рё РЅР° РєРЅРѕРїРєСѓ СѓРґР°Р»РµРЅРёСЏ С‚РµРєСѓС‰РµРіРѕ РіСЂР°С„РёРєР°
+    void onDeleteGraphClicked();
 
-    /// Если нажали на кнопку удаления текущего графика
-    void on_pushButton_clicked();
+    /// Р”РѕР»Р¶РЅРѕ Р»Рё Р±С‹С‚СЊ Р°РєС‚РёРІРЅС‹Рј РѕРєРЅРѕ СЃ РґРёР°РїР°Р·РѕРЅРѕРј СЃР»РµР¶РµРЅРёСЏ РїРѕ РѕСЃРё РҐ
+    void onAxisXToggled(bool enabled);
 
-public slots:
+    /// Р•СЃР»Рё РЅР°Р¶Р°Р»Рё РёР·РјРµРЅРёС‚СЊ С†РІРµС‚ - РЅСѓР¶РЅРѕ РёР·РјРµРЅРёС‚СЊ С†РІРµС‚
+    void onColorSelectionChanged(int index);
 
-    /// Должно ли быть активным окно с диапазоном слежения по оси Х
-    void isActiveDoubleSpinBox(bool b);
+    /// РџСЂРё РІС‹Р±РѕСЂРµ РіСЂР°С„РёРєР° РёР· СЃРїРёСЃРєР°
+    void onGraphSelectionChanged(int index);
 
-    /// Если нажали изменить цвет - нужно изменить цвет
-    void on_colorListWidget_currentRowChanged(int currentRow);
+    /// РџСЂРё РёР·РјРµРЅРµРЅРёРё РёРјРµРЅРё РіСЂР°С„РёРєР°
+    void onGraphNameChanged();
+
+    /// РџСЂРё РЅР°Р¶Р°С‚РёРё РєРЅРѕРїРєРё РёР·РјРµРЅРµРЅРёСЏ РёСЃС‚РѕС‡РЅРёРєР° РґР°РЅРЅС‹С…
+    void onChangeDataSourceClicked();
+
+    /// РћР±РЅРѕРІРёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ РІС‹Р±СЂР°РЅРЅРѕРј РіСЂР°С„РёРєРµ
+    void updateGraphInfo(int graphIndex);
 
 private:
     Ui::UGraphControlDialog *ui;
+    UGraphPaintWidget *graphPainter;
+    int selectedGraphIndex;
+    bool graphNameChanged;
+    bool graphDataSourceChanged;
+    QString newGraphName;
+    int newChannelIndex;
+    QString newComponentName;
+    QString newPropertyName;
+    int newJx, newJy;
+    bool deleteRequested;
+
+    /// РРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°С‚СЊ СЃРїРёСЃРѕРє С†РІРµС‚РѕРІ
+    void initializeColorList();
+
+    /// РџРѕР»СѓС‡РёС‚СЊ С†РІРµС‚ РїРѕ РёРЅРґРµРєСЃСѓ
+    QColor getColorByIndex(int index) const;
+
+    /// РџРѕР»СѓС‡РёС‚СЊ РёРЅРґРµРєСЃ С†РІРµС‚Р°
+    int getColorIndex(const QColor &color) const;
 };
 
 #endif // UGRAPHCONTROLDIALOG_H

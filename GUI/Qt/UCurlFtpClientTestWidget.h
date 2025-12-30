@@ -29,6 +29,9 @@ static size_t read_callback(void *ptr, size_t size, size_t nmemb, void *stream)
           " bytes from file\n", nread);*/
   return retcode;
 }
+#ifdef _MSC_VER
+#pragma warning(disable:4505)
+#endif
 
 class UCurlFtpClientTestWidget : public UVisualControllerWidget
 {
@@ -38,11 +41,11 @@ public:
   explicit UCurlFtpClientTestWidget(QWidget *parent = 0, RDK::UApplication *app = NULL);
   ~UCurlFtpClientTestWidget();
 
-  /// запись файла настроек
+  /// Р·Р°РїРёСЃСЊ С„Р°Р№Р»Р° РЅР°СЃС‚СЂРѕРµРє
   virtual void ASaveParameters();
-  /// считывание файла настроек
+  /// СЃС‡РёС‚С‹РІР°РЅРёРµ С„Р°Р№Р»Р° РЅР°СЃС‚СЂРѕРµРє
   virtual void ALoadParameters();
-  /// обновление интерфейса
+  /// РѕР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
   virtual void AUpdateInterface();
 
 bool DownloadZip(const QString &remote_url, const QString& dst_zip_file);

@@ -13,7 +13,7 @@ TUFavoriteComponentInfoFrame *UFavoriteComponentInfoFrame;
 
 //---------------------------------------------------------------------------
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 TUFavoriteData::TUFavoriteData(void)
 {
@@ -40,9 +40,9 @@ TUFavoriteData::~TUFavoriteData(void)
 // --------------------------
 
 // --------------------------
-// Методы управления данными
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё
 // --------------------------
-// Считывает значение в соответствии с типом и режимом и сохраняет его в переменной Data
+// РЎС‡РёС‚С‹РІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ С‚РёРїРѕРј Рё СЂРµР¶РёРјРѕРј Рё СЃРѕС…СЂР°РЅСЏРµС‚ РµРіРѕ РІ РїРµСЂРµРјРµРЅРЅРѕР№ Data
 void TUFavoriteData::ReadData(void)
 {
  const char *value=0;
@@ -199,7 +199,7 @@ __fastcall TUFavoriteComponentInfoFrame::TUFavoriteComponentInfoFrame(TComponent
 {
 }
 
-// Обновляет интерфейс
+// РћР±РЅРѕРІР»СЏРµС‚ РёРЅС‚РµСЂС„РµР№СЃ
 void TUFavoriteComponentInfoFrame::AUpdateInterface(void)
 {
  StringGrid->ColWidths[1]=StringGrid->ClientWidth-StringGrid->ColWidths[0];
@@ -218,13 +218,13 @@ void TUFavoriteComponentInfoFrame::AUpdateInterface(void)
 }
 
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TUFavoriteComponentInfoFrame::AClearInterface(void)
 {
  Info.clear();
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TUFavoriteComponentInfoFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("ColWidth",StringGrid->ColWidths[0]);
@@ -244,7 +244,7 @@ void TUFavoriteComponentInfoFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.SelectUp();
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TUFavoriteComponentInfoFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  Info.clear();

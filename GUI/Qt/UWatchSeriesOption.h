@@ -6,6 +6,9 @@
 #include <QPen>
 #include <QColor>
 #include <QChart>
+#include <QVector>
+#include <QSlider>
+#include <QLineEdit>
 
 #include "UVisualControllerWidget.h"
 
@@ -17,9 +20,10 @@ class UWatchSeriesOption;
 using namespace QtCharts;
 
 class UWatchTab;
+class UWatchChart;
 
 //////////////////////////////////////////////////////////////////////
-// Один отдельно взятый график с одной или несколькими сериями данных
+// РћРґРёРЅ РѕС‚РґРµР»СЊРЅРѕ РІР·СЏС‚С‹Р№ РіСЂР°С„РёРє СЃ РѕРґРЅРѕР№ РёР»Рё РЅРµСЃРєРѕР»СЊРєРёРјРё СЃРµСЂРёСЏРјРё РґР°РЅРЅС‹С…
 //////////////////////////////////////////////////////////////////////
 
 class UWatchSeriesOption : public QDialog
@@ -27,7 +31,7 @@ class UWatchSeriesOption : public QDialog
     Q_OBJECT
 
 public:
-    explicit UWatchSeriesOption(QWidget *parent = nullptr);
+    explicit UWatchSeriesOption(QWidget *parent = nullptr, RDK::UApplication *app = nullptr);
     ~UWatchSeriesOption();
 
 
@@ -44,36 +48,70 @@ private slots:
 
     void on_axisXtrackCB_stateChanged(int arg1);
 
+    void onSerieColorChanged(int index);
+    void onChangeDataSourceClicked();
+    void on_axisYMultiplierCombo_currentIndexChanged(int index);
+    void on_axisYmaxSlider_valueChanged(int value);
+    void on_axisYminSlider_valueChanged(int value);
+    void on_axisYmaxEdit_editingFinished();
+    void on_axisYminEdit_editingFinished();
+    void on_axisAutoButton_clicked();
+    void on_axisResetButton_clicked();
+    void on_axisApplyAllButton_clicked();
+
 private:
     Ui::UWatchSeriesOption *ui;
     UWatchTab *WatchTab;
+    RDK::UApplication *application;
 
-   //void loadGraphsName();//загрузить имена графиков
-    void updateGraphsSeries(int currentChartIndex); //обновить имена серий выбранного графика в листе серий
+   //void loadGraphsName();//Р·Р°РіСЂСѓР·РёС‚СЊ РёРјРµРЅР° РіСЂР°С„РёРєРѕРІ
+    void updateGraphsSeries(int currentChartIndex); //РѕР±РЅРѕРІРёС‚СЊ РёРјРµРЅР° СЃРµСЂРёР№ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РіСЂР°С„РёРєР° РІ Р»РёСЃС‚Рµ СЃРµСЂРёР№
 
-    void updateSeriesProperties(int currentSerieIndex); //Обновить свойства для выбранной серии
+    void updateSeriesProperties(int currentSerieIndex); //РћР±РЅРѕРІРёС‚СЊ СЃРІРѕР№СЃС‚РІР° РґР»СЏ РІС‹Р±СЂР°РЅРЅРѕР№ СЃРµСЂРёРё
     void updateSeriesNameProp(int currentChartIndex, int currentSerieIndex);
     void updateSeriesColorProp(int currentChartIndex, int currentSerieIndex);
     void updateSeriesWidthProp(int currentChartIndex, int currentSerieIndex);
     void updateSeriesLineTypeProp(int currentChartIndex,int currentSerieIndex);
     void updateSeriesYShift(int currentChartIndex,int currentSerieIndex);
+    void updateSeriesDataSourceProp(int currentChartIndex, int currentSerieIndex); // РћР±РЅРѕРІРёС‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ РѕР± РёСЃС‚РѕС‡РЅРёРєРµ РґР°РЅРЅС‹С…
+    void updateColorPreview(const QColor &color); // РћР±РЅРѕРІРёС‚СЊ РїСЂРµРґРїСЂРѕСЃРјРѕС‚СЂ С†РІРµС‚Р°
 
-    void updateChartList(); //обновить имена в лист графиков
+    void updateChartList(); //РѕР±РЅРѕРІРёС‚СЊ РёРјРµРЅР° РІ Р»РёСЃС‚ РіСЂР°С„РёРєРѕРІ
     void updateLayoutBox();
-    void updateParameters(int chartIndex);//обновить параметры выбранного в листе графика
-    void createLayout(); //создать новое расположение
-    void saveChartParameters(); //сохранить изменения
+    void updateParameters(int chartIndex);//РѕР±РЅРѕРІРёС‚СЊ РїР°СЂР°РјРµС‚СЂС‹ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РІ Р»РёСЃС‚Рµ РіСЂР°С„РёРєР°
+    void createLayout(); //СЃРѕР·РґР°С‚СЊ РЅРѕРІРѕРµ СЂР°СЃРїРѕР»РѕР¶РµРЅРёРµ
+    void saveChartParameters(); //СЃРѕС…СЂР°РЅРёС‚СЊ РёР·РјРµРЅРµРЅРёСЏ
 
-
-    //сохранить параметры
+    //СЃРѕС…СЂР°РЅРёС‚СЊ РїР°СЂР°РјРµС‚СЂС‹
     void saveParemeters();
+    
+    // РР·РјРµРЅРёС‚СЊ РёСЃС‚РѕС‡РЅРёРє РґР°РЅРЅС‹С… СЃРµСЂРёРё
+    void changeSeriesDataSource(int chartIndex, int serieIndex);
 
-    //массивы цветов и типов линий
+    // РРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°С‚СЊ ComboBox С†РІРµС‚РѕРІ СЃ РёРєРѕРЅРєР°РјРё
+    void initializeColorComboBox();
+    void initializeAxisControls();
+    void updateAxisControlsFromChart(int chartIndex);
+    void applyAxisInputsToChart(int chartIndex);
+    void syncSliderWithValue(QSlider *slider, double value);
+    double axisValueFromSlider(int sliderValue) const;
+    int sliderValueFromAxis(double value) const;
+    double readAxisValue(QLineEdit *edit, double fallback) const;
+    void setAxisLineEditValue(QLineEdit *edit, double value);
+    std::pair<double, double> calculateAutoYAxis(UWatchChart *chart) const;
+    double currentAxisMultiplier() const;
+    void setAxisMultiplierByIndex(int index);
+
+    //РјР°СЃСЃРёРІС‹ С†РІРµС‚РѕРІ Рё С‚РёРїРѕРІ Р»РёРЅРёР№
     const QColor defaultColors[15]={Qt::red, Qt::darkRed, Qt::yellow, Qt::darkYellow, Qt::green,
                                     Qt::darkGreen, Qt::cyan, Qt::darkCyan, Qt::blue, Qt::darkBlue,
                                     Qt::magenta,Qt::darkMagenta, Qt::gray, Qt::darkGray, Qt::black};
 
     const Qt::PenStyle defaultLineStyle[4] = {Qt::SolidLine, Qt::DotLine, Qt::DashLine, Qt::DashDotLine};
+
+    QVector<double> axisMultipliers;
+    double axisMultiplier = 1.0;
+    static constexpr int AXIS_SLIDER_LIMIT = 10000;
 };
 
 #endif // UWATCHSERIESOPTION_H

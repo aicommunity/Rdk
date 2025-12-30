@@ -12,18 +12,28 @@
 #include <QDialog>
 #include <QComboBox>
 #include <QMessageBox>
+#include <QTreeWidgetItem>
+#include <QString>
+#include <QHash>
 
 namespace Ui {
 class UClassesListWidget;
 }
 
+// РњРµС‚РѕРґС‹ РіСЂСѓРїРїРёСЂРѕРІРєРё РєР»Р°СЃСЃРѕРІ
+enum class GroupingMethod {
+    None = 0,              // Р‘РµР· РіСЂСѓРїРїРёСЂРѕРІРєРё
+    ByDescription = 1,     // РџРѕ РѕРїРёСЃР°РЅРёСЋ
+    ByInheritance = 2,     // РџРѕ РЅР°СЃР»РµРґРѕРІР°РЅРёСЋ
+    ByBaseComponent = 3    // РџРѕ Р±Р°Р·РѕРІРѕРјСѓ РєРѕРјРїРѕРЅРµРЅС‚Сѓ
+};
 
-/// UClassesListWidget class - виджет отображения списка доступных компонентов из UStorage
+/// UClassesListWidget class - РІРёРґР¶РµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃРїРёСЃРєР° РґРѕСЃС‚СѓРїРЅС‹С… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РёР· UStorage
 ///
-/// Содержит два списка отсортированных по имени:
-/// - By Name - список всех компонент хранилища
-/// - By Libs - древовидных список компонент по библиотекам
-/// компоненты из списка можно перемещать на виджеты, принимающие dropEvent
+/// РЎРѕРґРµСЂР¶РёС‚ РґРІР° СЃРїРёСЃРєР° РѕС‚СЃРѕСЂС‚РёСЂРѕРІР°РЅРЅС‹С… РїРѕ РёРјРµРЅРё:
+/// - By Name - СЃРїРёСЃРѕРє РІСЃРµС… РєРѕРјРїРѕРЅРµРЅС‚ С…СЂР°РЅРёР»РёС‰Р°
+/// - By Libs - РґСЂРµРІРѕРІРёРґРЅС‹С… СЃРїРёСЃРѕРє РєРѕРјРїРѕРЅРµРЅС‚ РїРѕ Р±РёР±Р»РёРѕС‚РµРєР°Рј
+/// РєРѕРјРїРѕРЅРµРЅС‚С‹ РёР· СЃРїРёСЃРєР° РјРѕР¶РЅРѕ РїРµСЂРµРјРµС‰Р°С‚СЊ РЅР° РІРёРґР¶РµС‚С‹, РїСЂРёРЅРёРјР°СЋС‰РёРµ dropEvent
 
 class UClassesListWidget : public UVisualControllerWidget
 {
@@ -35,7 +45,7 @@ public:
 
     QString selctedClass() const;
 
-    // Обновляет поле библиотек и ставит библиотеку с именем lib_name выбраной
+    // РћР±РЅРѕРІР»СЏРµС‚ РїРѕР»Рµ Р±РёР±Р»РёРѕС‚РµРє Рё СЃС‚Р°РІРёС‚ Р±РёР±Р»РёРѕС‚РµРєСѓ СЃ РёРјРµРЅРµРј lib_name РІС‹Р±СЂР°РЅРѕР№
     void AUpdateLibsView(QString lib_name);
 
     void SetModelScheme(UDrawEngineImageWidget* model);
@@ -55,13 +65,13 @@ signals:
 
 private slots:
 
-    // переключение фокуса библиотек во вкладке LibsCtrl
+    // РїРµСЂРµРєР»СЋС‡РµРЅРёРµ С„РѕРєСѓСЃР° Р±РёР±Р»РёРѕС‚РµРє РІРѕ РІРєР»Р°РґРєРµ LibsCtrl
     void on_listWidgetRTlibs_itemSelectionChanged();
 
-    // изменение некста поисковой строки
+    // РёР·РјРµРЅРµРЅРёРµ РЅРµРєСЃС‚Р° РїРѕРёСЃРєРѕРІРѕР№ СЃС‚СЂРѕРєРё
     void on_lineEditSearch_textChanged(const QString &arg1);
 
-    // реакция разных вкладок в зависимости от их активности на изменение текста поисковой строки
+    // СЂРµР°РєС†РёСЏ СЂР°Р·РЅС‹С… РІРєР»Р°РґРѕРє РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ РёС… Р°РєС‚РёРІРЅРѕСЃС‚Рё РЅР° РёР·РјРµРЅРµРЅРёРµ С‚РµРєСЃС‚Р° РїРѕРёСЃРєРѕРІРѕР№ СЃС‚СЂРѕРєРё
     void tab0_textChanged(const QString &arg1);
     void tab1_textChanged(const QString &arg1);
     void tab2_textChanged(const QString &arg1);
@@ -73,12 +83,12 @@ private slots:
     void on_listWidgetRTlibClasses_itemDoubleClicked(QListWidgetItem *item);
 
 public slots:
-    //События контекстного меню
-    // создание/удаление библиотеки
+    //РЎРѕР±С‹С‚РёСЏ РєРѕРЅС‚РµРєСЃС‚РЅРѕРіРѕ РјРµРЅСЋ
+    // СЃРѕР·РґР°РЅРёРµ/СѓРґР°Р»РµРЅРёРµ Р±РёР±Р»РёРѕС‚РµРєРё
     void CreateRTlibrary();
     void DeleteRTlibrary();
 
-    //создание/удаление класса
+    //СЃРѕР·РґР°РЅРёРµ/СѓРґР°Р»РµРЅРёРµ РєР»Р°СЃСЃР°
     void AddNewClass(QString cur_lib = "");
     void DeleteClass();
 
@@ -86,13 +96,29 @@ public slots:
 
     void on_action_cl_desc_triggered();
 
+    // РЎР»РѕС‚ РґР»СЏ РёР·РјРµРЅРµРЅРёСЏ РјРµС‚РѕРґР° РіСЂСѓРїРїРёСЂРѕРІРєРё
+    void on_comboBoxGroupingMethod_currentIndexChanged(int index);
+
 private:
     UDrawEngineImageWidget* ModelScheme;
     Ui::UClassesListWidget *ui;
 
+    // РњРµС‚РѕРґС‹ РіСЂСѓРїРїРёСЂРѕРІРєРё РєР»Р°СЃСЃРѕРІ
+    GroupingMethod GetCurrentGroupingMethod() const;
+    QString GetClassGroup(const QString& className, GroupingMethod method) const;
+    QString GroupByDescription(const QString& className) const;
+    QString GroupByInheritance(const QString& className) const;
+    QString GroupByBaseComponent(const QString& className) const;
+    
+    // РџРѕСЃС‚СЂРѕРµРЅРёРµ РґРµСЂРµРІР° СЃ РіСЂСѓРїРїРёСЂРѕРІРєРѕР№
+    void BuildGroupedTree(const QString& searchText = "");
+    
+    // РљСЌС€ РґР»СЏ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ РіСЂСѓРїРїРёСЂРѕРІРєРё (РґР»СЏ РѕРїС‚РёРјРёР·Р°С†РёРё)
+    mutable QHash<QString, QString> GroupingCache;
+
 };
 
-// Диалоговое окно для создания новой библиотеки
+// Р”РёР°Р»РѕРіРѕРІРѕРµ РѕРєРЅРѕ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ РЅРѕРІРѕР№ Р±РёР±Р»РёРѕС‚РµРєРё
 class CrLibDialog: public QDialog
 {
     Q_OBJECT
@@ -110,7 +136,7 @@ public slots:
     void ProcessInput();
 };
 
-// Диалоговое окно для создания нового класса
+// Р”РёР°Р»РѕРіРѕРІРѕРµ РѕРєРЅРѕ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ РЅРѕРІРѕРіРѕ РєР»Р°СЃСЃР°
 class CrClassDialog: public QDialog
 {
     Q_OBJECT
@@ -136,7 +162,7 @@ public slots:
     void ProcessInput();
 };
 
-// Диалоговое окно подтверждения удаления библиотеки/класса
+// Р”РёР°Р»РѕРіРѕРІРѕРµ РѕРєРЅРѕ РїРѕРґС‚РІРµСЂР¶РґРµРЅРёСЏ СѓРґР°Р»РµРЅРёСЏ Р±РёР±Р»РёРѕС‚РµРєРё/РєР»Р°СЃСЃР°
 class DeleteDialog: public QDialog
 {
     Q_OBJECT

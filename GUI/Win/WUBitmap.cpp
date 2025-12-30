@@ -34,7 +34,7 @@ BITMAPINFO bmpInfo = { 0 };
       return hBitmap;
 }
 
-// Преобразует UBitmap в HBITMAP
+// РџСЂРµРѕР±СЂР°Р·СѓРµС‚ UBitmap РІ HBITMAP
 void* operator >> (const UBitmap &bmp, HBITMAP &bmphandle)
 {
  DeleteObject(bmphandle);
@@ -94,8 +94,8 @@ void* operator >> (const UBitmap &bmp, HBITMAP &bmphandle)
  return ppvBits;
 }
 
-// Преобразует HBITMAP в UBitmap 
-// если isresize == true то размеры нового изображения берутся из bmp
+// РџСЂРµРѕР±СЂР°Р·СѓРµС‚ HBITMAP РІ UBitmap 
+// РµСЃР»Рё isresize == true С‚Рѕ СЂР°Р·РјРµСЂС‹ РЅРѕРІРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ Р±РµСЂСѓС‚СЃСЏ РёР· bmp
 UBitmap& operator << (UBitmap &bmp, const HBITMAP bmphandle)
 {
  bool isresize=true;
@@ -177,7 +177,7 @@ UBitmap& operator << (UBitmap &bmp, const HBITMAP bmphandle)
  return bmp;
 }
 
-// Устанавливает в UBitmap разрешение такое же как у HBITMAP
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІ UBitmap СЂР°Р·СЂРµС€РµРЅРёРµ С‚Р°РєРѕРµ Р¶Рµ РєР°Рє Сѓ HBITMAP
 UBitmap& ULoadBitmapRes(UBitmap &bmp, const HBITMAP bmphandle)
 {
  BITMAP bm;

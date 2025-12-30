@@ -181,25 +181,25 @@ TProjectConfig::TProjectConfig(const TProjectConfig& copy)
  NumChannels=copy.NumChannels;
  ChannelsConfig=copy.ChannelsConfig;
 
- /// Адрес интерфейса управления сервером
+ /// РђРґСЂРµСЃ РёРЅС‚РµСЂС„РµР№СЃР° СѓРїСЂР°РІР»РµРЅРёСЏ СЃРµСЂРІРµСЂРѕРј
  ServerInterfaceAddress=copy.ServerInterfaceAddress;
 
- /// Порт интерфейса управления сервером
+ /// РџРѕСЂС‚ РёРЅС‚РµСЂС„РµР№СЃР° СѓРїСЂР°РІР»РµРЅРёСЏ СЃРµСЂРІРµСЂРѕРј
  ServerInterfacePort=copy.ServerInterfacePort;
 
-  /// Адрес интерфейса Http-сервера
+  /// РђРґСЂРµСЃ РёРЅС‚РµСЂС„РµР№СЃР° Http-СЃРµСЂРІРµСЂР°
  HttpServerInterfaceAddress=copy.HttpServerInterfaceAddress;
 
-  /// Порт интерфейса управления сервером
+  /// РџРѕСЂС‚ РёРЅС‚РµСЂС„РµР№СЃР° СѓРїСЂР°РІР»РµРЅРёСЏ СЃРµСЂРІРµСЂРѕРј
  HttpServerInterfacePort=copy.HttpServerInterfacePort;
 
-  /// Порт интерфейса управления сервером
+  /// РџРѕСЂС‚ РёРЅС‚РµСЂС„РµР№СЃР° СѓРїСЂР°РІР»РµРЅРёСЏ СЃРµСЂРІРµСЂРѕРј
  HttpServerLogin=copy.HttpServerLogin;
 
-  /// Порт интерфейса управления сервером
+  /// РџРѕСЂС‚ РёРЅС‚РµСЂС„РµР№СЃР° СѓРїСЂР°РІР»РµРЅРёСЏ СЃРµСЂРІРµСЂРѕРј
  HttpServerPassword=copy.HttpServerPassword;
 
- // Флаг отображения состояний каналов
+ // Р¤Р»Р°Рі РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃРѕСЃС‚РѕСЏРЅРёР№ РєР°РЅР°Р»РѕРІ
  ProjectShowChannelsStates=copy.ProjectShowChannelsStates;
 
  InterfaceFileName=copy.InterfaceFileName;
@@ -255,7 +255,7 @@ bool TProjectConfig::operator == (const TProjectConfig& copy) const
 }
 
 // --------------------------
-/// Управление числом каналов
+/// РЈРїСЂР°РІР»РµРЅРёРµ С‡РёСЃР»РѕРј РєР°РЅР°Р»РѕРІ
 // --------------------------
 int TProjectConfig::GetNumChannels(void) const
 {
@@ -300,7 +300,7 @@ bool TProjectConfig::DeleteChannel(int index)
 
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UProject::UProject(void)
 {
@@ -317,9 +317,9 @@ UProject::~UProject(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј
 // --------------------------
-/// Данные проекта
+/// Р”Р°РЅРЅС‹Рµ РїСЂРѕРµРєС‚Р°
 const TProjectConfig& UProject::GetConfig(void) const
 {
  return Config;
@@ -337,29 +337,29 @@ bool UProject::SetConfig(const TProjectConfig& value)
 // --------------------------
 
 // --------------------------
-// Методы управления проектом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїСЂРѕРµРєС‚РѕРј
 // --------------------------
-/// Проверяет наличие изменений в конфигурации проекта
+/// РџСЂРѕРІРµСЂСЏРµС‚ РЅР°Р»РёС‡РёРµ РёР·РјРµРЅРµРЅРёР№ РІ РєРѕРЅС„РёРіСѓСЂР°С†РёРё РїСЂРѕРµРєС‚Р°
 bool UProject::IsModified(void) const
 {
  return ModifiedFlag;
 }
 
-/// Выставляет признак наличия изменений в конфигурации проекта
+/// Р’С‹СЃС‚Р°РІР»СЏРµС‚ РїСЂРёР·РЅР°Рє РЅР°Р»РёС‡РёСЏ РёР·РјРµРЅРµРЅРёР№ РІ РєРѕРЅС„РёРіСѓСЂР°С†РёРё РїСЂРѕРµРєС‚Р°
 bool UProject::SetModified(void)
 {
  ModifiedFlag=true;
  return true;
 }
 
-/// Сбрасывает признак наличия изменений в конфигурации проекта
+/// РЎР±СЂР°СЃС‹РІР°РµС‚ РїСЂРёР·РЅР°Рє РЅР°Р»РёС‡РёСЏ РёР·РјРµРЅРµРЅРёР№ РІ РєРѕРЅС„РёРіСѓСЂР°С†РёРё РїСЂРѕРµРєС‚Р°
 bool UProject::ResetModified(void)
 {
  ModifiedFlag=false;
  return true;
 }
 
-/// Флаг принудительного сохранения данных конфигурации в старом формате файла
+/// Р¤Р»Р°Рі РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С… РєРѕРЅС„РёРіСѓСЂР°С†РёРё РІ СЃС‚Р°СЂРѕРј С„РѕСЂРјР°С‚Рµ С„Р°Р№Р»Р°
 bool UProject::GetForceOldXmlFormat(void) const
 {
  return ForceOldXmlFormat;
@@ -382,7 +382,7 @@ bool UProject::SetForceOldXmlFormat(bool value)
  return true;
 }
 
-/// Флаг включения нового представления файловой структуры конфигурации
+/// Р¤Р»Р°Рі РІРєР»СЋС‡РµРЅРёСЏ РЅРѕРІРѕРіРѕ РїСЂРµРґСЃС‚Р°РІР»РµРЅРёСЏ С„Р°Р№Р»РѕРІРѕР№ СЃС‚СЂСѓРєС‚СѓСЂС‹ РєРѕРЅС„РёРіСѓСЂР°С†РёРё
 bool UProject::GetForceNewConfigFilesStructure(void) const
 {
  return ForceNewConfigFilesStructure;
@@ -404,8 +404,8 @@ bool UProject::SetForceNewConfigFilesStructure(bool value)
  return true;
 }
 
-/// Сбрасывает конфигурацию проекта в состояние по умолчанию
-/// Метод также сбрасывает ModifiedFlag
+/// РЎР±СЂР°СЃС‹РІР°РµС‚ РєРѕРЅС„РёРіСѓСЂР°С†РёСЋ РїСЂРѕРµРєС‚Р° РІ СЃРѕСЃС‚РѕСЏРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
+/// РњРµС‚РѕРґ С‚Р°РєР¶Рµ СЃР±СЂР°СЃС‹РІР°РµС‚ ModifiedFlag
 void UProject::ResetToDefault(void)
 {
  TProjectConfig default_config;
@@ -413,7 +413,7 @@ void UProject::ResetToDefault(void)
  ResetModified();
 }
 
-/// Доступ к пути до проекта
+/// Р”РѕСЃС‚СѓРї Рє РїСѓС‚Рё РґРѕ РїСЂРѕРµРєС‚Р°
 const std::string& UProject::GetProjectPath(void) const
 {
  return ProjectPath;
@@ -451,7 +451,7 @@ bool UProject::ReadFromXml(USerStorageXML &xml)
 }
 
 
-/// Сохраняет конфигурацию проекта в xml
+/// РЎРѕС…СЂР°РЅСЏРµС‚ РєРѕРЅС„РёРіСѓСЂР°С†РёСЋ РїСЂРѕРµРєС‚Р° РІ xml
 bool UProject::WriteToXml(USerStorageXML &xml)
 {
  if(ForceOldXmlFormat)
@@ -507,19 +507,19 @@ bool UProject::ReadFromXmlOld(USerStorageXML &xml)
 
  Config.ProjectName=xml.ReadString("ProjectName","NoName").c_str();
 
- // Число входов среды
+ // Р§РёСЃР»Рѕ РІС…РѕРґРѕРІ СЃСЂРµРґС‹
  //NumEnvInputs=xml.ReadInteger("NumEnvInputs",1);
 
- // Число выходов среды
+ // Р§РёСЃР»Рѕ РІС‹С…РѕРґРѕРІ СЃСЂРµРґС‹
  //NumEnvOutputs=xml.ReadInteger("NumEnvOutputs",1);
 
  //InputEnvImageWidth=xml.ReadInteger("InputEnvImageWidth",360);
  //InputEnvImageHeight=xml.ReadInteger("InputEnvImageHeight",240);
 
- // Флаг автоматического сохранения проекта
+ // Р¤Р»Р°Рі Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ РїСЂРѕРµРєС‚Р°
  Config.ProjectAutoSaveFlag=xml.ReadInteger("ProjectAutoSaveFlag",1);
 
- // Флаг автоматического сохранения проекта
+ // Р¤Р»Р°Рі Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ РїСЂРѕРµРєС‚Р°
  Config.ProjectAutoSaveStatesFlag=xml.ReadInteger("ProjectAutoSaveStateFlag",0);
 
  std::string descriptionfilename=xml.ReadString("ProjectDescriptionFileName","");
@@ -572,7 +572,7 @@ bool UProject::ReadFromXmlOld(USerStorageXML &xml)
   Config.ChannelsConfig[i].UseIndTimeStepFlag=xml.ReadBool(std::string("UseIndTimeStepFlag")+RDK::sntoa(i), false);
  }
 
- // TODO: Реализовать загрузку описания
+ // TODO: Р РµР°Р»РёР·РѕРІР°С‚СЊ Р·Р°РіСЂСѓР·РєСѓ РѕРїРёСЃР°РЅРёСЏ
 /*
  if(descriptionfilename.Length() != 0 && FileExists(descriptionfilename))
  {
@@ -627,10 +627,10 @@ bool UProject::ReadFromXmlNew(USerStorageXML &xml)
  Config.UserId = xml.ReadInteger("UserId", -1);
  Config.CreationTime = xml.ReadString("CreationTime","");
 
- // Флаг автоматического сохранения проекта
+ // Р¤Р»Р°Рі Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ РїСЂРѕРµРєС‚Р°
  Config.ProjectAutoSaveFlag=xml.ReadInteger("ProjectAutoSaveFlag",1);
 
- // Флаг автоматического сохранения проекта
+ // Р¤Р»Р°Рі Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ РїСЂРѕРµРєС‚Р°
  Config.ProjectAutoSaveStatesFlag=xml.ReadInteger("ProjectAutoSaveStateFlag",0);
 
  std::string descriptionfilename=xml.ReadString("ProjectDescriptionFileName","");
@@ -792,10 +792,10 @@ bool UProject::WriteToXmlOld(USerStorageXML &xml)
   if(i == 0)
   {
    xml.WriteInteger("PredefinedStructure",channel_config.PredefinedStructure);
-   // Шаг счета по умолчанию
+   // РЁР°Рі СЃС‡РµС‚Р° РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
    xml.WriteInteger("DefaultTimeStep",channel_config.DefaultTimeStep);
 
-   // Глобальный шаг счета модели
+   // Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ С€Р°Рі СЃС‡РµС‚Р° РјРѕРґРµР»Рё
    xml.WriteInteger("GlobalTimeStep",channel_config.GlobalTimeStep);
 
    xml.WriteInteger("CalculationMode",channel_config.CalculationMode);
@@ -813,10 +813,10 @@ bool UProject::WriteToXmlOld(USerStorageXML &xml)
   {
    std::string suffix=RDK::sntoa(i);
    xml.WriteInteger(std::string("PredefinedStructure_")+suffix,channel_config.PredefinedStructure);
-   // Шаг счета по умолчанию
+   // РЁР°Рі СЃС‡РµС‚Р° РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
    xml.WriteInteger(std::string("DefaultTimeStep_")+suffix,channel_config.DefaultTimeStep);
 
-   // Глобальный шаг счета модели
+   // Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ С€Р°Рі СЃС‡РµС‚Р° РјРѕРґРµР»Рё
    xml.WriteInteger(std::string("GlobalTimeStep_")+suffix,channel_config.GlobalTimeStep);
 
    xml.WriteInteger(std::string("CalculationMode_")+suffix,channel_config.CalculationMode);
@@ -835,13 +835,13 @@ bool UProject::WriteToXmlOld(USerStorageXML &xml)
 
  xml.WriteInteger("ProjectAutoSaveFlag",Config.ProjectAutoSaveFlag);
 
- // Флаг автоматического сохранения проекта
+ // Р¤Р»Р°Рі Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ РїСЂРѕРµРєС‚Р°
  xml.WriteInteger("ProjectAutoSaveStateFlag",Config.ProjectAutoSaveStatesFlag);
 
- // Число входов среды
+ // Р§РёСЃР»Рѕ РІС…РѕРґРѕРІ СЃСЂРµРґС‹
 // xml.WriteInteger("NumEnvInputs",NumEnvInputs);
 
- // Число выходов среды
+ // Р§РёСЃР»Рѕ РІС‹С…РѕРґРѕРІ СЃСЂРµРґС‹
 // xml.WriteInteger("NumEnvOutputs",NumEnvOutputs);
 
  xml.WriteInteger("ProjectMode",Config.ProjectMode);
@@ -898,7 +898,7 @@ bool UProject::WriteToXmlNew(USerStorageXML &xml)
 
  xml.WriteInteger("ProjectAutoSaveFlag",Config.ProjectAutoSaveFlag);
 
- // Флаг автоматического сохранения проекта
+ // Р¤Р»Р°Рі Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕРіРѕ СЃРѕС…СЂР°РЅРµРЅРёСЏ РїСЂРѕРµРєС‚Р°
  xml.WriteInteger("ProjectAutoSaveStateFlag",Config.ProjectAutoSaveStatesFlag);
 
  xml.WriteInteger("ProjectMode",Config.ProjectMode);
@@ -959,10 +959,10 @@ bool UProject::WriteToXmlNew(USerStorageXML &xml)
 
   xml.WriteInteger("PredefinedStructure",channel_config.PredefinedStructure);
 
-  // Шаг счета по умолчанию
+  // РЁР°Рі СЃС‡РµС‚Р° РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
   xml.WriteInteger("DefaultTimeStep",channel_config.DefaultTimeStep);
 
-  // Глобальный шаг счета модели
+  // Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ С€Р°Рі СЃС‡РµС‚Р° РјРѕРґРµР»Рё
   xml.WriteInteger("GlobalTimeStep",channel_config.GlobalTimeStep);
 
   xml.WriteInteger("CalculationMode",channel_config.CalculationMode);
@@ -1010,7 +1010,7 @@ bool UProject::FixSavePoint(USerStorageXML &xml)
 // --------------------------
 
 // --------------------------
-/// Управление числом каналов
+/// РЈРїСЂР°РІР»РµРЅРёРµ С‡РёСЃР»РѕРј РєР°РЅР°Р»РѕРІ
 // --------------------------
 int UProject::GetNumChannels(void) const
 {

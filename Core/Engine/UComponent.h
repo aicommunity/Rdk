@@ -19,34 +19,42 @@ See file license.txt for more information
 #include "UEPtr.h"
 #include "UContainerDescription.h"
 #include "UTime.h"
-#include "ULoggerEnv.h"
+#include "UExceptionLogger.h"
 #include "../Graphics/UFont.h"
+#include <unordered_map>
+#include <map>
 
 #ifndef RDK_PROPERTY_TYPES
 #define RDK_PROPERTY_TYPES
-// Варианты типа свойства (битовая маска) pt - Property Type
-// 0x1 - Параметр
-// 0x2 - Переменная состояния
-// 0x4 - Временная переменная
-// 0x8 - Вход
-enum {ptNone=0, ptParameter=1, ptState=2, ptTemp=4, ptInput=8, ptOutput=16, ptAny=255};
+// 0x2 - РџРµСЂРµРјРµРЅРЅР°СЏ СЃРѕСЃС‚РѕСЏРЅРёСЏ
+// 0x4 - Р’СЂРµРјРµРЅРЅР°СЏ РїРµСЂРµРјРµРЅРЅР°СЏ
+// 0x8 - Р’С…РѕРґ
+enum : unsigned int {ptNone=0, ptParameter=1, ptState=2, ptTemp=4, ptInput=8, ptOutput=16, ptAny=255};
 
-// Варианты групп свойства (битовая маска) pg - Property Group
-// 0x100 - Общедоступный
-// 0x200 - Системный
-// 0x400 - Входные данные
-// 0x800 - Выходные данные
-// 0x1000 - Флаг смены режима работы компонента
-enum {pgPublic=0x100, pgSystem=0x200, pgInput=0x400, pgOutput=0x800, pgMode=0x1000, pgAny=0xFFFFFF};
+// 0x100 - РћР±С‰РµРґРѕСЃС‚СѓРїРЅС‹Р№
+// 0x200 - РЎРёСЃС‚РµРјРЅС‹Р№
+// 0x400 - Р’С…РѕРґРЅС‹Рµ РґР°РЅРЅС‹Рµ
+// 0x800 - Р’С‹С…РѕРґРЅС‹Рµ РґР°РЅРЅС‹Рµ
+// 0x1000 - Р¤Р»Р°Рі СЃРјРµРЅС‹ СЂРµР¶РёРјР° СЂР°Р±РѕС‚С‹ РєРѕРјРїРѕРЅРµРЅС‚Р°
+enum : unsigned int {pgPublic=0x100, pgSystem=0x200, pgInput=0x400, pgOutput=0x800, pgMode=0x1000, pgAny=0xFFFFFF};
 
-// Наиболее часто используемые сочетания типа и группы
-enum {ptPubParameter=ptParameter|pgPublic, ptPubState=ptState|pgPublic, ptPubInput=ptInput|pgPublic, ptPubOutput=ptOutput|pgPublic};
+// Combined flags for public property types in component
+constexpr unsigned int ptPubParameter = static_cast<unsigned int>(ptParameter) | static_cast<unsigned int>(pgPublic);
+constexpr unsigned int ptPubState = static_cast<unsigned int>(ptState) | static_cast<unsigned int>(pgPublic);
+constexpr unsigned int ptPubInput = static_cast<unsigned int>(ptInput) | static_cast<unsigned int>(pgPublic);
+constexpr unsigned int ptPubOutput = static_cast<unsigned int>(ptOutput) | static_cast<unsigned int>(pgPublic);
+// Combined flags for system property types
+constexpr unsigned int ptSysParameter = static_cast<unsigned int>(ptParameter) | static_cast<unsigned int>(pgSystem);
+constexpr unsigned int ptPubSysParameter = static_cast<unsigned int>(ptParameter) | static_cast<unsigned int>(pgPublic) | static_cast<unsigned int>(pgSystem);
+constexpr unsigned int ptPubSysState = static_cast<unsigned int>(ptState) | static_cast<unsigned int>(pgPublic) | static_cast<unsigned int>(pgSystem);
+// Combined flags for any type with public group
+constexpr unsigned int ptAnyPub = static_cast<unsigned int>(ptAny) | static_cast<unsigned int>(pgPublic);
 
-enum { ipData=1, ipComp=2 };
-enum { ipSingle=16, ipRange=32, ipList=64 };
-enum { ipDataSingle=ipData|ipSingle, ipDataRange=ipData|ipRange,
-       ipDataList=ipData|ipList, ipCompSingle=ipComp|ipSingle,
-       ipCompRange=ipComp|ipRange, ipCompList=ipComp|ipList };
+enum : unsigned int { ipData=1 }; // ipComp removed as legacy (was used for component pointers, now unused)
+enum : unsigned int { ipSingle=16, ipRange=32, ipList=64 };
+constexpr unsigned int ipDataSingle = static_cast<unsigned int>(ipData) | static_cast<unsigned int>(ipSingle);
+constexpr unsigned int ipDataRange = static_cast<unsigned int>(ipData) | static_cast<unsigned int>(ipRange);
+constexpr unsigned int ipDataList = static_cast<unsigned int>(ipData) | static_cast<unsigned int>(ipList);
 #endif
 
 namespace RDK {
@@ -60,49 +68,98 @@ typedef USerStorage UVariableData;
 class UIProperty;
 class UIShare;
 
-// Хранилище свойств параметра
+/// РЎС‚СЂСѓРєС‚СѓСЂР° РѕРїРёСЃР°РЅРёСЏ Р°Р»РёР°СЃР° СЃРІРѕР№СЃС‚РІР° РІР»РѕР¶РµРЅРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
+/// РџРѕР·РІРѕР»СЏРµС‚ СЃРѕР·РґР°РІР°С‚СЊ "РїРѕСЂС‚С‹" РІРµСЂС…РЅРµРіРѕ СѓСЂРѕРІРЅСЏ РґР»СЏ РІС…РѕРґРѕРІ/РІС‹С…РѕРґРѕРІ РіР»СѓР±РѕРєРѕ РІР»РѕР¶РµРЅРЅС‹С… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ
+struct RDK_LIB_TYPE UPropertyAlias
+{
+    /// РРјСЏ Р°Р»РёР°СЃР° (РѕС‚РѕР±СЂР°Р¶Р°РµРјРѕРµ РёРјСЏ РїРѕСЂС‚Р° РЅР° РІРµСЂС…РЅРµРј СѓСЂРѕРІРЅРµ)
+    std::string AliasName;
+
+    /// РџСѓС‚СЊ Рє РєРѕРјРїРѕРЅРµРЅС‚Сѓ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РІР»Р°РґРµР»СЊС†Р° (РЅР°РїСЂРёРјРµСЂ: "SubNet.Neuron1" РёР»Рё "" РґР»СЏ С‚РµРєСѓС‰РµРіРѕ)
+    std::string ComponentPath;
+
+    /// РРјСЏ СЃРІРѕР№СЃС‚РІР° РІ С†РµР»РµРІРѕРј РєРѕРјРїРѕРЅРµРЅС‚Рµ
+    std::string PropertyName;
+
+    /// РўРёРї СЃРІРѕР№СЃС‚РІР° (ptPubInput, ptPubOutput Рё С‚.Рґ.)
+    unsigned int PropertyType;
+
+    // РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹
+    UPropertyAlias(void)
+        : PropertyType(0)
+    {}
+
+    UPropertyAlias(const std::string& alias, const std::string& comp_path,
+                   const std::string& prop_name, unsigned int prop_type)
+        : AliasName(alias), ComponentPath(comp_path),
+          PropertyName(prop_name), PropertyType(prop_type)
+    {}
+
+    /// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїРѕР»РЅС‹Р№ РїСѓС‚СЊ Рє СЃРІРѕР№СЃС‚РІСѓ (ComponentPath.PropertyName)
+    std::string GetFullPropertyPath() const
+    {
+        if(ComponentPath.empty())
+            return PropertyName;
+        return ComponentPath + "." + PropertyName;
+    }
+
+    /// РџСЂРѕРІРµСЂСЏРµС‚, СЏРІР»СЏРµС‚СЃСЏ Р»Рё Р°Р»РёР°СЃ РІС…РѕРґРѕРј
+    bool IsInput() const
+    {
+        return (PropertyType & ptInput) != 0;
+    }
+
+    /// РџСЂРѕРІРµСЂСЏРµС‚, СЏРІР»СЏРµС‚СЃСЏ Р»Рё Р°Р»РёР°СЃ РІС‹С…РѕРґРѕРј
+    bool IsOutput() const
+    {
+        return (PropertyType & ptOutput) != 0;
+    }
+};
+
+// РћРїРёСЃР°РЅРёРµ СЃС‚СЂСѓРєС‚СѓСЂС‹ СЃРІРѕР№СЃС‚РІР°
 struct RDK_LIB_TYPE UVariable
 {
-// Указатель на свойство
+// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° СЃРІРѕР№СЃС‚РІРѕ
 UEPtr<UIProperty> Property;
 
-// Флаг разрешения удаления данных на которых указывает Property
+// Р¤Р»Р°Рі СЂР°Р·СЂРµС€РµРЅРёСЏ СѓРґР°Р»РµРЅРёСЏ СЃРІРѕР№СЃС‚РІР° РїСЂРё СѓРґР°Р»РµРЅРёРё РёР· С‚Р°Р±Р»РёС†С‹ СЃРІРѕР№СЃС‚РІР° Property
 bool DelEnable;
 
-// Тип свойства (битовая маска)
-// Младшие 8 бит на собственно тип:
-// Старшие 24 на принадлежность группе
-// (показан их отсчет от 0):
+// РњР»Р°РґС€РёРµ 8 Р±РёС‚ РЅР° СЃРѕР±СЃС‚РІРµРЅРЅРѕ С‚РёРї:
+// РЎС‚Р°СЂС€РёРµ 24 РЅР° РїСЂРёРЅР°РґР»РµР¶РЅРѕСЃС‚СЊ РіСЂСѓРїРїРµ
+// (РїРѕРєР°Р·Р°РЅ РёС… РѕС‚СЃС‡РµС‚ РѕС‚ 0):
+// (РѕС‚СЃС‡РµС‚ РѕС‚ РЅСѓР»СЏ РѕС‚ 0):
 unsigned int Type;
 
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
-// Конструкторы и деструкторы
 // --------------------------
 UVariable(void);
 UVariable(UEPtr<UIProperty> prop, unsigned int type=0);
 UVariable(const UVariable &copy);
+UVariable& operator=(const UVariable& copy);
 virtual ~UVariable(void);
 // --------------------------
 
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј
 // --------------------------
-// Методы доступа к данным
-// --------------------------
-// Возвращает только маску типа свойства
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РѕР»СЊРєРѕ РјР°СЃРєСѓ С‚РёРїР° СЃРІРѕР№СЃС‚РІР°
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјР°СЃРєСѓ С‚РёРїР° РґР»СЏ С‚РёРїР° СЃРІРѕР№СЃС‚РІР°
 unsigned int GetPropertyType(void) const;
 
-// Возвращает только маску группы свойства
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјР°СЃРєСѓ С‚РёРїР° РґР»СЏ РіСЂСѓРїРїС‹ СЃРІРѕР№СЃС‚РІР°
 unsigned int GetPropertyGroup(void) const;
 
-// Возвращает строковое имя типа свойства по заданному типу
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ РёРјРµРЅРё РґР»СЏ С‚РёРїР° СЃРІРѕР№СЃС‚РІР° РїРѕ РїРµСЂРµРґР°РЅРЅРѕРјСѓ С‚РёРїСѓ
 static std::string GetPropertyTypeNameByType(unsigned int type);
 
-// Возвращает тип свойства по строковому имени
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РёРї СЃРІРѕР№СЃС‚РІР° РїРѕ РїРµСЂРµРґР°РЅРЅРѕРјСѓ РёРјРµРЅРё
 static unsigned int GetPropertyTypeByTypeName(const std::string &name);
 
-// Возвращает строковое имя типа свойства
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ РёРјРµРЅРё РґР»СЏ С‚РёРїР° СЃРІРѕР№СЃС‚РІР°
 std::string GetPropertyTypeName(void) const;
 
-// Проверяет соответствие типа и группы свойства маске
+// РџСЂРѕРІРµСЂСЏРµС‚ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРµ РјР°СЃРєРё С‚РёРїР° РІ РјР°СЃРєРµ С‚РёРїР° СЃРІРѕР№СЃС‚РІР° СЃРІРѕР№СЃС‚РІР°
 bool CheckMask(unsigned int mask) const;
 // --------------------------
 };
@@ -111,250 +168,258 @@ bool CheckMask(unsigned int mask) const;
 class RDK_LIB_TYPE UComponent: public UModule
 {
 friend class UStorage;
-public: // Типы данных
-typedef std::map<NameT,UVariable> VariableMapT;
-typedef std::map<NameT,UVariable>::iterator VariableMapIteratorT;
-typedef std::map<NameT,UVariable>::const_iterator VariableMapCIteratorT;
+public: // Р¤Р»Р°Рі СЃС‚Р°С‚РёРєРё
+typedef std::unordered_map<NameT,UVariable> VariableMapT;
+typedef std::unordered_map<NameT,UVariable>::iterator VariableMapIteratorT;
+typedef std::unordered_map<NameT,UVariable>::const_iterator VariableMapCIteratorT;
 
 typedef std::map<UId,UEPtr<UIShare> > ShareMapT;
 typedef std::map<UId,UEPtr<UIShare> >::iterator ShareMapIteratorT;
 typedef std::map<UId,UEPtr<UIShare> >::const_iterator ShareMapCIteratorT;
 
-public: // Классы описания исключений
+public: // РЈРєР°Р·Р°С‚РµР»СЊ РєРѕРјРїРѕРЅРµРЅС‚Р° РєРѕРјРїРѕРЅРµРЅС‚Р°
 class IException: public UException {};
 
-protected: // Основные свойства
-// Флаг, определяющий компонент является статическим
-// или динамическим
+protected: // Р¤Р»Р°Рі, РѕРїСЂРµРґРµР»СЏСЋС‰РёР№ РєРѕРјРїРѕРЅРµРЅС‚ СЏРІР»СЏРµС‚СЃСЏ СЃС‚Р°С‚РёС‡РµСЃРєРёРј
+// РёР»Рё РґРёРЅР°РјРёС‡РµСЃРєРёРј
+// Р¤Р»Р°Рі СЃС‚Р°С‚РёРєРё
 bool StaticFlag;
 
-// Указатель на владельца этим объектом
+// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° СЂРѕРґРёС‚РµР»СЊСЃРєРёР№ РІСЃРµ СЃРІРѕР№СЃС‚РІР°
 UEPtr<UComponent> Owner;
 
-// Указатель на главного владельца этим объектом
-// Автоматически устанавливается для всех дочерних объектов
+// РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРё СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ РґР»СЏ РІСЃРµС… РґРѕС‡РµСЂРЅРёС… РѕР±СЉРµРєС‚РѕРІ
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РґР»СЏ РІСЃРµС… РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РєРѕРјРїРѕРЅРµРЅС‚Р°
 UEPtr<UComponent> MainOwner;
 
-// Указатель на хранилище компонент этого объекта
+// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° СЂРѕРґРёС‚РµР»СЊСЃРєРёР№ РєРѕРјРїРѕРЅРµРЅС‚ РІСЃРµС… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ
 UEPtr<UStorage> Storage;
 
-// Указатель на среду выполнения этого объекта
+// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµРєСѓС‰РёР№ РєРѕРјРїРѕРЅРµРЅС‚ РІСЃРµС… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ
 UEPtr<UEnvironment> Environment;
 
-// Указатель на логгер
-UEPtr<ULoggerEnv> Logger;
+// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° Р»РѕРіРіРµСЂ
+UEPtr<UExceptionLogger> Logger;
 
-protected: // Данные
-// Идентификатор класса
+protected: // РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєР»Р°СЃСЃР°
+// РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєР»Р°СЃСЃР°
 UId Class;
 
-// Идентификатор экземпляра объекта
+//UId Id;
 //UId Id;
 
-protected: // Системные свойства
-//protected: // Системные свойства
-// Таблица соответствий имен и Id параметров объекта
+protected: //protected: // РЎРёСЃС‚РµРјРЅС‹Рµ СЃРІРѕР№СЃС‚РІР°
+// РўР°Р±Р»РёС†Р° СЃРѕРѕС‚РІРµС‚СЃС‚РІРёР№ РёРјРµРЅ Рё Id РїР°СЂР°РјРµС‚СЂРѕРІ РѕР±СЉРµРєС‚Р°
+// РўР°Р±Р»РёС†Р° СЃРѕРѕС‚РІРµС‚СЃС‚РІРёР№ РёРјРµРЅ Рё Id РїР°СЂР°РјРµС‚СЂРѕРІ СЃРІРѕР№СЃС‚РІР°
 VariableMapT PropertiesLookupTable;
 
+// РўР°Р±Р»РёС†Р° СЃРѕРѕС‚РІРµС‚СЃС‚РІРёР№ Id Рё РѕР±С‰РµРіРѕ СЃРІРѕР№СЃС‚РІР°
+mutable NameT CachedPropertyName;
+mutable UEPtr<UIProperty> CachedProperty;
+
+/// РљР°СЂС‚Р° Р°Р»РёР°СЃРѕРІ РІРёРґР° <Р°Р»РёСЃР°, РёРјСЏ СЃРІРѕР№СЃС‚РІР°>
+mutable NameT CachedAliasName;
+mutable NameT CachedAliasValue;
+
 protected:
-// Таблица соответствий Id и общего свойства
+// РўР°Р±Р»РёС†Р° СЃРѕРѕС‚РІРµС‚СЃС‚РІРёР№ Id Рё СѓРєР°Р·Р°С‚РµР»СЏ СЃРІРѕР№СЃС‚РІР°
 ShareMapT ShareLookupTable;
 
-protected: // Временные алиасы для свойств
-/// Карта алиасов вида <алиса, имя свойства>
+protected: // РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
+// --------------------------
 std::map<std::string, std::string> Aliases;
 
 
-protected: // Временные переменные
+protected: // РЈРєР°Р·Р°С‚РµР»СЊ РєРѕРјРїРѕРЅРµРЅС‚Р°
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє СЃРІРѕР№СЃС‚РІР°Рј
 // --------------------------
-// Конструкторы и деструкторы
-// --------------------------
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С„Р»Р°Рі, РѕРїСЂРµРґРµР»СЏСЋС‰РёР№ РєРѕРјРїРѕРЅРµРЅС‚ СЏРІР»СЏРµС‚СЃСЏ СЃС‚Р°С‚РёС‡РµСЃРєРёРј
+// РёР»Рё РґРёРЅР°РјРёС‡РµСЃРєРёРј
 UComponent(void);
 virtual ~UComponent(void);
 // --------------------------
 
 // --------------------------
-// Методы доступа к свойствам
+// Р¤СѓРЅРєС†РёРё РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј
 // --------------------------
-// Возвращает флаг, определяющий компонент является статическим
-// или динамическим
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РіР»Р°РІРЅРѕРіРѕ РІР»Р°РґРµР»СЊС†Р° СЌС‚РёРј РѕР±СЉРµРєС‚РѕРј
+// Р¤Р»Р°Рі СЃС‚Р°С‚РёРєРё
 bool GetStaticFlag(void) const;
 virtual bool SetStaticFlag(bool value);
 
-// Возвращает владелца этого объекта
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РІСЃРµС… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ
 UEPtr<UComponent> const GetOwner(void) const;
 virtual bool SetOwner(UEPtr<UComponent> owner);
 
-// Возвращает указатель на главного владельца этим объектом
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЂРѕРґРёС‚РµР»СЊСЃРєРёР№ РєРѕРјРїРѕРЅРµРЅС‚ РІСЃРµС… СЃРІРѕР№СЃС‚РІ РєРѕРјРїРѕРЅРµРЅС‚Р°
 UEPtr<UComponent> const GetMainOwner(void) const;
 virtual void SetMainOwner(UEPtr<UComponent> mainowner);
 
-// Возвращает хранилище компонент этого объекта
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РєРѕРјРїРѕРЅРµРЅС‚Р° РІСЃРµС… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ
 UEPtr<UStorage> const GetStorage(void) const;
 virtual bool SetStorage(UEPtr<UStorage> storage);
 
-// Возвращает среду выполнения этого объекта
+/// Р•СЃР»Рё Environment РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚ С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° Р·Р°РіР»СѓС€РєСѓ
 UEPtr<UEnvironment> const GetEnvironment(void) const;
 virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
 
-// Указатель на логгер
-UEPtr<ULoggerEnv> const GetLogger(void) const;
-virtual bool SetLogger(UEPtr<ULoggerEnv> logger);
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С€СЂРёС„С‚ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
+UEPtr<UExceptionLogger> const GetLogger(void) const;
+virtual bool SetLogger(UEPtr<UExceptionLogger> logger);
 
-/// Возвращает ссылку на класс управления времени из Environment.
-/// Если Environment отсутствует то возвращает указатель на заглушку
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ РЅР° РёРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° РєРѕРјРїРѕРЅРµРЅС‚Р° РёР· Environment.
+// --------------------------
 /// DummyTime
 const UTimeControl& GetTime(void) const;
 
-/// Возвращает указатель на шрифт по умолчанию
+// --------------------------
 UAFont* GetDefaultFont(void);
 
-/// Возвращает заданный шрифт
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ С€СЂРёС„С‚Р°
 UAFont* GetFont(const string &name, int size);
 // --------------------------
 
 // --------------------------
-// Методы управления данными
 // --------------------------
-// Идентификатор класса
+// --------------------------
+// --------------------------
 UId GetClass(void) const;
 bool SetClass(UId value);
 
 
-// Возвращает имя класса компоненты
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєР»Р°СЃСЃР° РєРѕРјРїРѕРЅРµРЅС‚Р°
 const NameT GetCompClassName(void) const;
 // --------------------------
 
 // --------------------------
-// Методы управления счетом
+// РЈРЅРёС‡С‚РѕР¶РµРЅРёРµ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°
 // --------------------------
-// Создает экземпляр этого класса
+// Р¤СѓРЅРєС†РёРё СЃРѕР·РґР°РЅРёСЏ РЅРѕРІРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 virtual UComponent* New(void)=0;
 
-// Создает экземпляр описания класса
+// Р¤СѓРЅРєС†РёСЏ СЃРѕР·РґР°РЅРёСЏ РЅРѕРІРѕРіРѕ РѕРїРёСЃР°РЅРёСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°
 virtual UContainerDescription* NewDescription(void);
 virtual UContainerDescription* ANewDescription(UComponentDescription* description);
 
-// Уничтожение этого объекта
+// --------------------------
 void Free(void);
 
 protected:
-/// Осуществляет обновление внутренних данных компонента, обеспечивающих его целостность
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РґР°РЅРЅС‹Рµ СЃРІРѕР№СЃС‚РІР°
 virtual void UpdateInternalData(void);
 virtual void AUpdateInternalData(void);
 // --------------------------
 
 // --------------------------
-// Методы доступа к параметрам
+// Р¤СѓРЅРєС†РёРё РґРѕСЃС‚СѓРїР° Рє СЃРІРѕР№СЃС‚РІР°Рј
 // --------------------------
 public:
-// Возвращает указатель на данные свойства
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ СЃРІРѕР№СЃС‚РІР°
 const UEPtr<UIProperty> FindProperty(const NameT &name) const;
 UEPtr<UIProperty> FindProperty(const NameT &name);
 
-// Возвращает значение параметра по имени 'name'
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РґР°РЅРЅС‹Рµ СЃРІРѕР№СЃС‚РІР° СЃРІРѕР№СЃС‚РІР° РїРѕ РёРјРµРЅРё 'name'
 UEPtr<UVariableData> GetProperty(const NameT &name, UEPtr<UVariableData> values) const;
 std::string& GetPropertyValue(const NameT &name, std::string &values) const;
 
-// Возвращает значение параметра по имени 'name'
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РґР°РЅРЅС‹Рµ СЃРІРѕР№СЃС‚РІР° СЃРІРѕР№СЃС‚РІР° РїРѕ РёРјРµРЅРё 'name'
 template<typename T>
 const T* AccessPropertyData(const NameT &name) const;
 
 template<typename T>
 T* AccessPropertyData(const NameT &name);
 
-// Устанавливает значение параметра по имени 'name'
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РґР°РЅРЅС‹Рµ СЃРІРѕР№СЃС‚РІР° СЃРІРѕР№СЃС‚РІР° РїРѕ РёРјРµРЅРё 'name'
 void SetProperty(const NameT &name, UEPtr<UVariableData> values);
 void SetPropertyValue(const NameT &name, const std::string &values);
 
-// Возвращает список Id параметров, содержащихся непосредственно
-// в этом объекте
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ Id СЃРІРѕР№СЃС‚РІР°, СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµРіРѕ СѓРєР°Р·Р°С‚РµР»СЋ
+// РС‰РµС‚ РїРµСЂРµРјРµРЅРЅСѓСЋ СЃРІРѕР№СЃС‚РІР° РІ С‚Р°Р±Р»РёС†Рµ РїРѕ СѓРєР°Р·Р°С‚РµР»СЋ РЅР° РЅРµРіРѕ
 const UComponent::VariableMapT& GetPropertiesList(void) const;
 
-// Ищет имя свойства по указателю на него
+// РљРѕРїРёСЂСѓРµС‚ РІСЃРµ РїР°СЂР°РјРµС‚СЂС‹ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р° РІ РѕР±СЉРµРєС‚ 'comp', РµСЃР»Рё РІРѕР·РјРѕР¶РЅРѕ.
 const NameT& FindPropertyName(UEPtr<const UIProperty> prop) const;
 
-// Ищет тип свойства по указателю на него
+// --------------------------
 unsigned int FindPropertyType(UEPtr<const UIProperty> prop) const;
 
-// Ищет переменную свойства в таблице по указателю на него
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂР°РјРё
 UComponent::VariableMapCIteratorT FindPropertyVariable(UEPtr<const UIProperty> prop) const;
 
-// Копирует все параметры этого объекта в объект 'comp', если возможно.
-// копируются только свойства типа type
+// Р”РѕР±Р°РІР»СЏРµС‚ РїР°СЂР°РјРµС‚СЂ СЃ РёРјРµРЅРµРј 'name' РІ С‚Р°Р±Р»РёС†Сѓ СЃРѕРѕС‚РІРµСЃС‚РІРёР№
+// РїР°СЂР°РјРµС‚СЂРѕРІ Рё РЅР°Р·РЅР°С‡Р°РµС‚ РµРјСѓ РєРѕСЂСЂРµРєС‚РЅС‹Р№ РёРЅРґРµРєСЃ
 virtual void CopyProperties(UEPtr<UComponent> comp, unsigned int type) const;
 // --------------------------
 
-// --------------------------
-// Скрытые методы управления параметрами
+// РР·РјРµРЅСЏРµС‚ С‚РёРї РїР°СЂР°РјРµС‚СЂР°
+// Р¤СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ С‚Р°Р±Р»РёС†РµР№ СЃРІРѕР№СЃС‚РІ
 // --------------------------
 public:
-// Добавляет параметр с именем 'name' в таблицу соотвествий
-// параметров и назначает ему корректный индекс
-// Должна вызываться в конструкторах классов
+// РЈРґР°Р»СЏРµС‚ РїР°СЂР°РјРµС‚СЂ СЃ РёРјРµРЅРµРј 'name' РёР· С‚Р°Р±Р»РёС†С‹ СЃРѕРѕС‚РІРµСЃС‚РІРёР№
+// РїР°СЂР°РјРµС‚СЂРѕРІ
+// Р¤СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ С‚Р°Р±Р»РёС†РµР№ СЃРІРѕР№СЃС‚РІ
 void AddLookupProperty(const NameT &name, unsigned int type, UEPtr<UIProperty> property, bool delenable=true);
 
-// Изменяет тип параметра
+// РР·РјРµРЅСЏРµС‚ С‚РёРї СЃРІРѕР№СЃС‚РІР°
 bool ChangeLookupPropertyType(const NameT &name, unsigned int type);
 
 protected:
-// Удаляет параметр с именем 'name' из таблицы соотвествий
-// параметров
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РѕР±С‰РёРјРё СЃРІРѕР№СЃС‚РІР°РјРё
+// --------------------------
 void DelLookupProperty(const NameT &name);
 
-// Удаляет всю таблицу соответствий
+// РѕР±С‰РёС… СЃРІРѕР№СЃС‚РІ Рё РЅР°Р·РЅР°С‡Р°РµС‚ РµРјСѓ РєРѕСЂСЂРµРєС‚РЅС‹Р№ РёРЅРґРµРєСЃ
 void ClearLookupPropertyTable(void);
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления общими свойствами
 // --------------------------
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ Р°Р»РёР°СЃР°РјРё
 public:
-// Добавляет общее свойство параметр с именем 'name' в таблицу соотвествий
-// общих свойств и назначает ему корректный индекс
-// Должна вызываться в конструкторах классов
+// Р”РѕР±Р°РІР»СЏРµС‚ РЅРѕРІРѕРµ СЃРІРѕР№СЃС‚РІРѕ СЃРІРѕР№СЃС‚РІР° РІ С‚Р°Р±Р»РёС†Сѓ 'name' РїРѕ РёРјРµРЅРё СЃРІРѕР№СЃС‚РІР°
+/// Р”РѕР±Р°РІР»РµРЅРёРµ Р°Р»РёСЃР°СЃР°
+// Р¤СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ С‚Р°Р±Р»РёС†РµР№ СЃРІРѕР№СЃС‚РІ
 UId AddLookupShare(const NameT &name, UEPtr<UIShare> property);
-// --------------------------
+/// РЈРґР°Р»РµРЅРёРµ Р°Р»РёСЃР°СЃР°
 
 // --------------------------
-// Методы управления алиасами
-// --------------------------
+// Р¤СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ Р°Р»РёР°СЃР°РјРё
+/// РџСЂРѕРІРµСЂРєР° РЅР°Р»РёС‡РёСЏ Р°Р»РёР°СЃР°
 protected:
-/// Добавление алисаса
+/// Р”РѕР±Р°РІР»СЏРµС‚ Р°Р»РёР°СЃ
 bool AddAlias(const std::string &alias, const std::string &property_name);
 
-/// Удаление алисаса
+// --------------------------
 void DelAlias(const std::string &alias);
 
 public:
-/// Проверка наличия алиаса
+/// РџСЂРѕРІРµСЂСЏРµС‚ РЅР°Р»РёС‡РёРµ Р°Р»РёР°СЃР°
 bool CheckAlias(const std::string &alias) const;
 
-/// Получение имени свойства по алиасу
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ СЃРІРѕР№СЃС‚РІР° РїРѕ Р°Р»РёР°СЃСѓ
 const std::string& GetPropertyNameByAlias(const std::string &alias) const;
 // --------------------------
 
 
-public: // Исключения
+public: // РћС€РёР±РєР°
 struct EEnvironmentNotExist: public EError
 {
 };
 
-// Имя свойства не найдено
+// Р”Р»СЏ СЃРІРѕР№СЃС‚РІР° РїРѕ РёРјРµРЅРё
 struct EPropertyNameNotExist: public ENameNotExist
 {
 explicit EPropertyNameNotExist(const std::string &name) : ENameNotExist(name) {}
 };
 
-// Имя свойства уже существует
+// Р”Р»СЏ СЃРІРѕР№СЃС‚РІР° РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
 struct EPropertyNameAlreadyExist: public ENameAlreadyExist
 {
 explicit EPropertyNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {}
 };
 
-// Имя алиаса не найдено
+// Р”Р»СЏ Р°Р»РёР°СЃР° РїРѕ РёРјРµРЅРё
 struct EAliasNameNotExist: public ENameNotExist
 {
 explicit EAliasNameNotExist(const std::string &name) : ENameNotExist(name) {}
@@ -370,82 +435,82 @@ static UComponent* NewStaticFunc()
 
 class UItem;
 
-// Класс сериализации свойств
+// РњРµС‚РѕРґ Р±Р°Р·РѕРІРѕРіРѕ СЃРІРѕР№СЃС‚РІР°
 class RDK_LIB_TYPE UIProperty
 {
 public:
-// Метод устанавливает значение указателя на итератор-хранилище данных об этом
-// свойстве в родительском компоненте
+// РњРµС‚РѕРґ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ СЃРІРѕР№СЃС‚РІР° РёР· РёС‚РµСЂР°С‚РѕСЂР°-С…СЂР°РЅРёР»РёС‰Р° РґР°РЅРЅС‹С… РЅР° РёРјСЏ
+// РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РєРѕРјРїРѕРЅРµРЅС‚Р°-РІР»Р°РґРµР»СЊС†Р° СЃРІРѕР№СЃС‚РІР°
 virtual void SetVariable(UComponent::VariableMapCIteratorT &var)=0;
 
-// Метод возвращает тип свойства
+// РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєРѕРІРѕРµ РёРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°-РІР»Р°РґРµР»СЊС†Р° СЃРІРѕР№СЃС‚РІР°
 virtual unsigned int GetType(void) const=0;
 
-// Метод возвращает строковое имя свойства
+// РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєРѕРІРѕРµ РёРјСЏ РєР»Р°СЃСЃР°-РІР»Р°РґРµР»СЊС†Р° СЃРІРѕР№СЃС‚РІР°
 virtual const std::string& GetName(void) const=0;
 
-// Метод возвращает указатель компонента-владельца свойства
+// РњРµС‚РѕРґ Р·Р°РїРёСЃС‹РІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ СЃРІРѕР№СЃС‚РІР° РІ РїРѕС‚РѕРє
 virtual UContainer* GetOwner(void) const=0;
 
-// Метод возвращает строковое имя компонента-владельца свойства
+// РњРµС‚РѕРґ С‡РёС‚Р°РµС‚ Р·РЅР°С‡РµРЅРёРµ СЃРІРѕР№СЃС‚РІР° РёР· РїРѕС‚РѕРєР°
 virtual std::string GetOwnerName(void) const=0;
 
-// Метод возвращает строковое имя класса-владельца свойства
+// РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РѕР±Р»Р°СЃС‚СЊ РїР°РјСЏС‚Рё, СЃРѕРґРµСЂР¶Р°С‰СѓСЋ РґР°РЅРЅС‹Рµ СЃРІРѕР№СЃС‚РІР°
 virtual std::string GetOwnerClassName(void) const=0;
 
-// Метод записывает значение свойства в поток
+// РњРµС‚РѕРґ РєРѕРїРёСЂСѓРµС‚ Р·РЅР°С‡РµРЅРёРµ РґР°РЅРЅС‹С… СЃРІРѕР№СЃС‚РІР° РёР· РѕР±Р»Р°СЃС‚Рё РїР°РјСЏС‚Рё
 virtual bool Save(UEPtr<USerStorage> storage, bool simplemode=false)=0;
 
-// Метод читает значение свойства из потока
+// РњРµС‚РѕРґ С‡С‚РµРЅРёСЏ Р·РЅР°С‡РµРЅРёСЏ СЃРІРѕР№СЃС‚РІР° РёР· РїРѕС‚РѕРєР°
 virtual bool Load(UEPtr<USerStorage> storage, bool simplemode=false)=0;
 
-// Метод возвращает указатель на область памяти, содержащую данные свойства
+// РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РѕР±Р»Р°СЃС‚СЊ РїР°РјСЏС‚Рё, СЃРѕРґРµСЂР¶Р°С‰СѓСЋ РґР°РЅРЅС‹Рµ СЃРІРѕР№СЃС‚РІР°
 virtual const void* GetMemoryArea(void)=0;
 
-// Метод копирует значение данных свойства из области памяти
-// штатными средствами копирования реального типа данных
-// входной указатель приводится к указателю на необходимый тип данных
+// РњРµС‚РѕРґ С‡С‚РµРЅРёСЏ Р·РЅР°С‡РµРЅРёСЏ СЃРІРѕР№СЃС‚РІР° РґР°РЅРЅС‹С… СЃРІРѕР№СЃС‚РІР° РёР· РѕР±Р»Р°СЃС‚Рё РїР°РјСЏС‚Рё
+// Р§РёС‚Р°РµС‚ РґР°РЅРЅС‹Рµ РёР· РїРµСЂРµРґР°РЅРЅРѕР№ РѕР±Р»Р°СЃС‚Рё РїР°РјСЏС‚Рё РґР»СЏ СЃРІРѕР№СЃС‚РІР° СЃРІРѕР№СЃС‚РІР°
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЏР·С‹РєРѕРІРѕР№ С‚РёРї С…СЂР°РЅРёРјРѕРіРѕ СЃРІРѕР№СЃС‚РІР° РґР»СЏ РѕРґРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р°
 virtual bool ReadFromMemory(const void *buffer)=0;
 
-// Возвращает языковой тип хранимого свойства
+// РњРµС‚РѕРґ СЃСЂР°РІРЅРёРІР°РµС‚ С‚РёРї СЌС‚РѕРіРѕ СЃРІРѕР№СЃС‚РІР° СЃ РґСЂСѓРіРёРј СЃРІРѕР№СЃС‚РІРѕРј (РїРѕ РѕРґРЅРѕРјСѓ СЌР»РµРјРµРЅС‚Сѓ)
 virtual const type_info& GetLanguageType(void) const=0;
 
-// Метод сравнивает тип этого свойства с другим свойством
+// --------------------------
 virtual bool CompareLanguageType(const UIProperty &dt) const=0;
 
-// Возвращает языковой тип хранимого свойства для одного элемента
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РёРї СЃРІРѕР№СЃС‚РІР° РІРІРѕРґР°-РІС‹РІРѕРґР°
 virtual const type_info& GetElemLanguageType(void) const=0;
 
-// Метод сравнивает тип этого свойства с другим свойством (по одному элементу)
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РґР°РЅРЅС‹С… СЃРІРѕР№СЃС‚РІР° (РјСЃ)
 virtual bool CompareElemLanguageType(const UIProperty &dt) const=0;
 
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІСЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РґР°РЅРЅС‹С… СЃРІРѕР№СЃС‚РІР°
+// Р¤СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃРѕ РІСЂРµРјРµРЅРµРј
 // --------------------------
-// Методы управления данными
-// --------------------------
-/// Возвращает тип свойства ввода-вывода
+/// РЎР±СЂР°СЃС‹РІР°РµС‚ РІСЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РґРѕ РЅСѓР»СЏ
 virtual int GetIoType(void) const=0;
 
-/// Возвращает время обновления данных свойства (мс)
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ СЃРІРѕР№СЃС‚РІР° СЃРІРѕР№СЃС‚РІР° (РјСЃ)
 virtual ULongTime GetUpdateTime(void) const=0;
 
-/// Устанавливает время обновления данных свойства
+// РСЃРєР»СЋС‡РµРЅРёСЏ
 virtual void SetUpdateTime(ULongTime value)=0;
 
-/// Сбрасывает время обновления до нуля
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РЅР° РЅРѕР»СЊ
 virtual void ResetUpdateTime(void)=0;
-// --------------------------
+/// РРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° РІР»Р°РґРµР»СЊС†Р°
 
 virtual ~UIProperty();
 
-public: // Исключения
-// Обращение к неинициализированным данным свойства
+public: // РћС€РёР±РєР°
+// РћС€РёР±РєР° РІ РЅРµРїСЂР°РІРёР»СЊРЅРѕРј Р·РЅР°С‡РµРЅРёРё СЃРІРѕР№СЃС‚РІР° СЃРІРѕР№СЃС‚РІР°
 struct EPropertyError: public EError
 {
-protected: // Данные исключения
-/// Имя компонента владельца
+protected: // РРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°
+/// РРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° РєРѕРјРїРѕРЅРµРЅС‚Р°
 std::string OwnerName;
 
-/// Имя свойства
+/// РРјСЏ СЃРІРѕР№СЃС‚РІР°
 std::string PropertyName;
 
 public:
@@ -453,14 +518,14 @@ EPropertyError(const std::string &owner_name, const std::string &property_name)
 : EError(), OwnerName(owner_name), PropertyName(property_name) {}
 virtual ~EPropertyError(void) throw() {}
 
-// Формирует строку лога об исключении
+// РЎРѕР·РґР°РµС‚ СЃС‚СЂРѕРєСѓ СЃРѕРѕР±С‰РµРЅРёСЏ РґР»СЏ РѕС€РёР±РєРё
 virtual std::string CreateLogMessage(void) const
 {
  return EError::CreateLogMessage()+std::string(" ")+OwnerName+std::string(":")+PropertyName;
 }
 };
 
-// Обращение к неинициализированным данным свойства
+// РћС€РёР±РєР° РІ РЅРµРїСЂР°РІРёР»СЊРЅРѕРј Р·РЅР°С‡РµРЅРёРё СЃРІРѕР№СЃС‚РІР° СЃРІРѕР№СЃС‚РІР°
 struct EPropertyZeroPtr: public EPropertyError
 {
 public:
@@ -468,7 +533,7 @@ EPropertyZeroPtr(const std::string &owner_name, const std::string &property_name
 : EPropertyError(owner_name, property_name) {}
 };
 
-// Вызов Getter завершен неудачно
+// РњРµС‚РѕРґ Getter Р·РЅР°С‡РµРЅРёСЏ СЃРІРѕР№СЃС‚РІР°
 struct EPropertyGetterFail: public EPropertyError
 {
 public:
@@ -476,7 +541,7 @@ EPropertyGetterFail(const std::string &owner_name, const std::string &property_n
 : EPropertyError(owner_name, property_name) {}
 };
 
-// Вызов Setter завершен неудачно
+// РњРµС‚РѕРґ Setter Р·РЅР°С‡РµРЅРёСЏ СЃРІРѕР№СЃС‚РІР°
 struct EPropertySetterFail: public EPropertyError
 {
 public:
@@ -494,84 +559,84 @@ class UItem;
 class RDK_LIB_TYPE UIPropertyInput: public UIProperty
 {
 public:
- /// Конструкторы и деструкторы
+ /// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
  UIPropertyInput(void);
  virtual ~UIPropertyInput(void);
 
- /// Возвращает указатель на компонент-источник
+ /// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РїРѕРґРєР»СЋС‡РµРЅРЅРѕРіРѕ РІС‹С…РѕРґР°
  virtual UItem* GetItem(int index=0)=0;
 
- /// Возвращает имя подключенного компонента
+ // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РґР°РЅРЅС‹Рµ РІС…РѕРґР°
  virtual std::string GetItemName(int index=0) const=0;
 
- /// Возвращает полное имя подключенного компонента
+ /// РЎР±СЂР°СЃС‹РІР°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РґР°РЅРЅС‹Рµ
  virtual std::string GetItemFullName(int index=0) const=0;
 
- /// Возвращает имя подключенного выхода
+ /// Р’РѕР·РІСЂР°С‰Р°РµС‚ true, РµСЃР»Рё РЅР° РїРѕРґРєР»СЋС‡РµРЅРЅРѕРј РІС‹С…РѕРґРµ РЅРѕРІС‹Рµ РґР°РЅРЅС‹Рµ
  virtual std::string GetItemOutputName(int index=0) const=0;
 
- // Устанавливает указатель на данные входа
+ /// Р’РѕР·РІСЂР°С‰Р°РµС‚ true РµСЃР»Рё РІС…РѕРґ РёРјРµРµС‚ РїРѕРґРєР»СЋС‡РµРЅРёРµ
  virtual bool SetPointer(int index, UIPropertyOutput* property)=0;
 
- /// Сбрасывает указатель на данные
+ /// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ
  virtual bool ResetPointer(int index, UIPropertyOutput* property)=0;
 
- /// Возвращает true, если на подключенном выходе новые данные
+ // Р”Р°РЅРЅС‹Рµ
  virtual bool IsNewData(void) const=0;
 
- /// Возвращает true если вход имеет подключение
+ /// Р’РѕР·РІСЂР°С‰Р°РµС‚ true РµСЃР»Рё РµСЃС‚СЊ РїРѕРґРєР»СЋС‡РµРЅРЅС‹Рµ РІС‹С…РѕРґС‹
  virtual bool IsConnected(void) const=0;
 };
 
 class RDK_LIB_TYPE UIPropertyOutput: public UIPropertyInput
 {
-protected: // Данные
- /// Указатели на компоненты-приемники данных
+protected: // РЈРєР°Р·Р°С‚РµР»СЊ
+ /// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РїРѕРґРєР»СЋС‡РµРЅРЅС‹Рµ-РІС‹С…РѕРґРЅС‹Рµ РґР°РЅРЅС‹Рµ
  std::vector<UItem*> Connectors;
 
- /// Имена входов компнентов-приемников данных
+ /// РЎРїРёСЃРѕРє РёРјРµРЅ РїРѕРґРєР»СЋС‡РµРЅРЅС‹С…-РїРѕРґРєР»СЋС‡РµРЅРЅС‹С… РґР°РЅРЅС‹С…
  std::vector<std::string> ConnectorInputNames;
 
 public:
- /// Конструкторы и деструкторы
+ /// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
  UIPropertyOutput(void);
  virtual ~UIPropertyOutput(void);
 
- /// Возвращает число подключенных входов
+ /// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЃРІРѕР№СЃС‚РІРѕ РїРѕРґРєР»СЋС‡РµРЅРЅРѕРіРѕ РІС…РѕРґР° РєРѕРјРїРѕРЅРµРЅС‚Р°-РїСЂРёРµРјРЅРёРєР°
  virtual size_t GetNumConnectors(void) const;
 
- /// Возвращает указатель на компонент-приемник
+ /// РћР±РЅРѕРІРёС‚СЊ СѓРєР°Р·Р°С‚РµР»Рё СЃРІРѕР№СЃС‚РІ-РІС…РѕРґРѕРІ
  virtual UConnector* GetConnector(int index);
 
- /// Возвращает имя подключенного входа компонента-приемника
+ /// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РґР»СЏ РїРѕРґРєР»СЋС‡РµРЅРЅРѕРіРѕ РІС‹С…РѕРґР° РїРѕРґРєР»СЋС‡РµРЅРЅС‹С…-РґР°РЅРЅС‹С…
  virtual std::string GetConnectorInputName(int index) const;
 
- /// Возвращает указатель на свойство подключенного входа компонента-приемника
+ /// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ РїРѕРґРєР»СЋС‡РµРЅРЅРѕРіРѕ РІС‹С…РѕРґР° РїРѕРґРєР»СЋС‡РµРЅРЅС‹С…-РґР°РЅРЅС‹С…
  virtual UIPropertyInput* GetConnectorProperty(int index);
 
- /// Обновить указатели свойств-входов
+ // РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ Id РѕР±С‰РµРіРѕ СЃРІРѕР№СЃС‚РІР°
  virtual void UpdateConnectedPointers(void);
 };
 
 
-// Класс управления общими свойствами
+// РњРµС‚РѕРґ Р±Р°Р·РѕРІРѕРіРѕ РєР»Р°СЃСЃР° СЃРІРѕР№СЃС‚РІР°
 class RDK_LIB_TYPE UIShare
 {
 public:
- // Метод возвращает Id общего свойства
+ // РњРµС‚РѕРґ РґРµРёРЅРёС†РёР°Р»РёР·Р°С†РёРё РѕР±С‰РµРіРѕ СЃРІРѕР№СЃС‚РІР°
 // virtual int GetId(void) const=0;
 
- // Метод возвращает строковое имя класса-владельца общего свойства
-// virtual std::string GetOwnerName(void) const=0;
+ // РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РёРјСЏ РґР»СЏ РєРѕРјРїРѕРЅРµРЅС‚Р°-С…СЂР°РЅРёР»РёС‰Р° РґР°РЅРЅС‹С… СЃРІРѕР№СЃС‚РІР°
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР° РїРѕ РёРјРµРЅРё 'name'
 
- // Метод инициализации общего свойства
+ // РњРµС‚РѕРґ РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РєРѕРјРїРѕРЅРµРЅС‚ СЃРІРѕР№СЃС‚РІР°
  virtual bool Init(UEPtr<UComponent> main_owner)=0;
 
- // Метод деинициализации общего свойства
+ // РњРµС‚РѕРґ РґРµРёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РєРѕРјРїРѕРЅРµРЅС‚ СЃРІРѕР№СЃС‚РІР°
  virtual bool UnInit(void)=0;
 };
 
-// Возвращает значение параметра по имени 'name'
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РґР°РЅРЅС‹Рµ СЃРІРѕР№СЃС‚РІР° СЃРІРѕР№СЃС‚РІР° РїРѕ РёРјРµРЅРё 'name'
 template<typename T>
 const T* UComponent::AccessPropertyData(const NameT &name) const
 {

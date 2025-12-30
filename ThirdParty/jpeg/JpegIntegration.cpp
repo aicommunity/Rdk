@@ -9,19 +9,19 @@
 
 namespace RDK {
 
-/// Преобразовывает UBitmap в jpeg
+/// РџСЂРµРѕР±СЂР°Р·РѕРІС‹РІР°РµС‚ UBitmap РІ jpeg
 int ConvertBitmapToJpeg(const UBitmap &bmp, std::vector<uint8_t> &jpeg_buf, std::vector<uint8_t> &temp_buf, bool order, int quality)
 {
    if(bmp.GetColorModel() != ubmRGB24)
    {
-	// ошибка
+	// РѕС€РёР±РєР°
 	jpeg_buf.clear();
 	return 1;
    }
 
    if(bmp.GetByteLength() == 0)
    {
-	// ошибка
+	// РѕС€РёР±РєР°
 	jpeg_buf.clear();
 	return 2;
    }
@@ -39,8 +39,8 @@ int ConvertBitmapToJpeg(const UBitmap &bmp, std::vector<uint8_t> &jpeg_buf, std:
  return 0;
 }
 
-/// Преобразовывает jpeg в UBitmap
-/// order определяет порядок следования цветовых каналов: RGB - true, BGR - false
+/// РџСЂРµРѕР±СЂР°Р·РѕРІС‹РІР°РµС‚ jpeg РІ UBitmap
+/// order РѕРїСЂРµРґРµР»СЏРµС‚ РїРѕСЂСЏРґРѕРє СЃР»РµРґРѕРІР°РЅРёСЏ С†РІРµС‚РѕРІС‹С… РєР°РЅР°Р»РѕРІ: RGB - true, BGR - false
 int ConvertJpegToBitmap(const std::vector<uint8_t> &jpeg_buf, UBitmap &bmp, bool order)
 {
  if(jpeg_buf.empty())
@@ -56,7 +56,7 @@ int ConvertJpegToBitmap(const std::vector<uint8_t> &jpeg_buf, UBitmap &bmp, bool
  return 0;
 }
 
-/// Возвращает разрешение изображения
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂР°Р·СЂРµС€РµРЅРёРµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 int ReadJpegSize(const std::vector<uint8_t> &jpeg_buf, int &width, int &height)
 {
  if(jpeg_buf.empty())

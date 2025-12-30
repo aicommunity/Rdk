@@ -17,9 +17,9 @@ See file license.txt for more information
 
 namespace RDK {
 
-// Ìåòîäû UTimeStamp
+// ÐœÐµÑ‚Ð¾Ð´Ñ‹ UTimeStamp
 // --------------------------
-// Êîíñòðóêòîðû è äåñòðóêòîðû
+// ÐšÐ¾Ð½ÑÑ‚Ñ€ÑƒÐºÑ‚Ð¾Ñ€Ñ‹ Ð¸ Ð´ÐµÑÑ‚Ñ€ÑƒÐºÑ‚Ð¾Ñ€Ñ‹
 // --------------------------
 UTimeStamp::UTimeStamp(void)
  : Hours(0), Minutes(0), Seconds(0), Frames(0), FPS(25)
@@ -54,9 +54,9 @@ UTimeStamp::~UTimeStamp(void)
 // --------------------------
 
 // --------------------------
-// Îïåðàòîðû
+// ÐžÐ¿ÐµÑ€Ð°Ñ‚Ð¾Ñ€Ñ‹
 // --------------------------
-// Îïåðàòîð ïðèñâàèâàíèÿ
+// ÐžÐ¿ÐµÑ€Ð°Ñ‚Ð¾Ñ€ Ð¿Ñ€Ð¸ÑÐ²Ð°Ð¸Ð²Ð°Ð½Ð¸Ñ
 UTimeStamp& UTimeStamp::operator = (const UTimeStamp &copy)
 {
  Hours=copy.Hours;
@@ -81,7 +81,7 @@ UTimeStamp& UTimeStamp::operator = (double seconds)
  return *this;
 }
 
-// Àðèôìåòè÷åñêèå îïåðàòîðû
+// ÐÑ€Ð¸Ñ„Ð¼ÐµÑ‚Ð¸Ñ‡ÐµÑÐºÐ¸Ðµ Ð¾Ð¿ÐµÑ€Ð°Ñ‚Ð¾Ñ€Ñ‹
 UTimeStamp& UTimeStamp::operator -= (const UTimeStamp &copy)
 {
  double sec=(*this)()-copy();
@@ -159,7 +159,7 @@ UTimeStamp operator + (double seconds,const UTimeStamp &copy)
  return res;
 }
 
-// Îïåðàòîð ïðåîáðàçîâàíèÿ â ñåêóíäû
+// ÐžÐ¿ÐµÑ€Ð°Ñ‚Ð¾Ñ€ Ð¿Ñ€ÐµÐ¾Ð±Ñ€Ð°Ð·Ð¾Ð²Ð°Ð½Ð¸Ñ Ð² ÑÐµÐºÑƒÐ½Ð´Ñ‹
 double UTimeStamp::operator() (void) const
 {
  return (double(abs(Hours))*3600.0+double(Minutes)*60.0+double(Seconds)
@@ -204,8 +204,8 @@ bool UTimeStamp::operator > (const UTimeStamp &copy)
 }
 
 
-// Îïåðàòîðû ââîäà âûâîäà â ñòðîêó
-// Ðàçäåëèòåëü ':'
+// ÐžÐ¿ÐµÑ€Ð°Ñ‚Ð¾Ñ€Ñ‹ Ð²Ð²Ð¾Ð´Ð° Ð²Ñ‹Ð²Ð¾Ð´Ð° Ð² ÑÑ‚Ñ€Ð¾ÐºÑƒ
+// Ð Ð°Ð·Ð´ÐµÐ»Ð¸Ñ‚ÐµÐ»ÑŒ ':'
 string& UTimeStamp::operator >> (string &str) const
 {
  str=sntoa(Hours,3);
@@ -229,9 +229,9 @@ UTimeStamp& UTimeStamp::operator << (const string &str)
   return *this;
 
  Hours=RDK::atoi(seps[0]);
- Minutes=RDK::atoi(seps[1]);
- Seconds=RDK::atoi(seps[2]);
- Frames=RDK::atoi(seps[3]);
+ Minutes=static_cast<unsigned char>(RDK::atoi(seps[1]));
+ Seconds=static_cast<unsigned char>(RDK::atoi(seps[2]));
+ Frames=static_cast<unsigned char>(RDK::atoi(seps[3]));
 
  return *this;
 }

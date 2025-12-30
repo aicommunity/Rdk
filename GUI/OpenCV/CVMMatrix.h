@@ -18,11 +18,11 @@ See file license.txt for more information
 
 namespace RDK {
 
-// Отправляет данные объекта MMatrix в CvMat
+// РћС‚РїСЂР°РІР»СЏРµС‚ РґР°РЅРЅС‹Рµ РѕР±СЉРµРєС‚Р° MMatrix РІ CvMat
 template<class T, int Rows, int Cols>
 void operator >> (MMatrix<T,Rows,Cols> &source, CvMat* &target);
 
-// Отправляет данные объекта CVMat в MMatrix
+// РћС‚РїСЂР°РІР»СЏРµС‚ РґР°РЅРЅС‹Рµ РѕР±СЉРµРєС‚Р° CVMat РІ MMatrix
 template<class T, int Rows, int Cols>
 void operator << (MMatrix<T,Rows,Cols> &target, const CvMat *source);
 }

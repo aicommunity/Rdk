@@ -15,7 +15,7 @@ PUsm_ReadData Usm_ReadData=0;
 PUsm_IsPipeInit Usm_IsPipeInit=0;
 PUsm_GetPipeSize Usm_GetPipeSize=0;
 
-/// Загружает библиотеку
+/// Р—Р°РіСЂСѓР¶Р°РµС‚ Р±РёР±Р»РёРѕС‚РµРєСѓ
 int LoadUSharedMemoryLibrary(const char *library_file_name)
 {
  USharedMemoryLibrary=LoadLibraryA(library_file_name);
@@ -58,7 +58,7 @@ int LoadUSharedMemoryLibrary(const char *library_file_name)
 }
 
 
-/// Выгружает библиотеку
+/// Р’С‹РіСЂСѓР¶Р°РµС‚ Р±РёР±Р»РёРѕС‚РµРєСѓ
 int UnLoadUSharedMemoryLibrary(void)
 {
  if(USharedMemoryLibrary)

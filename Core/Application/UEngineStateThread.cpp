@@ -7,19 +7,6 @@
 #include "UEngineControl.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 
-void ExceptionHandler(int channel_index)
-{
- using namespace RDK;
- if(!UEngineStateThread::GetRdkExceptionHandlerMutex())
-  return;
-
- UGenericMutexExclusiveLocker locker(UEngineStateThread::GetRdkExceptionHandlerMutex());
- std::list<int>& ch_indexes_ref=UEngineStateThread::GetUnsentLogChannelIndexes();
-
- if(find(ch_indexes_ref.begin(), ch_indexes_ref.end(),channel_index) == ch_indexes_ref.end())
-  ch_indexes_ref.push_back(channel_index);
-}
-
 namespace RDK {
 
 // --------------------------
@@ -28,10 +15,6 @@ namespace RDK {
 UEngineStateThread::UEngineStateThread(UEngineControl* engine_control)
 : EngineControl(engine_control)
 {
- if(!GetRdkExceptionHandlerMutex())
-  GetRdkExceptionHandlerMutex()=UCreateMutex();
-
- GetUnsentLogChannelIndexes();
  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
  TUThreadInfo info;
  info.Name="UEngineStateThread";
@@ -66,12 +49,6 @@ UEngineStateThread::~UEngineStateThread(void)
  UDestroyEvent(CalcStarted);
  UDestroyEvent(CalculationNotInProgress);
  UDestroyMutex(CalculationInProgress);
-
- if(GetRdkExceptionHandlerMutex())
- {
-  UDestroyMutex(GetRdkExceptionHandlerMutex());
-  GetRdkExceptionHandlerMutex()=0;
- }
 
 }
 // --------------------------
@@ -154,16 +131,10 @@ void UEngineStateThread::Execute(void)
   try
   {
    if(CalcStarted->wait(100) == false)
-   {
-	if(!Terminated) // TODO: Эта проверка - костыль. не должно возникать такой ситуации. Поток должен остановится раньше, чем разрушится модель
-	 ProcessLog();
-	continue;
-   }
+    continue;
 
    if(CalculationNotInProgress->wait(100) == false)
    {
-	if(!Terminated) // TODO: Эта проверка - костыль. не должно возникать такой ситуации. Поток должен остановится раньше, чем разрушится модель
- 	 ProcessLog();
 	continue;
    }
 
@@ -239,20 +210,19 @@ void UEngineStateThread::Execute(void)
   catch(UException &ex)
   {
    CalculationNotInProgress->set();
-   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, (string("UEngineStateThread Rdk exception: ")+ex.what()).c_str());
+   RDK::Logging::ChannelLog(RDK_SYS_MESSAGE, RDK_EX_DEBUG, (string("UEngineStateThread Rdk exception: ")+ex.what()).c_str());
   }
   catch(std::exception &ex)
   {
    CalculationNotInProgress->set();
-   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, (string("UEngineStateThread std exception: ")+ex.what()).c_str());
+   RDK::Logging::ChannelLog(RDK_SYS_MESSAGE, RDK_EX_DEBUG, (string("UEngineStateThread std exception: ")+ex.what()).c_str());
   }
   catch(...)
   {
    CalculationNotInProgress->set();
-   MLog_LogMessage(RDK_SYS_MESSAGE, RDK_EX_DEBUG, (string("UEngineStateThread unknown exception")).c_str());
+   RDK::Logging::ChannelLog(RDK_SYS_MESSAGE, RDK_EX_DEBUG, (string("UEngineStateThread unknown exception")).c_str());
   }
 
-  ProcessLog();
   CalculationNotInProgress->set();
   Sleep(100);
  }
@@ -314,25 +284,6 @@ void UEngineStateThread::AdditionExecute(void)
 
 /// Временная переменная в которой хранится весь еще не отображенный в интерфейсе лог
 /// Очищается каждый раз при запросе этой переменной
-std::list<std::string> UEngineStateThread::ReadGuiUnsentLog(void)
-{
- if(!CalculationInProgress->exclusive_lock(100))
-  return std::list<std::string>();
-
-// if(!CalculationNotInProgress)
-//  return std::list<std::string>();
-// if(!CalculationNotInProgress->wait(100))
-//  return std::list<std::string>();
-// CalculationNotInProgress->reset();
-
- std::list<std::string> buffer=GuiUnsentLog;
-
- GuiUnsentLog.clear();
- CalculationInProgress->exclusive_unlock();
-// CalculationNotInProgress->set();
- return buffer;
-}
-
 /// Прерывает исполнение потока
 void UEngineStateThread::Terminate(void)
 {
@@ -345,104 +296,6 @@ void UEngineStateThread::Terminate(void)
  CalculationNotInProgress->reset();
  CalcState->reset();
 }
-
-// Общедоступные данные логгирования
-UGenericMutex*& UEngineStateThread::GetRdkExceptionHandlerMutex(void)
-{
- static UGenericMutex* RdkExceptionHandlerMutex=0;
- return RdkExceptionHandlerMutex;
-}
-
-std::list<int>& UEngineStateThread::GetUnsentLogChannelIndexes(void)
-{
- static std::list<int> UnsentLogChannelIndexes;
- return UnsentLogChannelIndexes;
-}
-// --------------------------
-
-// --------------------------
-// Вспомогательные методы
-// --------------------------
-void UEngineStateThread::ProcessLog(void)
-{
- if(!GetRdkExceptionHandlerMutex())
-  return;
- std::list<int> ch_indexes;
- {
-  UGenericMutexExclusiveLocker locker(GetRdkExceptionHandlerMutex());
-  std::list<int>& ch_indexes_ref=GetUnsentLogChannelIndexes();
-
-  if(!ch_indexes_ref.empty())
-  {
-   ch_indexes=ch_indexes_ref;
-   ch_indexes_ref.clear();
-  }
- }
-
- if(ch_indexes.empty())
-  return;
-
- if(find(ch_indexes.begin(),ch_indexes.end(),RDK_GLOB_MESSAGE) == ch_indexes.end())
-  return;
-
- int global_error_level=-1;
- try
- {
-   int error_level=-1;
-   int number=0;
-   unsigned long long time=0;
-   int num_log_lines=MLog_GetNumUnreadLogLines(RDK_GLOB_MESSAGE);
-   for(int k=0;k<num_log_lines;k++)
-   {
-	const char * data=MLog_GetUnreadLog(RDK_GLOB_MESSAGE, error_level,number,time);
-	if(!data)
-	 continue;
-	if(global_error_level>error_level)
-	 global_error_level=error_level;
-
-	std::string new_log_data=data;
-	if(!new_log_data.empty())
-	{
-	 if(CalculationInProgress->exclusive_lock(10000))
-	 {
-	  GuiUnsentLog.push_back(new_log_data);
-      CalculationInProgress->exclusive_unlock();
-	 }
-	}
-   }
-   MLog_ClearReadLog(RDK_GLOB_MESSAGE);
-   int calc_stop_lev=EngineControl->GetApplication()->GetCalcStopLogLevel();
-   if(global_error_level>=0 && calc_stop_lev>=0 && global_error_level <= calc_stop_lev && EngineControl->GetApplication()->IsChannelStarted(0)) // принудительная остановка расчета
-   {
-    EngineControl->PauseChannel(-1);
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE,RDK_EX_INFO,"Calculation process stopped by CalcStopLogLevel signal",0);
-   }
- }
- catch(...)
- {
-  throw;
- }
-/*
- try
- {
-  while(!UnsentLog.empty())
-  {
-   if(EventsLogFlag)
-   {
-	Logger.WriteMessageToFile(UnsentLog.front());// TODO: Проверить на RDK_SUCCESS
-   }
-
-   UnsentLog.pop_front();
-  }
- }
- catch(...)
- {
-  throw;
- }      */
-}
-// --------------------------
-
-
 }
 
 #endif

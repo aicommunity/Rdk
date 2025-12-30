@@ -9,273 +9,279 @@
 #include "../../Core/Engine/UEnvironment.h"
 #include "rdk_version.h"
 
-// Менеджер DLL
+// РњРµРЅРµРґР¶РµСЂ DLL
 class RDK_LIB_TYPE URdkCoreManager
 {
 public:
-/// Массив хранилищ
+/// РњР°СЃСЃРёРІ С…СЂР°РЅРёР»РёС‰
 std::vector<RDK::UStorage*> StorageList;
 
-/// Массив сред
+/// РњР°СЃСЃРёРІ СЃСЂРµРґ
 std::vector<RDK::UEnvironment*> EnvironmentList;
 
-/// Массив движков
+/// РњР°СЃСЃРёРІ РґРІРёР¶РєРѕРІ
 std::vector<RDK::UEngine*> EngineList;
 
-/// Массив мьютексов
+/// РњР°СЃСЃРёРІ РјСЊСЋС‚РµРєСЃРѕРІ
 std::vector<UGenericMutex*> MutexList;
 
-/// Массив локеров
+/// РњР°СЃСЃРёРІ Р»РѕРєРµСЂРѕРІ
 std::vector<RDK::UELockPtr<RDK::UEngine>*> LockerList;
 
-/// Массив логгеров
-std::vector<RDK::ULoggerEnv*> LoggerList;
+/// РњР°СЃСЃРёРІ Р»РѕРіРіРµСЂРѕРІ
+std::vector<RDK::UExceptionLogger*> LoggerList;
 
-/// Системный логгер
-RDK::ULoggerEnv SystemLogger;
+/// РЎРёСЃС‚РµРјРЅС‹Р№ Р»РѕРіРіРµСЂ
+RDK::UExceptionLogger SystemLogger;
 
-/// Глобальный логгер (интегрирует информацию со всех логгеров)
-RDK::ULoggerEnv GlobalLogger;
+/// Р“Р»РѕР±Р°Р»СЊРЅС‹Р№ Р»РѕРіРіРµСЂ (РёРЅС‚РµРіСЂРёСЂСѓРµС‚ РёРЅС„РѕСЂРјР°С†РёСЋ СЃРѕ РІСЃРµС… Р»РѕРіРіРµСЂРѕРІ)
+RDK::UExceptionLogger GlobalLogger;
 
 UGenericMutex* GlobalMutex;
 
-/// Текущий выбраный канал
+/// РўРµРєСѓС‰РёР№ РІС‹Р±СЂР°РЅС‹Р№ РєР°РЅР°Р»
 RDK::UELockVar<int> SelectedChannelIndex;
 
-/// Текущее число каналов
+/// РўРµРєСѓС‰РµРµ С‡РёСЃР»Рѕ РєР°РЅР°Р»РѕРІ
 RDK::UELockVar<int> NumChannels;
 
-/// Данные текущего выбранного канала
-RDK::UEPtr<RDK::ULoggerEnv> Logger;
+/// Р”Р°РЅРЅС‹Рµ С‚РµРєСѓС‰РµРіРѕ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°
+RDK::UEPtr<RDK::UExceptionLogger> Logger;
 RDK::UEPtr<RDK::UEngine> Engine;
 RDK::UEPtr<RDK::UEnvironment> Environment;
 RDK::UEPtr<RDK::UStorage> Storage;
 
-/// Путь до директории с бинарными файлами ядра (приложения)
+/// РџСѓС‚СЊ РґРѕ РґРёСЂРµРєС‚РѕСЂРёРё СЃ Р±РёРЅР°СЂРЅС‹РјРё С„Р°Р№Р»Р°РјРё СЏРґСЂР° (РїСЂРёР»РѕР¶РµРЅРёСЏ)
 std::string SystemDir;
 
-/// Путь до директории с логами
+/// РџСѓС‚СЊ РґРѕ РґРёСЂРµРєС‚РѕСЂРёРё СЃ Р»РѕРіР°РјРё
 std::string LogDir;
 
-/// Флаг режима отладки
+/// Р¤Р»Р°Рі СЂРµР¶РёРјР° РѕС‚Р»Р°РґРєРё
 bool DebugMode;
 
-/// Флаг включения вывода лога в отладчик
+/// Р¤Р»Р°Рі РІРєР»СЋС‡РµРЅРёСЏ РІС‹РІРѕРґР° Р»РѕРіР° РІ РѕС‚Р»Р°РґС‡РёРє
 bool DebuggerMessageFlag;
 
 int BufObjectsMode;
 
-// Имя файла описаний параметров классов
+// РРјСЏ С„Р°Р№Р»Р° РѕРїРёСЃР°РЅРёР№ РїР°СЂР°РјРµС‚СЂРѕРІ РєР»Р°СЃСЃРѕРІ
 std::string ClassesDescriptionFileName;
 
-// Имя файла описаний общих параметров классов
+// РРјСЏ С„Р°Р№Р»Р° РѕРїРёСЃР°РЅРёР№ РѕР±С‰РёС… РїР°СЂР°РјРµС‚СЂРѕРІ РєР»Р°СЃСЃРѕРІ
 std::string CommonClassesDescriptionFileName;
 
-// Способ сборки хранилища
+// РЎРїРѕСЃРѕР± СЃР±РѕСЂРєРё С…СЂР°РЅРёР»РёС‰Р°
 int StorageBuildMode;
 
-// Установка необходимого режима сборки
+// РЈСЃС‚Р°РЅРѕРІРєР° РЅРµРѕР±С…РѕРґРёРјРѕРіРѕ СЂРµР¶РёРјР° СЃР±РѕСЂРєРё
 void SetStorageBuildMode(int mode);
 
-// Получение текущего режима сборки
+// РџРѕР»СѓС‡РµРЅРёРµ С‚РµРєСѓС‰РµРіРѕ СЂРµР¶РёРјР° СЃР±РѕСЂРєРё
 int GetStorageBuildMode();
 
-// Путь к папкам библиотек
+// РџСѓС‚СЊ Рє РїР°РїРєР°Рј Р±РёР±Р»РёРѕС‚РµРє
 std::string LibrariesPath;
 
-// Путь к папке с описаниями классов
+// РџСѓС‚СЊ Рє РїР°РїРєРµ СЃ РѕРїРёСЃР°РЅРёСЏРјРё РєР»Р°СЃСЃРѕРІ
 std::string ClDescPath;
 
-// Установка пути к папкам библиотек
+// РЈСЃС‚Р°РЅРѕРІРєР° РїСѓС‚Рё Рє РїР°РїРєР°Рј Р±РёР±Р»РёРѕС‚РµРє
 void SetLibrariesPath(const std::string& value);
 
-// Получение пути к папкам библиотек
+// РџРѕР»СѓС‡РµРЅРёРµ РїСѓС‚Рё Рє РїР°РїРєР°Рј Р±РёР±Р»РёРѕС‚РµРє
 const std::string GetLibrariesPath() const;
 
-// Установка пути к папке с описаниями классов
+// РЈСЃС‚Р°РЅРѕРІРєР° РїСѓС‚Рё Рє РїР°РїРєРµ СЃ РѕРїРёСЃР°РЅРёСЏРјРё РєР»Р°СЃСЃРѕРІ
 void SetClDescPath(const std::string& value);
 
-// Получение пути к папке с описаниями классов
+// РџРѕР»СѓС‡РµРЅРёРµ РїСѓС‚Рё Рє РїР°РїРєРµ СЃ РѕРїРёСЃР°РЅРёСЏРјРё РєР»Р°СЃСЃРѕРІ
 const std::string GetClDescPath() const;
 
 // ----------------------------------------------------------
-// Глобальные указатели на функции создания хранилища и среды
+// Р“Р»РѕР±Р°Р»СЊРЅС‹Рµ СѓРєР°Р·Р°С‚РµР»Рё РЅР° С„СѓРЅРєС†РёРё СЃРѕР·РґР°РЅРёСЏ С…СЂР°РЅРёР»РёС‰Р° Рё СЃСЂРµРґС‹
 // ----------------------------------------------------------
-// Создает новое хранилище и помещает в конец массива
-// Возвращает указатель на хранилище
+// РЎРѕР·РґР°РµС‚ РЅРѕРІРѕРµ С…СЂР°РЅРёР»РёС‰Рµ Рё РїРѕРјРµС‰Р°РµС‚ РІ РєРѕРЅРµС† РјР°СЃСЃРёРІР°
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С…СЂР°РЅРёР»РёС‰Рµ
 typedef RDK::UStorage* (*PCreateNewStorage)(void);
 PCreateNewStorage FuncCreateNewStorage;
 
-// Создает новую среду и помещает в конец массива
-// Возвращает указатель на среду
+// РЎРѕР·РґР°РµС‚ РЅРѕРІСѓСЋ СЃСЂРµРґСѓ Рё РїРѕРјРµС‰Р°РµС‚ РІ РєРѕРЅРµС† РјР°СЃСЃРёРІР°
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЃСЂРµРґСѓ
 typedef RDK::UEnvironment* (*PCreateNewEnvironment)(void);
 PCreateNewEnvironment FuncCreateNewEnvironment;
 
-// Создает новый движок и помещает в конец массива
-// Возвращает указатель на движок
+// РЎРѕР·РґР°РµС‚ РЅРѕРІС‹Р№ РґРІРёР¶РѕРє Рё РїРѕРјРµС‰Р°РµС‚ РІ РєРѕРЅРµС† РјР°СЃСЃРёРІР°
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РґРІРёР¶РѕРє
 typedef RDK::UEngine* (*PCreateNewEngine)(void);
 PCreateNewEngine FuncCreateNewEngine;
 // ----------------------------------------------------------
 
-// Глобальная коллекция шрифтов
+// Р“Р»РѕР±Р°Р»СЊРЅР°СЏ РєРѕР»Р»РµРєС†РёСЏ С€СЂРёС„С‚РѕРІ
 RDK::UBitmapFontCollection Fonts;
 
 public:
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 URdkCoreManager(void);
 virtual ~URdkCoreManager(void);
 // --------------------------
 
 // --------------------------
-// Методы управления данными
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё
 // --------------------------
-// Возвращает имя каталога бинарных файлов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєР°С‚Р°Р»РѕРіР° Р±РёРЅР°СЂРЅС‹С… С„Р°Р№Р»РѕРІ
 const char* GetSystemDir(void);
 
-// Устанавливает имя каталога бинарных файлов
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РёРјСЏ РєР°С‚Р°Р»РѕРіР° Р±РёРЅР°СЂРЅС‹С… С„Р°Р№Р»РѕРІ
 int SetSystemDir(const char *dir);
 
-// Возвращает имя каталога логов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєР°С‚Р°Р»РѕРіР° Р»РѕРіРѕРІ
 const char* GetLogDir(void);
 
-// Устанавливает имя каталога логов
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РёРјСЏ РєР°С‚Р°Р»РѕРіР° Р»РѕРіРѕРІ
 int SetLogDir(const char *dir);
 
-/// Флаг режима отладки
+/// Р¤Р»Р°Рі СЂРµР¶РёРјР° РѕС‚Р»Р°РґРєРё
 bool GetDebugMode(void) const;
 int SetDebugMode(bool value);
 
-/// Флаг включения вывода лога в отладчик
+/// Р¤Р»Р°Рі РІРєР»СЋС‡РµРЅРёСЏ РІС‹РІРѕРґР° Р»РѕРіР° РІ РѕС‚Р»Р°РґС‡РёРє
 bool GetDebuggerMessageFlag(void) const;
 int SetDebuggerMessageFlag(bool value);
 
 int GetBufObjectsMode(void);
 int SetBufObjectsMode(int value);
 
-// Очищает коллекцию глобальных шрифтов
+// РћС‡РёС‰Р°РµС‚ РєРѕР»Р»РµРєС†РёСЋ РіР»РѕР±Р°Р»СЊРЅС‹С… С€СЂРёС„С‚РѕРІ
 int ClearFonts(void);
 
-// Загружает глобальные шрифты
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РіР»РѕР±Р°Р»СЊРЅС‹Рµ С€СЂРёС„С‚С‹
 int LoadFonts(void);
 
-// Загружает новый глобальный шрифт
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РЅРѕРІС‹Р№ РіР»РѕР±Р°Р»СЊРЅС‹Р№ С€СЂРёС„С‚
 bool AddFont(const std::string &font_file_name);
 
-// Возвращает ссылку на коллекцию шрифтов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° РєРѕР»Р»РµРєС†РёСЋ С€СЂРёС„С‚РѕРІ
 RDK::UBitmapFontCollection& GetFonts(void);
 
-// Имя файла описаний параметров классов
+// РРјСЏ С„Р°Р№Р»Р° РѕРїРёСЃР°РЅРёР№ РїР°СЂР°РјРµС‚СЂРѕРІ РєР»Р°СЃСЃРѕРІ
 const std::string& GetClassesDescriptionFileName(void) const;
 bool SetClassesDescriptionFileName(const std::string& value);
 
-// Имя файла описаний общих параметров классов
+// РРјСЏ С„Р°Р№Р»Р° РѕРїРёСЃР°РЅРёР№ РѕР±С‰РёС… РїР°СЂР°РјРµС‚СЂРѕРІ РєР»Р°СЃСЃРѕРІ
 const std::string& GetCommonClassesDescriptionFileName(void) const;
 bool SetCommonClassesDescriptionFileName(const std::string& value);
 
-/// Возвращет версию ядра
+/// Р’РѕР·РІСЂР°С‰РµС‚ РІРµСЂСЃРёСЋ СЏРґСЂР°
 const RDK::UVersion& GetVersion(void) const;
 // --------------------------
 
 // --------------------------
-// Методы управления созданием каналов
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃРѕР·РґР°РЅРёРµРј РєР°РЅР°Р»РѕРІ
 // --------------------------
-/// Устанавливает указатели на глобальные функции, создающие экземпляр движка, среды и хранилища
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СѓРєР°Р·Р°С‚РµР»Рё РЅР° РіР»РѕР±Р°Р»СЊРЅС‹Рµ С„СѓРЅРєС†РёРё, СЃРѕР·РґР°СЋС‰РёРµ СЌРєР·РµРјРїР»СЏСЂ РґРІРёР¶РєР°, СЃСЂРµРґС‹ Рё С…СЂР°РЅРёР»РёС‰Р°
 bool SetCoreElementsCreationFunctions(PCreateNewStorage fCreateNewStorage,
             PCreateNewEnvironment fCreateNewEnvironment,
 			PCreateNewEngine fCreateNewEngine);
 
-/// Возвращает число движков
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РґРІРёР¶РєРѕРІ
 int GetNumChannels(void) const;
 
-/// Создает требуемое число пустых движков
+/// РЎРѕР·РґР°РµС‚ С‚СЂРµР±СѓРµРјРѕРµ С‡РёСЃР»Рѕ РїСѓСЃС‚С‹С… РґРІРёР¶РєРѕРІ
 int SetNumChannels(int num);
 
-/// Делает текущим канала с заданным индексом
+/// Р”РµР»Р°РµС‚ С‚РµРєСѓС‰РёРј РєР°РЅР°Р»Р° СЃ Р·Р°РґР°РЅРЅС‹Рј РёРЅРґРµРєСЃРѕРј
 int SelectChannel(int index);
 
-/// Возвращает индекс текущего выбраного канала
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅРґРµРєСЃ С‚РµРєСѓС‰РµРіРѕ РІС‹Р±СЂР°РЅРѕРіРѕ РєР°РЅР°Р»Р°
 int GetSelectedChannelIndex(void) const;
 
-/// Добавляет новый движок в позицию index
-/// Если index <0 или >= NumChannels то добавляет в конец
+/// Р”РѕР±Р°РІР»СЏРµС‚ РЅРѕРІС‹Р№ РґРІРёР¶РѕРє РІ РїРѕР·РёС†РёСЋ index
+/// Р•СЃР»Рё index <0 РёР»Рё >= NumChannels С‚Рѕ РґРѕР±Р°РІР»СЏРµС‚ РІ РєРѕРЅРµС†
 int Add(int index);
 
-/// Удаляет движок из позиции index
+/// РЈРґР°Р»СЏРµС‚ РґРІРёР¶РѕРє РёР· РїРѕР·РёС†РёРё index
 int Del(int index);
 
-/// Инициализирует канал (функция должна быть вызвана первой!)
-/// Upd: Функция может быть вызвана после SetNumChannels и SelectChannel
+/// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РєР°РЅР°Р» (С„СѓРЅРєС†РёСЏ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РІС‹Р·РІР°РЅР° РїРµСЂРІРѕР№!)
+/// Upd: Р¤СѓРЅРєС†РёСЏ РјРѕР¶РµС‚ Р±С‹С‚СЊ РІС‹Р·РІР°РЅР° РїРѕСЃР»Рµ SetNumChannels Рё SelectChannel
 int ChannelInit(int channel_index, int predefined_structure, void* exception_handler);
 
-/// Деинициализирует канал (функция автоматически вызывается при вызове инициализации)
+/// Р”РµРёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РєР°РЅР°Р» (С„СѓРЅРєС†РёСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РІС‹Р·С‹РІР°РµС‚СЃСЏ РїСЂРё РІС‹Р·РѕРІРµ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё)
 int ChannelUnInit(int channel_index);
 
 protected:
-/// Создаает требуемый канал
-/// (если канал уже инициализирован, то не делает ничего
+/// РЎРѕР·РґР°Р°РµС‚ С‚СЂРµР±СѓРµРјС‹Р№ РєР°РЅР°Р»
+/// (РµСЃР»Рё РєР°РЅР°Р» СѓР¶Рµ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅ, С‚Рѕ РЅРµ РґРµР»Р°РµС‚ РЅРёС‡РµРіРѕ
 int ChannelCreate(int index);
 
-/// Уничтожает требуемый канал
-/// (если канал уже уничтожен, то не делает ничего
+/// РЈРЅРёС‡С‚РѕР¶Р°РµС‚ С‚СЂРµР±СѓРµРјС‹Р№ РєР°РЅР°Р»
+/// (РµСЃР»Рё РєР°РЅР°Р» СѓР¶Рµ СѓРЅРёС‡С‚РѕР¶РµРЅ, С‚Рѕ РЅРµ РґРµР»Р°РµС‚ РЅРёС‡РµРіРѕ
 int ChannelDestroy(int index);
 
 public:
-/// Уничтожает все
+/// РЈРЅРёС‡С‚РѕР¶Р°РµС‚ РІСЃРµ
 void Destroy(void);
 // --------------------------
 
 // --------------------------
-// Методы доступа к каналам
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РєР°РЅР°Р»Р°Рј
 // --------------------------
 public:
-// Возвращает ссылку на указатель управляющего ядра
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ СѓРїСЂР°РІР»СЏСЋС‰РµРіРѕ СЏРґСЂР°
 RDK::UEPtr<RDK::UEngine>& GetEngine(void);
 RDK::UEPtr<RDK::UEngine> GetEngine(int channel_index);
 
-// Возвращает ссылку на указатель среды выполнения
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ СЃСЂРµРґС‹ РІС‹РїРѕР»РЅРµРЅРёСЏ
 RDK::UEPtr<RDK::UEnvironment>& GetEnvironment(void);
 RDK::UEPtr<RDK::UEnvironment> GetEnvironment(int channel_index);
 
-// Возвращает ссылку на указатель хранилища
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ С…СЂР°РЅРёР»РёС‰Р°
 RDK::UEPtr<RDK::UStorage>& GetStorage(void);
 RDK::UEPtr<RDK::UStorage> GetStorage(int channel_index);
 
-// Возвращает указатель на текущую модель
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµРєСѓС‰СѓСЋ РјРѕРґРµР»СЊ
 RDK::UEPtr<RDK::UContainer> GetModel(void);
 RDK::UEPtr<RDK::UContainer> GetModel(int channel_index);
 // --------------------------
 
 // --------------------------
-// Методы доступа к каналам с блокировкой
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РєР°РЅР°Р»Р°Рј СЃ Р±Р»РѕРєРёСЂРѕРІРєРѕР№
 // --------------------------
-/// Метод доступа к глобальному мьютексу
+/// РњРµС‚РѕРґ РґРѕСЃС‚СѓРїР° Рє РіР»РѕР±Р°Р»СЊРЅРѕРјСѓ РјСЊСЋС‚РµРєСЃСѓ
 UGenericMutex* GetGlobalMutex(void);
 
-/// Метод доступ к мьютексу
+/// РњРµС‚РѕРґ РґРѕСЃС‚СѓРї Рє РјСЊСЋС‚РµРєСЃСѓ
 UGenericMutex* GetEngineMutex(void);
 UGenericMutex* GetEngineMutex(int index);
 
-// Возвращает ссылку на указатель управляющего ядра
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ СѓРїСЂР°РІР»СЏСЋС‰РµРіРѕ СЏРґСЂР°
 RDK::UELockPtr<RDK::UEngine> GetEngineLock(void);
 RDK::UELockPtr<RDK::UEngine> GetEngineLock(int channel_index);
 RDK::UELockPtr<RDK::UEngine> GetEngineLockTimeout(unsigned timeout);
 RDK::UELockPtr<RDK::UEngine> GetEngineLockTimeout(int channel_index, unsigned timeout);
 
-// Возвращает ссылку на указатель среды выполнения
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ СЃСЂРµРґС‹ РІС‹РїРѕР»РЅРµРЅРёСЏ
 RDK::UELockPtr<RDK::UEnvironment> GetEnvironmentLock(void);
 RDK::UELockPtr<RDK::UEnvironment> GetEnvironmentLock(int channel_index);
 
-// Возвращает ссылку на указатель хранилища
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ С…СЂР°РЅРёР»РёС‰Р°
 RDK::UELockPtr<RDK::UStorage> GetStorageLock(void);
 RDK::UELockPtr<RDK::UStorage> GetStorageLock(int channel_index);
 
-// Возвращает указатель на текущую модель
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµРєСѓС‰СѓСЋ РјРѕРґРµР»СЊ
 RDK::UELockPtr<RDK::UContainer> GetModelLock(void);
 RDK::UELockPtr<RDK::UContainer> GetModelLock(int channel_index);
 RDK::UELockPtr<RDK::UContainer> GetModelLockTimeout(unsigned timeout);
 RDK::UELockPtr<RDK::UContainer> GetModelLockTimeout(int channel_index, unsigned timeout);
+
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµРєСѓС‰СѓСЋ РјРѕРґРµР»СЊ СЃ shared (read-only) Р±Р»РѕРєРёСЂРѕРІРєРѕР№
+// РџРѕР·РІРѕР»СЏРµС‚ РЅРµСЃРєРѕР»СЊРєРёРј С‡РёС‚Р°С‚РµР»СЏРј РѕРґРЅРѕРІСЂРµРјРµРЅРЅС‹Р№ РґРѕСЃС‚СѓРї
+RDK::UESharedLockPtr<RDK::UContainer> GetModelReadLock(void);
+RDK::UESharedLockPtr<RDK::UContainer> GetModelReadLock(int channel_index);
+RDK::UESharedLockPtr<RDK::UContainer> GetModelReadLockTimeout(int channel_index, unsigned timeout);
 
 template<class T>
 RDK::UELockPtr<T> GetEngineLock(int channel_index);
@@ -289,35 +295,41 @@ RDK::UELockPtr<T> GetModelLock(int channel_index);
 template<class T>
 RDK::UELockPtr<T> GetModelLockTimeout(int channel_index, unsigned timeout);
 
-/// Метод прямой блокировки канала
+template<class T>
+RDK::UESharedLockPtr<T> GetModelReadLock(int channel_index);
+
+template<class T>
+RDK::UESharedLockPtr<T> GetModelReadLockTimeout(int channel_index, unsigned timeout);
+
+/// РњРµС‚РѕРґ РїСЂСЏРјРѕР№ Р±Р»РѕРєРёСЂРѕРІРєРё РєР°РЅР°Р»Р°
 int LockChannel(int index);
 
-/// Метод снятия прямой блокировки канала
+/// РњРµС‚РѕРґ СЃРЅСЏС‚РёСЏ РїСЂСЏРјРѕР№ Р±Р»РѕРєРёСЂРѕРІРєРё РєР°РЅР°Р»Р°
 int UnLockChannel(int index);
 // --------------------------
 
 // --------------------------
-/// Средства логгирования
+/// РЎСЂРµРґСЃС‚РІР° Р»РѕРіРіРёСЂРѕРІР°РЅРёСЏ
 // --------------------------
-// Возвращает ссылку на указатель на логгер текущего канала
-RDK::UEPtr<RDK::ULoggerEnv>& GetLogger(void);
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ РЅР° Р»РѕРіРіРµСЂ С‚РµРєСѓС‰РµРіРѕ РєР°РЅР°Р»Р°
+RDK::UEPtr<RDK::UExceptionLogger>& GetLogger(void);
 
-// Возвращает указатель на логгер выбранного канала, или SystemLogger
-RDK::UEPtr<RDK::ULoggerEnv> GetLogger(int channel_index);
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° Р»РѕРіРіРµСЂ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°, РёР»Рё SystemLogger
+RDK::UEPtr<RDK::UExceptionLogger> GetLogger(int channel_index);
 
-/// Возвращает указатель на системный логгер
-RDK::UEPtr<RDK::ULoggerEnv> GetSystemLogger(void);
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЃРёСЃС‚РµРјРЅС‹Р№ Р»РѕРіРіРµСЂ
+RDK::UEPtr<RDK::UExceptionLogger> GetSystemLogger(void);
 
-/// Возвращает указатель  на глобальный логгер (интегрирует информацию со всех логгеров)
-RDK::UEPtr<RDK::ULoggerEnv> GetGlobalLogger(void);
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ  РЅР° РіР»РѕР±Р°Р»СЊРЅС‹Р№ Р»РѕРіРіРµСЂ (РёРЅС‚РµРіСЂРёСЂСѓРµС‚ РёРЅС„РѕСЂРјР°С†РёСЋ СЃРѕ РІСЃРµС… Р»РѕРіРіРµСЂРѕРІ)
+RDK::UEPtr<RDK::UExceptionLogger> GetGlobalLogger(void);
 // --------------------------
 
 
 // --------------------------
-// Вспомогательные методы управления
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
 protected:
-/// Меняет текущий выбраный канал
+/// РњРµРЅСЏРµС‚ С‚РµРєСѓС‰РёР№ РІС‹Р±СЂР°РЅС‹Р№ РєР°РЅР°Р»
 bool SetSelectedChannelIndex(int channel_index);
 // --------------------------
 };
@@ -362,6 +374,26 @@ RDK::UELockPtr<T> URdkCoreManager::GetModelLockTimeout(int channel_index, unsign
 #endif
 }
 
+template<class T>
+RDK::UESharedLockPtr<T> URdkCoreManager::GetModelReadLock(int channel_index)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UESharedLockPtr<T>(0,GetModel(channel_index));
+#else
+ return (channel_index<int(MutexList.size()))?RDK::UESharedLockPtr<T>(MutexList[channel_index],RDK::dynamic_pointer_cast<T>(GetModel(channel_index))):RDK::UESharedLockPtr<T>(0,0);
+#endif
+}
+
+template<class T>
+RDK::UESharedLockPtr<T> URdkCoreManager::GetModelReadLockTimeout(int channel_index, unsigned timeout)
+{
+#ifdef RDK_ENGINE_UNLOCKED
+ return RDK::UESharedLockPtr<T>(0,GetModel(channel_index));
+#else
+ return (channel_index<int(MutexList.size()))?RDK::UESharedLockPtr<T>(MutexList[channel_index],RDK::dynamic_pointer_cast<T>(GetModel(channel_index)), timeout):RDK::UESharedLockPtr<T>(0,0);
+#endif
+}
+
 
 //extern RDK::UEPtr<RDK::UEngine> PEngine;
 //extern RDK::UEPtr<RDK::UEnvironment> PEnvironment;
@@ -371,7 +403,7 @@ RDK::UELockPtr<T> URdkCoreManager::GetModelLockTimeout(int channel_index, unsign
 
 //extern RDK_LIB_TYPE std::string RdkSystemDir;
 
-// Экземпляр менеджера
+// Р­РєР·РµРјРїР»СЏСЂ РјРµРЅРµРґР¶РµСЂР°
 extern RDK_LIB_TYPE URdkCoreManager RdkCoreManager;
 
 #endif

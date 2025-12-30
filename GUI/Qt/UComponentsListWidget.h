@@ -3,7 +3,9 @@
 
 #include "UVisualControllerWidget.h"
 #include "UDrawEngineImageWidget.h"
+#include "UGuiModelSnapshot.h"
 
+#include <QLineEdit>
 #include <QTreeWidgetItem>
 #include <QMouseEvent>
 #include <QModelIndex>
@@ -14,7 +16,7 @@ namespace Ui {
 class UComponentsListWidget;
 }
 
-/// Виджет двигающий компоненты в QTreeWidget по шифту
+/// Р’РёРґР¶РµС‚ РґРІРёРіР°СЋС‰РёР№ РєРѕРјРїРѕРЅРµРЅС‚С‹ РІ QTreeWidget РїРѕ С€РёС„С‚Сѓ
 class UComponentListTreeWidget :public QTreeWidget
 {
     Q_OBJECT
@@ -54,10 +56,10 @@ protected:
     }
 };
 
-/// UComponentsListWidget class - виджет отображения списка компонентов модели (UModel)
+/// UComponentsListWidget class - РІРёРґР¶РµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ СЃРїРёСЃРєР° РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РјРѕРґРµР»Рё (UModel)
 ///
-/// Древовидный список компонентов с учетом вложенности, в порядке расчета
-/// Содержит сигналы адресованные к схеме сети, но не содержит указателя на схему, сигналы связываются в UGEngineControllWidget.
+/// Р”СЂРµРІРѕРІРёРґРЅС‹Р№ СЃРїРёСЃРѕРє РєРѕРјРїРѕРЅРµРЅС‚РѕРІ СЃ СѓС‡РµС‚РѕРј РІР»РѕР¶РµРЅРЅРѕСЃС‚Рё, РІ РїРѕСЂСЏРґРєРµ СЂР°СЃС‡РµС‚Р°
+/// РЎРѕРґРµСЂР¶РёС‚ СЃРёРіРЅР°Р»С‹ Р°РґСЂРµСЃРѕРІР°РЅРЅС‹Рµ Рє СЃС…РµРјРµ СЃРµС‚Рё, РЅРѕ РЅРµ СЃРѕРґРµСЂР¶РёС‚ СѓРєР°Р·Р°С‚РµР»СЏ РЅР° СЃС…РµРјСѓ, СЃРёРіРЅР°Р»С‹ СЃРІСЏР·С‹РІР°СЋС‚СЃСЏ РІ UGEngineControllWidget.
 class UComponentsListWidget : public UVisualControllerWidget
 {
     Q_OBJECT
@@ -66,25 +68,25 @@ public:
     explicit UComponentsListWidget(QWidget *parent = 0, RDK::UApplication* app = NULL, int channel_mode=0);
     virtual ~UComponentsListWidget();
 
-    /// Перерисовывает дерево текущего канала (С интерфейс с RDK)
+    /// РџРµСЂРµСЂРёСЃРѕРІС‹РІР°РµС‚ РґРµСЂРµРІРѕ С‚РµРєСѓС‰РµРіРѕ РєР°РЅР°Р»Р° (РЎ РёРЅС‚РµСЂС„РµР№СЃ СЃ RDK)
     void AUpdateInterface();
 
     void AClearInterface();
 
-    /// запись файла настроек
+    /// Р·Р°РїРёСЃСЊ С„Р°Р№Р»Р° РЅР°СЃС‚СЂРѕРµРє
     virtual void ASaveParameters();
-    /// считывание файла настроек
+    /// СЃС‡РёС‚С‹РІР°РЅРёРµ С„Р°Р№Р»Р° РЅР°СЃС‚СЂРѕРµРє
     virtual void ALoadParameters();
 
-    // Доступ к данным для других виджетов:
+    // Р”РѕСЃС‚СѓРї Рє РґР°РЅРЅС‹Рј РґР»СЏ РґСЂСѓРіРёС… РІРёРґР¶РµС‚РѕРІ:
 
-    /// Устанавливает виджет в вертикальное положение
+    /// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІРёРґР¶РµС‚ РІ РІРµСЂС‚РёРєР°Р»СЊРЅРѕРµ РїРѕР»РѕР¶РµРЅРёРµ
     void setVerticalOrientation(bool vertical);
 
-    /// Возвращает полное имя выбранного компонента
+    /// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїРѕР»РЅРѕРµ РёРјСЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
     QString getSelectedComponentLongName();
 
-    /// открывает определенную вкладку tabWidgetComponentInfo
+    /// РѕС‚РєСЂС‹РІР°РµС‚ РѕРїСЂРµРґРµР»РµРЅРЅСѓСЋ РІРєР»Р°РґРєСѓ tabWidgetComponentInfo
     ///
     /// 0 - parameters
     /// 1 - state
@@ -92,28 +94,28 @@ public:
     /// 3 - outputs
     void openTabN(int n);
 
-    /// Возвращает индекс текущего окна
+    /// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅРґРµРєСЃ С‚РµРєСѓС‰РµРіРѕ РѕРєРЅР°
     int currentTabIndex();
 
-    /// Возвращает имя выбранного Property
+    /// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ Property
     QString getSelectedPropertyName();
 
-    /// Возвращает номер выбранного канала
+    /// Р’РѕР·РІСЂР°С‰Р°РµС‚ РЅРѕРјРµСЂ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°
     int getSelectedChannelIndex();
 
-    /// Режим выбора канала
-    /// 0 - всегда работа с текущим каналом
-    /// 1 - работа с изначально заданным каналом
+    /// Р РµР¶РёРј РІС‹Р±РѕСЂР° РєР°РЅР°Р»Р°
+    /// 0 - РІСЃРµРіРґР° СЂР°Р±РѕС‚Р° СЃ С‚РµРєСѓС‰РёРј РєР°РЅР°Р»РѕРј
+    /// 1 - СЂР°Р±РѕС‚Р° СЃ РёР·РЅР°С‡Р°Р»СЊРЅРѕ Р·Р°РґР°РЅРЅС‹Рј РєР°РЅР°Р»РѕРј
     void setChannelMode(int mode);
 
-    /// Возвращает номер рабочего канала
-    /// используемый при отображении информации
+    /// Р’РѕР·РІСЂР°С‰Р°РµС‚ РЅРѕРјРµСЂ СЂР°Р±РѕС‡РµРіРѕ РєР°РЅР°Р»Р°
+    /// РёСЃРїРѕР»СЊР·СѓРµРјС‹Р№ РїСЂРё РѕС‚РѕР±СЂР°Р¶РµРЅРёРё РёРЅС„РѕСЂРјР°С†РёРё
     int getWorkChannelIndex();
 
-    /// устанавливает доступность вкладок
+    /// СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РґРѕСЃС‚СѓРїРЅРѕСЃС‚СЊ РІРєР»Р°РґРѕРє
     void setEnableTabN(int n, bool enable);
 
-    /// Устанавливает режим видимости для виджета выбора канала расчёта
+    /// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СЂРµР¶РёРј РІРёРґРёРјРѕСЃС‚Рё РґР»СЏ РІРёРґР¶РµС‚Р° РІС‹Р±РѕСЂР° РєР°РЅР°Р»Р° СЂР°СЃС‡С‘С‚Р°
     void setChannelsListVisible(bool value);
 
 signals:
@@ -141,12 +143,17 @@ public slots:
 
     void parametersListItemChanged(QTreeWidgetItem *item, int column);
     void favoritesListItemChanged(QTreeWidgetItem *item, int column);
+    void handleSnapshotUpdated(NMSDK::UGuiSnapshotPtr snapshot,
+                               const QStringList &added,
+                               const QStringList &removed,
+                               const QStringList &changed);
+    void handleFilterTextChanged(const QString &text);
 
 
-    /// Отправляет событие отрисовки выбранного компонента
+    /// РћС‚РїСЂР°РІР»СЏРµС‚ СЃРѕР±С‹С‚РёРµ РѕС‚СЂРёСЃРѕРІРєРё РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
     void drawSelectedComponent(QModelIndex index);
 
-    //События контекстного меню
+    //РЎРѕР±С‹С‚РёСЏ РєРѕРЅС‚РµРєСЃС‚РЅРѕРіРѕ РјРµРЅСЋ
     void componentMoveUp();
     void componentMoveDown();
     void componentRename();
@@ -160,7 +167,7 @@ public slots:
     void componentUnInit();
     void componentGUI();
 
-    /// Внешняя установка UpdateInterval, для уменьшения нагрузки на ядро
+    /// Р’РЅРµС€РЅСЏСЏ СѓСЃС‚Р°РЅРѕРІРєР° UpdateInterval, РґР»СЏ СѓРјРµРЅСЊС€РµРЅРёСЏ РЅР°РіСЂСѓР·РєРё РЅР° СЏРґСЂРѕ
     void setUpdateInterval(long value);
 
     void propertyCopyNameToClipboard();
@@ -175,56 +182,63 @@ private slots:
     void on_actionDefaultAllParameters_triggered();
 
 private:
-    /// Удаляет из переданных данных лидирующие переводы строк
+    /// РЈРґР°Р»СЏРµС‚ РёР· РїРµСЂРµРґР°РЅРЅС‹С… РґР°РЅРЅС‹С… Р»РёРґРёСЂСѓСЋС‰РёРµ РїРµСЂРµРІРѕРґС‹ СЃС‚СЂРѕРє
     std::string& EraseLeadEndls(std::string &value);
 
-    /// Удаляет из переданных данных лидирующие и завершающие переводы строк
+    /// РЈРґР°Р»СЏРµС‚ РёР· РїРµСЂРµРґР°РЅРЅС‹С… РґР°РЅРЅС‹С… Р»РёРґРёСЂСѓСЋС‰РёРµ Рё Р·Р°РІРµСЂС€Р°СЋС‰РёРµ РїРµСЂРµРІРѕРґС‹ СЃС‚СЂРѕРє
     std::string& EraseRangeEndls(std::string &value);
 
-    /// Если в переданных данных есть хотя бы один перевод строки, то заменяет текст
-    /// на "[SEE BELOW]"
+    /// Р•СЃР»Рё РІ РїРµСЂРµРґР°РЅРЅС‹С… РґР°РЅРЅС‹С… РµСЃС‚СЊ С…РѕС‚СЏ Р±С‹ РѕРґРёРЅ РїРµСЂРµРІРѕРґ СЃС‚СЂРѕРєРё, С‚Рѕ Р·Р°РјРµРЅСЏРµС‚ С‚РµРєСЃС‚
+    /// РЅР° "[SEE BELOW]"
     std::string& PreparePropertyValueToListView(std::string &value);
 private:
 
-    /// Имя компонента, чьи проперти отображены
+    /// РРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°, С‡СЊРё РїСЂРѕРїРµСЂС‚Рё РѕС‚РѕР±СЂР°Р¶РµРЅС‹
     QString currentDrawPropertyComponentName;
 
-    /// Выделенный компонент. Отличается от currentDrawPropertyComponentName, тем что переписывается
-    /// при componentListItemSelectionChanged, затем сравнивается с currentDrawPropertyComponentName,
-    /// таким образом избегается перерисовка при множественном выделении одного компонента.
+    /// Р’С‹РґРµР»РµРЅРЅС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚. РћС‚Р»РёС‡Р°РµС‚СЃСЏ РѕС‚ currentDrawPropertyComponentName, С‚РµРј С‡С‚Рѕ РїРµСЂРµРїРёСЃС‹РІР°РµС‚СЃСЏ
+    /// РїСЂРё componentListItemSelectionChanged, Р·Р°С‚РµРј СЃСЂР°РІРЅРёРІР°РµС‚СЃСЏ СЃ currentDrawPropertyComponentName,
+    /// С‚Р°РєРёРј РѕР±СЂР°Р·РѕРј РёР·Р±РµРіР°РµС‚СЃСЏ РїРµСЂРµСЂРёСЃРѕРІРєР° РїСЂРё РјРЅРѕР¶РµСЃС‚РІРµРЅРЅРѕРј РІС‹РґРµР»РµРЅРёРё РѕРґРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°.
     QString selectedComponentLongName;
 
-    // имена выбранных строк Property
+    // РёРјРµРЅР° РІС‹Р±СЂР°РЅРЅС‹С… СЃС‚СЂРѕРє Property
     QString selectedParameterName;
     QString selectedStateName;
     QString selectedInputName;
     QString selectedOutputName;
     QString selectedFavName;
 
-    /// Текущий канал для виджета
+    /// РўРµРєСѓС‰РёР№ РєР°РЅР°Р» РґР»СЏ РІРёРґР¶РµС‚Р°
     int currentChannel;
 
-    /// Режим выбора канала
-    /// 0 - всегда работа с текущим каналом
-    /// 1 - работа с изначально заданным каналом
+    /// Р РµР¶РёРј РІС‹Р±РѕСЂР° РєР°РЅР°Р»Р°
+    /// 0 - РІСЃРµРіРґР° СЂР°Р±РѕС‚Р° СЃ С‚РµРєСѓС‰РёРј РєР°РЅР°Р»РѕРј
+    /// 1 - СЂР°Р±РѕС‚Р° СЃ РёР·РЅР°С‡Р°Р»СЊРЅРѕ Р·Р°РґР°РЅРЅС‹Рј РєР°РЅР°Р»РѕРј
     int channelMode;
 
-    /// Флаг видимости компонента выбора канала
+    /// Р¤Р»Р°Рі РІРёРґРёРјРѕСЃС‚Рё РєРѕРјРїРѕРЅРµРЅС‚Р° РІС‹Р±РѕСЂР° РєР°РЅР°Р»Р°
     bool channelsSelectionVisible;
 
-    /// Указатель на кастомный класс TreeWidget с перемещением компонентов при нажатом shift
+    /// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РєР°СЃС‚РѕРјРЅС‹Р№ РєР»Р°СЃСЃ TreeWidget СЃ РїРµСЂРµРјРµС‰РµРЅРёРµРј РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РїСЂРё РЅР°Р¶Р°С‚РѕРј shift
     UComponentListTreeWidget *componentsTree;
 
-    /// Компонент владелец отрисованной схемы
+    /// РљРѕРјРїРѕРЅРµРЅС‚ РІР»Р°РґРµР»РµС† РѕС‚СЂРёСЃРѕРІР°РЅРЅРѕР№ СЃС…РµРјС‹
     QString currentDrawComponentName;
 
-    /// Скрытый рекурсивный метод заполнения списка компонентов
+    /// РЎРєСЂС‹С‚С‹Р№ СЂРµРєСѓСЂСЃРёРІРЅС‹Р№ РјРµС‚РѕРґ Р·Р°РїРѕР»РЅРµРЅРёСЏ СЃРїРёСЃРєР° РєРѕРјРїРѕРЅРµРЅС‚РѕРІ
     void addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem);
 
-    /// Перерисовка виджета со списком каналов
+    /// РџРµСЂРµСЂРёСЃРѕРІРєР° РІРёРґР¶РµС‚Р° СЃРѕ СЃРїРёСЃРєРѕРј РєР°РЅР°Р»РѕРІ
     void redrawChannelsList();
 
+    void rebuildTreeFromSnapshot(const NMSDK::UGuiSnapshotPtr &snapshot);
+    bool applyFilter(QTreeWidgetItem *item);
+
     Ui::UComponentsListWidget *ui;
+    QLineEdit *filterLineEdit;
+    quint64 renderedSnapshotVersion;
+    NMSDK::UGuiSnapshotPtr lastSnapshot;
+    QString componentFilterText;
 };
 
 

@@ -12,7 +12,7 @@
 #pragma resource "*.dfm"
 TUComponentsPerformanceFrame *UComponentsPerformanceFrame;
 
-/// Ýêçåïëÿð êëàññà ïðèëîæåíèÿ
+/// Ð­ÐºÐ·ÐµÐ¿Ð»ÑÑ€ ÐºÐ»Ð°ÑÑÐ° Ð¿Ñ€Ð¸Ð»Ð¾Ð¶ÐµÐ½Ð¸Ñ
 extern RDK::UApplication RdkApplication;
 
 //---------------------------------------------------------------------------
@@ -111,25 +111,25 @@ void TUComponentsPerformanceFrame::AUpdateInterface(void)
  }
 }
 
-// Âîçâðàò èíòåðôåéñà â èñõîäíîå ñîñòîÿíèå
+// Ð’Ð¾Ð·Ð²Ñ€Ð°Ñ‚ Ð¸Ð½Ñ‚ÐµÑ€Ñ„ÐµÐ¹ÑÐ° Ð² Ð¸ÑÑ…Ð¾Ð´Ð½Ð¾Ðµ ÑÐ¾ÑÑ‚Ð¾ÑÐ½Ð¸Ðµ
 void TUComponentsPerformanceFrame::AClearInterface(void)
 {
 // ClearComponents();
 }
 
-// Ñîõðàíÿåò ïàðàìåòðû èíòåðôåéñà â xml
+// Ð¡Ð¾Ñ…Ñ€Ð°Ð½ÑÐµÑ‚ Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ñ‹ Ð¸Ð½Ñ‚ÐµÑ€Ñ„ÐµÐ¹ÑÐ° Ð² xml
 void TUComponentsPerformanceFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("ShowModeRadioGroup",ShowModeRadioGroup->ItemIndex);
 }
 
-// Çàãðóæàåò ïàðàìåòðû èíòåðôåéñà èç xml
+// Ð—Ð°Ð³Ñ€ÑƒÐ¶Ð°ÐµÑ‚ Ð¿Ð°Ñ€Ð°Ð¼ÐµÑ‚Ñ€Ñ‹ Ð¸Ð½Ñ‚ÐµÑ€Ñ„ÐµÐ¹ÑÐ° Ð¸Ð· xml
 void TUComponentsPerformanceFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  ShowModeRadioGroup->ItemIndex=xml.ReadInteger("ShowModeRadioGroup",ShowModeRadioGroup->ItemIndex);
 }
 
-// Äîáàâëÿåò êîìïîíåíò äëÿ ìîíèòîðèíãà
+// Ð”Ð¾Ð±Ð°Ð²Ð»ÑÐµÑ‚ ÐºÐ¾Ð¼Ð¿Ð¾Ð½ÐµÐ½Ñ‚ Ð´Ð»Ñ Ð¼Ð¾Ð½Ð¸Ñ‚Ð¾Ñ€Ð¸Ð½Ð³Ð°
 void TUComponentsPerformanceFrame::AddComponent(const std::string &componentname)
 {
  RDK::UChannelProfiler* pefromance=RdkApplication.GetEngineControl()->GetChannelProfiler(Core_GetSelectedChannelIndex());
@@ -138,7 +138,7 @@ void TUComponentsPerformanceFrame::AddComponent(const std::string &componentname
  UpdateInterface();
 }
 
-// Äîáàâëÿåò âñå êîìïîíåíòû, ñîäåðæàùèåñÿ íåïîñðåäñòâåííî â âûáðàííîì êîìïîíåíòå
+// Ð”Ð¾Ð±Ð°Ð²Ð»ÑÐµÑ‚ Ð²ÑÐµ ÐºÐ¾Ð¼Ð¿Ð¾Ð½ÐµÐ½Ñ‚Ñ‹, ÑÐ¾Ð´ÐµÑ€Ð¶Ð°Ñ‰Ð¸ÐµÑÑ Ð½ÐµÐ¿Ð¾ÑÑ€ÐµÐ´ÑÑ‚Ð²ÐµÐ½Ð½Ð¾ Ð² Ð²Ñ‹Ð±Ñ€Ð°Ð½Ð½Ð¾Ð¼ ÐºÐ¾Ð¼Ð¿Ð¾Ð½ÐµÐ½Ñ‚Ðµ
 void TUComponentsPerformanceFrame::AddAllComponents(const std::string &componentname)
 {
  RDK::UChannelProfiler* pefromance=RdkApplication.GetEngineControl()->GetChannelProfiler(Core_GetSelectedChannelIndex());
@@ -147,7 +147,7 @@ void TUComponentsPerformanceFrame::AddAllComponents(const std::string &component
  UpdateInterface();
 }
 
-// Óäàëÿåò íàáëþäàåìûé êîìïîíåíò
+// Ð£Ð´Ð°Ð»ÑÐµÑ‚ Ð½Ð°Ð±Ð»ÑŽÐ´Ð°ÐµÐ¼Ñ‹Ð¹ ÐºÐ¾Ð¼Ð¿Ð¾Ð½ÐµÐ½Ñ‚
 void TUComponentsPerformanceFrame::DelComponent(const std::string &componentname)
 {
  RDK::UChannelProfiler* pefromance=RdkApplication.GetEngineControl()->GetChannelProfiler(Core_GetSelectedChannelIndex());
@@ -162,7 +162,7 @@ void TUComponentsPerformanceFrame::DelComponent(std::size_t index)
  UpdateInterface();
 }
 
-// Óäàëÿåò âñå íàáëþäàåìûå êîìïîíåíòû
+// Ð£Ð´Ð°Ð»ÑÐµÑ‚ Ð²ÑÐµ Ð½Ð°Ð±Ð»ÑŽÐ´Ð°ÐµÐ¼Ñ‹Ðµ ÐºÐ¾Ð¼Ð¿Ð¾Ð½ÐµÐ½Ñ‚Ñ‹
 void TUComponentsPerformanceFrame::ClearComponents(void)
 {
  RDK::UChannelProfiler* pefromance=RdkApplication.GetEngineControl()->GetChannelProfiler(Core_GetSelectedChannelIndex());

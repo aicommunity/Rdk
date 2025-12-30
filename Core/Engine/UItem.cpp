@@ -18,20 +18,20 @@ See file license.txt for more information
 namespace RDK {
 
 /* *************************************************************************** */
-// Контейнер - список указателей на подключенные элементы
+// РљРѕРЅС‚РµР№РЅРµСЂ - СЃРїРёСЃРѕРє СѓРєР°Р·Р°С‚РµР»РµР№ РЅР° РїРѕРґРєР»СЋС‡РµРЅРЅС‹Рµ СЌР»РµРјРµРЅС‚С‹
 // class UAConnectorVector
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UAConnectorVector::UAConnectorVector(void)
 {
- // Размер контейнера
+ // Р Р°Р·РјРµСЂ РєРѕРЅС‚РµР№РЅРµСЂР°
  Size=0;
 
- // Массив элементов
+ // РњР°СЃСЃРёРІ СЌР»РµРјРµРЅС‚РѕРІ
  Data=0;
 
- // Реальный размер контейнера
+ // Р РµР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ РєРѕРЅС‚РµР№РЅРµСЂР°
  RealSize=0;
 }
 
@@ -53,15 +53,15 @@ UAConnectorVector::~UAConnectorVector(void)
 // --------------------------
 
 // --------------------------
-// Методы управления
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-// Очищает контейнер
+// РћС‡РёС‰Р°РµС‚ РєРѕРЅС‚РµР№РЅРµСЂ
 void UAConnectorVector::Clear(void)
 {
  Size=0;
 }
 
-// Меняет размер контейнера с сохранением элементов
+// РњРµРЅСЏРµС‚ СЂР°Р·РјРµСЂ РєРѕРЅС‚РµР№РЅРµСЂР° СЃ СЃРѕС…СЂР°РЅРµРЅРёРµРј СЌР»РµРјРµРЅС‚РѕРІ
 void UAConnectorVector::Resize(int newsize)
 {
  if(Size == newsize)
@@ -84,8 +84,8 @@ void UAConnectorVector::Resize(int newsize)
  }
 }
 
-// Ищет в контейнере первый заданный элемент начиная с индекса index
-// и возвращает его индекс или -1 если элемент не найден
+// РС‰РµС‚ РІ РєРѕРЅС‚РµР№РЅРµСЂРµ РїРµСЂРІС‹Р№ Р·Р°РґР°РЅРЅС‹Р№ СЌР»РµРјРµРЅС‚ РЅР°С‡РёРЅР°СЏ СЃ РёРЅРґРµРєСЃР° index
+// Рё РІРѕР·РІСЂР°С‰Р°РµС‚ РµРіРѕ РёРЅРґРµРєСЃ РёР»Рё -1 РµСЃР»Рё СЌР»РµРјРµРЅС‚ РЅРµ РЅР°Р№РґРµРЅ
 int UAConnectorVector::Find(const PUAConnector &item, int index) const
 {
  PUAConnector *pdata=Data;
@@ -97,15 +97,15 @@ int UAConnectorVector::Find(const PUAConnector &item, int index) const
  return -1;
 }
 
-// Добавляет в конец контейнера элемент
+// Р”РѕР±Р°РІР»СЏРµС‚ РІ РєРѕРЅРµС† РєРѕРЅС‚РµР№РЅРµСЂР° СЌР»РµРјРµРЅС‚
 void UAConnectorVector::Add(const PUAConnector &item)
 {
  Resize(Size+1);
  Data[Size-1]=item;
 }
 
-// Добавляет в конец контейнера элемент только если таких элементов еще нет
-// Возвращает true в случае успешного добавления
+// Р”РѕР±Р°РІР»СЏРµС‚ РІ РєРѕРЅРµС† РєРѕРЅС‚РµР№РЅРµСЂР° СЌР»РµРјРµРЅС‚ С‚РѕР»СЊРєРѕ РµСЃР»Рё С‚Р°РєРёС… СЌР»РµРјРµРЅС‚РѕРІ РµС‰Рµ РЅРµС‚
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ true РІ СЃР»СѓС‡Р°Рµ СѓСЃРїРµС€РЅРѕРіРѕ РґРѕР±Р°РІР»РµРЅРёСЏ
 bool UAConnectorVector::AddUnique(const PUAConnector &item)
 {
  if(Find(item)>=0)
@@ -115,7 +115,7 @@ bool UAConnectorVector::AddUnique(const PUAConnector &item)
  return true;
 }
 
-// Удаляет элемент по индексу
+// РЈРґР°Р»СЏРµС‚ СЌР»РµРјРµРЅС‚ РїРѕ РёРЅРґРµРєСЃСѓ
 void UAConnectorVector::Del(int index)
 {
  if(index<0 || index >= Size)
@@ -129,7 +129,7 @@ void UAConnectorVector::Del(int index)
  Resize(Size-1);
 }
 
-// Удаляет элемент по указателю
+// РЈРґР°Р»СЏРµС‚ СЌР»РµРјРµРЅС‚ РїРѕ СѓРєР°Р·Р°С‚РµР»СЋ
 void UAConnectorVector::Del(PUAConnector *item)
 {
  int index=Find(*item);
@@ -138,9 +138,9 @@ void UAConnectorVector::Del(PUAConnector *item)
 // --------------------------
 
 // --------------------------
-// Методы доступа
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР°
 // --------------------------
-// Оператор присваивания
+// РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
 UAConnectorVector& UAConnectorVector::operator = (const UAConnectorVector &copy)
 {
  Resize(copy.Size);
@@ -149,7 +149,7 @@ UAConnectorVector& UAConnectorVector::operator = (const UAConnectorVector &copy)
  return *this;
 }
 
-// Оператор доступа к элементу
+// РћРїРµСЂР°С‚РѕСЂ РґРѕСЃС‚СѓРїР° Рє СЌР»РµРјРµРЅС‚Сѓ
 PUAConnector& UAConnectorVector::operator [] (int index)
 {
  return Data[index];
@@ -160,13 +160,13 @@ const PUAConnector& UAConnectorVector::operator [] (int index) const
  return Data[index];
 }
 
-// Оператор доступа к массиву
+// РћРїРµСЂР°С‚РѕСЂ РґРѕСЃС‚СѓРїР° Рє РјР°СЃСЃРёРІСѓ
 PUAConnector* UAConnectorVector::GetData(void)
 {
  return Data;
 }
 
-// Оператор доступа к размеру
+// РћРїРµСЂР°С‚РѕСЂ РґРѕСЃС‚СѓРїР° Рє СЂР°Р·РјРµСЂСѓ
 int UAConnectorVector::GetSize(void) const
 {
  return Size;
@@ -175,20 +175,20 @@ int UAConnectorVector::GetSize(void) const
 /* *************************************************************************** */
 
 /* *************************************************************************** */
-// Контейнер - список указателей на подключенные элементы
+// РљРѕРЅС‚РµР№РЅРµСЂ - СЃРїРёСЃРѕРє СѓРєР°Р·Р°С‚РµР»РµР№ РЅР° РїРѕРґРєР»СЋС‡РµРЅРЅС‹Рµ СЌР»РµРјРµРЅС‚С‹
 // class UAConnector2DVector
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UAConnector2DVector::UAConnector2DVector(void)
 {
- // Размер контейнера
+ // Р Р°Р·РјРµСЂ РєРѕРЅС‚РµР№РЅРµСЂР°
  Size=0;
 
- // Массив элементов
+ // РњР°СЃСЃРёРІ СЌР»РµРјРµРЅС‚РѕРІ
  Data=0;
 
- // Реальный размер контейнера
+ // Р РµР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ РєРѕРЅС‚РµР№РЅРµСЂР°
  RealSize=0;
 }
 
@@ -205,9 +205,9 @@ UAConnector2DVector::~UAConnector2DVector(void)
 // --------------------------
 
 // --------------------------
-// Методы управления
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-// Очищает контейнер
+// РћС‡РёС‰Р°РµС‚ РєРѕРЅС‚РµР№РЅРµСЂ
 void UAConnector2DVector::Clear(void)
 {
  if(Data)
@@ -218,7 +218,7 @@ void UAConnector2DVector::Clear(void)
  Size=RealSize=0;
 }
 
-// Меняет размер контейнера с сохранением элементов
+// РњРµРЅСЏРµС‚ СЂР°Р·РјРµСЂ РєРѕРЅС‚РµР№РЅРµСЂР° СЃ СЃРѕС…СЂР°РЅРµРЅРёРµРј СЌР»РµРјРµРЅС‚РѕРІ
 void UAConnector2DVector::Resize(int newsize)
 {
  if(Size == newsize)
@@ -243,14 +243,14 @@ void UAConnector2DVector::Resize(int newsize)
  }
 }
 
-// Добавляет в конец контейнера элемент
+// Р”РѕР±Р°РІР»СЏРµС‚ РІ РєРѕРЅРµС† РєРѕРЅС‚РµР№РЅРµСЂР° СЌР»РµРјРµРЅС‚
 void UAConnector2DVector::Add(const UAConnectorVector &item)
 {
  Resize(Size+1);
  Data[Size-1]=item;
 }
 
-// Удаляет элемент по индексу
+// РЈРґР°Р»СЏРµС‚ СЌР»РµРјРµРЅС‚ РїРѕ РёРЅРґРµРєСЃСѓ
 void UAConnector2DVector::Del(int index)
 {
  if(index<0 || index >= Size)
@@ -263,9 +263,9 @@ void UAConnector2DVector::Del(int index)
 // --------------------------
 
 // --------------------------
-// Методы доступа
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР°
 // --------------------------
-// Оператор присваивания
+// РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
 UAConnector2DVector& UAConnector2DVector::operator = (const UAConnector2DVector &copy)
 {
  Resize(copy.Size);
@@ -277,7 +277,7 @@ UAConnector2DVector& UAConnector2DVector::operator = (const UAConnector2DVector 
  return *this;
 }
 
-// Оператор доступа к элементу
+// РћРїРµСЂР°С‚РѕСЂ РґРѕСЃС‚СѓРїР° Рє СЌР»РµРјРµРЅС‚Сѓ
 UAConnectorVector& UAConnector2DVector::operator [] (int index)
 {
  return Data[index];
@@ -288,13 +288,13 @@ const UAConnectorVector& UAConnector2DVector::operator [] (int index) const
  return Data[index];
 }
 
-// Оператор доступа к массиву
+// РћРїРµСЂР°С‚РѕСЂ РґРѕСЃС‚СѓРїР° Рє РјР°СЃСЃРёРІСѓ
 UAConnectorVector* UAConnector2DVector::GetData(void)
 {
  return Data;
 }
 
-// Оператор доступа к размеру
+// РћРїРµСЂР°С‚РѕСЂ РґРѕСЃС‚СѓРїР° Рє СЂР°Р·РјРµСЂСѓ
 int UAConnector2DVector::GetSize(void) const
 {
  return Size;
@@ -303,9 +303,9 @@ int UAConnector2DVector::GetSize(void) const
 /* *************************************************************************** */
 
 /* *************************************************************************** */
-// Методы
+// РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UItem::UItem(void)
 {
@@ -318,21 +318,21 @@ UItem::~UItem(void)
 // --------------------------
 
 // --------------------------
-// Методы управления общедоступными свойствами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РѕР±С‰РµРґРѕСЃС‚СѓРїРЅС‹РјРё СЃРІРѕР№СЃС‚РІР°РјРё
 // --------------------------
 // --------------------------
 
 // --------------------------
-// Методы доступа к описанию входов и выходов
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РѕРїРёСЃР°РЅРёСЋ РІС…РѕРґРѕРІ Рё РІС‹С…РѕРґРѕРІ
 // --------------------------
-/// Ищет свойство-выход по заданному индексу
+/// РС‰РµС‚ СЃРІРѕР№СЃС‚РІРѕ-РІС‹С…РѕРґ РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ РёРЅРґРµРєСЃСѓ
 void UItem::FindOutputProperty(const NameT &item_property_name, UIPropertyOutput* &property) const
 {
- // Ищем указатель на выходные данные
+ // РС‰РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РІС‹С…РѕРґРЅС‹Рµ РґР°РЅРЅС‹Рµ
  property=0;
 
  VariableMapCIteratorT I=PropertiesLookupTable.find(item_property_name);
-// // TODO: Сначала проверяем алиасы
+// // TODO: РЎРЅР°С‡Р°Р»Р° РїСЂРѕРІРµСЂСЏРµРј Р°Р»РёР°СЃС‹
 // VariableMapCIteratorT I=PropertiesLookupTable.end();
 // if(CheckAlias(item_property_name))
 //  I=PropertiesLookupTable.find(GetPropertyNameByAlias(item_property_name));
@@ -349,7 +349,7 @@ void UItem::FindOutputProperty(const NameT &item_property_name, UIPropertyOutput
 }
 
 
-/// Возвращает указатель на свойство подключенного входа компонента-приемника
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЃРІРѕР№СЃС‚РІРѕ РїРѕРґРєР»СЋС‡РµРЅРЅРѕРіРѕ РІС…РѕРґР° РєРѕРјРїРѕРЅРµРЅС‚Р°-РїСЂРёРµРјРЅРёРєР°
 void UItem::FindConnectedProperty(const NameT &item_property_name, int index, UIPropertyInput* &property) const
 {
  property=0;
@@ -387,10 +387,10 @@ void UItem::FindConnectedProperty(const NameT &item_property_name, int index, UI
 
 
 // --------------------------
-// Системные методы управления объектом
+// РЎРёСЃС‚РµРјРЅС‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РѕР±СЉРµРєС‚РѕРј
 // --------------------------
-// Осуществляет освобождение этого объекта в его хранилище
-// или вызов деструктора, если Storage == 0
+// РћСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р° РІ РµРіРѕ С…СЂР°РЅРёР»РёС‰Рµ
+// РёР»Рё РІС‹Р·РѕРІ РґРµСЃС‚СЂСѓРєС‚РѕСЂР°, РµСЃР»Рё Storage == 0
 void UItem::Free(void)
 {
  DisconnectAll();
@@ -399,7 +399,7 @@ void UItem::Free(void)
 // --------------------------
 
 // ----------------------
-// Защищенные коммуникационные методы
+// Р—Р°С‰РёС‰РµРЅРЅС‹Рµ РєРѕРјРјСѓРЅРёРєР°С†РёРѕРЅРЅС‹Рµ РјРµС‚РѕРґС‹
 // ----------------------
 
 bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
@@ -407,10 +407,10 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
  if(!UConnector::ConnectToItem(na, item_property_name, connector_property_name,c_index, forced_connect_same_item))
   return false;
 
- // Ищем указатель на выходные данные (они гарантированно существуют, мы это проверили выше)
+ // РС‰РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РІС‹С…РѕРґРЅС‹Рµ РґР°РЅРЅС‹Рµ (РѕРЅРё РіР°СЂР°РЅС‚РёСЂРѕРІР°РЅРЅРѕ СЃСѓС‰РµСЃС‚РІСѓСЋС‚, РјС‹ СЌС‚Рѕ РїСЂРѕРІРµСЂРёР»Рё РІС‹С€Рµ)
  UIPropertyOutput* output_property=dynamic_pointer_cast<UIPropertyOutput>(na->FindProperty(item_property_name));
 
- // Ищем указатель на входные данные (они гарантированно существуют, мы это проверили выше)
+ // РС‰РµРј СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РІС…РѕРґРЅС‹Рµ РґР°РЅРЅС‹Рµ (РѕРЅРё РіР°СЂР°РЅС‚РёСЂРѕРІР°РЅРЅРѕ СЃСѓС‰РµСЃС‚РІСѓСЋС‚, РјС‹ СЌС‚Рѕ РїСЂРѕРІРµСЂРёР»Рё РІС‹С€Рµ)
  UIPropertyInput* input_property=dynamic_pointer_cast<UIPropertyInput>(FindProperty(connector_property_name));
 
 
@@ -428,7 +428,7 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
  return true;
 }
 
-// Устанавливает связь с коннектором 'c'.
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СЃРІСЏР·СЊ СЃ РєРѕРЅРЅРµРєС‚РѕСЂРѕРј 'c'.
 bool UItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
 {
  if(!c)
@@ -450,7 +450,7 @@ bool UItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, const 
  return true;
 }
 
-/// Разрывает все связи выхода этого объекта с коннектором 'c'.
+/// Р Р°Р·СЂС‹РІР°РµС‚ РІСЃРµ СЃРІСЏР·Рё РІС‹С…РѕРґР° СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р° СЃ РєРѕРЅРЅРµРєС‚РѕСЂРѕРј 'c'.
 void UItem::Disconnect(UEPtr<UConnector> c)
 {
  Build();
@@ -473,7 +473,7 @@ void UItem::Disconnect(UEPtr<UConnector> c)
  }
 }
 
-// Разрывает связь выхода этого объекта с коннектором 'c' по индексу
+// Р Р°Р·СЂС‹РІР°РµС‚ СЃРІСЏР·СЊ РІС‹С…РѕРґР° СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р° СЃ РєРѕРЅРЅРµРєС‚РѕСЂРѕРј 'c' РїРѕ РёРЅРґРµРєСЃСѓ
 void UItem::Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index)
 {
  if(!c)
@@ -507,21 +507,21 @@ void UItem::Disconnect(UEPtr<UConnector> c, const NameT &item_property_name, con
 // ----------------------
 
 // ----------------------
-// Коммуникационные методы
+// РљРѕРјРјСѓРЅРёРєР°С†РёРѕРЅРЅС‹Рµ РјРµС‚РѕРґС‹
 // ----------------------
-// Возвращает текущее число соединений.
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСѓС‰РµРµ С‡РёСЃР»Рѕ СЃРѕРµРґРёРЅРµРЅРёР№.
 int UItem::GetNumAConnectors(const NameT &item_property_name) const
 {
  return GetNumActiveOutputs(item_property_name);
 }
 
-/// Возвращает число выходов к которым кто-то подключен
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РІС‹С…РѕРґРѕРІ Рє РєРѕС‚РѕСЂС‹Рј РєС‚Рѕ-С‚Рѕ РїРѕРґРєР»СЋС‡РµРЅ
 int UItem::GetNumActiveOutputs(void) const
 {
  return int(RelatedConnectors.size());
 }
 
-/// Возвращает число коннекторов к которым подключено заданное свойство
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РєРѕРЅРЅРµРєС‚РѕСЂРѕРІ Рє РєРѕС‚РѕСЂС‹Рј РїРѕРґРєР»СЋС‡РµРЅРѕ Р·Р°РґР°РЅРЅРѕРµ СЃРІРѕР№СЃС‚РІРѕ
 int UItem::GetNumActiveOutputs(const NameT &item_property_name) const
 {
  std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.find(item_property_name);
@@ -531,7 +531,7 @@ int UItem::GetNumActiveOutputs(const NameT &item_property_name) const
  return int(I->second.size());
 }
 
-// Разрывает связь выхода этого объекта с коннектором по Id 'id'.
+// Р Р°Р·СЂС‹РІР°РµС‚ СЃРІСЏР·СЊ РІС‹С…РѕРґР° СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р° СЃ РєРѕРЅРЅРµРєС‚РѕСЂРѕРј РїРѕ Id 'id'.
 bool UItem::Disconnect(const UId &id)
 {
  Build();
@@ -553,8 +553,8 @@ bool UItem::Disconnect(const UId &id)
  return true;
 }
 
-// Разрывает связь выхода этого объекта со всеми
-// подключенными коннекторами.
+// Р Р°Р·СЂС‹РІР°РµС‚ СЃРІСЏР·СЊ РІС‹С…РѕРґР° СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р° СЃРѕ РІСЃРµРјРё
+// РїРѕРґРєР»СЋС‡РµРЅРЅС‹РјРё РєРѕРЅРЅРµРєС‚РѕСЂР°РјРё.
 void UItem::DisconnectAll(void)
 {
  Build();
@@ -590,9 +590,9 @@ void UItem::DisconnectAll(const NameT &item_property_name)
 }
 
 
-// Разрывает все связи объекта
-// исключая его внутренние связи и обратные связи
-// brklevel - объект, относительно которого связи считаются внутренними
+// Р Р°Р·СЂС‹РІР°РµС‚ РІСЃРµ СЃРІСЏР·Рё РѕР±СЉРµРєС‚Р°
+// РёСЃРєР»СЋС‡Р°СЏ РµРіРѕ РІРЅСѓС‚СЂРµРЅРЅРёРµ СЃРІСЏР·Рё Рё РѕР±СЂР°С‚РЅС‹Рµ СЃРІСЏР·Рё
+// brklevel - РѕР±СЉРµРєС‚, РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РєРѕС‚РѕСЂРѕРіРѕ СЃРІСЏР·Рё СЃС‡РёС‚Р°СЋС‚СЃСЏ РІРЅСѓС‚СЂРµРЅРЅРёРјРё
 void UItem::DisconnectBy(UEPtr<UContainer> brklevel)
 {
  Build();
@@ -614,8 +614,8 @@ void UItem::DisconnectBy(UEPtr<UContainer> brklevel)
 
 }
 
-// Переустанавливает все связи этого item со всеми connectors которые получают
-// данные от этого item
+// РџРµСЂРµСѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІСЃРµ СЃРІСЏР·Рё СЌС‚РѕРіРѕ item СЃРѕ РІСЃРµРјРё connectors РєРѕС‚РѕСЂС‹Рµ РїРѕР»СѓС‡Р°СЋС‚
+// РґР°РЅРЅС‹Рµ РѕС‚ СЌС‚РѕРіРѕ item
 void UItem::BuildLinks(void)
 {
 
@@ -641,8 +641,8 @@ void UItem::BuildLinks(void)
 
 }
 
-// Возвращает указатель на коннектор из списка подключений
-// по имени 'name'.
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РєРѕРЅРЅРµРєС‚РѕСЂ РёР· СЃРїРёСЃРєР° РїРѕРґРєР»СЋС‡РµРЅРёР№
+// РїРѕ РёРјРµРЅРё 'name'.
 UEPtr<UConnector> UItem::GetAConnector(const UId &id, int index) const
 {
  std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.begin();
@@ -660,7 +660,7 @@ UEPtr<UConnector> UItem::GetAConnector(const UId &id, int index) const
  return 0;
 }
 
-// Возвращает  коннектор из списка подключений.
+// Р’РѕР·РІСЂР°С‰Р°РµС‚  РєРѕРЅРЅРµРєС‚РѕСЂ РёР· СЃРїРёСЃРєР° РїРѕРґРєР»СЋС‡РµРЅРёР№.
 UEPtr<UConnector> UItem::GetAConnectorByIndex(const NameT &item_property_name, int index) const
 {
  std::map<std::string, std::vector<PUAConnector> >::const_iterator I=RelatedConnectors.find(item_property_name);
@@ -673,7 +673,7 @@ UEPtr<UConnector> UItem::GetAConnectorByIndex(const NameT &item_property_name, i
 }
 
 
-// Проверяет, существует ли связь с заданным коннектором
+// РџСЂРѕРІРµСЂСЏРµС‚, СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё СЃРІСЏР·СЊ СЃ Р·Р°РґР°РЅРЅС‹Рј РєРѕРЅРЅРµРєС‚РѕСЂРѕРј
 bool UItem::CheckLink(const UEPtr<UConnector> &connector, int connected_c_index) const
 {
  std::vector<UCLink> buffer;
@@ -706,7 +706,7 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_prop
  return false;
 }
 
-// Проверяет, существует ли связь с заданным коннектором и конкретным входом
+// РџСЂРѕРІРµСЂСЏРµС‚, СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё СЃРІСЏР·СЊ СЃ Р·Р°РґР°РЅРЅС‹Рј РєРѕРЅРЅРµРєС‚РѕСЂРѕРј Рё РєРѕРЅРєСЂРµС‚РЅС‹Рј РІС…РѕРґРѕРј
 bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_property_name, const NameT &connector_property_name, int connected_c_index) const
 {
  std::vector<UCLink> buffer;
@@ -727,18 +727,18 @@ bool UItem::CheckLink(const UEPtr<UConnector> &connector, const NameT &item_prop
 
 
 // --------------------------
-// Методы управления счетом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃС‡РµС‚РѕРј
 // --------------------------
-// Восстановление настроек по умолчанию и сброс процесса счета
+// Р’РѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ Рё СЃР±СЂРѕСЃ РїСЂРѕС†РµСЃСЃР° СЃС‡РµС‚Р°
 bool UItem::Default(void)
 {
  return UConnector::Default();
 }
 
-// Обеспечивает сборку внутренней структуры объекта
-// после настройки параметров
-// Автоматически вызывает метод Reset() и выставляет Ready в true
-// в случае успешной сборки
+// РћР±РµСЃРїРµС‡РёРІР°РµС‚ СЃР±РѕСЂРєСѓ РІРЅСѓС‚СЂРµРЅРЅРµР№ СЃС‚СЂСѓРєС‚СѓСЂС‹ РѕР±СЉРµРєС‚Р°
+// РїРѕСЃР»Рµ РЅР°СЃС‚СЂРѕР№РєРё РїР°СЂР°РјРµС‚СЂРѕРІ
+// РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРё РІС‹Р·С‹РІР°РµС‚ РјРµС‚РѕРґ Reset() Рё РІС‹СЃС‚Р°РІР»СЏРµС‚ Ready РІ true
+// РІ СЃР»СѓС‡Р°Рµ СѓСЃРїРµС€РЅРѕР№ СЃР±РѕСЂРєРё
 bool UItem::Build(void)
 {
  if(IsReady())

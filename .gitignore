@@ -107,3 +107,6 @@ Makefile
 Doxygen
 # Default ignored files
 Build/Tools/PyCodeGenerator/.idea/workspace.xml
+CMakeFiles/
+*_autogen/
+CMakeCache.txt

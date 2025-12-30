@@ -14,14 +14,14 @@
 
 namespace RDK {
 
-// Класс хранилище-визуальных интерфейсов
-// Список обработчиков, которые должны быть вызваны после расчета
+// РљР»Р°СЃСЃ С…СЂР°РЅРёР»РёС‰Рµ-РІРёР·СѓР°Р»СЊРЅС‹С… РёРЅС‚РµСЂС„РµР№СЃРѕРІ
+// РЎРїРёСЃРѕРє РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ, РєРѕС‚РѕСЂС‹Рµ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РІС‹Р·РІР°РЅС‹ РїРѕСЃР»Рµ СЂР°СЃС‡РµС‚Р°
 std::vector<RDK::UIVisualController*> UIVisualControllerStorage::InterfaceUpdaters;
 
-/// Общее время обновления интерфейса
+/// РћР±С‰РµРµ РІСЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РёРЅС‚РµСЂС„РµР№СЃР°
 unsigned long long UIVisualControllerStorage::UpdateTime=0;
 
-// Добавляет обработчик в список
+// Р”РѕР±Р°РІР»СЏРµС‚ РѕР±СЂР°Р±РѕС‚С‡РёРє РІ СЃРїРёСЃРѕРє
 void UIVisualControllerStorage::AddInterface(RDK::UIVisualController *value)
 {
  std::vector<RDK::UIVisualController*>::iterator I=find(InterfaceUpdaters.begin(),InterfaceUpdaters.end(),value);
@@ -29,7 +29,7 @@ void UIVisualControllerStorage::AddInterface(RDK::UIVisualController *value)
   InterfaceUpdaters.push_back(value);
 }
 
-// Удаляет обработчик из списка
+// РЈРґР°Р»СЏРµС‚ РѕР±СЂР°Р±РѕС‚С‡РёРє РёР· СЃРїРёСЃРєР°
 void UIVisualControllerStorage::DelInterface(RDK::UIVisualController *value)
 {
  std::vector<RDK::UIVisualController*>::iterator I=std::find(InterfaceUpdaters.begin(),InterfaceUpdaters.end(),value);
@@ -37,7 +37,7 @@ void UIVisualControllerStorage::DelInterface(RDK::UIVisualController *value)
   InterfaceUpdaters.erase(I);
 }
 
-// Метод, вызываемый после загрузки проекта
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ Р·Р°РіСЂСѓР·РєРё РїСЂРѕРµРєС‚Р°
 void UIVisualControllerStorage::AfterLoadProject(void)
 {
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
@@ -49,22 +49,22 @@ void UIVisualControllerStorage::AfterLoadProject(void)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
 }
 
 
 
-// Метод, вызываемый перед закрытием проекта
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ Р·Р°РєСЂС‹С‚РёРµРј РїСЂРѕРµРєС‚Р°
 void UIVisualControllerStorage::BeforeCloseProject(void)
 {
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
@@ -76,21 +76,21 @@ void UIVisualControllerStorage::BeforeCloseProject(void)
    }
    catch(RDK::UException &ex)
    {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterLoadProject - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
 }
 
 
-// Метод, вызываемый перед сбросом модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ СЃР±СЂРѕСЃРѕРј РјРѕРґРµР»Рё
 void UIVisualControllerStorage::BeforeReset(void)
 {
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
@@ -102,20 +102,20 @@ void UIVisualControllerStorage::BeforeReset(void)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeReset - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeReset - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeReset - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeReset - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeReset - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeReset - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
 }
 
-// Метод, вызываемый после сброса модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ СЃР±СЂРѕСЃР° РјРѕРґРµР»Рё
 void UIVisualControllerStorage::AfterReset(void)
 {
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
@@ -127,20 +127,20 @@ void UIVisualControllerStorage::AfterReset(void)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterReset - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterReset - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterReset - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterReset - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterReset - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterReset - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
 }
 
-// Метод, вызываемый перед шагом расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ С€Р°РіРѕРј СЂР°СЃС‡РµС‚Р°
 void UIVisualControllerStorage::BeforeCalculate(void)
 {
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
@@ -154,21 +154,21 @@ void UIVisualControllerStorage::BeforeCalculate(void)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeCalculate - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeCalculate - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeCalculate - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeCalculate - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeCalculate - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::BeforeCalculate - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
  }
 }
 
-// Метод, вызываемый после шага расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ С€Р°РіР° СЂР°СЃС‡РµС‚Р°
 void UIVisualControllerStorage::AfterCalculate(void)
 {
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
@@ -180,20 +180,20 @@ void UIVisualControllerStorage::AfterCalculate(void)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterCalculate - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterCalculate - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterCalculate - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterCalculate - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterCalculate - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::AfterCalculate - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
 }
 
-// Обновление интерфейса
+// РћР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
 void UIVisualControllerStorage::UpdateInterface(bool force_update)
 {
  unsigned long long begin_time=RDK::GetCurrentStartupTime();
@@ -206,21 +206,21 @@ void UIVisualControllerStorage::UpdateInterface(bool force_update)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::UpdateInterface - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::UpdateInterface - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::UpdateInterface - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::UpdateInterface - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::UpdateInterface - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::UpdateInterface - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
  UpdateTime=RDK::CalcDiffTime(RDK::GetCurrentStartupTime(),begin_time);
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void UIVisualControllerStorage::ClearInterface(void)
 {
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
@@ -232,20 +232,20 @@ void UIVisualControllerStorage::ClearInterface(void)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ClearInterface - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ClearInterface - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ClearInterface - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ClearInterface - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ClearInterface - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ClearInterface - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void UIVisualControllerStorage::SaveParameters(RDK::USerStorageXML &xml)
 {
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
@@ -257,20 +257,20 @@ void UIVisualControllerStorage::SaveParameters(RDK::USerStorageXML &xml)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SaveParameters - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SaveParameters - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SaveParameters - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SaveParameters - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SaveParameters - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SaveParameters - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void UIVisualControllerStorage::LoadParameters(RDK::USerStorageXML &xml)
 {
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
@@ -282,21 +282,21 @@ void UIVisualControllerStorage::LoadParameters(RDK::USerStorageXML &xml)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::LoadParameters - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::LoadParameters - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::LoadParameters - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::LoadParameters - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::LoadParameters - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::LoadParameters - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
 }
 
-// Служебные методы управления интерфейсом
-/// Сбрасывает флаг прошедшей перерисовки в этой итерации счета
+// РЎР»СѓР¶РµР±РЅС‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РёРЅС‚РµСЂС„РµР№СЃРѕРј
+/// РЎР±СЂР°СЃС‹РІР°РµС‚ С„Р»Р°Рі РїСЂРѕС€РµРґС€РµР№ РїРµСЂРµСЂРёСЃРѕРІРєРё РІ СЌС‚РѕР№ РёС‚РµСЂР°С†РёРё СЃС‡РµС‚Р°
 void UIVisualControllerStorage::ResetCalculationStepUpdatedFlag(void)
 {
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
@@ -308,20 +308,20 @@ void UIVisualControllerStorage::ResetCalculationStepUpdatedFlag(void)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ResetCalculationStepUpdatedFlag - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ResetCalculationStepUpdatedFlag - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ResetCalculationStepUpdatedFlag - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ResetCalculationStepUpdatedFlag - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ResetCalculationStepUpdatedFlag - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::ResetCalculationStepUpdatedFlag - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
 }
 
-/// Выставляет флаг прошедшей перерисовки в этой итерации счета
+/// Р’С‹СЃС‚Р°РІР»СЏРµС‚ С„Р»Р°Рі РїСЂРѕС€РµРґС€РµР№ РїРµСЂРµСЂРёСЃРѕРІРєРё РІ СЌС‚РѕР№ РёС‚РµСЂР°С†РёРё СЃС‡РµС‚Р°
 void UIVisualControllerStorage::SetCalculationStepUpdatedFlag(void)
 {
  for(size_t i=0;i<InterfaceUpdaters.size();i++)
@@ -333,39 +333,39 @@ void UIVisualControllerStorage::SetCalculationStepUpdatedFlag(void)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SetCalculationStepUpdatedFlag - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SetCalculationStepUpdatedFlag - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SetCalculationStepUpdatedFlag - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SetCalculationStepUpdatedFlag - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SetCalculationStepUpdatedFlag - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SetCalculationStepUpdatedFlag - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
    }
   }
 }
 
-/// Возвращает время обновления интерфейса (мс)
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РёРЅС‚РµСЂС„РµР№СЃР° (РјСЃ)
 unsigned long long UIVisualControllerStorage::GetUpdateTime(void)
 {
  return UpdateTime;
 }
 
 
-// Класс-хранилище внутренних модулей
-// Список обработчиков, которые должны быть вызваны после расчета
+// РљР»Р°СЃСЃ-С…СЂР°РЅРёР»РёС‰Рµ РІРЅСѓС‚СЂРµРЅРЅРёС… РјРѕРґСѓР»РµР№
+// РЎРїРёСЃРѕРє РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ, РєРѕС‚РѕСЂС‹Рµ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РІС‹Р·РІР°РЅС‹ РїРѕСЃР»Рµ СЂР°СЃС‡РµС‚Р°
 //std::vector<RDK::UIController*> UIControllerStorage::Controllers;
 
 std::vector<RDK::UIController*>& UIControllerStorage::GetControllers(void)
 {
- // Список обработчиков, которые должны быть вызваны после расчета
+ // РЎРїРёСЃРѕРє РѕР±СЂР°Р±РѕС‚С‡РёРєРѕРІ, РєРѕС‚РѕСЂС‹Рµ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РІС‹Р·РІР°РЅС‹ РїРѕСЃР»Рµ СЂР°СЃС‡РµС‚Р°
  static std::vector<RDK::UIController*> Controllers;
 
  return Controllers;
 }
 
-// Добавляет обработчик в список
+// Р”РѕР±Р°РІР»СЏРµС‚ РѕР±СЂР°Р±РѕС‚С‡РёРє РІ СЃРїРёСЃРѕРє
 void UIControllerStorage::AddController(RDK::UIController *value)
 {
  std::vector<RDK::UIController*>::iterator I=find(GetControllers().begin(),GetControllers().end(),value);
@@ -373,7 +373,7 @@ void UIControllerStorage::AddController(RDK::UIController *value)
   GetControllers().push_back(value);
 }
 
-// Удаляет обработчик из списка
+// РЈРґР°Р»СЏРµС‚ РѕР±СЂР°Р±РѕС‚С‡РёРє РёР· СЃРїРёСЃРєР°
 void UIControllerStorage::DelController(RDK::UIController *value)
 {
  std::vector<RDK::UIController*>::iterator I=std::find(GetControllers().begin(),GetControllers().end(),value);
@@ -381,7 +381,7 @@ void UIControllerStorage::DelController(RDK::UIController *value)
   GetControllers().erase(I);
 }
 
-// Метод, вызываемый после загрузки проекта
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ Р·Р°РіСЂСѓР·РєРё РїСЂРѕРµРєС‚Р°
 void UIControllerStorage::AfterLoadProject(int channel_index)
 {
  for(size_t i=0;i<GetControllers().size();i++)
@@ -393,20 +393,20 @@ void UIControllerStorage::AfterLoadProject(int channel_index)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
   }
 }
 
-// Метод, вызываемый перед закрытием проекта
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ Р·Р°РєСЂС‹С‚РёРµРј РїСЂРѕРµРєС‚Р°
 void UIControllerStorage::BeforeCloseProject(int channel_index)
 {
  for(size_t i=0;i<GetControllers().size();i++)
@@ -418,20 +418,20 @@ void UIControllerStorage::BeforeCloseProject(int channel_index)
    }
    catch(RDK::UException &ex)
    {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(...)
    {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterLoadProject - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
   }
 }
 
-// Метод, вызываемый перед сбросом модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ СЃР±СЂРѕСЃРѕРј РјРѕРґРµР»Рё
 void UIControllerStorage::BeforeReset(int channel_index)
 {
  for(size_t i=0;i<GetControllers().size();i++)
@@ -443,20 +443,20 @@ void UIControllerStorage::BeforeReset(int channel_index)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeReset - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeReset - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeReset - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeReset - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeReset - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeReset - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
   }
 }
 
-// Метод, вызываемый после сброса модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ СЃР±СЂРѕСЃР° РјРѕРґРµР»Рё
 void UIControllerStorage::AfterReset(int channel_index)
 {
  for(size_t i=0;i<GetControllers().size();i++)
@@ -468,20 +468,20 @@ void UIControllerStorage::AfterReset(int channel_index)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterReset - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterReset - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterReset - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterReset - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterReset - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterReset - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
   }
 }
 
-// Метод, вызываемый перед шагом расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ С€Р°РіРѕРј СЂР°СЃС‡РµС‚Р°
 void UIControllerStorage::BeforeCalculate(int channel_index)
 {
  for(size_t i=0;i<GetControllers().size();i++)
@@ -494,21 +494,21 @@ void UIControllerStorage::BeforeCalculate(int channel_index)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeCalculate - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeCalculate - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeCalculate - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeCalculate - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeCalculate - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::BeforeCalculate - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
   }
  }
 }
 
-// Метод, вызываемый после шага расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ С€Р°РіР° СЂР°СЃС‡РµС‚Р°
 void UIControllerStorage::AfterCalculate(int channel_index)
 {
  for(size_t i=0;i<GetControllers().size();i++)
@@ -520,20 +520,20 @@ void UIControllerStorage::AfterCalculate(int channel_index)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterCalculate - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterCalculate - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterCalculate - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterCalculate - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterCalculate - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::AfterCalculate - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
   }
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void UIControllerStorage::SaveParameters(RDK::USerStorageXML &xml)
 {
  for(size_t i=0;i<GetControllers().size();i++)
@@ -545,20 +545,20 @@ void UIControllerStorage::SaveParameters(RDK::USerStorageXML &xml)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::SaveParameters - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::SaveParameters - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::SaveParameters - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::SaveParameters - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::SaveParameters - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::SaveParameters - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
   }
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void UIControllerStorage::LoadParameters(RDK::USerStorageXML &xml)
 {
  for(size_t i=0;i<GetControllers().size();i++)
@@ -570,15 +570,15 @@ void UIControllerStorage::LoadParameters(RDK::USerStorageXML &xml)
    }
    catch(RDK::UException &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::LoadParameters - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::LoadParameters - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::LoadParameters - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::LoadParameters - ")+ex.what()+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
    catch(...)
    {
-	MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::LoadParameters - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIControllerStorage::LoadParameters - unhandled exception")+std::string(" in ")+GetControllers()[i]->GetName()).c_str());
    }
   }
 }
@@ -594,69 +594,69 @@ UAppController::~UAppController(void)
  UIControllerStorage::DelController(this);
 }
 
-// Класс дефолтный прототип интерфейсов
-// Метод, вызываемый после загрузки проекта
+// РљР»Р°СЃСЃ РґРµС„РѕР»С‚РЅС‹Р№ РїСЂРѕС‚РѕС‚РёРї РёРЅС‚РµСЂС„РµР№СЃРѕРІ
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ Р·Р°РіСЂСѓР·РєРё РїСЂРѕРµРєС‚Р°
 void UAppController::AfterLoadProject(void)
 {
 
 }
 
 
-// Метод, вызываемый перед закрытием проекта
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ Р·Р°РєСЂС‹С‚РёРµРј РїСЂРѕРµРєС‚Р°
 void UAppController::BeforeCloseProject(void)
 {
 
 }
 
-// Метод, вызываемый перед сбросом модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ СЃР±СЂРѕСЃРѕРј РјРѕРґРµР»Рё
 void UAppController::BeforeReset(void)
 {
 
 }
 
-// Метод, вызываемый после сброса модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ СЃР±СЂРѕСЃР° РјРѕРґРµР»Рё
 void UAppController::AfterReset(void)
 {
 
 }
 
-// Метод, вызываемый перед шагом расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ С€Р°РіРѕРј СЂР°СЃС‡РµС‚Р°
 void UAppController::BeforeCalculate(void)
 {
 
 }
 
-// Метод, вызываемый после шага расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ С€Р°РіР° СЂР°СЃС‡РµС‚Р°
 void UAppController::AfterCalculate(void)
 {
 
 }
 
-// Возвращает уникальное имя интерфейса
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРЅРёРєР°Р»СЊРЅРѕРµ РёРјСЏ РёРЅС‚РµСЂС„РµР№СЃР°
 std::string UAppController::GetName(void)
 {
  return Name;
 }
 
-// Возвращает полное уникальное имя интерфейса
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїРѕР»РЅРѕРµ СѓРЅРёРєР°Р»СЊРЅРѕРµ РёРјСЏ РёРЅС‚РµСЂС„РµР№СЃР°
 std::string UAppController::CalcFullName(void)
 {
- return Name; // TODO: не вычислить полное имя
+ return Name; // TODO: РЅРµ РІС‹С‡РёСЃР»РёС‚СЊ РїРѕР»РЅРѕРµ РёРјСЏ
 }
 
-// Возвращает имя класса интерфейса
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєР»Р°СЃСЃР° РёРЅС‚РµСЂС„РµР№СЃР°
 std::string UAppController::GetClassName(void)
 {
  return typeid(*this).name();
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void UAppController::SaveParameters(RDK::USerStorageXML &xml)
 {
 
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void UAppController::LoadParameters(RDK::USerStorageXML &xml)
 {
 

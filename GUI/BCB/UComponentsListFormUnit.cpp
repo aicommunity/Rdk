@@ -19,7 +19,7 @@ __fastcall TUComponentsListForm::TUComponentsListForm(TComponent* Owner)
  Mode=0;
 }
 //---------------------------------------------------------------------------
-// Метод открытия диалога для выбора компонента
+// РњРµС‚РѕРґ РѕС‚РєСЂС‹С‚РёСЏ РґРёР°Р»РѕРіР° РґР»СЏ РІС‹Р±РѕСЂР° РєРѕРјРїРѕРЅРµРЅС‚Р°
 int TUComponentsListForm::ShowComponentSelect(void)
 {
  Panel1->Visible=true;
@@ -28,7 +28,7 @@ int TUComponentsListForm::ShowComponentSelect(void)
  return ShowModal();
 }
 
-// Метод открытия диалога для выбора параметра
+// РњРµС‚РѕРґ РѕС‚РєСЂС‹С‚РёСЏ РґРёР°Р»РѕРіР° РґР»СЏ РІС‹Р±РѕСЂР° РїР°СЂР°РјРµС‚СЂР°
 int TUComponentsListForm::ShowParameterSelect(void)
 {
  Panel1->Visible=true;
@@ -38,7 +38,7 @@ int TUComponentsListForm::ShowParameterSelect(void)
  return ShowModal();
 }
 
-// Метод открытия диалога для выбора переменной состояния
+// РњРµС‚РѕРґ РѕС‚РєСЂС‹С‚РёСЏ РґРёР°Р»РѕРіР° РґР»СЏ РІС‹Р±РѕСЂР° РїРµСЂРµРјРµРЅРЅРѕР№ СЃРѕСЃС‚РѕСЏРЅРёСЏ
 int TUComponentsListForm::ShowStateSelect(void)
 {
  Panel1->Visible=true;
@@ -48,7 +48,7 @@ int TUComponentsListForm::ShowStateSelect(void)
  return ShowModal();
 }
 
-// Метод открытия диалога для выбора входа или выхода
+// РњРµС‚РѕРґ РѕС‚РєСЂС‹С‚РёСЏ РґРёР°Р»РѕРіР° РґР»СЏ РІС‹Р±РѕСЂР° РІС…РѕРґР° РёР»Рё РІС‹С…РѕРґР°
 int TUComponentsListForm::ShowIOSelect(void)
 {
  Panel1->Visible=true;
@@ -58,7 +58,7 @@ int TUComponentsListForm::ShowIOSelect(void)
  return ShowModal();
 }
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 TUComponentsListForm* TUComponentsListForm::New(TComponent *owner)
 {
  return new TUComponentsListForm(owner);

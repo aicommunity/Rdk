@@ -83,6 +83,13 @@
         <number>0</number>
        </property>
        <item>
+        <widget class="QComboBox" name="comboBoxGroupingMethod">
+         <property name="toolTip">
+          <string>Select class grouping method</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QTreeWidget" name="treeWidgetStorageByLibs">
          <attribute name="headerVisible">
           <bool>false</bool>

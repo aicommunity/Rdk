@@ -12,7 +12,7 @@ __fastcall TVideoCaptureOptionsInterface::TVideoCaptureOptionsInterface(TCompone
 
 }
 
-/// Возвращает тип видеоисточника, соотвествующий этому фрейму
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РёРї РІРёРґРµРѕРёСЃС‚РѕС‡РЅРёРєР°, СЃРѕРѕС‚РІРµСЃС‚РІСѓСЋС‰РёР№ СЌС‚РѕРјСѓ С„СЂРµР№РјСѓ
 int TVideoCaptureOptionsInterface::GetVideoSourceType(void)
 {
  return VideoSourceType;

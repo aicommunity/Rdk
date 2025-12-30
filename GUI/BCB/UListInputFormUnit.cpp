@@ -31,8 +31,8 @@ __fastcall TUListInputForm::TUListInputForm(TComponent* Owner)
 }
 
 //---------------------------------------------------------------------------
-// Метод задаёт заголовок окна, список вариантов
-// и начальное значение поля ввода
+// РњРµС‚РѕРґ Р·Р°РґР°С‘С‚ Р·Р°РіРѕР»РѕРІРѕРє РѕРєРЅР°, СЃРїРёСЃРѕРє РІР°СЂРёР°РЅС‚РѕРІ
+// Рё РЅР°С‡Р°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ РїРѕР»СЏ РІРІРѕРґР°
 void __fastcall TUListInputForm::Init(string caption,vector<string> &listvals,string deftext)
 {
  Caption=caption.c_str();
@@ -56,7 +56,7 @@ void __fastcall TUListInputForm::Init(string caption,vector<string> &listvals,st
 }
 
 
-// Отображает сообщение об ошибке
+// РћС‚РѕР±СЂР°Р¶Р°РµС‚ СЃРѕРѕР±С‰РµРЅРёРµ РѕР± РѕС€РёР±РєРµ
 void __fastcall TUListInputForm::ShowError(string cap, string msg)
 {
  Panel1->Visible=false;
@@ -65,7 +65,7 @@ void __fastcall TUListInputForm::ShowError(string cap, string msg)
  Panel2->Caption=msg.c_str();
  Button1->Default=true;
 
- // Параметры окна по умолчанию
+ // РџР°СЂР°РјРµС‚СЂС‹ РѕРєРЅР° РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
  top=Top;
  left=Left;
  width=Width;
@@ -138,8 +138,8 @@ void __fastcall TUListInputForm::EditChange(TObject *Sender)
 {
  int i;
  AnsiString temp;
- //   При наборе строки происходит непрерывный поиск похожей строки
- // в списке 
+ //   РџСЂРё РЅР°Р±РѕСЂРµ СЃС‚СЂРѕРєРё РїСЂРѕРёСЃС…РѕРґРёС‚ РЅРµРїСЂРµСЂС‹РІРЅС‹Р№ РїРѕРёСЃРє РїРѕС…РѕР¶РµР№ СЃС‚СЂРѕРєРё
+ // РІ СЃРїРёСЃРєРµ 
 
  for(i=0;i<List->RowCount;i++)
   {
@@ -155,21 +155,21 @@ void __fastcall TUListInputForm::EditChange(TObject *Sender)
 void __fastcall TUListInputForm::EditKeyDown(TObject *Sender, WORD &Key,
       TShiftState Shift)
 {
- // Если нажата клавиша Enter
+ // Р•СЃР»Рё РЅР°Р¶Р°С‚Р° РєР»Р°РІРёС€Р° Enter
  if(Key == VK_INSERT)
   {
    List->SetFocus();
    Edit->Text=List->Cells[List->Col][List->Row];
    Edit->SetFocus();
   }
- // Если нажата стрелка вверх
+ // Р•СЃР»Рё РЅР°Р¶Р°С‚Р° СЃС‚СЂРµР»РєР° РІРІРµСЂС…
  if( Key == VK_UP )
   {
    if(List->Row > 0)
     List->Row--;
   }
- else // Иначе...
- // Если нажата стрелка вниз
+ else // РРЅР°С‡Рµ...
+ // Р•СЃР»Рё РЅР°Р¶Р°С‚Р° СЃС‚СЂРµР»РєР° РІРЅРёР·
  if( Key == VK_DOWN )
   {
    if(List->Row < List->RowCount)

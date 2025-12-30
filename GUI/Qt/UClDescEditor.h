@@ -10,8 +10,8 @@ namespace Ui {
 class UClDescEditor;
 }
 
-/// Класс для отображения и редактирования свойств классов, позволяющий выбрать класс в списке классов
-/// Состоит из UClassDescriptionDisplay и UClassesListWidget
+/// РљР»Р°СЃСЃ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ Рё СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ СЃРІРѕР№СЃС‚РІ РєР»Р°СЃСЃРѕРІ, РїРѕР·РІРѕР»СЏСЋС‰РёР№ РІС‹Р±СЂР°С‚СЊ РєР»Р°СЃСЃ РІ СЃРїРёСЃРєРµ РєР»Р°СЃСЃРѕРІ
+/// РЎРѕСЃС‚РѕРёС‚ РёР· UClassDescriptionDisplay Рё UClassesListWidget
 class UClDescEditor : public UVisualControllerWidget
 {
     Q_OBJECT

@@ -13,9 +13,9 @@ UExceptionWrapperStd::~UExceptionWrapperStd(void) throw()
 }
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string UExceptionWrapperStd::CreateLogMessage(void) const
 {
  return UException::CreateLogMessage()+LogMessage;
@@ -33,9 +33,9 @@ UExceptionWrapperSEH::~UExceptionWrapperSEH(void) throw()
 }
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string UExceptionWrapperSEH::CreateLogMessage(void) const
 {
  return UException::CreateLogMessage()+LogMessage;
@@ -54,9 +54,9 @@ UExceptionWrapperBcb::~UExceptionWrapperBcb(void) throw()
 
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string UExceptionWrapperBcb::CreateLogMessage(void) const
 {
  return UException::CreateLogMessage()+LogMessage;
@@ -75,9 +75,9 @@ UExceptionWrapperBoost::~UExceptionWrapperBoost(void) throw()
 
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string UExceptionWrapperBoost::CreateLogMessage(void) const
 {
  return UException::CreateLogMessage()+LogMessage;
@@ -95,9 +95,9 @@ UExceptionWrapperOpenCv::~UExceptionWrapperOpenCv(void) throw()
 }
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string UExceptionWrapperOpenCv::CreateLogMessage(void) const
 {
  return UException::CreateLogMessage()+LogMessage;

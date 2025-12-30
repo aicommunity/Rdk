@@ -19,15 +19,15 @@ __fastcall TVideoCaptureOptionsVideoFileForm::TVideoCaptureOptionsVideoFileForm(
 //---------------------------------------------------------------------------
 
 /// -------------------------------------
-/// Методы загрузки/сохранения параметров
+/// РњРµС‚РѕРґС‹ Р·Р°РіСЂСѓР·РєРё/СЃРѕС…СЂР°РЅРµРЅРёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ
 /// -------------------------------------
-/// Создает копию объекта этого класса
+/// РЎРѕР·РґР°РµС‚ РєРѕРїРёСЋ РѕР±СЉРµРєС‚Р° СЌС‚РѕРіРѕ РєР»Р°СЃСЃР°
 TVideoCaptureOptionsVideoFileForm* TVideoCaptureOptionsVideoFileForm::New(TComponent *owner)
 {
  return new TVideoCaptureOptionsVideoFileForm(owner);
 }
 
-/// Считывает параметры в поля интерфейса
+/// РЎС‡РёС‚С‹РІР°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РІ РїРѕР»СЏ РёРЅС‚РµСЂС„РµР№СЃР°
 bool TVideoCaptureOptionsVideoFileForm::ReadParametersToGui(RDK::USerStorageXML &xml)
 {
  VFNameEdit->Text=xml.ReadString("FileName", AnsiString(VFNameEdit->Text).c_str()).c_str();
@@ -42,7 +42,7 @@ bool TVideoCaptureOptionsVideoFileForm::ReadParametersToGui(RDK::USerStorageXML 
  return true;
 }
 
-/// Записывает параметры из полей интерфейса в xml
+/// Р—Р°РїРёСЃС‹РІР°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёР· РїРѕР»РµР№ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 bool TVideoCaptureOptionsVideoFileForm::WriteParametersToXml(RDK::USerStorageXML &xml)
 {
  xml.SelectNodeRoot("VideoSourceThread");

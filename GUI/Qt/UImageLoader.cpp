@@ -154,40 +154,40 @@ void UImageLoader::setComponentName(const QString &value)
     componentName = value;
 }
 
-QImage UImageLoader::fromUBitmap(RDK::UBitmap *tempBmp)
+QImage UImageLoader::fromUBitmap(RDK::UBitmap *srcBmp)
 {
-    switch(tempBmp->GetColorModel())
+    switch(srcBmp->GetColorModel())
     {
     case RDK::ubmRGB24:
         {
-            return QImage(tempBmp->GetData(), tempBmp->GetWidth(), tempBmp->GetHeight(),
-                          tempBmp->GetLineByteLength(), QImage::Format_RGB888).rgbSwapped();
+            return QImage(srcBmp->GetData(), srcBmp->GetWidth(), srcBmp->GetHeight(),
+                          srcBmp->GetLineByteLength(), QImage::Format_RGB888).rgbSwapped();
         }
 
     case RDK::ubmRGB32:
         {
-            return QImage(tempBmp->GetData(), tempBmp->GetWidth(), tempBmp->GetHeight(),
-                          tempBmp->GetLineByteLength(), QImage::Format_RGB32).rgbSwapped();
+            return QImage(srcBmp->GetData(), srcBmp->GetWidth(), srcBmp->GetHeight(),
+                          srcBmp->GetLineByteLength(), QImage::Format_RGB32).rgbSwapped();
         }
 
     case RDK::ubmRGB96:
         {
-            tempBmp->SetColorModel(RDK::ubmRGB24, true);
-            return QImage(tempBmp->GetData(), tempBmp->GetWidth(), tempBmp->GetHeight(),
-                          tempBmp->GetLineByteLength(), QImage::Format_RGB32).rgbSwapped();
+            srcBmp->SetColorModel(RDK::ubmRGB24, true);
+            return QImage(srcBmp->GetData(), srcBmp->GetWidth(), srcBmp->GetHeight(),
+                          srcBmp->GetLineByteLength(), QImage::Format_RGB32).rgbSwapped();
         }
 
     case RDK::ubmY8:
         {
-            return QImage(tempBmp->GetData(), tempBmp->GetWidth(), tempBmp->GetHeight(),
-                          tempBmp->GetLineByteLength(), QImage::Format_Indexed8).convertToFormat(QImage::Format_RGB888);
+            return QImage(srcBmp->GetData(), srcBmp->GetWidth(), srcBmp->GetHeight(),
+                          srcBmp->GetLineByteLength(), QImage::Format_Indexed8).convertToFormat(QImage::Format_RGB888);
         }
 
     case RDK::ubmY32:
         {
-            tempBmp->SetColorModel(RDK::ubmY8, true);
-            return QImage(tempBmp->GetData(), tempBmp->GetWidth(), tempBmp->GetHeight(),
-                          tempBmp->GetLineByteLength(), QImage::Format_Indexed8).convertToFormat(QImage::Format_RGB888);
+            srcBmp->SetColorModel(RDK::ubmY8, true);
+            return QImage(srcBmp->GetData(), srcBmp->GetWidth(), srcBmp->GetHeight(),
+                          srcBmp->GetLineByteLength(), QImage::Format_Indexed8).convertToFormat(QImage::Format_RGB888);
         }
     }
 

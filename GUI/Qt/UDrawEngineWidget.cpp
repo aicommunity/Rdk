@@ -36,11 +36,28 @@ UDrawEngineWidget::UDrawEngineWidget(QWidget *parent, RDK::UApplication *app) :
     ui->scrollArea->setWidgetResizable(true);
     modelScheme->setFixedSize(ui->scrollArea->width(),ui->scrollArea->height());
 
+    // Современная диаграмма
+    modernScheme = new UModernDiagramWidget(ui->modernContainer);
+    modernScheme->SetApplication(app);
+    modernScheme->SetComponentName("");
+    auto layoutModern = new QVBoxLayout(ui->modernContainer);
+    layoutModern->setContentsMargins(0,0,0,0);
+    layoutModern->addWidget(modernScheme);
+    
+    // Подключение сигналов от современной диаграммы
+    connect(modernScheme, SIGNAL(componentSelected(QString)), this, SIGNAL(componentSelectedFromScheme(QString)));
+    connect(modernScheme, SIGNAL(componentDoubleClicked(QString)), this, SIGNAL(componentDoubleClickFromScheme(QString)));
+    connect(modernScheme, SIGNAL(componentStapBack()), this, SIGNAL(componentStapBackFromScheme()));
+    connect(modernScheme, SIGNAL(updateComponentsList()), this, SIGNAL(updateComponentsListFromScheme()));
+    connect(modernScheme, SIGNAL(viewLinks(QString)), this, SIGNAL(viewLinksFromScheme(QString)));
+    connect(modernScheme, SIGNAL(createLinks(QString,QString)), this, SIGNAL(createLinksFromScheme(QString,QString)));
+    connect(modernScheme, SIGNAL(switchLinks(QString,QString)), this, SIGNAL(switchLinksFromScheme(QString,QString)));
+
     ui->splitter->setStretchFactor(0,1);
     ui->splitter->setStretchFactor(1,0);
 
     UpdateInterval = 0; // don't update by core ticks
-    setAccessibleName("UDrawEngineWidget"); // ��� ������ ��� ������������
+    setAccessibleName("UDrawEngineWidget"); // имя класса для сериализации
     ALoadParameters();
 
     UpdateInterface(true);
@@ -54,6 +71,7 @@ UDrawEngineWidget::~UDrawEngineWidget()
 void UDrawEngineWidget::AUpdateInterface()
 {
   modelScheme->reDrawScheme(true);
+  modernScheme->Reload();
 }
 
 void UDrawEngineWidget::ASaveParameters()
@@ -68,7 +86,12 @@ void UDrawEngineWidget::ASaveParameters()
   settings.setValue("labelModelScheme_w", QVariant(modelScheme->width()));
   settings.setValue("labelModelScheme_h", QVariant(modelScheme->height()));
   settings.endGroup();
-
+  
+  // Сохраняем состояние viewport для современной диаграммы
+  if(modernScheme)
+  {
+    modernScheme->SaveViewState();
+  }
 }
 
 void UDrawEngineWidget::ALoadParameters()
@@ -83,9 +106,15 @@ void UDrawEngineWidget::ALoadParameters()
 //  modelScheme->setFixedSize(settings.value("labelModelScheme_w").toInt(),
 //                               settings.value("labelModelScheme_h").toInt());
   settings.endGroup();
+  
+  // Загружаем состояние viewport для современной диаграммы
+  if(modernScheme)
+  {
+    modernScheme->LoadViewState();
+  }
 }
 
-//���������� ����� ��� �������
+//расширение схемы при ресайзе
 void UDrawEngineWidget::resizeEvent(QResizeEvent*)
 {
  if(modelScheme->width()<width() || modelScheme->height()<height())
@@ -97,17 +126,20 @@ void UDrawEngineWidget::resizeEvent(QResizeEvent*)
 void UDrawEngineWidget::componentDoubleClick(QString name)
 {
     modelScheme->setComponentName(name);
+    modernScheme->SetComponentName(name);
+    modernScheme->Reload();
 }
 
 void UDrawEngineWidget::componentSingleClick(QString name)
 {
     modelScheme->selectComponent(name);
-    //updateScheme(true);
+    modernScheme->componentSingleClick(name);
 }
 
 void UDrawEngineWidget::updateScheme(bool reloadXml)
 {
  modelScheme->reDrawScheme(reloadXml);
+ modernScheme->updateScheme(reloadXml);
 }
 
 void UDrawEngineWidget::updateClassesList()

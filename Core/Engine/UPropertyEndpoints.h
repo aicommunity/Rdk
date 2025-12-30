@@ -8,15 +8,15 @@
 
 namespace RDK {
 
-/// Специализация: свойства - map
+/// РЎРїРµС†РёР°Р»РёР·Р°С†РёСЏ: СЃРІРѕР№СЃС‚РІР° - map
 template<typename T, typename V, typename OwnerT, unsigned int type>
 class UProperty<std::map<T,V>,OwnerT,type, true>: public UPropertyLocal<std::map<T,V>,OwnerT,type>
 {
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
-//Конструктор инициализации.
+//РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё.
 UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<std::map<T,V>,OwnerT,type>::SetterRT setmethod=0)
  : UPropertyLocal<std::map<T,V>,OwnerT,type>(name, owner, setmethod)
 { }
@@ -26,7 +26,7 @@ UProperty(const UProperty<std::map<T,V>,OwnerT,type> &v) {}
 
 public:
 
-/// Оператор доступа по индексу
+/// РћРїРµСЂР°С‚РѕСЂ РґРѕСЃС‚СѓРїР° РїРѕ РёРЅРґРµРєСЃСѓ
 typename std::map<T,V>::reference operator [] (T index)
 {
  return this->v[index];
@@ -92,7 +92,7 @@ size_t size(void) const
  return this->v.size();
 }
 
-/// Оператор присваивания
+/// РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
 UProperty<std::map<T,V>,OwnerT,type>& operator = (const std::map<T,V> &value)
 {
  this->SetData(value);
@@ -111,16 +111,16 @@ const std::map<T,V>& operator () (void) const
 
 };
 
-/// Специализация: свойства - MDMatrix
+/// РЎРїРµС†РёР°Р»РёР·Р°С†РёСЏ: СЃРІРѕР№СЃС‚РІР° - MDMatrix
 template<typename V, typename OwnerT, unsigned int type>
 class UProperty<MDMatrix<V>,OwnerT,type, false>: public UPropertyLocal<MDMatrix<V>,OwnerT,type>
 
 {
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
-//Конструктор инициализации.
+//РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё.
 UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<MDMatrix<V>,OwnerT,type>::SetterRT setmethod=0)
  : UPropertyLocal<MDMatrix<V>,OwnerT,type>(name, owner, setmethod)
 { }
@@ -130,7 +130,7 @@ UProperty(const UProperty<MDMatrix<V>,OwnerT,type> &v) {}
 
 public:
 
-/// Оператор доступа по индексу
+/// РћРїРµСЂР°С‚РѕСЂ РґРѕСЃС‚СѓРїР° РїРѕ РёРЅРґРµРєСЃСѓ
 V& operator [] (size_t index)
 {
  return this->v[index];
@@ -151,7 +151,7 @@ const V& operator () (int row, int col) const
  return this->v(row,col);
 }
 
-/// Возвращает число элементов по всем размерностям
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ СЌР»РµРјРµРЅС‚РѕРІ РїРѕ РІСЃРµРј СЂР°Р·РјРµСЂРЅРѕСЃС‚СЏРј
 MMatrixSize GetMatrixSize(void) const
 {
  return this->v.GetMatrixSize();
@@ -212,7 +212,7 @@ void ToZero(void) const
  this->v.ToZero();
 }
 
-/// Оператор присваивания
+/// РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
 UProperty<MDMatrix<V>,OwnerT,type>& operator = (const MDMatrix<V> &value)
 {
  this->SetData(value);
@@ -286,15 +286,15 @@ const MDMatrix<V> operator - (const UProperty<MDMatrix<V>,OwnerT, type> &v1,cons
 }
 
 
-/// Специализация: свойства - MDVector
+/// РЎРїРµС†РёР°Р»РёР·Р°С†РёСЏ: СЃРІРѕР№СЃС‚РІР° - MDVector
 template<typename V, typename OwnerT, unsigned int type>
 class UProperty<MDVector<V>,OwnerT,type, false>: public UPropertyLocal<MDVector<V>,OwnerT,type>
 {
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
-//Конструктор инициализации.
+//РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё.
 UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<MDVector<V>,OwnerT,type>::SetterRT setmethod=0)
  : UPropertyLocal<MDVector<V>,OwnerT,type>(name, owner, setmethod)
 { }
@@ -304,7 +304,7 @@ UProperty(const UProperty<MDVector<V>,OwnerT,type> &v) {}
 
 public:
 
-/// Оператор доступа по индексу
+/// РћРїРµСЂР°С‚РѕСЂ РґРѕСЃС‚СѓРїР° РїРѕ РёРЅРґРµРєСЃСѓ
 V& operator [] (size_t index)
 {
  return this->v[index];
@@ -325,7 +325,7 @@ const V& operator () (int index) const
  return this->v(index);
 }
 
-/// Возвращает число элементов по всем размерностям
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ СЌР»РµРјРµРЅС‚РѕРІ РїРѕ РІСЃРµРј СЂР°Р·РјРµСЂРЅРѕСЃС‚СЏРј
 MMatrixSize GetMatrixSize(void) const
 {
  return this->v.GetMatrixSize();
@@ -391,7 +391,7 @@ void ToZero(void) const
  this->v.ToZero();
 }
 
-/// Оператор присваивания
+/// РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
 UProperty<MDVector<V>,OwnerT,type>& operator = (const MDVector<V> &value)
 {
  this->SetData(value);
@@ -448,15 +448,15 @@ const MDVector<V> operator + (const UProperty<MDVector<V>,OwnerT, type> &v1,cons
 
 
 
-/// Специализация: свойства - double
+/// РЎРїРµС†РёР°Р»РёР·Р°С†РёСЏ: СЃРІРѕР№СЃС‚РІР° - double
 template<typename OwnerT, unsigned int type>
 class UProperty<double, OwnerT,type, false>: public UPropertyLocal<double,OwnerT,type>
 {
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
-//Конструктор инициализации.
+//РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё.
 UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<double,OwnerT,type>::SetterRT setmethod=0)
  : UPropertyLocal<double,OwnerT,type>(name, owner, setmethod)
 { }
@@ -467,10 +467,10 @@ UProperty(const UProperty<double,OwnerT,type> &v) {}
 public:
 
 // -----------------------------
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 // -----------------------------
 public:
-// Оператор присваивания
+// РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
 UProperty<double,OwnerT, type>& operator = (const double &value)
 {
  this->SetData(value);
@@ -491,15 +491,15 @@ const double& operator () (void) const
 
 };
 
-/// Специализация: свойства - int
+/// РЎРїРµС†РёР°Р»РёР·Р°С†РёСЏ: СЃРІРѕР№СЃС‚РІР° - int
 template<typename OwnerT, unsigned int type>
 class UProperty<int,OwnerT,type, false>: public UPropertyLocal<int,OwnerT,type>
 {
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
-//Конструктор инициализации.
+//РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё.
 UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<int,OwnerT,type>::SetterRT setmethod=0)
  : UPropertyLocal<int,OwnerT,type>(name, owner, setmethod)
 { }
@@ -563,15 +563,15 @@ const int& operator () (void) const
 
 };
 
-/// Специализация: свойства - unsigned int
+/// РЎРїРµС†РёР°Р»РёР·Р°С†РёСЏ: СЃРІРѕР№СЃС‚РІР° - unsigned int
 template<typename OwnerT, unsigned int type>
 class UProperty<unsigned int,OwnerT,type, false>: public UPropertyLocal<unsigned int,OwnerT,type>
 {
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
-//Конструктор инициализации.
+//РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё.
 UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<unsigned int,OwnerT,type>::SetterRT setmethod=0)
  : UPropertyLocal<unsigned int,OwnerT,type>(name, owner, setmethod)
 { }
@@ -636,15 +636,15 @@ const unsigned int& operator () (void) const
 
 };
 
-/// Специализация: свойства - int
+/// РЎРїРµС†РёР°Р»РёР·Р°С†РёСЏ: СЃРІРѕР№СЃС‚РІР° - int
 template<typename OwnerT, unsigned int type>
 class UProperty<unsigned long int,OwnerT,type, false>: public UPropertyLocal<unsigned long int,OwnerT,type>
 {
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
-//Конструктор инициализации.
+//РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё.
 UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<unsigned long int,OwnerT,type>::SetterRT setmethod=0)
  : UPropertyLocal<unsigned long int,OwnerT,type>(name, owner, setmethod)
 { }
@@ -709,15 +709,15 @@ const unsigned long int& operator () (void) const
 };
 
 
-/// Специализация: свойства - unsigned long long
+/// РЎРїРµС†РёР°Р»РёР·Р°С†РёСЏ: СЃРІРѕР№СЃС‚РІР° - unsigned long long
 template<typename OwnerT, unsigned int type>
 class UProperty<unsigned long long,OwnerT,type, false>: public UPropertyLocal<unsigned long long,OwnerT,type>
 {
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
-//Конструктор инициализации.
+//РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё.
 UProperty(const string &name, OwnerT * const owner, typename UPropertyLocal<unsigned long long,OwnerT,type>::SetterRT setmethod=0)
  : UPropertyLocal<unsigned long long,OwnerT,type>(name, owner, setmethod)
 { }
@@ -734,7 +734,7 @@ operator unsigned long long (void) const
 unsigned long long& operator ++ (void)
 {
  if(this->SetterR)
-  SetData(this->v+1);
+  this->SetData(this->v+1);
  else
   ++this->v;
  return this->v;
@@ -744,7 +744,7 @@ unsigned long long operator ++ (int)
 {
  int temp=this->v;
  if(this->SetterR)
-  SetData(this->v+1);
+  this->SetData(this->v+1);
  else
   this->v++;
  return temp;
@@ -753,7 +753,7 @@ unsigned long long operator ++ (int)
 unsigned long long& operator -- (void)
 {
  if(this->SetterR)
-  SetData(this->v-1);
+  this->SetData(this->v-1);
  else
   --this->v;
  return this->v;
@@ -763,7 +763,7 @@ unsigned long long operator -- (int)
 {
  unsigned int temp=this->v;
  if(this->SetterR)
-  SetData(this->v-1);
+  this->SetData(this->v-1);
  else
   this->v--;
  return temp;

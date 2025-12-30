@@ -21,7 +21,7 @@ See file license.txt for more information
 namespace RDK {
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UConsoleEngine::UConsoleEngine(const string &versioninfo)
 {
@@ -38,9 +38,9 @@ UConsoleEngine::~UConsoleEngine(void)
 // --------------------------
 
 // --------------------------
-// Методы управления параметрами по имени
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂР°РјРё РїРѕ РёРјРµРЅРё
 // --------------------------
-// Возвращает параметер по имени name;
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїР°СЂР°РјРµС‚РµСЂ РїРѕ РёРјРµРЅРё name;
 string UConsoleEngine::GetParameter(string &name)
 {
  if(name == "QueryDateEnable")
@@ -61,7 +61,7 @@ string UConsoleEngine::GetParameter(string &name)
  throw "unknownparam";
 }
 
-// Устанавливает значение параметра по имени name
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР° РїРѕ РёРјРµРЅРё name
 void UConsoleEngine::SetParameter(string &name, string &value)
 {
  if(name == "QueryDateEnable")
@@ -82,7 +82,7 @@ void UConsoleEngine::SetParameter(string &name, string &value)
  throw "unknownparam";
 }
 
-// Возвращает список имен параметров
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє РёРјРµРЅ РїР°СЂР°РјРµС‚СЂРѕРІ
 void UConsoleEngine::GetParametersList(list<string> &parameterslist)
 {
  parameterslist.push_back("QueryDateEnable");
@@ -94,45 +94,45 @@ void UConsoleEngine::GetParametersList(list<string> &parameterslist)
 // --------------------------
 
 // --------------------------
-// Интерфейсные сообщения
+// РРЅС‚РµСЂС„РµР№СЃРЅС‹Рµ СЃРѕРѕР±С‰РµРЅРёСЏ
 // --------------------------
-// Возвращает строку приветствия
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ РїСЂРёРІРµС‚СЃС‚РІРёСЏ
 const string& UConsoleEngine::GetWelcomeMSG(void)
 {
  return MSGBuffer="Welcome to console engine";
 }
 
-// Возвращает информацию о версии консоли
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ РІРµСЂСЃРёРё РєРѕРЅСЃРѕР»Рё
 const string& UConsoleEngine::GetVersionMSG(void)
 {
  return MSGBuffer=VersionInfo;
 }
 
-// Возвращает строку выхода
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ РІС‹С…РѕРґР°
 const string& UConsoleEngine::GetExitMSG(void)
 {
  return MSGBuffer="...console closed.";
 }
 
-// Возвращает строку сообщения о восстановлении настроек по умолчанию
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ СЃРѕРѕР±С‰РµРЅРёСЏ Рѕ РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРё РЅР°СЃС‚СЂРѕРµРє РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 const string& UConsoleEngine::GetSetDefaultOptionsMSG(void)
 {
  return MSGBuffer="Default options restored";
 }
 
-// Возвращает строку сообщения о неизвестной команде
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ СЃРѕРѕР±С‰РµРЅРёСЏ Рѕ РЅРµРёР·РІРµСЃС‚РЅРѕР№ РєРѕРјР°РЅРґРµ
 const string& UConsoleEngine::GetUnknownCommandMSG(void)
 {
  return CalcErrorMessage(string("unknown command"));
 }
 
-// Возвращает строку сообщения о неизвестном параметре
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ СЃРѕРѕР±С‰РµРЅРёСЏ Рѕ РЅРµРёР·РІРµСЃС‚РЅРѕРј РїР°СЂР°РјРµС‚СЂРµ
 const string& UConsoleEngine::GetUnknownParameterMSG(void)
 {
  return CalcErrorMessage(string("unknown parameter"));
 }
 
-// Возвращает строку сообщения об отсутствия значения
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ СЃРѕРѕР±С‰РµРЅРёСЏ РѕР± РѕС‚СЃСѓС‚СЃС‚РІРёСЏ Р·РЅР°С‡РµРЅРёСЏ
 const string& UConsoleEngine::GetParameterValueLostMSG(void)
 {
  return CalcErrorMessage(string("parameter value lost"));
@@ -140,10 +140,10 @@ const string& UConsoleEngine::GetParameterValueLostMSG(void)
 // --------------------------
 
 // --------------------------
-// Методы выполнения команд
-// Все методы записывают в buffer результаты работы
+// РњРµС‚РѕРґС‹ РІС‹РїРѕР»РЅРµРЅРёСЏ РєРѕРјР°РЅРґ
+// Р’СЃРµ РјРµС‚РѕРґС‹ Р·Р°РїРёСЃС‹РІР°СЋС‚ РІ buffer СЂРµР·СѓР»СЊС‚Р°С‚С‹ СЂР°Р±РѕС‚С‹
 // --------------------------
-// Запуск работы консоли
+// Р—Р°РїСѓСЃРє СЂР°Р±РѕС‚С‹ РєРѕРЅСЃРѕР»Рё
 void UConsoleEngine::CRun(void)
 {
  if(RunningState)
@@ -154,26 +154,26 @@ void UConsoleEngine::CRun(void)
  RunningState=true;
 }
 
-// Возвращает строку приветствия консоли
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ РїСЂРёРІРµС‚СЃС‚РІРёСЏ РєРѕРЅСЃРѕР»Рё
 void UConsoleEngine::CWelcome(void)
 {
  ResultBuffer.push_back(GetWelcomeMSG());
 }
 
-// Возвращает информацию о версии консоли
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ РІРµСЂСЃРёРё РєРѕРЅСЃРѕР»Рё
 void UConsoleEngine::CVersion(void)
 {
  ResultBuffer.push_back(GetVersionMSG());
 }
 
-// Завершение работы консоли
+// Р—Р°РІРµСЂС€РµРЅРёРµ СЂР°Р±РѕС‚С‹ РєРѕРЅСЃРѕР»Рё
 void UConsoleEngine::CExit(void)
 {
  RunningState=false;
  ResultBuffer.push_back(GetExitMSG());
 }
 
-// Восстанавливает значения настроек по умолчанию
+// Р’РѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·РЅР°С‡РµРЅРёСЏ РЅР°СЃС‚СЂРѕРµРє РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 void UConsoleEngine::CSetDefaultOptions(void)
 {
  QueryDateEnable=false;
@@ -185,7 +185,7 @@ void UConsoleEngine::CSetDefaultOptions(void)
  ResultBuffer.push_back(GetSetDefaultOptionsMSG());
 }
 
-// Устанавливает или возвращает значение настройки
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РёР»Рё РІРѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёРµ РЅР°СЃС‚СЂРѕР№РєРё
 void UConsoleEngine::CSetOptions(list<string> &queryresult)
 {
  list<string>::iterator I=queryresult.begin();
@@ -228,7 +228,7 @@ void UConsoleEngine::CSetOptions(list<string> &queryresult)
   } 
 }
 
-// Реакция на неизвестную команду
+// Р РµР°РєС†РёСЏ РЅР° РЅРµРёР·РІРµСЃС‚РЅСѓСЋ РєРѕРјР°РЅРґСѓ
 void UConsoleEngine::CUnknownCommand(void)
 {
  ResultBuffer.push_back(GetUnknownCommandMSG());
@@ -236,9 +236,9 @@ void UConsoleEngine::CUnknownCommand(void)
 // --------------------------
 
 // --------------------------
-// Методы внутреннего управления
+// РњРµС‚РѕРґС‹ РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-// Метод осуществляет синтаксический разбор строки запроса
+// РњРµС‚РѕРґ РѕСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ СЃРёРЅС‚Р°РєСЃРёС‡РµСЃРєРёР№ СЂР°Р·Р±РѕСЂ СЃС‚СЂРѕРєРё Р·Р°РїСЂРѕСЃР°
 void UConsoleEngine::ParseQuery(string &query, string &command, list<string> &params)
 {
  int left, right;
@@ -287,8 +287,8 @@ void UConsoleEngine::ParseQuery(string &query, string &command, list<string> &pa
   params.pop_front();
 }
 
-// Метод анализирует запрос, вызывает необходимый
-// метод выполнения команд и возвращает результат
+// РњРµС‚РѕРґ Р°РЅР°Р»РёР·РёСЂСѓРµС‚ Р·Р°РїСЂРѕСЃ, РІС‹Р·С‹РІР°РµС‚ РЅРµРѕР±С…РѕРґРёРјС‹Р№
+// РјРµС‚РѕРґ РІС‹РїРѕР»РЅРµРЅРёСЏ РєРѕРјР°РЅРґ Рё РІРѕР·РІСЂР°С‰Р°РµС‚ СЂРµР·СѓР»СЊС‚Р°С‚
 void UConsoleEngine::Parser(const string &command, list<string> &params)
 {
  if(command == "run")
@@ -330,7 +330,7 @@ void UConsoleEngine::Parser(const string &command, list<string> &params)
  CUnknownCommand();
 }
 
-// Формирует и возвращает строку запроса
+// Р¤РѕСЂРјРёСЂСѓРµС‚ Рё РІРѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ Р·Р°РїСЂРѕСЃР°
 const string& UConsoleEngine::CalcQueryString(void)
 {
  time_t timer;
@@ -364,13 +364,13 @@ const string& UConsoleEngine::CalcQueryString(void)
  return QueryString;
 }
 
-// Форматирует и возвращает сообщение об ошибке error
+// Р¤РѕСЂРјР°С‚РёСЂСѓРµС‚ Рё РІРѕР·РІСЂР°С‰Р°РµС‚ СЃРѕРѕР±С‰РµРЅРёРµ РѕР± РѕС€РёР±РєРµ error
 const string& UConsoleEngine::CalcErrorMessage(string error)
 {
  return MSGBuffer=ErrorPrefix+error;
 }
 
-// Запрос на ввод команды
+// Р—Р°РїСЂРѕСЃ РЅР° РІРІРѕРґ РєРѕРјР°РЅРґС‹
 void UConsoleEngine::Query(list<string> &buffer)
 {
  *OutputStream<<CalcQueryString();
@@ -378,8 +378,8 @@ void UConsoleEngine::Query(list<string> &buffer)
  buffer.push_back(QueryString+QueryBuffer);
 }
 
-// Отображает результаты работы консоли из буфера buffer
-// После выполнения буфер buffer будет пуст
+// РћС‚РѕР±СЂР°Р¶Р°РµС‚ СЂРµР·СѓР»СЊС‚Р°С‚С‹ СЂР°Р±РѕС‚С‹ РєРѕРЅСЃРѕР»Рё РёР· Р±СѓС„РµСЂР° buffer
+// РџРѕСЃР»Рµ РІС‹РїРѕР»РЅРµРЅРёСЏ Р±СѓС„РµСЂ buffer Р±СѓРґРµС‚ РїСѓСЃС‚
 void UConsoleEngine::Show(list<string> &buffer, bool isquery)
 {
  list<string>::iterator I=buffer.begin();
@@ -393,7 +393,7 @@ void UConsoleEngine::Show(list<string> &buffer, bool isquery)
  ConsoleList.splice(ConsoleList.end(), buffer, buffer.begin(), buffer.end());
 }
 
-// Обработчик исключений
+// РћР±СЂР°Р±РѕС‚С‡РёРє РёСЃРєР»СЋС‡РµРЅРёР№
 void UConsoleEngine::ProcessingException(void)
 {
  throw;
@@ -401,9 +401,9 @@ void UConsoleEngine::ProcessingException(void)
 // --------------------------
 
 // --------------------------
-// Методы внешнего управления
+// РњРµС‚РѕРґС‹ РІРЅРµС€РЅРµРіРѕ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-// Метод, осуществляющий запуск консоли
+// РњРµС‚РѕРґ, РѕСЃСѓС‰РµСЃС‚РІР»СЏСЋС‰РёР№ Р·Р°РїСѓСЃРє РєРѕРЅСЃРѕР»Рё
 void UConsoleEngine::Run(void)
 {
  bool startenable=true;

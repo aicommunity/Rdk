@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QSettings>
 #include <QMdiSubWindow>
+#include <QKeyEvent>
 
 #include <rdk_application.h>
 
@@ -29,6 +30,7 @@
 //////////////////////////
 #include "UCurlFtpClientTestWidget.h"
 #include "UAboutDialog.h"
+#include "UHelpWindow.h"
 
 #ifndef RDK_DISABLE_EXT_GUI
 #include "UVideoAnalyticsSimpleSettingsWidget.h"
@@ -40,7 +42,7 @@ class UGEngineControllWidget;
 
 struct USubTabDescription
 {
-/// ��� �������
+/// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 QString Name;
 
 QMdiSubWindow *SubWindow;
@@ -69,9 +71,9 @@ USubTabDescriptionWatches(void)
 {};
 };
 
-/// UGEngineControllWidget class - ������� ���� ����������
+/// UGEngineControllWidget class - пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 ///
-/// �������� ��������� �� ��� ������ ���� � ��������� �� � ������� �������� � ������.
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.
 
 class UGEngineControlWidget : public UVisualControllerMainWidget
 {
@@ -81,11 +83,14 @@ public:
     explicit UGEngineControlWidget(QWidget *parent = 0, RDK::UApplication *app = NULL);
     virtual ~UGEngineControlWidget();
 
-    ///���������� ������ � ������������� �������
+    ///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void showChannelsWidget(void);
 
-    ///��������� ������ �� �������� ��������� (���� ������ �� ������������� �� ������ ����)
+    ///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ)
     void loadProjectExternal(const QString &config_path);
+    
+    /// Open help window (public method for use by child widgets)
+    void openHelpWindow();
 
 #ifndef RDK_DISABLE_EXT_GUI
     void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
@@ -97,6 +102,9 @@ public slots:
     // settings
     void readSettings();
     void writeSettings();
+    
+    // Theme switching
+    void switchToTheme(const QString& themeName);
 
     void showLinksForSingleComponent(QString componentName);
     void showLinksForTwoComponents(QString firstComponentName, QString secondComponentName);
@@ -155,21 +163,25 @@ private slots:
     void updateChannelsVisibility();
 
 
-    /// ������� ������ ����������� ��������
+    /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void delImagesWidged(size_t index);
     void delImagesWidgetSlot(QObject* obj);
 
-    /// ������� ������ ����������� ��������
+    /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void delWatchesWidgetSlot(QObject* obj);
     void delWatchesWidged(size_t index);
 
     void on_actionAbout_triggered();
+    void on_actionUserGuide_triggered();
 
     void on_actionWatches_triggered();
 
     void on_actionImages_triggered();
 
 private:
+    // Helper methods
+    void createThemeMenu();
+    
     // data
     Ui::UGEngineControllWidget *ui;
 
@@ -196,94 +208,97 @@ private:
     QMainWindow *tcpServerControlWindow;
     UTcpServerControlWidget *tcpServerControlWidget;
     UAboutDialog *aboutDialog;
+    UHelpWindow *helpWindow;
 #ifndef RDK_DISABLE_EXT_GUI
     UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
 #endif
     UCurlFtpClientTestWidget *curlFtpClientTestWidget;
 
-    /// ������ �������� ����������� ��������
+    /// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     std::vector<UImagesWidget*> imagesVector;
 
-    /// ������ �������� ����������� ��������
+    /// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     std::vector<UWatchTab*> watchesVector;
 
 
-    /// �������� ������ ����������
+    /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     RDK::UApplication *application;
 
     // methods
 
-    ///if chanelIndex == -1 ��������� ��� ������ �������
+    ///if chanelIndex == -1 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void startChannel(int chanelIndex);
 
-    ///if chanelIndex == -1 ������������� ��� ������ �������
+    ///if chanelIndex == -1 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void pauseChannel(int chanelIndex);
 
-    ///if chanelIndex == -1 ���������� ��� ������ �������
+    ///if chanelIndex == -1 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void resetChannel(int chanelIndex);
 
-    ///if chanelIndex == -1 ������ ��� �� ��� ������ �������
+    ///if chanelIndex == -1 пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void calcOneStepChannel(int chanelIndex);
 
-    ///������� � �������� ���������� ���� ��� ���������� UVisualControllerWidget
+    ///пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ UVisualControllerWidget
     void execDialogUVisualControllWidget(UVisualControllerWidget* widget);
 
-    /// ��������� ����� ������ ����������� ��������
+    /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void addImagesWidged();
 
-    /// ��������� ����� ������ ����������� ��������
+    /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void addWatchesWidged();
 
-    /// ��������� ����� ������, ������ �������
-    /// � ����� � ���� Choose Storage Build Mode [N]
-    /// ����� ����� ����� ������ ������ (����������)
+    /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    /// пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ Choose Storage Build Mode [N]
+    /// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
     void updateShemeClassesList();
 
-    // ���������� ����������
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     virtual void AUpdateInterface(void);
 
-    // ������� ���������� � �������� ���������
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     virtual void AClearInterface(void);
 
-    // �����, ���������� ����� �������� �������
+    // пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     virtual void AAfterLoadProject(void);
 
-    // �����, ���������� ����� ��������� �������
+    // пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     virtual void ABeforeCloseProject(void);
 
-    // �����, ���������� ����� ������� ������
+    // пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     virtual void ABeforeReset(void);
 
-    // �����, ���������� ����� ������ ������
+    // пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     virtual void AAfterReset(void);
 
-    // �����, ���������� ����� ����� �������
+    // пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     virtual void ABeforeCalculate(void);
 
-    // �����, ���������� ����� ���� �������
+    // пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     virtual void AAfterCalculate(void);
 
-    // ��������� ��������� ���������� � xml
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ xml
     virtual void ASaveParameters(RDK::USerStorageXML &xml);
 
-    // ��������� ��������� ���������� �� xml
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ xml
     virtual void ALoadParameters(RDK::USerStorageXML &xml);
 
-
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
 
 };
 
-/// �� ������������� QMdiSubwindow ��� ����������� ����� ������
+/// пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ QMdiSubwindow пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 class SubWindowCloseIgnore: public QMdiSubWindow
 {
 public:
-    explicit SubWindowCloseIgnore(QWidget *parent = 0, Qt::WindowFlags flags = 0):QMdiSubWindow(parent, flags){}
+    explicit SubWindowCloseIgnore(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags()):QMdiSubWindow(parent, flags){}
 protected:
-    void closeEvent(QCloseEvent *event){event->ignore();}
+    void closeEvent(QCloseEvent *event) override {event->ignore();}
+    void keyPressEvent(QKeyEvent *event) override;
 };
 
 /*
-/// �� ������������� QMdiSubwindow ��� ����������� ����� ������
+/// пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ QMdiSubwindow пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 class SubWindowCloseExt: public QMdiSubWindow
 {
 public:

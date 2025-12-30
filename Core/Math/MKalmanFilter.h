@@ -22,9 +22,9 @@ class MKalmanFilter
 public:
 typedef MMatrix<T,Size,Size> KMatrix;
 typedef MMatrix<T,Size,1> KVector;
-protected: // Параметры
+protected: // РџР°СЂР°РјРµС‚СЂС‹
 
-public: // Данные
+public: // Р”Р°РЅРЅС‹Рµ
 KMatrix FM;
 KMatrix BM;
 KMatrix QM;
@@ -37,18 +37,18 @@ MMatrix<T,Size,1> Uk1;
 MMatrix<T,Size,1> Z;
 
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 MKalmanFilter(void) : FM(0.0),BM(0.0),QM(0.0),HM(0.0),RM(0.0),Pk1(0.0),Xk1(0.0),Uk1(0.0),Z(0.0) {};
 virtual ~MKalmanFilter(void) {};
 // --------------------------
 
 // --------------------------
-// Методы счета
+// РњРµС‚РѕРґС‹ СЃС‡РµС‚Р°
 // --------------------------
-// Предсказание
+// РџСЂРµРґСЃРєР°Р·Р°РЅРёРµ
 MMatrix<T,Size,1> StatePrediction(const KMatrix &F, const KMatrix &B,
 					 const MMatrix<T,Size,1> &xk1, const MMatrix<T,Size,1> &uk1)
 {
@@ -61,7 +61,7 @@ KMatrix CovariationError(const KMatrix &F, const KMatrix &Pk1,
  return F*Pk1*F.Transpose()+Q; // PkL
 }
 
-// Корректировка
+// РљРѕСЂСЂРµРєС‚РёСЂРѕРІРєР°
 KMatrix KalmanGain(const KMatrix &PkL, const KMatrix &H,
 					 const KMatrix &R)
 {
@@ -80,7 +80,7 @@ KMatrix CovariationErrorUpdate(const KMatrix &Kk, const KMatrix &H,
  return (KMatrix::Eye()-Kk*H)*PkL; // Pk
 }
 
-// Калман
+// РљР°Р»РјР°РЅ
 void KalmanCalculate(int i)
 {
  MMatrix<T,Size,1> xkL=StatePrediction(FM,BM,Xk1,Uk1);

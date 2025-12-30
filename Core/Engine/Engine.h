@@ -34,7 +34,7 @@ See file license.txt for more information
 #include "UComponentDescription.h"
 #include "UContainerDescription.h"
 #include "UEnvException.h"
-#include "ULogger.h"
+#include "UExceptionLogger.h"
 #include "UPropertyEndpoints.h"
 
 //#include "Libraries/UELibraries.h"

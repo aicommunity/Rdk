@@ -13,7 +13,7 @@
 TUHttpServerFrame *UHttpServerFrame;
 
 
-// Формирует из xml описания и временной метки пакет метаданных
+// Р¤РѕСЂРјРёСЂСѓРµС‚ РёР· xml РѕРїРёСЃР°РЅРёСЏ Рё РІСЂРµРјРµРЅРЅРѕР№ РјРµС‚РєРё РїР°РєРµС‚ РјРµС‚Р°РґР°РЅРЅС‹С…
 void EncodeMetaPackage(const std::string &xml_description, long long time_stamp, int channel_index, std::string &metadata)
 {
  metadata="<Meta>\r\n";
@@ -29,7 +29,7 @@ void EncodeMetaPackage(const std::string &xml_description, long long time_stamp,
  metadata+="</Meta>";
 }
 
-// Формирует из пакета метаданных xml описание и временную метку
+// Р¤РѕСЂРјРёСЂСѓРµС‚ РёР· РїР°РєРµС‚Р° РјРµС‚Р°РґР°РЅРЅС‹С… xml РѕРїРёСЃР°РЅРёРµ Рё РІСЂРµРјРµРЅРЅСѓСЋ РјРµС‚РєСѓ
 void DecodeMetaPackage(const std::string &metadata, std::string &xml_description, long long &time_stamp, int &channel_index)
 {
  RDK::USerStorageXML xml;
@@ -57,16 +57,16 @@ __fastcall TUHttpServerFrame::~TUHttpServerFrame(void)
 }
 //---------------------------------------------------------------------------
 // --------------------------
-// Методы управления сервером
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃРµСЂРІРµСЂРѕРј
 // --------------------------
-/// Возвращает порт
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїРѕСЂС‚
 int TUHttpServerFrame::GetListenPort(void) const
 {
  return IdHTTPServer->Bindings->Items[0]->Port;
 }
 
-/// Устанавливает новый порт
-/// Возвращает 0 в случае успеха
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅРѕРІС‹Р№ РїРѕСЂС‚
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ 0 РІ СЃР»СѓС‡Р°Рµ СѓСЃРїРµС…Р°
 int TUHttpServerFrame::SetListenPort(int port)
 {
  ServerListenOff();
@@ -100,14 +100,14 @@ void TUHttpServerFrame::UnInit(void)
 }
 
 
-/// Включает сервер
+/// Р’РєР»СЋС‡Р°РµС‚ СЃРµСЂРІРµСЂ
 int TUHttpServerFrame::ServerListenOn(void)
 {
  IdHTTPServer->Active=true;
  return 0;
 }
 
-/// Выключает сервер
+/// Р’С‹РєР»СЋС‡Р°РµС‚ СЃРµСЂРІРµСЂ
 int TUHttpServerFrame::ServerListenOff(void)
 {
  IdHTTPServer->Active=false;
@@ -289,7 +289,7 @@ void __fastcall TUHttpServerFrame::IdHTTPServerCommandGet(TIdContext *AContext, 
  {
   ParsingSimpleRequest(AContext, ARequestInfo, AResponseInfo, ParsedRequestArgs);
  }
- else // Загрузка файла
+ else // Р—Р°РіСЂСѓР·РєР° С„Р°Р№Р»Р°
  {
   ParsingMultiRequest(AContext, ARequestInfo,  AResponseInfo, ParsedRequestArgs);
  }

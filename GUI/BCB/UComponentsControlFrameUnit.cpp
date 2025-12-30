@@ -25,14 +25,14 @@ void TUComponentsControlFrame::AUpdateInterface(void)
  ComponentsListFrame->UpdateInterface();
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TUComponentsControlFrame::AClearInterface(void)
 {
 
 }
 
-// Сохраняет выбранную модель
-// Если filename == "", то открывает окно запроса диалога
+// РЎРѕС…СЂР°РЅСЏРµС‚ РІС‹Р±СЂР°РЅРЅСѓСЋ РјРѕРґРµР»СЊ
+// Р•СЃР»Рё filename == "", С‚Рѕ РѕС‚РєСЂС‹РІР°РµС‚ РѕРєРЅРѕ Р·Р°РїСЂРѕСЃР° РґРёР°Р»РѕРіР°
 void TUComponentsControlFrame::SaveModelToFile(const String &filename)
 {
  if(!Core_IsChannelInit())
@@ -62,13 +62,13 @@ void TUComponentsControlFrame::SaveModelToFile(const String &filename)
  }
  catch(Exception &exception)
  {
-  MLog_LogMessage(Core_GetSelectedChannelIndex(), RDK_EX_ERROR, (std::string("Save model Fail: ")+AnsiString(exception.Message).c_str()).c_str());
+  RDK::Logging::ChannelLog(Core_GetSelectedChannelIndex(), RDK_EX_ERROR, (std::string("Save model Fail: ")+AnsiString(exception.Message).c_str()).c_str());
  }
 
 }
 
-// Загружает выбранную модель
-// Если filename == "", то открывает окно запроса диалога
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РІС‹Р±СЂР°РЅРЅСѓСЋ РјРѕРґРµР»СЊ
+// Р•СЃР»Рё filename == "", С‚Рѕ РѕС‚РєСЂС‹РІР°РµС‚ РѕРєРЅРѕ Р·Р°РїСЂРѕСЃР° РґРёР°Р»РѕРіР°
 void TUComponentsControlFrame::LoadModelFromFile(const String &filename)
 {
  if(!Core_IsChannelInit())
@@ -101,12 +101,12 @@ void TUComponentsControlFrame::LoadModelFromFile(const String &filename)
  }
  catch(Exception &exception)
  {
-  MLog_LogMessage(Core_GetSelectedChannelIndex(), RDK_EX_ERROR, (std::string("Load model Fail: ")+AnsiString(exception.Message).c_str()).c_str());
+  RDK::Logging::ChannelLog(Core_GetSelectedChannelIndex(), RDK_EX_ERROR, (std::string("Load model Fail: ")+AnsiString(exception.Message).c_str()).c_str());
  }
 }
 
-// Сохраняет параметры выбранной модели
-// Если filename == "", то открывает окно запроса диалога
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РІС‹Р±СЂР°РЅРЅРѕР№ РјРѕРґРµР»Рё
+// Р•СЃР»Рё filename == "", С‚Рѕ РѕС‚РєСЂС‹РІР°РµС‚ РѕРєРЅРѕ Р·Р°РїСЂРѕСЃР° РґРёР°Р»РѕРіР°
 void TUComponentsControlFrame::SaveParametersToFile(const String &filename)
 {
  if(!Core_IsChannelInit())
@@ -134,8 +134,8 @@ void TUComponentsControlFrame::SaveParametersToFile(const String &filename)
  delete RichEdit;
 }
 
-// Загружает параметры выбранной модели
-// Если filename == "", то открывает окно запроса диалога
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РІС‹Р±СЂР°РЅРЅРѕР№ РјРѕРґРµР»Рё
+// Р•СЃР»Рё filename == "", С‚Рѕ РѕС‚РєСЂС‹РІР°РµС‚ РѕРєРЅРѕ Р·Р°РїСЂРѕСЃР° РґРёР°Р»РѕРіР°
 void TUComponentsControlFrame::LoadParametersFromFile(const String &filename)
 {
  if(!Core_IsChannelInit())
@@ -164,8 +164,8 @@ void TUComponentsControlFrame::LoadParametersFromFile(const String &filename)
  ComponentsListFrame->UpdateInterface();
 }
 
-// Сохраняет состояние выбранной модели
-// Если filename == "", то открывает окно запроса диалога
+// РЎРѕС…СЂР°РЅСЏРµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ РІС‹Р±СЂР°РЅРЅРѕР№ РјРѕРґРµР»Рё
+// Р•СЃР»Рё filename == "", С‚Рѕ РѕС‚РєСЂС‹РІР°РµС‚ РѕРєРЅРѕ Р·Р°РїСЂРѕСЃР° РґРёР°Р»РѕРіР°
 void TUComponentsControlFrame::SaveStatesToFile(const String &filename)
 {
  if(!Core_IsChannelInit())
@@ -194,8 +194,8 @@ void TUComponentsControlFrame::SaveStatesToFile(const String &filename)
  delete RichEdit;
 }
 
-// Загружает состояние выбранной модели
-// Если filename == "", то открывает окно запроса диалога
+// Р—Р°РіСЂСѓР¶Р°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ РІС‹Р±СЂР°РЅРЅРѕР№ РјРѕРґРµР»Рё
+// Р•СЃР»Рё filename == "", С‚Рѕ РѕС‚РєСЂС‹РІР°РµС‚ РѕРєРЅРѕ Р·Р°РїСЂРѕСЃР° РґРёР°Р»РѕРіР°
 void TUComponentsControlFrame::LoadStatesFromFile(const String &filename)
 {
  if(!Core_IsChannelInit())
@@ -225,7 +225,7 @@ void TUComponentsControlFrame::LoadStatesFromFile(const String &filename)
 }
 
 
-/// Загружает общее описание классов
+/// Р—Р°РіСЂСѓР¶Р°РµС‚ РѕР±С‰РµРµ РѕРїРёСЃР°РЅРёРµ РєР»Р°СЃСЃРѕРІ
 void TUComponentsControlFrame::LoadCommonClassesDescriptionFromFile(const String &filename)
 {
  if(!Core_IsChannelInit())
@@ -254,7 +254,7 @@ void TUComponentsControlFrame::LoadCommonClassesDescriptionFromFile(const String
  ComponentsListFrame->UpdateInterface();
 }
 
-/// Загружает детальное описание классов
+/// Р—Р°РіСЂСѓР¶Р°РµС‚ РґРµС‚Р°Р»СЊРЅРѕРµ РѕРїРёСЃР°РЅРёРµ РєР»Р°СЃСЃРѕРІ
 void TUComponentsControlFrame::LoadClassesDescriptionFromFile(const String &filename)
 {
  if(!Core_IsChannelInit())

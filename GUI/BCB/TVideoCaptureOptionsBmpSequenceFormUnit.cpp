@@ -20,15 +20,15 @@ __fastcall TVideoCaptureOptionsBmpSequenceForm::TVideoCaptureOptionsBmpSequenceF
 //---------------------------------------------------------------------------
 
 /// -------------------------------------
-/// Методы загрузки/сохранения параметров
+/// РњРµС‚РѕРґС‹ Р·Р°РіСЂСѓР·РєРё/СЃРѕС…СЂР°РЅРµРЅРёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ
 /// -------------------------------------
-/// Создает копию объекта этого класса
+/// РЎРѕР·РґР°РµС‚ РєРѕРїРёСЋ РѕР±СЉРµРєС‚Р° СЌС‚РѕРіРѕ РєР»Р°СЃСЃР°
 TVideoCaptureOptionsBmpSequenceForm* TVideoCaptureOptionsBmpSequenceForm::New(TComponent *owner)
 {
  return new TVideoCaptureOptionsBmpSequenceForm(owner);
 }
 
-/// Считывает параметры в поля интерфейса
+/// РЎС‡РёС‚С‹РІР°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РІ РїРѕР»СЏ РёРЅС‚РµСЂС„РµР№СЃР°
 bool TVideoCaptureOptionsBmpSequenceForm::ReadParametersToGui(RDK::USerStorageXML &xml)
 {
  ImageSequencePathEdit->Text=xml.ReadString("PathName",AnsiString(ImageSequencePathEdit->Text).c_str()).c_str();
@@ -44,7 +44,7 @@ bool TVideoCaptureOptionsBmpSequenceForm::ReadParametersToGui(RDK::USerStorageXM
  return true;
 }
 
-/// Записывает параметры из полей интерфейса в xml
+/// Р—Р°РїРёСЃС‹РІР°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёР· РїРѕР»РµР№ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 bool TVideoCaptureOptionsBmpSequenceForm::WriteParametersToXml(RDK::USerStorageXML &xml)
 {
  xml.SelectNodeRoot("VideoSourceThread");

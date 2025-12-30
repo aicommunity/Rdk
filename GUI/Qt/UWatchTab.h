@@ -23,7 +23,7 @@ class UWatchTab;
 
 class UWatchChart;
 //////////////////////////////////////////////////////////////////////////////
-// Класс, реализующий одну вкладку с одним или несколькими графиками
+// РљР»Р°СЃСЃ, СЂРµР°Р»РёР·СѓСЋС‰РёР№ РѕРґРЅСѓ РІРєР»Р°РґРєСѓ СЃ РѕРґРЅРёРј РёР»Рё РЅРµСЃРєРѕР»СЊРєРёРјРё РіСЂР°С„РёРєР°РјРё
 //////////////////////////////////////////////////////////////////////////////
 
 class UWatchTab : public UVisualControllerWidget
@@ -34,34 +34,34 @@ public:
     explicit UWatchTab(QWidget *parent = nullptr, RDK::UApplication* app = NULL);
     ~UWatchTab();
 
-    ///создание расположений графиков
+    ///СЃРѕР·РґР°РЅРёРµ СЂР°СЃРїРѕР»РѕР¶РµРЅРёР№ РіСЂР°С„РёРєРѕРІ
     void createGridLayout(int rowNumber, int colNumber);
 
 
     UWatchChart *getChart(int index);
     int countGraphs();
 
-    ///вызывется окно для выбора источника данных
+    ///РІС‹Р·С‹РІРµС‚СЃСЏ РѕРєРЅРѕ РґР»СЏ РІС‹Р±РѕСЂР° РёСЃС‚РѕС‡РЅРёРєР° РґР°РЅРЅС‹С…
     void createSelectionDialog(int chartIndex);
 
-    ///частота обновления графика, мс
+    ///С‡Р°СЃС‚РѕС‚Р° РѕР±РЅРѕРІР»РµРЅРёСЏ РіСЂР°С„РёРєР°, РјСЃ
     int UpdateIntervalMs = 200;
     void saveUpdateInterval(int newInterval);
 
-    //узнать количество строк и столбцов
+    //СѓР·РЅР°С‚СЊ РєРѕР»РёС‡РµСЃС‚РІРѕ СЃС‚СЂРѕРє Рё СЃС‚РѕР»Р±С†РѕРІ
     int getColNumber();
     int getRowNumber();
 
-    // Сохраняет параметры интерфейса в xml
+    // РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
     virtual void ASaveParameters(RDK::USerStorageXML &xml);
 
-    // Загружает параметры интерфейса из xml
+    // Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
     virtual void ALoadParameters(RDK::USerStorageXML &xml);
 
 
 
 private:
-    // Создание/удаление графиков
+    // РЎРѕР·РґР°РЅРёРµ/СѓРґР°Р»РµРЅРёРµ РіСЂР°С„РёРєРѕРІ
     void createGraph();
     void deleteGraph(int index);
     void deleteGraphs(int new_graph_count);
@@ -71,7 +71,7 @@ private:
     int tabColNumber=0;
     int tabRowNumber=0;
 
-    ///вектор графиков на одной вкладке
+    ///РІРµРєС‚РѕСЂ РіСЂР°С„РёРєРѕРІ РЅР° РѕРґРЅРѕР№ РІРєР»Р°РґРєРµ
     QVector <UWatchChart*> graph;
     std::list<double> XData;
     std::list<double> YData;
@@ -89,15 +89,15 @@ private:
     UWatchChartOption *chartOption;
     UWatchSeriesOption *seriesOption;
 
-    ///Обновляет графики
-    ///Для каждого графика - обращаемся к ядру, берем матрицу по заданному источнику данных
-    ///Ее данные положим на этот график
+    ///РћР±РЅРѕРІР»СЏРµС‚ РіСЂР°С„РёРєРё
+    ///Р”Р»СЏ РєР°Р¶РґРѕРіРѕ РіСЂР°С„РёРєР° - РѕР±СЂР°С‰Р°РµРјСЃСЏ Рє СЏРґСЂСѓ, Р±РµСЂРµРј РјР°С‚СЂРёС†Сѓ РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ РёСЃС‚РѕС‡РЅРёРєСѓ РґР°РЅРЅС‹С…
+    ///Р•Рµ РґР°РЅРЅС‹Рµ РїРѕР»РѕР¶РёРј РЅР° СЌС‚РѕС‚ РіСЂР°С„РёРє
     virtual void AUpdateInterface();
 
-    ///Очищает интерфейс
+    ///РћС‡РёС‰Р°РµС‚ РёРЅС‚РµСЂС„РµР№СЃ
     virtual void AClearInterface();
 
-    /// Безопасно считывает данные серии из ядра
+    /// Р‘РµР·РѕРїР°СЃРЅРѕ СЃС‡РёС‚С‹РІР°РµС‚ РґР°РЅРЅС‹Рµ СЃРµСЂРёРё РёР· СЏРґСЂР°
     virtual void ReadSeriesDataSafe(int graphIndex, int serieIndex, std::list<double> &xdata, std::list<double> &ydata);
 
 public slots:

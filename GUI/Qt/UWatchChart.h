@@ -29,7 +29,7 @@ using namespace QtCharts;
 
 class UWatchTab;
 //////////////////////////////////////////////////////////////////////////////
-// Один отдельно взятый график с одной или несколькими сериями данных
+// РћРґРёРЅ РѕС‚РґРµР»СЊРЅРѕ РІР·СЏС‚С‹Р№ РіСЂР°С„РёРє СЃ РѕРґРЅРѕР№ РёР»Рё РЅРµСЃРєРѕР»СЊРєРёРјРё СЃРµСЂРёСЏРјРё РґР°РЅРЅС‹С…
 //////////////////////////////////////////////////////////////////////////////
 
 class UWatchChart : public QWidget
@@ -41,7 +41,7 @@ public:
     ~UWatchChart();
 
 
-    //get'ы
+    //get'С‹
     QString getChartTitle();
 
     QString getAxisXName();
@@ -62,7 +62,7 @@ public:
 
 
 
-    //set'ы
+    //set'С‹
     void setChartTitle(QString title);
     void setChartIndex(int index);
 
@@ -76,7 +76,7 @@ public:
     void setAxisXrange(double value);
     bool getIsAxisXtrackable(void) const;
 
-    // Функция для высталвения диапазона времени для считывания и отображения данных
+    // Р¤СѓРЅРєС†РёСЏ РґР»СЏ РІС‹СЃС‚Р°Р»РІРµРЅРёСЏ РґРёР°РїР°Р·РѕРЅР° РІСЂРµРјРµРЅРё РґР»СЏ СЃС‡РёС‚С‹РІР°РЅРёСЏ Рё РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РґР°РЅРЅС‹С…
     void updateTimeIntervals(double value);
 
     void setSerieName(int serieIndex, QString name);
@@ -90,28 +90,31 @@ public:
     void restoreInitialAxesState();
     bool checkZoomed(void);
 
-    //действия с сериями
+    // РњРµС‚РѕРґС‹ РґР»СЏ Р±Р°С‚С‡РёРЅРіР° РѕР±РЅРѕРІР»РµРЅРёР№
+    void requestUpdate();
+    void commitUpdate();
+
+    //РґРµР№СЃС‚РІРёСЏ СЃ СЃРµСЂРёСЏРјРё
     void createSerie(int channelIndex, const QString componentName, const QString propertyName,
                      const QString type, int jx, int jy, double time_interval, double y_shift);
     void deleteSerie(int serieIndex);
     void addDataToSerie(int serieIndex, double x, double y);
     int  countSeries();
 
-    //работа с динамикой осей
+    //СЂР°Р±РѕС‚Р° СЃ РґРёРЅР°РјРёРєРѕР№ РѕСЃРµР№
     int axisXrange;
-    bool isAxisXtrackable = true;   //будет ли "поле зрения" бежать за временем
-    bool isAxisYzoomable = true;    //зум по оси У (ctrl+крокрутка)
-    bool isAxisYscrollable = true;  //скролл оси У
+    bool isAxisXtrackable = true;   //Р±СѓРґРµС‚ Р»Рё "РїРѕР»Рµ Р·СЂРµРЅРёСЏ" Р±РµР¶Р°С‚СЊ Р·Р° РІСЂРµРјРµРЅРµРј
+    bool isAxisYzoomable = true;    //Р·СѓРј РїРѕ РѕСЃРё РЈ (ctrl+РєСЂРѕРєСЂСѓС‚РєР°)
+    bool isAxisYscrollable = true;  //СЃРєСЂРѕР»Р» РѕСЃРё РЈ
 
-    //доступные цвета для серий
-    const QColor defaultColors[15]={Qt::red, Qt::darkRed, Qt::yellow, Qt::darkYellow, Qt::green, Qt::darkGreen, Qt::cyan, Qt::darkCyan,
-                                   Qt::blue, Qt::darkBlue, Qt::magenta,Qt::darkMagenta, Qt::gray, Qt::darkGray, Qt::black};
+    //РґРѕСЃС‚СѓРїРЅС‹Рµ С†РІРµС‚Р° РґР»СЏ СЃРµСЂРёР№ (РёР· UStyleManager)
+    QColor getDefaultColor(int index) const;
 
 
 private:
     Ui::UWatchChart *ui;
 
-    //все график, оси, скороллбар и их расположение
+    //РІСЃРµ РіСЂР°С„РёРє, РѕСЃРё, СЃРєРѕСЂРѕР»Р»Р±Р°СЂ Рё РёС… СЂР°СЃРїРѕР»РѕР¶РµРЅРёРµ
     QVBoxLayout *verticalLayout;
     QScrollBar *horizontalScrolBar;
 
@@ -135,16 +138,19 @@ private:
     QValueAxis *axisY;
 
 
-    //серии + данные об источнике данных
+    //СЃРµСЂРёРё + РґР°РЅРЅС‹Рµ РѕР± РёСЃС‚РѕС‡РЅРёРєРµ РґР°РЅРЅС‹С…
     QVector <UWatchSerie*> series;
 
     bool isCtrlPressed = false;
-    int chartIndex; //что бы график знал какой он по счету в векторе графиков
+    int chartIndex; //С‡С‚Рѕ Р±С‹ РіСЂР°С„РёРє Р·РЅР°Р» РєР°РєРѕР№ РѕРЅ РїРѕ СЃС‡РµС‚Сѓ РІ РІРµРєС‚РѕСЂРµ РіСЂР°С„РёРєРѕРІ
+
+    // Р¤Р»Р°Рі РґР»СЏ Р±Р°С‚С‡РёРЅРіР° РѕР±РЅРѕРІР»РµРЅРёР№
+    bool pendingUpdate = false;
 
 
 
 private slots:
-    //скролл и зум по оси Y
+    //СЃРєСЂРѕР»Р» Рё Р·СѓРј РїРѕ РѕСЃРё Y
     void wheelEvent(QWheelEvent * event);
     void keyPressEvent(QKeyEvent *event);
     void keyReleaseEvent(QKeyEvent *event);
