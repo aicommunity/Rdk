@@ -31,6 +31,10 @@
 #include <QResizeEvent>
 #include <QScrollBar>
 #include <QTimer>
+#include <QDateTime>
+#include <QCryptographicHash>
+#include <QFile>
+#include <QFileInfo>
 #include <cmath>
 #include <ctime>
 #include <sstream>
@@ -1842,17 +1846,26 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getAliasOutp
 
 QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getOwnInputPorts() const
 {
-    // ОПТИМИЗАЦИЯ: используем кэш для избежания повторных вызовов API ядра
+    // ОПТИМИЗАЦИЯ: сначала проверяем локальный кэш
     if(m_portsCacheValid && !m_cachedOwnInputPorts.isEmpty())
     {
+        return m_cachedOwnInputPorts;
+    }
+    
+    // ОПТИМИЗАЦИЯ: проверяем глобальный кэш компонентов
+    QString fullName = m_owner ? (m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName) : nodeName;
+    ComponentCacheEntry* cacheEntry = m_owner ? m_owner->m_componentCache.getEntry(fullName) : nullptr;
+    if(cacheEntry && !cacheEntry->ownInputPorts.isEmpty())
+    {
+        // Восстанавливаем из глобального кэша в локальный
+        m_cachedOwnInputPorts = cacheEntry->ownInputPorts;
+        m_portsCacheValid = true;
         return m_cachedOwnInputPorts;
     }
     
     QVector<Port> result;
     if(!m_owner || !m_owner->m_application)
         return result;
-    
-    QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
     
     // Получаем собственные входные свойства компонента (без точки в пути)
     const char* inputProps = Model_GetComponentPropertiesLookupList(
@@ -1883,9 +1896,26 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getOwnInputP
         Engine_FreeBufString(inputProps);
     }
     
-    // Сохраняем в кэш
+    // Сохраняем в локальный кэш
     m_cachedOwnInputPorts = result;
     m_portsCacheValid = true;
+    
+    // Сохраняем в глобальный кэш
+    if(m_owner)
+    {
+        if(!cacheEntry)
+        {
+            ComponentCacheEntry newEntry;
+            newEntry.ownInputPorts = result;
+            newEntry.timestamp = QDateTime::currentMSecsSinceEpoch();
+            m_owner->m_componentCache.setEntry(fullName, newEntry);
+        }
+        else
+        {
+            cacheEntry->ownInputPorts = result;
+            cacheEntry->timestamp = QDateTime::currentMSecsSinceEpoch();
+        }
+    }
     
     return result;
 }
@@ -2023,6 +2053,17 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
     int linksWithoutCategories = 0;
     QList<PortCategory> foundCategories;  // Для отладки: собираем все найденные категории
     
+    // ДЕТАЛЬНОЕ ЛОГИРОВАНИЕ для диагностики PGenerator
+    bool isPGenerator = (nodeName == "PGenerator");
+    if(isPGenerator)
+    {
+        QString componentDisplayName = m_owner && !m_owner->m_componentName.isEmpty() ? m_owner->m_componentName : "root";
+        QString categoryStr = category == PortCategory::Own ? "Own" : (category == PortCategory::Child ? "Child" : "Alias");
+        QString logMsg = QString("[UModernDiagramWidget] Component: %1, NodeItem: %2, hasConnectionsToInputCategory(%3): starting check, m_connectedLinks.size()=%4")
+            .arg(componentDisplayName).arg(nodeName).arg(categoryStr).arg(m_connectedLinks.size());
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+    }
+    
     for(LinkItem* link : m_connectedLinks)
     {
         if(!link || link->dst() != this)
@@ -2041,6 +2082,14 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
             {
                 hasConnection = true;
                 usedFastPath = true;
+                if(isPGenerator)
+                {
+                    QString componentDisplayName = m_owner && !m_owner->m_componentName.isEmpty() ? m_owner->m_componentName : "root";
+                    QString categoryStr = category == PortCategory::Own ? "Own" : (category == PortCategory::Child ? "Child" : "Alias");
+                    QString logMsg = QString("[UModernDiagramWidget] Component: %1, NodeItem: %2, hasConnectionsToInputCategory(%3): FOUND via fast path (link hasCategories=true, dstCategory=%4)")
+                        .arg(componentDisplayName).arg(nodeName).arg(categoryStr).arg(cat == PortCategory::Own ? "Own" : (cat == PortCategory::Child ? "Child" : "Alias"));
+                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+                }
                 break;
             }
         }
@@ -2079,17 +2128,41 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
     {
         return true;
     }
-    
-    // ОПТИМИЗАЦИЯ: если все связи имеют категории, но ни одна из них не совпадает с проверяемой категорией,
-    // то соединений для этой категории точно нет - возвращаем false БЕЗ вызова медленного fallback
-    if(linksChecked > 0 && linksWithoutCategories == 0 && !foundCategories.contains(category))
+
+    // ОПТИМИЗАЦИЯ: если вообще нет входящих связей для этого узла, то нет смысла запускать медленный fallback по XML.
+    // Это особенно важно для узлов вроде PGenerator, у которых нет входов: linksChecked == 0 и fallback только тратит время.
+    if(linksChecked == 0)
     {
-        // Все связи имеют категории, но ни одна из них не совпадает с проверяемой категорией
-        // Значит, соединений для этой категории нет - возвращаем false без вызова API
         return false;
     }
     
-    // Логируем информацию о быстрой проверке (только если она не сработала)
+    // ОПТИМИЗАЦИЯ: если все связи имеют категории, но ни одна из них не совпадает с проверяемой категорией,
+    // то соединений для этой категории точно нет - возвращаем false БЕЗ вызова медленного fallback
+    bool earlyExitCondition = (linksChecked > 0 && linksWithoutCategories == 0 && !foundCategories.contains(category));
+    if(earlyExitCondition)
+    {
+        // Все связи имеют категории, но ни одна из них не совпадает с проверяемой категорией
+        // Значит, соединений для этой категории нет - возвращаем false без вызова API
+        if(isPGenerator)
+        {
+            QString componentDisplayName = m_owner && !m_owner->m_componentName.isEmpty() ? m_owner->m_componentName : "root";
+            QString categoryStr = category == PortCategory::Own ? "Own" : (category == PortCategory::Child ? "Child" : "Alias");
+            QString foundCategoriesStr;
+            for(PortCategory cat : foundCategories)
+            {
+                if(!foundCategoriesStr.isEmpty()) foundCategoriesStr += ",";
+                if(cat == PortCategory::Own) foundCategoriesStr += "Own";
+                else if(cat == PortCategory::Child) foundCategoriesStr += "Child";
+                else if(cat == PortCategory::Alias) foundCategoriesStr += "Alias";
+            }
+            QString logMsg = QString("[UModernDiagramWidget] Component: %1, NodeItem: %2, hasConnectionsToInputCategory(%3): early exit (all %4 links have categories, but none match, foundCategories: [%5])")
+                .arg(componentDisplayName).arg(nodeName).arg(categoryStr).arg(linksChecked).arg(foundCategoriesStr);
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+        }
+        return false;
+    }
+    
+    // Логируем информацию о быстрой проверке (только если она не сработала и fallback будет вызван)
     if(!usedFastPath && linksChecked > 0)
     {
         QString componentDisplayName = m_owner && !m_owner->m_componentName.isEmpty() ? m_owner->m_componentName : "root";
@@ -2102,8 +2175,18 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
             else if(cat == PortCategory::Child) foundCategoriesStr += "Child";
             else if(cat == PortCategory::Alias) foundCategoriesStr += "Alias";
         }
-        QString logMsg = QString("[UModernDiagramWidget] Component: %1, NodeItem: %2, hasConnectionsToInputCategory(%3): fast path failed (checked %4 links, withCategories: %5, foundCategories: [%6]), using fallback")
-            .arg(componentDisplayName).arg(nodeName).arg(categoryStr).arg(linksChecked).arg(linksWithCategories).arg(foundCategoriesStr);
+        QString earlyExitReason;
+        if(linksChecked == 0)
+            earlyExitReason = "no links checked";
+        else if(linksWithoutCategories > 0)
+            earlyExitReason = QString("has %1 links without categories").arg(linksWithoutCategories);
+        else if(foundCategories.contains(category))
+            earlyExitReason = QString("found category %1 in links").arg(categoryStr);
+        else
+            earlyExitReason = "unknown reason";
+        
+        QString logMsg = QString("[UModernDiagramWidget] Component: %1, NodeItem: %2, hasConnectionsToInputCategory(%3): fast path failed (checked %4 links, withCategories: %5, withoutCategories: %6, foundCategories: [%7], earlyExitCondition: %8, reason: %9), using fallback")
+            .arg(componentDisplayName).arg(nodeName).arg(categoryStr).arg(linksChecked).arg(linksWithCategories).arg(linksWithoutCategories).arg(foundCategoriesStr).arg(earlyExitCondition ? "true" : "false").arg(earlyExitReason);
         MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
     }
     
@@ -2362,6 +2445,17 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
     int linksWithoutCategories = 0;
     QList<PortCategory> foundCategories;  // Для отладки: собираем все найденные категории
     
+    // ДЕТАЛЬНОЕ ЛОГИРОВАНИЕ для диагностики PGenerator
+    bool isPGenerator = (nodeName == "PGenerator");
+    if(isPGenerator)
+    {
+        QString componentDisplayName = m_owner && !m_owner->m_componentName.isEmpty() ? m_owner->m_componentName : "root";
+        QString categoryStr = category == PortCategory::Own ? "Own" : (category == PortCategory::Child ? "Child" : "Alias");
+        QString logMsg = QString("[UModernDiagramWidget] Component: %1, NodeItem: %2, hasConnectionsToOutputCategory(%3): starting check, m_connectedLinks.size()=%4")
+            .arg(componentDisplayName).arg(nodeName).arg(categoryStr).arg(m_connectedLinks.size());
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+    }
+    
     for(LinkItem* link : m_connectedLinks)
     {
         if(!link || link->src() != this)
@@ -2380,9 +2474,19 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
             {
                 hasConnection = true;
                 usedFastPath = true;
+                if(isPGenerator)
+                {
+                    QString componentDisplayName = m_owner && !m_owner->m_componentName.isEmpty() ? m_owner->m_componentName : "root";
+                    QString categoryStr = category == PortCategory::Own ? "Own" : (category == PortCategory::Child ? "Child" : "Alias");
+                    QString logMsg = QString("[UModernDiagramWidget] Component: %1, NodeItem: %2, hasConnectionsToOutputCategory(%3): FOUND via fast path (link hasCategories=true, srcCategory=%4)")
+                        .arg(componentDisplayName).arg(nodeName).arg(categoryStr).arg(cat == PortCategory::Own ? "Own" : (cat == PortCategory::Child ? "Child" : "Alias"));
+                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+                }
                 break;
             }
         }
+        // Внешние связи (где dstNode == nullptr) также имеют категории и должны учитываться
+        // Такие связи важны для узлов типа PGenerator, чьи выходы ведут к внешним компонентам
         // Если категория не задана, но есть связь от выходного порта, считаем что есть соединение
         // (для обратной совместимости со старыми связями)
         else if(!link->hasCategories() && link->useOutput())
@@ -2421,14 +2525,31 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
     
     // ОПТИМИЗАЦИЯ: если все связи имеют категории, но ни одна из них не совпадает с проверяемой категорией,
     // то соединений для этой категории точно нет - возвращаем false БЕЗ вызова медленного fallback
-    if(linksChecked > 0 && linksWithoutCategories == 0 && !foundCategories.contains(category))
+    bool earlyExitCondition = (linksChecked > 0 && linksWithoutCategories == 0 && !foundCategories.contains(category));
+    if(earlyExitCondition)
     {
         // Все связи имеют категории, но ни одна из них не совпадает с проверяемой категорией
         // Значит, соединений для этой категории нет - возвращаем false без вызова API
+        if(isPGenerator)
+        {
+            QString componentDisplayName = m_owner && !m_owner->m_componentName.isEmpty() ? m_owner->m_componentName : "root";
+            QString categoryStr = category == PortCategory::Own ? "Own" : (category == PortCategory::Child ? "Child" : "Alias");
+            QString foundCategoriesStr;
+            for(PortCategory cat : foundCategories)
+            {
+                if(!foundCategoriesStr.isEmpty()) foundCategoriesStr += ",";
+                if(cat == PortCategory::Own) foundCategoriesStr += "Own";
+                else if(cat == PortCategory::Child) foundCategoriesStr += "Child";
+                else if(cat == PortCategory::Alias) foundCategoriesStr += "Alias";
+            }
+            QString logMsg = QString("[UModernDiagramWidget] Component: %1, NodeItem: %2, hasConnectionsToOutputCategory(%3): early exit (all %4 links have categories, but none match, foundCategories: [%5])")
+                .arg(componentDisplayName).arg(nodeName).arg(categoryStr).arg(linksChecked).arg(foundCategoriesStr);
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+        }
         return false;
     }
     
-    // Логируем информацию о быстрой проверке (только если она не сработала)
+    // Логируем информацию о быстрой проверке (только если она не сработала и fallback будет вызван)
     if(!usedFastPath && linksChecked > 0)
     {
         QString componentDisplayName = m_owner && !m_owner->m_componentName.isEmpty() ? m_owner->m_componentName : "root";
@@ -2441,8 +2562,18 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
             else if(cat == PortCategory::Child) foundCategoriesStr += "Child";
             else if(cat == PortCategory::Alias) foundCategoriesStr += "Alias";
         }
-        QString logMsg = QString("[UModernDiagramWidget] Component: %1, NodeItem: %2, hasConnectionsToOutputCategory(%3): fast path failed (checked %4 links, withCategories: %5, foundCategories: [%6]), using fallback")
-            .arg(componentDisplayName).arg(nodeName).arg(categoryStr).arg(linksChecked).arg(linksWithCategories).arg(foundCategoriesStr);
+        QString earlyExitReason;
+        if(linksChecked == 0)
+            earlyExitReason = "no links checked";
+        else if(linksWithoutCategories > 0)
+            earlyExitReason = QString("has %1 links without categories").arg(linksWithoutCategories);
+        else if(foundCategories.contains(category))
+            earlyExitReason = QString("found category %1 in links").arg(categoryStr);
+        else
+            earlyExitReason = "unknown reason";
+        
+        QString logMsg = QString("[UModernDiagramWidget] Component: %1, NodeItem: %2, hasConnectionsToOutputCategory(%3): fast path failed (checked %4 links, withCategories: %5, withoutCategories: %6, foundCategories: [%7], earlyExitCondition: %8, reason: %9), using fallback")
+            .arg(componentDisplayName).arg(nodeName).arg(categoryStr).arg(linksChecked).arg(linksWithCategories).arg(linksWithoutCategories).arg(foundCategoriesStr).arg(earlyExitCondition ? "true" : "false").arg(earlyExitReason);
         MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
     }
     
@@ -4069,14 +4200,15 @@ void UModernDiagramWidget::buildLinks()
                 srcNode = resolveById(QString::fromStdString(itemId));
             if(!dstNode)
                 dstNode = resolveById(QString::fromStdString(connId));
-            if(!srcNode || !dstNode)
+            
+            // Если srcNode не найден, пропускаем связь (не можем определить категорию источника)
+            if(!srcNode)
             {
                 skipped++;
-                // Удалено избыточное логирование - создавало спам в INFO логах
                 continue;
             }
             
-            // Оптимизация: кэшируем результаты determinePortCategory
+            // Оптимизация: кэшируем результаты determinePortCategory для источника
             QPair<NodeItem*, QString> srcKey(srcNode, itemName);
             PortCategory srcCategory;
             if(portCategoryCache.contains(srcKey))
@@ -4089,11 +4221,39 @@ void UModernDiagramWidget::buildLinks()
                 portCategoryCache[srcKey] = srcCategory;
             }
             
-            // Для определения категории входного порта нужно нормализовать connName относительно dstNode
-            // connName может быть в любом формате, нужно извлечь часть, относящуюся к dstNode
+            // Для определения категории входного порта нужно нормализовать connName
             QString normalizedConnName = connName;
-            QString dstNodeName = dstNode->nodeName;
+            QString dstNodeName;
             QString connIdStr = QString::fromStdString(connId);
+            
+            // Если dstNode найден, используем его имя для нормализации
+            if(dstNode)
+            {
+                dstNodeName = dstNode->nodeName;
+            }
+            else
+            {
+                // Для внешних связей (dstNode не найден) пытаемся извлечь имя узла из connId или connName
+                // Это нужно для определения категории целевого порта
+                if(!connIdStr.isEmpty())
+                {
+                    int dot = connIdStr.indexOf('.');
+                    dstNodeName = dot >= 0 ? connIdStr.left(dot) : connIdStr;
+                    // Убираем префикс компонента, если есть
+                    if(!m_componentName.isEmpty() && dstNodeName.startsWith(m_componentName + "."))
+                    {
+                        dstNodeName = dstNodeName.mid(m_componentName.length() + 1);
+                        int nextDot = dstNodeName.indexOf('.');
+                        if(nextDot >= 0)
+                            dstNodeName = dstNodeName.left(nextDot);
+                    }
+                }
+                else if(!connName.isEmpty())
+                {
+                    int dot = connName.indexOf('.');
+                    dstNodeName = dot >= 0 ? connName.left(dot) : connName;
+                }
+            }
             
             // На верхнем уровне (m_componentName.isEmpty()) connName уже является относительным путем
             // и не требует нормализации через удаление dstNodeName
@@ -4159,27 +4319,83 @@ void UModernDiagramWidget::buildLinks()
                 }
             }
             
-            // Оптимизация: кэшируем результаты determinePortCategory
-            QPair<NodeItem*, QString> dstKey(dstNode, normalizedConnName);
+            // Определяем категорию целевого порта
             PortCategory dstCategory;
-            if(portCategoryCache.contains(dstKey))
+            if(dstNode)
             {
-                dstCategory = portCategoryCache[dstKey];
+                // Если dstNode найден, используем обычный метод
+                QPair<NodeItem*, QString> dstKey(dstNode, normalizedConnName);
+                if(portCategoryCache.contains(dstKey))
+                {
+                    dstCategory = portCategoryCache[dstKey];
+                }
+                else
+                {
+                    dstCategory = dstNode->determinePortCategory(normalizedConnName, true);
+                    portCategoryCache[dstKey] = dstCategory;
+                }
             }
             else
             {
-                dstCategory = dstNode->determinePortCategory(normalizedConnName, true);
-                portCategoryCache[dstKey] = dstCategory;
+                // Для внешних связей (dstNode не найден) определяем категорию по эвристике
+                // Внешние связи обычно идут к собственным портам внешних компонентов (Own)
+                // Но если путь содержит точку после имени компонента, это может быть Child
+                if(!normalizedConnName.isEmpty() && normalizedConnName.contains('.'))
+                {
+                    // Путь содержит точку - проверяем, является ли первая часть дочерним компонентом
+                    QString firstPart = normalizedConnName.split('.').first();
+                    // Если у srcNode есть дочерний компонент с таким именем, это Child
+                    // Иначе это Own (связь к собственному порту внешнего компонента)
+                    QString fullName = m_componentName.isEmpty() ? srcNode->nodeName : m_componentName + "." + srcNode->nodeName;
+                    const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
+                    bool isChild = false;
+                    if(compList)
+                    {
+                        QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
+                        isChild = components.contains(firstPart);
+                        Engine_FreeBufString(compList);
+                    }
+                    dstCategory = isChild ? PortCategory::Child : PortCategory::Own;
+                }
+                else
+                {
+                    // Простое имя свойства без точки - это Own категория (собственный порт внешнего компонента)
+                    dstCategory = PortCategory::Own;
+                }
             }
             
-            // Создаем LinkItem с категориями портов (БЕЗ добавления в сцену и БЕЗ updateGeometry)
+            // Создаем LinkItem с категориями портов
             auto* l = new LinkItem(srcNode, dstNode, srcCategory, dstCategory);
-            linksToAdd.append(l);
-            m_links.append(l);
-            // Обновляем кэш связей для узлов
-            srcNode->m_connectedLinks.append(l);
-            dstNode->m_connectedLinks.append(l);
-            added++;
+            
+            if(dstNode)
+            {
+                // Обычная связь между узлами в сцене - добавляем в сцену
+                linksToAdd.append(l);
+                m_links.append(l);
+                // Обновляем кэш связей для обоих узлов
+                srcNode->m_connectedLinks.append(l);
+                dstNode->m_connectedLinks.append(l);
+                added++;
+            }
+            else
+            {
+                // Внешняя связь (dstNode не найден) - не добавляем в сцену, но учитываем в кэше
+                // Такие связи важны для быстрой проверки соединений (например, для PGenerator)
+                m_links.append(l);
+                srcNode->m_connectedLinks.append(l);
+                added++;
+                // Не добавляем в linksToAdd, чтобы не добавлять в сцену
+                
+                // ДЕТАЛЬНОЕ ЛОГИРОВАНИЕ для диагностики внешних связей
+                if(srcNode->nodeName == "PGenerator")
+                {
+                    QString categoryStr = srcCategory == PortCategory::Own ? "Own" : (srcCategory == PortCategory::Child ? "Child" : "Alias");
+                    QString dstCategoryStr = dstCategory == PortCategory::Own ? "Own" : (dstCategory == PortCategory::Child ? "Child" : "Alias");
+                    QString logMsg = QString("[UModernDiagramWidget] Component: %1, buildLinks: Created EXTERNAL link from PGenerator (srcCategory=%2, dstCategory=%3, connName=%4)")
+                        .arg(componentDisplayName).arg(categoryStr).arg(dstCategoryStr).arg(connName);
+                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+                }
+            }
             // Удалено избыточное логирование - создавало спам в INFO логах
         }
     }
@@ -6285,6 +6501,9 @@ void UModernDiagramWidget::createContextMenu()
     QAction* actionCopyComponentXMLDescription = new QAction(m_contextMenu);
     actionCopyComponentXMLDescription->setText("Copy component XML description");
     
+    QAction* actionClearComponentCache = new QAction(m_contextMenu);
+    actionClearComponentCache->setText("Clear component cache");
+    
     // Add actions to menu
     m_contextMenu->addAction(m_actionViewOrBreakLink);
     m_contextMenu->addAction(actionSeparator1);
@@ -6317,6 +6536,7 @@ void UModernDiagramWidget::createContextMenu()
     m_contextMenu->addAction(actionSeparator8);
     m_contextMenu->addAction(m_actionCloneComponent);
     m_contextMenu->addAction(m_actionQuickLink);
+    m_contextMenu->addAction(actionClearComponentCache);
     
     // Connect signals
     connect(m_actionViewOrBreakLink, SIGNAL(triggered(bool)), this, SLOT(componentViewOrBreakLink()));
@@ -6342,6 +6562,7 @@ void UModernDiagramWidget::createContextMenu()
     connect(actionCopyComponentXMLDescription, SIGNAL(triggered(bool)), this, SLOT(componentCopyXMLDescription()));
     connect(m_actionCloneComponent, SIGNAL(triggered(bool)), this, SLOT(componentCloneComponent()));
     connect(m_actionQuickLink, SIGNAL(triggered(bool)), this, SLOT(componentQuickLink()));
+    connect(actionClearComponentCache, SIGNAL(triggered(bool)), this, SLOT(componentClearCache()));
 }
 
 QString UModernDiagramWidget::getSelectedComponentLongName() const
@@ -6702,6 +6923,18 @@ void UModernDiagramWidget::componentQuickLink()
                 emit updateComponentsList();
             }
         }
+    }
+}
+
+void UModernDiagramWidget::componentClearCache()
+{
+    int ret = QMessageBox::question(this, tr("Clear Component Cache"), 
+                                    tr("Are you sure you want to clear the component cache? This will remove all cached component information."),
+                                    QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
+    if(ret == QMessageBox::Yes)
+    {
+        clearComponentCache();
+        QMessageBox::information(this, tr("Cache Cleared"), tr("Component cache has been cleared successfully."));
     }
 }
 
@@ -7075,5 +7308,415 @@ QString UModernDiagramWidget::generateCanvasTooltip() const
     );
     
     return tooltip;
+}
+
+// --------------------------- ComponentCache ---------------------------
+
+UModernDiagramWidget::ComponentCacheEntry* UModernDiagramWidget::ComponentCache::getEntry(const QString& componentFullName)
+{
+    if(m_cache.contains(componentFullName))
+        return &m_cache[componentFullName];
+    return nullptr;
+}
+
+void UModernDiagramWidget::ComponentCache::setEntry(const QString& componentFullName, const ComponentCacheEntry& entry)
+{
+    m_cache[componentFullName] = entry;
+}
+
+bool UModernDiagramWidget::ComponentCache::hasEntry(const QString& componentFullName) const
+{
+    return m_cache.contains(componentFullName);
+}
+
+void UModernDiagramWidget::ComponentCache::invalidateEntry(const QString& componentFullName)
+{
+    m_cache.remove(componentFullName);
+}
+
+void UModernDiagramWidget::ComponentCache::clear()
+{
+    m_cache.clear();
+}
+
+// --------------------------- File Cache Methods ---------------------------
+
+QString UModernDiagramWidget::getCacheFilePath(const QString& extension) const
+{
+    if(!m_application)
+        return QString();
+    
+    // Получаем путь к папке конфигураций
+    QString configsPath = QString::fromLocal8Bit(m_application->GetConfigsMainPath().c_str());
+    QString workDir = QString::fromLocal8Bit(m_application->GetWorkDirectory().c_str());
+    
+    // Определяем полный путь к папке конфигураций
+    QString fullConfigsPath;
+    if(QDir::isAbsolutePath(configsPath))
+    {
+        fullConfigsPath = configsPath;
+    }
+    else
+    {
+        // Относительный путь - относительно рабочей директории
+        QDir workDirObj(workDir);
+        fullConfigsPath = workDirObj.absoluteFilePath(configsPath);
+    }
+    
+    // Получаем имя проекта из имени файла приложения или используем "default"
+    QString projectName = "default";
+    QString appFileName = QString::fromLocal8Bit(m_application->GetApplicationFileName().c_str());
+    if(!appFileName.isEmpty())
+    {
+        QFileInfo fileInfo(appFileName);
+        projectName = fileInfo.baseName();
+        if(projectName.isEmpty())
+            projectName = "default";
+    }
+    
+    // Создаем путь к папке кэша: {ConfigsMainPath}/{ProjectName}/.cache/
+    QDir configsDir(fullConfigsPath);
+    QString cacheDirPath = configsDir.absoluteFilePath(projectName + "/.cache");
+    
+    // Создаем папку кэша, если она не существует
+    QDir cacheDir(cacheDirPath);
+    if(!cacheDir.exists())
+    {
+        cacheDir.mkpath(".");
+    }
+    
+    // Возвращаем путь к файлу кэша
+    return cacheDir.absoluteFilePath("component_cache." + extension);
+}
+
+bool UModernDiagramWidget::saveComponentCacheToFile(const QString& filePath, bool useBinary) const
+{
+    if(useBinary)
+    {
+        // Бинарный формат будет реализован позже
+        return false;
+    }
+    
+    // JSON формат
+    QJsonObject root;
+    root["version"] = 1;
+    
+    QJsonObject components;
+    const QHash<QString, ComponentCacheEntry>& entries = m_componentCache.getAllEntries();
+    for(auto it = entries.begin(); it != entries.end(); ++it)
+    {
+        const QString& componentName = it.key();
+        const ComponentCacheEntry& entry = it.value();
+        
+        QJsonObject componentObj;
+        componentObj["timestamp"] = entry.timestamp;
+        componentObj["hash"] = entry.hash;
+        
+        QJsonObject portsObj;
+        
+        // Сериализуем порты
+        QJsonArray ownInputArray;
+        for(const Port& port : entry.ownInputPorts)
+        {
+            QJsonObject portObj;
+            portObj["name"] = port.name;
+            portObj["fullPath"] = port.fullPath;
+            portObj["componentName"] = port.componentName;
+            portObj["displayName"] = port.displayName;
+            portObj["isInput"] = port.isInput;
+            portObj["category"] = static_cast<int>(port.category);
+            ownInputArray.append(portObj);
+        }
+        portsObj["ownInput"] = ownInputArray;
+        
+        QJsonArray childInputArray;
+        for(const Port& port : entry.childInputPorts)
+        {
+            QJsonObject portObj;
+            portObj["name"] = port.name;
+            portObj["fullPath"] = port.fullPath;
+            portObj["componentName"] = port.componentName;
+            portObj["displayName"] = port.displayName;
+            portObj["isInput"] = port.isInput;
+            portObj["category"] = static_cast<int>(port.category);
+            childInputArray.append(portObj);
+        }
+        portsObj["childInput"] = childInputArray;
+        
+        QJsonArray aliasInputArray;
+        for(const Port& port : entry.aliasInputPorts)
+        {
+            QJsonObject portObj;
+            portObj["name"] = port.name;
+            portObj["fullPath"] = port.fullPath;
+            portObj["componentName"] = port.componentName;
+            portObj["displayName"] = port.displayName;
+            portObj["isInput"] = port.isInput;
+            portObj["category"] = static_cast<int>(port.category);
+            aliasInputArray.append(portObj);
+        }
+        portsObj["aliasInput"] = aliasInputArray;
+        
+        QJsonArray ownOutputArray;
+        for(const Port& port : entry.ownOutputPorts)
+        {
+            QJsonObject portObj;
+            portObj["name"] = port.name;
+            portObj["fullPath"] = port.fullPath;
+            portObj["componentName"] = port.componentName;
+            portObj["displayName"] = port.displayName;
+            portObj["isInput"] = port.isInput;
+            portObj["category"] = static_cast<int>(port.category);
+            ownOutputArray.append(portObj);
+        }
+        portsObj["ownOutput"] = ownOutputArray;
+        
+        QJsonArray childOutputArray;
+        for(const Port& port : entry.childOutputPorts)
+        {
+            QJsonObject portObj;
+            portObj["name"] = port.name;
+            portObj["fullPath"] = port.fullPath;
+            portObj["componentName"] = port.componentName;
+            portObj["displayName"] = port.displayName;
+            portObj["isInput"] = port.isInput;
+            portObj["category"] = static_cast<int>(port.category);
+            childOutputArray.append(portObj);
+        }
+        portsObj["childOutput"] = childOutputArray;
+        
+        QJsonArray aliasOutputArray;
+        for(const Port& port : entry.aliasOutputPorts)
+        {
+            QJsonObject portObj;
+            portObj["name"] = port.name;
+            portObj["fullPath"] = port.fullPath;
+            portObj["componentName"] = port.componentName;
+            portObj["displayName"] = port.displayName;
+            portObj["isInput"] = port.isInput;
+            portObj["category"] = static_cast<int>(port.category);
+            aliasOutputArray.append(portObj);
+        }
+        portsObj["aliasOutput"] = aliasOutputArray;
+        
+        componentObj["ports"] = portsObj;
+        components[componentName] = componentObj;
+    }
+    
+    root["components"] = components;
+    
+    QJsonDocument doc(root);
+    QFile file(filePath);
+    if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        return false;
+    
+    file.write(doc.toJson());
+    file.close();
+    
+    return true;
+}
+
+bool UModernDiagramWidget::loadComponentCacheFromFile(const QString& filePath, bool useBinary)
+{
+    if(useBinary)
+    {
+        // Бинарный формат будет реализован позже
+        return false;
+    }
+    
+    // JSON формат
+    QFile file(filePath);
+    if(!file.exists() || !file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return false;
+    
+    QByteArray data = file.readAll();
+    file.close();
+    
+    QJsonParseError error;
+    QJsonDocument doc = QJsonDocument::fromJson(data, &error);
+    if(error.error != QJsonParseError::NoError || !doc.isObject())
+        return false;
+    
+    QJsonObject root = doc.object();
+    int version = root["version"].toInt();
+    if(version != 1)
+        return false;  // Неподдерживаемая версия
+    
+    QJsonObject components = root["components"].toObject();
+    QHash<QString, ComponentCacheEntry> entries;
+    
+    for(auto it = components.begin(); it != components.end(); ++it)
+    {
+        const QString& componentName = it.key();
+        QJsonObject componentObj = it.value().toObject();
+        
+        ComponentCacheEntry entry;
+        entry.timestamp = componentObj["timestamp"].toVariant().toLongLong();
+        entry.hash = componentObj["hash"].toString();
+        
+        QJsonObject portsObj = componentObj["ports"].toObject();
+        
+        // Десериализуем порты
+        QJsonArray ownInputArray = portsObj["ownInput"].toArray();
+        for(const QJsonValue& val : ownInputArray)
+        {
+            QJsonObject portObj = val.toObject();
+            Port port;
+            port.name = portObj["name"].toString();
+            port.fullPath = portObj["fullPath"].toString();
+            port.componentName = portObj["componentName"].toString();
+            port.displayName = portObj["displayName"].toString();
+            port.isInput = portObj["isInput"].toBool();
+            port.category = static_cast<PortCategory>(portObj["category"].toInt());
+            entry.ownInputPorts.append(port);
+        }
+        
+        QJsonArray childInputArray = portsObj["childInput"].toArray();
+        for(const QJsonValue& val : childInputArray)
+        {
+            QJsonObject portObj = val.toObject();
+            Port port;
+            port.name = portObj["name"].toString();
+            port.fullPath = portObj["fullPath"].toString();
+            port.componentName = portObj["componentName"].toString();
+            port.displayName = portObj["displayName"].toString();
+            port.isInput = portObj["isInput"].toBool();
+            port.category = static_cast<PortCategory>(portObj["category"].toInt());
+            entry.childInputPorts.append(port);
+        }
+        
+        QJsonArray aliasInputArray = portsObj["aliasInput"].toArray();
+        for(const QJsonValue& val : aliasInputArray)
+        {
+            QJsonObject portObj = val.toObject();
+            Port port;
+            port.name = portObj["name"].toString();
+            port.fullPath = portObj["fullPath"].toString();
+            port.componentName = portObj["componentName"].toString();
+            port.displayName = portObj["displayName"].toString();
+            port.isInput = portObj["isInput"].toBool();
+            port.category = static_cast<PortCategory>(portObj["category"].toInt());
+            entry.aliasInputPorts.append(port);
+        }
+        
+        QJsonArray ownOutputArray = portsObj["ownOutput"].toArray();
+        for(const QJsonValue& val : ownOutputArray)
+        {
+            QJsonObject portObj = val.toObject();
+            Port port;
+            port.name = portObj["name"].toString();
+            port.fullPath = portObj["fullPath"].toString();
+            port.componentName = portObj["componentName"].toString();
+            port.displayName = portObj["displayName"].toString();
+            port.isInput = portObj["isInput"].toBool();
+            port.category = static_cast<PortCategory>(portObj["category"].toInt());
+            entry.ownOutputPorts.append(port);
+        }
+        
+        QJsonArray childOutputArray = portsObj["childOutput"].toArray();
+        for(const QJsonValue& val : childOutputArray)
+        {
+            QJsonObject portObj = val.toObject();
+            Port port;
+            port.name = portObj["name"].toString();
+            port.fullPath = portObj["fullPath"].toString();
+            port.componentName = portObj["componentName"].toString();
+            port.displayName = portObj["displayName"].toString();
+            port.isInput = portObj["isInput"].toBool();
+            port.category = static_cast<PortCategory>(portObj["category"].toInt());
+            entry.childOutputPorts.append(port);
+        }
+        
+        QJsonArray aliasOutputArray = portsObj["aliasOutput"].toArray();
+        for(const QJsonValue& val : aliasOutputArray)
+        {
+            QJsonObject portObj = val.toObject();
+            Port port;
+            port.name = portObj["name"].toString();
+            port.fullPath = portObj["fullPath"].toString();
+            port.componentName = portObj["componentName"].toString();
+            port.displayName = portObj["displayName"].toString();
+            port.isInput = portObj["isInput"].toBool();
+            port.category = static_cast<PortCategory>(portObj["category"].toInt());
+            entry.aliasOutputPorts.append(port);
+        }
+        
+        entries[componentName] = entry;
+    }
+    
+    m_componentCache.setAllEntries(entries);
+    return true;
+}
+
+QString UModernDiagramWidget::computeComponentHash(const QString& componentFullName) const
+{
+    if(!m_application)
+        return QString();
+    
+    QCryptographicHash hash(QCryptographicHash::Sha256);
+    
+    // Добавляем имя компонента
+    hash.addData(componentFullName.toUtf8());
+    
+    // Добавляем список дочерних компонентов
+    const char* compList = Model_GetComponentsNameList(componentFullName.toStdString().c_str());
+    if(compList)
+    {
+        hash.addData(compList, strlen(compList));
+        Engine_FreeBufString(compList);
+    }
+    
+    // Добавляем список портов (входных и выходных)
+    const char* inputProps = Model_GetComponentPropertiesLookupList(componentFullName.toStdString().c_str(), ptPubInput | ptInput);
+    if(inputProps)
+    {
+        hash.addData(inputProps, strlen(inputProps));
+        Engine_FreeBufString(inputProps);
+    }
+    
+    const char* outputProps = Model_GetComponentPropertiesLookupList(componentFullName.toStdString().c_str(), ptPubOutput | ptOutput);
+    if(outputProps)
+    {
+        hash.addData(outputProps, strlen(outputProps));
+        Engine_FreeBufString(outputProps);
+    }
+    
+    // Добавляем список связей
+    const char* xmlRaw = Model_GetComponentInternalLinks(componentFullName.toStdString().c_str(), nullptr);
+    if(xmlRaw)
+    {
+        hash.addData(xmlRaw, strlen(xmlRaw));
+        Engine_FreeBufString(xmlRaw);
+    }
+    
+    return QString::fromLatin1(hash.result().toHex());
+}
+
+void UModernDiagramWidget::invalidateComponentCache(const QString& componentFullName)
+{
+    if(componentFullName.isEmpty())
+    {
+        // Инвалидируем весь кэш
+        m_componentCache.clear();
+    }
+    else
+    {
+        // Инвалидируем кэш конкретного компонента
+        m_componentCache.invalidateEntry(componentFullName);
+    }
+}
+
+void UModernDiagramWidget::clearComponentCache()
+{
+    m_componentCache.clear();
+    
+    // Также удаляем файлы кэша
+    QString jsonPath = getCacheFilePath("json");
+    QString binPath = getCacheFilePath("bin");
+    
+    if(QFile::exists(jsonPath))
+        QFile::remove(jsonPath);
+    if(QFile::exists(binPath))
+        QFile::remove(binPath);
 }
 

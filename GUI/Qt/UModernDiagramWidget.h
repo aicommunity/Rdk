@@ -15,6 +15,11 @@
 #include <QMap>
 #include <QPushButton>
 #include <QSettings>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QDateTime>
+#include <QCryptographicHash>
 #include <rdk_init.h>
 #include <rdk_application.h>
 #include "../Core/Engine/UXMLEnvSerialize.h"
@@ -226,6 +231,14 @@ private:
     void invalidateLevelCache(const QString& componentName = QString()); // Инвалидирует кэш уровня (пустая строка = все уровни)
     void restoreSceneFromCache(const QString& componentName); // Восстанавливает сцену из кэша
     void saveSceneToCache(const QString& componentName); // Сохраняет текущую сцену в кэш
+    
+    // Методы для работы с кэшем компонентов
+    QString computeComponentHash(const QString& componentFullName) const; // Вычисляет хеш содержимого компонента
+    void invalidateComponentCache(const QString& componentFullName = QString()); // Инвалидирует кэш компонента (пустая строка = все компоненты)
+    void clearComponentCache(); // Очищает весь кэш компонентов
+    QString getCacheFilePath(const QString& extension) const; // Получает путь к файлу кэша
+    bool saveComponentCacheToFile(const QString& filePath, bool useBinary = false) const; // Сохраняет кэш в файл (JSON или бинарный)
+    bool loadComponentCacheFromFile(const QString& filePath, bool useBinary = false); // Загружает кэш из файла (JSON или бинарный)
 
     // UI
     QGraphicsScene* m_scene;
@@ -292,6 +305,52 @@ private:
     };
     QHash<QString, SceneCache> m_levelCache;  // Кэш уровней по имени компонента
     
+    // Кэш информации о компонентах для ускорения отрисовки
+    struct ComponentCacheEntry {
+        QVector<Port> ownInputPorts;
+        QVector<Port> childInputPorts;
+        QVector<Port> aliasInputPorts;
+        QVector<Port> ownOutputPorts;
+        QVector<Port> childOutputPorts;
+        QVector<Port> aliasOutputPorts;
+        QHash<QPair<QString, bool>, PortCategory> portCategoryCache;  // Кэш для determinePortCategory: (propertyName, isInput) -> PortCategory
+        qint64 timestamp;  // Временная метка последнего обновления
+        QString hash;      // Хеш содержимого компонента для инвалидации
+        
+        ComponentCacheEntry() : timestamp(0) {}
+    };
+    
+    class ComponentCache {
+    public:
+        ComponentCache() {}
+        
+        // Получить запись кэша для компонента
+        ComponentCacheEntry* getEntry(const QString& componentFullName);
+        
+        // Создать или обновить запись кэша
+        void setEntry(const QString& componentFullName, const ComponentCacheEntry& entry);
+        
+        // Проверить, есть ли запись в кэше
+        bool hasEntry(const QString& componentFullName) const;
+        
+        // Инвалидировать запись кэша
+        void invalidateEntry(const QString& componentFullName);
+        
+        // Очистить весь кэш
+        void clear();
+        
+        // Получить все записи кэша (для сохранения в файл)
+        const QHash<QString, ComponentCacheEntry>& getAllEntries() const { return m_cache; }
+        
+        // Установить все записи кэша (для загрузки из файла)
+        void setAllEntries(const QHash<QString, ComponentCacheEntry>& entries) { m_cache = entries; }
+        
+    private:
+        QHash<QString, ComponentCacheEntry> m_cache;
+    };
+    
+    mutable ComponentCache m_componentCache;  // Сессионный кэш компонентов (mutable для использования в const методах)
+    
     // Флаг для временного отключения обработки ItemSelectedHasChanged в itemChange
     // во время batch-выделения, чтобы предотвратить сброс выделения Qt
     bool m_isBatchSelecting = false;
@@ -356,6 +415,7 @@ private slots:
     void componentCopyXMLDescription();
     void componentCloneComponent();
     void componentQuickLink();
+    void componentClearCache();
     void onResetZoomClicked();
 
     QPointF scenePosFromKernel(const QPointF& kernel) const;
