@@ -239,6 +239,7 @@ private:
     QString getCacheFilePath(const QString& extension) const; // Получает путь к файлу кэша
     bool saveComponentCacheToFile(const QString& filePath, bool useBinary = false) const; // Сохраняет кэш в файл (JSON или бинарный)
     bool loadComponentCacheFromFile(const QString& filePath, bool useBinary = false); // Загружает кэш из файла (JSON или бинарный)
+    void scheduleCacheSave(); // Планирует отложенное сохранение кэша
 
     // UI
     QGraphicsScene* m_scene;
