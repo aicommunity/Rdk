@@ -25,6 +25,9 @@ See file license.txt for more information
 
 namespace RDK {
 
+// Forward declaration
+typedef void (*ProgressBarCallback)(int complete_percent, const std::string &text);
+
 /* *********************************************************************** */
 class ULibrary;
 class URuntimeLibrary;
@@ -119,6 +122,9 @@ protected: // Массив доступных библиотек
 // Список доступных библиотек
 UClassLibraryList CollectionList;
 
+// Индекс для быстрого поиска библиотеки по имени класса
+// Оптимизация: O(1) поиск вместо O(m), где m - количество библиотек
+std::unordered_map<std::string, UEPtr<ULibrary>> ClassLibraryIndex;
 
 /// имеет вид <имя класса, имя его библиотеки>
 //std::map<std::string, std::string> ClassLibraryLookupTable;
@@ -335,6 +341,15 @@ virtual bool LoadCommonClassesDescription(USerStorageXML &xml);
 // Указатель на логгер
 UEPtr<UExceptionLogger> const GetLogger(void) const;
 virtual bool SetLogger(UEPtr<UExceptionLogger> logger);
+
+/// Callback для обновления прогресса инициализации
+ProgressBarCallback FuncProgressBarCallback;
+
+/// Установка callback для обновления прогресса инициализации
+void SetProgressBarCallback(ProgressBarCallback callback);
+
+/// Получение callback для обновления прогресса инициализации
+ProgressBarCallback GetProgressBarCallback() const;
 
 // Возвращает библиотеку по индексу
 UEPtr<ULibrary> GetCollection(int index);

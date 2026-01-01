@@ -145,6 +145,9 @@ bool MirrorLogsToWorkDirFlag;
 
 /// Флаг инициализации инфраструктуры логирования
 bool LoggingInitialized;
+
+/// Callback для обновления прогресса инициализации
+ProgressBarCallback FuncProgressBarCallback;
 /// Флаг инициализации Google Logging (glog)
 bool GoogleLoggingInitialized;
 
@@ -351,6 +354,12 @@ void SetStorageBuildMode(int mode);
 
 /// Получение текущего режима сборки
 int GetStorageBuildMode();
+
+/// Установка callback для обновления прогресса инициализации
+void SetProgressBarCallback(ProgressBarCallback callback);
+
+/// Получение callback для обновления прогресса инициализации
+ProgressBarCallback GetProgressBarCallback() const;
 // --------------------------
 /// Создание библиотек-заглушек из статических библиотек с сохранением файлов
 void CreateSaveMockLibs();

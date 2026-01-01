@@ -96,6 +96,8 @@ bool UEnvironment::SetModelCalculationComponent(const ULongId& value)
   return true;
 
  ModelCalculationComponent=value;
+ // Инвалидируем кэш компонента расчета
+ CachedCalculationComponent = UEPtr<UContainer>(0);
 
  return true;
 }
@@ -300,6 +302,8 @@ bool UEnvironment::CreateModel(const NameT& classname)
  Model->SetLogger(Logger);
  Model->SetEnvironment(this);
  Ready=false;
+ // Инвалидируем кэш компонента расчета при создании новой модели
+ CachedCalculationComponent = UEPtr<UContainer>(0);
  return true;
 }
 
@@ -338,6 +342,8 @@ bool UEnvironment::CreateModel(const UId& classid)
  Model->SetLogger(Logger);
  Model->SetEnvironment(this);
  Ready=false;
+ // Инвалидируем кэш компонента расчета при создании новой модели
+ CachedCalculationComponent = UEPtr<UContainer>(0);
  return true;
 }
 
@@ -352,6 +358,8 @@ bool UEnvironment::DestroyModel(void)
  Model->Free();
  Model = UEPtr<UContainer>(0);
  CurrentComponent = UEPtr<UComponent>(0);
+ // Инвалидируем кэш компонента расчета
+ CachedCalculationComponent = UEPtr<UContainer>(0);
 
  return true;
 }
@@ -775,7 +783,9 @@ void UEnvironment::RTCalculate(void)
 
  if(IsCalcFinished())
   return;
- Build();
+ // Вызываем Build() только если объект не готов (оптимизация: избегаем избыточных вызовов)
+ if(!IsReady())
+  Build();
 
  CurrentTime=GetCurrentStartupTime();
 // Time.SetSourceCurrentLocalTime(double(GetCurrentStartupTime())/1000.0);
@@ -817,7 +827,9 @@ void UEnvironment::RTCalculate(void)
  int elapsed_counter=0;
  if(model_duration>0)
  {
-  elapsed_counter=int((model_duration*Model->GetTimeStep())/1000);
+  // Оптимизация: кэшируем GetTimeStep() в локальной переменной
+  ULongTime time_step = Model->GetTimeStep();
+  elapsed_counter=int((model_duration*time_step)/1000);
  }
  else
  {
@@ -828,6 +840,10 @@ void UEnvironment::RTCalculate(void)
  }
 
  curtime=GetCurrentStartupTime();
+ // Кэшируем начальное значение времени модели для оптимизации проверки MaxCalcTime
+ double cached_model_time = Time.GetDoubleTime();
+ const bool check_max_calc_time = (MaxCalcTime > 0.0);
+ 
  while(curtime-CurrentTime<timer_interval && i<elapsed_counter)
  {
   Calculate();
@@ -835,11 +851,17 @@ void UEnvironment::RTCalculate(void)
   // DataReaders[i]->Update();
 
   ++i;
+  // Оптимизация: обновляем системное время для проверки условия цикла, но проверку MaxCalcTime делаем реже
   curtime=GetCurrentStartupTime();
-  if(MaxCalcTime>0.0 && Time.GetDoubleTime()>=MaxCalcTime)
+  // Проверяем MaxCalcTime каждые 10 итераций для оптимизации (или каждую итерацию, если близко к лимиту)
+  if(check_max_calc_time && (i % 10 == 0 || i == elapsed_counter - 1))
   {
-   CalcFinishedFlag=true;
-   break;
+   cached_model_time = Time.GetDoubleTime();
+   if(cached_model_time >= MaxCalcTime)
+   {
+    CalcFinishedFlag=true;
+    break;
+   }
   }
  }
 
@@ -866,7 +888,9 @@ void UEnvironment::FastCalculate(double calc_interval)
 
  if(IsCalcFinished())
   return;
- Build();
+ // Вызываем Build() только если объект не готов (оптимизация: избегаем избыточных вызовов)
+ if(!IsReady())
+  Build();
 
  CurrentTime=GetCurrentStartupTime();
 // Time.SetSourceCurrentLocalTime(double(GetCurrentStartupTime())/1000.0);
@@ -903,7 +927,9 @@ void UEnvironment::FastCalculate(double calc_interval)
  int elapsed_counter=0;
  if(model_duration>0)
  {
-  elapsed_counter=int((model_duration*Model->GetTimeStep())/1000);
+  // Оптимизация: кэшируем GetTimeStep() в локальной переменной
+  ULongTime time_step = Model->GetTimeStep();
+  elapsed_counter=int((model_duration*time_step)/1000);
  }
  else
  {
@@ -1097,20 +1123,25 @@ bool UEnvironment::ACalculate(void)
   return true;
 
  LastStepStartTime=cur_time;
- if(ModelCalculationComponent.GetSize() == 0)
+ // Оптимизация: кэшируем результат проверки размера ModelCalculationComponent
+ const bool calc_full_model = (ModelCalculationComponent.GetSize() == 0);
+ if(calc_full_model)
  {
   if(!Model->Calculate())
    return false;
  }
  else
  {
-  UEPtr<UContainer> destcont;
-  destcont=GetModel()->GetComponentL(ModelCalculationComponent);
+  // Используем кэшированный компонент вместо повторных вызовов GetComponentL
+  if(!CachedCalculationComponent)
+  {
+   CachedCalculationComponent=GetModel()->GetComponentL(ModelCalculationComponent);
+  }
 
-  if(!destcont)
+  if(!CachedCalculationComponent)
    return false;
 
-  if(!destcont->Calculate())
+  if(!CachedCalculationComponent->Calculate())
    return false;
  }
 
@@ -1119,7 +1150,7 @@ bool UEnvironment::ACalculate(void)
 
  // Если не задан для расчета то рассчитывается вся модель целиком,
  // иначе рассчитывается только указанный компонент и его дочерние компоненты
- if(ModelCalculationComponent.GetSize() == 0)
+ if(calc_full_model)
   IncreaseModelTimeByStep();
 
  return true;

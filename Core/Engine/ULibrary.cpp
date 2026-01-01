@@ -17,6 +17,8 @@ See file license.txt for more information
 #include "UNet.h"
 #include "UMockUNet.h"
 #include "UComponentFactory.h"
+#include <future>
+#include <vector>
 
 namespace RDK {
 
@@ -473,13 +475,30 @@ bool URuntimeLibrary::LoadCompDescriptions()
     if(RDK::FindFilesList(LibPath,"*.xml",true,comp_descriptions))
         return false;
 
-    ClassesStructures.resize(comp_descriptions.size());
-    for(size_t i = 0 ; i < comp_descriptions.size(); i++)
+    // Параллельная загрузка XML файлов (только чтение, безопасно)
+    // Используем std::async для параллельного чтения файлов
+    std::vector<std::future<std::string>> futures;
+    futures.reserve(comp_descriptions.size());
+    
+    for(size_t i = 0; i < comp_descriptions.size(); i++)
     {
-        // Парсинг текущего файла
-        CurrentComponentStruct.LoadFromFile(LibPath+"/"+comp_descriptions[i],"");
-        // Запись описания в строку
-        CurrentComponentStruct.Save(ClassesStructures[i]);
+        // Захватываем по значению для безопасности в многопоточной среде
+        std::string file_path = LibPath + "/" + comp_descriptions[i];
+        futures.push_back(std::async(std::launch::async, [file_path]() {
+            // Каждый поток работает со своей копией XML структуры
+            USerStorageXML temp_xml;
+            temp_xml.LoadFromFile(file_path, "");
+            std::string result;
+            temp_xml.Save(result);
+            return result;
+        }));
+    }
+
+    // Собираем результаты в правильном порядке (сохраняем последовательность)
+    ClassesStructures.resize(comp_descriptions.size());
+    for(size_t i = 0; i < futures.size(); i++)
+    {
+        ClassesStructures[i] = futures[i].get();
     }
 
     return true;

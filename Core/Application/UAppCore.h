@@ -287,6 +287,8 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  else
   application.SetUserName(default_user_name);
 
+ // Передаем callback в Application для дальнейшей передачи в Engine/Storage
+ application.SetProgressBarCallback(FuncProgressBarCallback);
 
  application.Init();
 

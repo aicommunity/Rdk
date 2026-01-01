@@ -117,6 +117,10 @@ protected: // Переменные быстрого доступа
 // Текущий компонент модели
 UEPtr<UComponent> CurrentComponent;
 
+/// Кэшированный компонент для расчета (используется в ACalculate)
+/// Инвалидируется при изменении ModelCalculationComponent
+mutable UEPtr<UContainer> CachedCalculationComponent;
+
 protected: // Временные переменные
 unsigned long long StartupTime;
 

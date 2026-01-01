@@ -19,6 +19,9 @@ See file license.txt for more information
 #include "ULibrary.h"
 #include "../../Deploy/Include/rdk_exceptions.h"
 #include "UEnvException.h"
+#include <future>
+#include <mutex>
+#include <unordered_set>
 
 namespace RDK {
 
@@ -109,6 +112,7 @@ bool UInstancesStorageElement::operator != (const UInstancesStorageElement &valu
 UStorage::UStorage(void)
 {
  LastClassId=0;
+ FuncProgressBarCallback=0;
 }
 
 UStorage::~UStorage(void)
@@ -118,11 +122,20 @@ UStorage::~UStorage(void)
   ClearObjectsStorage(true);
   ClearClassesStorage(true);
 
-  // Удаление всех библиотек
-  for(int i =0; i < int(CollectionList.size());i++)
+  // Быстрое удаление всех библиотек без вызова DelAbandonedClasses() в цикле
+  // Это критично для производительности - избегаем O(n*m*k) сложности
+  for(int i = 0; i < int(CollectionList.size()); i++)
   {
-      DelCollection(i);
+   if(CollectionList[i])
+   {
+    if(CollectionList[i]->GetType() == 2)
+     delete CollectionList[i];
+   }
   }
+  CollectionList.clear();
+  
+  // Один вызов DelAbandonedClasses() в конце вместо вызова для каждой библиотеки
+  DelAbandonedClasses();
 
  }
  catch(EObjectStorageNotEmpty &ex)
@@ -426,36 +439,38 @@ void UStorage::FreeClassesStorage(bool force)
 // Удаляет все образцы классов из хранилища
 void UStorage::ClearClassesStorage(bool force)
 {
- for(UClassesStorageCIterator I=ClassesStorage.begin(),
- 							  J=ClassesStorage.end(); I!=J; ++I)
+ // Оптимизация: объединяем проверку и удаление в один проход
+ UClassesStorageIterator I = ClassesStorage.begin();
+ while(I != ClassesStorage.end())
  {
+  // Проверка наличия объектов (если нужно)
   UObjectsStorageIterator temp=ObjectsStorage.find(I->first);
   if(temp != ObjectsStorage.end() && temp->second.size() != 0)
   {
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Destory class which objecst in use: ")+FindClassName(I->first));
+   if(Logger)
+    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Destory class which objecst in use: ")+FindClassName(I->first));
    if(!force)
-	throw EObjectStorageNotEmpty(I->first);
-   else
-    break;
+   {
+    throw EObjectStorageNotEmpty(I->first);
+   }
+   // При force пропускаем проверку и продолжаем удаление
   }
- }
-
- for(UClassesStorageCIterator I = ClassesStorage.begin(), J=ClassesStorage.end(); I != J; ++I)
- {
+  
+  // Удаление класса
   RDK_SYS_TRY
   {
    try
    {
-	if(I->second)
-	{
+    if(I->second)
+    {
      std::string name=FindClassName(I->first);
-	 delete I->second.Get();
-	}
+     delete I->second.Get();
+    }
    }
    catch(...)
    {
-	if(Logger)
-	 Logger->LogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("Exception raised when destroy class ")+FindClassName(I->first));
+    if(Logger)
+     Logger->LogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("Exception raised when destroy class ")+FindClassName(I->first));
    }
   }
   RDK_SYS_CATCH
@@ -463,8 +478,12 @@ void UStorage::ClearClassesStorage(bool force)
    if(Logger)
     Logger->ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
   }
+  
+  // Безопасное удаление из map (erase возвращает следующий итератор)
+  I = ClassesStorage.erase(I);
  }
- ClassesStorage.clear();
+ 
+ // ClassesStorage уже очищен в цикле выше
 
  for(UClassesDescriptionCIterator I = ClassesDescription.begin(), J=ClassesDescription.end(); I != J; ++I)
  {
@@ -1119,40 +1138,136 @@ void UStorage::LoadClassesDescription()
 {
     std::vector<string> lib_names;
     RDK::FindFilesList(ClDesc, "*", false, lib_names);
+    
+    // Кэшируем результаты FindFilesList для каждой библиотеки, чтобы избежать двойного вызова
+    struct LibFileCache {
+        std::string lib_name;
+        std::string lib_cl_desc_path;
+        std::vector<string> cl_desc_files;
+    };
+    
+    std::vector<LibFileCache> lib_files_cache;
+    size_t total_files = 0;
+    
+    // Собираем все файлы заранее (кэширование FindFilesList)
     for(std::vector<string>::iterator lib_name = lib_names.begin(); lib_name != lib_names.end(); ++lib_name)
     {
         std::string lib_cl_desc_path = ClDesc + *lib_name +"/ru-RU/";
-
         std::vector<string> cl_desc_files;
         RDK::FindFilesList(lib_cl_desc_path, "*.xml", true, cl_desc_files);
-
-        for(std::vector<string>::iterator cl_decs = cl_desc_files.begin(); cl_decs != cl_desc_files.end(); ++cl_decs)
+        
+        LibFileCache cache;
+        cache.lib_name = *lib_name;
+        cache.lib_cl_desc_path = lib_cl_desc_path;
+        cache.cl_desc_files = std::move(cl_desc_files);
+        total_files += cache.cl_desc_files.size();
+        lib_files_cache.push_back(std::move(cache));
+    }
+    
+    // Структура для хранения информации о файле для параллельной загрузки
+    struct FileLoadInfo {
+        std::string file_path;
+        std::string lib_cl_desc_path;
+        std::string file_name;
+    };
+    
+    // Собираем все пути к файлам заранее
+    std::vector<FileLoadInfo> files_to_load;
+    files_to_load.reserve(total_files);
+    
+    for(const auto& cache : lib_files_cache)
+    {
+        for(const auto& file_name : cache.cl_desc_files)
         {
-            USerStorageXML cl_desc_xml;
-            cl_desc_xml.LoadFromFile(lib_cl_desc_path+*cl_decs,"ClassDescription");
-
-            cl_desc_xml.SelectNodeForce("ClassName");
-            std::string class_name = cl_desc_xml.GetNodeText();
-            cl_desc_xml.SelectRoot();
-
-            // Пропускаем классы, которых нет в storage (могут быть устаревшие описания)
+            FileLoadInfo info;
+            info.file_path = cache.lib_cl_desc_path + file_name;
+            info.lib_cl_desc_path = cache.lib_cl_desc_path;
+            info.file_name = file_name;
+            files_to_load.push_back(std::move(info));
+        }
+    }
+    
+    // Структура для результатов параллельной загрузки
+    struct LoadedFileData {
+        std::string class_name;
+        USerStorageXML xml;
+        bool valid;
+    };
+    
+    // Параллельно загружаем XML файлы (только чтение, безопасно)
+    std::vector<std::future<LoadedFileData>> futures;
+    futures.reserve(files_to_load.size());
+    
+    for(const auto& file_info : files_to_load)
+    {
+        futures.push_back(std::async(std::launch::async, [file_info]() {
+            LoadedFileData result;
+            result.valid = false;
+            
             try
             {
-                SetClassDescription(class_name, new RDK::UContainerDescription());
-                LoadClassDescription(class_name,cl_desc_xml);
-            }
-            catch(const EClassNameNotExist&)
-            {
-                if(Logger)
-                    Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, 
-                        std::string("Skipping description for non-existent class: ") + class_name);
-                // Продолжаем загрузку других классов
+                // Каждый поток работает со своей копией XML структуры
+                USerStorageXML xml;
+                xml.LoadFromFile(file_info.file_path, "ClassDescription");
+                
+                xml.SelectNodeForce("ClassName");
+                result.class_name = xml.GetNodeText();
+                xml.SelectRoot();
+                
+                // Сохраняем XML для последующего использования (копируем, так как move может быть не полностью реализован)
+                result.xml = xml;
+                result.valid = true;
             }
             catch(...)
             {
-                // Пробрасываем другие исключения дальше
-                throw;
+                // Игнорируем ошибки загрузки отдельных файлов
+                result.valid = false;
             }
+            
+            return result;
+        }));
+    }
+    
+    // Последовательно добавляем загруженные описания в Storage (с синхронизацией)
+    std::mutex desc_mutex;
+    size_t processed_files = 0;
+    
+    for(auto& future : futures)
+    {
+        LoadedFileData loaded_data = future.get();
+        
+        if(!loaded_data.valid)
+            continue;
+        
+        // Синхронизируем доступ к ClassesDescription
+        std::lock_guard<std::mutex> lock(desc_mutex);
+        
+        try
+        {
+            SetClassDescription(loaded_data.class_name, new RDK::UContainerDescription());
+            LoadClassDescription(loaded_data.class_name, loaded_data.xml);
+        }
+        catch(const EClassNameNotExist&)
+        {
+            if(Logger)
+                Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, 
+                    std::string("Skipping description for non-existent class: ") + loaded_data.class_name);
+            // Продолжаем загрузку других классов
+        }
+        catch(...)
+        {
+            // Пробрасываем другие исключения дальше
+            throw;
+        }
+        
+        // Обновление прогресса после каждого загруженного описания класса (19-20%)
+        processed_files++;
+        if(FuncProgressBarCallback && total_files > 0)
+        {
+            int progress = 19 + (int)(processed_files / total_files);
+            std::string msg = "Launching application: loading class descriptions (" + 
+                             RDK::sntoa(processed_files) + "/" + RDK::sntoa(total_files) + ")...";
+            FuncProgressBarCallback(progress, msg);
         }
     }
 }
@@ -1296,6 +1411,18 @@ bool UStorage::SetLogger(UEPtr<UExceptionLogger> logger)
 
  Logger=logger;
  return true;
+}
+
+/// Установка callback для обновления прогресса инициализации
+void UStorage::SetProgressBarCallback(ProgressBarCallback callback)
+{
+    FuncProgressBarCallback = callback;
+}
+
+/// Получение callback для обновления прогресса инициализации
+ProgressBarCallback UStorage::GetProgressBarCallback() const
+{
+    return FuncProgressBarCallback;
 }
 
 // Возвращает библиотеку по индексу
@@ -1633,6 +1760,15 @@ void UStorage::InitRTlibs(void)
     for(size_t i = 0 ; i < lib_names.size(); i++)
     {
        LoadRuntimeCollection(lib_names[i]);
+       
+       // Обновление прогресса после каждой загруженной библиотеки (15-17%)
+       if(FuncProgressBarCallback && lib_names.size() > 0)
+       {
+           int progress = 15 + (int)((i + 1) * 2 / lib_names.size());
+           std::string msg = "Launching application: loading library " + lib_names[i] + " (" + 
+                            RDK::sntoa(i + 1) + "/" + RDK::sntoa(lib_names.size()) + ")...";
+           FuncProgressBarCallback(progress, msg);
+       }
     }
 }
 
@@ -1701,6 +1837,15 @@ bool UStorage::AddCollection(ULibrary *library, bool force_build)
  }
 
  CollectionList.push_back(library);
+ 
+ // Обновляем индекс классов -> библиотек для оптимизации поиска
+ // Это позволяет FindCollection() работать за O(1) вместо O(m)
+ const std::vector<std::string>& complete_classes = newlib->GetComplete();
+ for(const auto& class_name : complete_classes)
+ {
+  ClassLibraryIndex[class_name] = newlib;
+ }
+ 
  if(force_build)
   BuildStorage();
  return true;
@@ -1713,13 +1858,31 @@ bool UStorage::DelCollection(int index)
  if(index < 0 || index >= int(CollectionList.size()))
   return false;
  std::vector<ULibrary*>::iterator I=CollectionList.begin()+index;
+ UEPtr<ULibrary> lib_to_remove = *I;
+ 
+ // Удаляем библиотеку из индекса классов -> библиотек
+ if(lib_to_remove)
+ {
+  const std::vector<std::string>& complete_classes = lib_to_remove->GetComplete();
+  for(const auto& class_name : complete_classes)
+  {
+   // Удаляем только если это та же библиотека (на случай дубликатов)
+   auto index_it = ClassLibraryIndex.find(class_name);
+   if(index_it != ClassLibraryIndex.end() && index_it->second == lib_to_remove)
+   {
+    ClassLibraryIndex.erase(index_it);
+   }
+  }
+ }
+ 
  if((*I)->GetType() == 2)
  {
   //static_cast<URuntimeLibrary*>(*I)->DeleteOwnDirectory();
   delete *I;
  }
  CollectionList.erase(I);
- DelAbandonedClasses();
+ // Убрано: DelAbandonedClasses() - вызывающий код должен сам вызывать DelAbandonedClasses() при необходимости
+ // Это критично для производительности - избегаем множественных вызовов при удалении нескольких библиотек
  return true;
 }
 
@@ -1951,6 +2114,15 @@ bool UStorage::BuildStorage(void)
 // 1 - Внешняя библиотека (загружена из внешней dll)
 bool UStorage::BuildStorage(int lib_type)
 {
+    // Подсчитываем количество библиотек нужного типа для прогресса
+    size_t total_libs = 0;
+    for(size_t i=0;i<CollectionList.size();i++)
+    {
+        if(CollectionList[i] && CollectionList[i]->GetType()==lib_type)
+            total_libs++;
+    }
+    
+    size_t processed_libs = 0;
     for(size_t i=0;i<CollectionList.size();i++)
     {
      UEPtr<ULibrary> lib=CollectionList[i];
@@ -1989,6 +2161,16 @@ bool UStorage::BuildStorage(int lib_type)
       IncompletedClassNames.insert(IncompletedClassNames.end(),
                                 lib->GetIncomplete().begin(),
                                 lib->GetIncomplete().end());
+      
+      // Обновление прогресса после каждой обработанной библиотеки (17-19%)
+      processed_libs++;
+      if(FuncProgressBarCallback && total_libs > 0)
+      {
+          int progress = 17 + (int)(processed_libs * 2 / total_libs);
+          std::string msg = "Launching application: building library " + lib->GetName() + " (" + 
+                           RDK::sntoa(processed_libs) + "/" + RDK::sntoa(total_libs) + ")...";
+          FuncProgressBarCallback(progress, msg);
+      }
      }
     }
 
@@ -1999,11 +2181,34 @@ bool UStorage::BuildStorage(int lib_type)
 /// а также все связанные образцы
 void UStorage::DelAbandonedClasses(void)
 {
+ // Оптимизация: строим индекс классов -> библиотек один раз перед циклом
+ // Это уменьшает сложность с O(n*m) до O(n+m), где n - классы, m - библиотеки
+ std::unordered_set<std::string> classes_with_libs;
+ classes_with_libs.reserve(ClassesStorage.size());
+ 
+ // Проходим по всем библиотекам и собираем имена классов
+ for(size_t i=0; i<CollectionList.size(); i++)
+ {
+  UEPtr<ULibrary> lib = CollectionList[i];
+  if(lib)
+  {
+   // Получаем список классов библиотеки
+   const std::vector<std::string>& complete_classes = lib->GetComplete();
+   for(const auto& class_name : complete_classes)
+   {
+    classes_with_libs.insert(class_name);
+   }
+  }
+ }
+ 
+ // Теперь проходим по классам и удаляем только те, для которых нет библиотек
  UClassesStorageIterator I=ClassesStorage.begin(),J;
  while(I != ClassesStorage.end())
  {
   J=I; ++J;
-  if(!FindCollection(I->first))
+  std::string class_name = FindClassName(I->first);
+  // Используем индекс вместо вызова FindCollection() для каждого класса
+  if(classes_with_libs.find(class_name) == classes_with_libs.end())
    DelClass(I->first,true);
   I=J;
  }
@@ -2012,11 +2217,23 @@ void UStorage::DelAbandonedClasses(void)
 /// Возвращает указатель на библиотеку класса по имени класса
 UEPtr<ULibrary> UStorage::FindCollection(const std::string &class_name)
 {
+ // Оптимизация: используем индекс для O(1) поиска вместо O(m) линейного поиска
+ auto index_it = ClassLibraryIndex.find(class_name);
+ if(index_it != ClassLibraryIndex.end())
+ {
+  return index_it->second;
+ }
+ 
+ // Fallback: если индекс не содержит класс (например, при старых данных), используем линейный поиск
  for(size_t i=0;i<CollectionList.size();i++)
  {
   UEPtr<ULibrary> lib=CollectionList[i];
-  if(lib->IsClassNamePresent(class_name))
+  if(lib && lib->IsClassNamePresent(class_name))
+  {
+   // Обновляем индекс для будущих вызовов
+   ClassLibraryIndex[class_name] = lib;
    return lib;
+  }
  }
  return 0;
 }

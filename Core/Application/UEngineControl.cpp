@@ -9,6 +9,7 @@
 #include "UApplication.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 #include "../../Deploy/Include/rdk_logging.h"
+#include "../../Core/System/rdk_system.h"
 
 namespace RDK {
 
@@ -28,6 +29,8 @@ UEngineControl::UEngineControl(void)
     SetGuiUpdateMode(0);
 
     InitFlag=false;
+
+    LastInterfaceUpdateTime = 0;
 
     Name="EngineControl";
 }
@@ -273,6 +276,14 @@ void UEngineControl::StartChannel(int channel_index)
 //  Timer->Enabled=true;
 //  for(size_t i=0; i<EngineControlThreads.size(); i++)
 //   CalculateState[i]=true;
+  if(channel_index < 0)
+  {
+   RLOG(RDK_EX_INFO, RDK_GLOB_MESSAGE, "glob", std::string("Calculation started for all channels (mode: single-threaded)"));
+  }
+  else
+  {
+   RLOG(RDK_EX_INFO, RDK_GLOB_MESSAGE, "glob", std::string("Calculation started for channel #") + sntoa(channel_index) + std::string(" (mode: single-threaded)"));
+  }
  break;
 
  case 1:
@@ -287,6 +298,7 @@ void UEngineControl::StartChannel(int channel_index)
 	 EngineControlThreads[i]->Start();
 	}
    }
+   RLOG(RDK_EX_INFO, RDK_GLOB_MESSAGE, "glob", std::string("Calculation started for all channels (mode: multi-threaded)"));
   }
   else
   {
@@ -294,6 +306,7 @@ void UEngineControl::StartChannel(int channel_index)
 	{
 	 EngineControlThreads[channel_index]->Start();
 	}
+   RLOG(RDK_EX_INFO, RDK_GLOB_MESSAGE, "glob", std::string("Calculation started for channel #") + sntoa(channel_index) + std::string(" (mode: multi-threaded)"));
   }
  break;
  }
@@ -315,6 +328,14 @@ void UEngineControl::PauseChannel(int channel_index)
 //  Timer->Enabled=false;
 //  for(size_t i=0; i<EngineControlThreads.size(); i++)
 //   CalculateState[i]=false;
+  if(channel_index < 0)
+  {
+   RLOG(RDK_EX_INFO, RDK_GLOB_MESSAGE, "glob", std::string("Calculation paused for all channels (mode: single-threaded)"));
+  }
+  else
+  {
+   RLOG(RDK_EX_INFO, RDK_GLOB_MESSAGE, "glob", std::string("Calculation paused for channel #") + sntoa(channel_index) + std::string(" (mode: single-threaded)"));
+  }
  break;
 
  case 1:
@@ -333,6 +354,7 @@ void UEngineControl::PauseChannel(int channel_index)
 	 }
 	}
    }
+   RLOG(RDK_EX_INFO, RDK_GLOB_MESSAGE, "glob", std::string("Calculation paused for all channels (mode: multi-threaded)"));
   }
   else
   {
@@ -362,6 +384,7 @@ void UEngineControl::PauseChannel(int channel_index)
    {
 //	Timer->Enabled=false;
    }
+   RLOG(RDK_EX_INFO, RDK_GLOB_MESSAGE, "glob", std::string("Calculation paused for channel #") + sntoa(channel_index) + std::string(" (mode: multi-threaded)"));
   }
  break;
  }
@@ -391,6 +414,7 @@ void UEngineControl::ResetChannel(int channel_index)
   }
   RDK::UIVisualControllerStorage::AfterReset();
   RDK::UIVisualControllerStorage::UpdateInterface();
+  RLOG(RDK_EX_INFO, RDK_GLOB_MESSAGE, "glob", std::string("Calculation reset for all channels"));
  }
  else
  {
@@ -406,6 +430,7 @@ void UEngineControl::ResetChannel(int channel_index)
   RDK::UIControllerStorage::AfterReset(channel_index);
   RDK::UIVisualControllerStorage::AfterReset();
   RDK::UIVisualControllerStorage::UpdateInterface();
+  RLOG(RDK_EX_INFO, RDK_GLOB_MESSAGE, "glob", std::string("Calculation reset for channel #") + sntoa(channel_index));
  }
 }
 
@@ -501,19 +526,27 @@ void UEngineControl::TimerExecute(void)
   int num_channels=GetNumChannels();
   if(GuiUpdateMode == 1)
   {
+   // Оптимизация: синхронизация потоков только для активных каналов
    for(int i=0;i<num_channels;i++)
    {
-    EngineControlThreads[i]->WaitSyncSignal();
+    if(EngineControlThreads[i] && EngineControlThreads[i]->IsCalcStarted())
+    {
+     EngineControlThreads[i]->WaitSyncSignal();
+    }
    }
 
+   // Оптимизация: проверка завершения расчета только для активных каналов с ненулевой длительностью шага
    for(int i=0;i<num_channels;i++)
    {
-	unsigned long long model_full_step_duration=EngineControlThreads[i]->GetLastFullStepDuration();
-	if(model_full_step_duration>0)
+	if(EngineControlThreads[i] && EngineControlThreads[i]->IsCalcStarted())
 	{
-	 if(EngineControlThreads[i]->WaitForCalculationComplete(int(model_full_step_duration)) == false)
+	 unsigned long long model_full_step_duration=EngineControlThreads[i]->GetLastFullStepDuration();
+	 if(model_full_step_duration>0)
 	 {
-	  RLOG(RDK_EX_DEBUG, RDK_GLOB_MESSAGE, "glob", std::string("Calculation doesn't complete for channel #") + sntoa(i) + std::string(" for =") + sntoa(model_full_step_duration) + " ms");
+	  if(EngineControlThreads[i]->WaitForCalculationComplete(int(model_full_step_duration)) == false)
+	  {
+	   RLOG(RDK_EX_DEBUG, RDK_GLOB_MESSAGE, "glob", std::string("Calculation doesn't complete for channel #") + sntoa(i) + std::string(" for =") + sntoa(model_full_step_duration) + " ms");
+	  }
 	 }
 	}
    }
@@ -538,7 +571,16 @@ void UEngineControl::TimerExecute(void)
   RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
 //  for(int i=0;i<GetNumChannels();i++)
 //   EngineControlThreads[i]->GetProfiler()->CalcProfilerOutputData();
-  RDK::UIVisualControllerStorage::UpdateInterface();
+  // Оптимизация: дебаунсинг обновления интерфейса для снижения нагрузки на UI поток
+  unsigned long long current_time = RDK::GetCurrentStartupTime();
+  int update_interval = UpdateInterval;
+  if(update_interval <= 0)
+   update_interval = 100; // значение по умолчанию
+  if(LastInterfaceUpdateTime == 0 || RDK::CalcDiffTime(current_time, LastInterfaceUpdateTime) >= (unsigned long long)update_interval)
+  {
+   RDK::UIVisualControllerStorage::UpdateInterface();
+   LastInterfaceUpdateTime = current_time;
+  }
 
   try
   {
@@ -559,9 +601,13 @@ void UEngineControl::TimerExecute(void)
 
   if(GuiUpdateMode == 1)
   {
+   // Оптимизация: синхронизация потоков только для активных каналов
    for(int i=0;i<num_channels;i++)
    {
-	EngineControlThreads[i]->WaitSyncSignalOff();
+	if(EngineControlThreads[i] && EngineControlThreads[i]->IsCalcStarted())
+	{
+	 EngineControlThreads[i]->WaitSyncSignalOff();
+	}
    }
   }
  }
