@@ -27,6 +27,41 @@ See file license.txt for more information
 
 namespace RDK {
 
+// Вспомогательный trait для проверки, является ли тип вектором
+template<typename T>
+struct is_vector : std::false_type {};
+
+template<typename T, typename Alloc>
+struct is_vector<std::vector<T, Alloc>> : std::true_type {};
+
+template<typename T>
+inline constexpr bool is_vector_v = is_vector<T>::value;
+
+// Вспомогательная функция для определения типа без создания XML объекта (оптимизация)
+// Использует typeid и std::is_same вместо создания временных объектов
+template<typename T>
+inline std::string GetTypeName()
+{
+ return typeid(T).name();
+}
+
+// Специализации для часто используемых типов
+template<> inline std::string GetTypeName<bool>() { return typeid(bool).name(); }
+template<> inline std::string GetTypeName<char>() { return typeid(char).name(); }
+template<> inline std::string GetTypeName<unsigned char>() { return typeid(unsigned char).name(); }
+template<> inline std::string GetTypeName<short>() { return typeid(short).name(); }
+template<> inline std::string GetTypeName<unsigned short>() { return typeid(unsigned short).name(); }
+template<> inline std::string GetTypeName<int>() { return typeid(int).name(); }
+template<> inline std::string GetTypeName<unsigned int>() { return typeid(unsigned int).name(); }
+template<> inline std::string GetTypeName<long>() { return typeid(long).name(); }
+template<> inline std::string GetTypeName<unsigned long>() { return typeid(unsigned long).name(); }
+template<> inline std::string GetTypeName<long long>() { return typeid(long long).name(); }
+template<> inline std::string GetTypeName<unsigned long long>() { return typeid(unsigned long long).name(); }
+template<> inline std::string GetTypeName<float>() { return typeid(float).name(); }
+template<> inline std::string GetTypeName<double>() { return typeid(double).name(); }
+template<> inline std::string GetTypeName<long double>() { return typeid(long double).name(); }
+template<> inline std::string GetTypeName<std::string>() { return "std::string"; }
+
 // Оптимизированные функции сериализации простых типов
 // Используют быстрые функции преобразования с сохранением полной точности для вещественных чисел
 
@@ -272,20 +307,11 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::map<T1,T2> &dat
  storage.SetNodeAttribute("Type","std::map");
  storage.SetNodeAttribute("Size",sntoa(data.size()));
 
- // Узнать типы элементов пары (на случай отсутствия элементов внутри)
- T1 first;
- USerStorageXML tempXML;
- tempXML.Destroy();
- tempXML.Create("temp");
- tempXML << first;
- std::string first_type = tempXML.GetNodeAttribute("Type");
+ // Оптимизация: используем typeid вместо создания временных XML объектов
+ std::string first_type = GetTypeName<T1>();
  storage.SetNodeAttribute("firstType",first_type);
 
- T2 second;
- tempXML.Destroy();
- tempXML.Create("temp");
- tempXML << second;
- std::string second_type = tempXML.GetNodeAttribute("Type");
+ std::string second_type = GetTypeName<T2>();
  storage.SetNodeAttribute("secondType",second_type);
 
 
@@ -363,13 +389,8 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::list<T> &data)
  size_t size=data.size();
  storage.SetNodeAttribute("Size",sntoa(size));
 
- // Указать тип элемента контейнера (на случай отсутствия элементов внутри)
- T temp;
- USerStorageXML tempXML;
- tempXML.Destroy();
- tempXML.Create("temp");
- tempXML << temp;
- std::string type = tempXML.GetNodeAttribute("Type");
+ // Оптимизация: используем typeid вместо создания временных XML объектов
+ std::string type = GetTypeName<T>();
  storage.SetNodeAttribute("elemType",type);
 
  if(size == 0)
@@ -469,42 +490,35 @@ USerStorageXML& operator << (USerStorageXML& storage, const std::vector<T> &data
  size_t size=data.size();
  storage.SetNodeAttribute("Size",sntoa(size));
 
- // Указать тип элемента контейнера (на случай отсутствия элементов внутри)
- T temp;
- USerStorageXML tempXML;
- tempXML.Destroy();
- tempXML.Create("temp");
- tempXML << temp;
- std::string elem_type = tempXML.GetNodeAttribute("Type");
- std::string elem_size = tempXML.GetNodeAttribute("Size");
-
+ // Оптимизация: используем typeid вместо создания временных XML объектов
+ std::string elem_type = GetTypeName<T>();
  storage.SetNodeAttribute("elemType",elem_type);
 
- if(!elem_size.empty())
-  storage.SetNodeAttribute("elemSize",elem_size);
-
- if(elem_type == "simplevector")
+ // Для определения вложенных типов используем проверку во время компиляции
+ // Если это массив, сохраняем размер
+ if constexpr (std::is_array_v<T>)
  {
-  T elem_temp;
-  USerStorageXML elem_tempXML;
-  elem_tempXML.Destroy();
-  elem_tempXML.Create("elem_temp");
-  elem_tempXML << elem_temp;
-  std::string elem_SV_type = elem_tempXML.GetNodeAttribute("elemType");
-
-  storage.SetNodeAttribute("elemSVType",elem_SV_type);
+  storage.SetNodeAttribute("elemSize", sntoa(std::extent_v<T>));
+  // Для массивов определяем тип элемента
+  using ElemType = std::remove_extent_t<T>;
+  std::string elem_SV_type = GetTypeName<ElemType>();
+  storage.SetNodeAttribute("elemSVType", elem_SV_type);
  }
-
- if(elem_type == "std::vector")
+ else if constexpr (is_vector_v<T>)
  {
-  T elem_temp;
-  USerStorageXML elem_tempXML;
-  elem_tempXML.Destroy();
-  elem_tempXML.Create("elem_temp");
-  elem_tempXML << elem_temp;
-  std::string elem_SV_type = elem_tempXML.GetNodeAttribute("elemType");
-
-  storage.SetNodeAttribute("elemVecType",elem_SV_type);
+  // Для векторов проверяем тип элемента
+  using ElemType = typename T::value_type;
+  std::string elem_SV_type = GetTypeName<ElemType>();
+  
+  // Проверяем, является ли элемент вектором (вложенный вектор)
+  if constexpr (is_vector_v<ElemType>)
+  {
+   storage.SetNodeAttribute("elemVecType", elem_SV_type);
+  }
+  else if constexpr (std::is_array_v<ElemType>)
+  {
+   storage.SetNodeAttribute("elemSVType", elem_SV_type);
+  }
  }
 
  /*

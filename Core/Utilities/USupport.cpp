@@ -301,15 +301,39 @@ RDK_LIB_TYPE string relative_file_path(const string &path, const string &relativ
 /// Заменяет все вхождения подстроки find_str на подстроку replace_str
 RDK_LIB_TYPE string replace_substring(const string &src, const string &find_str, const string &replace_str )
 {
- std::string result(src);
- string::size_type i = 0;
-
- while ( ( i = result.find( find_str, i ) ) != result.npos )
+ // Если искомая подстрока пуста или равна исходной, возвращаем исходную строку
+ if(find_str.empty() || find_str == replace_str)
+  return src;
+ 
+ // Подсчитываем количество вхождений для предварительного резервирования памяти
+ string::size_type count = 0;
+ string::size_type pos = 0;
+ while((pos = src.find(find_str, pos)) != string::npos)
  {
-  result.replace( i, find_str.length(), replace_str);
-  i+=replace_str.length();
+  ++count;
+  pos += find_str.length();
  }
-
+ 
+ // Если вхождений нет, возвращаем исходную строку
+ if(count == 0)
+  return src;
+ 
+ // Вычисляем размер результата и резервируем память
+ size_t result_size = src.length() + count * (replace_str.length() - find_str.length());
+ std::string result;
+ result.reserve(result_size);
+ 
+ // Выполняем замену за один проход
+ pos = 0;
+ string::size_type prev_pos = 0;
+ while((pos = src.find(find_str, prev_pos)) != string::npos)
+ {
+  result.append(src, prev_pos, pos - prev_pos);
+  result.append(replace_str);
+  prev_pos = pos + find_str.length();
+ }
+ result.append(src, prev_pos);
+ 
  return result;
 }
 
@@ -317,26 +341,37 @@ RDK_LIB_TYPE string replace_substring(const string &src, const string &find_str,
 /// Загружает файл в строку
 RDK_LIB_TYPE bool LoadFile(const std::string &file_name, std::string &buffer)
 {
- std::ifstream t(file_name.c_str(), ios::in);
+ std::ifstream t(file_name.c_str(), ios::in | ios::binary);
 
- if(!t || t.fail() || t.bad())
+ if(!t.is_open())
  {
   buffer.clear();
   return false;
  }
 
+ // Получаем размер файла
  t.seekg(0, std::ios::end);
- if(t.fail() || t.bad())
-  return false;
- buffer.reserve(t.tellg());
+ std::streampos file_size = t.tellg();
+ if(file_size <= 0)
+ {
+  buffer.clear();
+  return true; // Пустой файл - не ошибка
+ }
+ 
  t.seekg(0, std::ios::beg);
- if(t.fail() || t.bad())
+ 
+ // Резервируем память и читаем файл
+ buffer.clear();
+ buffer.resize(static_cast<size_t>(file_size));
+ t.read(&buffer[0], file_size);
+ 
+ // Проверяем успешность чтения
+ if(t.gcount() != static_cast<std::streamsize>(file_size))
+ {
+  buffer.clear();
   return false;
-
- buffer.assign((std::istreambuf_iterator<char>(t)),
-			std::istreambuf_iterator<char>());
- if(t.fail() || t.bad())
-  return false;
+ }
+ 
  return true;
 }
 
@@ -344,24 +379,35 @@ bool LoadFileBin(const std::string &file_name, std::vector<uint8_t> &buffer)
 {
  std::ifstream t(file_name.c_str(), ios::in | ios::binary);
 
- if(!t || t.fail() || t.bad())
+ if(!t.is_open())
  {
   buffer.clear();
   return false;
  }
 
+ // Получаем размер файла
  t.seekg(0, std::ios::end);
- if(t.fail() || t.bad())
-  return false;
- buffer.reserve(t.tellg());
+ std::streampos file_size = t.tellg();
+ if(file_size <= 0)
+ {
+  buffer.clear();
+  return true; // Пустой файл - не ошибка
+ }
+ 
  t.seekg(0, std::ios::beg);
- if(t.fail() || t.bad())
+ 
+ // Резервируем память и читаем файл
+ buffer.clear();
+ buffer.resize(static_cast<size_t>(file_size));
+ t.read(reinterpret_cast<char*>(&buffer[0]), file_size);
+ 
+ // Проверяем успешность чтения
+ if(t.gcount() != static_cast<std::streamsize>(file_size))
+ {
+  buffer.clear();
   return false;
-
- buffer.assign((std::istreambuf_iterator<char>(t)),
-			std::istreambuf_iterator<char>());
- if(t.fail() || t.bad())
-  return false;
+ }
+ 
  return true;
 }
 
@@ -369,16 +415,20 @@ bool LoadFileBin(const std::string &file_name, std::vector<uint8_t> &buffer)
 /// Сохраняет файл из строки
 RDK_LIB_TYPE bool SaveFile(const std::string &file_name, const std::string &buffer)
 {
- std::ofstream t(file_name.c_str(), ios::trunc);
+ std::ofstream t(file_name.c_str(), ios::trunc | ios::binary);
 
- if(!t || t.fail() || t.bad())
+ if(!t.is_open())
  {
   return false;
  }
 
- t<<buffer;
- if(t.fail() || t.bad())
-  return false;
+ if(!buffer.empty())
+ {
+  t.write(buffer.c_str(), static_cast<std::streamsize>(buffer.size()));
+  if(!t.good())
+   return false;
+ }
+ 
  return true;
 }
 
@@ -386,15 +436,18 @@ bool SaveFileBin(const std::string &file_name, const std::vector<uint8_t> &buffe
 {
  std::ofstream t(file_name.c_str(), ios::trunc | ios::binary);
 
- if(!t || t.fail() || t.bad())
+ if(!t.is_open())
  {
   return false;
  }
 
  if(!buffer.empty())
-  t.write(reinterpret_cast<const char *>(&buffer[0]),buffer.size());
- if(t.fail() || t.bad())
-  return false;
+ {
+  t.write(reinterpret_cast<const char *>(&buffer[0]), static_cast<std::streamsize>(buffer.size()));
+  if(!t.good())
+   return false;
+ }
+ 
  return true;
 }
 

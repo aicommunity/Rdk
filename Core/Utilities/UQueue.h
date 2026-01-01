@@ -125,57 +125,43 @@ size_t size(void)
 // Добавляет элемент в конец
 void push(const Ty& obj)
 {
- if(empty())
+ // Инициализация при первом использовании
+ if(!MaxSize)
  {
-  // если не создано хранилище
-  if(!MaxSize)
-  {
-   m_pData.resize(INIT_SIZE);
-   MaxSize = INIT_SIZE;
-  }
+  m_pData.resize(INIT_SIZE);
+  MaxSize = INIT_SIZE;
   Front = Back = 0;
+  Size = 0;
+ }
+ 
+ // Проверяем, нужно ли расширение
+ if(Size >= MaxSize)
+ {
+  // Сохраняем текущие данные
+  vector<Ty> temp;
+  temp.reserve(MaxSize * 2);
+  
+  // Копируем элементы от Front до конца, затем от начала до Back
+  for(unsigned int i = Front; i < MaxSize; ++i)
+   temp.push_back(m_pData[i]);
+  for(unsigned int i = 0; i < Front; ++i)
+   temp.push_back(m_pData[i]);
+  
+  // Расширяем и обновляем индексы
+  m_pData = temp;
+  m_pData.resize(MaxSize * 2);
+  Front = 0;
+  Back = MaxSize;
+  MaxSize *= 2;
  }
  else
  {
-  // если дощли до конца блока памяти
-  if(++Back == MaxSize)
-  {
-   // если всю память израсходовли
-   if(Size == MaxSize)
-   {
-    // выделяем новый блок, причём все
-    // элементы хранятся не разрывно
-    m_pData.resize(m_pData.size()+MaxSize);
-    Front = 0;
-    Back = MaxSize;
-    MaxSize *= 2;
-   }
-   else
-    // память ещё есть в начале
-    Back = 0;
-  }
-  else
-  if(Back == Front)
-  {
-   // если здесь то вся память потрачена
-   // и разбита на две части
-   vector<Ty> temp;
-   temp.resize(temp.size()+MaxSize);
-   for(size_t i=Front,j=0;i<MaxSize;i++,j++)
-    temp[j]=m_pData[i];
-   for(size_t i=0,j=Front+1;i<Front;i++,j++)
-    temp[j]=m_pData[i];
-
-   m_pData=temp;
-
-   Front = 0;
-   Back = MaxSize;
-   MaxSize *= 2;
-  }
+  // Обычное добавление
+  Back = (Back + 1) % MaxSize;
  }
-
- ++Size;
+ 
  m_pData[Back] = obj;
+ ++Size;
 };
 
 // Извлекает элемент из начала

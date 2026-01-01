@@ -690,6 +690,8 @@ void* MDMatrix<T>::GetVoid(void)
 template<class T>
 const MDMatrix<T>& MDMatrix<T>::operator = (const MDMatrix<T> &copy)
 {
+ if (&copy == this)
+  return *this;
  Resize(copy.Rows, copy.Cols);
  memcpy(Data,copy.Data,Rows*Cols*sizeof(T));
  return *this;
@@ -843,15 +845,23 @@ template<class T>
 MDMatrix<T> operator * (const MDMatrix<T> &M1, const MDMatrix<T> &M2)
 {
  MDMatrix<T> res(M1.GetRows(),M2.GetCols());
+ res.ToZero(); // Инициализируем нулями
 
- for(int j=0;j<M2.GetCols();j++)
+ int rows = M1.GetRows();
+ int cols = M1.GetCols();
+ int cols2 = M2.GetCols();
+ int cols1 = M1.GetCols();
+
+ // Оптимизированный порядок циклов для лучшего использования кэша: k → i → j
+ for(int k=0;k<rows;k++)
  {
-  for(int k=0;k<M1.GetRows();k++)
+  for(int i=0;i<cols;i++)
   {
-   T sum=0;
-   for(int i=0;i<M1.GetCols();i++)
-	sum+=M1.Data[k*M1.GetCols()+i]*M2.Data[i*M2.GetCols()+j];
-   res.Data[k*res.GetCols()+j]=sum;
+   T val = M1.Data[k*cols1+i];
+   for(int j=0;j<cols2;j++)
+   {
+    res.Data[k*cols2+j] += val * M2.Data[i*cols2+j];
+   }
   }
  }
 

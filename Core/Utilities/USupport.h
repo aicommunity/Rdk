@@ -562,38 +562,66 @@ RDK_LIB_TYPE int fraction(double d, int digs);
 template<typename CharT>
 int separatestring(const basic_string<CharT> &str, vector<basic_string<CharT> > &output, CharT sep, int num=0, int *lastpos=0)
 {
- typename basic_string<CharT>::size_type i=0,j=0;
- int size=0;
- int nnum=(num>0)?num-1:0;
-
  if(lastpos) *lastpos=0;
- output.resize(0);
+ output.clear();
  if(str.empty())
   return 0;
 
- while(i != string::npos && (nnum>=0) )
+ // Предварительно подсчитываем количество элементов для резервирования памяти
+ typename basic_string<CharT>::size_type i=0, j=0;
+ int count = 0;
+ int nnum = (num>0) ? num-1 : 0;
+ 
+ // Первый проход - подсчет элементов
+ while(i != string::npos && (nnum>=0))
  {
-  i=str.find_first_of(sep,j);
+  i = str.find_first_of(sep, j);
   if(i == j)
   {
    j++;
    continue;
   }
-
-  ++size;
-  output.resize(size);
+  ++count;
   if(num)
    nnum--;
   if(i == string::npos)
-   output[size-1]=str.substr(j);
+   break;
+  j = i + 1;
+  if(j >= str.size())
+   break;
+ }
+ 
+ // Резервируем память
+ output.reserve(count);
+ 
+ // Второй проход - заполнение вектора
+ i = 0;
+ j = 0;
+ nnum = (num>0) ? num-1 : 0;
+ int size = 0;
+ 
+ while(i != string::npos && (nnum>=0))
+ {
+  i = str.find_first_of(sep, j);
+  if(i == j)
+  {
+   j++;
+   continue;
+  }
+  
+  ++size;
+  if(num)
+   nnum--;
+  if(i == string::npos)
+   output.push_back(str.substr(j));
   else
-   output[size-1]=str.substr(j,i-j);
-  j=i+1;
+   output.push_back(str.substr(j, i-j));
+  j = i + 1;
   if(j >= str.size())
    break;
  }
 
- if(lastpos) *lastpos=int(i);
+ if(lastpos) *lastpos = int(i);
 
  return size;
 }

@@ -17,6 +17,8 @@ See file license.txt for more information
 #include <vector>
 #include <map>
 #include <list>
+#include <cstring>
+#include <type_traits>
 //#include "../Utilities/UQueue.h"
 #include "USerStorageBinary.h"
 #include "../Utilities/UTree.h"
@@ -26,25 +28,24 @@ namespace RDK {
 //typedef UQueue<unsigned char> USerStorage;
 
 // Простые типы
+// Оптимизированная версия с использованием блоковой записи
 template<typename T>
 USerStorageBinary& USimpleToStorage (USerStorageBinary& storage, const T data)
 {
- for(size_t i=0;i<sizeof(data);i++)
-  storage.push(reinterpret_cast<const unsigned char*>(&data)[i]);
-
+ // Используем блоковую запись для оптимизации производительности
+ storage.WriteBlock(reinterpret_cast<const unsigned char*>(&data), sizeof(data));
  return storage;
 }
 
 template<typename T>
 USerStorageBinary& USimpleFromStorage (USerStorageBinary& storage, T &data)
 {
- for(size_t i=0;i<sizeof(data);i++)
+ // Используем блоковое чтение для оптимизации производительности
+ int bytesRead = storage.ReadBlock(reinterpret_cast<unsigned char*>(&data), sizeof(data));
+ if(bytesRead != sizeof(data))
  {
-  if(storage.empty())
-   return storage;
-
-  reinterpret_cast<unsigned char*>(&data)[i]=storage.front();
-  storage.pop();
+  // Если не удалось прочитать все данные, обнуляем результат
+  memset(&data, 0, sizeof(data));
  }
  return storage;
 }
@@ -109,22 +110,20 @@ RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, long do
 template<typename T>
 USerStorageBinary& operator << (USerStorageBinary& storage, const T *data)
 {
- for(size_t i=0;i<sizeof(data);i++)
-  storage.push(reinterpret_cast<const unsigned char*>(&data)[i]);
-
+ // Используем блоковую запись для оптимизации производительности
+ storage.WriteBlock(reinterpret_cast<const unsigned char*>(&data), sizeof(data));
  return storage;
 }
 
 template<typename T>
 USerStorageBinary& operator >> (USerStorageBinary& storage, T* &data)
 {
- for(size_t i=0;i<sizeof(data);i++)
+ // Используем блоковое чтение для оптимизации производительности
+ int bytesRead = storage.ReadBlock(reinterpret_cast<unsigned char*>(&data), sizeof(data));
+ if(bytesRead != sizeof(data))
  {
-  if(storage.empty())
-   return storage;
-
-  reinterpret_cast<unsigned char*>(&data)[i]=storage.front();
-  storage.pop();
+  // Если не удалось прочитать все данные, обнуляем указатель
+  data = nullptr;
  }
  return storage;
 }
@@ -244,8 +243,18 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const std::vector<T>
  if(size == 0)
   return storage;
 
- for(size_t i=0;i<size;i++)
-  operator <<(storage,data[i]);
+ // Оптимизация: для POD типов используем блоковую запись
+ if constexpr (std::is_trivially_copyable_v<T> && std::is_standard_layout_v<T>)
+ {
+  // POD тип - используем блоковую запись
+  storage.WriteBlock(reinterpret_cast<const unsigned char*>(data.data()), size * sizeof(T));
+ }
+ else
+ {
+  // Не POD тип - используем поэлементную запись
+  for(size_t i=0;i<size;i++)
+   operator <<(storage,data[i]);
+ }
 
  return storage;
 }
@@ -253,17 +262,31 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const std::vector<T>
 template<typename T>
 USerStorageBinary& operator >> (USerStorageBinary& storage, std::vector<T> &data)
 {
- unsigned int size=data.size();
+ unsigned int size=0;
  operator >>(storage,size);
  data.resize(size);
 
  if(size == 0)
   return storage;
 
- T* pdata=&data[0];
-
- for(size_t i=0;i<size;i++)
-  operator >>(storage,*(pdata+i));
+ // Оптимизация: для POD типов используем блоковое чтение
+ if constexpr (std::is_trivially_copyable_v<T> && std::is_standard_layout_v<T>)
+ {
+  // POD тип - используем блоковое чтение
+  int bytesRead = storage.ReadBlock(reinterpret_cast<unsigned char*>(data.data()), size * sizeof(T));
+  if(bytesRead != size * sizeof(T))
+  {
+   // Если не удалось прочитать все данные, уменьшаем размер вектора
+   data.resize(bytesRead / sizeof(T));
+  }
+ }
+ else
+ {
+  // Не POD тип - используем поэлементное чтение
+  T* pdata=&data[0];
+  for(size_t i=0;i<size;i++)
+   operator >>(storage,*(pdata+i));
+ }
 
  return storage;
 }

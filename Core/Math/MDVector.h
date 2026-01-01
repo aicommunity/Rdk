@@ -202,6 +202,8 @@ void MDVector<T>::Assign(int size, const void *data)
 template<class T>
 MDVector<T>& MDVector<T>::operator = (const MDVector<T> &copy)
 {
+ if (&copy == this)
+  return *this;
  Resize(copy.GetRows());
  memcpy(MDMatrix<T>::Data,copy.Data,sizeof(T)*this->GetRows());
  return *this;

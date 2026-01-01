@@ -20,6 +20,7 @@ See file license.txt for more information
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <unordered_map>
 
 namespace RDK {
 
@@ -58,6 +59,12 @@ vector<UTree<T>* > SubTree;
 // Указатель на текущий подузел
 mutable UTree<T> *Current;
 
+// Опциональная индексация для быстрого поиска по имени (O(1) вместо O(n))
+// Индекс автоматически используется при количестве узлов >= INDEX_THRESHOLD
+mutable std::unordered_map<NameT, UTree<T>*> NameIndex;
+mutable bool IndexValid;
+static const size_t INDEX_THRESHOLD = 10; // Порог для включения индексации
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
@@ -68,6 +75,7 @@ UTree(void)
  Current=this;
  Name="Root";
  Separator='.';
+ IndexValid=false;
 };
 
 UTree(const UTree<T> &node)
@@ -78,6 +86,7 @@ UTree(const UTree<T> &node)
  Current=this;
  Name=node.Name;
  Data=node.Data;
+ IndexValid=false;
 
  SubTree.resize(node.SubTree.size());
 
@@ -136,6 +145,17 @@ UTree<T>* GetRoot(void)
 size_t GetSubTreeSize(void) const
 { return SubTree.size(); };
 
+// Обновляет индекс имен для быстрого поиска
+void UpdateIndex(void) const
+{
+ NameIndex.clear();
+ for(size_t j=0; j<SubTree.size(); j++)
+ {
+  NameIndex[SubTree[j]->Name] = SubTree[j];
+ }
+ IndexValid = true;
+}
+
 // Возвращает указатель на поддерево с полным именем 'fullname'
 UTree<T>* FindSubTree (const string &fullname)
 {
@@ -145,24 +165,60 @@ UTree<T>* FindSubTree (const string &fullname)
  i=fullname.find_first_of(Separator);
  if(i == string::npos)
   {
-   for(j=0;j<SubTree.size();j++)
-    if(SubTree[j]->Name == fullname)
+   // Используем индекс если доступен и есть достаточно узлов
+   if(SubTree.size() >= INDEX_THRESHOLD)
+   {
+    if(!IndexValid)
+     UpdateIndex();
+    
+    auto it = NameIndex.find(fullname);
+    if(it != NameIndex.end())
     {
-     Current=SubTree[j];
+     Current = it->second;
      return Current;
     }
+   }
+   else
+   {
+    // Линейный поиск для малого количества узлов
+    for(j=0;j<SubTree.size();j++)
+     if(SubTree[j]->Name == fullname)
+     {
+      Current=SubTree[j];
+      return Current;
+     }
+   }
 
    Current=this;
    return 0;
   }
  else
   {
-   for(j=0;j<SubTree.size();j++)
-    if(fullname.compare(0,i,SubTree[j]->Name) == 0)
+   string first_part = fullname.substr(0, i);
+   
+   // Используем индекс если доступен
+   if(SubTree.size() >= INDEX_THRESHOLD)
+   {
+    if(!IndexValid)
+     UpdateIndex();
+    
+    auto it = NameIndex.find(first_part);
+    if(it != NameIndex.end())
     {
-     Current=&((*SubTree[j])[fullname.substr(i+1,fullname.size()-i-1)]);
+     Current = &((*it->second)[fullname.substr(i+1,fullname.size()-i-1)]);
      return Current;
     }
+   }
+   else
+   {
+    // Линейный поиск для малого количества узлов
+    for(j=0;j<SubTree.size();j++)
+     if(fullname.compare(0,i,SubTree[j]->Name) == 0)
+     {
+      Current=&((*SubTree[j])[fullname.substr(i+1,fullname.size()-i-1)]);
+      return Current;
+     }
+   }
 
    Current=this;
    return 0;
@@ -373,6 +429,12 @@ bool Add(UTree<T> *node)
  node->Id=SubTree.size()+1;
  SubTree.push_back(node);
  SubTree[SubTree.size()-1]->Root=this;
+ 
+ // Инвалидируем индекс при добавлении узла
+ IndexValid = false;
+ if(SubTree.size() >= INDEX_THRESHOLD)
+  UpdateIndex();
+ 
  return true;
 };
 
@@ -427,7 +489,7 @@ bool Del(const string &name)
 // Сортирует ветвь.
 void Sort(void)
 {
- SubTree.sort();
+ std::sort(SubTree.begin(), SubTree.end());
 }
 
 // Создает ветвь дерева по длинному имени 'name'
