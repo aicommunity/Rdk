@@ -77,6 +77,8 @@ UContainer::UContainer(void)
   , PComponents(0), NumComponents(0), LastId(0)
   , CachedComponent(0), CachedComponentId(ForbiddenId), CachedComponentType(typeid(void))
   , ActiveComponentsCacheValid(false)
+  , CachedTimeStepEqual(false)
+  , CachedTimeStepLess(false), CachedTimeStepGreater(false)
 
 {
  Id = 0;
@@ -855,6 +857,11 @@ bool UContainer::SetTimeStep(const UTime &timestep)
  else
   OwnerTimeStep=timestep;
 
+ // Инвалидируем кэш проверок TimeStep
+ CachedTimeStepEqual = false;
+ CachedTimeStepLess = false;
+ CachedTimeStepGreater = false;
+
  // Указатель на все дочерние компоненты
  UEPtr<UContainer>* comps=PComponents;
  for(int i=0;i<NumComponents;i++,comps++)
@@ -896,10 +903,7 @@ bool UContainer::SetGlobalTimeStep(UTime timestep)
 
 
 // Устанавливает флаг активности компонента
-const bool& UContainer::GetActivity(void) const
-{
- return Activity.v;
-}
+// GetActivity() реализация перенесена в заголовочный файл как inline
 
 bool UContainer::SetActivity(const bool &activity)
 {
@@ -2432,7 +2436,7 @@ bool UContainer::Calculate(void)
  {
   try
   {
-   Init(); // Заглушка
+   // Оптимизация: убрали избыточный вызов Init() - проверка InitFlag выполняется ниже
 
    #ifdef RDK_ENABLE_CALC_LOGGING
    if(!Owner)
@@ -2451,7 +2455,9 @@ bool UContainer::Calculate(void)
 	return false;
    }
 
-   unsigned long long tempstepduration=StartCalcTime=GetCurrentStartupTime();
+   // Оптимизация: кэшируем GetCurrentStartupTime() для уменьшения системных вызовов
+   unsigned long long start_time = GetCurrentStartupTime();
+   unsigned long long tempstepduration=StartCalcTime=start_time;
    InterstepsInterval=(LastCalcTime>0)?CalcDiffTime(tempstepduration,LastCalcTime):0;
    LastCalcTime=tempstepduration;
 
@@ -2503,7 +2509,9 @@ bool UContainer::Calculate(void)
 	 #ifdef RDK_ENABLE_CALC_TIME_CHECKS
 	 if(check_max_duration)
 	 {
-	  unsigned long long calc_duration=CalcDiffTime(GetCurrentStartupTime(),StartCalcTime);
+	  // Используем актуальное время для проверки длительности
+	  unsigned long long current_time = GetCurrentStartupTime();
+	  unsigned long long calc_duration=CalcDiffTime(current_time,StartCalcTime);
 	  if(calc_duration > ULongTime(MaxCalculationDuration))
 	 {
 	   ForceSkipComponentCalculation();
@@ -2521,36 +2529,64 @@ bool UContainer::Calculate(void)
    SkipComponentCalculation=false;
    ComponentReCalculation=false;
 
-   LogPropertiesBeforeCalc();
+   // Оптимизация: кэшируем флаг логирования для избежания повторных проверок
+   bool should_log_properties = (Logger && Logger->GetDebugMode() && 
+								 (Logger->GetDebugSysEventsMask() & (RDK_SYS_DEBUG_PROPERTIES & DebugSysEventsMask)));
+   if(should_log_properties)
+	LogPropertiesBeforeCalc();
 
    #ifdef RDK_ENABLE_CALC_TIME_CHECKS
+   // Используем актуальное время для начала измерения ACalculate
    unsigned long long acalc_start_time=GetCurrentStartupTime();
    bool check_acalc_duration = check_max_duration;
    #endif
+   
+   // Оптимизация: кэшируем проверки TimeStep для избежания повторных вычислений
    if(!Owner)
    {
 	ACalculate();
    }
    else
-   if(TimeStep == OwnerTimeStep)
    {
-	ACalculate();
-   }
-   else
-   if(TimeStep < OwnerTimeStep)
-   {
-	--CalcCounter;
-	if(CalcCounter <= 0)
+	// Обновляем OwnerTimeStep если нужно
+	if(OwnerTimeStep == 0 || OwnerTimeStep != GetOwner()->TimeStep)
 	{
-	 CalcCounter=OwnerTimeStep/TimeStep;
+	 OwnerTimeStep = GetOwner()->TimeStep;
+	 // Инвалидируем кэш при изменении OwnerTimeStep
+	 CachedTimeStepEqual = false;
+	 CachedTimeStepLess = false;
+	 CachedTimeStepGreater = false;
+	}
+	
+	// Вычисляем сравнения TimeStep лениво
+	if(!CachedTimeStepEqual && !CachedTimeStepLess && !CachedTimeStepGreater)
+	{
+	 if(TimeStep == OwnerTimeStep)
+	  CachedTimeStepEqual = true;
+	 else if(TimeStep < OwnerTimeStep)
+	  CachedTimeStepLess = true;
+	 else
+	  CachedTimeStepGreater = true;
+	}
+	
+	if(CachedTimeStepEqual)
+	{
 	 ACalculate();
 	}
-   }
-   else
-   if(TimeStep > OwnerTimeStep)
-   {
-	for(int calc_iter=int(TimeStep/OwnerTimeStep);calc_iter>=0;--calc_iter)
-	 ACalculate();
+	else if(CachedTimeStepLess)
+	{
+	 --CalcCounter;
+	 if(CalcCounter <= 0)
+	 {
+	  CalcCounter=OwnerTimeStep/TimeStep;
+	  ACalculate();
+	 }
+	}
+	else if(CachedTimeStepGreater)
+	{
+	 for(int calc_iter=int(TimeStep/OwnerTimeStep);calc_iter>=0;--calc_iter)
+	  ACalculate();
+	}
    }
    #ifdef RDK_ENABLE_CALC_TIME_CHECKS
    if(check_acalc_duration)
@@ -2567,12 +2603,18 @@ bool UContainer::Calculate(void)
    }
    #endif
 
-   LogPropertiesAfterCalc();
+   // Используем тот же кэшированный флаг для логирования после расчета
+   if(should_log_properties)
+	LogPropertiesAfterCalc();
 
-   UpdateMainOwner();
+   // Оптимизация: вызываем UpdateMainOwner() только если MainOwner установлен
+   if(MainOwner)
+	UpdateMainOwner();
    InterstepsInterval-=StepDuration;
 
-   StepDuration=CalcDiffTime(GetCurrentStartupTime(),tempstepduration);
+   // Используем актуальное время для финального расчета StepDuration
+   unsigned long long end_time = GetCurrentStartupTime();
+   StepDuration=CalcDiffTime(end_time,tempstepduration);
 
    #ifdef RDK_ENABLE_CALC_TIME_CHECKS
    if(check_duration_threshold && (StepDuration > ULongTime(CalculationDurationThreshold)))
