@@ -48,7 +48,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 
     settings = NULL;
     propertyChanger = NULL;
-    drawEngine = NULL;
+    modernDiagram = NULL;
     componentLinks = NULL;
     images = NULL;
     imagesWindow = NULL;
@@ -129,13 +129,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
         }
     };
     
-    drawEngine = new UDrawEngineWidget(this, application);
-    QMdiSubWindow *drawEngineSbWindow = new SubWindowCloseIgnore(ui->mdiArea, Qt::SubWindow);
-    drawEngineSbWindow->setWidget(drawEngine);
-    drawEngineSbWindow->show();
-    drawEngineSbWindow->showMaximized();
-    
-    // Применяем стили к QTabBar в QMdiArea программно после создания первого окна
+    // Применяем стили к QTabBar в QMdiArea программно
     QTimer::singleShot(0, this, applyMdiAreaTabBarStyles);
     
     // Также применяем стили при активации subWindow (когда QTabBar может быть пересоздан)
@@ -144,23 +138,31 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
         QTimer::singleShot(0, applyMdiAreaTabBarStyles);
     });
 
+    // Создаем современную диаграмму
+    modernDiagram = new UModernDiagramContainerWidget(this, application);
+    QMdiSubWindow *modernDiagramSbWindow = new SubWindowCloseIgnore(ui->mdiArea, Qt::SubWindow);
+    modernDiagramSbWindow->setWidget(modernDiagram);
+    modernDiagramSbWindow->setWindowTitle("Scheme");
+    modernDiagramSbWindow->show();
+    modernDiagramSbWindow->showMaximized();
+
     // связывание схемы модели и списка отображения компонентов модели
     //  схема -> список
     connect(propertyChanger->componentsList, SIGNAL(componentDoubleClick(QString)),
-            drawEngine, SLOT(componentDoubleClick(QString)));
+            modernDiagram, SLOT(componentDoubleClick(QString)));
     connect(propertyChanger->componentsList, SIGNAL(componentSelected(QString)),
-            drawEngine, SLOT(componentSingleClick(QString)));
+            modernDiagram, SLOT(componentSingleClick(QString)));
     connect(propertyChanger->componentsList, SIGNAL(updateScheme(bool)),
-            drawEngine, SLOT(updateScheme(bool)));
+            modernDiagram, SLOT(updateScheme(bool)));
 
     //  список -> схема
-    connect(drawEngine, SIGNAL(componentSelectedFromScheme(QString)),
+    connect(modernDiagram, SIGNAL(componentSelectedFromScheme(QString)),
             propertyChanger->componentsList, SLOT(componentSelectedFromScheme(QString)));
-    connect(drawEngine, SIGNAL(componentDoubleClickFromScheme(QString)),
+    connect(modernDiagram, SIGNAL(componentDoubleClickFromScheme(QString)),
             propertyChanger->componentsList, SLOT(componentDoubleClickFromScheme(QString)));
-    connect(drawEngine, SIGNAL(componentStapBackFromScheme()),
+    connect(modernDiagram, SIGNAL(componentStapBackFromScheme()),
             propertyChanger->componentsList, SLOT(componentStapBackFromScheme()));
-    connect(drawEngine, SIGNAL(updateComponentsListFromScheme()),
+    connect(modernDiagram, SIGNAL(updateComponentsListFromScheme()),
             propertyChanger->componentsList, SLOT(updateComponentsListFromScheme()));
 
     componentLinks = new UComponentLinksWidget(this, application);
@@ -168,14 +170,14 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 
     // связывание схемы модели и окна отображения связей
     //  связи -> схема
-    connect(componentLinks, SIGNAL(updateScheme(bool)), drawEngine, SLOT(updateScheme(bool)));
+    connect(componentLinks, SIGNAL(updateScheme(bool)), modernDiagram, SLOT(updateScheme(bool)));
 
     //  схема -> связи
     // обнако слоты находятся в окне главного интерфейса, так как необходимо сначала создать
     // диалоговые окна (QDialog) для отображения виджета связей
-    connect(drawEngine, SIGNAL(viewLinksFromScheme(QString)), this, SLOT(showLinksForSingleComponent(QString)));
-    connect(drawEngine, SIGNAL(createLinksFromScheme(QString,QString)), this, SLOT(showLinksForTwoComponents(QString,QString)));
-    connect(drawEngine, SIGNAL(switchLinksFromScheme(QString,QString)), this, SLOT(switchLinksForTwoComponents(QString,QString)));
+    connect(modernDiagram, SIGNAL(viewLinksFromScheme(QString)), this, SLOT(showLinksForSingleComponent(QString)));
+    connect(modernDiagram, SIGNAL(createLinksFromScheme(QString,QString)), this, SLOT(showLinksForTwoComponents(QString,QString)));
+    connect(modernDiagram, SIGNAL(switchLinksFromScheme(QString,QString)), this, SLOT(switchLinksForTwoComponents(QString,QString)));
 
     images = new UImagesWidget(this, application);
     images->hide();
@@ -417,7 +419,6 @@ void UGEngineControlWidget::actionLoadConfig()
       list.pop_back();*/
 
       RDK::UIVisualControllerStorage::UpdateInterface(true);
-      //drawEngine->updateScheme(true);
     }
     catch(RDK::UException& e)
     {
@@ -440,7 +441,6 @@ void UGEngineControlWidget::loadProjectExternal(const QString &config_path)
   list.pop_back();*/
 
   //RDK::UIVisualControllerStorage::UpdateInterface(true);
-  //drawEngine->updateScheme(true);
  }
  catch(RDK::UException& e)
  {
@@ -725,8 +725,11 @@ void UGEngineControlWidget::actionCreateSaveMockLibs()
 
 void UGEngineControlWidget::updateShemeClassesList()
 {
- drawEngine->updateScheme(true);
- drawEngine->updateClassesList();
+ if(modernDiagram)
+ {
+  modernDiagram->updateScheme(true);
+  modernDiagram->updateClassesList();
+ }
  int build_mode = application->GetStorageBuildMode();
  ui->menuChooseBuildStorageMode->setTitle("Choose Build Storage Mode [" + QString::number(build_mode) +"]");
 }
@@ -1277,11 +1280,11 @@ void UGEngineControlWidget::AClearInterface(void)
     QList<QMdiSubWindow *> SubWindows = ui->mdiArea->findChildren<QMdiSubWindow *>();
     foreach(QWidget * widget, SubWindows)
     {
-        // Игнорируем UDrawEngineWidget
+        // Игнорируем UModernDiagramContainerWidget
         if(dynamic_cast<SubWindowCloseIgnore*>(widget))
             continue;
 
-        // Остальные удаляем (Images, Watches)
+        // Удаляем все остальные subWindows (Images, Watches)
         QMdiSubWindow* wid = dynamic_cast<QMdiSubWindow*>(widget);
         if(wid!=nullptr)
             delete widget;
@@ -1480,9 +1483,9 @@ void UGEngineControlWidget::switchToTheme(const QString& themeName)
         }
         
         // Update the modern diagram widget if it exists
-        if (drawEngine)
+        if (modernDiagram)
         {
-            drawEngine->update();
+            modernDiagram->update();
         }
     }
     else

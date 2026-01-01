@@ -10,7 +10,7 @@
 
 #include "UVisualControllerMainWidget.h"
 #include "UComponentsListWidget.h"
-#include "UDrawEngineWidget.h"
+#include "UModernDiagramContainerWidget.h"
 #include "UComponentLinksWidget.h"
 #include "UImagesWidget.h"
 #include "UCalculationChannelsWidget.h"
@@ -188,7 +188,7 @@ private:
     // widgets
     USettingsReaderWidget *settings;
     UComponentPropertyChanger *propertyChanger;
-    UDrawEngineWidget *drawEngine;
+    UModernDiagramContainerWidget *modernDiagram;
     UComponentLinksWidget *componentLinks;
     UImagesWidget *images;
     QMainWindow *imagesWindow;
