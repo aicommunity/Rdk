@@ -271,13 +271,22 @@ virtual int GetIoType(void) const
 
 virtual ULongTime GetUpdateTime(void) const
 {
-// UGenericLocker locker(Mutex);
+ if (this->Mutex)
+ {
+  UGenericMutexSharedLocker locker(this->Mutex);
+  return UpdateTime;
+ }
  return UpdateTime;
 }
 
 virtual void SetUpdateTime(ULongTime value)
 {
-// UGenericLocker locker(Mutex);
+ if (this->Mutex)
+ {
+  UGenericMutexExclusiveLocker locker(this->Mutex);
+  UpdateTime=value;
+  return;
+ }
  UpdateTime=value;
 }
 // -----------------------------
@@ -428,24 +437,30 @@ public: // Указатель
 // Конструкторы и деструкторы
 // --------------------------
 // Конструктор для свойств без регистрации в компоненте
-UVProperty(OwnerT * const owner, SetterRT setmethod , GetterRT getmethod) :
+UVProperty(OwnerT * const owner, SetterRT setmethod , GetterRT getmethod, bool thread_safe = false) :
   UVBaseProperty<T, OwnerT>(owner), GetterR(getmethod), SetterR(setmethod), ExternalDataSource(0),
   IsConnectedFlag(false), CachedConnectedOutput(0), CheckEqualsFlag(true), v()
 {
+ if (thread_safe && !this->Mutex)
+  this->Mutex = UCreateMutex();
 }
 
 // Конструктор для свойств с внешними данными
-UVProperty(OwnerT * const owner, T * const pdata, SetterRT setmethod=0) :
+UVProperty(OwnerT * const owner, T * const pdata, SetterRT setmethod=0, bool thread_safe = false) :
   UVBaseProperty<T, OwnerT>(owner, pdata), GetterR(0), SetterR(setmethod), ExternalDataSource(0),
   IsConnectedFlag(false), CachedConnectedOutput(0), CheckEqualsFlag(true), v()
 {
+ if (thread_safe && !this->Mutex)
+  this->Mutex = UCreateMutex();
 }
 
 // Конструктор для свойств с регистрацией в компоненте (объединенная функциональность UPropertyLocal)
-UVProperty(const string &name, OwnerT * const owner, unsigned int type, SetterRT setmethod=0) :
+UVProperty(const string &name, OwnerT * const owner, unsigned int type, SetterRT setmethod=0, bool thread_safe = false) :
   UVBaseProperty<T, OwnerT>(owner), GetterR(0), SetterR(setmethod), ExternalDataSource(0),
   IsConnectedFlag(false), CachedConnectedOutput(0), CheckEqualsFlag(true), v()
 {
+ if (thread_safe && !this->Mutex)
+  this->Mutex = UCreateMutex();
  dynamic_cast<UComponent* const>(owner)->AddLookupProperty(name,type,this,false);
 }
 // -----------------------------
@@ -552,12 +567,38 @@ void SetCheckEquals(bool value)
 {
  CheckEqualsFlag=value;
 }
+
+/// Enable or disable thread safety for this property
+/// If enabled, creates a mutex if it doesn't exist
+/// If disabled, destroys the mutex if it exists
+void EnableThreadSafety(bool enable)
+{
+ if (enable)
+ {
+  if (!this->Mutex)
+   this->Mutex = UCreateMutex();
+ }
+ else
+ {
+  if (this->Mutex)
+  {
+   UDestroyMutex(this->Mutex);
+   this->Mutex = nullptr;
+  }
+ }
+}
+
+/// Check if thread safety is enabled for this property
+bool IsThreadSafe(void) const
+{
+ return (this->Mutex != nullptr);
+}
 // -----------------------------
 
 // -----------------------------
 // Data access methods (from UPropertyLocal)
 // -----------------------------
-/// Get data implementation (optimized with fast-path)
+/// Get data implementation (optimized with fast-path and thread-safety)
 inline const T& GetData(void) const
 {
  // Fast path for unconnected properties (most common case) - ~99% of calls
@@ -566,14 +607,25 @@ inline const T& GetData(void) const
 #else
  if (!IsConnectedFlag && !this->ExternalDataSource)
 #endif
+ {
+  // Thread-safe fast path: use shared lock if mutex exists
+  if (this->Mutex)
+  {
+   UGenericMutexSharedLocker locker(this->Mutex);
+   return v;
+  }
   return v;
+ }
 
 #ifndef _MSC_VER
  if ([[unlikely]] (this->ExternalDataSource))
 #else
  if (this->ExternalDataSource)
 #endif
+ {
+  // External data source: delegate to it (it should handle its own thread safety)
   return this->ExternalDataSource->GetData();
+ }
 
 #ifndef _MSC_VER
  if ([[unlikely]] (IsConnectedFlag))
@@ -581,26 +633,69 @@ inline const T& GetData(void) const
  if (IsConnectedFlag)
 #endif
  {
-  // Cache typed pointer on first access
-  if (!CachedConnectedOutput && !ConnectedOutputs.empty())
-   CachedConnectedOutput = dynamic_cast<UVBaseDataProperty<T>*>(ConnectedOutputs[0]);
-  
-  if (CachedConnectedOutput)
+  // Connected property: need to update from connected output
+  if (this->Mutex)
   {
-   // Cache data with update time check to avoid unnecessary copies
-   ULongTime outputTime = CachedConnectedOutput->GetUpdateTime();
-   if (outputTime > this->UpdateTime)
+   // First, check if update is needed with shared lock
+   ULongTime outputTime = 0;
+   UVBaseDataProperty<T>* cachedOutput = nullptr;
    {
-    v = CachedConnectedOutput->GetData();
-    this->UpdateTime = outputTime;
+    UGenericMutexSharedLocker locker(this->Mutex);
+    // Cache typed pointer on first access
+    if (!CachedConnectedOutput && !ConnectedOutputs.empty())
+     CachedConnectedOutput = dynamic_cast<UVBaseDataProperty<T>*>(ConnectedOutputs[0]);
+    
+    cachedOutput = CachedConnectedOutput;
+    if (cachedOutput)
+    {
+     outputTime = cachedOutput->GetUpdateTime();
+    }
    }
+   
+   // If update needed, acquire exclusive lock
+   if (cachedOutput && outputTime > this->UpdateTime)
+   {
+    UGenericMutexExclusiveLocker exclusiveLocker(this->Mutex);
+    // Re-check after acquiring exclusive lock (double-check pattern)
+    outputTime = cachedOutput->GetUpdateTime();
+    if (outputTime > this->UpdateTime)
+    {
+     v = cachedOutput->GetData();
+     this->UpdateTime = outputTime;
+    }
+   }
+   
+   // Return value with shared lock
+   {
+    UGenericMutexSharedLocker locker(this->Mutex);
+    return v;
+   }
+  }
+  else
+  {
+   // No mutex: original logic
+   // Cache typed pointer on first access
+   if (!CachedConnectedOutput && !ConnectedOutputs.empty())
+    CachedConnectedOutput = dynamic_cast<UVBaseDataProperty<T>*>(ConnectedOutputs[0]);
+   
+   if (CachedConnectedOutput)
+   {
+    // Cache data with update time check to avoid unnecessary copies
+    ULongTime outputTime = CachedConnectedOutput->GetUpdateTime();
+    if (outputTime > this->UpdateTime)
+    {
+     v = CachedConnectedOutput->GetData();
+     this->UpdateTime = outputTime;
+    }
+   }
+   return v;
   }
  }
 
  return v;
 }
 
-// Устанавливает указатель на данные входа (optimized with early exits)
+// Устанавливает указатель на данные входа (optimized with early exits and thread-safety)
 virtual void SetData(const T &value)
 {
  if (this->ExternalDataSource)
@@ -612,6 +707,26 @@ virtual void SetData(const T &value)
  if (IsConnectedFlag)
   return;
 
+ // Thread-safe path: use exclusive lock if mutex exists
+ if (this->Mutex)
+ {
+  UGenericMutexExclusiveLocker locker(this->Mutex);
+  
+  if (CheckEqualsFlag && value == v)
+   return;
+
+  if (this->Owner)
+  {
+   if (this->SetterR && !(this->Owner->*(this->SetterR))(value))
+    throw UIProperty::EPropertySetterFail(this->GetOwnerName(),this->GetName());
+  }
+
+  v=value;
+  this->RenewUpdateTime();
+  return;
+ }
+ 
+ // No mutex: original logic
  if (CheckEqualsFlag && value == v)
   return;
 
@@ -639,6 +754,20 @@ void SetDataDirect(const T &value)
  if (IsConnectedFlag)
   return;
 
+ // Thread-safe path: use exclusive lock if mutex exists
+ if (this->Mutex)
+ {
+  UGenericMutexExclusiveLocker locker(this->Mutex);
+  
+  if (CheckEqualsFlag && value == v)
+   return;
+
+  v=value;
+  this->RenewUpdateTime();
+  return;
+ }
+ 
+ // No mutex: original logic
  if (CheckEqualsFlag && value == v)
   return;
 
@@ -653,16 +782,44 @@ public:
 // -----------------------------
 bool AttachTo(UVBaseDataProperty<T>* prop)
 {
+ // Thread-safe path: use exclusive lock if mutex exists
+ if (this->Mutex)
+ {
+  UGenericMutexExclusiveLocker locker(this->Mutex);
+  bool res=UVBaseDataProperty<T>::AttachTo(prop);
+  if(res)
+  {
+   IsConnectedFlag=true;
+   // Cache typed pointer for optimization
+   CachedConnectedOutput = prop;
+  }
+  return res;
+ }
+ 
+ // No mutex: original logic
  bool res=UVBaseDataProperty<T>::AttachTo(prop);
  if(res)
  {
   IsConnectedFlag=true;
+  // Cache typed pointer for optimization
+  CachedConnectedOutput = prop;
  }
  return res;
 }
 
 void DetachFrom(void)
 {
+ // Thread-safe path: use exclusive lock if mutex exists
+ if (this->Mutex)
+ {
+  UGenericMutexExclusiveLocker locker(this->Mutex);
+  IsConnectedFlag=false;
+  CachedConnectedOutput = 0; // Clear cache
+  UVBaseDataProperty<T>::DetachFrom();
+  return;
+ }
+ 
+ // No mutex: original logic
  IsConnectedFlag=false;
  CachedConnectedOutput = 0; // Clear cache
  UVBaseDataProperty<T>::DetachFrom();
@@ -723,8 +880,8 @@ public:
 // Конструкторы и деструкторы
 // --------------------------
 //Конструктор инициализирует
-UProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
-    : UVProperty<T,OwnerT>(name, owner, type, setmethod)
+UProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0, bool thread_safe = false)
+    : UVProperty<T,OwnerT>(name, owner, type, setmethod, thread_safe)
 { }
 
 protected:
@@ -780,14 +937,14 @@ public:
 // Конструкторы и деструкторы
 // --------------------------
 public:
-UProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0)
- : UVProperty<T,OwnerT>(name, owner, type, setmethod), VSetterR(0)
+UProperty(const string &name, OwnerT * const owner, typename UVProperty<T,OwnerT>::SetterRT setmethod=0, bool thread_safe = false)
+ : UVProperty<T,OwnerT>(name, owner, type, setmethod, thread_safe), VSetterR(0)
 {
  this->IoType = static_cast<unsigned int>(ipRange) | static_cast<unsigned int>(ipData);
 }
 
-UProperty(const string &name, OwnerT * const owner, typename UProperty<T,OwnerT,type>::VSetterRT setmethod)
- : UVProperty<T,OwnerT>(name, owner, type, (typename UVProperty<T,OwnerT>::SetterRT)0), VSetterR(setmethod)
+UProperty(const string &name, OwnerT * const owner, typename UProperty<T,OwnerT,type>::VSetterRT setmethod, bool thread_safe = false)
+ : UVProperty<T,OwnerT>(name, owner, type, (typename UVProperty<T,OwnerT>::SetterRT)0, thread_safe), VSetterR(setmethod)
 {
  this->IoType = static_cast<unsigned int>(ipRange) | static_cast<unsigned int>(ipData);
 }
@@ -802,6 +959,18 @@ virtual const T& GetData(void) const
  if(this->ExternalDataSource)
   return this->ExternalDataSource->GetData();
 
+ // Thread-safe path: use shared lock if mutex exists
+ if (this->Mutex)
+ {
+  UGenericMutexSharedLocker locker(this->Mutex);
+  
+  if(this->IsConnectedFlag)
+   UpdateLocalInputData(this->v);
+
+  return this->v;
+ }
+ 
+ // No mutex: original logic
  if(this->IsConnectedFlag)
   UpdateLocalInputData(this->v);
 
@@ -819,6 +988,41 @@ virtual void SetData(const T &value)
  if(this->IsConnectedFlag)
   return;
 
+ // Thread-safe path: use exclusive lock if mutex exists
+ if (this->Mutex)
+ {
+  UGenericMutexExclusiveLocker locker(this->Mutex);
+  
+  if(this->CheckEqualsFlag && this->v == value)
+   return;
+
+  if(this->Owner)
+  {
+   if(VSetterR)
+   {
+    typename T::const_iterator I,J;
+    I=value.begin(); J=value.end();
+    while(I != J)
+    {
+     if(!(this->Owner->*VSetterR)(*I))
+      throw UIProperty::EPropertySetterFail(this->GetOwnerName(),this->GetName());
+
+     ++I;
+    }
+   }
+   else
+   {
+    if(this->SetterR && !(this->Owner->*(this->SetterR))(value))
+     throw UIProperty::EPropertySetterFail(this->GetOwnerName(),this->GetName());
+   }
+  }
+
+  this->v=value;
+  this->RenewUpdateTime();
+  return;
+ }
+ 
+ // No mutex: original logic
  if(this->CheckEqualsFlag && this->v == value)
   return;
 
@@ -855,6 +1059,28 @@ bool SetPointer(int index, UIPropertyOutput* property)
  if(index<0)
   return false;
 
+ // Thread-safe path: use exclusive lock if mutex exists
+ if (this->Mutex)
+ {
+  UGenericMutexExclusiveLocker locker(this->Mutex);
+  
+  if(int(this->ConnectedOutputs.size())<=index)
+  {
+   size_t new_size=index+1;
+   if(has_resize<T>::value)
+    this->v.resize(new_size);
+   else
+    throw std::runtime_error("resize doesn't support");
+   this->ConnectedOutputs.resize(new_size,0);
+  }
+  this->ConnectedOutputs[index]=property;
+  this->IsConnectedFlag=true;
+  // Cache typed pointer for optimization
+  this->CachedConnectedOutput = dynamic_cast<UVBaseDataProperty<T>*>(property);
+  return true;
+ }
+ 
+ // No mutex: original logic
  if(int(this->ConnectedOutputs.size())<=index)
  {
   size_t new_size=index+1;
@@ -866,12 +1092,41 @@ bool SetPointer(int index, UIPropertyOutput* property)
  }
  this->ConnectedOutputs[index]=property;
  this->IsConnectedFlag=true;
+ // Cache typed pointer for optimization
+ this->CachedConnectedOutput = dynamic_cast<UVBaseDataProperty<T>*>(property);
  return true;
 }
 
 /// Возвращает указатель на указатель
 bool ResetPointer(int index, UIPropertyOutput* property)
 {
+ // Thread-safe path: use exclusive lock if mutex exists
+ if (this->Mutex)
+ {
+  UGenericMutexExclusiveLocker locker(this->Mutex);
+  
+  if(int(this->v.size())>index && index >=0)
+  {
+   auto it = this->v.begin();
+   std::advance(it,index);
+   this->v.erase(it);
+  }
+
+  if(int(this->ConnectedOutputs.size())>index && index >= 0)
+  {
+   this->ConnectedOutputs.erase(this->ConnectedOutputs.begin()+index);
+   if(this->ConnectedOutputs.empty())
+   {
+    this->IsConnectedFlag=false;
+    this->CachedConnectedOutput = nullptr; // Clear cache
+   }
+   return true;
+  }
+
+  return false;
+ }
+ 
+ // No mutex: original logic
  if(int(this->v.size())>index && index >=0)
  {
   auto it = this->v.begin();
@@ -883,7 +1138,10 @@ bool ResetPointer(int index, UIPropertyOutput* property)
  {
   this->ConnectedOutputs.erase(this->ConnectedOutputs.begin()+index);
   if(this->ConnectedOutputs.empty())
+  {
    this->IsConnectedFlag=false;
+   this->CachedConnectedOutput = nullptr; // Clear cache
+  }
   return true;
  }
 
@@ -953,6 +1211,22 @@ bool operator () (size_t i, const typename UProperty<T, OwnerT, type, true>::TV 
  if(this->IsConnectedFlag)
   return false;
 
+ // Thread-safe path: use exclusive lock if mutex exists
+ if (this->Mutex)
+ {
+  UGenericMutexExclusiveLocker locker(this->Mutex);
+  
+  if(i>=this->v.size())
+   throw EPropertyRangeError(this->GetOwnerName(),this->GetName(),
+                                0,int(this->v.size()),int(i));
+
+  this->v[i]=value;
+  this->RenewUpdateTime();
+
+  return true;
+ }
+ 
+ // No mutex: original logic
  if(i>=this->v.size())
   throw EPropertyRangeError(this->GetOwnerName(),this->GetName(),
                                0,int(this->v.size()),int(i));
@@ -1051,6 +1325,16 @@ const T& front(void) const
 
 void push_back(const TV &value)
 {
+ // Thread-safe path: use exclusive lock if mutex exists
+ if (this->Mutex)
+ {
+  UGenericMutexExclusiveLocker locker(this->Mutex);
+  this->v.push_back(value);
+  this->RenewUpdateTime();
+  return;
+ }
+ 
+ // No mutex: original logic
  const_cast<T&>(this->GetData()).push_back(value);
 }
 
@@ -1061,6 +1345,21 @@ size_t size(void) const
 
 void resize(size_t size, const TV &val)
 {
+ // Thread-safe path: use exclusive lock if mutex exists
+ if (this->Mutex)
+ {
+  UGenericMutexExclusiveLocker locker(this->Mutex);
+  if(has_resize<T>::value)
+  {
+   this->v.resize(size,val);
+   this->RenewUpdateTime();
+  }
+  else
+   throw std::runtime_error("resize doesn't support");
+  return;
+ }
+ 
+ // No mutex: original logic
  if(has_resize<T>::value)
   this->v.resize(size,val);
  else
@@ -1069,6 +1368,21 @@ void resize(size_t size, const TV &val)
 
 void resize(size_t size)
 {
+ // Thread-safe path: use exclusive lock if mutex exists
+ if (this->Mutex)
+ {
+  UGenericMutexExclusiveLocker locker(this->Mutex);
+  if(has_resize<T>::value)
+  {
+   this->v.resize(size);
+   this->RenewUpdateTime();
+  }
+  else
+   throw std::runtime_error("resize doesn't support");
+  return;
+ }
+ 
+ // No mutex: original logic
  if(has_resize<T>::value)
   this->v.resize(size);
  else
@@ -1077,6 +1391,21 @@ void resize(size_t size)
 
 void assign(size_t size, const TV &val)
 {
+ // Thread-safe path: use exclusive lock if mutex exists
+ if (this->Mutex)
+ {
+  UGenericMutexExclusiveLocker locker(this->Mutex);
+  if(has_resize<T>::value)
+  {
+   this->v.assign(size,val);
+   this->RenewUpdateTime();
+  }
+  else
+   throw std::runtime_error("resize doesn't support");
+  return;
+ }
+ 
+ // No mutex: original logic
  if(has_resize<T>::value)
   this->v.assign(size,val);
  else
