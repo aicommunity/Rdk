@@ -560,14 +560,26 @@ void SetCheckEquals(bool value)
 /// Get data implementation (optimized with fast-path)
 inline const T& GetData(void) const
 {
- // Fast path for unconnected properties (most common case)
+ // Fast path for unconnected properties (most common case) - ~99% of calls
+#ifndef _MSC_VER
+ if ([[likely]] (!IsConnectedFlag && !this->ExternalDataSource))
+#else
  if (!IsConnectedFlag && !this->ExternalDataSource)
+#endif
   return v;
 
+#ifndef _MSC_VER
+ if ([[unlikely]] (this->ExternalDataSource))
+#else
  if (this->ExternalDataSource)
+#endif
   return this->ExternalDataSource->GetData();
 
+#ifndef _MSC_VER
+ if ([[unlikely]] (IsConnectedFlag))
+#else
  if (IsConnectedFlag)
+#endif
  {
   // Cache typed pointer on first access
   if (!CachedConnectedOutput && !ConnectedOutputs.empty())
