@@ -367,7 +367,7 @@ bool SetGlobalTimeStep(UTime timestep);
 void ChangeUseIndTimeStepMode(bool value);
 
 // ������������� ���� ���������� �������
-inline const bool& GetActivity(void) const { return Activity.v; }
+inline const bool& GetActivity(void) const { return Activity.GetData(); }
 
 // Id �������
 UId GetId(void) const;
