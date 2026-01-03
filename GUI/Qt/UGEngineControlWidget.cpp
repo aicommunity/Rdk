@@ -50,6 +50,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     propertyChanger = NULL;
     modernDiagram = NULL;
     componentLinks = NULL;
+    breadcrumbsWidget = NULL;
     images = NULL;
     imagesWindow = NULL;
     channels = NULL;
@@ -104,6 +105,13 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
         QTimer::singleShot(0, updateMdiAreaTabBarStyles);
     });
 
+    // Создаем breadcrumbs виджет
+    breadcrumbsWidget = new UBreadcrumbsWidget(this);
+    breadcrumbsWidget->setMinimumHeight(30);
+    breadcrumbsWidget->setMaximumHeight(35);
+    // Добавляем breadcrumbsWidget в layout перед mdiArea
+    ui->verticalLayout->insertWidget(0, breadcrumbsWidget);
+
     // Создаем современную диаграмму
     modernDiagram = new UModernDiagramContainerWidget(this, application);
     QMdiSubWindow *modernDiagramSbWindow = new SubWindowCloseIgnore(ui->mdiArea, Qt::SubWindow);
@@ -111,6 +119,22 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     modernDiagramSbWindow->setWindowTitle("Scheme");
     modernDiagramSbWindow->show();
     modernDiagramSbWindow->showMaximized();
+
+    // Настройка синхронизации навигации между breadcrumbs, ComponentsList и Diagram
+    // Breadcrumbs -> ComponentsList + Diagram
+    connect(breadcrumbsWidget, SIGNAL(componentPathSelected(QString)),
+            propertyChanger->componentsList, SLOT(componentSelectedFromScheme(QString)));
+    connect(breadcrumbsWidget, SIGNAL(componentPathSelected(QString)),
+            modernDiagram, SLOT(componentSingleClick(QString)));
+
+    // ComponentsList -> Breadcrumbs + Diagram
+    connect(propertyChanger->componentsList, SIGNAL(componentSelected(QString)),
+            breadcrumbsWidget, SLOT(updateBreadcrumbs(QString)));
+
+    // Diagram -> Breadcrumbs + ComponentsList
+    connect(modernDiagram, SIGNAL(componentSelectedFromScheme(QString)),
+            breadcrumbsWidget, SLOT(updateBreadcrumbs(QString)));
+
 
     // связывание схемы модели и списка отображения компонентов модели
     //  схема -> список

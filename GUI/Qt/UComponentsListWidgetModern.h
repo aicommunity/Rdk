@@ -68,7 +68,7 @@ protected:
 ///
 /// Древовидный список компонентов с учетом вложенности, в порядке расчета
 /// Содержит сигналы адресованные к схеме сети, но не содержит указателя на схему, сигналы связываются в UGEngineControllWidget.
-/// Modern версия с breadcrumbs навигацией и popup окном для дерева
+/// Modern версия с popup окном для дерева компонентов
 class UComponentsListWidgetModern : public UVisualControllerWidget
 {
     Q_OBJECT
@@ -161,9 +161,6 @@ public slots:
     /// Переключение между компактным и полным режимом отображения дерева
     void toggleTreeViewMode();
 
-    /// Обновление breadcrumbs навигации при выборе компонента
-    void updateBreadcrumbs(const QString &componentPath);
-
     /// Отправляет событие отрисовки выбранного компонента
     void drawSelectedComponent(QModelIndex index);
 
@@ -248,29 +245,14 @@ private:
     void rebuildTreeFromSnapshot(const NMSDK::UGuiSnapshotPtr &snapshot);
     bool applyFilter(QTreeWidgetItem *item);
 
-    /// Обработчик клика на элемент breadcrumbs
-    void onBreadcrumbClicked(const QString &componentPath);
-
     Ui::UComponentsListWidgetModern *ui;
     QLineEdit *filterLineEdit;
     quint64 renderedSnapshotVersion;
     NMSDK::UGuiSnapshotPtr lastSnapshot;
     QString componentFilterText;
 
-    /// Режим отображения дерева компонентов
-    /// true - компактный режим (breadcrumbs), false - полное дерево
-    bool compactMode;
-
-    /// Виджет для breadcrumbs навигации
-    QWidget *breadcrumbsWidget;
-    QHBoxLayout *breadcrumbsLayout;
-    QList<QPushButton*> breadcrumbButtons;
-
     /// Кнопка переключения режимов
     QToolButton *toggleModeButton;
-
-    /// Поле поиска/фильтра для компактного режима
-    QLineEdit *compactFilterLineEdit;
 
     /// Выпадающее окно для дерева компонентов
     QDialog *treePopupDialog;

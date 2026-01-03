@@ -12,6 +12,7 @@
 #include "UComponentsListWidget.h"
 #include "UModernDiagramContainerWidget.h"
 #include "UComponentLinksWidget.h"
+#include "UBreadcrumbsWidget.h"
 #include "UImagesWidget.h"
 #include "UCalculationChannelsWidget.h"
 #include "UEngineControlQt.h"
@@ -194,6 +195,7 @@ private:
     USettingsReaderWidget *settings;
     UComponentPropertyChanger *propertyChanger;
     UModernDiagramContainerWidget *modernDiagram;
+    UBreadcrumbsWidget *breadcrumbsWidget;
     UComponentLinksWidget *componentLinks;
     UImagesWidget *images;
     QMainWindow *imagesWindow;

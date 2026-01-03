@@ -28,29 +28,6 @@ UComponentsListWidgetModern::UComponentsListWidgetModern(QWidget *parent, RDK::U
     CheckModelFlag=false;
     ui->setupUi(this);
 
-    // Инициализация режимов отображения
-    compactMode = true; // Компактный режим по умолчанию
-    breadcrumbButtons.clear();
-    
-    // Создание breadcrumbs виджета
-    breadcrumbsWidget = ui->breadcrumbsContainer;
-    breadcrumbsLayout = qobject_cast<QHBoxLayout*>(ui->breadcrumbsContainer->layout());
-    if (!breadcrumbsLayout) {
-        breadcrumbsLayout = new QHBoxLayout(breadcrumbsWidget);
-        breadcrumbsLayout->setContentsMargins(4, 2, 4, 2);
-        breadcrumbsLayout->setSpacing(4);
-    }
-    
-    // Создание поля поиска для компактного режима
-    compactFilterLineEdit = new QLineEdit(breadcrumbsWidget);
-    compactFilterLineEdit->setObjectName(QStringLiteral("compactFilterLineEdit"));
-    compactFilterLineEdit->setPlaceholderText(tr("Поиск компонентов..."));
-    compactFilterLineEdit->setClearButtonEnabled(true);
-    compactFilterLineEdit->setMaximumWidth(200);
-    // Синхронизируем с основным фильтром
-    connect(compactFilterLineEdit, &QLineEdit::textChanged,
-            this, &UComponentsListWidgetModern::handleFilterTextChanged);
-    
     // Создание кнопки переключения режимов
     toggleModeButton = new QToolButton(this);
     toggleModeButton->setText(tr("☰"));
@@ -73,6 +50,8 @@ UComponentsListWidgetModern::UComponentsListWidgetModern(QWidget *parent, RDK::U
     filterLineEdit->setObjectName(QStringLiteral("componentsFilterLineEdit"));
     filterLineEdit->setPlaceholderText(tr("Фильтр компонентов..."));
     filterLineEdit->setClearButtonEnabled(true);
+    connect(filterLineEdit, &QLineEdit::textChanged,
+            this, &UComponentsListWidgetModern::handleFilterTextChanged);
     // Виджеты будут перемещаться между контейнерами
     treeLayout->addWidget(filterLineEdit);
     treeLayout->addWidget(componentsTree);
@@ -109,13 +88,8 @@ UComponentsListWidgetModern::UComponentsListWidgetModern(QWidget *parent, RDK::U
     connect(componentsTree, SIGNAL(moveComponentUp()), this, SLOT(componentMoveUp()));
     connect(componentsTree, SIGNAL(moveComponentDown()), this, SLOT(componentMoveDown()));
     
-    // Инициализация breadcrumbs
-    updateBreadcrumbs("");
-    
     // Всегда используем компактный режим - дерево скрыто в основном layout
     ui->treeContainer->hide();
-    breadcrumbsWidget->show();
-    compactFilterLineEdit->show();
     toggleModeButton->setChecked(false);
     toggleModeButton->setText(tr("☰"));
     toggleModeButton->setToolTip(tr("Показать дерево компонентов"));
@@ -426,9 +400,6 @@ void UComponentsListWidgetModern::componentListItemSelectionChanged()
     if(!item) return;
     
     selectedComponentLongName = item->data(0,Qt::UserRole).toString();
-
-    // Обновляем breadcrumbs при выборе компонента
-    updateBreadcrumbs(selectedComponentLongName);
 
     reloadPropertys();
 
@@ -974,23 +945,14 @@ void UComponentsListWidgetModern::handleSnapshotUpdated(NMSDK::UGuiSnapshotPtr s
 
 void UComponentsListWidgetModern::handleFilterTextChanged(const QString &text)
 {
+    if(!componentsTree)
+        return;
+    
     componentFilterText = text.trimmed();
-    
-    // Синхронизируем текст между двумя полями поиска
-    QLineEdit* senderEdit = qobject_cast<QLineEdit*>(sender());
-    if (senderEdit == filterLineEdit && compactFilterLineEdit) {
-        if (compactFilterLineEdit->text() != text) {
-            QSignalBlocker blocker(compactFilterLineEdit);
-            compactFilterLineEdit->setText(text);
-        }
-    } else if (senderEdit == compactFilterLineEdit && filterLineEdit) {
-        if (filterLineEdit->text() != text) {
-            QSignalBlocker blocker(filterLineEdit);
-            filterLineEdit->setText(text);
-        }
-    }
-    
     applyFilter(componentsTree->invisibleRootItem());
+    
+    // Обновляем виджет для отображения изменений
+    componentsTree->update();
 }
 
 void UComponentsListWidgetModern::rebuildTreeFromSnapshot(const NMSDK::UGuiSnapshotPtr &snapshot)
@@ -1065,10 +1027,23 @@ void UComponentsListWidgetModern::componentSelectedFromScheme(QString name)
     {
         if((*iterator)->data(0, Qt::UserRole) == name)
         {
+            // Раскрываем путь к компоненту (все родительские элементы)
+            QTreeWidgetItem *item = *iterator;
+            while (item) {
+                item->setExpanded(true);
+                item = item->parent();
+            }
+            
+            // Устанавливаем текущий элемент
             componentsTree->setCurrentItem(*iterator);
+            
+            // Прокручиваем к выбранному элементу
+            componentsTree->scrollToItem(*iterator, QAbstractItemView::EnsureVisible);
+            
+            // Обновляем выбранный компонент и свойства
             selectedComponentLongName = name;
-            // Обновляем breadcrumbs при выборе компонента из схемы
-            updateBreadcrumbs(name);
+            reloadPropertys();
+            
             return;
         }
         ++iterator;
@@ -1112,8 +1087,6 @@ void UComponentsListWidgetModern::drawSelectedComponent(QModelIndex index)
 {
     currentDrawComponentName = index.data(Qt::UserRole).toString();
     selectedComponentLongName = currentDrawComponentName;
-    // Обновляем breadcrumbs при двойном клике
-    updateBreadcrumbs(currentDrawComponentName);
     emit componentDoubleClick(currentDrawComponentName);
     if(componentsTree->currentItem())
         componentsTree->currentItem()->setExpanded(true);
@@ -1511,147 +1484,6 @@ void UComponentsListWidgetModern::toggleTreeViewMode()
     }
 }
 
-void UComponentsListWidgetModern::updateBreadcrumbs(const QString &componentPath)
-{
-    // Очищаем все кнопки breadcrumbs и разделители, но сохраняем поле поиска и stretch
-    QList<QLayoutItem*> itemsToRemove;
-    for (int i = 0; i < breadcrumbsLayout->count(); ++i) {
-        QLayoutItem* item = breadcrumbsLayout->itemAt(i);
-        if (item) {
-            QWidget* widget = item->widget();
-            // Пропускаем поле поиска
-            if (widget == compactFilterLineEdit) {
-                continue;
-            }
-            // Пропускаем stretch (spacer items)
-            if (item->spacerItem()) {
-                continue;
-            }
-            // Удаляем все остальные виджеты (кнопки и разделители)
-            if (widget) {
-                itemsToRemove.append(item);
-            }
-        }
-    }
-    
-    // Удаляем найденные виджеты
-    for (QLayoutItem* item : itemsToRemove) {
-        breadcrumbsLayout->removeItem(item);
-        if (item->widget()) {
-            item->widget()->deleteLater();
-        }
-        delete item;
-    }
-    breadcrumbButtons.clear();
-    
-    // Если путь пустой, показываем только "Model"
-    if (componentPath.isEmpty()) {
-        QPushButton* modelButton = new QPushButton(tr("Model"), breadcrumbsWidget);
-        modelButton->setFlat(true);
-        modelButton->setStyleSheet("QPushButton { text-align: left; border: none; padding: 2px; }");
-        connect(modelButton, &QPushButton::clicked, this, [this]() { onBreadcrumbClicked(""); });
-        breadcrumbsLayout->addWidget(modelButton);
-        breadcrumbButtons.append(modelButton);
-    } else {
-        // Добавляем кнопку "Model"
-        QPushButton* modelButton = new QPushButton(tr("Model"), breadcrumbsWidget);
-        modelButton->setFlat(true);
-        modelButton->setStyleSheet("QPushButton { text-align: left; border: none; padding: 2px; }");
-        connect(modelButton, &QPushButton::clicked, this, [this]() { onBreadcrumbClicked(""); });
-        breadcrumbsLayout->addWidget(modelButton);
-        breadcrumbButtons.append(modelButton);
-        
-        // Разбиваем путь на части и создаем кнопки для каждого уровня
-        QStringList pathParts = componentPath.split(".");
-        QString currentPath = "";
-        
-        for (int i = 0; i < pathParts.size(); ++i) {
-            // Добавляем разделитель
-            QLabel* separator = new QLabel(tr(">"), breadcrumbsWidget);
-            separator->setStyleSheet("QLabel { color: gray; padding: 2px; }");
-            breadcrumbsLayout->addWidget(separator);
-            
-            // Формируем путь до текущего уровня
-            if (currentPath.isEmpty()) {
-                currentPath = pathParts[i];
-            } else {
-                currentPath += "." + pathParts[i];
-            }
-            
-            // Создаем кнопку для текущего уровня
-            QPushButton* button = new QPushButton(pathParts[i], breadcrumbsWidget);
-            button->setFlat(true);
-            button->setStyleSheet("QPushButton { text-align: left; border: none; padding: 2px; }");
-            
-            QString pathToSelect = currentPath;
-            connect(button, &QPushButton::clicked, this, [this, pathToSelect]() { onBreadcrumbClicked(pathToSelect); });
-            
-            breadcrumbsLayout->addWidget(button);
-            breadcrumbButtons.append(button);
-        }
-    }
-    
-    // Добавляем поле поиска после breadcrumbs (если его еще нет в layout)
-    bool hasSearchField = false;
-    for (int i = 0; i < breadcrumbsLayout->count(); ++i) {
-        QLayoutItem* item = breadcrumbsLayout->itemAt(i);
-        if (item && item->widget() == compactFilterLineEdit) {
-            hasSearchField = true;
-            break;
-        }
-    }
-    if (!hasSearchField) {
-        breadcrumbsLayout->addWidget(compactFilterLineEdit);
-    }
-    
-    // Добавляем растягивающийся спейсер в конце (если его еще нет)
-    bool hasStretch = false;
-    for (int i = 0; i < breadcrumbsLayout->count(); ++i) {
-        QLayoutItem* item = breadcrumbsLayout->itemAt(i);
-        if (item && item->spacerItem()) {
-            hasStretch = true;
-            break;
-        }
-    }
-    if (!hasStretch) {
-        breadcrumbsLayout->addStretch();
-    }
-}
-
-void UComponentsListWidgetModern::onBreadcrumbClicked(const QString &componentPath)
-{
-    // Выбираем компонент в дереве
-    if (componentPath.isEmpty()) {
-        // Выбираем корневой элемент "Model"
-        QTreeWidgetItemIterator iterator(componentsTree);
-        while(*iterator) {
-            if((*iterator)->data(0, Qt::UserRole).toString().isEmpty()) {
-                componentsTree->setCurrentItem(*iterator);
-                selectedComponentLongName = "";
-                reloadPropertys();
-                emit componentSelected("");
-                break;
-            }
-            ++iterator;
-        }
-    } else {
-        // Ищем компонент по пути
-        QTreeWidgetItemIterator iterator(componentsTree);
-        while(*iterator) {
-            if((*iterator)->data(0, Qt::UserRole).toString() == componentPath) {
-                componentsTree->setCurrentItem(*iterator);
-                selectedComponentLongName = componentPath;
-                reloadPropertys();
-                emit componentSelected(componentPath);
-                break;
-            }
-            ++iterator;
-        }
-    }
-    
-    // Обновляем breadcrumbs
-    updateBreadcrumbs(componentPath);
-}
 
 void UComponentsListWidgetModern::showTreePopup()
 {
@@ -1677,8 +1509,8 @@ void UComponentsListWidgetModern::showTreePopup()
     QPoint globalPos = toggleModeButton->mapToGlobal(QPoint(0, toggleModeButton->height()));
     QRect screenGeometry = QApplication::desktop()->availableGeometry(this);
     
-    // Ширина popup = ширина breadcrumbs виджета или минимальная ширина
-    int popupWidth = qMax(breadcrumbsWidget->width(), 300);
+    // Ширина popup = минимальная ширина
+    int popupWidth = 300;
     // Высота = доступная высота экрана минус позиция минус отступ
     int popupHeight = qMin(screenGeometry.height() - globalPos.y() - 10, 600);
     popupHeight = qMax(popupHeight, 200); // Минимальная высота

@@ -6627,16 +6627,62 @@ void UModernDiagramWidget::updateResetZoomButtonStyle()
 
 void UModernDiagramWidget::selectComponent(QString name)
 {
-    // Найти компонент в текущем пути
-    QString componentName = name;
-    if(!m_componentName.isEmpty() && name.startsWith(m_componentName + "."))
+    // Если имя пустое, ничего не делаем
+    if(name.isEmpty())
+        return;
+    
+    // Если имя совпадает с текущим путём, значит мы на верхнем уровне
+    if(!m_componentName.isEmpty() && name == m_componentName)
     {
+        // Выделяем все узлы на текущем уровне (или ничего, если это корневой уровень)
+        return;
+    }
+    
+    // Определяем относительное имя компонента в текущем контексте
+    QString componentName = name;
+    
+    if(m_componentName.isEmpty())
+    {
+        // Мы на корневом уровне, компонент должен быть прямым потомком
+        // Берем только первую часть пути
+        componentName = name.split(".").first();
+    }
+    else if(name.startsWith(m_componentName + "."))
+    {
+        // Компонент находится внутри текущего контекста
         componentName = name.mid(m_componentName.size() + 1);
     }
-    else if(!m_componentName.isEmpty() && name == m_componentName)
+    else
     {
-        // Если имя совпадает с текущим путём, значит мы на верхнем уровне
-        return;
+        // Компонент находится вне текущего контекста
+        // Нужно перейти на нужный уровень
+        // Определяем родительский путь компонента
+        QStringList pathParts = name.split(".");
+        if(pathParts.size() > 1)
+        {
+            pathParts.removeLast();
+            QString parentPath = pathParts.join(".");
+            // Переходим на родительский уровень
+            saveCurrentViewState();
+            SetComponentName(parentPath);
+            Reload();
+            // После перезагрузки выбираем компонент
+            QTimer::singleShot(100, [this, name]() {
+                selectComponent(name);
+            });
+            return;
+        }
+        else
+        {
+            // Компонент на корневом уровне, переходим туда
+            saveCurrentViewState();
+            SetComponentName("");
+            Reload();
+            QTimer::singleShot(100, [this, name]() {
+                selectComponent(name);
+            });
+            return;
+        }
     }
     
     // Найти узел и выделить его
@@ -6645,6 +6691,9 @@ void UModernDiagramWidget::selectComponent(QString name)
         m_scene->clearSelection();
         it.value()->setSelected(true);
         m_contextMenuNode = it.value();
+        // Прокручиваем к выбранному узлу
+        if(m_mainView)
+            m_mainView->centerOn(it.value());
     }
 }
 
