@@ -69,6 +69,10 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     tcpServerControlWindow=NULL;
     tcpServerControlWidget=0;
     curlFtpClientTestWidget=NULL;
+    
+    // Initialize theme menu actions
+    m_lightThemeAction = NULL;
+    m_darkThemeAction = NULL;
 
     settings = new USettingsReaderWidget(this);
     connect(settings, SIGNAL(readSetting()) , this, SLOT(readSettings()));
@@ -1141,6 +1145,10 @@ void UGEngineControlWidget::writeSettings()
 
     projectSettings.setValue("geometry", saveGeometry());
     projectSettings.setValue("state",    saveState());
+    
+    // Save current theme
+    UStyleManager* styleManager = UStyleManager::instance();
+    projectSettings.setValue("theme", styleManager->getThemeName());
 
     if(imagesWindow)
     {
@@ -1162,6 +1170,10 @@ void UGEngineControlWidget::readSettings()
 
     restoreGeometry(projectSettings.value("geometry").toByteArray());
     restoreState(projectSettings.value("state").toByteArray());
+    
+    // Load saved theme (defaults to "Modern Light" if not saved)
+    QString savedTheme = projectSettings.value("theme", "Modern Light").toString();
+    switchToTheme(savedTheme);
 
     if(!imagesWindow)
     {
@@ -1444,27 +1456,62 @@ void UGEngineControlWidget::createThemeMenu()
     QActionGroup* themeGroup = new QActionGroup(this);
     themeGroup->setExclusive(true);
     
-    QAction* lightThemeAction = themeMenu->addAction(tr("Light"));
-    lightThemeAction->setCheckable(true);
-    lightThemeAction->setChecked(true); // Default theme
-    themeGroup->addAction(lightThemeAction);
+    m_lightThemeAction = themeMenu->addAction(tr("Light"));
+    m_lightThemeAction->setCheckable(true);
+    themeGroup->addAction(m_lightThemeAction);
     
-    QAction* darkThemeAction = themeMenu->addAction(tr("Dark"));
-    darkThemeAction->setCheckable(true);
-    themeGroup->addAction(darkThemeAction);
+    m_darkThemeAction = themeMenu->addAction(tr("Dark"));
+    m_darkThemeAction->setCheckable(true);
+    themeGroup->addAction(m_darkThemeAction);
     
     // Connect theme actions
-    connect(lightThemeAction, &QAction::triggered, this, [this]() {
+    connect(m_lightThemeAction, &QAction::triggered, this, [this]() {
         switchToTheme("Modern Light");
+        // Save theme to settings when user manually switches
+        if (application)
+        {
+            QSettings projectSettings(QString::fromLocal8Bit(
+                                 application->GetProjectPath().c_str())+"settings.qt",
+                               QSettings::IniFormat);
+            projectSettings.beginGroup(accessibleName());
+            projectSettings.setValue("theme", "Modern Light");
+            projectSettings.endGroup();
+        }
     });
     
-    connect(darkThemeAction, &QAction::triggered, this, [this]() {
+    connect(m_darkThemeAction, &QAction::triggered, this, [this]() {
         switchToTheme("Modern Dark");
+        // Save theme to settings when user manually switches
+        if (application)
+        {
+            QSettings projectSettings(QString::fromLocal8Bit(
+                                 application->GetProjectPath().c_str())+"settings.qt",
+                               QSettings::IniFormat);
+            projectSettings.beginGroup(accessibleName());
+            projectSettings.setValue("theme", "Modern Dark");
+            projectSettings.endGroup();
+        }
     });
     
     // Add theme menu to Window menu
     ui->menuWindow->addSeparator();
     ui->menuWindow->addMenu(themeMenu);
+    
+    // Update menu state based on current theme
+    updateThemeMenuState();
+}
+
+void UGEngineControlWidget::updateThemeMenuState()
+{
+    if (!m_lightThemeAction || !m_darkThemeAction)
+        return;
+    
+    UStyleManager* styleManager = UStyleManager::instance();
+    QString currentTheme = styleManager->getThemeName();
+    
+    // Update checkboxes based on current theme
+    m_lightThemeAction->setChecked(currentTheme == "Modern Light");
+    m_darkThemeAction->setChecked(currentTheme == "Modern Dark");
 }
 
 void UGEngineControlWidget::switchToTheme(const QString& themeName)
@@ -1483,10 +1530,14 @@ void UGEngineControlWidget::switchToTheme(const QString& themeName)
         }
         
         // Update the modern diagram widget if it exists
+        // This invalidates cache and forces repaint of all nodes with new theme colors
         if (modernDiagram)
         {
-            modernDiagram->update();
+            modernDiagram->updateTheme();
         }
+        
+        // Update menu state
+        updateThemeMenuState();
     }
     else
     {

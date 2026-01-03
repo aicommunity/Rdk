@@ -6551,6 +6551,34 @@ void UModernDiagramWidget::updateScheme(bool reloadXml)
     Reload();
 }
 
+void UModernDiagramWidget::updateTheme()
+{
+    // Инвалидируем кэш отрисовки для всех узлов
+    for(auto* node : m_nodes)
+    {
+        if(node)
+        {
+            node->m_cacheValid = false;
+            node->update();
+        }
+    }
+    
+    // Обновляем все связи
+    for(auto* link : m_links)
+    {
+        if(link)
+        {
+            link->update();
+        }
+    }
+    
+    // Обновляем всю сцену
+    if(m_scene)
+    {
+        m_scene->update();
+    }
+}
+
 void UModernDiagramWidget::selectComponent(QString name)
 {
     // Найти компонент в текущем пути

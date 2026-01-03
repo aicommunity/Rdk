@@ -27,6 +27,8 @@ public:
     virtual void ASaveParameters();
     /// считывание файла настроек
     virtual void ALoadParameters();
+    /// Обновление темы - инвалидирует кэш всех узлов и обновляет сцену
+    void updateTheme();
 
 public slots:
     void componentDoubleClick(QString name);

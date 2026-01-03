@@ -10,12 +10,21 @@
 #include <cerrno>
 #include <stdexcept>
 #include <cstring>
+#include <cstdlib>
+#include <map>
+#include <unistd.h>
+#include <sys/syscall.h>
 #include "pevents.h" // got from https://github.com/NeoSmart/PEvents
 
 class RDK_LIB_TYPE UGenericMutexGcc: public UGenericMutex
 {
 private:
- pthread_rwlock_t m_rwlock;
+ pthread_mutex_t m_mutex; // Рекурсивный мьютекс для exclusive lock
+ pthread_cond_t m_condition; // Условная переменная для ожидания
+ pthread_t m_exclusive_owner; // Поток, владеющий exclusive блокировкой
+ int m_exclusive_count; // Счетчик рекурсивных exclusive блокировок
+ int m_shared_count; // Количество активных shared блокировок
+ std::map<pthread_t, int> m_shared_readers; // Счетчики shared блокировок по потокам
 
 public:
  UGenericMutexGcc() noexcept;
@@ -28,6 +37,7 @@ public:
  virtual bool exclusive_unlock() noexcept;
 
 private:
+ pthread_t get_current_thread_id() const;
  UGenericMutexGcc(const UGenericMutexGcc &copy) = delete;
  UGenericMutexGcc& operator = (const UGenericMutexGcc &copy) = delete;
 };
@@ -51,138 +61,275 @@ private:
  UGenericEventGcc& operator = (const UGenericEventGcc &copy);
 };
 
+// Глобальная константа для "пустого" pthread_t (используется для проверки инициализации)
+// Должна быть объявлена перед использованием в конструкторе
+static const pthread_t g_empty_pthread = {0};
+
+// Проверяет, является ли pthread_t "пустым" (не инициализированным)
+static bool is_pthread_empty(const pthread_t& pt)
+{
+ return pthread_equal(pt, g_empty_pthread) != 0;
+}
 
 UGenericMutexGcc::UGenericMutexGcc() noexcept
+ : m_exclusive_count(0), m_shared_count(0)
 {
- pthread_rwlockattr_t attr;
- pthread_rwlockattr_init(&attr);
- if(pthread_rwlock_init(&m_rwlock, &attr) != 0)
+ // Инициализируем pthread_t как "пустой" (копируем заранее обнуленный)
+ m_exclusive_owner = g_empty_pthread;
+ 
+ pthread_mutexattr_t attr;
+ pthread_mutexattr_init(&attr);
+ pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+ 
+ int result = pthread_mutex_init(&m_mutex, &attr);
+ pthread_mutexattr_destroy(&attr);
+ 
+ if(result == 0)
  {
-  // В noexcept конструкторе не можем выбросить исключение
-  // Инициализация может завершиться неудачей, но это не должно приводить к исключению
+  result = pthread_cond_init(&m_condition, nullptr);
  }
- pthread_rwlockattr_destroy(&attr);
+ 
+ // Если инициализация не удалась, это критическая ошибка системы
+ if(result != 0)
+ {
+  std::abort(); // Критическая ошибка - прерываем выполнение
+ }
 }
 
 UGenericMutexGcc::~UGenericMutexGcc() noexcept
 {
- int res = pthread_rwlock_destroy(&m_rwlock);
- // В noexcept деструкторе не можем выбросить исключение
- // Игнорируем ошибки уничтожения
- (void)res; // Подавляем предупреждение о неиспользуемой переменной
+ pthread_cond_destroy(&m_condition);
+ pthread_mutex_destroy(&m_mutex);
+}
+
+pthread_t UGenericMutexGcc::get_current_thread_id() const
+{
+ return pthread_self();
 }
 
 bool UGenericMutexGcc::shared_lock(unsigned timeout)
 {
- int res;
-
- if(timeout == RDK_MUTEX_TIMEOUT)
+ pthread_t thread_id = get_current_thread_id();
+ 
+ if(pthread_mutex_lock(&m_mutex) != 0)
+  return false;
+ 
+ // Если текущий поток уже имеет exclusive блокировку, разрешаем shared
+ // (рекурсивная блокировка, как в Qt версии)
+ if(!is_pthread_empty(m_exclusive_owner) && pthread_equal(m_exclusive_owner, thread_id) && m_exclusive_count > 0)
  {
-  res = pthread_rwlock_rdlock(&m_rwlock);
+  m_shared_count++;
+  m_shared_readers[thread_id]++;
+  pthread_mutex_unlock(&m_mutex);
+  return true;
  }
- else
+ 
+ // Ждем, пока не будет exclusive блокировки (только если она не принадлежит текущему потоку)
+ struct timespec abs_time;
+ bool use_timeout = (timeout != RDK_MUTEX_TIMEOUT);
+ 
+ if(use_timeout)
  {
-  struct timespec abs_time;
   if(clock_gettime(CLOCK_REALTIME, &abs_time) != 0)
   {
-   // Ошибка получения времени - используем обычную блокировку
-   res = pthread_rwlock_rdlock(&m_rwlock);
+   pthread_mutex_unlock(&m_mutex);
+   return false;
+  }
+  abs_time.tv_sec += timeout / 1000;
+  long nsec_add = (timeout % 1000) * 1000000L;
+  abs_time.tv_nsec += nsec_add;
+  if(abs_time.tv_nsec >= 1000000000L)
+  {
+   abs_time.tv_sec += abs_time.tv_nsec / 1000000000L;
+   abs_time.tv_nsec = abs_time.tv_nsec % 1000000000L;
+  }
+ }
+ 
+ // Ждем, пока exclusive блокировка не будет освобождена (если она принадлежит другому потоку)
+ while(m_exclusive_count > 0 && (is_pthread_empty(m_exclusive_owner) || !pthread_equal(m_exclusive_owner, thread_id)))
+ {
+  if(use_timeout)
+  {
+   int res = pthread_cond_timedwait(&m_condition, &m_mutex, &abs_time);
+   if(res == ETIMEDOUT)
+   {
+    pthread_mutex_unlock(&m_mutex);
+    return false;
+   }
+   else if(res != 0)
+   {
+    pthread_mutex_unlock(&m_mutex);
+    return false;
+   }
   }
   else
   {
-   // Вычисляем абсолютное время с учетом таймаута
-   abs_time.tv_sec += timeout / 1000;
-   long nsec_add = (timeout % 1000) * 1000000L;
-   abs_time.tv_nsec += nsec_add;
-   
-   // Обработка переполнения наносекунд
-   if(abs_time.tv_nsec >= 1000000000L)
-   {
-    abs_time.tv_sec += abs_time.tv_nsec / 1000000000L;
-    abs_time.tv_nsec = abs_time.tv_nsec % 1000000000L;
-   }
-   
-   res = pthread_rwlock_timedrdlock(&m_rwlock, &abs_time);
+   pthread_cond_wait(&m_condition, &m_mutex);
   }
  }
-
- if(res == 0)
-  return true;
- else if(res == ETIMEDOUT)
-  return false;
- else
- {
-  // Другие ошибки (EINVAL, EDEADLK и т.д.)
-  return false;
- }
+ 
+ m_shared_count++;
+ m_shared_readers[thread_id]++;
+ pthread_mutex_unlock(&m_mutex);
+ return true;
 }
 
 bool UGenericMutexGcc::shared_unlock() noexcept
 {
- int res = pthread_rwlock_unlock(&m_rwlock);
- if(res != 0)
+ pthread_t thread_id = get_current_thread_id();
+ 
+ if(pthread_mutex_lock(&m_mutex) != 0)
+  return false;
+ 
+ auto it = m_shared_readers.find(thread_id);
+ if(it == m_shared_readers.end() || it->second <= 0)
  {
-  // Ошибка разблокировки - возможно, мьютекс не был заблокирован этим потоком
-  // В noexcept функции не можем выбросить исключение
+  pthread_mutex_unlock(&m_mutex);
   return false;
  }
+ 
+ it->second--;
+ if(it->second == 0)
+ {
+  m_shared_readers.erase(it);
+ }
+ m_shared_count--;
+ 
+ pthread_cond_broadcast(&m_condition);
+ pthread_mutex_unlock(&m_mutex);
  return true;
 }
 
 bool UGenericMutexGcc::exclusive_lock(unsigned timeout)
 {
- int res;
-
- if(timeout == RDK_MUTEX_TIMEOUT)
+ pthread_t thread_id = get_current_thread_id();
+ 
+ if(pthread_mutex_lock(&m_mutex) != 0)
+  return false;
+ 
+ // Рекурсивная блокировка: если текущий поток уже владеет exclusive блокировкой
+ if(!is_pthread_empty(m_exclusive_owner) && pthread_equal(m_exclusive_owner, thread_id))
  {
-  res = pthread_rwlock_wrlock(&m_rwlock);
+  m_exclusive_count++;
+  pthread_mutex_unlock(&m_mutex);
+  return true;
  }
- else
+ 
+ // Проверяем, есть ли у текущего потока shared блокировки
+ auto shared_it = m_shared_readers.find(thread_id);
+ int current_thread_shared_count = (shared_it != m_shared_readers.end()) ? shared_it->second : 0;
+ 
+ // Если у текущего потока есть shared блокировки, нужно проверить, есть ли другие блокировки
+ // Если только текущий поток имеет shared блокировки, можно преобразовать их в exclusive
+ bool has_other_locks = false;
+ if(m_exclusive_count > 0)
  {
-  struct timespec abs_time;
+  // Есть exclusive блокировка от другого потока
+  has_other_locks = true;
+ }
+ else if(m_shared_count > current_thread_shared_count)
+ {
+  // Есть shared блокировки от других потоков
+  has_other_locks = true;
+ }
+ 
+ // Если нет других блокировок и у текущего потока есть shared блокировки, преобразуем их
+ if(!has_other_locks && current_thread_shared_count > 0)
+ {
+  // Удаляем shared блокировки текущего потока
+  m_shared_count -= current_thread_shared_count;
+  m_shared_readers.erase(shared_it);
+  
+  // Устанавливаем exclusive блокировку
+  m_exclusive_owner = thread_id;
+  m_exclusive_count = 1;
+  pthread_mutex_unlock(&m_mutex);
+  return true;
+ }
+ 
+ // Ждем, пока не будет других блокировок
+ struct timespec abs_time;
+ bool use_timeout = (timeout != RDK_MUTEX_TIMEOUT);
+ 
+ if(use_timeout)
+ {
   if(clock_gettime(CLOCK_REALTIME, &abs_time) != 0)
   {
-   // Ошибка получения времени - используем обычную блокировку
-   res = pthread_rwlock_wrlock(&m_rwlock);
+   pthread_mutex_unlock(&m_mutex);
+   return false;
+  }
+  abs_time.tv_sec += timeout / 1000;
+  long nsec_add = (timeout % 1000) * 1000000L;
+  abs_time.tv_nsec += nsec_add;
+  if(abs_time.tv_nsec >= 1000000000L)
+  {
+   abs_time.tv_sec += abs_time.tv_nsec / 1000000000L;
+   abs_time.tv_nsec = abs_time.tv_nsec % 1000000000L;
+  }
+ }
+ 
+ // Ждем, пока не будет других блокировок (исключая shared блокировки текущего потока)
+ while(m_exclusive_count > 0 || (m_shared_count > current_thread_shared_count))
+ {
+  if(use_timeout)
+  {
+   int res = pthread_cond_timedwait(&m_condition, &m_mutex, &abs_time);
+   if(res == ETIMEDOUT)
+   {
+    pthread_mutex_unlock(&m_mutex);
+    return false;
+   }
+   else if(res != 0)
+   {
+    pthread_mutex_unlock(&m_mutex);
+    return false;
+   }
   }
   else
   {
-   // Вычисляем абсолютное время с учетом таймаута
-   abs_time.tv_sec += timeout / 1000;
-   long nsec_add = (timeout % 1000) * 1000000L;
-   abs_time.tv_nsec += nsec_add;
-   
-   // Обработка переполнения наносекунд
-   if(abs_time.tv_nsec >= 1000000000L)
-   {
-    abs_time.tv_sec += abs_time.tv_nsec / 1000000000L;
-    abs_time.tv_nsec = abs_time.tv_nsec % 1000000000L;
-   }
-   
-   res = pthread_rwlock_timedwrlock(&m_rwlock, &abs_time);
+   pthread_cond_wait(&m_condition, &m_mutex);
   }
+  
+  // Пересчитываем количество shared блокировок текущего потока (на случай изменений)
+  shared_it = m_shared_readers.find(thread_id);
+  current_thread_shared_count = (shared_it != m_shared_readers.end()) ? shared_it->second : 0;
  }
-
- if(res == 0)
-  return true;
- else if(res == ETIMEDOUT)
-  return false;
- else
+ 
+ // Если у текущего потока были shared блокировки, удаляем их
+ if(current_thread_shared_count > 0)
  {
-  // Другие ошибки (EINVAL, EDEADLK и т.д.)
-  return false;
+  m_shared_count -= current_thread_shared_count;
+  m_shared_readers.erase(thread_id);
  }
+ 
+ m_exclusive_owner = thread_id;
+ m_exclusive_count = 1;
+ pthread_mutex_unlock(&m_mutex);
+ return true;
 }
 
 bool UGenericMutexGcc::exclusive_unlock() noexcept
 {
- int res = pthread_rwlock_unlock(&m_rwlock);
- if(res != 0)
+ pthread_t thread_id = get_current_thread_id();
+ 
+ if(pthread_mutex_lock(&m_mutex) != 0)
+  return false;
+ 
+ // Проверяем, что текущий поток владеет блокировкой
+ if(is_pthread_empty(m_exclusive_owner) || !pthread_equal(m_exclusive_owner, thread_id) || m_exclusive_count <= 0)
  {
-  // Ошибка разблокировки - возможно, мьютекс не был заблокирован этим потоком
-  // В noexcept функции не можем выбросить исключение
+  pthread_mutex_unlock(&m_mutex);
   return false;
  }
+ 
+ m_exclusive_count--;
+ if(m_exclusive_count == 0)
+ {
+  m_exclusive_owner = g_empty_pthread;
+  pthread_cond_broadcast(&m_condition);
+ }
+ 
+ pthread_mutex_unlock(&m_mutex);
  return true;
 }
 

@@ -181,9 +181,14 @@ private slots:
 private:
     // Helper methods
     void createThemeMenu();
+    void updateThemeMenuState();
     
     // data
     Ui::UGEngineControllWidget *ui;
+    
+    // Theme menu actions
+    QAction* m_lightThemeAction;
+    QAction* m_darkThemeAction;
 
     // widgets
     USettingsReaderWidget *settings;

@@ -115,3 +115,11 @@ void UModernDiagramContainerWidget::updateClassesList()
     }
 }
 
+void UModernDiagramContainerWidget::updateTheme()
+{
+    if(modernScheme)
+    {
+        modernScheme->updateTheme();
+    }
+}
+

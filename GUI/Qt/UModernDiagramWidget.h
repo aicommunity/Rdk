@@ -60,6 +60,8 @@ public slots:
     /// @param addToSelection Если true, добавляет к текущему выделению, иначе очищает перед выделением
     /// @return Количество выделенных объектов
     int selectNodesInRect(const QRectF& selectionRect, bool addToSelection = false);
+    /// Обновление темы - инвалидирует кэш всех узлов и обновляет сцену
+    void updateTheme();
 
 signals:
     /// Компонент выбран (одиночный клик)

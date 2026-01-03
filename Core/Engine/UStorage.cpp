@@ -19,6 +19,7 @@ See file license.txt for more information
 #include "ULibrary.h"
 #include "../../Deploy/Include/rdk_exceptions.h"
 #include "UEnvException.h"
+#include "../../Deploy/Include/rdk_init.h"
 #include <future>
 #include <mutex>
 #include <unordered_set>
@@ -1156,6 +1157,11 @@ void UStorage::LoadClassesDescription()
         std::vector<string> cl_desc_files;
         RDK::FindFilesList(lib_cl_desc_path, "*.xml", true, cl_desc_files);
         
+        if(!cl_desc_files.empty())
+        {
+            // Игнорируем проверки для ускорения загрузки
+        }
+        
         LibFileCache cache;
         cache.lib_name = *lib_name;
         cache.lib_cl_desc_path = lib_cl_desc_path;
@@ -1190,8 +1196,16 @@ void UStorage::LoadClassesDescription()
     // Структура для результатов параллельной загрузки
     struct LoadedFileData {
         std::string class_name;
-        USerStorageXML xml;
+        std::string xml_string; // Сохраняем XML как строку, чтобы избежать проблем с копированием
         bool valid;
+        
+        // Метод для получения XML объекта
+        USerStorageXML GetXML() const {
+            USerStorageXML xml;
+            if(!xml_string.empty())
+                xml.Load(xml_string, "ClassDescription");
+            return xml;
+        }
     };
     
     // Параллельно загружаем XML файлы (только чтение, безопасно)
@@ -1208,19 +1222,47 @@ void UStorage::LoadClassesDescription()
             {
                 // Каждый поток работает со своей копией XML структуры
                 USerStorageXML xml;
-                xml.LoadFromFile(file_info.file_path, "ClassDescription");
+                if(!xml.LoadFromFile(file_info.file_path, "ClassDescription"))
+                {
+                    result.valid = false;
+                    return result;
+                }
+                // После LoadFromFile мы находимся в корне узла ClassDescription
+                
+                // Проверяем, что мы в правильном узле
+                std::string root_name = xml.GetNodeName();
+                if(root_name != "ClassDescription")
+                {
+                    // Если не в ClassDescription, пытаемся найти его
+                    xml.SelectRoot();
+                    if(!xml.SelectNode("ClassDescription"))
+                    {
+                        result.valid = false;
+                        return result;
+                    }
+                }
                 
                 xml.SelectNodeForce("ClassName");
                 result.class_name = xml.GetNodeText();
+                // Возвращаемся к корню ClassDescription (не к корню документа!)
+                // SelectUp() вернет нас из ClassName обратно к ClassDescription
+                xml.SelectUp();
+                
+                // Убеждаемся, что мы в корне ClassDescription
                 xml.SelectRoot();
                 
-                // Сохраняем XML для последующего использования (копируем, так как move может быть не полностью реализован)
-                result.xml = xml;
+                // Сохраняем XML как строку, чтобы избежать проблем с копированием USerStorageXML
+                xml.SaveFromNode(result.xml_string);
                 result.valid = true;
+            }
+            catch(const std::exception& ex)
+            {
+                // Игнорируем ошибки загрузки отдельных файлов
+                result.valid = false;
             }
             catch(...)
             {
-                // Игнорируем ошибки загрузки отдельных файлов
+                // Игнорируем другие ошибки загрузки отдельных файлов
                 result.valid = false;
             }
             
@@ -1237,7 +1279,9 @@ void UStorage::LoadClassesDescription()
         LoadedFileData loaded_data = future.get();
         
         if(!loaded_data.valid)
+        {
             continue;
+        }
         
         // Синхронизируем доступ к ClassesDescription
         std::lock_guard<std::mutex> lock(desc_mutex);
@@ -1245,13 +1289,11 @@ void UStorage::LoadClassesDescription()
         try
         {
             SetClassDescription(loaded_data.class_name, new RDK::UContainerDescription());
-            LoadClassDescription(loaded_data.class_name, loaded_data.xml);
+            USerStorageXML xml = loaded_data.GetXML();
+            LoadClassDescription(loaded_data.class_name, xml);
         }
         catch(const EClassNameNotExist&)
         {
-            if(Logger)
-                Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, 
-                    std::string("Skipping description for non-existent class: ") + loaded_data.class_name);
             // Продолжаем загрузку других классов
         }
         catch(...)
@@ -1301,7 +1343,17 @@ void UStorage::SaveClassDescription(const std::string &classname,
 void UStorage::LoadClassDescription(const std::string &classname,
 										USerStorageXML &xml)
 {
- GetClassDescription(classname)->Load(xml);
+ UEPtr<UContainerDescription> desc = GetClassDescription(classname, true);
+ if(!desc)
+ {
+  return;
+ }
+ 
+ // ВАЖНО: xml уже должен быть позиционирован в корне ClassDescription после LoadFromFile
+ xml.SelectRoot(); // Убеждаемся, что мы в корне ClassDescription
+ 
+ // Загружаем описание
+ desc->Load(xml);
 }
 
 // Сохраняет описание всех классов в xml

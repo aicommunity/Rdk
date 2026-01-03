@@ -9,6 +9,8 @@
 #include <QHash>
 #include "../../Core/Engine/UStorage.h"
 #include "../../Core/Engine/UContainerDescription.h"
+#include "../../Core/Engine/UComponentFactory.h"
+#include "../../Deploy/Include/rdk_init.h"
 #include "../../../Libraries/Nmsdk-PulseLib/Core/NPulseNeuron.h"
 #include "../../../Libraries/Nmsdk-PulseLib/Core/NPulseSynapseCommon.h"
 #include "../../../Libraries/Nmsdk-PulseLib/Core/NPulseMembraneCommon.h"
@@ -60,6 +62,7 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
             item->setForeground(QBrush(Qt::darkCyan));
         item->setText(str);
         ui->listWidgetStorageByName->addItem(item);
+        item->setToolTip(GetClassTooltip(str));
     }
     ui->listWidgetStorageByName->sortItems(Qt::AscendingOrder);
 
@@ -275,7 +278,9 @@ void UClassesListWidget::on_listWidgetRTlibs_itemSelectionChanged()
     {
         if(className != "")
         {
-             ui->listWidgetRTlibClasses->addItem(className);
+             QListWidgetItem* item = new QListWidgetItem(className);
+             ui->listWidgetRTlibClasses->addItem(item);
+             item->setToolTip(GetClassTooltip(className));
         }
     }
 }
@@ -352,6 +357,7 @@ void UClassesListWidget::tab0_textChanged(const QString &arg1)
                     item->setForeground(QBrush(Qt::darkCyan));
                 item->setText(str);
                 ui->listWidgetStorageByName->addItem(item);
+                item->setToolTip(GetClassTooltip(str));
             }
         }
     }
@@ -1219,6 +1225,7 @@ void UClassesListWidget::BuildGroupedTree(const QString& searchText)
                     classItem->setForeground(0, QBrush(Qt::darkYellow));
                 if(isRTlib)
                     classItem->setForeground(0, QBrush(Qt::darkCyan));
+                classItem->setToolTip(0, GetClassTooltip(className));
             }
         }
         else
@@ -1258,11 +1265,115 @@ void UClassesListWidget::BuildGroupedTree(const QString& searchText)
                         classItem->setForeground(0, QBrush(Qt::darkYellow));
                     if(isRTlib)
                         classItem->setForeground(0, QBrush(Qt::darkCyan));
+                    classItem->setToolTip(0, GetClassTooltip(className));
                 }
             }
         }
     }
     
     ui->treeWidgetStorageByLibs->sortItems(0, Qt::AscendingOrder);
+}
+
+QString UClassesListWidget::GetClassTooltip(const QString& className) const
+{
+    if (className.isEmpty())
+        return QString();
+    
+    auto storage = RDK::GetStorageLock();
+    if (!storage)
+        return QString();
+    
+    QString tooltip;
+    QString header;
+    QString description;
+    QString defaultComponentName;
+    
+    // Пытаемся получить описание класса
+    RDK::UEPtr<RDK::UContainerDescription> desc = storage->GetClassDescription(className.toStdString(), true);
+    if (desc)
+    {
+        header = QString::fromStdString(desc->GetHeader()).trimmed();
+        description = QString::fromStdString(desc->GetDescription()).trimmed();
+    }
+    
+    // Получаем имя компонента по умолчанию через factory
+    try
+    {
+        RDK::UEPtr<RDK::UComponentAbstractFactory> factory = storage->GetComponentFactory(className.toStdString());
+        if (factory)
+        {
+            // Проверяем тип factory
+            RDK::UEPtr<RDK::UVirtualMethodFactory> virtualFactory = 
+                RDK::dynamic_pointer_cast<RDK::UVirtualMethodFactory>(factory);
+            if (virtualFactory)
+            {
+                RDK::UEPtr<RDK::UContainer> component = virtualFactory->GetComponent();
+                if (component)
+                {
+                    defaultComponentName = QString::fromStdString(component->GetName());
+                }
+            }
+            else
+            {
+                // Для UComponentFactoryMethod создаем временный компонент для получения имени
+                RDK::UEPtr<RDK::UComponent> tempComponent = factory->New();
+                if (tempComponent)
+                {
+                    RDK::UEPtr<RDK::UContainer> container = 
+                        RDK::dynamic_pointer_cast<RDK::UContainer>(tempComponent);
+                    if (container)
+                    {
+                        defaultComponentName = QString::fromStdString(container->GetName());
+                    }
+                }
+            }
+        }
+    }
+    catch(...)
+    {
+        // Игнорируем ошибки при получении имени компонента
+    }
+    
+    // Формируем tooltip с именем класса и именем компонента по умолчанию
+    QStringList tooltipParts;
+    
+    // Добавляем имя класса
+    tooltipParts << QString("<b>Class:</b> %1").arg(className);
+    
+    // Добавляем имя компонента по умолчанию, если оно есть
+    if (!defaultComponentName.isEmpty())
+    {
+        tooltipParts << QString("<b>Default component name:</b> %1").arg(defaultComponentName);
+    }
+    
+    // Добавляем Header и Description, если они есть
+    if (!header.isEmpty() || !description.isEmpty())
+    {
+        if (!header.isEmpty() && !description.isEmpty())
+        {
+            tooltipParts << QString("<b>%1</b><br/>%2").arg(header.toHtmlEscaped(), description.toHtmlEscaped());
+        }
+        else if (!header.isEmpty())
+        {
+            tooltipParts << QString("<b>%1</b>").arg(header.toHtmlEscaped());
+        }
+        else
+        {
+            tooltipParts << description.toHtmlEscaped();
+        }
+    }
+    else
+    {
+        // Если описание пустое, показываем библиотеку
+        RDK::UEPtr<RDK::ULibrary> lib = storage->FindCollection(className.toStdString());
+        if (lib)
+        {
+            QString libName = QString::fromStdString(lib->GetName());
+            tooltipParts << QString("<b>Library:</b> %1").arg(libName);
+        }
+    }
+    
+    tooltip = tooltipParts.join("<br/>");
+    return tooltip;
 }
 
