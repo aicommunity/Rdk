@@ -603,7 +603,7 @@ inline const T& GetData(void) const
 {
  // Fast path for unconnected properties (most common case) - ~99% of calls
 #ifndef _MSC_VER
- if ([[likely]] (!IsConnectedFlag && !this->ExternalDataSource))
+ if (!IsConnectedFlag && !this->ExternalDataSource) [[likely]]
 #else
  if (!IsConnectedFlag && !this->ExternalDataSource)
 #endif
@@ -618,7 +618,7 @@ inline const T& GetData(void) const
  }
 
 #ifndef _MSC_VER
- if ([[unlikely]] (this->ExternalDataSource))
+ if (this->ExternalDataSource) [[unlikely]]
 #else
  if (this->ExternalDataSource)
 #endif
@@ -628,7 +628,7 @@ inline const T& GetData(void) const
  }
 
 #ifndef _MSC_VER
- if ([[unlikely]] (IsConnectedFlag))
+ if (IsConnectedFlag) [[unlikely]]
 #else
  if (IsConnectedFlag)
 #endif

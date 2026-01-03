@@ -18,7 +18,7 @@ private:
  pthread_rwlock_t m_rwlock;
 
 public:
- UGenericMutexGcc();
+ UGenericMutexGcc() noexcept;
  virtual ~UGenericMutexGcc() noexcept;
 
  virtual bool shared_lock(unsigned timeout=RDK_MUTEX_TIMEOUT);
@@ -38,11 +38,11 @@ protected:
 neosmart::neosmart_event_t Event;
 
 public:
- UGenericEventGcc();
- virtual ~UGenericEventGcc();
+ UGenericEventGcc() noexcept;
+ virtual ~UGenericEventGcc() noexcept;
 
- virtual bool set(void);
- virtual bool reset(void);
+ virtual bool set() noexcept;
+ virtual bool reset() noexcept;
  virtual bool wait(unsigned wait_time);
 
 
@@ -52,35 +52,24 @@ private:
 };
 
 
-UGenericMutexGcc::UGenericMutexGcc()
+UGenericMutexGcc::UGenericMutexGcc() noexcept
 {
- pthread_mutexattr_t attr;
- pthread_mutexattr_init(&attr);
- pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
- if(pthread_mutex_init(&mutex, &attr) != 0)
-  throw 1;
+ pthread_rwlockattr_t attr;
+ pthread_rwlockattr_init(&attr);
+ if(pthread_rwlock_init(&m_rwlock, &attr) != 0)
+ {
+  // В noexcept конструкторе не можем выбросить исключение
+  // Инициализация может завершиться неудачей, но это не должно приводить к исключению
+ }
+ pthread_rwlockattr_destroy(&attr);
 }
 
-UGenericMutexGcc::~UGenericMutexGcc()
+UGenericMutexGcc::~UGenericMutexGcc() noexcept
 {
- int res = pthread_mutex_destroy(&mutex);
-// switch (res)
-// {
-//  case 0:
-//   // Success
-//   break;
-//
-//  case EBUSY:
-//   // Attempting to destroy a locked mutex results in undefined behavior.
-//   // If we are here, then the behavior has already happened.
-//   break;
-//
-//  case EINVAL:
-//   break;
-//
-//  default:
-//   break;
-// }
+ int res = pthread_rwlock_destroy(&m_rwlock);
+ // В noexcept деструкторе не можем выбросить исключение
+ // Игнорируем ошибки уничтожения
+ (void)res; // Подавляем предупреждение о неиспользуемой переменной
 }
 
 bool UGenericMutexGcc::shared_lock(unsigned timeout)
