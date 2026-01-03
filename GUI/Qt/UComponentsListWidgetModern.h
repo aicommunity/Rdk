@@ -1,0 +1,292 @@
+#ifndef UCOMPONENTSLISTWIDGETMODERN_H
+#define UCOMPONENTSLISTWIDGETMODERN_H
+
+#include "UVisualControllerWidget.h"
+#include "UDrawEngineImageWidget.h"
+#include "UGuiModelSnapshot.h"
+
+#include <QLineEdit>
+#include <QTreeWidgetItem>
+#include <QMouseEvent>
+#include <QModelIndex>
+#include <QApplication>
+#include <QHeaderView>
+#include <QWidget>
+#include <QHBoxLayout>
+#include <QPushButton>
+#include <QLabel>
+#include <QToolButton>
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QKeyEvent>
+
+namespace Ui {
+class UComponentsListWidgetModern;
+}
+
+/// Виджет двигающий компоненты в QTreeWidget по шифту
+class UComponentListTreeWidgetModern :public QTreeWidget
+{
+    Q_OBJECT
+
+public:
+    explicit UComponentListTreeWidgetModern(QWidget *parent = 0):QTreeWidget(parent)
+    {
+        setContextMenuPolicy(Qt::ActionsContextMenu);
+        header()->setVisible(false);
+    }
+    virtual ~UComponentListTreeWidgetModern(){}
+
+signals:
+    void moveComponentUp();
+    void moveComponentDown();
+
+protected:
+    void keyPressEvent(QKeyEvent * event)
+    {
+        if(QApplication::keyboardModifiers() == Qt::ShiftModifier)
+        {
+            QTreeWidgetItem *item = currentItem();
+            if(!item) return;
+
+            if(event->key() == Qt::Key_Up)
+            {
+                emit moveComponentUp();
+                return;
+            }
+            if(event->key() == Qt::Key_Down)
+            {
+                emit moveComponentDown();
+                return;
+            }
+        }
+        QTreeWidget::keyPressEvent(event);
+    }
+};
+
+/// UComponentsListWidgetModern class - виджет отображения списка компонентов модели (UModel)
+///
+/// Древовидный список компонентов с учетом вложенности, в порядке расчета
+/// Содержит сигналы адресованные к схеме сети, но не содержит указателя на схему, сигналы связываются в UGEngineControllWidget.
+/// Modern версия с breadcrumbs навигацией и popup окном для дерева
+class UComponentsListWidgetModern : public UVisualControllerWidget
+{
+    Q_OBJECT
+
+public:
+    explicit UComponentsListWidgetModern(QWidget *parent = 0, RDK::UApplication* app = NULL, int channel_mode=0);
+    virtual ~UComponentsListWidgetModern();
+
+    /// Перерисовывает дерево текущего канала (С интерфейс с RDK)
+    void AUpdateInterface();
+
+    void AClearInterface();
+
+    /// запись файла настроек
+    virtual void ASaveParameters();
+    /// считывание файла настроек
+    virtual void ALoadParameters();
+
+    // Доступ к данным для других виджетов:
+
+    /// Устанавливает виджет в вертикальное положение
+    void setVerticalOrientation(bool vertical);
+
+    /// Возвращает полное имя выбранного компонента
+    QString getSelectedComponentLongName();
+
+    /// открывает определенную вкладку tabWidgetComponentInfo
+    ///
+    /// 0 - parameters
+    /// 1 - state
+    /// 2 - inputs
+    /// 3 - outputs
+    void openTabN(int n);
+
+    /// Возвращает индекс текущего окна
+    int currentTabIndex();
+
+    /// Возвращает имя выбранного Property
+    QString getSelectedPropertyName();
+
+    /// Возвращает номер выбранного канала
+    int getSelectedChannelIndex();
+
+    /// Режим выбора канала
+    /// 0 - всегда работа с текущим каналом
+    /// 1 - работа с изначально заданным каналом
+    void setChannelMode(int mode);
+
+    /// Возвращает номер рабочего канала
+    /// используемый при отображении информации
+    int getWorkChannelIndex();
+
+    /// устанавливает доступность вкладок
+    void setEnableTabN(int n, bool enable);
+
+    /// Устанавливает режим видимости для виджета выбора канала расчёта
+    void setChannelsListVisible(bool value);
+
+signals:
+    void componentSelected(QString name); //single click
+    void componentDoubleClick(QString name);
+    void updateScheme(bool forceUpdate);
+    void selectedPropertyValue(QString value);
+    void itemChanged(QTreeWidgetItem *item, int column);
+
+public slots:
+    void updateComponentsListFromScheme();
+    void componentSelectedFromScheme(QString name); //single click
+    void componentDoubleClickFromScheme(QString name);
+    void componentStapBackFromScheme();
+
+    void channelsListSelectionChanged();
+    void componentListItemSelectionChanged();
+    void reloadPropertys(bool forceReload = true);
+
+    void parametersListSelectionChanged();
+    void stateListSelectionChanged();
+    void inputsListSelectionChanged();
+    void outputsListSelectionChanged();
+    void favoritesListSelectionChanged();
+
+    void parametersListItemChanged(QTreeWidgetItem *item, int column);
+    void favoritesListItemChanged(QTreeWidgetItem *item, int column);
+    void handleSnapshotUpdated(NMSDK::UGuiSnapshotPtr snapshot,
+                               const QStringList &added,
+                               const QStringList &removed,
+                               const QStringList &changed);
+    void handleFilterTextChanged(const QString &text);
+
+    /// Переключение между компактным и полным режимом отображения дерева
+    void toggleTreeViewMode();
+
+    /// Обновление breadcrumbs навигации при выборе компонента
+    void updateBreadcrumbs(const QString &componentPath);
+
+    /// Отправляет событие отрисовки выбранного компонента
+    void drawSelectedComponent(QModelIndex index);
+
+    //События контекстного меню
+    void componentMoveUp();
+    void componentMoveDown();
+    void componentRename();
+    void componentDelete();
+    void componentCopyNameToClipboard();
+    void componentCopyLongNameToClipboard();
+    void componentCopyClassNameToClipboard();
+    void componentReset();
+    void componentCalculate();
+    void componentInit();
+    void componentUnInit();
+    void componentGUI();
+
+    /// Внешняя установка UpdateInterval, для уменьшения нагрузки на ядро
+    void setUpdateInterval(long value);
+
+    void propertyCopyNameToClipboard();
+    void propertyCopyValueToClipboard();
+    void propertyPasteValueFromClipboard();
+
+private slots:
+    void on_actionReloadTree_triggered();
+
+    void on_tabWidgetComponentInfo_currentChanged(int index);
+
+    void on_actionDefaultAllParameters_triggered();
+
+private:
+    /// Удаляет из переданных данных лидирующие переводы строк
+    std::string& EraseLeadEndls(std::string &value);
+
+    /// Удаляет из переданных данных лидирующие и завершающие переводы строк
+    std::string& EraseRangeEndls(std::string &value);
+
+    /// Если в переданных данных есть хотя бы один перевод строки, то заменяет текст
+    /// на "[SEE BELOW]"
+    std::string& PreparePropertyValueToListView(std::string &value);
+private:
+
+    /// Имя компонента, чьи проперти отображены
+    QString currentDrawPropertyComponentName;
+
+    /// Выделенный компонент. Отличается от currentDrawPropertyComponentName, тем что переписывается
+    /// при componentListItemSelectionChanged, затем сравнивается с currentDrawPropertyComponentName,
+    /// таким образом избегается перерисовка при множественном выделении одного компонента.
+    QString selectedComponentLongName;
+
+    // имена выбранных строк Property
+    QString selectedParameterName;
+    QString selectedStateName;
+    QString selectedInputName;
+    QString selectedOutputName;
+    QString selectedFavName;
+
+    /// Текущий канал для виджета
+    int currentChannel;
+
+    /// Режим выбора канала
+    /// 0 - всегда работа с текущим каналом
+    /// 1 - работа с изначально заданным каналом
+    int channelMode;
+
+    /// Флаг видимости компонента выбора канала
+    bool channelsSelectionVisible;
+
+    /// Указатель на кастомный класс TreeWidget с перемещением компонентов при нажатом shift
+    UComponentListTreeWidgetModern *componentsTree;
+
+    /// Компонент владелец отрисованной схемы
+    QString currentDrawComponentName;
+
+    /// Скрытый рекурсивный метод заполнения списка компонентов
+    void addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem);
+
+    /// Перерисовка виджета со списком каналов
+    void redrawChannelsList();
+
+    void rebuildTreeFromSnapshot(const NMSDK::UGuiSnapshotPtr &snapshot);
+    bool applyFilter(QTreeWidgetItem *item);
+
+    /// Обработчик клика на элемент breadcrumbs
+    void onBreadcrumbClicked(const QString &componentPath);
+
+    Ui::UComponentsListWidgetModern *ui;
+    QLineEdit *filterLineEdit;
+    quint64 renderedSnapshotVersion;
+    NMSDK::UGuiSnapshotPtr lastSnapshot;
+    QString componentFilterText;
+
+    /// Режим отображения дерева компонентов
+    /// true - компактный режим (breadcrumbs), false - полное дерево
+    bool compactMode;
+
+    /// Виджет для breadcrumbs навигации
+    QWidget *breadcrumbsWidget;
+    QHBoxLayout *breadcrumbsLayout;
+    QList<QPushButton*> breadcrumbButtons;
+
+    /// Кнопка переключения режимов
+    QToolButton *toggleModeButton;
+
+    /// Поле поиска/фильтра для компактного режима
+    QLineEdit *compactFilterLineEdit;
+
+    /// Выпадающее окно для дерева компонентов
+    QDialog *treePopupDialog;
+    QWidget *treePopupContainer;
+    QVBoxLayout *treePopupLayout;
+    
+    /// Показывает/скрывает popup окно с деревом
+    void showTreePopup();
+    void hideTreePopup();
+    
+protected:
+    /// Обработка клавиши Esc для закрытия popup
+    bool eventFilter(QObject *obj, QEvent *event) override;
+};
+
+
+
+#endif // UCOMPONENTSLISTWIDGETMODERN_H
+
