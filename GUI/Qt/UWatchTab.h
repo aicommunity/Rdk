@@ -57,8 +57,9 @@ public:
 
     // Загружает параметры интерфейса из xml
     virtual void ALoadParameters(RDK::USerStorageXML &xml);
-
-
+    
+    // Обновление темы - применяет стили ко всем графикам
+    void updateTheme();
 
 private:
     // Создание/удаление графиков

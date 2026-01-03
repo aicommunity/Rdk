@@ -60,6 +60,9 @@ public:
 
     // Загружает параметры интерфейса из xml
     virtual void ALoadParameters(RDK::USerStorageXML &xml);
+    
+    // Обновление темы - применяет стили ко всем табам и графикам
+    void updateTheme();
 
 private slots:
     void on_actionCreate_tab_triggered();

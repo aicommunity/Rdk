@@ -81,65 +81,27 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     propertyChanger = new UComponentPropertyChanger(this, application);
     ui->dockWidgetComponentsList->setWidget(propertyChanger);
 
-    // Функция для применения стилей к QTabBar в QMdiArea
-    auto applyMdiAreaTabBarStyles = [this]() {
-        QTabBar* tabBar = ui->mdiArea->findChild<QTabBar*>();
-        if (tabBar) {
-            QString tabBarStyle = 
-                "QTabBar::tab {"
-                "    background-color: #F1F5F9;"
-                "    border: 1px solid #E2E8F0;"
-                "    border-bottom: none;"
-                "    padding: 10px 8px;"
-                "    margin-right: 2px;"
-                "    margin-left: 0px;"
-                "    margin-top: 0px;"
-                "    margin-bottom: 0px;"
-                "    border-top-left-radius: 8px;"
-                "    border-top-right-radius: 8px;"
-                "    color: #64748B;"
-                "    font-weight: 500;"
-                "    min-height: 0px;"
-                "}"
-                "QTabBar::tab:selected {"
-                "    background-color: #EFF6FF;"
-                "    color: #1E40AF;"
-                "    border-top: 1px solid #5B8DEF;"
-                "    border-left: 1px solid #5B8DEF;"
-                "    border-right: 1px solid #5B8DEF;"
-                "    border-bottom: 3px solid #3B82F6;"
-                "    border-top-left-radius: 8px;"
-                "    border-top-right-radius: 8px;"
-                "    margin-left: 0px;"
-                "    margin-right: 2px;"
-                "    margin-top: 0px;"
-                "    margin-bottom: 0px;"
-                "    padding: 10px 8px;"
-                "    font-weight: 600;"
-                "}"
-                "QTabBar::tab:hover:!selected {"
-                "    background-color: #EEF2FF;"
-                "    color: #4338CA;"
-                "}"
-                "QTabBar::close-button {"
-                "    margin-left: -8px;"
-                "    margin-right: 2px;"
-                "    subcontrol-position: right;"
-                "    subcontrol-origin: padding;"
-                "    width: 16px;"
-                "    height: 16px;"
-                "}";
-            tabBar->setStyleSheet(tabBarStyle);
+    // Функция для обновления стилей QTabBar в QMdiArea
+    // Используется при переключении темы и при создании новых subWindow
+    auto updateMdiAreaTabBarStyles = [this]() {
+        if (ui && ui->mdiArea)
+        {
+            QTabBar* tabBar = ui->mdiArea->findChild<QTabBar*>();
+            if (tabBar)
+            {
+                // Очищаем локальные стили, чтобы применились глобальные из QSS
+                tabBar->setStyleSheet("");
+                tabBar->style()->unpolish(tabBar);
+                tabBar->style()->polish(tabBar);
+                tabBar->update();
+            }
         }
     };
     
-    // Применяем стили к QTabBar в QMdiArea программно
-    QTimer::singleShot(0, this, applyMdiAreaTabBarStyles);
-    
-    // Также применяем стили при активации subWindow (когда QTabBar может быть пересоздан)
-    connect(ui->mdiArea, &QMdiArea::subWindowActivated, this, [applyMdiAreaTabBarStyles](QMdiSubWindow* window) {
+    // Обновляем стили при активации subWindow (когда QTabBar может быть пересоздан)
+    connect(ui->mdiArea, &QMdiArea::subWindowActivated, this, [updateMdiAreaTabBarStyles](QMdiSubWindow* window) {
         Q_UNUSED(window);
-        QTimer::singleShot(0, applyMdiAreaTabBarStyles);
+        QTimer::singleShot(0, updateMdiAreaTabBarStyles);
     });
 
     // Создаем современную диаграмму
@@ -1529,11 +1491,44 @@ void UGEngineControlWidget::switchToTheme(const QString& themeName)
             widget->update();
         }
         
+        // Принудительно обновляем стили QTabBar в QMdiArea
+        // Это необходимо, так как QMdiArea создает свой собственный QTabBar
+        // Используем QTimer для гарантированного обновления после применения глобальных стилей
+        QTimer::singleShot(0, this, [this]() {
+            if (ui && ui->mdiArea)
+            {
+                QTabBar* tabBar = ui->mdiArea->findChild<QTabBar*>();
+                if (tabBar)
+                {
+                    // Очищаем локальные стили, чтобы применились глобальные из QSS
+                    tabBar->setStyleSheet("");
+                    tabBar->style()->unpolish(tabBar);
+                    tabBar->style()->polish(tabBar);
+                    tabBar->update();
+                }
+            }
+        });
+        
         // Update the modern diagram widget if it exists
         // This invalidates cache and forces repaint of all nodes with new theme colors
         if (modernDiagram)
         {
             modernDiagram->updateTheme();
+        }
+        
+        // Update Watch window if it exists
+        if (watchWindow)
+        {
+            watchWindow->updateTheme();
+        }
+        
+        // Update all Watch tabs in MDI area
+        for(size_t i = 0; i < watchesVector.size(); i++)
+        {
+            if(watchesVector[i])
+            {
+                watchesVector[i]->updateTheme();
+            }
         }
         
         // Update menu state

@@ -109,6 +109,9 @@ public:
 
     //доступные цвета для серий (из UStyleManager)
     QColor getDefaultColor(int index) const;
+    
+    // Применение стилей темы к графику
+    void applyTheme();
 
 
 private:

@@ -436,6 +436,18 @@ void UWatchTab::saveUpdateInterval(int newInterval)
     UpdateInterval = newInterval;
 }
 
+void UWatchTab::updateTheme()
+{
+    // Применяем стили темы ко всем графикам
+    for(int i = 0; i < graph.count(); i++)
+    {
+        if(graph[i])
+        {
+            graph[i]->applyTheme();
+        }
+    }
+}
+
 int UWatchTab::getColNumber()
 {
     return tabColNumber;

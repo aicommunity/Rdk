@@ -43,8 +43,44 @@ void UGlogGuiSink::AddDirectory(const std::string& directory)
  FileTail->AddDirectory(directory);
 }
 
-void UGlogGuiSink::PushMessage(int severity, const std::string& text) const
+std::string UGlogGuiSink::CreateMessageKey(int severity, const std::string& text) const
 {
+ // Создаем уникальный ключ на основе severity и текста сообщения
+ // Используем простую конкатенацию для создания ключа
+ std::ostringstream key;
+ key << severity << "|" << text;
+ return key.str();
+}
+
+void UGlogGuiSink::PushMessage(int severity, const std::string& text, bool check_duplicate) const
+{
+ // Проверяем дубликаты перед добавлением (если требуется)
+ if(check_duplicate)
+ {
+  std::string message_key = CreateMessageKey(severity, text);
+  
+  std::lock_guard<std::mutex> dedup_lock(DedupMutex);
+  // Проверяем, не было ли уже такого сообщения
+  if(MessageKeys.find(message_key) != MessageKeys.end())
+  {
+   // Дубликат найден, пропускаем сообщение
+   return;
+  }
+  
+  // Добавляем ключ в set и очередь
+  MessageKeys.insert(message_key);
+  MessageKeysQueue.push_back(message_key);
+  
+  // Очищаем старые записи, если превышен лимит
+  if(MessageKeysQueue.size() > MaxDedupKeys)
+  {
+   const std::string& oldest_key = MessageKeysQueue.front();
+   MessageKeys.erase(oldest_key);
+   MessageKeysQueue.pop_front();
+  }
+ }
+ 
+ // Добавляем сообщение в очередь
  std::lock_guard<std::mutex> lock(QueueMutex);
  Messages.push_back({severity, text});
  if(Messages.size() > MaxMessages)
@@ -81,6 +117,11 @@ void UGlogGuiSink::Clear()
 {
  std::lock_guard<std::mutex> lock(QueueMutex);
  Messages.clear();
+ 
+ // Очищаем также ключи дедупликации
+ std::lock_guard<std::mutex> dedup_lock(DedupMutex);
+ MessageKeys.clear();
+ MessageKeysQueue.clear();
 }
 
 void UGlogGuiSink::SetMaxMessages(std::size_t value)
@@ -148,12 +189,42 @@ void UGlogGuiSink::DrainFileMessages() const
 
  for(const auto& entry : new_entries)
  {
+  // Форматируем сообщение
   std::string line = FormatTimestamp(entry.Timestamp);
   line.append(" [");
   line.append(SeverityToString(entry.Severity));
   line.append("] ");
   line.append(entry.Text);
-  PushMessage(entry.Severity, line);
+  
+  // PushMessage() выполнит проверку дубликатов на основе severity и текста
+  // Используем оригинальный текст (entry.Text) для создания ключа дедупликации
+  // Для этого создадим ключ из severity и оригинального текста перед форматированием
+  std::string dedup_key = CreateMessageKey(entry.Severity, entry.Text);
+  
+  // Проверяем дубликаты перед добавлением
+  {
+   std::lock_guard<std::mutex> dedup_lock(DedupMutex);
+   if(MessageKeys.find(dedup_key) != MessageKeys.end())
+   {
+    // Дубликат найден, пропускаем сообщение
+    continue;
+   }
+   
+   // Добавляем ключ в set и очередь
+   MessageKeys.insert(dedup_key);
+   MessageKeysQueue.push_back(dedup_key);
+   
+   // Очищаем старые записи, если превышен лимит
+   if(MessageKeysQueue.size() > MaxDedupKeys)
+   {
+    const std::string& oldest_key = MessageKeysQueue.front();
+    MessageKeys.erase(oldest_key);
+    MessageKeysQueue.pop_front();
+   }
+  }
+  
+  // Добавляем сообщение (проверка дубликатов уже выполнена)
+  PushMessage(entry.Severity, line, false);
  }
 }
 

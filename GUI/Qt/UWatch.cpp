@@ -10,59 +10,8 @@ UWatch::UWatch(QWidget *parent, RDK::UApplication* app)
     ui->setupUi(this);
     setAccessibleName("UWatch");
     
-    // Отладка: проверяем objectName виджета
-    qDebug() << "UWatch::UWatch - tabWidget objectName:" << ui->tabWidget->objectName();
-    qDebug() << "UWatch::UWatch - tabWidget tabShape:" << ui->tabWidget->tabShape();
-    qDebug() << "UWatch::UWatch - tabWidget tabsClosable:" << ui->tabWidget->tabsClosable();
-    
-    // Применяем стили с задержкой, чтобы они применились после глобального stylesheet
-    // Используем QTimer::singleShot для отложенного применения
-    QTimer::singleShot(0, this, [this]() {
-        QTabBar* tabBar = ui->tabWidget->tabBar();
-        if (tabBar) {
-            qDebug() << "UWatch::UWatch - Found QTabBar, applying direct styles";
-            qDebug() << "UWatch::UWatch - tabBar styleSheet before:" << tabBar->styleSheet();
-            
-            // Применяем стили напрямую к QTabBar для прямоугольных вкладок
-            // Высота вкладок соответствует высоте заголовков списка компонентов (padding: 10px)
-            // Активные вкладки имеют яркий фон для лучшей видимости
-            QString tabBarStyle = 
-                "QTabBar::tab {"
-                "    padding: 10px 28px 10px 20px;"
-                "    margin-left: 0px;"
-                "    margin-right: 2px;"
-                "    margin-top: 0px;"
-                "    margin-bottom: 0px;"
-                "    min-height: 0px;"
-                "}"
-                "QTabBar::tab:selected {"
-                "    background-color: #EFF6FF;"
-                "    color: #1E40AF;"
-                "    border: 1px solid #5B8DEF;"
-                "    border-bottom: 3px solid #3B82F6;"
-                "    margin-left: 0px;"
-                "    margin-right: 2px;"
-                "    margin-top: 0px;"
-                "    margin-bottom: 0px;"
-                "    font-weight: 600;"
-                "}"
-                "QTabBar::close-button {"
-                "    margin-left: -8px;"
-                "    margin-right: 2px;"
-                "    subcontrol-position: right;"
-                "    subcontrol-origin: padding;"
-                "    width: 16px;"
-                "    height: 16px;"
-                "}";
-            
-            // Применяем стили напрямую к QTabBar
-            tabBar->setStyleSheet(tabBarStyle);
-            qDebug() << "UWatch::UWatch - Applied stylesheet directly to QTabBar";
-            qDebug() << "UWatch::UWatch - tabBar styleSheet after:" << tabBar->styleSheet();
-        } else {
-            qWarning() << "UWatch::UWatch - Could not find QTabBar!";
-        }
-    });
+    // Стили для табов теперь применяются через глобальные стили из QSS
+    // Это позволяет правильно работать с темной и светлой темами
     
     //создаем первую вкладку
     //createTab();
@@ -118,6 +67,21 @@ void UWatch::createTab()
     ui->tabWidget->addTab(tab.last(), QString("tab_%0").arg(index));
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
     tab.last()->setAccessibleName(QString("tab_%0").arg(index));
+    
+    // Обновляем стили табов после создания новой вкладки
+    QTimer::singleShot(0, this, [this]() {
+        if(ui && ui->tabWidget)
+        {
+            QTabBar* tabBar = ui->tabWidget->tabBar();
+            if(tabBar)
+            {
+                tabBar->setStyleSheet("");
+                tabBar->style()->unpolish(tabBar);
+                tabBar->style()->polish(tabBar);
+                tabBar->update();
+            }
+        }
+    });
 }
 
 void UWatch::deleteTab(int index)
@@ -225,5 +189,31 @@ void UWatch::on_tabWidget_currentChanged(int index)
 {
  if(index >=0 && index<tab.size())
   tab[index]->UpdateInterface();
+}
+
+void UWatch::updateTheme()
+{
+    // Обновляем стили табов
+    if(ui && ui->tabWidget)
+    {
+        QTabBar* tabBar = ui->tabWidget->tabBar();
+        if(tabBar)
+        {
+            // Очищаем локальные стили, чтобы применились глобальные из QSS
+            tabBar->setStyleSheet("");
+            tabBar->style()->unpolish(tabBar);
+            tabBar->style()->polish(tabBar);
+            tabBar->update();
+        }
+    }
+    
+    // Обновляем стили всех табов и их графиков
+    for(int i = 0; i < tab.count(); i++)
+    {
+        if(tab[i])
+        {
+            tab[i]->updateTheme();
+        }
+    }
 }
 

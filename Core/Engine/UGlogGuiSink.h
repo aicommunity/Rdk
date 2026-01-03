@@ -5,6 +5,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "../../Deploy/Include/rdk_logging.h"
@@ -39,9 +40,10 @@ private:
  UGlogGuiSink& operator=(const UGlogGuiSink&) = delete;
 
  void DrainFileMessages() const;
- void PushMessage(int severity, const std::string& text) const;
+ void PushMessage(int severity, const std::string& text, bool check_duplicate = true) const;
  std::string FormatTimestamp(std::time_t timestamp) const;
  std::string SeverityToString(int severity) const;
+ std::string CreateMessageKey(int severity, const std::string& text) const;
 
  mutable std::mutex QueueMutex;
  mutable std::deque<UGlogGuiMessage> Messages;
@@ -50,6 +52,12 @@ private:
 
  mutable std::mutex FileMutex;
  mutable std::unique_ptr<UGlogFileTail> FileTail;
+
+ // Дедупликация сообщений
+ mutable std::mutex DedupMutex;
+ mutable std::unordered_set<std::string> MessageKeys;
+ mutable std::deque<std::string> MessageKeysQueue; // FIFO очередь для очистки старых ключей
+ static constexpr std::size_t MaxDedupKeys = 1000; // Максимальное количество ключей для дедупликации
 };
 
 }

@@ -62,6 +62,8 @@ public slots:
     int selectNodesInRect(const QRectF& selectionRect, bool addToSelection = false);
     /// Обновление темы - инвалидирует кэш всех узлов и обновляет сцену
     void updateTheme();
+    /// Обновление стилей кнопки сброса масштаба в соответствии с текущей темой
+    void updateResetZoomButtonStyle();
 
 signals:
     /// Компонент выбран (одиночный клик)

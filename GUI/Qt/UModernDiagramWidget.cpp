@@ -3699,20 +3699,7 @@ UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
     m_resetZoomButton->setText("⟲");
     m_resetZoomButton->setToolTip(tr("Reset zoom"));
     m_resetZoomButton->setFixedSize(32, 32);
-    m_resetZoomButton->setStyleSheet(
-        "QPushButton {"
-        "    background-color: rgba(255, 255, 255, 200);"
-        "    border: 1px solid #ccc;"
-        "    border-radius: 4px;"
-        "    font-size: 18px;"
-        "}"
-        "QPushButton:hover {"
-        "    background-color: rgba(240, 240, 240, 220);"
-        "}"
-        "QPushButton:pressed {"
-        "    background-color: rgba(220, 220, 220, 240);"
-        "}"
-    );
+    updateResetZoomButtonStyle();
     m_resetZoomButton->raise();
     connect(m_resetZoomButton, &QPushButton::clicked, this, &UModernDiagramWidget::onResetZoomClicked);
     
@@ -6576,6 +6563,65 @@ void UModernDiagramWidget::updateTheme()
     if(m_scene)
     {
         m_scene->update();
+    }
+    
+    // Обновляем стили кнопки сброса масштаба
+    updateResetZoomButtonStyle();
+}
+
+void UModernDiagramWidget::updateResetZoomButtonStyle()
+{
+    if(!m_resetZoomButton)
+        return;
+    
+    UStyleManager* styleManager = UStyleManager::instance();
+    QString themeName = styleManager->getThemeName();
+    
+    if(themeName == "Modern Dark" || themeName == "dark")
+    {
+        // Темная тема
+        m_resetZoomButton->setStyleSheet(
+            "QPushButton {"
+            "    background-color: rgba(33, 37, 43, 220);"
+            "    border: 1px solid #5C6370;"
+            "    border-radius: 4px;"
+            "    font-size: 18px;"
+            "    color: #ABB2BF;"
+            "}"
+            "QPushButton:hover {"
+            "    background-color: rgba(44, 49, 58, 240);"
+            "    border-color: #61AFEF;"
+            "    color: #61AFEF;"
+            "}"
+            "QPushButton:pressed {"
+            "    background-color: rgba(30, 58, 95, 250);"
+            "    border-color: #61AFEF;"
+            "    color: #61AFEF;"
+            "}"
+        );
+    }
+    else
+    {
+        // Светлая тема (по умолчанию)
+        m_resetZoomButton->setStyleSheet(
+            "QPushButton {"
+            "    background-color: rgba(255, 255, 255, 200);"
+            "    border: 1px solid #ccc;"
+            "    border-radius: 4px;"
+            "    font-size: 18px;"
+            "    color: #374151;"
+            "}"
+            "QPushButton:hover {"
+            "    background-color: rgba(240, 240, 240, 220);"
+            "    border-color: #5B8DEF;"
+            "    color: #1E40AF;"
+            "}"
+            "QPushButton:pressed {"
+            "    background-color: rgba(220, 220, 220, 240);"
+            "    border-color: #3B82F6;"
+            "    color: #1E40AF;"
+            "}"
+        );
     }
 }
 
