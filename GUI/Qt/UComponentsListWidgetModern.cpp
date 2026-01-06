@@ -1113,15 +1113,29 @@ void UComponentsListWidgetModern::onComponentItemClicked(QTreeWidgetItem* item, 
 
 void UComponentsListWidgetModern::drawSelectedComponent(QModelIndex index)
 {
-    currentDrawComponentName = index.data(Qt::UserRole).toString();
-    selectedComponentLongName = currentDrawComponentName;
-    emit componentDoubleClick(currentDrawComponentName);
-    if(componentsTree->currentItem())
-        componentsTree->currentItem()->setExpanded(true);
+    // Получаем данные компонента из index
+    QString componentName = index.data(Qt::UserRole).toString();
+    if(componentName.isEmpty()) return;
     
-    // Закрываем popup после выбора компонента
-    if (treePopupDialog->isVisible()) {
-        hideTreePopup();
+    // Находим элемент в дереве по данным
+    QTreeWidgetItemIterator iterator(componentsTree);
+    while(*iterator)
+    {
+        if((*iterator)->data(0, Qt::UserRole) == componentName)
+        {
+            // Устанавливаем текущий элемент
+            componentsTree->setCurrentItem(*iterator);
+            
+            // Вызываем обработчик выбора компонента (как при одинарном клике)
+            componentListItemSelectionChanged();
+            
+            // Закрываем popup после выбора компонента
+            if (treePopupDialog->isVisible()) {
+                hideTreePopup();
+            }
+            return;
+        }
+        ++iterator;
     }
 }
 
@@ -1268,7 +1282,7 @@ void UComponentsListWidgetModern::addComponentSons(QString componentName, QTreeW
     if(!componentNames.empty()&&componentNames[0]!="")
     {
         QString father;
-        if(treeWidgetFather) treeWidgetFather->setExpanded(false);
+        if(treeWidgetFather) treeWidgetFather->setExpanded(true);
         if(!componentName.isEmpty()) father = componentName + ".";
         foreach(str, componentNames)
         {
@@ -1278,12 +1292,12 @@ void UComponentsListWidgetModern::addComponentSons(QString componentName, QTreeW
             if(oldRootItem == father+str)
             {
                 componentsTree->setCurrentItem(childItem);
-                childItem->setExpanded(false);
+                childItem->setExpanded(true);
             }
             if(oldSelectedItem == father+str)
             {
                 componentsTree->setCurrentItem(childItem);
-                childItem->setExpanded(false);
+                childItem->setExpanded(true);
             }
 
             addComponentSons(father+str, childItem, oldRootItem, oldSelectedItem);
@@ -1555,6 +1569,9 @@ void UComponentsListWidgetModern::showTreePopup()
     treePopupDialog->show();
     treePopupDialog->raise();
     treePopupDialog->activateWindow();
+    
+    // Разворачиваем все элементы дерева
+    componentsTree->expandAll();
     
     // Устанавливаем фокус на поле фильтра
     filterLineEdit->setFocus();
