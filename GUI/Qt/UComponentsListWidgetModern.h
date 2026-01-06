@@ -142,6 +142,7 @@ public slots:
 
     void channelsListSelectionChanged();
     void componentListItemSelectionChanged();
+    void onComponentItemClicked(QTreeWidgetItem* item, int column);
     void reloadPropertys(bool forceReload = true);
 
     void parametersListSelectionChanged();

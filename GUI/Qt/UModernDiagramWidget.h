@@ -276,6 +276,9 @@ private:
     QHash<QString, NodeItem*> m_nodeByName;
     QList<LinkItem*> m_links;
     
+    // Защита от бесконечной рекурсии при выборе компонента
+    int m_selectComponentRetryCount;
+    
     // Для перемещения группы объектов - храним предыдущие позиции
     QHash<NodeItem*, QPointF> m_lastNodePositions;
 

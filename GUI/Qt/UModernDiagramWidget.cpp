@@ -3675,6 +3675,7 @@ UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
     , m_actionQuickLink(nullptr)
     , m_contextMenuNode(nullptr)
     , m_resetZoomButton(nullptr)
+    , m_selectComponentRetryCount(0)
 {
     m_mainView->setRenderHint(QPainter::Antialiasing, true);
     m_mainView->setDragMode(QGraphicsView::RubberBandDrag);
@@ -6629,63 +6630,94 @@ void UModernDiagramWidget::selectComponent(QString name)
 {
     // Если имя пустое, ничего не делаем
     if(name.isEmpty())
+    {
+        m_selectComponentRetryCount = 0;
         return;
+    }
+    
+    // Защита от бесконечной рекурсии
+    if(m_selectComponentRetryCount >= 3)
+    {
+        m_selectComponentRetryCount = 0;
+        return;
+    }
     
     // Если имя совпадает с текущим путём, значит мы на верхнем уровне
     if(!m_componentName.isEmpty() && name == m_componentName)
     {
-        // Выделяем все узлы на текущем уровне (или ничего, если это корневой уровень)
+        m_selectComponentRetryCount = 0;
         return;
     }
     
     // Определяем относительное имя компонента в текущем контексте
     QString componentName = name;
+    bool needToNavigate = false;
+    QString targetPath;
     
     if(m_componentName.isEmpty())
     {
         // Мы на корневом уровне, компонент должен быть прямым потомком
         // Берем только первую часть пути
         componentName = name.split(".").first();
+        
+        // Если компонент имеет вложенность, нужно перейти внутрь
+        if(name.contains("."))
+        {
+            needToNavigate = true;
+            targetPath = componentName;
+        }
     }
     else if(name.startsWith(m_componentName + "."))
     {
         // Компонент находится внутри текущего контекста
         componentName = name.mid(m_componentName.size() + 1);
+        
+        // Проверяем, есть ли вложенность (например, Component1.Component2.Component3)
+        QStringList relativePathParts = componentName.split(".");
+        if(relativePathParts.size() > 1)
+        {
+            // Компонент находится не на прямом уровне вложенности
+            // Нужно перейти внутрь родительского компонента
+            needToNavigate = true;
+            QStringList fullPathParts = name.split(".");
+            fullPathParts.removeLast(); // Убираем последний элемент (сам компонент)
+            targetPath = fullPathParts.join(".");
+        }
     }
     else
     {
         // Компонент находится вне текущего контекста
         // Нужно перейти на нужный уровень
-        // Определяем родительский путь компонента
         QStringList pathParts = name.split(".");
+        
         if(pathParts.size() > 1)
         {
+            // Компонент находится внутри другого компонента
             pathParts.removeLast();
-            QString parentPath = pathParts.join(".");
-            // Переходим на родительский уровень
-            saveCurrentViewState();
-            SetComponentName(parentPath);
-            Reload();
-            // После перезагрузки выбираем компонент
-            QTimer::singleShot(100, [this, name]() {
-                selectComponent(name);
-            });
-            return;
+            targetPath = pathParts.join(".");
         }
         else
         {
-            // Компонент на корневом уровне, переходим туда
-            saveCurrentViewState();
-            SetComponentName("");
-            Reload();
-            QTimer::singleShot(100, [this, name]() {
-                selectComponent(name);
-            });
-            return;
+            // Компонент на корневом уровне
+            targetPath = "";
         }
+        needToNavigate = true;
     }
     
-    // Найти узел и выделить его
+    // Если нужно перейти на другой уровень, используем componentDoubleClick
+    if(needToNavigate)
+    {
+        m_selectComponentRetryCount++;
+        componentDoubleClick(targetPath);
+        
+        // После перезагрузки выбираем компонент
+        QTimer::singleShot(300, [this, name]() {
+            selectComponent(name);
+        });
+        return;
+    }
+    
+    // Компонент должен быть на текущем уровне - пытаемся найти и выделить его
     if(auto it = m_nodeByName.find(componentName); it != m_nodeByName.end())
     {
         m_scene->clearSelection();
@@ -6694,6 +6726,28 @@ void UModernDiagramWidget::selectComponent(QString name)
         // Прокручиваем к выбранному узлу
         if(m_mainView)
             m_mainView->centerOn(it.value());
+        
+        // Сбрасываем счетчик после успешного выбора
+        m_selectComponentRetryCount = 0;
+        
+        // Сигнал componentSelected будет эмитирован автоматически через механизм выделения узлов в схеме
+        // (через itemChange в NodeItem)
+    }
+    else
+    {
+        // Компонент не найден на текущем уровне
+        // Возможно, нужно подождать еще немного после перезагрузки
+        if(m_selectComponentRetryCount < 3)
+        {
+            m_selectComponentRetryCount++;
+            QTimer::singleShot(300, [this, name]() {
+                selectComponent(name);
+            });
+        }
+        else
+        {
+            m_selectComponentRetryCount = 0;
+        }
     }
 }
 

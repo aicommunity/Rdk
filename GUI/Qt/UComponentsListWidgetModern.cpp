@@ -114,6 +114,10 @@ UComponentsListWidgetModern::UComponentsListWidgetModern(QWidget *parent, RDK::U
     connect(componentsTree, SIGNAL(itemSelectionChanged()),
             this, SLOT(componentListItemSelectionChanged()));
 
+    // Обработка одинарного клика для popup режима
+    connect(componentsTree, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
+            this, SLOT(onComponentItemClicked(QTreeWidgetItem*, int)));
+
     //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     connect(componentsTree, SIGNAL(doubleClicked(QModelIndex)),
             this, SLOT(drawSelectedComponent(QModelIndex)));
@@ -1081,6 +1085,30 @@ void UComponentsListWidgetModern::channelsListSelectionChanged()
   {
     currentChannel = ui->listWidgetChannelSelection->currentItem()->data(Qt::UserRole).toInt();
   }
+}
+
+void UComponentsListWidgetModern::onComponentItemClicked(QTreeWidgetItem* item, int column)
+{
+    Q_UNUSED(column);
+    if(!item) return;
+    
+    // Раскрываем путь к компоненту (все родительские элементы)
+    QTreeWidgetItem *currentItem = item;
+    while (currentItem) {
+        currentItem->setExpanded(true);
+        currentItem = currentItem->parent();
+    }
+    
+    // Устанавливаем текущий элемент (если еще не установлен)
+    if(componentsTree->currentItem() != item) {
+        componentsTree->setCurrentItem(item);
+    }
+    
+    // Прокручиваем к выбранному элементу
+    componentsTree->scrollToItem(item, QAbstractItemView::EnsureVisible);
+    
+    // Вызываем обработчик выбора компонента
+    componentListItemSelectionChanged();
 }
 
 void UComponentsListWidgetModern::drawSelectedComponent(QModelIndex index)
