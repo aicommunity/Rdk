@@ -3675,6 +3675,7 @@ UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
     , m_actionQuickLink(nullptr)
     , m_contextMenuNode(nullptr)
     , m_resetZoomButton(nullptr)
+    , m_selectComponentRetryCount(0)
 {
     m_mainView->setRenderHint(QPainter::Antialiasing, true);
     m_mainView->setDragMode(QGraphicsView::RubberBandDrag);
@@ -3699,20 +3700,7 @@ UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
     m_resetZoomButton->setText("⟲");
     m_resetZoomButton->setToolTip(tr("Reset zoom"));
     m_resetZoomButton->setFixedSize(32, 32);
-    m_resetZoomButton->setStyleSheet(
-        "QPushButton {"
-        "    background-color: rgba(255, 255, 255, 200);"
-        "    border: 1px solid #ccc;"
-        "    border-radius: 4px;"
-        "    font-size: 18px;"
-        "}"
-        "QPushButton:hover {"
-        "    background-color: rgba(240, 240, 240, 220);"
-        "}"
-        "QPushButton:pressed {"
-        "    background-color: rgba(220, 220, 220, 240);"
-        "}"
-    );
+    updateResetZoomButtonStyle();
     m_resetZoomButton->raise();
     connect(m_resetZoomButton, &QPushButton::clicked, this, &UModernDiagramWidget::onResetZoomClicked);
     
@@ -6551,26 +6539,215 @@ void UModernDiagramWidget::updateScheme(bool reloadXml)
     Reload();
 }
 
+void UModernDiagramWidget::updateTheme()
+{
+    // Инвалидируем кэш отрисовки для всех узлов
+    for(auto* node : m_nodes)
+    {
+        if(node)
+        {
+            node->m_cacheValid = false;
+            node->update();
+        }
+    }
+    
+    // Обновляем все связи
+    for(auto* link : m_links)
+    {
+        if(link)
+        {
+            link->update();
+        }
+    }
+    
+    // Обновляем всю сцену
+    if(m_scene)
+    {
+        m_scene->update();
+    }
+    
+    // Обновляем стили кнопки сброса масштаба
+    updateResetZoomButtonStyle();
+}
+
+void UModernDiagramWidget::updateResetZoomButtonStyle()
+{
+    if(!m_resetZoomButton)
+        return;
+    
+    UStyleManager* styleManager = UStyleManager::instance();
+    QString themeName = styleManager->getThemeName();
+    
+    if(themeName == "Modern Dark" || themeName == "dark")
+    {
+        // Темная тема
+        m_resetZoomButton->setStyleSheet(
+            "QPushButton {"
+            "    background-color: rgba(33, 37, 43, 220);"
+            "    border: 1px solid #5C6370;"
+            "    border-radius: 4px;"
+            "    font-size: 18px;"
+            "    color: #ABB2BF;"
+            "}"
+            "QPushButton:hover {"
+            "    background-color: rgba(44, 49, 58, 240);"
+            "    border-color: #61AFEF;"
+            "    color: #61AFEF;"
+            "}"
+            "QPushButton:pressed {"
+            "    background-color: rgba(30, 58, 95, 250);"
+            "    border-color: #61AFEF;"
+            "    color: #61AFEF;"
+            "}"
+        );
+    }
+    else
+    {
+        // Светлая тема (по умолчанию)
+        m_resetZoomButton->setStyleSheet(
+            "QPushButton {"
+            "    background-color: rgba(255, 255, 255, 200);"
+            "    border: 1px solid #ccc;"
+            "    border-radius: 4px;"
+            "    font-size: 18px;"
+            "    color: #374151;"
+            "}"
+            "QPushButton:hover {"
+            "    background-color: rgba(240, 240, 240, 220);"
+            "    border-color: #5B8DEF;"
+            "    color: #1E40AF;"
+            "}"
+            "QPushButton:pressed {"
+            "    background-color: rgba(220, 220, 220, 240);"
+            "    border-color: #3B82F6;"
+            "    color: #1E40AF;"
+            "}"
+        );
+    }
+}
+
 void UModernDiagramWidget::selectComponent(QString name)
 {
-    // Найти компонент в текущем пути
-    QString componentName = name;
-    if(!m_componentName.isEmpty() && name.startsWith(m_componentName + "."))
+    // Если имя пустое, ничего не делаем
+    if(name.isEmpty())
     {
-        componentName = name.mid(m_componentName.size() + 1);
-    }
-    else if(!m_componentName.isEmpty() && name == m_componentName)
-    {
-        // Если имя совпадает с текущим путём, значит мы на верхнем уровне
+        m_selectComponentRetryCount = 0;
         return;
     }
     
-    // Найти узел и выделить его
+    // Защита от бесконечной рекурсии
+    if(m_selectComponentRetryCount >= 3)
+    {
+        m_selectComponentRetryCount = 0;
+        return;
+    }
+    
+    // Если имя совпадает с текущим путём, значит мы на верхнем уровне
+    if(!m_componentName.isEmpty() && name == m_componentName)
+    {
+        m_selectComponentRetryCount = 0;
+        return;
+    }
+    
+    // Определяем относительное имя компонента в текущем контексте
+    QString componentName = name;
+    bool needToNavigate = false;
+    QString targetPath;
+    
+    if(m_componentName.isEmpty())
+    {
+        // Мы на корневом уровне, компонент должен быть прямым потомком
+        // Берем только первую часть пути
+        componentName = name.split(".").first();
+        
+        // Если компонент имеет вложенность, нужно перейти внутрь
+        if(name.contains("."))
+        {
+            needToNavigate = true;
+            targetPath = componentName;
+        }
+    }
+    else if(name.startsWith(m_componentName + "."))
+    {
+        // Компонент находится внутри текущего контекста
+        componentName = name.mid(m_componentName.size() + 1);
+        
+        // Проверяем, есть ли вложенность (например, Component1.Component2.Component3)
+        QStringList relativePathParts = componentName.split(".");
+        if(relativePathParts.size() > 1)
+        {
+            // Компонент находится не на прямом уровне вложенности
+            // Нужно перейти внутрь родительского компонента
+            needToNavigate = true;
+            QStringList fullPathParts = name.split(".");
+            fullPathParts.removeLast(); // Убираем последний элемент (сам компонент)
+            targetPath = fullPathParts.join(".");
+        }
+    }
+    else
+    {
+        // Компонент находится вне текущего контекста
+        // Нужно перейти на нужный уровень
+        QStringList pathParts = name.split(".");
+        
+        if(pathParts.size() > 1)
+        {
+            // Компонент находится внутри другого компонента
+            pathParts.removeLast();
+            targetPath = pathParts.join(".");
+        }
+        else
+        {
+            // Компонент на корневом уровне
+            targetPath = "";
+        }
+        needToNavigate = true;
+    }
+    
+    // Если нужно перейти на другой уровень, используем componentDoubleClick
+    if(needToNavigate)
+    {
+        m_selectComponentRetryCount++;
+        componentDoubleClick(targetPath);
+        
+        // После перезагрузки выбираем компонент
+        QTimer::singleShot(300, [this, name]() {
+            selectComponent(name);
+        });
+        return;
+    }
+    
+    // Компонент должен быть на текущем уровне - пытаемся найти и выделить его
     if(auto it = m_nodeByName.find(componentName); it != m_nodeByName.end())
     {
         m_scene->clearSelection();
         it.value()->setSelected(true);
         m_contextMenuNode = it.value();
+        // Прокручиваем к выбранному узлу
+        if(m_mainView)
+            m_mainView->centerOn(it.value());
+        
+        // Сбрасываем счетчик после успешного выбора
+        m_selectComponentRetryCount = 0;
+        
+        // Сигнал componentSelected будет эмитирован автоматически через механизм выделения узлов в схеме
+        // (через itemChange в NodeItem)
+    }
+    else
+    {
+        // Компонент не найден на текущем уровне
+        // Возможно, нужно подождать еще немного после перезагрузки
+        if(m_selectComponentRetryCount < 3)
+        {
+            m_selectComponentRetryCount++;
+            QTimer::singleShot(300, [this, name]() {
+                selectComponent(name);
+            });
+        }
+        else
+        {
+            m_selectComponentRetryCount = 0;
+        }
     }
 }
 

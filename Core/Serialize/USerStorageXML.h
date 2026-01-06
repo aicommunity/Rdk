@@ -14,6 +14,8 @@ See file license.txt for more information
 
 #include <string>
 #include <locale>
+#include <map>
+#include <vector>
 #include "USerStorage.h"
 
 #ifndef _UNICODE
@@ -55,6 +57,16 @@ mutable std::string CachedNodeText;
 mutable XMLNode CachedNode; // Узел, для которого кэшированы данные
 mutable bool NodeNameCached;
 mutable bool NodeTextCached;
+
+// Кэш для оптимизации SelectNodeRoot
+mutable std::string CachedPath;
+mutable std::vector<std::string> CachedPathNodes;
+mutable bool PathCached;
+
+// Кэш для оптимизации работы с атрибутами
+mutable std::map<std::string, std::string> CachedAttributes;
+mutable XMLNode CachedAttributesNode;
+mutable bool AttributesCached;
 
 
 public: // Методы
@@ -129,6 +141,10 @@ bool SelectNodeForce(const std::string &name);
 // Аналогично SelectNodeForce, но позиционируется всегда от корневого узла,
 // и поддерживает составное именование узла, с разделителем в виде '/'
 bool SelectNodeRoot(const std::string &name);
+
+// Оптимизированный batch-метод для множественного выбора узлов
+// Выбирает узлы по пути, разделенному '/', возвращает true если все узлы найдены
+bool SelectNodeBatch(const std::vector<std::string> &path);
 
 // Возвращает имя узла
 const std::string GetNodeName(void) const;

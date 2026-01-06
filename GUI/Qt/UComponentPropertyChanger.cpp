@@ -15,7 +15,7 @@ UComponentPropertyChanger::UComponentPropertyChanger(QWidget *parent, RDK::UAppl
   setAccessibleName("UComponentPropertyChanger");
   propertyXML = NULL;
 
-  componentsList = new UComponentsListWidget(this, application);
+  componentsList = new UComponentsListWidgetModern(this, application);
   componentsList->setAccessibleName(accessibleName() + "_componentsList");
   ui->verticalLayoutComponentsList->addWidget(componentsList);
 
@@ -60,6 +60,10 @@ void UComponentPropertyChanger::ASaveParameters()
   settings.beginGroup(accessibleName());
   settings.setValue("splitterState", ui->splitter->saveState());
   settings.endGroup();
+  
+  // Сохраняем настройки componentsList (включая режим отображения)
+  if(componentsList)
+    componentsList->ASaveParameters();
 }
 
 void UComponentPropertyChanger::ALoadParameters()
@@ -72,6 +76,10 @@ void UComponentPropertyChanger::ALoadParameters()
   settings.beginGroup(accessibleName());
   ui->splitter->restoreState(settings.value("splitterState").toByteArray());
   settings.endGroup();
+  
+  // Загружаем настройки componentsList (включая режим отображения)
+  if(componentsList)
+    componentsList->ALoadParameters();
 }
 
 void UComponentPropertyChanger::actionSet()

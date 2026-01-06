@@ -169,8 +169,8 @@ double UTimeStamp::operator() (void) const
 
 bool UTimeStamp::operator == (const UTimeStamp &copy)
 {
- return ((Hours==copy.Hours) & (Minutes==copy.Minutes)
-		& (Seconds==copy.Seconds) & (Frames==copy.Frames));
+ return ((Hours==copy.Hours) && (Minutes==copy.Minutes)
+		&& (Seconds==copy.Seconds) && (Frames==copy.Frames));
 }
 
 bool UTimeStamp::operator != (const UTimeStamp &copy)

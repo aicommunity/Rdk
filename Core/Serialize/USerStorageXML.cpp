@@ -32,6 +32,8 @@ USerStorageXML::USerStorageXML(void)
 #endif
 , NodeNameCached(false)
 , NodeTextCached(false)
+, PathCached(false)
+, AttributesCached(false)
 {
 }
 
@@ -238,10 +240,13 @@ bool USerStorageXML::SaveToFile(const std::string &file_name)
 // Позиционируется на корневой узел
 void USerStorageXML::SelectRoot(void)
 {
- CurrentNode=RootNode;
- // Инвалидируем кэш при изменении узла
- NodeNameCached = false;
- NodeTextCached = false;
+ // Инвалидируем кэш только если действительно меняем узел
+ if(CurrentNode.getName() != RootNode.getName() || CurrentNode.isEmpty() != RootNode.isEmpty())
+ {
+  CurrentNode=RootNode;
+  NodeNameCached = false;
+  NodeTextCached = false;
+ }
 }
 
 // Позиционируется на родительский узел
@@ -250,10 +255,13 @@ void USerStorageXML::SelectUp(void)
  XMLNode node=CurrentNode.getParentNode();
  if(node.isEmpty())
   return;
- CurrentNode=node;
- // Инвалидируем кэш при изменении узла
- NodeNameCached = false;
- NodeTextCached = false;
+ // Инвалидируем кэш только если действительно меняем узел
+ if(node.getName() != CurrentNode.getName() || node.isEmpty() != CurrentNode.isEmpty())
+ {
+  CurrentNode=node;
+  NodeNameCached = false;
+  NodeTextCached = false;
+ }
 }
 
 // Возвращает число узлов с заданным именем
@@ -289,6 +297,7 @@ bool USerStorageXML::SelectNode(const std::string &name, int index)
  // Инвалидируем кэш при изменении узла
  NodeNameCached = false;
  NodeTextCached = false;
+ AttributesCached = false;
  return true;
 }
 
@@ -301,6 +310,7 @@ bool USerStorageXML::SelectNode(int index)
  // Инвалидируем кэш при изменении узла
  NodeNameCached = false;
  NodeTextCached = false;
+ AttributesCached = false;
  return true;
 }
 
@@ -319,9 +329,20 @@ bool USerStorageXML::SelectNodeForce(const std::string &name)
 // и поддерживает составное именование узла, с разделителем в виде '/'
 bool USerStorageXML::SelectNodeRoot(const std::string &name)
 {
+ // Оптимизация: используем кэш для разбиения пути
  std::vector<std::string> nodes;
+ if(PathCached && CachedPath == name)
+ {
+  nodes = CachedPathNodes;
+ }
+ else
+ {
+  separatestring(name,nodes, '/');
+  CachedPath = name;
+  CachedPathNodes = nodes;
+  PathCached = true;
+ }
 
- separatestring(name,nodes, '/');
  SelectRoot();
  if(nodes.empty())
   return false;
@@ -338,12 +359,30 @@ bool USerStorageXML::SelectNodeRoot(const std::string &name)
  }
 
  if(rootName != nodes[0])
+ {
   Create(nodes[0]);
+  // Инвалидируем кэш пути при изменении корня
+  PathCached = false;
+ }
  for(size_t i=1;i<nodes.size();i++)
  {
   if(!SelectNode(nodes[i]))
    if(!AddNode(nodes[i]))
     return false;
+ }
+ return true;
+}
+
+// Оптимизированный batch-метод для множественного выбора узлов
+bool USerStorageXML::SelectNodeBatch(const std::vector<std::string> &path)
+{
+ if(path.empty())
+  return false;
+
+ for(size_t i=0;i<path.size();i++)
+ {
+  if(!SelectNode(path[i]))
+   return false;
  }
  return true;
 }
@@ -476,8 +515,31 @@ void USerStorageXML::DelNodeInternalContent(void)
 // Устанавливает значение атрибута узла
 bool USerStorageXML::SetNodeAttribute(const std::string &name, const std::string &value)
 {
+ // Оптимизация: обновляем кэш атрибутов
+ if(AttributesCached && CachedAttributesNode.getName() == CurrentNode.getName())
+ {
+  CachedAttributes[name] = value;
+ }
+ else
+ {
+  // Инвалидируем кэш, если узел изменился
+  AttributesCached = false;
+  CachedAttributes.clear();
+ }
+
 #ifdef RDK_UNICODE_RUN
- if(!CurrentNode.isAttributeSet(widen(name,Locale,WBuffer).c_str()))
+ // Оптимизация: проверяем isAttributeSet только если кэш недействителен
+ bool attributeExists = false;
+ if(AttributesCached && CachedAttributesNode.getName() == CurrentNode.getName())
+ {
+  attributeExists = (CachedAttributes.find(name) != CachedAttributes.end());
+ }
+ else
+ {
+  attributeExists = CurrentNode.isAttributeSet(widen(name,Locale,WBuffer).c_str());
+ }
+
+ if(!attributeExists)
  {
   CurrentNode.addAttribute(widen(name,Locale,WBuffer).c_str(),widen(value,Locale,WBuffer2).c_str());
  }
@@ -486,7 +548,18 @@ bool USerStorageXML::SetNodeAttribute(const std::string &name, const std::string
   CurrentNode.updateAttribute(widen(value,Locale,WBuffer).c_str(),0,widen(name,Locale,WBuffer2).c_str());
  }
 #else
- if(!CurrentNode.isAttributeSet(name.c_str()))
+ // Оптимизация: проверяем isAttributeSet только если кэш недействителен
+ bool attributeExists = false;
+ if(AttributesCached && CachedAttributesNode.getName() == CurrentNode.getName())
+ {
+  attributeExists = (CachedAttributes.find(name) != CachedAttributes.end());
+ }
+ else
+ {
+  attributeExists = CurrentNode.isAttributeSet(name.c_str());
+ }
+
+ if(!attributeExists)
  {
   CurrentNode.addAttribute(name.c_str(),value.c_str());
  }
@@ -501,6 +574,14 @@ bool USerStorageXML::SetNodeAttribute(const std::string &name, const std::string
 // Возвращает значение атрибута узла
 const std::string USerStorageXML::GetNodeAttribute(const std::string &name) const
 {
+ // Оптимизация: используем кэш атрибутов
+ if(AttributesCached && CachedAttributesNode.getName() == CurrentNode.getName())
+ {
+  auto it = CachedAttributes.find(name);
+  if(it != CachedAttributes.end())
+   return it->second;
+ }
+
  std::string str;
 #ifdef RDK_UNICODE_RUN
  const wchar_t *p=CurrentNode.getAttribute(widen(name,Locale,WBuffer).c_str(),0);
@@ -513,6 +594,20 @@ const std::string USerStorageXML::GetNodeAttribute(const std::string &name) cons
  if(p)
   str=p;
 #endif
+
+ // Обновляем кэш
+ if(AttributesCached && CachedAttributesNode.getName() == CurrentNode.getName())
+ {
+  CachedAttributes[name] = str;
+ }
+ else
+ {
+  CachedAttributes.clear();
+  CachedAttributes[name] = str;
+  CachedAttributesNode = CurrentNode;
+  AttributesCached = true;
+ }
+
  return str;
 }
 

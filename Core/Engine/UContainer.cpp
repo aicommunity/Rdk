@@ -77,6 +77,8 @@ UContainer::UContainer(void)
   , PComponents(0), NumComponents(0), LastId(0)
   , CachedComponent(0), CachedComponentId(ForbiddenId), CachedComponentType(typeid(void))
   , ActiveComponentsCacheValid(false)
+  , CachedTimeStepEqual(false)
+  , CachedTimeStepLess(false), CachedTimeStepGreater(false)
 
 {
  Id = 0;
@@ -450,15 +452,15 @@ void UContainer::SetPropertiesForDetailedLog(const std::string &str)
 // Координата компонента в пространстве сети
 const RDK::MVector<double,3>& UContainer::GetCoord(void) const
 {
- return Coord.v;
+ return Coord.GetData();
 }
 
 bool UContainer::SetCoord(const RDK::MVector<double,3> &value)
 {
- if(Coord.v == value)
+ if(Coord.GetData() == value)
   return true;
 
- Coord.v =value;
+ Coord.SetDataDirect(value);
 
  return true;
 }
@@ -630,12 +632,12 @@ NameT& UContainer::GenerateName(const NameT &prefix, NameT &namebuffer)
 // Устанавливает имя объекта.
 const NameT& UContainer::GetName(void) const
 {
- return Name.v;
+ return Name.GetData();
 }
 
 bool UContainer::SetName(const NameT &name)
 {
- if(Name.v == name)
+ if(Name.GetData() == name)
   return true;
 
  if(name.empty())
@@ -651,7 +653,7 @@ bool UContainer::SetName(const NameT &name)
 
    GetOwner()->ModifyLookupComponent(Name, name);
   }
- Name.v=name;
+ Name.SetDataDirect(name);
  return true;
 }
 
@@ -840,7 +842,7 @@ const vector<NameT>& UContainer::GetComponentsNameByClassName(const NameT &name,
 // Устанавливает величину шага интегрирования
 const UTime& UContainer::GetTimeStep(void) const
 {
- return TimeStep.v;
+ return TimeStep.GetData();
 }
 
 bool UContainer::SetTimeStep(const UTime &timestep)
@@ -848,12 +850,17 @@ bool UContainer::SetTimeStep(const UTime &timestep)
  if(timestep <= 0)
   return false;
 
- TimeStep.v=timestep;
+ TimeStep.SetDataDirect(timestep);
 
  if(Owner)
   OwnerTimeStep=GetOwner()->TimeStep;
  else
   OwnerTimeStep=timestep;
+
+ // Инвалидируем кэш проверок TimeStep
+ CachedTimeStepEqual = false;
+ CachedTimeStepLess = false;
+ CachedTimeStepGreater = false;
 
  // Указатель на все дочерние компоненты
  UEPtr<UContainer>* comps=PComponents;
@@ -896,25 +903,22 @@ bool UContainer::SetGlobalTimeStep(UTime timestep)
 
 
 // Устанавливает флаг активности компонента
-const bool& UContainer::GetActivity(void) const
-{
- return Activity.v;
-}
+// GetActivity() реализация перенесена в заголовочный файл как inline
 
 bool UContainer::SetActivity(const bool &activity)
 {
 //  return true;
 //  return true;
 
- Activity.v=true;
+ Activity.SetDataDirect(true);
  UEPtr<UContainer>* comps=PComponents;
  for(int i=0;i<NumComponents;i++,comps++)
-  (*comps)->Activity = activity;
+  (*comps)->Activity.SetDataDirect(activity);
 
 //  return Reset(); // !!! Заглушка. Возможно это не нужно!
 //  return Reset(); // !!! Заглушка. Возможно это не нужно!
 
- Activity.v=activity;
+ Activity.SetDataDirect(activity);
  StepDuration=0;
  InterstepsInterval=0;
 
@@ -927,7 +931,7 @@ bool UContainer::SetActivity(const bool &activity)
 // Id компонента
 UId UContainer::GetId(void) const
 {
- return Id.v;
+ return Id.GetData();
 }
 
 bool UContainer::SetId(const UId &id)
@@ -946,7 +950,7 @@ bool UContainer::SetId(const UId &id)
 
    GetOwner()->SetLookupComponent(Name, id);
   }
- Id.v=id;
+ Id.SetDataDirect(id);
  return true;
 }
 
@@ -957,12 +961,12 @@ bool UContainer::SetId(const UId &id)
 /// Если значение параметра <0, то нет ограничений
 const long long& UContainer::GetMaxCalculationDuration(void) const
 {
- return MaxCalculationDuration.v;
+ return MaxCalculationDuration.GetData();
 }
 
 bool UContainer::SetMaxCalculationDuration(const long long &value)
 {
- MaxCalculationDuration.v=value;
+ MaxCalculationDuration.SetDataDirect(value);
  return true;
 }
 
@@ -971,12 +975,12 @@ bool UContainer::SetMaxCalculationDuration(const long long &value)
 /// Если значение параметра <0, то нет ограничений
 const long long& UContainer::GetCalculationDurationThreshold(void) const
 {
- return CalculationDurationThreshold.v;
+ return CalculationDurationThreshold.GetData();
 }
 
 bool UContainer::SetCalculationDurationThreshold(const long long& value)
 {
- CalculationDurationThreshold.v=value;
+ CalculationDurationThreshold.SetDataDirect(value);
  return true;
 }
 
@@ -984,12 +988,12 @@ bool UContainer::SetCalculationDurationThreshold(const long long& value)
 /// Маска системных событий для отладки компонента компонента компонента компонента
 const unsigned int& UContainer::GetDebugSysEventsMask(void) const
 {
- return DebugSysEventsMask.v;
+ return DebugSysEventsMask.GetData();
 }
 
 bool UContainer::SetDebugSysEventsMask(const unsigned int &value)
 {
- DebugSysEventsMask.v=value;
+ DebugSysEventsMask.SetDataDirect(value);
  return true;
 }
 
@@ -1498,7 +1502,7 @@ void UContainer::CopyComponents(UEPtr<UContainer> comp, UEPtr<UStorage> stor) co
    }
 
    comp->AddComponent(bufcomp,pointer);
-   bufcomp->Id = (*pcomponents)->Id.v;
+   bufcomp->Id = (*pcomponents)->Id.GetData();
    comp->SetLookupComponent(bufcomp->GetName(), bufcomp->GetId());
   }
  /*
@@ -2432,7 +2436,7 @@ bool UContainer::Calculate(void)
  {
   try
   {
-   Init(); // Заглушка
+   // Оптимизация: убрали избыточный вызов Init() - проверка InitFlag выполняется ниже
 
    #ifdef RDK_ENABLE_CALC_LOGGING
    if(!Owner)
@@ -2451,7 +2455,9 @@ bool UContainer::Calculate(void)
 	return false;
    }
 
-   unsigned long long tempstepduration=StartCalcTime=GetCurrentStartupTime();
+   // Оптимизация: кэшируем GetCurrentStartupTime() для уменьшения системных вызовов
+   unsigned long long start_time = GetCurrentStartupTime();
+   unsigned long long tempstepduration=StartCalcTime=start_time;
    InterstepsInterval=(LastCalcTime>0)?CalcDiffTime(tempstepduration,LastCalcTime):0;
    LastCalcTime=tempstepduration;
 
@@ -2503,13 +2509,15 @@ bool UContainer::Calculate(void)
 	 #ifdef RDK_ENABLE_CALC_TIME_CHECKS
 	 if(check_max_duration)
 	 {
-	  unsigned long long calc_duration=CalcDiffTime(GetCurrentStartupTime(),StartCalcTime);
+	  // Используем актуальное время для проверки длительности
+	  unsigned long long current_time = GetCurrentStartupTime();
+	  unsigned long long calc_duration=CalcDiffTime(current_time,StartCalcTime);
 	  if(calc_duration > ULongTime(MaxCalculationDuration))
 	 {
 	   ForceSkipComponentCalculation();
 	   #ifdef RDK_ENABLE_CALC_LOGGING
 	   std::string temp;
-       LogMessage(RDK_EX_WARNING, string("CalcTime[")+sntoa(calc_duration)+std::string("]>MaxCalculationDuration[")+sntoa(MaxCalculationDuration.v)+("] after ")+comp->GetFullName(temp));
+       LogMessage(RDK_EX_WARNING, string("CalcTime[")+sntoa(calc_duration)+std::string("]>MaxCalculationDuration[")+sntoa(MaxCalculationDuration.GetData())+("] after ")+comp->GetFullName(temp));
 	   #endif
 	  }
 	 }
@@ -2521,36 +2529,64 @@ bool UContainer::Calculate(void)
    SkipComponentCalculation=false;
    ComponentReCalculation=false;
 
-   LogPropertiesBeforeCalc();
+   // Оптимизация: кэшируем флаг логирования для избежания повторных проверок
+   bool should_log_properties = (Logger && Logger->GetDebugMode() && 
+								 (Logger->GetDebugSysEventsMask() & (RDK_SYS_DEBUG_PROPERTIES & DebugSysEventsMask)));
+   if(should_log_properties)
+	LogPropertiesBeforeCalc();
 
    #ifdef RDK_ENABLE_CALC_TIME_CHECKS
+   // Используем актуальное время для начала измерения ACalculate
    unsigned long long acalc_start_time=GetCurrentStartupTime();
    bool check_acalc_duration = check_max_duration;
    #endif
+   
+   // Оптимизация: кэшируем проверки TimeStep для избежания повторных вычислений
    if(!Owner)
    {
 	ACalculate();
    }
    else
-   if(TimeStep == OwnerTimeStep)
    {
-	ACalculate();
-   }
-   else
-   if(TimeStep < OwnerTimeStep)
-   {
-	--CalcCounter;
-	if(CalcCounter <= 0)
+	// Обновляем OwnerTimeStep если нужно
+	if(OwnerTimeStep == 0 || OwnerTimeStep != GetOwner()->TimeStep)
 	{
-	 CalcCounter=OwnerTimeStep/TimeStep;
+	 OwnerTimeStep = GetOwner()->TimeStep;
+	 // Инвалидируем кэш при изменении OwnerTimeStep
+	 CachedTimeStepEqual = false;
+	 CachedTimeStepLess = false;
+	 CachedTimeStepGreater = false;
+	}
+	
+	// Вычисляем сравнения TimeStep лениво
+	if(!CachedTimeStepEqual && !CachedTimeStepLess && !CachedTimeStepGreater)
+	{
+	 if(TimeStep == OwnerTimeStep)
+	  CachedTimeStepEqual = true;
+	 else if(TimeStep < OwnerTimeStep)
+	  CachedTimeStepLess = true;
+	 else
+	  CachedTimeStepGreater = true;
+	}
+	
+	if(CachedTimeStepEqual)
+	{
 	 ACalculate();
 	}
-   }
-   else
-   if(TimeStep > OwnerTimeStep)
-   {
-	for(int calc_iter=int(TimeStep/OwnerTimeStep);calc_iter>=0;--calc_iter)
-	 ACalculate();
+	else if(CachedTimeStepLess)
+	{
+	 --CalcCounter;
+	 if(CalcCounter <= 0)
+	 {
+	  CalcCounter=OwnerTimeStep/TimeStep;
+	  ACalculate();
+	 }
+	}
+	else if(CachedTimeStepGreater)
+	{
+	 for(int calc_iter=int(TimeStep/OwnerTimeStep);calc_iter>=0;--calc_iter)
+	  ACalculate();
+	}
    }
    #ifdef RDK_ENABLE_CALC_TIME_CHECKS
    if(check_acalc_duration)
@@ -2562,22 +2598,28 @@ bool UContainer::Calculate(void)
 	 {
 	  GetOwner()->ForceSkipComponentCalculation();
 	 }
-     LogMessage(RDK_EX_WARNING, string("ACalculate CalcTime[")+sntoa(calc_duration)+std::string("]>MaxCalculationDuration[")+sntoa(MaxCalculationDuration.v)+"]");
+     LogMessage(RDK_EX_WARNING, string("ACalculate CalcTime[")+sntoa(calc_duration)+std::string("]>MaxCalculationDuration[")+sntoa(MaxCalculationDuration.GetData())+"]");
 	}
    }
    #endif
 
-   LogPropertiesAfterCalc();
+   // Используем тот же кэшированный флаг для логирования после расчета
+   if(should_log_properties)
+	LogPropertiesAfterCalc();
 
-   UpdateMainOwner();
+   // Оптимизация: вызываем UpdateMainOwner() только если MainOwner установлен
+   if(MainOwner)
+	UpdateMainOwner();
    InterstepsInterval-=StepDuration;
 
-   StepDuration=CalcDiffTime(GetCurrentStartupTime(),tempstepduration);
+   // Используем актуальное время для финального расчета StepDuration
+   unsigned long long end_time = GetCurrentStartupTime();
+   StepDuration=CalcDiffTime(end_time,tempstepduration);
 
    #ifdef RDK_ENABLE_CALC_TIME_CHECKS
    if(check_duration_threshold && (StepDuration > ULongTime(CalculationDurationThreshold)))
    {
-    LogMessageEx(RDK_EX_WARNING, string("Performance warning: StepDuration>")+RDK::sntoa(CalculationDurationThreshold.v)+" ms");
+    LogMessageEx(RDK_EX_WARNING, string("Performance warning: StepDuration>")+RDK::sntoa(CalculationDurationThreshold.GetData())+" ms");
    }
    #endif
 

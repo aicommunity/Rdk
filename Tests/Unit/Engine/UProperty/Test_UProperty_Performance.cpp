@@ -158,3 +158,170 @@ TEST(PerformanceTest, UnconnectedVsConnected)
     EXPECT_LT(connected_ns, unconnected_ns * 2.0);
 }
 
+// Test for multiple GetData() calls in arithmetic operations (simulating real usage patterns)
+TEST(PerformanceTest, MultipleGetDataCalls)
+{
+    PerfTestComponent comp;
+    comp.Parameter = 42;
+    
+    const int iterations = 100000;
+    
+    // Test: Multiple GetData() calls without caching (old pattern)
+    auto start1 = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < iterations; ++i)
+    {
+        // Simulating: result = prop1.GetData() + prop2.GetData() + prop3.GetData()
+        volatile int result = comp.Parameter() + comp.Parameter() + comp.Parameter();
+        (void)result; // Suppress unused variable warning
+    }
+    auto end1 = std::chrono::high_resolution_clock::now();
+    auto duration1 = std::chrono::duration_cast<std::chrono::microseconds>(end1 - start1);
+    
+    // Test: Multiple GetData() calls with caching (optimized pattern)
+    auto start2 = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < iterations; ++i)
+    {
+        // Simulating optimized pattern: cache value first
+        const int param = comp.Parameter();
+        volatile int result = param + param + param;
+        (void)result; // Suppress unused variable warning
+    }
+    auto end2 = std::chrono::high_resolution_clock::now();
+    auto duration2 = std::chrono::duration_cast<std::chrono::microseconds>(end2 - start2);
+    
+    double without_caching_ns = (duration1.count() * 1000.0) / iterations;
+    double with_caching_ns = (duration2.count() * 1000.0) / iterations;
+    
+    std::cout << "Multiple GetData() without caching: " << without_caching_ns << " ns" << std::endl;
+    std::cout << "Multiple GetData() with caching: " << with_caching_ns << " ns" << std::endl;
+    if (without_caching_ns > 0)
+    {
+        double improvement = ((without_caching_ns - with_caching_ns) / without_caching_ns) * 100.0;
+        std::cout << "Improvement from caching: " << improvement << "%" << std::endl;
+    }
+    
+    // Caching should be faster or at least not slower
+    EXPECT_LE(with_caching_ns, without_caching_ns * 1.1); // Allow 10% tolerance
+}
+
+// Test for GetData() in loop (simulating ACalculate() methods)
+TEST(PerformanceTest, GetDataInLoop)
+{
+    PerfTestComponent comp;
+    comp.Parameter = 42;
+    
+    const int outer_iterations = 1000;
+    const int inner_iterations = 100;
+    
+    // Test: GetData() called in inner loop without caching
+    auto start1 = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < outer_iterations; ++i)
+    {
+        int sum = 0;
+        for (int j = 0; j < inner_iterations; ++j)
+        {
+            sum += comp.Parameter(); // GetData() called in loop
+        }
+        volatile int dummy = sum;
+        (void)dummy;
+    }
+    auto end1 = std::chrono::high_resolution_clock::now();
+    auto duration1 = std::chrono::duration_cast<std::chrono::microseconds>(end1 - start1);
+    
+    // Test: GetData() cached before loop (optimized pattern)
+    auto start2 = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < outer_iterations; ++i)
+    {
+        const int param = comp.Parameter(); // Cache before loop
+        int sum = 0;
+        for (int j = 0; j < inner_iterations; ++j)
+        {
+            sum += param; // Use cached value
+        }
+        volatile int dummy = sum;
+        (void)dummy;
+    }
+    auto end2 = std::chrono::high_resolution_clock::now();
+    auto duration2 = std::chrono::duration_cast<std::chrono::microseconds>(end2 - start2);
+    
+    double without_caching_ns = (duration1.count() * 1000.0) / (outer_iterations * inner_iterations);
+    double with_caching_ns = (duration2.count() * 1000.0) / (outer_iterations * inner_iterations);
+    
+    std::cout << "GetData() in loop (per access): " << without_caching_ns << " ns" << std::endl;
+    std::cout << "GetData() cached before loop (per access): " << with_caching_ns << " ns" << std::endl;
+    if (without_caching_ns > 0)
+    {
+        double improvement = ((without_caching_ns - with_caching_ns) / without_caching_ns) * 100.0;
+        std::cout << "Improvement from caching: " << improvement << "%" << std::endl;
+    }
+    
+    // Caching should provide significant improvement
+    EXPECT_LE(with_caching_ns, without_caching_ns * 0.8); // At least 20% improvement expected
+}
+
+// Test for different property types (int, double, bool)
+TEST(PerformanceTest, GetDataDifferentTypes)
+{
+    class MultiTypeComponent : public UNet
+    {
+    public:
+        UProperty<int, MultiTypeComponent, ptPubParameter> IntProp;
+        UProperty<double, MultiTypeComponent, ptPubParameter> DoubleProp;
+        UProperty<bool, MultiTypeComponent, ptPubParameter> BoolProp;
+        
+        MultiTypeComponent() : 
+            IntProp("IntProp", this),
+            DoubleProp("DoubleProp", this),
+            BoolProp("BoolProp", this)
+        {
+        }
+    };
+    
+    MultiTypeComponent comp;
+    comp.IntProp = 42;
+    comp.DoubleProp = 3.14159;
+    comp.BoolProp = true;
+    
+    const int iterations = 1000000;
+    
+    // Test int
+    auto start1 = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < iterations; ++i)
+    {
+        volatile int value = comp.IntProp();
+    }
+    auto end1 = std::chrono::high_resolution_clock::now();
+    auto duration1 = std::chrono::duration_cast<std::chrono::microseconds>(end1 - start1);
+    
+    // Test double
+    auto start2 = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < iterations; ++i)
+    {
+        volatile double value = comp.DoubleProp();
+    }
+    auto end2 = std::chrono::high_resolution_clock::now();
+    auto duration2 = std::chrono::duration_cast<std::chrono::microseconds>(end2 - start2);
+    
+    // Test bool
+    auto start3 = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < iterations; ++i)
+    {
+        volatile bool value = comp.BoolProp();
+    }
+    auto end3 = std::chrono::high_resolution_clock::now();
+    auto duration3 = std::chrono::duration_cast<std::chrono::microseconds>(end3 - start3);
+    
+    double int_ns = (duration1.count() * 1000.0) / iterations;
+    double double_ns = (duration2.count() * 1000.0) / iterations;
+    double bool_ns = (duration3.count() * 1000.0) / iterations;
+    
+    std::cout << "GetData() int: " << int_ns << " ns" << std::endl;
+    std::cout << "GetData() double: " << double_ns << " ns" << std::endl;
+    std::cout << "GetData() bool: " << bool_ns << " ns" << std::endl;
+    
+    // All should be reasonably fast
+    EXPECT_LT(int_ns, 1000.0);
+    EXPECT_LT(double_ns, 1000.0);
+    EXPECT_LT(bool_ns, 1000.0);
+}
+

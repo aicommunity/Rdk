@@ -19,6 +19,7 @@ See file license.txt for more information
 #include <fstream>
 #include <iomanip>
 #include <vector>
+#include <map>
 
 namespace RDK {
 
@@ -61,6 +62,10 @@ protected: // Данные
 // список строк ini-файла
 StringListT Lines;
 
+// Кэш позиций секций для быстрого поиска
+mutable std::map<StringT, StringListIteratorT> SectionCache;
+mutable bool CacheValid;
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
@@ -85,6 +90,8 @@ UIniFile(void)
  NoNameSymbols[2]='=';
  NoNameSymbols[3]='\n';
  NoNameSymbols[4]='\r';
+ 
+ CacheValid = false;
 };
 
 UIniFile(const UIniFile<CharT> &ini)
@@ -271,6 +278,9 @@ bool Add(const StringT &section)
   return true;
 
  Lines.push_back(StringT(1,'[')+section+StringT(1,']'));
+ 
+ // Инвалидируем кэш при добавлении секции
+ CacheValid = false;
 
  return true;
 };
@@ -328,6 +338,7 @@ bool Rename(const StringT &section, const StringT &newsection)
  if(FindSection(section,result,startname,stopname) && result)
  {
   *result=result->substr(0,startname-1)+newsection+result->substr(stopname+1);
+  CacheValid = false; // Инвалидируем кэш при переименовании
   return true;
  }
 
@@ -377,12 +388,16 @@ bool Delete(const StringT &section)
  while(I != J)
  {
   if(DecodeAsSection(*I, start, stop))
+  {
+   CacheValid = false; // Инвалидируем кэш при удалении секции
    return true;
+  }
 
   K=I; ++I;
   Lines.erase(K);
  }
 
+ CacheValid = false; // Инвалидируем кэш при удалении секции
  return true;
 };
 
@@ -503,25 +518,61 @@ bool operator () (const StringT &section, const StringT &variable, const StringT
 // -----------------
 
 protected: // скрытые методы
+// Построение кэша секций
+void BuildSectionCache(void) const
+{
+ SectionCache.clear();
+ typename list<StringT>::iterator I = Lines.begin();
+ typename list<StringT>::iterator J = Lines.end();
+ SizeT start=0, stop=0;
+
+ while(I != J)
+ {
+  if(DecodeAsSection(*I, start, stop))
+  {
+   StringT section_name = I->substr(start, stop-start+1);
+   SectionCache[section_name] = I;
+  }
+  ++I;
+ }
+ CacheValid = true;
+}
+
 // Метод поиска строки описания секции 'section'
 // Метод возвращает итератор на найденную строку или end
 StringListIteratorT FindSection(const StringT &section)
 {
+ // Используем кэш если он валиден
+ if(CacheValid)
+ {
+  auto it = SectionCache.find(section);
+  if(it != SectionCache.end())
+   return it->second;
+  return Lines.end();
+ }
+ 
+ // Иначе делаем линейный поиск и строим кэш
  typename list<StringT>::iterator I,J;
  SizeT start=0,stop=0;
 
  I=Lines.begin(); J=Lines.end();
 
  while(I != J)
- {
-  if(DecodeAsSection(*I, start, stop))
   {
- //  StringT str=I->substr(start,stop-start+1);
-   if(section == I->substr(start,stop-start+1))
-    break;
+   if(DecodeAsSection(*I, start, stop))
+   {
+    StringT section_name = I->substr(start,stop-start+1);
+    // Сохраняем в кэш
+    SectionCache[section_name] = I;
+    
+    if(section == section_name)
+    {
+     CacheValid = true;
+     return I;
+    }
+   }
+   ++I;
   }
-  ++I;
- }
 
  return I;
 };

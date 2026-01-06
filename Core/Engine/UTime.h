@@ -81,7 +81,7 @@ double GetSourceStartGlobalTime(void) const;
 bool SetSourceStartGlobalTime(double value);
 
 /// Текущее время источника данных в днях от начала времен
-double GetSourceCurrentGlobalTime(void) const;
+inline double GetSourceCurrentGlobalTime(void) const { return SourceCurrentGlobalTime; }
 bool SetSourceCurrentGlobalTime(double value);
 
 /// Время начала расчета в днях от произвольной точки (по времени источника данных)
@@ -100,8 +100,8 @@ ULongTime GetSourceCurrentLocalTimeMs(void) const;
 // Методы управления глобальными свойствами
 // --------------------------
 // Возвращает текущее время модели
-const ULongTime& GetTime(void) const;
-const double& GetDoubleTime(void) const;
+inline const ULongTime& GetTime(void) const { return Time; }
+inline const double& GetDoubleTime(void) const { return DoubleTime; }
 
 // Устанавливает текущее время модели
 bool SetTime(ULongTime value);

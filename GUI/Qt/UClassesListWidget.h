@@ -115,6 +115,9 @@ private:
     
     // Кэш для результатов группировки (для оптимизации)
     mutable QHash<QString, QString> GroupingCache;
+    
+    // Получение tooltip для класса из class description
+    QString GetClassTooltip(const QString& className) const;
 
 };
 

@@ -60,6 +60,10 @@ public slots:
     /// @param addToSelection Если true, добавляет к текущему выделению, иначе очищает перед выделением
     /// @return Количество выделенных объектов
     int selectNodesInRect(const QRectF& selectionRect, bool addToSelection = false);
+    /// Обновление темы - инвалидирует кэш всех узлов и обновляет сцену
+    void updateTheme();
+    /// Обновление стилей кнопки сброса масштаба в соответствии с текущей темой
+    void updateResetZoomButtonStyle();
 
 signals:
     /// Компонент выбран (одиночный клик)
@@ -271,6 +275,9 @@ private:
     QList<NodeItem*> m_nodes;
     QHash<QString, NodeItem*> m_nodeByName;
     QList<LinkItem*> m_links;
+    
+    // Защита от бесконечной рекурсии при выборе компонента
+    int m_selectComponentRetryCount;
     
     // Для перемещения группы объектов - храним предыдущие позиции
     QHash<NodeItem*, QPointF> m_lastNodePositions;

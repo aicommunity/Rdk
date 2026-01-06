@@ -1,5 +1,5 @@
-#include "UComponentsListWidget.h"
-#include "ui_UComponentsListWidget.h"
+#include "UComponentsListWidgetModern.h"
+#include "ui_UComponentsListWidgetModern.h"
 
 #include <QDebug>
 #include <QToolBar>
@@ -12,52 +12,111 @@
 #include <QScrollBar>
 #include <QSignalBlocker>
 #include <QVBoxLayout>
+#include <QTimer>
+#include <QMouseEvent>
+#include <QKeyEvent>
+#include <QDesktopWidget>
+#include <QApplication>
 
 #include "UGuiTelemetry.h"
 
-UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication *app, int channel_mode) :
+UComponentsListWidgetModern::UComponentsListWidgetModern(QWidget *parent, RDK::UApplication *app, int channel_mode) :
     UVisualControllerWidget(parent, app),
-    ui(new Ui::UComponentsListWidget)
+    ui(new Ui::UComponentsListWidgetModern)
 {
     channelMode=channel_mode;
     CheckModelFlag=false;
     ui->setupUi(this);
 
-    componentsTree = new UComponentListTreeWidget(this);
-    QWidget *treeContainer = new QWidget(this);
-    QVBoxLayout *treeLayout = new QVBoxLayout(treeContainer);
-    treeLayout->setContentsMargins(0,0,0,0);
-    filterLineEdit = new QLineEdit(treeContainer);
+    // Создание кнопки переключения режимов
+    toggleModeButton = new QToolButton(this);
+    toggleModeButton->setText(tr("☰"));
+    toggleModeButton->setToolTip(tr("Показать/скрыть дерево компонентов"));
+    toggleModeButton->setCheckable(true);
+    toggleModeButton->setChecked(false); // false = компактный режим
+    toggleModeButton->setMaximumWidth(30);
+    ui->horizontalLayoutTreeWidget->insertWidget(1, toggleModeButton);
+    connect(toggleModeButton, &QToolButton::clicked, this, &UComponentsListWidgetModern::toggleTreeViewMode);
+    
+    // Создание дерева компонентов
+    componentsTree = new UComponentListTreeWidgetModern(this);
+    QWidget *treeContainer = ui->treeContainer;
+    QVBoxLayout *treeLayout = qobject_cast<QVBoxLayout*>(treeContainer->layout());
+    if (!treeLayout) {
+        treeLayout = new QVBoxLayout(treeContainer);
+        treeLayout->setContentsMargins(0,0,0,0);
+    }
+    filterLineEdit = new QLineEdit(this);
     filterLineEdit->setObjectName(QStringLiteral("componentsFilterLineEdit"));
     filterLineEdit->setPlaceholderText(tr("Фильтр компонентов..."));
     filterLineEdit->setClearButtonEnabled(true);
+    connect(filterLineEdit, &QLineEdit::textChanged,
+            this, &UComponentsListWidgetModern::handleFilterTextChanged);
+    // Виджеты будут перемещаться между контейнерами
     treeLayout->addWidget(filterLineEdit);
     treeLayout->addWidget(componentsTree);
-    ui->horizontalLayoutTreeWidget->addWidget(treeContainer);
-    connect(filterLineEdit, &QLineEdit::textChanged,
-            this, &UComponentsListWidget::handleFilterTextChanged);
+    
+    // Создание popup окна для дерева компонентов
+    treePopupDialog = new QDialog(this, Qt::Popup);
+    treePopupDialog->setWindowModality(Qt::NonModal);
+    treePopupDialog->setAttribute(Qt::WA_DeleteOnClose, false);
+    treePopupDialog->setStyleSheet(
+        "QDialog { "
+        "background-color: palette(window); "
+        "border: 1px solid palette(mid); "
+        "border-radius: 4px; "
+        "}"
+    );
+    // Закрытие при потере фокуса (клик вне окна)
+    connect(treePopupDialog, &QDialog::finished, this, [this]() {
+        if (treePopupDialog->isVisible()) {
+            hideTreePopup();
+        }
+    });
+    treePopupContainer = new QWidget(treePopupDialog);
+    treePopupLayout = new QVBoxLayout(treePopupContainer);
+    treePopupLayout->setContentsMargins(4, 4, 4, 4);
+    treePopupLayout->setSpacing(4);
+    
+    QVBoxLayout *dialogLayout = new QVBoxLayout(treePopupDialog);
+    dialogLayout->setContentsMargins(0, 0, 0, 0);
+    dialogLayout->addWidget(treePopupContainer);
+    
+    // Устанавливаем фильтр событий для обработки Esc
+    treePopupDialog->installEventFilter(this);
+    
     connect(componentsTree, SIGNAL(moveComponentUp()), this, SLOT(componentMoveUp()));
     connect(componentsTree, SIGNAL(moveComponentDown()), this, SLOT(componentMoveDown()));
+    
+    // Всегда используем компактный режим - дерево скрыто в основном layout
+    ui->treeContainer->hide();
+    toggleModeButton->setChecked(false);
+    toggleModeButton->setText(tr("☰"));
+    toggleModeButton->setToolTip(tr("Показать дерево компонентов"));
 
     currentChannel = Core_GetSelectedChannelIndex();
     ui->listWidgetChannelSelection->hide();
     channelsSelectionVisible = false;
 
     UpdateInterval = -1;
-    setAccessibleName("UComponentsListWidget"); // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    setAccessibleName("UComponentsListWidgetModern"); // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     //readSettings(app, settingsGroup);
 
     renderedSnapshotVersion = 0;
     lastSnapshot = NMSDK::UGuiModelSnapshot::Instance().CurrentSnapshot();
     componentFilterText.clear();
     connect(&NMSDK::UGuiModelSnapshot::Instance(), &NMSDK::UGuiModelSnapshot::SnapshotUpdated,
-            this, &UComponentsListWidget::handleSnapshotUpdated);
+            this, &UComponentsListWidgetModern::handleSnapshotUpdated);
 
     UpdateInterface(true);
 
     //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     connect(componentsTree, SIGNAL(itemSelectionChanged()),
             this, SLOT(componentListItemSelectionChanged()));
+
+    // Обработка одинарного клика для popup режима
+    connect(componentsTree, SIGNAL(itemClicked(QTreeWidgetItem*, int)),
+            this, SLOT(onComponentItemClicked(QTreeWidgetItem*, int)));
 
     //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     connect(componentsTree, SIGNAL(doubleClicked(QModelIndex)),
@@ -154,19 +213,19 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication 
     connect(ui->actionPastePropertyValueFromClipboard, SIGNAL(triggered()), this, SLOT(propertyPasteValueFromClipboard()));
 }
 
-UComponentsListWidget::~UComponentsListWidget()
+UComponentsListWidgetModern::~UComponentsListWidgetModern()
 {
     delete ui;
 }
 
-void UComponentsListWidget::updateComponentsListFromScheme()
+void UComponentsListWidgetModern::updateComponentsListFromScheme()
 {
     UpdateInterface(true);
 }
 
-void UComponentsListWidget::AUpdateInterface()
+void UComponentsListWidgetModern::AUpdateInterface()
 {
-    NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UComponentsList"), accessibleName());
+    NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UComponentsListModern"), accessibleName());
 
     QString oldRootItem = currentDrawComponentName;
     QString oldSelectedItem = selectedComponentLongName;
@@ -191,12 +250,12 @@ void UComponentsListWidget::AUpdateInterface()
       redrawChannelsList();
     }
 }
-void UComponentsListWidget::AClearInterface()
+void UComponentsListWidgetModern::AClearInterface()
 {
  componentsTree->clear();
 }
 
-void UComponentsListWidget::ASaveParameters()
+void UComponentsListWidgetModern::ASaveParameters()
 {
     if(!application) return;
 
@@ -212,7 +271,7 @@ void UComponentsListWidget::ASaveParameters()
     settings.endGroup();
 }
 
-void UComponentsListWidget::ALoadParameters()
+void UComponentsListWidgetModern::ALoadParameters()
 {
     if(!application) return;
 
@@ -228,7 +287,7 @@ void UComponentsListWidget::ALoadParameters()
     settings.endGroup();
 }
 
-void UComponentsListWidget::setVerticalOrientation(bool vertical)
+void UComponentsListWidgetModern::setVerticalOrientation(bool vertical)
 {
     if (vertical)
         ui->splitter->setOrientation(Qt::Vertical);
@@ -236,7 +295,7 @@ void UComponentsListWidget::setVerticalOrientation(bool vertical)
         ui->splitter->setOrientation(Qt::Horizontal);
 }
 
-QString UComponentsListWidget::getSelectedComponentLongName()
+QString UComponentsListWidgetModern::getSelectedComponentLongName()
 {
     if(!componentsTree->currentItem())
       return "";
@@ -257,18 +316,18 @@ QString UComponentsListWidget::getSelectedComponentLongName()
 
 }
 
-void UComponentsListWidget::openTabN(int n)
+void UComponentsListWidgetModern::openTabN(int n)
 {
     if(n > 0 && n < 4)
       ui->tabWidgetComponentInfo->setCurrentIndex(n);
 }
 
-int UComponentsListWidget::currentTabIndex()
+int UComponentsListWidgetModern::currentTabIndex()
 {
     return ui->tabWidgetComponentInfo->currentIndex();
 }
 
-QString UComponentsListWidget::getSelectedPropertyName()
+QString UComponentsListWidgetModern::getSelectedPropertyName()
 {
   switch(ui->tabWidgetComponentInfo->currentIndex())
   {
@@ -305,7 +364,7 @@ QString UComponentsListWidget::getSelectedPropertyName()
   }
 }
 
-int UComponentsListWidget::getSelectedChannelIndex()
+int UComponentsListWidgetModern::getSelectedChannelIndex()
 {
     return currentChannel;
 }
@@ -313,33 +372,33 @@ int UComponentsListWidget::getSelectedChannelIndex()
 /// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 /// 0 - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 /// 1 - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
-void UComponentsListWidget::setChannelMode(int mode)
+void UComponentsListWidgetModern::setChannelMode(int mode)
 {
  channelMode=mode;
 }
 
 /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
-int UComponentsListWidget::getWorkChannelIndex()
+int UComponentsListWidgetModern::getWorkChannelIndex()
 {
  return (channelMode == 0)?Core_GetSelectedChannelIndex():currentChannel;
 }
 
 
-void UComponentsListWidget::setEnableTabN(int n, bool enable)
+void UComponentsListWidgetModern::setEnableTabN(int n, bool enable)
 {
     if(n >= 0 && n < 4)
       ui->tabWidgetComponentInfo->setTabEnabled(n, enable);
 }
 
-void UComponentsListWidget::setChannelsListVisible(bool value)
+void UComponentsListWidgetModern::setChannelsListVisible(bool value)
 {
     ui->listWidgetChannelSelection->setVisible(value);
     channelsSelectionVisible = value;
     redrawChannelsList();
 }
 
-void UComponentsListWidget::componentListItemSelectionChanged()
+void UComponentsListWidgetModern::componentListItemSelectionChanged()
 {
     QTreeWidgetItem * item = componentsTree->currentItem();
     if(!item) return;
@@ -352,7 +411,7 @@ void UComponentsListWidget::componentListItemSelectionChanged()
     emit componentSelected(selectedComponentLongName);
 }
 
-void UComponentsListWidget::reloadPropertys(bool forceReload)
+void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
 {
     if(currentDrawPropertyComponentName == selectedComponentLongName && !forceReload)
       return;
@@ -641,7 +700,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
     }
 }
 
-void UComponentsListWidget::parametersListSelectionChanged()
+void UComponentsListWidgetModern::parametersListSelectionChanged()
 {
     QTreeWidgetItem * item = ui->treeWidgetParameters->currentItem();
     if(!item)
@@ -656,7 +715,7 @@ void UComponentsListWidget::parametersListSelectionChanged()
     emit selectedPropertyValue(item->data(1, Qt::UserRole).toString());
 }
 
-void UComponentsListWidget::parametersListItemChanged(QTreeWidgetItem *item, int column)
+void UComponentsListWidgetModern::parametersListItemChanged(QTreeWidgetItem *item, int column)
 {
  try
  {
@@ -704,7 +763,7 @@ catch (std::exception &exception)
 }
 }
 
-void UComponentsListWidget::stateListSelectionChanged()
+void UComponentsListWidgetModern::stateListSelectionChanged()
 {
     QTreeWidgetItem * item = ui->treeWidgetState->currentItem();
     if(!item)
@@ -719,7 +778,7 @@ void UComponentsListWidget::stateListSelectionChanged()
     emit selectedPropertyValue(item->data(1, Qt::UserRole).toString());
 }
 
-void UComponentsListWidget::inputsListSelectionChanged()
+void UComponentsListWidgetModern::inputsListSelectionChanged()
 {
     QTreeWidgetItem * item = ui->treeWidgetInputs->currentItem();
     if(!item)
@@ -734,7 +793,7 @@ void UComponentsListWidget::inputsListSelectionChanged()
     emit selectedPropertyValue(item->data(1, Qt::UserRole).toString());
 }
 
-void UComponentsListWidget::outputsListSelectionChanged()
+void UComponentsListWidgetModern::outputsListSelectionChanged()
 {
     QTreeWidgetItem * item = ui->treeWidgetOutputs->currentItem();
     if(!item)
@@ -749,7 +808,7 @@ void UComponentsListWidget::outputsListSelectionChanged()
     emit selectedPropertyValue(item->data(1, Qt::UserRole).toString());
 }
 
-void UComponentsListWidget::favoritesListSelectionChanged()
+void UComponentsListWidgetModern::favoritesListSelectionChanged()
 {
     QTreeWidgetItem * item = ui->treeWidgetFavorites->currentItem();
     if(!item)
@@ -764,7 +823,7 @@ void UComponentsListWidget::favoritesListSelectionChanged()
     emit selectedPropertyValue(item->data(2, Qt::UserRole).toString());
 }
 
-void UComponentsListWidget::favoritesListItemChanged(QTreeWidgetItem *item, int column)
+void UComponentsListWidgetModern::favoritesListItemChanged(QTreeWidgetItem *item, int column)
 {
 
 try
@@ -872,7 +931,7 @@ catch (std::exception &exception)
 
 }
 
-void UComponentsListWidget::handleSnapshotUpdated(NMSDK::UGuiSnapshotPtr snapshot,
+void UComponentsListWidgetModern::handleSnapshotUpdated(NMSDK::UGuiSnapshotPtr snapshot,
                                                   const QStringList &,
                                                   const QStringList &,
                                                   const QStringList &)
@@ -888,13 +947,19 @@ void UComponentsListWidget::handleSnapshotUpdated(NMSDK::UGuiSnapshotPtr snapsho
     }
 }
 
-void UComponentsListWidget::handleFilterTextChanged(const QString &text)
+void UComponentsListWidgetModern::handleFilterTextChanged(const QString &text)
 {
+    if(!componentsTree)
+        return;
+    
     componentFilterText = text.trimmed();
     applyFilter(componentsTree->invisibleRootItem());
+    
+    // Обновляем виджет для отображения изменений
+    componentsTree->update();
 }
 
-void UComponentsListWidget::rebuildTreeFromSnapshot(const NMSDK::UGuiSnapshotPtr &snapshot)
+void UComponentsListWidgetModern::rebuildTreeFromSnapshot(const NMSDK::UGuiSnapshotPtr &snapshot)
 {
     if (!snapshot)
         return;
@@ -936,7 +1001,7 @@ void UComponentsListWidget::rebuildTreeFromSnapshot(const NMSDK::UGuiSnapshotPtr
     }
 }
 
-bool UComponentsListWidget::applyFilter(QTreeWidgetItem *item)
+bool UComponentsListWidgetModern::applyFilter(QTreeWidgetItem *item)
 {
     if (!item)
         return false;
@@ -959,21 +1024,37 @@ bool UComponentsListWidget::applyFilter(QTreeWidgetItem *item)
     return visible;
 }
 
-void UComponentsListWidget::componentSelectedFromScheme(QString name)
+void UComponentsListWidgetModern::componentSelectedFromScheme(QString name)
 {
     QTreeWidgetItemIterator iterator(componentsTree);
     while(*iterator)
     {
         if((*iterator)->data(0, Qt::UserRole) == name)
         {
+            // Раскрываем путь к компоненту (все родительские элементы)
+            QTreeWidgetItem *item = *iterator;
+            while (item) {
+                item->setExpanded(true);
+                item = item->parent();
+            }
+            
+            // Устанавливаем текущий элемент
             componentsTree->setCurrentItem(*iterator);
+            
+            // Прокручиваем к выбранному элементу
+            componentsTree->scrollToItem(*iterator, QAbstractItemView::EnsureVisible);
+            
+            // Обновляем выбранный компонент и свойства
+            selectedComponentLongName = name;
+            reloadPropertys();
+            
             return;
         }
         ++iterator;
     }
 }
 
-void UComponentsListWidget::componentDoubleClickFromScheme(QString name)
+void UComponentsListWidgetModern::componentDoubleClickFromScheme(QString name)
 {
     QTreeWidgetItemIterator iterator(componentsTree);
     while(*iterator)
@@ -989,7 +1070,7 @@ void UComponentsListWidget::componentDoubleClickFromScheme(QString name)
     }
 }
 
-void UComponentsListWidget::componentStapBackFromScheme()
+void UComponentsListWidgetModern::componentStapBackFromScheme()
 {
     QStringList list = currentDrawComponentName.split(".");
     QString leaveComponent = list.last();
@@ -998,7 +1079,7 @@ void UComponentsListWidget::componentStapBackFromScheme()
     componentSelectedFromScheme(leaveComponent);
 }
 
-void UComponentsListWidget::channelsListSelectionChanged()
+void UComponentsListWidgetModern::channelsListSelectionChanged()
 {
   if(ui->listWidgetChannelSelection->currentItem())
   {
@@ -1006,16 +1087,60 @@ void UComponentsListWidget::channelsListSelectionChanged()
   }
 }
 
-void UComponentsListWidget::drawSelectedComponent(QModelIndex index)
+void UComponentsListWidgetModern::onComponentItemClicked(QTreeWidgetItem* item, int column)
 {
-    currentDrawComponentName = index.data(Qt::UserRole).toString();
-    emit componentDoubleClick(currentDrawComponentName);
-    if(componentsTree->currentItem())
-        componentsTree->currentItem()->setExpanded(true);
+    Q_UNUSED(column);
+    if(!item) return;
+    
+    // Раскрываем путь к компоненту (все родительские элементы)
+    QTreeWidgetItem *currentItem = item;
+    while (currentItem) {
+        currentItem->setExpanded(true);
+        currentItem = currentItem->parent();
+    }
+    
+    // Устанавливаем текущий элемент (если еще не установлен)
+    if(componentsTree->currentItem() != item) {
+        componentsTree->setCurrentItem(item);
+    }
+    
+    // Прокручиваем к выбранному элементу
+    componentsTree->scrollToItem(item, QAbstractItemView::EnsureVisible);
+    
+    // Вызываем обработчик выбора компонента
+    componentListItemSelectionChanged();
+}
+
+void UComponentsListWidgetModern::drawSelectedComponent(QModelIndex index)
+{
+    // Получаем данные компонента из index
+    QString componentName = index.data(Qt::UserRole).toString();
+    if(componentName.isEmpty()) return;
+    
+    // Находим элемент в дереве по данным
+    QTreeWidgetItemIterator iterator(componentsTree);
+    while(*iterator)
+    {
+        if((*iterator)->data(0, Qt::UserRole) == componentName)
+        {
+            // Устанавливаем текущий элемент
+            componentsTree->setCurrentItem(*iterator);
+            
+            // Вызываем обработчик выбора компонента (как при одинарном клике)
+            componentListItemSelectionChanged();
+            
+            // Закрываем popup после выбора компонента
+            if (treePopupDialog->isVisible()) {
+                hideTreePopup();
+            }
+            return;
+        }
+        ++iterator;
+    }
 }
 
 
-void UComponentsListWidget::componentMoveUp()
+void UComponentsListWidgetModern::componentMoveUp()
 {
     if(componentsTree->currentItem())
     {
@@ -1024,7 +1149,7 @@ void UComponentsListWidget::componentMoveUp()
     }
 }
 
-void UComponentsListWidget::componentMoveDown()
+void UComponentsListWidgetModern::componentMoveDown()
 {
     if(componentsTree->currentItem())
     {
@@ -1033,7 +1158,7 @@ void UComponentsListWidget::componentMoveDown()
     }
 }
 
-void UComponentsListWidget::componentRename()
+void UComponentsListWidgetModern::componentRename()
 {
     if(componentsTree->currentItem())
     {
@@ -1057,7 +1182,7 @@ void UComponentsListWidget::componentRename()
     }
 }
 
-void UComponentsListWidget::componentDelete()
+void UComponentsListWidgetModern::componentDelete()
 {
     if(componentsTree->currentItem())
     {
@@ -1073,7 +1198,7 @@ void UComponentsListWidget::componentDelete()
     }
 }
 
-void UComponentsListWidget::componentCopyNameToClipboard()
+void UComponentsListWidgetModern::componentCopyNameToClipboard()
 {
     QClipboard *clipboard = QApplication::clipboard();
     QStringList list = selectedComponentLongName.split(".");
@@ -1081,13 +1206,13 @@ void UComponentsListWidget::componentCopyNameToClipboard()
     clipboard->setText(name);
 }
 
-void UComponentsListWidget::componentCopyLongNameToClipboard()
+void UComponentsListWidgetModern::componentCopyLongNameToClipboard()
 {
     QClipboard *clipboard = QApplication::clipboard();
     clipboard->setText(selectedComponentLongName);
 }
 
-void UComponentsListWidget::componentCopyClassNameToClipboard()
+void UComponentsListWidgetModern::componentCopyClassNameToClipboard()
 {
     const char *className=MModel_GetComponentClassName(getWorkChannelIndex(), selectedComponentLongName.toLocal8Bit());
     if(className)
@@ -1098,7 +1223,7 @@ void UComponentsListWidget::componentCopyClassNameToClipboard()
     Engine_FreeBufString(className);
 }
 
-void UComponentsListWidget::componentReset()
+void UComponentsListWidgetModern::componentReset()
 {
     if(componentsTree->currentItem())
     {
@@ -1107,7 +1232,7 @@ void UComponentsListWidget::componentReset()
     }
 }
 
-void UComponentsListWidget::componentCalculate()
+void UComponentsListWidgetModern::componentCalculate()
 {
     if(componentsTree->currentItem())
     {
@@ -1116,7 +1241,7 @@ void UComponentsListWidget::componentCalculate()
     }
 }
 
-void UComponentsListWidget::componentInit()
+void UComponentsListWidgetModern::componentInit()
 {
  if(componentsTree->currentItem())
  {
@@ -1125,7 +1250,7 @@ void UComponentsListWidget::componentInit()
  }
 }
 
-void UComponentsListWidget::componentUnInit()
+void UComponentsListWidgetModern::componentUnInit()
 {
  if(componentsTree->currentItem())
  {
@@ -1134,17 +1259,17 @@ void UComponentsListWidget::componentUnInit()
  }
 }
 
-void UComponentsListWidget::componentGUI()
+void UComponentsListWidgetModern::componentGUI()
 {
   qDebug() << "component GUI";
 }
 
-void UComponentsListWidget::setUpdateInterval(long value)
+void UComponentsListWidgetModern::setUpdateInterval(long value)
 {
   UpdateInterval = value;
 }
 
-void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem)
+void UComponentsListWidgetModern::addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem)
 {
  // Use timeout to avoid blocking UI during calculation
  RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLockTimeout<RDK::UEngine>(getWorkChannelIndex(), 100);
@@ -1157,7 +1282,7 @@ void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetI
     if(!componentNames.empty()&&componentNames[0]!="")
     {
         QString father;
-        if(treeWidgetFather) treeWidgetFather->setExpanded(false);
+        if(treeWidgetFather) treeWidgetFather->setExpanded(true);
         if(!componentName.isEmpty()) father = componentName + ".";
         foreach(str, componentNames)
         {
@@ -1167,12 +1292,12 @@ void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetI
             if(oldRootItem == father+str)
             {
                 componentsTree->setCurrentItem(childItem);
-                childItem->setExpanded(false);
+                childItem->setExpanded(true);
             }
             if(oldSelectedItem == father+str)
             {
                 componentsTree->setCurrentItem(childItem);
-                childItem->setExpanded(false);
+                childItem->setExpanded(true);
             }
 
             addComponentSons(father+str, childItem, oldRootItem, oldSelectedItem);
@@ -1180,7 +1305,7 @@ void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetI
     }
 }
 
-void UComponentsListWidget::redrawChannelsList()
+void UComponentsListWidgetModern::redrawChannelsList()
 {
   ui->listWidgetChannelSelection->clear();
   int channelsCounter = Core_GetNumChannels();
@@ -1195,7 +1320,7 @@ void UComponentsListWidget::redrawChannelsList()
 }
 
 /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
-std::string& UComponentsListWidget::EraseLeadEndls(std::string &value)
+std::string& UComponentsListWidgetModern::EraseLeadEndls(std::string &value)
 {
  std::string::size_type data_i=value.find_first_of("\n");
  if(data_i != std::string::npos)
@@ -1206,7 +1331,7 @@ std::string& UComponentsListWidget::EraseLeadEndls(std::string &value)
 }
 
 /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
-std::string& UComponentsListWidget::EraseRangeEndls(std::string &value)
+std::string& UComponentsListWidgetModern::EraseRangeEndls(std::string &value)
 {
  std::string::size_type data_i=value.find_first_of("\n");
  if(data_i != std::string::npos && data_i<2)
@@ -1224,7 +1349,7 @@ std::string& UComponentsListWidget::EraseRangeEndls(std::string &value)
 
 /// пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 /// пїЅпїЅ "[SEE BELOW]"
-std::string& UComponentsListWidget::PreparePropertyValueToListView(std::string &value)
+std::string& UComponentsListWidgetModern::PreparePropertyValueToListView(std::string &value)
 {
  EraseRangeEndls(value);
  if(value.empty())
@@ -1240,7 +1365,7 @@ std::string& UComponentsListWidget::PreparePropertyValueToListView(std::string &
 }
 
 
-void UComponentsListWidget::propertyCopyNameToClipboard()
+void UComponentsListWidgetModern::propertyCopyNameToClipboard()
 {
  QClipboard *clipboard = QApplication::clipboard();
 
@@ -1271,7 +1396,7 @@ void UComponentsListWidget::propertyCopyNameToClipboard()
  clipboard->setText(value);
 }
 
-void UComponentsListWidget::propertyCopyValueToClipboard()
+void UComponentsListWidgetModern::propertyCopyValueToClipboard()
 {
  QClipboard *clipboard = QApplication::clipboard();
 
@@ -1302,7 +1427,7 @@ void UComponentsListWidget::propertyCopyValueToClipboard()
  clipboard->setText(value);
 }
 
-void UComponentsListWidget::propertyPasteValueFromClipboard()
+void UComponentsListWidgetModern::propertyPasteValueFromClipboard()
 {
  QClipboard *clipboard = QApplication::clipboard();
 
@@ -1348,19 +1473,19 @@ void UComponentsListWidget::propertyPasteValueFromClipboard()
 }
 
 
-void UComponentsListWidget::on_actionReloadTree_triggered()
+void UComponentsListWidgetModern::on_actionReloadTree_triggered()
 {
     UpdateInterface(true);
 }
 
 
-void UComponentsListWidget::on_tabWidgetComponentInfo_currentChanged(int index)
+void UComponentsListWidgetModern::on_tabWidgetComponentInfo_currentChanged(int index)
 {
     reloadPropertys(true);
 }
 
 
-void UComponentsListWidget::on_actionDefaultAllParameters_triggered()
+void UComponentsListWidgetModern::on_actionDefaultAllParameters_triggered()
 {
     if(componentsTree->currentItem())
     {
@@ -1388,5 +1513,109 @@ void UComponentsListWidget::on_actionDefaultAllParameters_triggered()
          object->CreateLinks(links_list, owner);
         RDK::UIVisualControllerStorage::UpdateInterface(true);
     }
+}
+
+void UComponentsListWidgetModern::toggleTreeViewMode()
+{
+    if (treePopupDialog->isVisible()) {
+        // Если popup открыт, закрываем его
+        hideTreePopup();
+    } else {
+        // Если popup закрыт, открываем его
+        showTreePopup();
+    }
+}
+
+
+void UComponentsListWidgetModern::showTreePopup()
+{
+    // Перемещаем виджеты из основного контейнера в popup
+    QWidget *treeContainer = ui->treeContainer;
+    QVBoxLayout *treeLayout = qobject_cast<QVBoxLayout*>(treeContainer->layout());
+    
+    if (treeLayout) {
+        // Удаляем виджеты из основного layout
+        treeLayout->removeWidget(filterLineEdit);
+        treeLayout->removeWidget(componentsTree);
+    }
+    
+    // Добавляем виджеты в popup layout (если их еще нет)
+    if (treePopupLayout->indexOf(filterLineEdit) == -1) {
+        treePopupLayout->addWidget(filterLineEdit);
+    }
+    if (treePopupLayout->indexOf(componentsTree) == -1) {
+        treePopupLayout->addWidget(componentsTree);
+    }
+    
+    // Вычисляем размер и позицию popup
+    QPoint globalPos = toggleModeButton->mapToGlobal(QPoint(0, toggleModeButton->height()));
+    QRect screenGeometry = QApplication::desktop()->availableGeometry(this);
+    
+    // Ширина popup = минимальная ширина
+    int popupWidth = 300;
+    // Высота = доступная высота экрана минус позиция минус отступ
+    int popupHeight = qMin(screenGeometry.height() - globalPos.y() - 10, 600);
+    popupHeight = qMax(popupHeight, 200); // Минимальная высота
+    
+    // Проверяем, не выходит ли popup за границы экрана
+    if (globalPos.x() + popupWidth > screenGeometry.right()) {
+        globalPos.setX(screenGeometry.right() - popupWidth);
+    }
+    if (globalPos.x() < screenGeometry.left()) {
+        globalPos.setX(screenGeometry.left());
+    }
+    
+    treePopupDialog->setGeometry(globalPos.x(), globalPos.y(), popupWidth, popupHeight);
+    treePopupDialog->show();
+    treePopupDialog->raise();
+    treePopupDialog->activateWindow();
+    
+    // Разворачиваем все элементы дерева
+    componentsTree->expandAll();
+    
+    // Устанавливаем фокус на поле фильтра
+    filterLineEdit->setFocus();
+    
+    toggleModeButton->setChecked(true);
+    toggleModeButton->setText(tr("☷"));
+    toggleModeButton->setToolTip(tr("Скрыть дерево компонентов"));
+}
+
+void UComponentsListWidgetModern::hideTreePopup()
+{
+    if (!treePopupDialog->isVisible()) {
+        return;
+    }
+    
+    // Перемещаем виджеты обратно в основной контейнер
+    treePopupLayout->removeWidget(filterLineEdit);
+    treePopupLayout->removeWidget(componentsTree);
+    
+    QWidget *treeContainer = ui->treeContainer;
+    QVBoxLayout *treeLayout = qobject_cast<QVBoxLayout*>(treeContainer->layout());
+    if (treeLayout) {
+        treeLayout->addWidget(filterLineEdit);
+        treeLayout->addWidget(componentsTree);
+    }
+    
+    treePopupDialog->hide();
+    
+    toggleModeButton->setChecked(false);
+    toggleModeButton->setText(tr("☰"));
+    toggleModeButton->setToolTip(tr("Показать дерево компонентов"));
+}
+
+bool UComponentsListWidgetModern::eventFilter(QObject *obj, QEvent *event)
+{
+    // Обработка Esc для закрытия popup
+    if (obj == treePopupDialog && event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        if (keyEvent->key() == Qt::Key_Escape) {
+            hideTreePopup();
+            return true;
+        }
+    }
+    
+    return UVisualControllerWidget::eventFilter(obj, event);
 }
 

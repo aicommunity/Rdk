@@ -7294,10 +7294,28 @@ void UEngine::CreateEnvironment(bool isinit, list<UContainer*>* external_classes
    }
 
    Logger->LogMessage(RDK_EX_DEBUG, "Build storage has been started...");
+   
+   // Обновление прогресса: начало инициализации Storage (15%)
+   if(Storage->GetProgressBarCallback())
+    Storage->GetProgressBarCallback()(15, "Launching application: initializing storage...");
+   
    Storage->InitRTlibs();
-
+   
+   // Обновление прогресса: после InitRTlibs (17%)
+   if(Storage->GetProgressBarCallback())
+    Storage->GetProgressBarCallback()(17, "Launching application: loading runtime libraries...");
+   
    Storage->BuildStorage();
+   
+   // Обновление прогресса: после BuildStorage (19%)
+   if(Storage->GetProgressBarCallback())
+    Storage->GetProgressBarCallback()(19, "Launching application: building storage...");
+   
    Storage->LoadClassesDescription();
+   
+   // Обновление прогресса: после LoadClassesDescription (20%)
+   if(Storage->GetProgressBarCallback())
+    Storage->GetProgressBarCallback()(20, "Launching application: loading class descriptions...");
 
    // Теперь Storage полностью инициализирован, можно обрабатывать external_classes
    if(external_classes != 0)

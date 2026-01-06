@@ -179,9 +179,19 @@ unsigned int UTransferPacket::CalcChecksum(void)
 // Вычисляет значение int по участку вектора
 unsigned int UTransferPacket::IntCompose(const UParamT &value, int istart)
 { 
- memcpy((void*)&Temp,&(value[istart]),sizeof(int));
-             
- return Temp; 
+ // Используем union для безопасного преобразования с учетом выравнивания
+ union {
+  unsigned char bytes[sizeof(int)];
+  unsigned int value;
+ } converter;
+ 
+ // Копируем байты в union
+ for(size_t i = 0; i < sizeof(int) && (istart + i) < value.size(); ++i)
+ {
+  converter.bytes[i] = value[istart + i];
+ }
+ 
+ return converter.value;
 }
 
 const UParamT& UTransferPacket::IntDivide(unsigned int value, UParamT &buffer, int istart) const

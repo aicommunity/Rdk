@@ -188,7 +188,6 @@
     <addaction name="actionPerformance"/>
     <addaction name="actionTestCreator"/>
     <addaction name="actionFavoriteInformation"/>
-    <addaction name="actionDrawEngine"/>
     <addaction name="actionProfiling"/>
     <addaction name="actionVASimpleSettings"/>
     <addaction name="separator"/>
@@ -598,20 +597,6 @@
    </property>
    <property name="text">
     <string>Favorite Information</string>
-   </property>
-   <property name="visible">
-    <bool>false</bool>
-   </property>
-  </action>
-  <action name="actionDrawEngine">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>Draw Engine</string>
    </property>
    <property name="visible">
     <bool>false</bool>

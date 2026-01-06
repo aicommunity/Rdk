@@ -2,7 +2,7 @@
 #define UCOMPONENTPROPERTYCHANGER_H
 
 #include "UVisualControllerWidget.h"
-#include "UComponentsListWidget.h"
+#include "UComponentsListWidgetModern.h"
 #include "UPropertyXMLWidget.h"
 
 namespace Ui {
@@ -31,7 +31,7 @@ public slots:
   void updateCurrentPropertyValue(QString value);
 
 public:
-  UComponentsListWidget *componentsList;
+  UComponentsListWidgetModern *componentsList;
 
 private:
   // methods

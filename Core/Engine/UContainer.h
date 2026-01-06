@@ -180,6 +180,12 @@ int NumComponents;
 std::vector<UEPtr<UContainer>> ActiveComponents;
 bool ActiveComponentsCacheValid;
 
+// Кэш для проверки TimeStep (оптимизация Calculate)
+// Инвалидируется при изменении TimeStep
+mutable bool CachedTimeStepEqual;
+mutable bool CachedTimeStepLess;
+mutable bool CachedTimeStepGreater;
+
 //UEPtr<UInstancesStorageElement> ObjectIterator;
 //UEPtr<UInstancesStorageElement> ObjectIterator;
 
@@ -361,7 +367,7 @@ bool SetGlobalTimeStep(UTime timestep);
 void ChangeUseIndTimeStepMode(bool value);
 
 // ������������� ���� ���������� �������
-const bool& GetActivity(void) const;
+inline const bool& GetActivity(void) const { return Activity.GetData(); }
 
 // Id �������
 UId GetId(void) const;

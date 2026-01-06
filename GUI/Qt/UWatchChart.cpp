@@ -58,6 +58,9 @@ UWatchChart::UWatchChart(QWidget *parent) :
 
     connect(this, SIGNAL(UpdateTabGuiSignal(bool)), parent, SLOT(UpdateInterface(bool)));
 
+    // Применяем стили темы к графику
+    applyTheme();
+
     fixInitialAxesState();
 }
 
@@ -69,6 +72,37 @@ UWatchChart::~UWatchChart()
 QColor UWatchChart::getDefaultColor(int index) const
 {
     return UStyleManager::instance()->getChartSeriesColor(index);
+}
+
+void UWatchChart::applyTheme()
+{
+    if(!chart || !axisX || !axisY)
+        return;
+    
+    UStyleManager* styleManager = UStyleManager::instance();
+    
+    // Применяем фон графика
+    chart->setBackgroundBrush(QBrush(styleManager->getChartBackgroundColor()));
+    
+    // Применяем цвета осей
+    QPen axisPen(styleManager->getChartAxisColor());
+    axisX->setLinePenColor(styleManager->getChartAxisColor());
+    axisY->setLinePenColor(styleManager->getChartAxisColor());
+    
+    // Применяем цвета подписей осей
+    QBrush labelBrush(styleManager->getChartLabelColor());
+    axisX->setLabelsBrush(labelBrush);
+    axisY->setLabelsBrush(labelBrush);
+    
+    // Применяем цвета сетки
+    axisX->setGridLineColor(styleManager->getChartGridColor());
+    axisY->setGridLineColor(styleManager->getChartGridColor());
+    
+    // Применяем цвет заголовка
+    chart->setTitleBrush(QBrush(styleManager->getChartTitleColor()));
+    
+    // Обновляем график
+    chart->update();
 }
 
 void UWatchChart::setChartTitle(QString title)

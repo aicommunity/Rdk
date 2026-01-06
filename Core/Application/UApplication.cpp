@@ -221,6 +221,7 @@ UApplication::UApplication(void)
  MirrorLogsToWorkDirFlag=true;
  LoggingInitialized=false;
  GoogleLoggingInitialized=false;
+ FuncProgressBarCallback=0;
  //SetStandartXMLInCatalog();
 
  // DebugMode=false;
@@ -999,7 +1000,19 @@ void UApplication::SetStorageBuildMode(int mode)
 /// Получение текущего режима сборки
 int UApplication::GetStorageBuildMode()
 {
- return StorageBuildMode;
+    return StorageBuildMode;
+}
+
+/// Установка callback для обновления прогресса инициализации
+void UApplication::SetProgressBarCallback(ProgressBarCallback callback)
+{
+    FuncProgressBarCallback = callback;
+}
+
+/// Получение callback для обновления прогресса инициализации
+ProgressBarCallback UApplication::GetProgressBarCallback() const
+{
+    return FuncProgressBarCallback;
 }
 // --------------------------
 /// Создание библиотек-заглушек из статических библиотек с сохранением файлов
@@ -1256,6 +1269,22 @@ google::InstallFailureSignalHandler();
  RDK::GetCoreLock()->SetClDescPath(ClDescPath);
 
  UApplication::SetNumChannels(1);
+ 
+ // Передаем callback в Storage для обновления прогресса инициализации
+ // Делаем это после SetNumChannels, когда Storage уже создан
+ if(FuncProgressBarCallback)
+ {
+  try
+  {
+   RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock();
+   if(storage)
+    storage->SetProgressBarCallback(FuncProgressBarCallback);
+  }
+  catch(...)
+  {
+   // Игнорируем ошибки при установке callback
+  }
+ }
  
  // Сбрасываем флаг режима инициализации после инициализации каналов
  RDK::UExceptionLogger::SetInitializationMode(false);

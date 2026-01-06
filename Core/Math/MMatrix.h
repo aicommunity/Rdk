@@ -25,6 +25,8 @@ template<class T, unsigned Rows, unsigned Cols=Rows>
 class MMatrix: public MMatrixBase
 {
 public:
+typedef T value_type; // Для совместимости с STL-контейнерами
+
 // Данные матрицы
 union
 {
@@ -140,9 +142,11 @@ const T& operator () (int i, int j) const;
 
 // Возвращает заданную строку матрицы
 MMatrix<T,Cols,1> GetRow(int i) const;
+MMatrix<T,Cols,1>& GetRow(int i, MMatrix<T,Cols,1> &res) const;
 
 // Возвращает заданный столбец матрицы
 MMatrix<T,Rows,1> GetCol(int i) const;
+MMatrix<T,Rows,1>& GetCol(int i, MMatrix<T,Rows,1> &res) const;
 
 /// Предоставляет доступ к данным матрицы как к одномерному массиву выбранного
 /// типа. Небезопасно!
@@ -603,6 +607,12 @@ template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Cols,1> MMatrix<T,Rows,Cols>::GetRow(int i) const
 {
  MMatrix<T,Cols,1> res;
+ return GetRow(i, res);
+}
+
+template<class T, unsigned Rows, unsigned Cols>
+MMatrix<T,Cols,1>& MMatrix<T,Rows,Cols>::GetRow(int i, MMatrix<T,Cols,1> &res) const
+{
  for(int j=0;j<Cols;j++)
   res.Data[j][0]=Data[i][j];
  return res;
@@ -613,6 +623,12 @@ template<class T, unsigned Rows, unsigned Cols>
 MMatrix<T,Rows,1> MMatrix<T,Rows,Cols>::GetCol(int i) const
 {
  MMatrix<T,Rows,1> res;
+ return GetCol(i, res);
+}
+
+template<class T, unsigned Rows, unsigned Cols>
+MMatrix<T,Rows,1>& MMatrix<T,Rows,Cols>::GetCol(int i, MMatrix<T,Rows,1> &res) const
+{
  for(int j=0;j<Rows;j++)
   res.Data[j][0]=Data[j][i];
  return res;
@@ -672,20 +688,65 @@ MMatrix<T,Rows,Cols> operator - (const MMatrix<T,Rows,Cols> &M1, const MMatrix<T
  return res;
 }
 
+// Специализация для 2x2 матриц
+template<class T>
+MMatrix<T,2,2> operator * (const MMatrix<T,2,2> &M1, const MMatrix<T,2,2> &M2)
+{
+ MMatrix<T,2,2> res;
+ res.Data[0][0] = M1.Data[0][0]*M2.Data[0][0] + M1.Data[0][1]*M2.Data[1][0];
+ res.Data[0][1] = M1.Data[0][0]*M2.Data[0][1] + M1.Data[0][1]*M2.Data[1][1];
+ res.Data[1][0] = M1.Data[1][0]*M2.Data[0][0] + M1.Data[1][1]*M2.Data[1][0];
+ res.Data[1][1] = M1.Data[1][0]*M2.Data[0][1] + M1.Data[1][1]*M2.Data[1][1];
+ return res;
+}
+
+// Специализация для 3x3 матриц
+template<class T>
+MMatrix<T,3,3> operator * (const MMatrix<T,3,3> &M1, const MMatrix<T,3,3> &M2)
+{
+ MMatrix<T,3,3> res;
+ for(unsigned k=0;k<3;k++)
+ {
+  for(unsigned j=0;j<3;j++)
+  {
+   res.Data[k][j] = M1.Data[k][0]*M2.Data[0][j] + M1.Data[k][1]*M2.Data[1][j] + M1.Data[k][2]*M2.Data[2][j];
+  }
+ }
+ return res;
+}
+
+// Специализация для 4x4 матриц
+template<class T>
+MMatrix<T,4,4> operator * (const MMatrix<T,4,4> &M1, const MMatrix<T,4,4> &M2)
+{
+ MMatrix<T,4,4> res;
+ for(unsigned k=0;k<4;k++)
+ {
+  for(unsigned j=0;j<4;j++)
+  {
+   res.Data[k][j] = M1.Data[k][0]*M2.Data[0][j] + M1.Data[k][1]*M2.Data[1][j] + 
+                     M1.Data[k][2]*M2.Data[2][j] + M1.Data[k][3]*M2.Data[3][j];
+  }
+ }
+ return res;
+}
+
+// Общий шаблон для остальных размеров
 template<class T, unsigned Rows, unsigned Cols, unsigned Cols2>
 MMatrix<T,Rows,Cols2> operator * (const MMatrix<T,Rows,Cols> &M1, const MMatrix<T,Cols,Cols2> &M2)
 {
  MMatrix<T,Rows,Cols2> res;
 
- for(unsigned j=0;j<Cols2;j++)
+ // Оптимизированный порядок циклов для лучшего использования кэша: k → i → j
+ for(unsigned k=0;k<Rows;k++)
  {
-  for(unsigned k=0;k<Rows;k++)
+  for(unsigned i=0;i<Cols;i++)
   {
-   T sum=0;
-   for(unsigned i=0;i<Cols;i++)
-//	sum+=M1.Data[i][k]*M2.Data[j][i];
-	sum+=M1.Data[k][i]*M2.Data[i][j];
-   res.Data[k][j]=sum;
+   T val = M1.Data[k][i];
+   for(unsigned j=0;j<Cols2;j++)
+   {
+    res.Data[k][j] += val * M2.Data[i][j];
+   }
   }
  }
 
@@ -1020,10 +1081,24 @@ T MMatrix<T,Rows,Cols>::Det(void) const
 
  if(Rows == 4 && Cols == 4)
  {
-  return Data[0][0]*this->GetMinor(0,0).Det3x3()
-		-Data[0][1]*this->GetMinor(0,1).Det3x3()
-		+Data[0][2]*this->GetMinor(0,2).Det3x3()
-		-Data[0][3]*this->GetMinor(0,3).Det3x3();
+  // Прямая формула для 4x4 детерминанта (разложение по первой строке)
+  T m00 = Data[1][1]*(Data[2][2]*Data[3][3] - Data[2][3]*Data[3][2]) - 
+          Data[1][2]*(Data[2][1]*Data[3][3] - Data[2][3]*Data[3][1]) + 
+          Data[1][3]*(Data[2][1]*Data[3][2] - Data[2][2]*Data[3][1]);
+  
+  T m01 = Data[1][0]*(Data[2][2]*Data[3][3] - Data[2][3]*Data[3][2]) - 
+          Data[1][2]*(Data[2][0]*Data[3][3] - Data[2][3]*Data[3][0]) + 
+          Data[1][3]*(Data[2][0]*Data[3][2] - Data[2][2]*Data[3][0]);
+  
+  T m02 = Data[1][0]*(Data[2][1]*Data[3][3] - Data[2][3]*Data[3][1]) - 
+          Data[1][1]*(Data[2][0]*Data[3][3] - Data[2][3]*Data[3][0]) + 
+          Data[1][3]*(Data[2][0]*Data[3][1] - Data[2][1]*Data[3][0]);
+  
+  T m03 = Data[1][0]*(Data[2][1]*Data[3][2] - Data[2][2]*Data[3][1]) - 
+          Data[1][1]*(Data[2][0]*Data[3][2] - Data[2][2]*Data[3][0]) + 
+          Data[1][2]*(Data[2][0]*Data[3][1] - Data[2][1]*Data[3][0]);
+  
+  return Data[0][0]*m00 - Data[0][1]*m01 + Data[0][2]*m02 - Data[0][3]*m03;
  }
 
  MMatrix<T,Rows,Cols> Temp=*this;

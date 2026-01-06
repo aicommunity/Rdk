@@ -22,6 +22,8 @@ template<class T, unsigned Rows>
 class MVector: public MMatrix<T,Rows,1>
 {
 public:
+typedef T value_type; // Для совместимости с STL-контейнерами
+
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -165,6 +167,8 @@ bool MVector<T,Rows>::Resize(const MMatrixSize &size)
 template<class T, unsigned Rows>
 MVector<T,Rows>& MVector<T,Rows>::operator = (const MVector<T,Rows> &copy)
 {
+ if (&copy == this)
+  return *this;
  memcpy(MMatrix<T,Rows,1>::Data,copy.Data,sizeof(T)*Rows);
  return *this;
 };
@@ -172,6 +176,8 @@ MVector<T,Rows>& MVector<T,Rows>::operator = (const MVector<T,Rows> &copy)
 template<class T, unsigned Rows>
 MVector<T,Rows>& MVector<T,Rows>::operator = (const MMatrix<T,Rows,1> &copy)
 {
+ if (&copy == this)
+  return *this;
  memcpy(MMatrix<T,Rows,1>::Data,copy.Data,sizeof(T)*Rows);
  return *this;
 }
@@ -233,6 +239,23 @@ const T& MVector<T,Rows>::operator () (int i) const
 // Арифметические операторы
 // --------------------------
 // Скалярное произведение векторов
+
+// Специализация для 3D векторов
+template<class T>
+double operator * (const MVector<T,3> &M1, const MVector<T,3> &M2)
+{
+ return double(M1.Data[0][0]*M2.Data[0][0] + M1.Data[1][0]*M2.Data[1][0] + M1.Data[2][0]*M2.Data[2][0]);
+}
+
+// Специализация для 4D векторов
+template<class T>
+double operator * (const MVector<T,4> &M1, const MVector<T,4> &M2)
+{
+ return double(M1.Data[0][0]*M2.Data[0][0] + M1.Data[1][0]*M2.Data[1][0] + 
+               M1.Data[2][0]*M2.Data[2][0] + M1.Data[3][0]*M2.Data[3][0]);
+}
+
+// Общий шаблон для остальных размеров
 template<class T, unsigned Rows>
 double operator * (const MVector<T,Rows> &M1, const MVector<T,Rows> &M2)
 {

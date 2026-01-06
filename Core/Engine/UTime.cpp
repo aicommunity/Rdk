@@ -66,10 +66,7 @@ bool UTimeControl::SetSourceStartGlobalTime(double value)
 }
 
 /// Текущее время источника данных в днях
-double UTimeControl::GetSourceCurrentGlobalTime(void) const
-{
- return SourceCurrentGlobalTime;
-}
+// Реализация перенесена в заголовочный файл как inline
 
 bool UTimeControl::SetSourceCurrentGlobalTime(double value)
 {
@@ -112,15 +109,7 @@ ULongTime UTimeControl::GetSourceCurrentLocalTimeMs(void) const
 // Методы управления глобальными свойствами
 // --------------------------
 // Возвращает текущее время модели
-const ULongTime& UTimeControl::GetTime(void) const
-{
- return Time;
-}
-
-const double& UTimeControl::GetDoubleTime(void) const
-{
- return DoubleTime;
-}
+// Реализация перенесена в заголовочный файл как inline
 
 // Устанавливает текущее время модели
 bool UTimeControl::SetTime(ULongTime value)

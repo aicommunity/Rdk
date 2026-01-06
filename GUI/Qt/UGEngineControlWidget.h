@@ -10,8 +10,9 @@
 
 #include "UVisualControllerMainWidget.h"
 #include "UComponentsListWidget.h"
-#include "UDrawEngineWidget.h"
+#include "UModernDiagramContainerWidget.h"
 #include "UComponentLinksWidget.h"
+#include "UBreadcrumbsWidget.h"
 #include "UImagesWidget.h"
 #include "UCalculationChannelsWidget.h"
 #include "UEngineControlQt.h"
@@ -181,14 +182,20 @@ private slots:
 private:
     // Helper methods
     void createThemeMenu();
+    void updateThemeMenuState();
     
     // data
     Ui::UGEngineControllWidget *ui;
+    
+    // Theme menu actions
+    QAction* m_lightThemeAction;
+    QAction* m_darkThemeAction;
 
     // widgets
     USettingsReaderWidget *settings;
     UComponentPropertyChanger *propertyChanger;
-    UDrawEngineWidget *drawEngine;
+    UModernDiagramContainerWidget *modernDiagram;
+    UBreadcrumbsWidget *breadcrumbsWidget;
     UComponentLinksWidget *componentLinks;
     UImagesWidget *images;
     QMainWindow *imagesWindow;

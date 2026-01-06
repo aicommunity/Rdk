@@ -85,6 +85,8 @@ list(APPEND RDK_STATIC_SOURCES
 )
 # 4) Используем Qt-вариант системного модуля, исключаем gcc-вариант
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/System/Gcc/rdk_system\\.gcc\\.cpp$")
+# Исключаем GCC версию мьютекса, используем Qt версию (QReadWriteLock::Recursive)
+list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/System/Gcc/UGenericMutex\\.gcc\\.cpp$")
 
 # Добавляем только необходимые deploy-файлы под Unix
 if (UNIX)

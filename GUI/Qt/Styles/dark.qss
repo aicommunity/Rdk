@@ -297,6 +297,24 @@ QMdiArea QTabBar::close-button {
 /* Специфичные стили для UWatch::tabWidget с треугольными вкладками */
 QTabWidget[objectName="tabWidget"] QTabBar::tab {
     padding: 10px 40px 10px 20px;
+    background-color: #21252B;
+    border: 1px solid #181A1F;
+    border-bottom: none;
+    color: #5C6370;
+    font-weight: 500;
+}
+
+QTabWidget[objectName="tabWidget"] QTabBar::tab:selected {
+    background-color: #1E3A5F;
+    color: #61AFEF;
+    border: 1px solid #61AFEF;
+    border-bottom: 3px solid #61AFEF;
+    font-weight: 600;
+}
+
+QTabWidget[objectName="tabWidget"] QTabBar::tab:hover:!selected {
+    background-color: #2C313A;
+    color: #ABB2BF;
 }
 
 QTabWidget[objectName="tabWidget"] QTabBar::close-button {
@@ -311,6 +329,24 @@ QTabWidget[objectName="tabWidget"] QTabBar::close-button {
 /* Альтернативный селектор для всех треугольных вкладок с кнопками закрытия */
 QTabWidget[tabShape="Triangular"] QTabBar::tab {
     padding: 10px 40px 10px 20px;
+    background-color: #21252B;
+    border: 1px solid #181A1F;
+    border-bottom: none;
+    color: #5C6370;
+    font-weight: 500;
+}
+
+QTabWidget[tabShape="Triangular"] QTabBar::tab:selected {
+    background-color: #1E3A5F;
+    color: #61AFEF;
+    border: 1px solid #61AFEF;
+    border-bottom: 3px solid #61AFEF;
+    font-weight: 600;
+}
+
+QTabWidget[tabShape="Triangular"] QTabBar::tab:hover:!selected {
+    background-color: #2C313A;
+    color: #ABB2BF;
 }
 
 QTabWidget[tabShape="Triangular"] QTabBar::close-button {

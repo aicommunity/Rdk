@@ -193,7 +193,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, std::vector<bool> &d
 }
 
 // Строки
-//template<typename T>
+// Оптимизированная версия с использованием блоковой записи
 USerStorageBinary& operator << (USerStorageBinary& storage, const std::string &data)
 {
  size_t size=data.size();
@@ -202,10 +202,8 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const std::string &d
  if(size <= 0)
   return storage;
 
-// const char* pdata=&data[0];
- for(size_t i=0;i<size;i++)
-//  operator <<(storage,*(pdata+i));
-  operator <<(storage,data[i]);
+ // Оптимизация: используем блоковую запись вместо поэлементной
+ storage.WriteBlock(reinterpret_cast<const unsigned char*>(data.c_str()), size);
 
  return storage;
 }
@@ -214,15 +212,21 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, std::string &data)
 {
  size_t size=0;
  operator >>(storage,size);
- data.resize(size);
 
  if(size <= 0)
+ {
+  data.clear();
   return storage;
+ }
 
- char* pdata=&data[0];
+ data.resize(size);
 
- for(size_t i=0;i<size;i++)
-  operator >>(storage,*(pdata+i));
+ // Оптимизация: используем блоковое чтение вместо поэлементного
+ int bytesRead = storage.ReadBlock(reinterpret_cast<unsigned char*>(&data[0]), size);
+ if(bytesRead != size)
+ {
+  data.resize(bytesRead);
+ }
 
  return storage;
 }

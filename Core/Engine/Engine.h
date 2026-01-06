@@ -29,15 +29,23 @@ See file license.txt for more information
 #include "UEnvironment.h"
 #include "UEngine.h"
 #include "UEnvSupport.h"
-#include "UItemData.h"
 #include "UXMLEnvSerialize.h"
 #include "UComponentDescription.h"
 #include "UContainerDescription.h"
 #include "UEnvException.h"
 #include "UExceptionLogger.h"
 #include "UPropertyEndpoints.h"
+#include "../Math/MDMatrix.h"
 
 //#include "Libraries/UELibraries.h"
+
+namespace RDK {
+
+// Typedef for backward compatibility
+// UItemData was previously defined in UItemData.h which has been removed
+typedef MDMatrix<double> UItemData;
+
+}
 
 #endif
 
