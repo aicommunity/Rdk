@@ -14,24 +14,24 @@ UAboutDialog::UAboutDialog(QWidget *parent, RDK::UApplication *app) :
      ui->labelProgramName->setText(app->GetProgramName().c_str());
     else
      ui->labelProgramName->setText("Rdk Core");
-    ui->label_2->setText("Version: "+QCoreApplication::applicationVersion());
+    
+    // Версия приложения
+    ui->label_2->setText(QCoreApplication::applicationVersion());
 
-    QString user_label="User: ";
+    // Версия сборки
+    ui->label_4->setText(RDK_APP_VERSION);
+
+    // Пользователь
+    QString user_text;
     if(!app->GetUserName().empty())
     {
-     user_label = user_label+app->GetUserName().c_str();
+     user_text = app->GetUserName().c_str();
      if(app->GetUserId()>=0)
-      user_label = user_label+":"+RDK::sntoa(app->GetUserId()).c_str();
+      user_text += ":" + QString::fromStdString(RDK::sntoa(app->GetUserId()));
     }
     else
-     user_label = user_label + "Unknown";
-    ui->label_3->setText(user_label);
-
-    QString build_version="Build rev: ";
-    build_version += "app=";
-    build_version += RDK::sntoa(RDK_APP_VERSION).c_str();
-
-    ui->label_4->setText(build_version);
+     user_text = "Unknown";
+    ui->label_3->setText(user_text);
 
 #ifndef RDK_APP_URL
 #define RDK_APP_URL ""
@@ -39,7 +39,15 @@ UAboutDialog::UAboutDialog(QWidget *parent, RDK::UApplication *app) :
 #ifndef RDK_APP_LICENSE
 #define RDK_APP_LICENSE ""
 #endif
-    ui->labelUrl->setText(RDK_APP_URL);
+    // URL как кликабельная ссылка
+    QString url_text = QString(RDK_APP_URL);
+    if(!url_text.isEmpty())
+    {
+     url_text = QString("<a href=\"%1\">%1</a>").arg(url_text);
+    }
+    ui->labelUrl->setText(url_text);
+    
+    // Лицензия
     ui->labelLicense->setText(RDK_APP_LICENSE);
 }
 
