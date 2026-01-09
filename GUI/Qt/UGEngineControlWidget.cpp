@@ -446,6 +446,12 @@ void UGEngineControlWidget::actionCreateConfig()
 {
  if(application->GetProjectOpenFlag())
  {
+  // Убеждаемся, что виджет видим и активен перед показом диалога (важно для Windows)
+  if (!isVisible() || !isActiveWindow()) {
+      raise();
+      activateWindow();
+  }
+  
   QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Another configuration is open. Close?", QMessageBox::Save|QMessageBox::Close|QMessageBox::Cancel);
   if (reply == QMessageBox::Save)
   {
@@ -474,7 +480,14 @@ void UGEngineControlWidget::actionCreateSimple()
     // Закрытие проекта
     if(application->GetProjectOpenFlag())
     {
-        if(QMessageBox::question(this, "Info", "Close current config?", QMessageBox::Yes|QMessageBox::No) != QMessageBox::Yes)
+        // Убеждаемся, что виджет видим и активен перед показом диалога (важно для Windows)
+        if (!isVisible() || !isActiveWindow()) {
+            raise();
+            activateWindow();
+        }
+        
+        QMessageBox::StandardButton reply = QMessageBox::question(this, "Info", "Close current config?", QMessageBox::Yes|QMessageBox::No);
+        if (reply != QMessageBox::Yes)
         {
             return;
         }
@@ -506,7 +519,14 @@ void UGEngineControlWidget::actionCreateSimple()
     std::string path_dialog=default_path.toUtf8().data();
 
     // Создание папки проекта автоматическое либо выбор существующей
-    if(QMessageBox::question(this, "Info", "Autocreate configuration folder?", QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
+    // Убеждаемся, что виджет видим и активен перед показом диалога (важно для Windows)
+    if (!isVisible() || !isActiveWindow()) {
+        raise();
+        activateWindow();
+    }
+    
+    QMessageBox::StandardButton reply2 = QMessageBox::question(this, "Info", "Autocreate configuration folder?", QMessageBox::Yes|QMessageBox::No);
+    if (reply2 == QMessageBox::Yes)
     {
         time_t curr_time;
         time(&curr_time);
@@ -585,6 +605,12 @@ void UGEngineControlWidget::actionCopyConfig()
 
  application->CopyProject(res_path.toLocal8Bit().constData());
 
+ // Убеждаемся, что виджет видим и активен перед показом диалога (важно для Windows)
+ if (!isVisible() || !isActiveWindow()) {
+     raise();
+     activateWindow();
+ }
+ 
  QMessageBox::StandardButton reply = QMessageBox::question(this, "Info", "Current configuration has been copied to selected destination. Switch to new destination? If you select NO we continue work with previous configuration.", QMessageBox::Yes|QMessageBox::No);
  if(reply == QMessageBox::Yes)
  {
@@ -611,13 +637,20 @@ void UGEngineControlWidget::actionAutoCopyConfig()
 {
   try
   {
+    // Убеждаемся, что виджет видим и активен перед показом диалога (важно для Windows)
+    if (!isVisible() || !isActiveWindow()) {
+        raise();
+        activateWindow();
+    }
+    
     if(!application->GetProjectOpenFlag())
     {
         QMessageBox::question(this, "Error", "Please open configuration for copy first!", QMessageBox::Ok);
         return;
     }
-
-    if(QMessageBox::question(this, "Info", "Are you sure to autocreate copy of current config?", QMessageBox::Yes|QMessageBox::No) != QMessageBox::Yes)
+    
+    QMessageBox::StandardButton reply = QMessageBox::question(this, "Info", "Are you sure to autocreate copy of current config?", QMessageBox::Yes|QMessageBox::No);
+    if (reply != QMessageBox::Yes)
     {
         return;
     }
@@ -655,6 +688,12 @@ void UGEngineControlWidget::actionRenameConfig()
 {
   try
   {
+    // Убеждаемся, что виджет видим и активен перед показом диалога (важно для Windows)
+    if (!isVisible() || !isActiveWindow()) {
+        raise();
+        activateWindow();
+    }
+    
     if(!application->GetProjectOpenFlag())
     {
         QMessageBox::question(this, "Error", "Please open configuration for copy first!", QMessageBox::Ok);
@@ -683,7 +722,14 @@ void UGEngineControlWidget::actionRenameConfig()
     if (ok && !new_name.empty())
     {
         if(!application->RenameProject(project_path+new_name))
+        {
+            // Убеждаемся, что виджет видим и активен перед показом диалога (важно для Windows)
+            if (!isVisible() || !isActiveWindow()) {
+                raise();
+                activateWindow();
+            }
             QMessageBox::question(this, "Error", "Falied to rename configuration!", QMessageBox::Ok);
+        }
     }
   }
   catch(RDK::UException& e)

@@ -113,6 +113,11 @@ target_compile_definitions(${TARGET_NAME}
     RDK_USE_SQL
 )
 
+# Настройка Qt из vcpkg (должно быть ДО find_package(Qt5))
+if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/ForceQtFromVcpkg.cmake")
+    include("${CMAKE_SOURCE_DIR}/cmake/ForceQtFromVcpkg.cmake")
+endif()
+
 # Qt зависимости для модулей, используемых в Core/Application
 find_package(Qt5 REQUIRED COMPONENTS Core Network)
 target_link_libraries(${TARGET_NAME} PUBLIC Qt5::Core Qt5::Network)
