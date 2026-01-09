@@ -886,9 +886,11 @@ QDialog {
     background-color: #FFFFFF;
 }
 
-QDialogButtonBox {
-    button-layout: spread;
-}
+/* QDialogButtonBox rule removed to fix crash in QMessageBox::question
+ * The button-layout: spread rule causes crash in QDialogButtonBoxPrivate::layoutButtons()
+ * when QMessageBox is created with global styles applied to QApplication.
+ * QMessageBox uses its own internal layout management.
+ */
 
 /* ===== Message Box ===== */
 QMessageBox {
