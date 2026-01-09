@@ -88,14 +88,14 @@ protected:
 private:
     friend class ModernScene;
     friend class ModernGraphicsView;
-    
+
     /// Категория порта для категоризации выходных портов
     enum class PortCategory {
         Own,        // Собственные свойства компонента
         Child,      // Свойства дочерних компонентов
         Alias       // Алиасы свойств
     };
-    
+
     struct Port
     {
         QPointF pos;
@@ -105,9 +105,9 @@ private:
         QString componentName;  // Имя компонента-владельца
         QString displayName;    // Отображаемое имя (для tooltip)
         PortCategory category;  // Категория порта (для выходных портов)
-        
+
         Port() : isInput(false), category(PortCategory::Own) {}
-        Port(const QPointF& p, bool input, const QString& n) 
+        Port(const QPointF& p, bool input, const QString& n)
             : pos(p), isInput(input), name(n), componentName(n), displayName(n), category(PortCategory::Own) {}
     };
 
@@ -162,14 +162,14 @@ private:
         mutable QVector<Port> m_cachedAliasOutputPorts;
         // Последняя позиция курсора для throttling в hoverMoveEvent
         QPointF m_lastHoverMovePos;
-        
+
         friend class ModernScene;
     public:
         void showPortListWidget(const QPointF& scenePos);
         void hidePortListWidget();
         void updatePortListWidget(bool isInput, bool includeNested);
         void onPortItemActivated(QTreeWidgetItem* item, int column);
-        
+
         // Методы для получения портов по категориям
         QVector<Port> getOwnOutputPorts() const;
         QVector<Port> getChildOutputPorts() const;
@@ -177,7 +177,7 @@ private:
         QVector<Port> getOwnInputPorts() const;
         QVector<Port> getChildInputPorts() const;
         QVector<Port> getAliasInputPorts() const;
-        
+
         // Методы для проверки наличия соединений к портам категории
         bool hasConnectionsToInputCategory(PortCategory category) const;
         bool hasConnectionsToOutputCategory(PortCategory category) const;
@@ -193,15 +193,15 @@ private:
         // Временная линия до курсора
         LinkItem(class NodeItem* src, const QPointF& tempEnd, const QPointF& startPos = QPointF());
         void updateGeometry(const QPointF& cursorOverride = QPointF());
-        
+
         // Hover events for tooltips
         void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
         void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
-        
+
         // Getters for tooltip generation
         NodeItem* getSourceNode() const { return m_src; }
         NodeItem* getDestinationNode() const { return m_dst; }
-        
+
         // Геттеры для доступа к данным связи (для оптимизации проверки соединений)
         NodeItem* src() const { return m_src; }
         NodeItem* dst() const { return m_dst; }
@@ -227,6 +227,9 @@ private:
     void buildScene();
     void clearScene();
     void layoutGrid();
+    /// Добавляет один компонент в сцену без полного перестроения
+    /// Использует текущий m_normalizationOffset, чтобы не сдвигать существующие компоненты
+    NodeItem* addSingleComponent(const QString& fullName);
     NodeItem* pickPort(const QPointF& scenePos, bool requireInput, QPointF& portPos);
     const Port* pickPortDetailed(const QPointF& scenePos, bool requireInput, NodeItem*& node, QPointF& portPos);
     NodeItem* pickNode(const QPointF& scenePos) const;
@@ -235,7 +238,7 @@ private:
     void invalidateLevelCache(const QString& componentName = QString()); // Инвалидирует кэш уровня (пустая строка = все уровни)
     void restoreSceneFromCache(const QString& componentName); // Восстанавливает сцену из кэша
     void saveSceneToCache(const QString& componentName); // Сохраняет текущую сцену в кэш
-    
+
     // Методы для работы с кэшем компонентов
     QString computeComponentHash(const QString& componentFullName) const; // Вычисляет хеш содержимого компонента
     void invalidateComponentCache(const QString& componentFullName = QString()); // Инвалидирует кэш компонента (пустая строка = все компоненты)
@@ -255,7 +258,7 @@ private:
     NodeItem* m_dragSourceNode;
     const Port* m_dragSourcePort;
     QPointF   m_dragSourcePortPos;
-    
+
     // Active connection state (for tree widget selection)
     NodeItem* m_activeSourceNode;
     const Port* m_activeSourcePort;  // Указатель для быстрого доступа (может стать невалидным)
@@ -275,17 +278,17 @@ private:
     QList<NodeItem*> m_nodes;
     QHash<QString, NodeItem*> m_nodeByName;
     QList<LinkItem*> m_links;
-    
+
     // Защита от бесконечной рекурсии при выборе компонента
     int m_selectComponentRetryCount;
-    
+
     // Для перемещения группы объектов - храним предыдущие позиции
     QHash<NodeItem*, QPointF> m_lastNodePositions;
 
     // Coord scaling (scene units per kernel unit)
     // Set to 30 to match UDrawEngine's ZoomCoeff for 1:1 scale with classic diagram
     double m_coordScale = 30.0;
-    
+
     // Минимальная позиция, использованная для нормализации при загрузке
     // Нужна для правильной денормализации координат при сохранении
     QPointF m_normalizationOffset;
@@ -298,7 +301,7 @@ private:
     };
     QHash<QString, ViewState> m_viewStates;  // Состояние viewport для каждого компонента
     static constexpr double DEFAULT_SCALE = 1.0;  // Начальный масштаб по умолчанию (уменьшен в 2.5 раза от предыдущего значения 2.5)
-    
+
     // Кэш загруженных уровней для быстрого повторного перехода
     // ВАЖНО: не используем QPointer, так как элементы управляются сценой
     // Вместо этого сохраняем указатели только если элементы еще в сцене
@@ -312,7 +315,7 @@ private:
         bool isValid = false;
     };
     QHash<QString, SceneCache> m_levelCache;  // Кэш уровней по имени компонента
-    
+
     // Кэш информации о компонентах для ускорения отрисовки
     struct ComponentCacheEntry {
         // Кэш портов (для NodeItem::paint и determinePortCategory)
@@ -323,57 +326,60 @@ private:
         QVector<Port> childOutputPorts;
         QVector<Port> aliasOutputPorts;
         QHash<QPair<QString, bool>, PortCategory> portCategoryCache;  // Кэш для determinePortCategory: (propertyName, isInput) -> PortCategory
-        
+
         // Данные, используемые в buildScene (для ускорения Reload)
         QString className;      // Имя класса компонента
         QPointF kernelPos;      // Координаты компонента в ядре
         bool hasKernelPos = false; // Флаг, что kernelPos загружен и валиден
-        
+
         qint64 timestamp;  // Временная метка последнего обновления
         QString hash;      // Хеш содержимого компонента для инвалидации
-        
+
         ComponentCacheEntry() : timestamp(0) {}
     };
-    
+
     class ComponentCache {
     public:
         ComponentCache() {}
-        
+
         // Получить запись кэша для компонента
         ComponentCacheEntry* getEntry(const QString& componentFullName);
-        
+
         // Создать или обновить запись кэша
         void setEntry(const QString& componentFullName, const ComponentCacheEntry& entry);
-        
+
         // Проверить, есть ли запись в кэше
         bool hasEntry(const QString& componentFullName) const;
-        
+
         // Инвалидировать запись кэша
         void invalidateEntry(const QString& componentFullName);
-        
+
         // Очистить весь кэш
         void clear();
-        
+
         // Получить все записи кэша (для сохранения в файл)
         const QHash<QString, ComponentCacheEntry>& getAllEntries() const { return m_cache; }
-        
+
         // Установить все записи кэша (для загрузки из файла)
         void setAllEntries(const QHash<QString, ComponentCacheEntry>& entries) { m_cache = entries; }
-        
+
     private:
         QHash<QString, ComponentCacheEntry> m_cache;
     };
-    
+
     mutable ComponentCache m_componentCache;  // Сессионный кэш компонентов (mutable для использования в const методах)
-    
+
     // Флаг для временного отключения обработки ItemSelectedHasChanged в itemChange
     // во время batch-выделения, чтобы предотвратить сброс выделения Qt
     bool m_isBatchSelecting = false;
-    
+
     // Флаг для предотвращения рекурсивного перемещения группы объектов
     // Когда один узел перемещается и перемещает другие, мы не должны снова перемещать их
     bool m_isMovingGroup = false;
-    
+
+    // Флаг для предотвращения сохранения координат во время инициализации сцены
+    bool m_isBuildingScene = false;
+
     // Кнопка сброса масштаба
     QPushButton* m_resetZoomButton;
 
@@ -391,7 +397,7 @@ private:
     QAction* m_actionCancelSwitching;
     QAction* m_actionCloneComponent;
     QAction* m_actionQuickLink;
-    
+
     // Context menu state
     QString m_firstComponentToConnection;
     QString m_startMoveComponent;
@@ -400,11 +406,11 @@ private:
 
     void createContextMenu();
     QString getSelectedComponentLongName() const;
-    
+
     /// Удаляет указанные компоненты с запросом подтверждения
     /// @param nodesToDelete Список NodeItem для удаления
     void deleteComponents(const QList<NodeItem*>& nodesToDelete);
-    
+
     // Context menu slots
 private slots:
     void componentViewOrBreakLink();
@@ -438,12 +444,12 @@ private slots:
     bool loadCoord(const QString& fullName, QPointF& outPos) const;
     void saveCoord(const QString& fullName, const QPointF& scenePos) const;
     QPointF currentMinScenePos() const;
-    
+
     // Viewport state management methods
     void saveCurrentViewState();
     void restoreViewState(const QString& componentName);
     void resetZoom();
-    
+
     // Tooltip generation methods
     QString generateNodeTooltip(NodeItem* node) const;
     QString generatePortTooltip(const Port& port) const;

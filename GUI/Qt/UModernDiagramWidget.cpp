@@ -103,39 +103,39 @@ protected:
             event->accept();
             return;
         }
-        
+
         // Сохраняем начальную позицию для RubberBandDrag (если не Ctrl)
         if(event->button() == Qt::LeftButton && !(event->modifiers() & Qt::ControlModifier))
         {
             m_rubberBandStartViewPos = event->pos();
             m_isRubberBandDragging = true;
         }
-        
+
         // Иначе передаем событие в базовый класс
         QGraphicsView::mousePressEvent(event);
     }
-    
+
     void mouseMoveEvent(QMouseEvent *event) override
     {
         if(m_isPanning)
         {
             // Вычисляем смещение
             QPoint delta = event->pos() - m_lastPanPoint;
-            
+
             // Прокручиваем viewport через scrollbars
             horizontalScrollBar()->setValue(horizontalScrollBar()->value() - delta.x());
             verticalScrollBar()->setValue(verticalScrollBar()->value() - delta.y());
-            
+
             // Обновляем последнюю позицию
             m_lastPanPoint = event->pos();
             event->accept();
             return;
         }
-        
+
         // Иначе передаем событие в базовый класс
         QGraphicsView::mouseMoveEvent(event);
     }
-    
+
     void mouseReleaseEvent(QMouseEvent *event) override
     {
         // Обработка прокрутки (Ctrl+ЛКМ)
@@ -147,7 +147,7 @@ protected:
             event->accept();
             return;
         }
-        
+
         // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Проверяем, не была ли перемещена группа объектов
         // ВАЖНО: Проверяем ДО вызова базового класса, так как базовый класс может сбросить флаг
         // и вызвать ModernScene::mouseReleaseEvent, который сбросит m_isGroupMoving
@@ -160,15 +160,15 @@ protected:
                 wasGroupMoved = modernScene->isGroupMoving();
             }
         }
-        
+
         // Сначала вызываем базовый класс, чтобы Qt обработал RubberBandDrag
         // Qt автоматически рисует прямоугольник и обрабатывает выделение
         QGraphicsView::mouseReleaseEvent(event);
-        
+
         // После обработки базовым классом проверяем, был ли это RubberBand drag
         // и исправляем выделение, если нужно
         // НО НЕ вызываем selectNodesInRect, если группа была перемещена
-        if(event->button() == Qt::LeftButton && 
+        if(event->button() == Qt::LeftButton &&
            !(event->modifiers() & Qt::ControlModifier) &&
            m_isRubberBandDragging &&
            !wasGroupMoved)  // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: не вызываем selectNodesInRect после перемещения группы
@@ -177,32 +177,32 @@ protected:
             QPoint endPos = event->pos();
             QPoint delta = endPos - m_rubberBandStartViewPos;
             int dragDistanceSquared = delta.x() * delta.x() + delta.y() * delta.y();
-            
+
             // Если был реальный drag (не просто клик)
             if(dragDistanceSquared > 25)  // 5 * 5 = 25
             {
                 // Создаем прямоугольник выделения в координатах view
                 QRect rubberBandRect = QRect(m_rubberBandStartViewPos, endPos).normalized();
-                
+
                 // Преобразуем прямоугольник из координат view в координаты scene
                 QPointF topLeft = mapToScene(rubberBandRect.topLeft());
                 QPointF bottomRight = mapToScene(rubberBandRect.bottomRight());
                 QRectF selectionRect = QRectF(topLeft, bottomRight).normalized();
-                
+
                 // ВАЖНО: Базовый класс QGraphicsView::mouseReleaseEvent уже передал событие в сцену,
                 // и базовый класс QGraphicsScene::mouseReleaseEvent сбросил выделение при клике на фоне.
                 // Поэтому мы должны исправить выделение ПОСЛЕ того, как все обработчики завершились.
                 // Используем QTimer::singleShot для отложенного вызова, чтобы он выполнился после
                 // всех обработчиков событий, включая ModernScene::mouseReleaseEvent
                 bool addToSelection = (event->modifiers() & Qt::ShiftModifier) != 0;
-                
+
                 // Сохраняем параметры для отложенного вызова
                 QRectF savedSelectionRect = selectionRect;
                 bool savedAddToSelection = addToSelection;
-                
+
                 // Вызываем selectNodesInRect сразу (для немедленного выделения)
                 m_owner->selectNodesInRect(savedSelectionRect, savedAddToSelection);
-                
+
                 // ВАЖНО: Вызываем selectNodesInRect еще раз через QTimer::singleShot,
                 // чтобы исправить выделение ПОСЛЕ того, как ModernScene::mouseReleaseEvent
                 // завершится и базовый класс Qt сбросит выделение
@@ -215,38 +215,38 @@ protected:
                     {
                         return;
                     }
-                    
+
                     m_owner->selectNodesInRect(savedSelectionRect, savedAddToSelection);
                 });
             }
-            
+
             m_isRubberBandDragging = false;
         }
     }
-    
+
     bool viewportEvent(QEvent *event) override
     {
         if(event->type() == QEvent::Wheel)
         {
             auto* wheel = static_cast<QWheelEvent*>(event);
             const double factor = wheel->angleDelta().y() > 0 ? 1.15 : 0.87;
-            
+
             // 1. Сохраняем позицию курсора в координатах сцены до масштабирования
             QPointF cursorViewportPos = wheel->position();
             QPointF scenePosBefore = mapToScene(cursorViewportPos.toPoint());
-            
+
             // 2. Применяем масштабирование
             scale(factor, factor);
-            
+
             // 3. Вычисляем новую позицию курсора в координатах сцены после масштабирования
             QPointF scenePosAfter = mapToScene(cursorViewportPos.toPoint());
-            
+
             // 4. Корректируем позицию, чтобы точка под курсором осталась на месте
             QPointF delta = scenePosBefore - scenePosAfter;
             QPointF currentCenter = mapToScene(viewport()->rect().center());
             QPointF newCenter = currentCenter + delta;
             centerOn(newCenter);
-            
+
             // 5. Проверяем видимость диаграммы и корректируем при необходимости
             if(m_owner && m_owner->m_scene)
             {
@@ -258,10 +258,10 @@ protected:
                     QPointF topLeft = mapToScene(viewportRect.topLeft().toPoint());
                     QPointF bottomRight = mapToScene(viewportRect.bottomRight().toPoint());
                     QRectF visibleRect(topLeft, bottomRight);
-                    
+
                     // Проверяем, помещается ли вся диаграмма в видимую область
                     bool fitsInView = visibleRect.contains(sceneBounds);
-                    
+
                     if(!fitsInView)
                     {
                         // Диаграмма не помещается - центрируем относительно курсора
@@ -273,7 +273,7 @@ protected:
                         // Корректируем позицию для сохранения видимости, если это возможно
                         QPointF finalCenter = newCenter;
                         bool needsAdjustment = false;
-                        
+
                         // Проверяем и корректируем по горизонтали
                         if(sceneBounds.left() < visibleRect.left())
                         {
@@ -289,7 +289,7 @@ protected:
                             finalCenter.setX(finalCenter.x() - shiftX);
                             needsAdjustment = true;
                         }
-                        
+
                         // Проверяем и корректируем по вертикали
                         if(sceneBounds.top() < visibleRect.top())
                         {
@@ -305,7 +305,7 @@ protected:
                             finalCenter.setY(finalCenter.y() - shiftY);
                             needsAdjustment = true;
                         }
-                        
+
                         // Применяем корректировку только если она не слишком большая
                         // (чтобы не нарушать позицию относительно курсора слишком сильно)
                         if(needsAdjustment)
@@ -320,12 +320,12 @@ protected:
                     }
                 }
             }
-            
+
             return true;
         }
         return QGraphicsView::viewportEvent(event);
     }
-    
+
     void dragEnterEvent(QDragEnterEvent *event) override
     {
         if(event->mimeData()->hasFormat("Component"))
@@ -338,7 +338,7 @@ protected:
             event->ignore();
         }
     }
-    
+
     void dragMoveEvent(QDragMoveEvent *event) override
     {
         if(event->mimeData()->hasFormat("Component"))
@@ -351,7 +351,7 @@ protected:
             event->ignore();
         }
     }
-    
+
     void dropEvent(QDropEvent *event) override
     {
         if(!event->mimeData()->hasFormat("Component"))
@@ -359,34 +359,34 @@ protected:
             event->ignore();
             return;
         }
-        
+
         if(!m_owner || !m_owner->m_application)
         {
             event->ignore();
             return;
         }
-        
+
         QByteArray itemData = event->mimeData()->data("Component");
         QDataStream dataStream(&itemData, QIODevice::ReadOnly);
         QString classname;
         dataStream >> classname;
-        
+
         if(classname.isEmpty())
         {
             event->ignore();
             return;
         }
-        
+
         // Если конфигурация не открыта, то создать новую
         if(!m_owner->m_application->GetProjectOpenFlag())
         {
-            QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", 
-                "Config not created. Auto-create one-channel configuration and model from this component?", 
+            QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning",
+                "Config not created. Auto-create one-channel configuration and model from this component?",
                 QMessageBox::Yes|QMessageBox::Cancel);
             if (reply == QMessageBox::Yes)
             {
                 std::string file_name;
-                
+
                 QString default_path = QString::fromLocal8Bit(
                     (m_owner->m_application->GetWorkDirectory() + "/../../Configs/").c_str());
                 QDir path1(default_path);
@@ -401,20 +401,20 @@ protected:
                             m_owner->m_application->GetWorkDirectory().c_str());
                     }
                 }
-                
+
                 std::string path_dialog = default_path.toUtf8().data();
-                
+
                 // Создание папки проекта автоматическое либо выбор существующей
-                if(QMessageBox::question(this, "Info", "Autocreate configuration folder?", 
+                if(QMessageBox::question(this, "Info", "Autocreate configuration folder?",
                     QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
                 {
                     time_t curr_time;
                     time(&curr_time);
-                    
+
                     // Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
                     std::string folder = RDK::get_text_time(curr_time, '.', '_');
                     path_dialog += std::string("/Autocreate") + folder.c_str();
-                    
+
                     if(RDK::CreateNewDirectory(std::string(path_dialog).c_str()) != 0)
                     {
                         event->ignore();
@@ -423,20 +423,20 @@ protected:
                 }
                 else
                 {
-                    path_dialog = QFileDialog::getExistingDirectory(this, tr("Select project directory"), 
+                    path_dialog = QFileDialog::getExistingDirectory(this, tr("Select project directory"),
                         default_path, QFileDialog::ShowDirsOnly).toUtf8().data();
                 }
-                
+
                 if(path_dialog.empty())
                 {
                     event->ignore();
                     return;
                 }
-                
+
                 file_name = path_dialog + "/Project.ini";
-                
+
                 m_owner->m_application->CreateProject(file_name, classname.toLocal8Bit().constData());
-                
+
                 m_owner->Reload();
                 emit m_owner->componentSelected(QString());
                 emit m_owner->updateComponentsList();
@@ -444,12 +444,12 @@ protected:
             event->accept();
             return;
         }
-        
+
         // Если модель не существует, спросить не создать ли ее
         if(!Model_Check())
         {
-            QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", 
-                "Model not exist. Create new model from this class?", 
+            QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning",
+                "Model not exist. Create new model from this class?",
                 QMessageBox::Yes|QMessageBox::Cancel);
             if (reply == QMessageBox::Yes)
             {
@@ -462,49 +462,38 @@ protected:
             event->accept();
             return;
         }
-        
+
         // Создать компонент
         const char* pname = Model_AddComponent(m_owner->m_componentName.toLocal8Bit(), classname.toLocal8Bit());
         if(pname)
         {
             std::string name = pname;
             Engine_FreeBufString(pname);
-            
+
             // Преобразовать координаты drop из view в сцену
             QPointF scenePos = mapToScene(event->pos());
-            
-            // Сохранить абсолютные координаты
-            // При создании нового компонента координаты еще не нормализованы, так как сцена еще не перезагружена
-            // Но нужно учесть текущее смещение нормализации для правильного сохранения
-            QPointF absoluteScenePos = scenePos + m_owner->m_normalizationOffset;
+
             QString fullName = QString::fromStdString(name);
+
+            // Вычисляем абсолютные координаты для сохранения в ядро
+            // Используем текущий m_normalizationOffset для правильного вычисления абсолютных координат
+            QPointF absoluteScenePos = scenePos + m_owner->m_normalizationOffset;
             m_owner->saveCoord(fullName, absoluteScenePos);
-            
-            // Перезагрузить сцену для обновления всех компонентов и связей
-            m_owner->Reload();
-            
-            // Найти созданный узел и выделить его
-            QString shortName = QString::fromStdString(name);
-            if(!m_owner->m_componentName.isEmpty())
-            {
-                // Если мы внутри компонента, нужно извлечь короткое имя
-                QString prefix = m_owner->m_componentName + ".";
-                if(shortName.startsWith(prefix))
-                {
-                    shortName = shortName.mid(prefix.length());
-                }
-            }
-            
-            auto* node = m_owner->m_nodeByName.value(shortName, nullptr);
+
+            // Добавляем только новый компонент без полного перестроения сцены
+            // Это сохранит визуальные позиции всех существующих компонентов
+            auto* node = m_owner->addSingleComponent(fullName);
+
+            // Выделяем новый компонент
             if(node)
             {
                 m_owner->m_scene->clearSelection();
                 node->setSelected(true);
             }
-            
+
             emit m_owner->componentSelected(QString::fromStdString(name));
             emit m_owner->updateComponentsList();
-            
+
             event->accept();
         }
         else
@@ -512,7 +501,7 @@ protected:
             event->ignore();
         }
     }
-    
+
 private:
     UModernDiagramWidget* m_owner;
     bool m_isPanning = false;
@@ -541,7 +530,7 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
     setAcceptHoverEvents(true);
     // Включаем кэширование для оптимизации отрисовки
     setCacheMode(QGraphicsItem::DeviceCoordinateCache);
-    
+
     // Создаем QTreeWidget для отображения портов
     m_portListWidget = new QTreeWidget();
     m_portListWidget->setHeaderHidden(true);
@@ -553,7 +542,7 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
     m_portListWidget->setStyleSheet(UStyleManager::instance()->getTreeWidgetStyleSheet());
     // Устанавливаем политику фокуса при создании
     m_portListWidget->setFocusPolicy(Qt::StrongFocus);
-    
+
     // Таймер для отложенного скрытия списка портов
     m_hideTimer->setSingleShot(true);
     m_hideTimer->setInterval(1000); // 1 секунда после ухода курсора
@@ -567,7 +556,7 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
         }
         hidePortListWidget();
     });
-    
+
     // Создаем прокси для встраивания виджета в сцену
     if(m_owner && m_owner->m_scene)
     {
@@ -578,27 +567,27 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
         m_portListWidgetProxy->setFlag(QGraphicsItem::ItemIsFocusable, true);
         m_portListWidgetProxy->setAcceptedMouseButtons(Qt::LeftButton | Qt::RightButton);
         m_portListWidgetProxy->setAcceptHoverEvents(true);
-        
+
         // Подключаем обработку двойного клика
         QObject::connect(m_portListWidget, &QTreeWidget::itemDoubleClicked,
                         [this](QTreeWidgetItem* item, int column) {
                             // Логируем событие двойного клика (используем qDebug для гарантированного вывода)
-                            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO,
                                 "itemDoubleClicked signal received", 0);
                             // Двойной клик всегда активирует порт
                             onPortItemActivated(item, column);
                         });
-        
+
         // Подключаем обработку активации элемента (двойной клик или Enter)
         QObject::connect(m_portListWidget, &QTreeWidget::itemActivated,
                         [this](QTreeWidgetItem* item, int column) {
                             // Логируем событие активации (используем qDebug для гарантированного вывода)
-                            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO,
                                 "itemActivated signal received", 0);
                             // Активация всегда обрабатывает порт
                             onPortItemActivated(item, column);
                         });
-        
+
         // Обработка Enter через QShortcut
         // Используем WindowShortcut для работы даже когда виджет не имеет фокуса
         QShortcut* enterShortcut = new QShortcut(QKeySequence(Qt::Key_Return), m_portListWidget);
@@ -607,7 +596,7 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
         enterShortcut->setContext(Qt::WindowShortcut);
         enterShortcut2->setContext(Qt::WindowShortcut);
         QObject::connect(enterShortcut, &QShortcut::activated, [this]() {
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO,
                 "Enter shortcut activated", 0);
             if(m_portListWidget && m_portListWidgetProxy && m_portListWidgetProxy->isVisible())
             {
@@ -621,7 +610,7 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
                 }
                 else
                 {
-                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
+                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING,
                         "Enter shortcut: currentItem is null", 0);
                 }
             }
@@ -635,7 +624,7 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
             }
         });
         QObject::connect(enterShortcut2, &QShortcut::activated, [this]() {
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO,
                 "Enter (numpad) shortcut activated", 0);
             if(m_portListWidget && m_portListWidgetProxy && m_portListWidgetProxy->isVisible())
             {
@@ -649,7 +638,7 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
                 }
                 else
                 {
-                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
+                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING,
                         "Enter (numpad) shortcut: currentItem is null", 0);
                 }
             }
@@ -662,7 +651,7 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
                 MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, warnMsg.toStdString().c_str(), 0);
             }
         });
-        
+
         // Добавляем обработку одинарного клика для выходных и входных портов
         QObject::connect(m_portListWidget, &QTreeWidget::itemClicked,
                         [this](QTreeWidgetItem* item, int column) {
@@ -675,12 +664,12 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
                                     QMap<QString, QVariant> portData = data.value<QMap<QString, QVariant>>();
                                     bool isInput = portData["isInput"].toBool();
                                     QString portName = portData["name"].toString();
-                                    
+
                                     QString logMsg = QString("itemClicked: %1 port '%2', activeTempLink=%3")
                                         .arg(isInput ? "input" : "output")
                                         .arg(portName)
                                         .arg(m_owner && m_owner->m_activeTempLink ? "yes" : "no");
-                                    
+
                                     // Для выходных портов начинаем соединение
                                     if(!isInput && !portName.isEmpty())
                                     {
@@ -700,7 +689,7 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
                                 }
                                 else
                                 {
-                                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
+                                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING,
                                         "itemClicked: Port data is invalid", 0);
                                 }
                             }
@@ -718,11 +707,11 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
     if(m_owner && m_owner->m_application)
     {
         QString fullName = m_owner->m_componentName.isEmpty() ? name : m_owner->m_componentName + "." + name;
-        
+
         // Загружаем входные порты по категориям
         // Всегда создаем три порта: собственные, дочерние и алиасы
         // Если портов нет, порт все равно создается, но будет отображаться серым
-        
+
         // 1. Собственные входные свойства компонента
         Port ownInputPort;
         ownInputPort.isInput = true;
@@ -732,7 +721,7 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
         ownInputPort.displayName = QStringLiteral("Собственные");
         ownInputPort.category = PortCategory::Own;
         inputs.append(ownInputPort);
-        
+
         // 2. Входные свойства дочерних компонентов
         Port childInputPort;
         childInputPort.isInput = true;
@@ -742,7 +731,7 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
         childInputPort.displayName = QStringLiteral("Дочерние");
         childInputPort.category = PortCategory::Child;
         inputs.append(childInputPort);
-        
+
         // 3. Входные свойства алиасов
         Port aliasInputPort;
         aliasInputPort.isInput = true;
@@ -752,11 +741,11 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
         aliasInputPort.displayName = QStringLiteral("Алиасы");
         aliasInputPort.category = PortCategory::Alias;
         inputs.append(aliasInputPort);
-        
+
         // Загружаем выходные порты по категориям
         // Всегда создаем три порта: собственные, дочерние и алиасы
         // Если портов нет, порт все равно создается, но будет отображаться серым
-        
+
         // 1. Собственные выходные свойства компонента
         Port ownPort;
         ownPort.isInput = false;
@@ -766,7 +755,7 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
         ownPort.displayName = QStringLiteral("Собственные");
         ownPort.category = PortCategory::Own;
         outputs.append(ownPort);
-        
+
         // 2. Выходные свойства дочерних компонентов
         Port childPort;
         childPort.isInput = false;
@@ -776,7 +765,7 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
         childPort.displayName = QStringLiteral("Дочерние");
         childPort.category = PortCategory::Child;
         outputs.append(childPort);
-        
+
         // 3. Выходные свойства алиасов
         Port aliasPort;
         aliasPort.isInput = false;
@@ -797,7 +786,7 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
         defaultInput.fullPath = QStringLiteral("In");
         defaultInput.displayName = QStringLiteral("In");
         inputs.append(defaultInput);
-        
+
         Port defaultOutput;
         defaultOutput.isInput = false;
         defaultOutput.name = QStringLiteral("Out");
@@ -806,7 +795,7 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
         defaultOutput.displayName = QStringLiteral("Out");
         outputs.append(defaultOutput);
     }
-    
+
     // Вычисляем необходимую высоту на основе количества портов
     int maxPorts = qMax(inputs.size(), outputs.size());
     double requiredHeight = topMargin + bottomMargin;
@@ -815,12 +804,12 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
         requiredHeight += (maxPorts - 1) * portSpacing;
     }
     requiredHeight = qMax(requiredHeight, minHeight);
-    
+
     // Устанавливаем размер прямоугольника (центр в (0,0))
     double width = minWidth;
     double height = requiredHeight;
     setRect(-width/2, -height/2, width, height);
-    
+
     // Распределяем входные порты
     if(inputs.size() == 1)
     {
@@ -834,7 +823,7 @@ UModernDiagramWidget::NodeItem::NodeItem(UModernDiagramWidget* owner, const QStr
             inputs[i].pos = QPointF(rect().left(), startY + i * portSpacing);
         }
     }
-    
+
     // Распределяем выходные порты
     if(outputs.size() == 1)
     {
@@ -859,7 +848,7 @@ UModernDiagramWidget::NodeItem::~NodeItem()
         delete m_hideTimer;
         m_hideTimer = nullptr;
     }
-    
+
     // Если указатели обнулены (clearScene() был вызван), то сцена
     // сама удалит прокси-виджет и виджет списка портов.
     // Удаляем только если указатели ещё валидны (индивидуальное удаление узла).
@@ -896,7 +885,7 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
     Q_UNUSED(widget);
     Q_UNUSED(option);
     painter->setRenderHint(QPainter::Antialiasing, true);
-    
+
     // Обновляем кэш, если он невалиден
     // ОПТИМИЗАЦИЯ: используем кэшированные порты вместо вызова методов получения портов
     // Это критично для производительности - вызовы API ядра очень медленные
@@ -904,7 +893,7 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
     {
         // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
         // NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UModernDiagramWidget.NodeItem.paint"), nodeName);
-        
+
         // ОПТИМИЗАЦИЯ: загружаем порты только если кэш портов невалиден
         // Это позволяет избежать повторных вызовов API ядра при каждой инвалидации кэша paint
         qint64 portsLoadTime = 0;
@@ -921,7 +910,7 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
             getAliasOutputPorts();  // Загрузит и закэширует
             // portsLoadTime = portsTelemetry.Elapsed();
         }
-        
+
         // Кэшируем результаты проверки наличия портов (используем уже закэшированные порты)
         m_hasInputPortsCache[PortCategory::Own] = !m_cachedOwnInputPorts.isEmpty();
         m_hasInputPortsCache[PortCategory::Child] = !m_cachedChildInputPorts.isEmpty();
@@ -929,7 +918,7 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
         m_hasOutputPortsCache[PortCategory::Own] = !m_cachedOwnOutputPorts.isEmpty();
         m_hasOutputPortsCache[PortCategory::Child] = !m_cachedChildOutputPorts.isEmpty();
         m_hasOutputPortsCache[PortCategory::Alias] = !m_cachedAliasOutputPorts.isEmpty();
-        
+
         // Кэшируем результаты проверки соединений с детальным профилированием
         qint64 connectionsCheckTime = 0;
         {
@@ -943,9 +932,9 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
             m_hasConnectionsToOutputCache[PortCategory::Alias] = hasConnectionsToOutputCategory(PortCategory::Alias);
             // connectionsCheckTime = connectionsTelemetry.Elapsed();
         }
-        
+
         m_cacheValid = true;
-        
+
         // Логируем результат профилирования (только при инвалидации кэша)
         // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
         // qint64 elapsed = telemetry.Elapsed();
@@ -959,17 +948,17 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
 
     UStyleManager* style = UStyleManager::instance();
     double cornerRadius = style->getNodeCornerRadius();
-    
+
     // Рисуем тень под узлом
     QColor shadowColor = style->getShadowColor();
     double shadowBlur = style->getShadowBlur();
     double shadowOffsetY = style->getShadowOffsetY();
-    
+
     if (shadowColor.alpha() > 0)
     {
         QRectF shadowRect = rect().adjusted(2, 2, 2, 2).translated(0, shadowOffsetY);
         painter->setPen(Qt::NoPen);
-        
+
         // Оптимизация: используем только 2 слоя вместо 4 для ускорения отрисовки
         // Внешний слой (более размытый)
         QColor outerColor = shadowColor;
@@ -977,7 +966,7 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
         painter->setBrush(outerColor);
         QRectF outerRect = shadowRect.adjusted(-shadowBlur, -shadowBlur, shadowBlur, shadowBlur);
         painter->drawRoundedRect(outerRect, cornerRadius + shadowBlur, cornerRadius + shadowBlur);
-        
+
         // Внутренний слой (более четкий)
         QColor innerColor = shadowColor;
         innerColor.setAlpha(shadowColor.alpha() / 2);
@@ -985,7 +974,7 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
         QRectF innerRect = shadowRect.adjusted(-shadowBlur/2, -shadowBlur/2, shadowBlur/2, shadowBlur/2);
         painter->drawRoundedRect(innerRect, cornerRadius + shadowBlur/2, cornerRadius + shadowBlur/2);
     }
-    
+
     // Градиентный фон узла
     QLinearGradient gradient = style->getNodeGradient(rect());
     if (isSelected())
@@ -995,7 +984,7 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
         gradient.setColorAt(0, selectedColor.lighter(110));
         gradient.setColorAt(1, selectedColor.darker(110));
     }
-    
+
     // Рисуем основной прямоугольник узла
     QColor border = isSelected() ? style->getAccentColor() : style->getNodeBorderColor();
     // Для выделенных узлов делаем границу толще и ярче
@@ -1004,7 +993,7 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
     painter->setPen(QPen(borderColor, borderWidth));
     painter->setBrush(gradient);
     painter->drawRoundedRect(rect(), cornerRadius, cornerRadius);
-    
+
     // Для выделенных узлов добавляем дополнительную яркую рамку
     if (isSelected())
     {
@@ -1014,7 +1003,7 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
         painter->setBrush(Qt::NoBrush);
         painter->drawRoundedRect(rect().adjusted(1, 1, -1, -1), cornerRadius - 1, cornerRadius - 1);
     }
-    
+
     // Рисуем светлую линию сверху для эффекта объёма
     painter->setPen(QPen(QColor(255, 255, 255, 80), 1));
     QRectF topLine = rect().adjusted(cornerRadius, 1, -cornerRadius, 0);
@@ -1029,7 +1018,7 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
     painter->drawText(rect().adjusted(10, 8, -10, -8),
                      Qt::AlignTop | Qt::AlignLeft,
                      nodeName);
-    
+
     // Класс компонента в квадратных скобках внизу (меньший размер, вторичный цвет)
     QFont classFont = painter->font();
     classFont.setWeight(QFont::Normal);
@@ -1044,10 +1033,10 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
     // Входные порты
     for (const Port& p : inputs) {
         bool isHovered = (m_hoveredPort == &p);
-        
+
         // Проверяем, активна ли временная линия для создания соединения
         bool isActiveConnection = (m_owner && m_owner->m_activeTempLink && m_owner->m_activeSourceNode);
-        
+
         // Используем кэшированные значения вместо дорогих вызовов методов
         bool hasPorts = false;
         if (p.category == PortCategory::Own)
@@ -1062,7 +1051,7 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
         {
             hasPorts = m_hasInputPortsCache.value(PortCategory::Alias, false);
         }
-        
+
         // Проверяем, есть ли соединения к портам этой категории
         // Проверяем соединения для всех категоризированных портов (с пустым fullPath)
         bool hasConnections = false;
@@ -1070,7 +1059,7 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
         {
             hasConnections = m_hasConnectionsToInputCache.value(p.category, false);
         }
-        
+
         // Определяем цвет порта:
         // - Если активна временная линия и есть порты: подсвечиваем ярче
         // - Если есть соединения: активный цвет (даже если портов нет, но есть соединения - это означает, что соединения идут к скрытым портам)
@@ -1097,13 +1086,13 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
             // Есть порты, но нет соединений - обычный цвет
             portColor = isHovered ? style->getPortInputHoverColor() : style->getPortInputColor();
         }
-        
+
         double portSize = isHovered ? style->getPortHoverRadius() : style->getPortRadius();
-        
+
         // Заливка порта
         painter->setPen(Qt::NoPen);
         painter->setBrush(portColor);
-        
+
         // Рисуем разные формы в зависимости от категории порта
         if (p.category == PortCategory::Own)
         {
@@ -1113,7 +1102,7 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
         else if (p.category == PortCategory::Child)
         {
             // Квадрат для свойств дочерних компонентов
-            QRectF squareRect(p.pos.x() - portSize, p.pos.y() - portSize, 
+            QRectF squareRect(p.pos.x() - portSize, p.pos.y() - portSize,
                              portSize * 2, portSize * 2);
             painter->drawRect(squareRect);
         }
@@ -1135,7 +1124,7 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
             // Fallback: круг по умолчанию
             painter->drawEllipse(p.pos, portSize, portSize);
         }
-        
+
         // Белая обводка для контраста
         painter->setPen(QPen(style->getBackgroundAltColor(), 1.5));
         painter->setBrush(Qt::NoBrush);
@@ -1145,11 +1134,11 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
         }
         else if (p.category == PortCategory::Child)
         {
-            QRectF squareRect(p.pos.x() - portSize, p.pos.y() - portSize, 
+            QRectF squareRect(p.pos.x() - portSize, p.pos.y() - portSize,
                              portSize * 2, portSize * 2);
             painter->drawRect(squareRect);
         }
-        
+
         // Подсветка при hover
         if (isHovered)
         {
@@ -1160,11 +1149,11 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
             painter->drawEllipse(p.pos, portSize + 4, portSize + 4);
         }
     }
-    
+
     // Выходные порты
     for (const Port& p : outputs) {
         bool isHovered = (m_hoveredPort == &p);
-        
+
         // Используем кэшированные значения вместо дорогих вызовов методов
         bool hasPorts = false;
         if (p.category == PortCategory::Own)
@@ -1179,7 +1168,7 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
         {
             hasPorts = m_hasOutputPortsCache.value(PortCategory::Alias, false);
         }
-        
+
         // Проверяем, есть ли соединения от портов этой категории
         // Проверяем соединения для всех категоризированных портов (с пустым fullPath)
         bool hasConnections = false;
@@ -1187,7 +1176,7 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
         {
             hasConnections = m_hasConnectionsToOutputCache.value(p.category, false);
         }
-        
+
         // Определяем цвет порта:
         // - Если есть соединения: активный цвет (даже если портов нет, но есть соединения - это означает, что соединения идут от скрытых портов)
         // - Если портов нет и соединений нет: серый (недоступный)
@@ -1208,13 +1197,13 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
             // Есть порты, но нет соединений - обычный цвет
             portColor = isHovered ? style->getPortOutputHoverColor() : style->getPortOutputColor();
         }
-        
+
         double portSize = isHovered ? style->getPortHoverRadius() : style->getPortRadius();
-        
+
         // Заливка порта
         painter->setPen(Qt::NoPen);
         painter->setBrush(portColor);
-        
+
         // Рисуем разные формы в зависимости от категории порта
         if (p.category == PortCategory::Own)
         {
@@ -1224,7 +1213,7 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
         else if (p.category == PortCategory::Child)
         {
             // Квадрат для свойств дочерних компонентов
-            QRectF squareRect(p.pos.x() - portSize, p.pos.y() - portSize, 
+            QRectF squareRect(p.pos.x() - portSize, p.pos.y() - portSize,
                              portSize * 2, portSize * 2);
             painter->drawRect(squareRect);
         }
@@ -1246,7 +1235,7 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
             // Fallback: круг по умолчанию
             painter->drawEllipse(p.pos, portSize, portSize);
         }
-        
+
         // Белая обводка для контраста
         painter->setPen(QPen(style->getBackgroundAltColor(), 1.5));
         painter->setBrush(Qt::NoBrush);
@@ -1256,11 +1245,11 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
         }
         else if (p.category == PortCategory::Child)
         {
-            QRectF squareRect(p.pos.x() - portSize, p.pos.y() - portSize, 
+            QRectF squareRect(p.pos.x() - portSize, p.pos.y() - portSize,
                              portSize * 2, portSize * 2);
             painter->drawRect(squareRect);
         }
-        
+
         // Подсветка при hover
         if (isHovered)
         {
@@ -1301,7 +1290,7 @@ UModernDiagramWidget::PortCategory UModernDiagramWidget::NodeItem::determinePort
     // Это имеет приоритет, так как соединения к дочерним компонентам должны определяться как Child
     // На верхнем уровне (m_componentName.isEmpty()) propertyName уже является относительным путем
     QString fullName = m_owner ? (m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName) : nodeName;
-    
+
     // Убеждаемся, что fullName не пустое перед запросом дочерних компонентов
     if(!fullName.isEmpty())
     {
@@ -1310,7 +1299,7 @@ UModernDiagramWidget::PortCategory UModernDiagramWidget::NodeItem::determinePort
         {
             QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
             Engine_FreeBufString(compList);
-            
+
             if(!components.isEmpty())
             {
                 // Проверяем, начинается ли propertyName с любого дочернего компонента
@@ -1323,7 +1312,7 @@ UModernDiagramWidget::PortCategory UModernDiagramWidget::NodeItem::determinePort
                         return PortCategory::Child;
                     }
                 }
-                
+
                 // Если propertyName начинается с nodeName, проверяем часть после nodeName
                 if(propertyName.startsWith(nodeName + "."))
                 {
@@ -1345,47 +1334,47 @@ UModernDiagramWidget::PortCategory UModernDiagramWidget::NodeItem::determinePort
             }
         }
     }
-    
+
     // Извлекаем имя свойства (может быть "Property" или "Component.Property")
     QString propName = propertyName;
     if(propName.contains('.'))
     {
         propName = propName.split('.').last();
     }
-    
+
     // Проверяем фактическое наличие свойства в каждой категории
     // Сначала проверяем алиасы (они имеют приоритет)
     QVector<Port> aliasPorts = isInput ? getAliasInputPorts() : getAliasOutputPorts();
     for(const Port& port : aliasPorts)
     {
-        if(port.name == propName || 
+        if(port.name == propName ||
            port.fullPath == propertyName ||
            port.fullPath.endsWith("." + propName))
         {
             return PortCategory::Alias;
         }
     }
-    
+
     // Затем проверяем дочерние компоненты
     // Проверяем точное совпадение с портами из getChildInputPorts/getChildOutputPorts
     QVector<Port> childPorts = isInput ? getChildInputPorts() : getChildOutputPorts();
     for(const Port& port : childPorts)
     {
         // Проверяем различные форматы сопоставления
-        if(port.name == propName || 
+        if(port.name == propName ||
            port.fullPath == propertyName ||
            port.fullPath.endsWith("." + propName) ||
            propertyName.contains(port.componentName + "." + propName))
         {
             return PortCategory::Child;
         }
-        
+
         // Проверяем, начинается ли propertyName с пути к дочернему компоненту
         if(propertyName.startsWith(port.componentName + "."))
         {
             return PortCategory::Child;
         }
-        
+
         // Проверяем, содержит ли propertyName путь к дочернему компоненту
         if(propertyName.contains("." + port.componentName + ".") ||
            propertyName.startsWith(port.componentName + "."))
@@ -1393,19 +1382,19 @@ UModernDiagramWidget::PortCategory UModernDiagramWidget::NodeItem::determinePort
             return PortCategory::Child;
         }
     }
-    
+
     // Наконец проверяем собственные свойства
     QVector<Port> ownPorts = isInput ? getOwnInputPorts() : getOwnOutputPorts();
     for(const Port& port : ownPorts)
     {
-        if(port.name == propName || 
+        if(port.name == propName ||
            port.fullPath == propertyName ||
            port.fullPath == propName)
         {
             return PortCategory::Own;
         }
     }
-    
+
     // Если свойство не найдено ни в одной категории, определяем по имени:
     // Если содержит точку и начинается с nodeName - проверяем, является ли первый компонент дочерним
     if(propertyName.contains('.'))
@@ -1418,7 +1407,7 @@ UModernDiagramWidget::PortCategory UModernDiagramWidget::NodeItem::determinePort
         // Если начинается с nodeName, но не нашли в категориях - по умолчанию Child
         return PortCategory::Child;
     }
-    
+
     return PortCategory::Own;
 }
 
@@ -1433,7 +1422,7 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
             if(link && link->scene())
                 link->updateGeometry();
         }
-        
+
         // Перемещение группы выделенных объектов
         if(m_owner && isSelected())
         {
@@ -1441,10 +1430,10 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
             QPointF newPos = pos();
             // Получаем старую позицию из хэш-таблицы
             QPointF oldPos = m_owner->m_lastNodePositions.value(this, newPos);
-            
+
             // Вычисляем смещение
             QPointF delta = newPos - oldPos;
-            
+
             // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Предотвращаем рекурсивное перемещение группы
             // Если уже идет групповое перемещение (m_isMovingGroup == true), не перемещаем другие узлы,
             // чтобы избежать бесконечной рекурсии
@@ -1452,7 +1441,7 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
             {
                 // Получаем все выделенные объекты
                 QList<QGraphicsItem*> selectedItems = scene()->selectedItems();
-                
+
                 // Подсчитываем количество выделенных NodeItem
                 int selectedNodeCount = 0;
                 QStringList selectedNodeNames;
@@ -1465,13 +1454,13 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
                         selectedNodeNames << node->nodeName;
                     }
                 }
-                
+
                 // Если выделено больше одного объекта, перемещаем всю группу
                 if(selectedNodeCount > 1)
                 {
                     // Устанавливаем флаг группового перемещения, чтобы предотвратить рекурсию
                     m_owner->m_isMovingGroup = true;
-                    
+
                     // ДИАГНОСТИКА: Логируем движение группы
                     for(QGraphicsItem* item : selectedItems)
                     {
@@ -1488,19 +1477,20 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
                             m_owner->m_lastNodePositions[otherNode] = otherNode->pos();
                         }
                     }
-                    
+
                     // Сбрасываем флаг группового перемещения
                     m_owner->m_isMovingGroup = false;
                 }
             }
-            
+
             // Обновляем сохраненную позицию для текущего объекта
             m_owner->m_lastNodePositions[this] = newPos;
         }
-        
+
         // Сохранить координаты
         // Важно: сохраняем абсолютные координаты (с учетом визуальной нормализации)
-        if(m_owner)
+        // Не сохраняем координаты во время инициализации сцены
+        if(m_owner && !m_owner->m_isBuildingScene)
         {
             QString fullName = m_owner->m_componentName.isEmpty() ? nodeName
                                                                   : m_owner->m_componentName + "." + nodeName;
@@ -1522,7 +1512,7 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
             // Пропускаем обработку ItemSelectedHasChanged во время batch-выделения
             return QGraphicsRectItem::itemChange(change, value);
         }
-        
+
         // Отслеживаем изменение выбора компонента
         bool isNowSelected = value.toBool();
         if(isNowSelected)
@@ -1570,9 +1560,9 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getNestedPor
     QVector<Port> result;
     if(!m_owner || !m_owner->m_application)
         return result;
-    
+
     QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
-    
+
     // Получаем порты текущего компонента
     unsigned int mask = isInput ? (ptPubInput | ptInput) : (ptPubOutput | ptOutput);
     const char* propsList = Model_GetComponentPropertiesLookupList(fullName.toStdString().c_str(), mask);
@@ -1596,7 +1586,7 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getNestedPor
         }
         Engine_FreeBufString(propsList);
     }
-    
+
     // Добавляем алиасы свойств из UNet (если компонент является UNet)
     try
     {
@@ -1608,7 +1598,7 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getNestedPor
                 component = model;
             else
                 component = model->GetComponentL(fullName.toStdString(), true);
-            
+
             if(component)
             {
                 RDK::UEPtr<RDK::UNet> net = RDK::dynamic_pointer_cast<RDK::UNet>(component);
@@ -1618,7 +1608,7 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getNestedPor
                     // Константы типов свойств определены в rdk_init.h в глобальном пространстве имен
                     unsigned int aliasTypeMask = isInput ? (ptInput | ptPubInput) : (ptOutput | ptPubOutput);
                     std::vector<RDK::UPropertyAlias> aliases = net->GetPropertyAliasesByType(aliasTypeMask);
-                    
+
                     for(const auto& alias : aliases)
                     {
                         Port port;
@@ -1638,7 +1628,7 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getNestedPor
     {
         // Игнорируем ошибки при получении алиасов
     }
-    
+
     // Если нужно включить вложенные порты
     if(includeNested)
     {
@@ -1675,7 +1665,7 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getNestedPor
             Engine_FreeBufString(compList);
         }
     }
-    
+
     return result;
 }
 
@@ -1686,13 +1676,13 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getOwnOutput
     {
         return m_cachedOwnOutputPorts;
     }
-    
+
     QVector<Port> result;
     if(!m_owner || !m_owner->m_application)
         return result;
-    
+
     QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
-    
+
     // Получаем собственные выходные свойства компонента (без точки в пути)
     const char* outputProps = Model_GetComponentPropertiesLookupList(
         fullName.toStdString().c_str(), ptPubOutput | ptOutput);
@@ -1721,11 +1711,11 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getOwnOutput
         }
         Engine_FreeBufString(outputProps);
     }
-    
+
     // Сохраняем в кэш
     m_cachedOwnOutputPorts = result;
     m_portsCacheValid = true;
-    
+
     return result;
 }
 
@@ -1736,13 +1726,13 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getChildOutp
     {
         return m_cachedChildOutputPorts;
     }
-    
+
     QVector<Port> result;
     if(!m_owner || !m_owner->m_application)
         return result;
-    
+
     QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
-    
+
     // Получаем список дочерних компонентов
     const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
     if(compList)
@@ -1777,11 +1767,11 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getChildOutp
         }
         Engine_FreeBufString(compList);
     }
-    
+
     // Сохраняем в кэш
     m_cachedChildOutputPorts = result;
     m_portsCacheValid = true;
-    
+
     return result;
 }
 
@@ -1792,13 +1782,13 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getAliasOutp
     {
         return m_cachedAliasOutputPorts;
     }
-    
+
     QVector<Port> result;
     if(!m_owner || !m_owner->m_application)
         return result;
-    
+
     QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
-    
+
     // Получаем алиасы свойств из UNet (если компонент является UNet)
     try
     {
@@ -1810,7 +1800,7 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getAliasOutp
                 component = model;
             else
                 component = model->GetComponentL(fullName.toStdString(), true);
-            
+
             if(component)
             {
                 RDK::UEPtr<RDK::UNet> net = RDK::dynamic_pointer_cast<RDK::UNet>(component);
@@ -1819,7 +1809,7 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getAliasOutp
                     // Получаем алиасы выходных свойств
                     unsigned int aliasTypeMask = ptOutput | ptPubOutput;
                     std::vector<RDK::UPropertyAlias> aliases = net->GetPropertyAliasesByType(aliasTypeMask);
-                    
+
                     for(const auto& alias : aliases)
                     {
                         Port port;
@@ -1840,11 +1830,11 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getAliasOutp
     {
         // Игнорируем ошибки при получении алиасов
     }
-    
+
     // Сохраняем в кэш
     m_cachedAliasOutputPorts = result;
     m_portsCacheValid = true;
-    
+
     return result;
 }
 
@@ -1855,7 +1845,7 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getOwnInputP
     {
         return m_cachedOwnInputPorts;
     }
-    
+
     // ОПТИМИЗАЦИЯ: проверяем глобальный кэш компонентов
     QString fullName = m_owner ? (m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName) : nodeName;
     ComponentCacheEntry* cacheEntry = m_owner ? m_owner->m_componentCache.getEntry(fullName) : nullptr;
@@ -1866,11 +1856,11 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getOwnInputP
         m_portsCacheValid = true;
         return m_cachedOwnInputPorts;
     }
-    
+
     QVector<Port> result;
     if(!m_owner || !m_owner->m_application)
         return result;
-    
+
     // Получаем собственные входные свойства компонента (без точки в пути)
     const char* inputProps = Model_GetComponentPropertiesLookupList(
         fullName.toStdString().c_str(), ptPubInput | ptInput);
@@ -1899,11 +1889,11 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getOwnInputP
         }
         Engine_FreeBufString(inputProps);
     }
-    
+
     // Сохраняем в локальный кэш
     m_cachedOwnInputPorts = result;
     m_portsCacheValid = true;
-    
+
     // Сохраняем в глобальный кэш
     if(m_owner)
     {
@@ -1920,7 +1910,7 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getOwnInputP
             cacheEntry->timestamp = QDateTime::currentMSecsSinceEpoch();
         }
     }
-    
+
     return result;
 }
 
@@ -1931,13 +1921,13 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getChildInpu
     {
         return m_cachedChildInputPorts;
     }
-    
+
     QVector<Port> result;
     if(!m_owner || !m_owner->m_application)
         return result;
-    
+
     QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
-    
+
     // Получаем список дочерних компонентов
     const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
     if(compList)
@@ -1972,11 +1962,11 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getChildInpu
         }
         Engine_FreeBufString(compList);
     }
-    
+
     // Сохраняем в кэш
     m_cachedChildInputPorts = result;
     m_portsCacheValid = true;
-    
+
     return result;
 }
 
@@ -1987,13 +1977,13 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getAliasInpu
     {
         return m_cachedAliasInputPorts;
     }
-    
+
     QVector<Port> result;
     if(!m_owner || !m_owner->m_application)
         return result;
-    
+
     QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
-    
+
     // Получаем алиасы свойств из UNet (если компонент является UNet)
     try
     {
@@ -2005,7 +1995,7 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getAliasInpu
                 component = model;
             else
                 component = model->GetComponentL(fullName.toStdString(), true);
-            
+
             if(component)
             {
                 RDK::UEPtr<RDK::UNet> net = RDK::dynamic_pointer_cast<RDK::UNet>(component);
@@ -2014,7 +2004,7 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getAliasInpu
                     // Получаем алиасы входных свойств
                     unsigned int aliasTypeMask = ptInput | ptPubInput;
                     std::vector<RDK::UPropertyAlias> aliases = net->GetPropertyAliasesByType(aliasTypeMask);
-                    
+
                     for(const auto& alias : aliases)
                     {
                         Port port;
@@ -2035,11 +2025,11 @@ QVector<UModernDiagramWidget::Port> UModernDiagramWidget::NodeItem::getAliasInpu
     {
         // Игнорируем ошибки при получении алиасов
     }
-    
+
     // Сохраняем в кэш
     m_cachedAliasInputPorts = result;
     m_portsCacheValid = true;
-    
+
     return result;
 }
 
@@ -2047,7 +2037,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
 {
     if(!m_owner || !m_owner->m_application)
         return false;
-    
+
     // ОПТИМИЗАЦИЯ: используем m_connectedLinks для быстрой проверки вместо вызова API
     // Это критично для производительности - вызов Model_GetComponentInternalLinks очень медленный
     bool hasConnection = false;
@@ -2056,7 +2046,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
     int linksWithCategories = 0;
     int linksWithoutCategories = 0;
     QList<PortCategory> foundCategories;  // Для отладки: собираем все найденные категории
-    
+
     // ДЕТАЛЬНОЕ ЛОГИРОВАНИЕ для диагностики PGenerator
     // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
     // bool isPGenerator = (nodeName == "PGenerator");
@@ -2069,14 +2059,14 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
     //     MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
     // }
     bool isPGenerator = false;  // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
-    
+
     for(LinkItem* link : m_connectedLinks)
     {
         if(!link || link->dst() != this)
             continue;  // Пропускаем связи, где этот узел не является получателем
-        
+
         linksChecked++;
-        
+
         // Проверяем категорию целевого порта
         if(link->hasCategories())
         {
@@ -2120,7 +2110,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
             {
                 hasPorts = !m_cachedAliasInputPorts.isEmpty();
             }
-            
+
             if(hasPorts)
             {
                 hasConnection = true;
@@ -2129,7 +2119,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
             }
         }
     }
-    
+
     // Если нашли соединение через быструю проверку, возвращаем результат
     if(hasConnection)
     {
@@ -2142,7 +2132,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
     {
         return false;
     }
-    
+
     // ОПТИМИЗАЦИЯ: если все связи имеют категории, но ни одна из них не совпадает с проверяемой категорией,
     // то соединений для этой категории точно нет - возвращаем false БЕЗ вызова медленного fallback
     bool earlyExitCondition = (linksChecked > 0 && linksWithoutCategories == 0 && !foundCategories.contains(category));
@@ -2169,7 +2159,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
         // }
         return false;
     }
-    
+
     // Логируем информацию о быстрой проверке (только если она не сработала и fallback будет вызван)
     // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
     // if(!usedFastPath && linksChecked > 0)
@@ -2193,16 +2183,16 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
     //         earlyExitReason = QString("found category %1 in links").arg(categoryStr);
     //     else
     //         earlyExitReason = "unknown reason";
-    //     
+    //
     //     QString logMsg = QString("[UModernDiagramWidget] Component: %1, NodeItem: %2, hasConnectionsToInputCategory(%3): fast path failed (checked %4 links, withCategories: %5, withoutCategories: %6, foundCategories: [%7], earlyExitCondition: %8, reason: %9), using fallback")
     //         .arg(componentDisplayName).arg(nodeName).arg(categoryStr).arg(linksChecked).arg(linksWithCategories).arg(linksWithoutCategories).arg(foundCategoriesStr).arg(earlyExitCondition ? "true" : "false").arg(earlyExitReason);
     //     MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
     // }
-    
+
     // Fallback: если быстрая проверка не дала результата, используем старый метод
     // (для старых связей без категорий или для сложных случаев)
     QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
-    
+
     // Получаем список портов категории
     QVector<Port> categoryPorts;
     if(category == PortCategory::Own)
@@ -2217,30 +2207,30 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
     {
         categoryPorts = getAliasInputPorts();
     }
-    
+
     // Для категории Own не возвращаем false сразу, если портов нет
     // Соединения могут быть к свойствам, которые не отображаются в списке портов
     if(categoryPorts.isEmpty() && category != PortCategory::Own)
         return false;
-    
+
     // Получаем все связи компонента
     const char* xmlRaw = Model_GetComponentInternalLinks(m_owner->m_componentName.toStdString().c_str(), nullptr);
     if(!xmlRaw)
         return false;
-    
+
     std::string raw(xmlRaw ? xmlRaw : "");
     Engine_FreeBufString(xmlRaw);
-    
+
     if(raw.empty())
         return false;
-    
+
     RDK::USerStorageXML xml;
     if(!xml.Load(raw, "Links"))
         return false;
-    
+
     RDK::UStringLinksList linkslist;
     xml >> linkslist;
-    
+
     // Проверяем, есть ли связи к портам категории
     for(int i = 0; i < linkslist.GetSize(); ++i)
     {
@@ -2250,16 +2240,16 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
             const auto& connSide = link.Connector[c];
             QString connName = QString::fromStdString(connSide.Name);
             QString connId = QString::fromStdString(connSide.Id);
-            
+
             // Определяем, относится ли соединение к нашему компоненту
             // connId содержит полный путь компонента, например "ComponentName" или "Parent.ComponentName"
             bool isOurComponent = false;
-            
+
             if(m_owner->m_componentName.isEmpty())
             {
                 // Для верхнего уровня (m_componentName пустое)
                 // connId может быть просто именем компонента или полным путем
-                isOurComponent = (connId == nodeName || 
+                isOurComponent = (connId == nodeName ||
                                  connId.endsWith("." + nodeName) ||
                                  connId.startsWith(nodeName + ".") ||
                                  connId == nodeName);
@@ -2268,21 +2258,21 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
             {
                 // Для вложенных уровней
                 QString targetComponentName = m_owner->m_componentName + "." + nodeName;
-                isOurComponent = (connId == targetComponentName || 
+                isOurComponent = (connId == targetComponentName ||
                                  connId.endsWith("." + nodeName) ||
                                  connId == nodeName);
             }
-            
+
             if(isOurComponent)
             {
                 // Извлекаем имя свойства из connName
                 // connName может быть просто именем свойства или "Component.Property"
                 QString propName = connName;
-                
+
                 if(m_owner->m_componentName.isEmpty())
                 {
                     // Для верхнего уровня
-                    // connName может быть просто именем свойства (например, "Input") 
+                    // connName может быть просто именем свойства (например, "Input")
                     // или "Component.Property" (например, "Neuron.Input")
                     if(propName.contains('.'))
                     {
@@ -2317,7 +2307,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
                         }
                     }
                 }
-                
+
                 // Проверяем, относится ли свойство к категории
                 // Сравниваем с полным путем свойства и именем
                 for(const Port& port : categoryPorts)
@@ -2369,7 +2359,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
                     else if(category == PortCategory::Alias)
                     {
                         // Для алиасов проверяем по имени и полному пути
-                        if(port.name == propName || 
+                        if(port.name == propName ||
                            port.fullPath == connName ||
                            port.fullPath == propName ||
                            port.fullPath.endsWith("." + propName))
@@ -2378,7 +2368,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
                         }
                     }
                 }
-                
+
                 // Для категории Own: если портов нет, но connName соответствует формату Own, считаем соединение найденным
                 if(category == PortCategory::Own && categoryPorts.isEmpty())
                 {
@@ -2400,7 +2390,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
                             {
                                 QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
                                 Engine_FreeBufString(compList);
-                                
+
                                 // Если вторая часть НЕ является дочерним компонентом, это собственное свойство
                                 if(!components.contains(parts[1]))
                                 {
@@ -2410,7 +2400,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
                         }
                     }
                 }
-                
+
                 // Для категории Child: проверяем многоуровневые пути
                 if(category == PortCategory::Child)
                 {
@@ -2421,11 +2411,11 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
                     {
                         checkName = checkName.mid(nodeName.length() + 1);
                     }
-                    
+
                     // Проверяем, начинается ли checkName с имени дочернего компонента
                     for(const Port& port : categoryPorts)
                     {
-                        if(checkName.startsWith(port.componentName + ".") || 
+                        if(checkName.startsWith(port.componentName + ".") ||
                            checkName == port.componentName ||
                            connName.contains(port.componentName + "."))
                         {
@@ -2436,7 +2426,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
             }
         }
     }
-    
+
     return false;
 }
 
@@ -2444,7 +2434,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
 {
     if(!m_owner || !m_owner->m_application)
         return false;
-    
+
     // ОПТИМИЗАЦИЯ: используем m_connectedLinks для быстрой проверки вместо вызова API
     // Это критично для производительности - вызов Model_GetComponentInternalLinks очень медленный
     bool hasConnection = false;
@@ -2453,7 +2443,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
     int linksWithCategories = 0;
     int linksWithoutCategories = 0;
     QList<PortCategory> foundCategories;  // Для отладки: собираем все найденные категории
-    
+
     // ДЕТАЛЬНОЕ ЛОГИРОВАНИЕ для диагностики PGenerator
     // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
     // bool isPGenerator = (nodeName == "PGenerator");
@@ -2466,14 +2456,14 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
     //     MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
     // }
     bool isPGenerator = false;  // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
-    
+
     for(LinkItem* link : m_connectedLinks)
     {
         if(!link || link->src() != this)
             continue;  // Пропускаем связи, где этот узел не является источником
-        
+
         linksChecked++;
-        
+
         // Проверяем категорию исходного порта
         if(link->hasCategories())
         {
@@ -2519,7 +2509,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
             {
                 hasPorts = !m_cachedAliasOutputPorts.isEmpty();
             }
-            
+
             if(hasPorts)
             {
                 hasConnection = true;
@@ -2528,13 +2518,13 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
             }
         }
     }
-    
+
     // Если нашли соединение через быструю проверку, возвращаем результат
     if(hasConnection)
     {
         return true;
     }
-    
+
     // ОПТИМИЗАЦИЯ: если все связи имеют категории, но ни одна из них не совпадает с проверяемой категорией,
     // то соединений для этой категории точно нет - возвращаем false БЕЗ вызова медленного fallback
     bool earlyExitCondition = (linksChecked > 0 && linksWithoutCategories == 0 && !foundCategories.contains(category));
@@ -2561,7 +2551,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
         // }
         return false;
     }
-    
+
     // Логируем информацию о быстрой проверке (только если она не сработала и fallback будет вызван)
     // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
     // if(!usedFastPath && linksChecked > 0)
@@ -2585,16 +2575,16 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
     //         earlyExitReason = QString("found category %1 in links").arg(categoryStr);
     //     else
     //         earlyExitReason = "unknown reason";
-    //     
+    //
     //     QString logMsg = QString("[UModernDiagramWidget] Component: %1, NodeItem: %2, hasConnectionsToOutputCategory(%3): fast path failed (checked %4 links, withCategories: %5, withoutCategories: %6, foundCategories: [%7], earlyExitCondition: %8, reason: %9), using fallback")
     //         .arg(componentDisplayName).arg(nodeName).arg(categoryStr).arg(linksChecked).arg(linksWithCategories).arg(linksWithoutCategories).arg(foundCategoriesStr).arg(earlyExitCondition ? "true" : "false").arg(earlyExitReason);
     //     MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
     // }
-    
+
     // Fallback: если быстрая проверка не дала результата, используем старый метод
     // (для старых связей без категорий или для сложных случаев)
     QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
-    
+
     // Получаем список портов категории
     QVector<Port> categoryPorts;
     if(category == PortCategory::Own)
@@ -2609,46 +2599,46 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
     {
         categoryPorts = getAliasOutputPorts();
     }
-    
+
     // Для категории Own не возвращаем false сразу, если портов нет
     // Соединения могут быть к свойствам, которые не отображаются в списке портов
     if(categoryPorts.isEmpty() && category != PortCategory::Own)
         return false;
-    
+
     // Получаем все связи компонента
     const char* xmlRaw = Model_GetComponentInternalLinks(m_owner->m_componentName.toStdString().c_str(), nullptr);
     if(!xmlRaw)
         return false;
-    
+
     std::string raw(xmlRaw ? xmlRaw : "");
     Engine_FreeBufString(xmlRaw);
-    
+
     if(raw.empty())
         return false;
-    
+
     RDK::USerStorageXML xml;
     if(!xml.Load(raw, "Links"))
         return false;
-    
+
     RDK::UStringLinksList linkslist;
     xml >> linkslist;
-    
+
     // Проверяем, есть ли связи от портов категории
     for(int i = 0; i < linkslist.GetSize(); ++i)
     {
         const auto& link = linkslist[i];
         QString itemName = QString::fromStdString(link.Item.Name);
         QString itemId = QString::fromStdString(link.Item.Id);
-        
+
         // Определяем, относится ли соединение к нашему компоненту
         // itemId содержит полный путь компонента, например "ComponentName" или "Parent.ComponentName"
         bool isOurComponent = false;
-        
+
         if(m_owner->m_componentName.isEmpty())
         {
             // Для верхнего уровня (m_componentName пустое)
             // itemId может быть просто именем компонента или полным путем
-            isOurComponent = (itemId == nodeName || 
+            isOurComponent = (itemId == nodeName ||
                              itemId.endsWith("." + nodeName) ||
                              itemId.startsWith(nodeName + ".") ||
                              itemId == nodeName);
@@ -2657,21 +2647,21 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
         {
             // Для вложенных уровней
             QString sourceComponentName = m_owner->m_componentName + "." + nodeName;
-            isOurComponent = (itemId == sourceComponentName || 
+            isOurComponent = (itemId == sourceComponentName ||
                              itemId.endsWith("." + nodeName) ||
                              itemId == nodeName);
         }
-        
+
         if(isOurComponent)
         {
             // Извлекаем имя свойства из itemName
             // itemName может быть просто именем свойства или "Component.Property"
             QString propName = itemName;
-            
+
             if(m_owner->m_componentName.isEmpty())
             {
                 // Для верхнего уровня
-                // itemName может быть просто именем свойства (например, "Output") 
+                // itemName может быть просто именем свойства (например, "Output")
                 // или "Component.Property" (например, "Neuron.Output")
                 if(propName.contains('.'))
                 {
@@ -2706,7 +2696,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
                     }
                 }
             }
-            
+
             // Проверяем, относится ли свойство к категории
             // Сравниваем с полным путем свойства и именем
             for(const Port& port : categoryPorts)
@@ -2758,7 +2748,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
                     else if(category == PortCategory::Alias)
                     {
                         // Для алиасов проверяем по имени и полному пути
-                        if(port.name == propName || 
+                        if(port.name == propName ||
                            port.fullPath == itemName ||
                            port.fullPath == propName ||
                            port.fullPath.endsWith("." + propName))
@@ -2767,7 +2757,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
                         }
                     }
                 }
-                
+
                 // Для категории Own: если портов нет, но itemName соответствует формату Own, считаем соединение найденным
                 if(category == PortCategory::Own && categoryPorts.isEmpty())
                 {
@@ -2789,7 +2779,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
                             {
                                 QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
                                 Engine_FreeBufString(compList);
-                                
+
                                 // Если вторая часть НЕ является дочерним компонентом, это собственное свойство
                                 if(!components.contains(parts[1]))
                                 {
@@ -2799,7 +2789,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
                         }
                     }
                 }
-                
+
                 // Для категории Child: проверяем многоуровневые пути
                 if(category == PortCategory::Child && !categoryPorts.isEmpty())
                 {
@@ -2810,11 +2800,11 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
                     {
                         checkName = checkName.mid(nodeName.length() + 1);
                     }
-                    
+
                     // Проверяем, начинается ли checkName с имени дочернего компонента
                     for(const Port& port : categoryPorts)
                     {
-                        if(checkName.startsWith(port.componentName + ".") || 
+                        if(checkName.startsWith(port.componentName + ".") ||
                            checkName == port.componentName ||
                            itemName.contains(port.componentName + "."))
                         {
@@ -2824,7 +2814,7 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
                 }
             }
         }
-    
+
     return false;
 }
 
@@ -2834,7 +2824,7 @@ void UModernDiagramWidget::NodeItem::hoverEnterEvent(QGraphicsSceneHoverEvent *e
     m_hoveredPort = getPortAtPosition(event->pos());
     update(); // Только визуальная подсветка
     // Убрано: showPortListWidget - окно открывается только при клике
-    
+
     // Set initial tooltip
     if(m_hoveredPort && m_owner)
     {
@@ -2851,13 +2841,13 @@ void UModernDiagramWidget::NodeItem::hoverEnterEvent(QGraphicsSceneHoverEvent *e
 void UModernDiagramWidget::NodeItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     QGraphicsRectItem::hoverMoveEvent(event);
-    
+
     // Throttling: обновляем только если позиция изменилась значительно (минимум 3 пикселя)
     const double minUpdateDistance = 3.0;
     QPointF currentPos = event->pos();
-    bool positionChanged = m_lastHoverMovePos.isNull() || 
+    bool positionChanged = m_lastHoverMovePos.isNull() ||
                           (QLineF(m_lastHoverMovePos, currentPos).length() > minUpdateDistance);
-    
+
     if(!positionChanged)
     {
         // Позиция не изменилась значительно, только обновляем tooltip если нужно
@@ -2873,9 +2863,9 @@ void UModernDiagramWidget::NodeItem::hoverMoveEvent(QGraphicsSceneHoverEvent *ev
         }
         return;
     }
-    
+
     m_lastHoverMovePos = currentPos;
-    
+
     const Port* port = getPortAtPosition(event->pos());
     bool portChanged = (port != m_hoveredPort);
     if(portChanged)
@@ -2884,7 +2874,7 @@ void UModernDiagramWidget::NodeItem::hoverMoveEvent(QGraphicsSceneHoverEvent *ev
         update(); // Только визуальная подсветка
         // Убрано: showPortListWidget - окно открывается только при клике
     }
-    
+
     // Set tooltip based on hover state
     if(m_hoveredPort && m_owner)
     {
@@ -2913,11 +2903,11 @@ void UModernDiagramWidget::NodeItem::showPortListWidget(const QPointF& scenePos)
 {
     if(!m_hoveredPort || !m_owner || !m_portListWidgetProxy)
         return;
-    
+
     // Для категоризированных портов проверяем, есть ли порты для этой категории
-    if(m_hoveredPort->fullPath.isEmpty() && 
-       (m_hoveredPort->category == PortCategory::Own || 
-        m_hoveredPort->category == PortCategory::Child || 
+    if(m_hoveredPort->fullPath.isEmpty() &&
+       (m_hoveredPort->category == PortCategory::Own ||
+        m_hoveredPort->category == PortCategory::Child ||
         m_hoveredPort->category == PortCategory::Alias))
     {
         bool hasPorts = false;
@@ -2953,12 +2943,12 @@ void UModernDiagramWidget::NodeItem::showPortListWidget(const QPointF& scenePos)
                 hasPorts = !getAliasOutputPorts().isEmpty();
             }
         }
-        
+
         // Если портов нет, не показываем дерево портов
         if (!hasPorts)
             return;
     }
-    
+
     // Закрываем все открытые деревья портов других узлов перед открытием нового
     for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
     {
@@ -2967,49 +2957,49 @@ void UModernDiagramWidget::NodeItem::showPortListWidget(const QPointF& scenePos)
             node->hidePortListWidget();
         }
     }
-    
+
     if(m_hideTimer)
         m_hideTimer->stop();
 
     bool shiftPressed = QApplication::keyboardModifiers() & Qt::ShiftModifier;
     updatePortListWidget(m_hoveredPort->isInput, shiftPressed);
-    
+
     // Позиционируем виджет рядом с курсором
     QPointF widgetPos = scenePos + QPointF(20, 20);
-    
+
     // Проверяем границы viewport и корректируем позицию при необходимости
     if(m_owner && m_owner->m_mainView)
     {
         QRectF viewportRect = m_owner->m_mainView->mapToScene(m_owner->m_mainView->viewport()->rect()).boundingRect();
         QRectF widgetRect(widgetPos, QSizeF(m_portListWidget->width(), m_portListWidget->height()));
-        
+
         // Если виджет выходит за правую границу, позиционируем слева от курсора
         if(widgetRect.right() > viewportRect.right())
         {
             widgetPos.setX(scenePos.x() - m_portListWidget->width() - 20);
         }
-        
+
         // Если виджет выходит за нижнюю границу, позиционируем выше курсора
         if(widgetRect.bottom() > viewportRect.bottom())
         {
             widgetPos.setY(scenePos.y() - m_portListWidget->height() - 20);
         }
     }
-    
+
     m_portListWidgetProxy->setPos(widgetPos);
     m_portListWidgetProxy->setVisible(true);
-    
+
     // ИСПРАВЛЕНИЕ: Устанавливаем фокус для работы клавиатуры
     // Сначала устанавливаем фокус на прокси-виджет, затем на сам виджет
     m_portListWidgetProxy->setFocus();
     m_portListWidget->setFocus();
-    
+
     // Принудительно обновляем сцену, чтобы окно стало видимым немедленно
     if(m_owner && m_owner->m_scene)
     {
         m_owner->m_scene->update();
     }
-    
+
     // Устанавливаем текущий элемент, если есть
     if(m_portListWidget->topLevelItemCount() > 0)
     {
@@ -3033,11 +3023,11 @@ void UModernDiagramWidget::NodeItem::hidePortListWidget()
 void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, int column)
 {
     Q_UNUSED(column);
-    
+
     // Логируем вход в функцию в самом начале (используем qDebug для гарантированного вывода)
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO,
         "onPortItemActivated: Function called", 0);
-    
+
     if(!item || !m_owner)
     {
         QString errorMsg = QString("onPortItemActivated: Invalid item or owner (item=%1, owner=%2)")
@@ -3046,28 +3036,28 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
         MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, errorMsg.toStdString().c_str(), 0);
         return;
     }
-    
+
     // Проверяем, что это элемент порта (не компонент)
     if(item->parent() == nullptr)
     {
         return; // Это элемент компонента, не порт
     }
-    
+
     // Получаем данные порта
     QVariant data = item->data(0, Qt::UserRole);
     if(!data.isValid())
     {
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING,
             "onPortItemActivated: Port data is invalid", 0);
         return;
     }
-    
+
     QMap<QString, QVariant> portData = data.value<QMap<QString, QVariant>>();
     bool isInput = portData["isInput"].toBool();
     QString portName = portData["name"].toString();
     QString componentName = portData["componentName"].toString();
     QString fullPath = portData["fullPath"].toString();
-    
+
     // Логируем начало обработки
     QString logMsg = QString("onPortItemActivated: Processing %1 port '%2' in component '%3', activeTempLink=%4")
         .arg(isInput ? "input" : "output")
@@ -3075,42 +3065,42 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
         .arg(componentName)
         .arg(m_owner->m_activeTempLink ? "yes" : "no");
     MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
-    
+
     // НЕ закрываем дерево портов сразу - оно закроется автоматически через таймер
     // Это предотвращает случайные клики на фон сразу после закрытия дерева
     if(m_hideTimer)
     {
         m_hideTimer->stop();
     }
-    
+
     if(isInput)
     {
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO,
             "onPortItemActivated: Input port selected", 0);
-        
+
         // Если выбран входной порт и есть активное соединение - завершаем связь
         // Проверяем наличие активного соединения через m_activeTempLink
         if(m_owner->m_activeTempLink)
         {
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO,
                 "onPortItemActivated: Active connection exists", 0);
-            
+
             // Дополнительная проверка: должны быть установлены исходные данные
-            if(!m_owner->m_activeSourceNode || 
+            if(!m_owner->m_activeSourceNode ||
                m_owner->m_activeSourcePortName.isEmpty())
             {
-                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
+                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING,
                     "onPortItemActivated: Cannot complete connection - source port data is missing", 0);
                 return;
             }
-            
+
             // Формируем полные имена компонентов
             QString srcName = m_owner->m_activeSourceNode->nodeName;
             // Для собственных портов используем nodeName, для дочерних - componentName
             // componentName равен nodeName для собственных портов, поэтому проверяем это
             QString dstName = (componentName.isEmpty() || componentName == nodeName) ? nodeName : componentName;
             QString fullSrc = m_owner->m_componentName.isEmpty() ? srcName : m_owner->m_componentName + "." + srcName;
-            
+
             // Формируем fullDst: если componentName == nodeName, это собственный порт,
             // и мы должны использовать только nodeName (без добавления m_componentName, если оно уже содержит nodeName)
             QString fullDst;
@@ -3130,9 +3120,9 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
                     fullDst = m_owner->m_componentName + "." + dstName;
                 }
             }
-            
+
             // Логируем промежуточные значения для диагностики
-            
+
             // Формируем пути свойств, используя сохраненные копии вместо указателя
             QString srcProp;
             if(m_owner->m_activeSourcePortFullPath.isEmpty())
@@ -3143,11 +3133,11 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
             {
                 srcProp = m_owner->m_activeSourcePortFullPath;
             }
-            
+
             QString dstProp = fullPath.isEmpty() ? portName : fullPath;
-            
+
             // Учитываем вложенные компоненты
-            if(!m_owner->m_activeSourcePortComponentName.isEmpty() && 
+            if(!m_owner->m_activeSourcePortComponentName.isEmpty() &&
                m_owner->m_activeSourcePortComponentName != srcName)
             {
                 srcProp = m_owner->m_activeSourcePortComponentName + "." + srcProp;
@@ -3157,12 +3147,12 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
             {
                 dstProp = componentName + "." + dstProp;
             }
-            
+
             // Логируем параметры перед созданием соединения
             QString preMsg = QString("onPortItemActivated: Creating connection: %1.%2 -> %3.%4")
                 .arg(fullSrc).arg(srcProp).arg(fullDst).arg(dstProp);
             MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, preMsg.toStdString().c_str(), 0);
-            
+
             // Применяем связь к ядру
             int result = Model_CreateLinkByName(
                 fullSrc.toStdString().c_str(),
@@ -3170,8 +3160,8 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
                 fullDst.toStdString().c_str(),
                 dstProp.toStdString().c_str()
             );
-            
-            
+
+
             // Логируем результат создания соединения
             if(result == 0) // Предполагаем, что 0 означает успех
             {
@@ -3185,7 +3175,7 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
                     .arg(fullSrc).arg(srcProp).arg(fullDst).arg(dstProp).arg(result);
                 MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_ERROR, errorMsg.toStdString().c_str(), 0);
             }
-            
+
             // Удаляем временную линию
             if(m_owner->m_activeTempLink)
             {
@@ -3193,25 +3183,25 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
                 delete m_owner->m_activeTempLink;
                 m_owner->m_activeTempLink = nullptr;
             }
-            
+
             // Сбрасываем состояние
             m_owner->m_activeSourceNode = nullptr;
             m_owner->m_activeSourcePort = nullptr;
             m_owner->m_isLineFrozen = false;
             m_owner->m_isWaitingForPortSelection = false;
-            
+
             // Сбрасываем курсор
             if(m_owner->m_mainView)
             {
                 m_owner->m_mainView->unsetCursor();
             }
-            
+
             // Закрываем все открытые деревья портов
             for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
             {
                 node->hidePortListWidget();
             }
-            
+
             // Обновляем схему (перестраиваем связи)
             // Сначала отправляем сигнал, затем перестраиваем связи (чтобы избежать обращения к удаленным объектам)
             emit m_owner->updateComponentsList();
@@ -3226,7 +3216,7 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
         else
         {
             // Логируем предупреждение: попытка завершить соединение без активного соединения
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING,
                 "onPortItemActivated: Attempted to complete connection but no active connection exists", 0);
             return;
         }
@@ -3238,13 +3228,13 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
             .arg(portName);
         // Находим порт в реальных портах (не в категоризированных)
         const Port* selectedPort = nullptr;
-        
+
         // Ищем порт во всех доступных выходных портах
         QVector<Port> allOutputPorts;
         allOutputPorts.append(getOwnOutputPorts());
         allOutputPorts.append(getChildOutputPorts());
         allOutputPorts.append(getAliasOutputPorts());
-        
+
         for(const Port& p : allOutputPorts)
         {
             if(p.name == portName && (componentName.isEmpty() || p.componentName == componentName))
@@ -3253,7 +3243,7 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
                 break;
             }
         }
-        
+
         // Если не нашли, проверяем также вложенные порты
         if(!selectedPort)
         {
@@ -3267,14 +3257,14 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
                 }
             }
         }
-        
+
         if(selectedPort)
         {
             // Логируем успешное начало соединения
             QString successMsg = QString("Connection started from port '%1' in component '%2'")
                 .arg(portName).arg(nodeName);
             MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, successMsg.toStdString().c_str(), 0);
-            
+
             // Сохраняем состояние активной связи
             m_owner->m_activeSourceNode = this;
             m_owner->m_activeSourcePort = selectedPort;
@@ -3296,7 +3286,7 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
                 return;
             }
             m_owner->m_activeSourcePortPos = mapToScene(selectedPort->pos);
-            
+
             // Получаем текущую позицию курсора в сцене для начальной позиции временной линии
             QPointF cursorScenePos;
             if(m_owner->m_mainView)
@@ -3309,26 +3299,26 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
             {
                 cursorScenePos = m_owner->m_activeSourcePortPos;
             }
-            
+
             // Создаем временную линию с сохраненной позицией порта
             m_owner->m_activeTempLink = new LinkItem(this, cursorScenePos, m_owner->m_activeSourcePortPos);
             m_owner->m_scene->addItem(m_owner->m_activeTempLink);
-            
+
             // Сбрасываем состояние заморозки при создании новой связи
             m_owner->m_isLineFrozen = false;
-            
+
             // Обновляем геометрию линии сразу после создания
             m_owner->m_activeTempLink->updateGeometry(cursorScenePos);
-            
+
             // Визуальная обратная связь: изменяем курсор
             if(m_owner->m_mainView)
             {
                 m_owner->m_mainView->setCursor(Qt::CrossCursor);
             }
-            
+
             // Обновляем сцену для немедленного отображения временной линии
             m_owner->m_scene->update();
-            
+
             // Закрываем дерево портов после создания временной линии
             hidePortListWidget();
         }
@@ -3340,7 +3330,7 @@ void UModernDiagramWidget::NodeItem::onPortItemActivated(QTreeWidgetItem* item, 
             MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, errorMsg.toStdString().c_str(), 0);
         }
     }
-    
+
     // Закрываем дерево портов для входного порта тоже (если связь завершена)
     if(isInput && m_owner->m_activeSourceNode && m_owner->m_activeSourcePort)
     {
@@ -3352,18 +3342,18 @@ void UModernDiagramWidget::NodeItem::updatePortListWidget(bool isInput, bool inc
 {
     if(!m_portListWidget || !m_hoveredPort)
         return;
-    
+
     m_portListWidget->clear();
-    
+
     // Получаем список портов с улучшенной логикой
     QVector<Port> availablePorts;
-    
+
     // Проверяем модификаторы для показа всех портов
     bool showAll = QApplication::keyboardModifiers() & Qt::ShiftModifier;
-    
-    if(m_hoveredPort->fullPath.isEmpty() && 
-       (m_hoveredPort->category == PortCategory::Own || 
-        m_hoveredPort->category == PortCategory::Child || 
+
+    if(m_hoveredPort->fullPath.isEmpty() &&
+       (m_hoveredPort->category == PortCategory::Own ||
+        m_hoveredPort->category == PortCategory::Child ||
         m_hoveredPort->category == PortCategory::Alias))
     {
         // Если это категоризированный порт
@@ -3435,7 +3425,7 @@ void UModernDiagramWidget::NodeItem::updatePortListWidget(bool isInput, bool inc
         // Для обычных портов используем стандартную логику с улучшенной поддержкой вложенных портов
         availablePorts = getNestedPorts(isInput, includeNested || showAll);
     }
-    
+
     if(availablePorts.isEmpty())
     {
         // Если портов нет, показываем только текущий порт
@@ -3443,7 +3433,7 @@ void UModernDiagramWidget::NodeItem::updatePortListWidget(bool isInput, bool inc
         rootItem->setText(0, nodeName);
         QTreeWidgetItem* portItem = new QTreeWidgetItem(rootItem);
         portItem->setText(0, m_hoveredPort->name + " (текущий)");
-        
+
         // Сохраняем данные порта
         QMap<QString, QVariant> portData;
         portData["isInput"] = m_hoveredPort->isInput;
@@ -3451,7 +3441,7 @@ void UModernDiagramWidget::NodeItem::updatePortListWidget(bool isInput, bool inc
         portData["componentName"] = m_hoveredPort->componentName;
         portData["fullPath"] = m_hoveredPort->fullPath;
         portItem->setData(0, Qt::UserRole, QVariant::fromValue(portData));
-        
+
         rootItem->setExpanded(true);
         m_portListWidget->setCurrentItem(portItem);
     }
@@ -3460,7 +3450,7 @@ void UModernDiagramWidget::NodeItem::updatePortListWidget(bool isInput, bool inc
         // Группируем порты по компонентам
         QMap<QString, QTreeWidgetItem*> componentItems;
         QTreeWidgetItem* currentPortItem = nullptr;
-        
+
         for(const Port& p : availablePorts)
         {
             QTreeWidgetItem* compItem = nullptr;
@@ -3474,7 +3464,7 @@ void UModernDiagramWidget::NodeItem::updatePortListWidget(bool isInput, bool inc
                 compItem->setText(0, p.componentName);
                 componentItems[p.componentName] = compItem;
             }
-            
+
             QTreeWidgetItem* portItem = new QTreeWidgetItem(compItem);
             QString portText = p.name;
             if(p.name == m_hoveredPort->name && p.componentName == nodeName)
@@ -3483,7 +3473,7 @@ void UModernDiagramWidget::NodeItem::updatePortListWidget(bool isInput, bool inc
                 currentPortItem = portItem;
             }
             portItem->setText(0, portText);
-            
+
             // Сохраняем данные порта
             QMap<QString, QVariant> portData;
             portData["isInput"] = p.isInput;
@@ -3492,13 +3482,13 @@ void UModernDiagramWidget::NodeItem::updatePortListWidget(bool isInput, bool inc
             portData["fullPath"] = p.fullPath;
             portItem->setData(0, Qt::UserRole, QVariant::fromValue(portData));
         }
-        
+
         // Разворачиваем все элементы
         for(QTreeWidgetItem* item : componentItems.values())
         {
             item->setExpanded(true);
         }
-        
+
         // Выделяем текущий порт
         if(currentPortItem)
         {
@@ -3578,7 +3568,7 @@ void UModernDiagramWidget::LinkItem::updateGeometry(const QPointF& cursorOverrid
 {
     if(!m_src)
         return;
-    
+
     QPointF start;
     // Для временной линии используем сохраненную позицию порта, если она задана
     if(m_isTemp && !m_startPos.isNull())
@@ -3602,7 +3592,7 @@ void UModernDiagramWidget::LinkItem::updateGeometry(const QPointF& cursorOverrid
             start = m_src->scenePortPos(true);
         }
     }
-    
+
     QPointF end;
     if(m_dst)
     {
@@ -3694,7 +3684,7 @@ UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
     mainLayout->addWidget(m_mainView);
     // Миникарта скрыта
     m_miniMap->hide();
-    
+
     // Создание кнопки сброса масштаба
     m_resetZoomButton = new QPushButton(this);
     m_resetZoomButton->setText("⟲");
@@ -3703,7 +3693,7 @@ UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
     updateResetZoomButtonStyle();
     m_resetZoomButton->raise();
     connect(m_resetZoomButton, &QPushButton::clicked, this, &UModernDiagramWidget::onResetZoomClicked);
-    
+
     // Позиционируем кнопку при первом создании
     QTimer::singleShot(0, this, [this]() {
         if(m_resetZoomButton)
@@ -3712,7 +3702,7 @@ UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
             m_resetZoomButton->move(width() - m_resetZoomButton->width() - margin, margin);
         }
     });
-    
+
     createContextMenu();
 }
 
@@ -3743,7 +3733,7 @@ UModernDiagramWidget::~UModernDiagramWidget()
 void UModernDiagramWidget::SetApplication(RDK::UApplication* app)
 {
     m_application = app;
-    
+
     // Автоматическая загрузка кэша при установке приложения
     if(m_application)
     {
@@ -3751,14 +3741,14 @@ void UModernDiagramWidget::SetApplication(RDK::UApplication* app)
         QString projectPath = QString::fromLocal8Bit(m_application->GetProjectPath().c_str());
         QString logMsg = QString("[UModernDiagramWidget] SetApplication called, projectPath: '%1'").arg(projectPath.isEmpty() ? "<empty>" : projectPath);
         MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
-        
+
         // Сначала пробуем загрузить бинарный формат (быстрее)
         QString binPath = getCacheFilePath("bin");
         QString jsonPath = getCacheFilePath("json");
-        
+
         logMsg = QString("[UModernDiagramWidget] Attempting to load cache from binary: %1").arg(binPath.isEmpty() ? "<empty>" : binPath);
         MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
-        
+
         bool loaded = loadComponentCacheFromFile(binPath, true);
         if(loaded)
         {
@@ -3770,7 +3760,7 @@ void UModernDiagramWidget::SetApplication(RDK::UApplication* app)
             // Если бинарный не найден, пробуем JSON
             logMsg = QString("[UModernDiagramWidget] Binary cache not found, attempting JSON: %1").arg(jsonPath.isEmpty() ? "<empty>" : jsonPath);
             MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
-            
+
             loaded = loadComponentCacheFromFile(jsonPath, false);
             if(loaded)
             {
@@ -3804,26 +3794,26 @@ void UModernDiagramWidget::Reload()
     // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
     // QString componentDisplayName = m_componentName.isEmpty() ? "root" : m_componentName;
     // NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UModernDiagramWidget.Reload"), componentDisplayName);
-    
+
     // Сохраняем текущее состояние viewport перед перезагрузкой
     // Сохраняем только если сцена уже содержит элементы (компонент был загружен ранее)
     if(!m_componentName.isEmpty() && !m_scene->items().isEmpty())
     {
         saveCurrentViewState();
     }
-    
+
     // Оптимизация: проверяем кэш ПЕРЕД clearScene()
     bool structureUnchanged = false;
     if(!m_componentName.isEmpty() && m_levelCache.contains(m_componentName))
     {
         const SceneCache& cache = m_levelCache[m_componentName];
-        
+
         // Проверяем, изменилась ли структура компонентов
         const char* compRaw = Model_GetComponentsNameList(m_componentName.toStdString().c_str());
         QString compListStr = QString::fromUtf8(compRaw ? compRaw : "");
         QStringList currentComponents = compListStr.split(",", Qt::SkipEmptyParts);
         Engine_FreeBufString(compRaw);
-        
+
         // Сравниваем списки компонентов
         bool structureChanged = (currentComponents.size() != cache.componentNames.size());
         if(!structureChanged)
@@ -3835,9 +3825,9 @@ void UModernDiagramWidget::Reload()
             sortedCached.sort();
             structureChanged = (sortedCurrent != sortedCached);
         }
-        
+
         structureUnchanged = !structureChanged;
-        
+
         // ВРЕМЕННО ОТКЛЮЧЕНО: кэш указателей вызывает падения при повторном входе
         // Проблема: после clearScene() указатели становятся невалидными
         // TODO: переделать кэш на сохранение данных вместо указателей
@@ -3861,24 +3851,24 @@ void UModernDiagramWidget::Reload()
             invalidateLevelCache(m_componentName);
         }
     }
-    
+
     // Оптимизация: отключаем обновления во время перестройки для ускорения
     setUpdatesEnabled(false);
     if(m_mainView)
         m_mainView->setUpdatesEnabled(false);
-    
+
     // Удалено избыточное логирование - создавало спам в INFO логах
     clearScene();
     buildScene();
-    
+
     // Включаем обновления обратно
     setUpdatesEnabled(true);
     if(m_mainView)
         m_mainView->setUpdatesEnabled(true);
-    
+
     // Восстанавливаем состояние viewport для текущего компонента
     restoreViewState(m_componentName);
-    
+
     // Логируем результат профилирования
     // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
     // qint64 elapsed = telemetry.Elapsed();
@@ -3907,9 +3897,9 @@ void UModernDiagramWidget::clearScene()
     int nodesCount = m_nodes.size();
     int linksCount = m_links.size();
     // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
-    // NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UModernDiagramWidget.clearScene"), 
+    // NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UModernDiagramWidget.clearScene"),
     //     componentDisplayName + " (" + QString::number(nodesCount) + " nodes)");
-    
+
     // ВРЕМЕННО ОТКЛЮЧЕНО: сохранение в кэш вызывает падения при повторном входе
     // Проблема: после clearScene() указатели становятся невалидными
     // TODO: переделать кэш на сохранение данных вместо указателей
@@ -3920,7 +3910,7 @@ void UModernDiagramWidget::clearScene()
         saveSceneToCache(m_componentName);
     }
     */
-    
+
     // Перед очисткой сцены обнуляем указатели на прокси-виджеты,
     // чтобы предотвратить двойное удаление в деструкторе NodeItem.
     // Сцена владеет прокси-виджетами и удалит их при clear().
@@ -3938,7 +3928,7 @@ void UModernDiagramWidget::clearScene()
             node->m_connectedLinks.clear();
         }
     }
-    
+
     m_nodes.clear();
     m_nodeByName.clear();
     m_links.clear();
@@ -3952,7 +3942,7 @@ void UModernDiagramWidget::clearScene()
     m_isLineFrozen = false;
     m_frozenTargetPortPos = QPointF(0, 0);
     m_normalizationOffset = QPointF(0, 0);
-    
+
     // Логируем результат профилирования
     // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
     // qint64 elapsed = telemetry.Elapsed();
@@ -3986,20 +3976,20 @@ void UModernDiagramWidget::buildScene()
     QStringList components = compListStr.split(",", Qt::SkipEmptyParts);
     Engine_FreeBufString(compRaw);
     // Удалено избыточное логирование - создавало спам в INFO логах
-    
+
     // Обновляем имя телеметрии с количеством узлов
     // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
     // telemetry.Stop();
-    // NMSDK::UGuiTelemetryScope telemetry2(QStringLiteral("UModernDiagramWidget.buildScene"), 
+    // NMSDK::UGuiTelemetryScope telemetry2(QStringLiteral("UModernDiagramWidget.buildScene"),
     //     componentDisplayName + " (" + QString::number(components.size()) + " nodes)");
 
     // Оптимизация: кэшируем имена классов компонентов для минимизации вызовов API
     QHash<QString, QString> classNameCache;
-    
+
     // Оптимизация: кэшируем координаты компонентов, чтобы не вызывать loadCoord() дважды
     QHash<QString, QPointF> coordCache;
     QHash<QString, bool> coordLoadedCache;
-    
+
     int idx = 0;
     bool coordsLoaded = false;
     QPointF minKernel(0,0);
@@ -4010,7 +4000,7 @@ void UModernDiagramWidget::buildScene()
         QString fullName = m_componentName.isEmpty() ? comp : m_componentName + "." + comp;
         QPointF kernelPos;
         bool loaded = false;
-        
+
         // Пытаемся взять координаты из сессионного кэша компонентов
         ComponentCacheEntry* cacheEntry = m_componentCache.getEntry(fullName);
         bool usedCache = false;
@@ -4023,7 +4013,7 @@ void UModernDiagramWidget::buildScene()
         else
         {
             loaded = loadCoord(fullName, kernelPos);
-            
+
             // Сохраняем координаты в кэш для ускорения последующих Reload
             if(cacheEntry)
             {
@@ -4040,10 +4030,10 @@ void UModernDiagramWidget::buildScene()
                 m_componentCache.setEntry(fullName, newEntry);
             }
         }
-        
+
         coordCache[fullName] = kernelPos;
         coordLoadedCache[fullName] = loaded;
-        
+
         if(loaded)
         {
             coordsLoaded = true;
@@ -4059,7 +4049,7 @@ void UModernDiagramWidget::buildScene()
             }
         }
     }
-    
+
     // Вычисляем смещение для визуальной нормализации (только для отображения)
     // Это смещение НЕ сохраняется в ядре и пересчитывается при каждой загрузке
     QPointF minScenePos = coordsLoaded ? scenePosFromKernel(minKernel) : QPointF(0,0);
@@ -4067,15 +4057,15 @@ void UModernDiagramWidget::buildScene()
     // ВАЖНО: это смещение используется только для визуального отображения, координаты в ядре остаются абсолютными
     m_normalizationOffset = minScenePos;
     // Удалено избыточное логирование - создавало спам в INFO логах
-    
+
     // Оптимизация: создаем все узлы сначала, затем добавляем в сцену пакетами
     QList<NodeItem*> nodesToAdd;
     QHash<QString, QPointF> nodePositions;
-    
+
     for(const QString& comp : components)
     {
         QString fullName = m_componentName.isEmpty() ? comp : m_componentName + "." + comp;
-        
+
         // Кэшируем имя класса для минимизации вызовов API
         QString cls;
         bool classNameFromCache = false;
@@ -4096,7 +4086,7 @@ void UModernDiagramWidget::buildScene()
             cls = QString::fromUtf8(clsRaw ? clsRaw : "");
             Engine_FreeBufString(clsRaw);
             classNameCache[fullName] = cls;
-            
+
             // Сохраняем имя класса в сессионный кэш для ускорения последующих Reload
             if(cacheEntry)
             {
@@ -4127,13 +4117,16 @@ void UModernDiagramWidget::buildScene()
         {
             loaded = QPointF((idx%4)*180, (idx/4)*140);
         }
-        
+
         nodesToAdd.append(node);
         nodePositions[comp] = loaded;
         m_nodeByName.insert(comp, node);
         idx++;
     }
-    
+
+    // Устанавливаем флаг, чтобы предотвратить сохранение координат во время инициализации
+    m_isBuildingScene = true;
+
     // Добавляем узлы в сцену пакетами
     for(auto* node : nodesToAdd)
     {
@@ -4145,7 +4138,10 @@ void UModernDiagramWidget::buildScene()
         // Инициализируем сохраненную позицию для перемещения группы
         m_lastNodePositions[node] = loaded;
     }
-    
+
+    // Сбрасываем флаг после установки всех позиций
+    m_isBuildingScene = false;
+
     if(!coordsLoaded)
     {
         // нет координат из ядра — оставляем как есть и не перезаписываем в ядро,
@@ -4158,19 +4154,19 @@ void UModernDiagramWidget::buildScene()
     setUpdatesEnabled(true);
     if(m_mainView)
         m_mainView->setUpdatesEnabled(true);
-    
+
     // Создаем связи после всех узлов
     buildLinks();
-    
+
     // ВРЕМЕННО ОТКЛЮЧЕНО: сохранение в кэш вызывает падения при повторном входе
     // Проблема: после clearScene() указатели становятся невалидными
     // TODO: переделать кэш на сохранение данных вместо указателей
     // saveSceneToCache(m_componentName);
-    
+
     // Логируем результат профилирования buildScene
     // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
     // qint64 elapsed = telemetry2.Elapsed();
-    // 
+    //
     // // Подсчитываем статистику использования кэша
     // int coordsFromCache = 0;
     // int classNamesFromCache = 0;
@@ -4186,15 +4182,102 @@ void UModernDiagramWidget::buildScene()
     //             classNamesFromCache++;
     //     }
     // }
-    // 
+    //
     // QString details = QString("created %1 nodes, coordsFromCache: %2/%3, classNamesFromCache: %4/%3")
     //     .arg(components.size()).arg(coordsFromCache).arg(components.size()).arg(classNamesFromCache);
     // QString logMsg = QString("[UModernDiagramWidget] Component: %1, Operation: buildScene, Duration: %2ms, Details: %3")
     //     .arg(componentDisplayName).arg(elapsed).arg(details);
     // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
-    
+
     // Планируем отложенное сохранение кэша после завершения buildScene
     scheduleCacheSave();
+}
+
+UModernDiagramWidget::NodeItem* UModernDiagramWidget::addSingleComponent(const QString& fullName)
+{
+    if(!m_application)
+        return nullptr;
+
+    // Извлекаем короткое имя компонента
+    QString shortName = fullName;
+    if(!m_componentName.isEmpty())
+    {
+        QString prefix = m_componentName + ".";
+        if(shortName.startsWith(prefix))
+        {
+            shortName = shortName.mid(prefix.length());
+        }
+    }
+
+    // Проверяем, что компонент еще не добавлен
+    if(m_nodeByName.contains(shortName))
+    {
+        return m_nodeByName.value(shortName);
+    }
+
+    // Получаем имя класса
+    const char* clsRaw = Model_GetComponentClassName(fullName.toStdString().c_str());
+    QString cls = QString::fromUtf8(clsRaw ? clsRaw : "");
+    Engine_FreeBufString(clsRaw);
+
+    // Загружаем координаты из ядра
+    QPointF kernelPos;
+    bool coordLoaded = loadCoord(fullName, kernelPos);
+
+    // Вычисляем нормализованную позицию используя текущий m_normalizationOffset
+    // Это важно - мы НЕ пересчитываем m_normalizationOffset, чтобы не сдвигать существующие компоненты
+    QPointF loaded;
+    if(coordLoaded)
+    {
+        QPointF absoluteScenePos = scenePosFromKernel(kernelPos);
+        loaded = absoluteScenePos - m_normalizationOffset;
+    }
+    else
+    {
+        // Если координат нет, размещаем в сетке
+        int idx = m_nodes.size();
+        loaded = QPointF((idx%4)*180, (idx/4)*140);
+    }
+
+    // Создаем узел
+    auto* node = new NodeItem(this, shortName, cls);
+
+    // Устанавливаем флаг, чтобы предотвратить сохранение координат во время инициализации
+    m_isBuildingScene = true;
+
+    // Добавляем узел в сцену
+    m_scene->addItem(node);
+    m_nodes.append(node);
+    m_nodeByName.insert(shortName, node);
+    node->setPos(loaded);
+    m_lastNodePositions[node] = loaded;
+
+    // Сбрасываем флаг
+    m_isBuildingScene = false;
+
+    // Обновляем кэш компонента
+    ComponentCacheEntry* cacheEntry = m_componentCache.getEntry(fullName);
+    if(cacheEntry)
+    {
+        cacheEntry->className = cls;
+        cacheEntry->kernelPos = kernelPos;
+        cacheEntry->hasKernelPos = coordLoaded;
+        cacheEntry->timestamp = QDateTime::currentMSecsSinceEpoch();
+    }
+    else
+    {
+        ComponentCacheEntry newEntry;
+        newEntry.className = cls;
+        newEntry.kernelPos = kernelPos;
+        newEntry.hasKernelPos = coordLoaded;
+        newEntry.timestamp = QDateTime::currentMSecsSinceEpoch();
+        m_componentCache.setEntry(fullName, newEntry);
+    }
+
+    // Обновляем связи (это добавит связи для нового компонента)
+    rebuildLinks();
+
+    return node;
 }
 
 void UModernDiagramWidget::layoutGrid()
@@ -4251,13 +4334,13 @@ void UModernDiagramWidget::buildLinks()
     // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
     // QString componentDisplayName = m_componentName.isEmpty() ? "root" : m_componentName;
     // NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UModernDiagramWidget.buildLinks"), componentDisplayName);
-    
+
     // Оптимизация: отключаем обновления во время массового создания связей
     bool updatesWereEnabled = updatesEnabled();
     setUpdatesEnabled(false);
     if(m_mainView)
         m_mainView->setUpdatesEnabled(false);
-    
+
     const char* xmlRaw = Model_GetComponentInternalLinks(m_componentName.toStdString().c_str(), nullptr);
     if(!xmlRaw)
     {
@@ -4293,11 +4376,11 @@ void UModernDiagramWidget::buildLinks()
     xml >> linkslist;
     Engine_FreeBufString(xmlRaw);
     // Удалено избыточное логирование - создавало спам в INFO логах
-    
+
     // Обновляем имя телеметрии с количеством связей
     // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
     // telemetry.Stop();
-    // NMSDK::UGuiTelemetryScope telemetry2(QStringLiteral("UModernDiagramWidget.buildLinks"), 
+    // NMSDK::UGuiTelemetryScope telemetry2(QStringLiteral("UModernDiagramWidget.buildLinks"),
     //     componentDisplayName + " (" + QString::number(linkslist.GetSize()) + " links)");
 
     QPointF minPos = currentMinScenePos();
@@ -4337,7 +4420,7 @@ void UModernDiagramWidget::buildLinks()
     // Оптимизация: создаем все связи сначала, затем добавляем в сцену пакетами
     QList<LinkItem*> linksToAdd;
     QHash<QPair<NodeItem*, QString>, PortCategory> portCategoryCache;  // Кэш для determinePortCategory
-    
+
     int added = 0;
     int skipped = 0;
     for(int i=0;i<linkslist.GetSize();++i)
@@ -4358,14 +4441,14 @@ void UModernDiagramWidget::buildLinks()
                 srcNode = resolveById(QString::fromStdString(itemId));
             if(!dstNode)
                 dstNode = resolveById(QString::fromStdString(connId));
-            
+
             // Если srcNode не найден, пропускаем связь (не можем определить категорию источника)
             if(!srcNode)
             {
                 skipped++;
                 continue;
             }
-            
+
             // Оптимизация: кэшируем результаты determinePortCategory для источника
             QPair<NodeItem*, QString> srcKey(srcNode, itemName);
             PortCategory srcCategory;
@@ -4378,12 +4461,12 @@ void UModernDiagramWidget::buildLinks()
                 srcCategory = srcNode->determinePortCategory(itemName, false);
                 portCategoryCache[srcKey] = srcCategory;
             }
-            
+
             // Для определения категории входного порта нужно нормализовать connName
             QString normalizedConnName = connName;
             QString dstNodeName;
             QString connIdStr = QString::fromStdString(connId);
-            
+
             // Если dstNode найден, используем его имя для нормализации
             if(dstNode)
             {
@@ -4412,7 +4495,7 @@ void UModernDiagramWidget::buildLinks()
                     dstNodeName = dot >= 0 ? connName.left(dot) : connName;
                 }
             }
-            
+
             // На верхнем уровне (m_componentName.isEmpty()) connName уже является относительным путем
             // и не требует нормализации через удаление dstNodeName
             // НО: если connName - это просто имя свойства (без точки), а connId содержит путь к дочернему компоненту,
@@ -4466,7 +4549,7 @@ void UModernDiagramWidget::buildLinks()
                     {
                         // Если connId указывает на dstNode, используем connName как есть
                         // (он уже является относительным путем)
-                        if(connIdStr == dstNodeName || 
+                        if(connIdStr == dstNodeName ||
                            connIdStr.endsWith("." + dstNodeName) ||
                            connIdStr == fullPath ||
                            connIdStr.endsWith("." + fullPath))
@@ -4476,7 +4559,7 @@ void UModernDiagramWidget::buildLinks()
                     }
                 }
             }
-            
+
             // Определяем категорию целевого порта
             PortCategory dstCategory;
             if(dstNode)
@@ -4521,10 +4604,10 @@ void UModernDiagramWidget::buildLinks()
                     dstCategory = PortCategory::Own;
                 }
             }
-            
+
             // Создаем LinkItem с категориями портов
             auto* l = new LinkItem(srcNode, dstNode, srcCategory, dstCategory);
-            
+
             if(dstNode)
             {
                 // Обычная связь между узлами в сцене - добавляем в сцену
@@ -4543,7 +4626,7 @@ void UModernDiagramWidget::buildLinks()
                 srcNode->m_connectedLinks.append(l);
                 added++;
                 // Не добавляем в linksToAdd, чтобы не добавлять в сцену
-                
+
                 // ДЕТАЛЬНОЕ ЛОГИРОВАНИЕ для диагностики внешних связей
                 // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
                 // if(srcNode->nodeName == "PGenerator")
@@ -4558,17 +4641,17 @@ void UModernDiagramWidget::buildLinks()
             // Удалено избыточное логирование - создавало спам в INFO логах
         }
     }
-    
+
     // Добавляем все связи в сцену пакетами
     for(auto* l : linksToAdd)
     {
         m_scene->addItem(l);
     }
-    
+
     // Вызываем updateGeometry() для всех связей после добавления в сцену
     // Профилирование: измеряем время обновления геометрии всех связей
     // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
-    // NMSDK::UGuiTelemetryScope telemetry3(QStringLiteral("UModernDiagramWidget.LinkItem.updateGeometry"), 
+    // NMSDK::UGuiTelemetryScope telemetry3(QStringLiteral("UModernDiagramWidget.LinkItem.updateGeometry"),
     //     componentDisplayName + " (" + QString::number(linksToAdd.size()) + " links)");
     for(auto* l : linksToAdd)
     {
@@ -4577,7 +4660,7 @@ void UModernDiagramWidget::buildLinks()
     // telemetry3.Stop();
     // qint64 updateGeometryElapsed = telemetry3.Elapsed();
     qint64 updateGeometryElapsed = 0;  // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
-    
+
     // Инвалидируем кэш paint() для всех узлов после создания связей
     for(auto* node : m_nodes)
     {
@@ -4585,12 +4668,12 @@ void UModernDiagramWidget::buildLinks()
         // НЕ инвалидируем кэш портов - они не меняются при создании связей
         // node->m_portsCacheValid = false;
     }
-    
+
     // Включаем обновления обратно
     setUpdatesEnabled(updatesWereEnabled);
     if(m_mainView)
         m_mainView->setUpdatesEnabled(updatesWereEnabled);
-    
+
     // Логируем результат профилирования
     // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
     // qint64 elapsed = telemetry2.Elapsed();
@@ -4609,7 +4692,7 @@ void UModernDiagramWidget::rebuildLinks()
         // Инвалидируем кэш paint() при изменении связей
         node->m_cacheValid = false;
     }
-    
+
     // Удаляем все существующие связи
     for(auto* link : m_links)
     {
@@ -4617,16 +4700,16 @@ void UModernDiagramWidget::rebuildLinks()
         delete link;
     }
     m_links.clear();
-    
+
     // Перестраиваем связи
     buildLinks();
-    
+
     // Инвалидируем кэш paint() для всех узлов после перестройки связей
     for(auto* node : m_nodes)
     {
         node->m_cacheValid = false;
     }
-    
+
     // Инвалидируем кэш уровня при изменении связей
     if(!m_componentName.isEmpty())
     {
@@ -4638,7 +4721,7 @@ void UModernDiagramWidget::saveSceneToCache(const QString& componentName)
 {
     if(componentName.isEmpty() || m_nodes.isEmpty())
         return;
-    
+
     // ВАЖНО: сохраняем кэш только если элементы еще в сцене (не были удалены)
     // Проверяем, что хотя бы один узел еще в сцене
     bool hasValidNodes = false;
@@ -4652,20 +4735,20 @@ void UModernDiagramWidget::saveSceneToCache(const QString& componentName)
     }
     if(!hasValidNodes)
         return;  // Элементы уже удалены, не сохраняем в кэш
-    
+
     SceneCache cache;
     cache.nodes = m_nodes;
     cache.links = m_links;
     cache.nodeByName = m_nodeByName;
     cache.lastNodePositions = m_lastNodePositions;
     cache.normalizationOffset = m_normalizationOffset;
-    
+
     // Сохраняем список компонентов для проверки изменений структуры
     const char* compRaw = Model_GetComponentsNameList(componentName.toStdString().c_str());
     QString compListStr = QString::fromUtf8(compRaw ? compRaw : "");
     cache.componentNames = compListStr.split(",", Qt::SkipEmptyParts);
     Engine_FreeBufString(compRaw);
-    
+
     cache.isValid = true;
     m_levelCache[componentName] = cache;
 }
@@ -4674,23 +4757,23 @@ void UModernDiagramWidget::restoreSceneFromCache(const QString& componentName)
 {
     if(componentName.isEmpty() || !m_levelCache.contains(componentName))
         return;
-    
+
     const SceneCache& cache = m_levelCache[componentName];
     if(!cache.isValid)
         return;
-    
+
     // Оптимизация: отключаем обновления во время восстановления
     setUpdatesEnabled(false);
     if(m_mainView)
         m_mainView->setUpdatesEnabled(false);
-    
+
     // Восстанавливаем данные
     m_nodes = cache.nodes;
     m_links = cache.links;
     m_nodeByName = cache.nodeByName;
     m_lastNodePositions = cache.lastNodePositions;
     m_normalizationOffset = cache.normalizationOffset;
-    
+
     // Добавляем узлы и связи обратно в сцену
     // ВАЖНО: элементы из кэша должны быть валидными, так как мы не вызываем clearScene()
     // при восстановлении из кэша. Но на всякий случай проверяем валидность через scene()
@@ -4707,14 +4790,14 @@ void UModernDiagramWidget::restoreSceneFromCache(const QString& componentName)
                 // Указатель невалидный, пропускаем этот узел
                 continue;
             }
-            
+
             if(!nodeScene)
             {
                 m_scene->addItem(node);
             }
         }
     }
-    
+
     for(auto* link : m_links)
     {
         if(link)
@@ -4727,7 +4810,7 @@ void UModernDiagramWidget::restoreSceneFromCache(const QString& componentName)
                 // Указатель невалидный, пропускаем эту связь
                 continue;
             }
-            
+
             if(!linkScene)
             {
                 m_scene->addItem(link);
@@ -4741,7 +4824,7 @@ void UModernDiagramWidget::restoreSceneFromCache(const QString& componentName)
             }
         }
     }
-    
+
     // Включаем обновления обратно
     setUpdatesEnabled(true);
     if(m_mainView)
@@ -4765,7 +4848,7 @@ void UModernDiagramWidget::invalidateLevelCache(const QString& componentName)
 void UModernDiagramWidget::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
-    
+
     // Позиционируем кнопку сброса масштаба в правом верхнем углу
     if(m_resetZoomButton)
     {
@@ -4790,7 +4873,7 @@ void UModernDiagramWidget::keyPressEvent(QKeyEvent *event)
                     if(currentItem && currentItem->parent() != nullptr) // Проверяем, что это элемент порта (не категория)
                     {
                         // Логируем через qDebug для гарантированного вывода
-                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO,
                             "keyPressEvent: Enter pressed, processing current item from port list", 0);
                         node->onPortItemActivated(currentItem, 0);
                         event->accept();
@@ -4804,7 +4887,7 @@ void UModernDiagramWidget::keyPressEvent(QKeyEvent *event)
         }
         // Если окно выбора портов не открыто, передаем событие дальше (не отменяем соединение!)
     }
-    
+
     // Обработка Esc для отмены активной связи и закрытия окон со списком портов
     if(event->key() == Qt::Key_Escape)
     {
@@ -4829,24 +4912,24 @@ void UModernDiagramWidget::keyPressEvent(QKeyEvent *event)
                 return;
             }
         }
-        
+
         // Если ожидается выбор порта из окна выбора, отменяем это состояние
         if(m_isWaitingForPortSelection)
         {
             m_isWaitingForPortSelection = false;
             m_isLineFrozen = false;
-            
+
             // Закрываем все открытые деревья портов
             for(NodeItem* node : m_nodes)
             {
                 node->hidePortListWidget();
             }
-            
+
             // Возвращаемся в состояние создания соединения (временная линия продолжает следовать за мышью)
             event->accept();
             return;
         }
-        
+
         if(m_activeTempLink)
         {
             m_scene->removeItem(m_activeTempLink);
@@ -4856,28 +4939,28 @@ void UModernDiagramWidget::keyPressEvent(QKeyEvent *event)
             m_activeSourcePort = nullptr;
             m_isLineFrozen = false;
             m_isWaitingForPortSelection = false;
-            
+
             // Сбрасываем курсор
             if(m_mainView)
             {
                 m_mainView->unsetCursor();
             }
         }
-        
+
         // Закрываем все открытые деревья портов (даже если нет активной связи)
         for(NodeItem* node : m_nodes)
         {
             node->hidePortListWidget();
         }
-        
+
         event->accept();
         return;
     }
-    
+
     if(event->key() == Qt::Key_Delete)
     {
         QList<QGraphicsItem*> selected = m_scene->selectedItems();
-        
+
         // Собираем все выделенные NodeItem
         QList<NodeItem*> nodesToDelete;
         for(QGraphicsItem* it : selected)
@@ -4888,7 +4971,7 @@ void UModernDiagramWidget::keyPressEvent(QKeyEvent *event)
                 nodesToDelete.append(node);
             }
         }
-        
+
         // Удаляем все выделенные компоненты через универсальный метод
         if(!nodesToDelete.isEmpty())
         {
@@ -5013,7 +5096,7 @@ void ModernScene::pollHover()
     // Берем первую view (у нас одна основная)
     QGraphicsView* view = views().first();
     QPointF scenePos = view->mapToScene(view->mapFromGlobal(QCursor::pos()));
-    
+
     // Оптимизация: проверяем, изменилась ли позиция курсора значительно
     // Если позиция не изменилась более чем на 5 пикселей, пропускаем обновление hover для узлов
     const double minHoverDistance = 5.0;
@@ -5023,21 +5106,21 @@ void ModernScene::pollHover()
         // Позиция не изменилась значительно, но все равно обновляем временную линию если она активна
         if(m_owner->m_activeTempLink && !m_owner->m_isWaitingForPortSelection)
         {
-            QPointF targetPos = m_owner->m_isLineFrozen ? 
+            QPointF targetPos = m_owner->m_isLineFrozen ?
                                 m_owner->m_frozenTargetPortPos : scenePos;
             m_owner->m_activeTempLink->updateGeometry(targetPos);
         }
         return;
     }
     m_lastHoverPos = scenePos;
-    
+
     // Оптимизация: пропускаем обновление hover во время обработки событий мыши
     // Это предотвращает задержки при клике
     if(m_isProcessingMouseEvent)
     {
         return;
     }
-    
+
     // Получаем видимую область viewport для оптимизации
     QRectF visibleRect = view->mapToScene(view->viewport()->rect()).boundingRect();
 
@@ -5046,10 +5129,10 @@ void ModernScene::pollHover()
     {
         const double portFreezeRadius = 35.0; // Радиус буферной зоны вокруг порта (пиксели)
         const double widgetFreezeDistance = 60.0; // Расстояние до окна дерева портов (пиксели)
-        
+
         bool shouldFreezeLine = false;
         QPointF targetPortPos;
-        
+
         // Проверяем буферную зону вокруг входного порта
         QPointF portPos;
         UModernDiagramWidget::NodeItem* portNode = nullptr;
@@ -5063,7 +5146,7 @@ void ModernScene::pollHover()
                 targetPortPos = portPos;
             }
         }
-        
+
         // Проверяем буферную зону вокруг окна дерева портов
         if(!shouldFreezeLine)
         {
@@ -5073,7 +5156,7 @@ void ModernScene::pollHover()
                 {
                     QRectF widgetRect = node->m_portListWidgetProxy->mapToScene(
                         node->m_portListWidgetProxy->boundingRect()).boundingRect();
-                    QRectF expandedRect = widgetRect.adjusted(-widgetFreezeDistance, -widgetFreezeDistance, 
+                    QRectF expandedRect = widgetRect.adjusted(-widgetFreezeDistance, -widgetFreezeDistance,
                                                                   widgetFreezeDistance, widgetFreezeDistance);
                     if(expandedRect.contains(scenePos))
                     {
@@ -5102,7 +5185,7 @@ void ModernScene::pollHover()
                 }
             }
         }
-        
+
         // Проверяем, есть ли видимое окно выбора портов - если есть, не обновляем временную линию
         bool hasVisiblePortListWidget = false;
         for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
@@ -5113,19 +5196,19 @@ void ModernScene::pollHover()
                 break;
             }
         }
-        
+
         // Обновляем состояние заморозки
         m_owner->m_isLineFrozen = shouldFreezeLine;
         if(shouldFreezeLine)
         {
             m_owner->m_frozenTargetPortPos = targetPortPos;
         }
-        
+
         // Обновляем геометрию временной линии только если не ожидается выбор порта
         // и нет видимого окна выбора портов
         if(!m_owner->m_isWaitingForPortSelection && !hasVisiblePortListWidget)
         {
-            QPointF targetPos = m_owner->m_isLineFrozen ? 
+            QPointF targetPos = m_owner->m_isLineFrozen ?
                                 m_owner->m_frozenTargetPortPos : scenePos;
             m_owner->m_activeTempLink->updateGeometry(targetPos);
         }
@@ -5152,7 +5235,7 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     // Устанавливаем флаг обработки событий мыши для пропуска pollHover
     m_isProcessingMouseEvent = true;
-    
+
     // Обработка правого клика для отмены активной связи
     if(event->button() == Qt::RightButton && m_owner->m_activeTempLink)
     {
@@ -5163,23 +5246,23 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         m_owner->m_activeSourcePort = nullptr;
         m_owner->m_isLineFrozen = false;
         m_owner->m_isWaitingForPortSelection = false;
-        
+
         // Сбрасываем курсор
         if(m_owner->m_mainView)
         {
             m_owner->m_mainView->unsetCursor();
         }
-        
+
         // Закрываем все открытые деревья портов
         for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
         {
             node->hidePortListWidget();
         }
-        
+
         event->accept();
         return;
     }
-    
+
     // Сохраняем начальную позицию для RubberBandDrag при ЛКМ без Ctrl
     // Это нужно для корректной работы выделения прямоугольником
     if(event->button() == Qt::LeftButton && !(event->modifiers() & Qt::ControlModifier))
@@ -5187,12 +5270,12 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         m_rubberBandStartPos = event->scenePos();
         m_isRubberBandActive = true;
     }
-    
+
     if(event->button() == Qt::LeftButton)
     {
         QPointF portPos;
         UModernDiagramWidget::NodeItem* node = nullptr;
-        
+
         // СНАЧАЛА проверяем входные порты (даже если есть активная связь)
         // Это позволяет открывать окно выбора входов во время создания соединения
         const UModernDiagramWidget::Port* inputPort = m_owner->pickPortDetailed(event->scenePos(), true, node, portPos);
@@ -5200,14 +5283,14 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         {
             // Устанавливаем hoveredPort для корректной работы showPortListWidget
             node->m_hoveredPort = inputPort;
-            
+
             // Если есть активная связь - открываем список входов для выбора целевого порта
             // Завершение связи будет обработано в mouseReleaseEvent при клике на выбранный порт
             // Если нет активной связи - также открываем список входов для просмотра
-            
-            if(inputPort->fullPath.isEmpty() && 
-               (inputPort->category == UModernDiagramWidget::PortCategory::Own || 
-                inputPort->category == UModernDiagramWidget::PortCategory::Child || 
+
+            if(inputPort->fullPath.isEmpty() &&
+               (inputPort->category == UModernDiagramWidget::PortCategory::Own ||
+                inputPort->category == UModernDiagramWidget::PortCategory::Child ||
                 inputPort->category == UModernDiagramWidget::PortCategory::Alias))
             {
                 // Проверяем, есть ли порты для этой категории
@@ -5224,18 +5307,18 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                     {
                         hasPorts = !node->getAliasInputPorts().isEmpty();
                     }
-                    
+
                     if (hasPorts)
                     {
-                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO,
                             "mousePressEvent: Opening input port list for category", 0);
-                        
+
                         // Если есть активная связь, активируем состояние ожидания выбора порта
                         if(m_owner->m_activeTempLink)
                         {
-                            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO,
                                 "mousePressEvent: Active connection exists, setting waiting state", 0);
-                            
+
                             // Получаем текущую позицию курсора в сцене
                             QPointF currentCursorPos;
                             if(m_owner->m_mainView)
@@ -5248,20 +5331,20 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                             {
                                 currentCursorPos = event->scenePos();
                             }
-                            
+
                             // Устанавливаем состояние ДО вызова showPortListWidget, чтобы mouseMoveEvent мог его увидеть
                             m_owner->m_isWaitingForPortSelection = true;
                             // Замораживаем временную линию на текущей позиции курсора
                             // Используем замороженную позицию, если уже заморожена, иначе текущую позицию курсора
                             bool wasFrozen = m_owner->m_isLineFrozen;
-                            QPointF freezePos = wasFrozen ? 
+                            QPointF freezePos = wasFrozen ?
                                 m_owner->m_frozenTargetPortPos : currentCursorPos;
                             m_owner->m_isLineFrozen = true;
                             m_owner->m_frozenTargetPortPos = freezePos;
                             // Обновляем геометрию временной линии один раз для заморозки
                             m_owner->m_activeTempLink->updateGeometry(freezePos);
-                            
-                            
+
+
                             // Принудительно обновляем сцену, чтобы изменения вступили в силу немедленно
                             if(m_owner->m_scene)
                             {
@@ -5271,7 +5354,7 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                         else
                         {
                         }
-                        
+
                         node->showPortListWidget(event->scenePos());
                         event->accept();
                         return;
@@ -5292,11 +5375,11 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 allInputPorts.append(node->getOwnInputPorts());
                 allInputPorts.append(node->getChildInputPorts());
                 allInputPorts.append(node->getAliasInputPorts());
-                
+
                 // Также проверяем вложенные порты
                 QVector<UModernDiagramWidget::Port> nestedPorts = node->getNestedPorts(true, false);
                 allInputPorts.append(nestedPorts);
-                
+
                 if(!allInputPorts.isEmpty())
                 {
                     // Если есть активная связь, активируем состояние ожидания выбора порта
@@ -5314,19 +5397,19 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                         {
                             currentCursorPos = event->scenePos();
                         }
-                        
+
                         // Устанавливаем состояние ДО вызова showPortListWidget, чтобы mouseMoveEvent мог его увидеть
                         m_owner->m_isWaitingForPortSelection = true;
                         // Замораживаем временную линию на текущей позиции курсора
                         // Используем замороженную позицию, если уже заморожена, иначе текущую позицию курсора
                         bool wasFrozen = m_owner->m_isLineFrozen;
-                        QPointF freezePos = wasFrozen ? 
+                        QPointF freezePos = wasFrozen ?
                             m_owner->m_frozenTargetPortPos : currentCursorPos;
                         m_owner->m_isLineFrozen = true;
                         m_owner->m_frozenTargetPortPos = freezePos;
                         // Обновляем геометрию временной линии один раз для заморозки
                         m_owner->m_activeTempLink->updateGeometry(freezePos);
-                        
+
                         // Принудительно обновляем сцену, чтобы изменения вступили в силу немедленно
                         if(m_owner->m_scene)
                         {
@@ -5345,7 +5428,7 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 }
             }
         }
-        
+
         // Если есть активная связь из дерева портов, не начинаем новую связь через drag & drop
         // (только если мы НЕ кликнули на входной порт)
         if(m_owner->m_activeTempLink)
@@ -5354,16 +5437,16 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             event->accept();
             return;
         }
-        
+
         // Проверяем выходные порты
         const UModernDiagramWidget::Port* port = m_owner->pickPortDetailed(event->scenePos(), false, node, portPos);
         if(node && port && !port->isInput)
         {
             // Обработка выходных портов
             // Если это категоризированный порт (с пустым fullPath), показываем дерево портов
-            if(port->fullPath.isEmpty() && 
-               (port->category == UModernDiagramWidget::PortCategory::Own || 
-                port->category == UModernDiagramWidget::PortCategory::Child || 
+            if(port->fullPath.isEmpty() &&
+               (port->category == UModernDiagramWidget::PortCategory::Own ||
+                port->category == UModernDiagramWidget::PortCategory::Child ||
                 port->category == UModernDiagramWidget::PortCategory::Alias))
             {
                 // Проверяем, есть ли порты для этой категории
@@ -5380,7 +5463,7 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 {
                     hasPorts = !node->getAliasOutputPorts().isEmpty();
                 }
-                
+
                 // Показываем дерево портов только если есть порты для этой категории
                 if (hasPorts)
                 {
@@ -5395,7 +5478,7 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                     return;
                 }
             }
-            
+
             // Для обычных выходных портов начинаем drag & drop
             m_owner->m_dragSourceNode = node;
             m_owner->m_dragSourcePort = port;
@@ -5425,16 +5508,16 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             return;
         }
     }
-    
+
     // Проверяем, был ли клик на фоне (не на узле, не на порте, не на окне со списком портов)
     bool clickedOnBackground = true;
-    
+
     // Проверяем, попали ли в узел
     auto* clickedNode = m_owner->pickNode(event->scenePos());
     if(clickedNode)
     {
         clickedOnBackground = false;
-        
+
         // Если клик на выделенном узле и есть группа выделенных объектов, сохраняем выделение для перемещения
         if(event->button() == Qt::LeftButton && !(event->modifiers() & Qt::ControlModifier) && clickedNode->isSelected())
         {
@@ -5448,7 +5531,7 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                     selectedNodeCount++;
                 }
             }
-            
+
             // Если выделено больше одного объекта, сохраняем выделение для перемещения группы
             if(selectedNodeCount > 1)
             {
@@ -5466,7 +5549,7 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             }
         }
     }
-    
+
     // Проверяем, попали ли в порт
     if(clickedOnBackground)
     {
@@ -5478,7 +5561,7 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             clickedOnBackground = false;
         }
     }
-    
+
     // Проверяем, попали ли в окно со списком портов
     if(clickedOnBackground)
     {
@@ -5499,7 +5582,7 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             }
         }
     }
-    
+
     // Если клик на фоне, закрываем все окна со списком портов
     if(clickedOnBackground)
     {
@@ -5513,7 +5596,7 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             m_owner->m_isWaitingForPortSelection = false;
             m_owner->m_isLineFrozen = false;
         }
-        
+
         // Сбрасываем выделение группы при клике на фоне (левой или правой кнопкой)
         if(m_isGroupSelected || m_isGroupMoving)
         {
@@ -5522,7 +5605,7 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             m_isGroupMoving = false;
             m_savedSelection.clear();
         }
-        
+
         // Если клик на фоне и ЛКМ без Ctrl (не прокрутка), передаем событие для RubberBandDrag
         // Ctrl+ЛКМ обрабатывается в ModernGraphicsView для прокрутки
         if(event->button() == Qt::LeftButton && !(event->modifiers() & Qt::ControlModifier))
@@ -5533,7 +5616,7 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             return;
         }
     }
-    
+
     // Если не клик на фоне, но это ЛКМ без Ctrl, флаг уже установлен в начале метода
     // Иначе сбрасываем флаг RubberBandDrag
     if(event->button() != Qt::LeftButton || (event->modifiers() & Qt::ControlModifier))
@@ -5541,7 +5624,7 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         m_isRubberBandActive = false;
     }
     QGraphicsScene::mousePressEvent(event);
-    
+
     // Сбрасываем флаг после обработки события
     m_isProcessingMouseEvent = false;
 }
@@ -5554,7 +5637,7 @@ void ModernScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
         event->accept();
         return;
     }
-    
+
     // Сначала проверяем, есть ли видимое окно выбора портов - если есть, не обновляем временную линию
     bool hasVisiblePortListWidget = false;
     for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
@@ -5565,7 +5648,7 @@ void ModernScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             break;
         }
     }
-    
+
     // Обновляем временную линию активной связи из дерева портов
     if(m_owner->m_activeTempLink)
     {
@@ -5580,13 +5663,13 @@ void ModernScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             QGraphicsScene::mouseMoveEvent(event);
             return;
         }
-        
+
         const double portFreezeRadius = 35.0; // Радиус буферной зоны вокруг порта (пиксели)
         const double widgetFreezeDistance = 60.0; // Расстояние до окна дерева портов (пиксели)
-        
+
         bool shouldFreezeLine = false;
         QPointF targetPortPos;
-        
+
         // Проверяем буферную зону вокруг входного порта
         QPointF portPos;
         UModernDiagramWidget::NodeItem* portNode = nullptr;
@@ -5600,7 +5683,7 @@ void ModernScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 targetPortPos = portPos;
             }
         }
-        
+
         // Проверяем буферную зону вокруг окна дерева портов
         if(!shouldFreezeLine)
         {
@@ -5610,7 +5693,7 @@ void ModernScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 {
                     QRectF widgetRect = node->m_portListWidgetProxy->mapToScene(
                         node->m_portListWidgetProxy->boundingRect()).boundingRect();
-                    QRectF expandedRect = widgetRect.adjusted(-widgetFreezeDistance, -widgetFreezeDistance, 
+                    QRectF expandedRect = widgetRect.adjusted(-widgetFreezeDistance, -widgetFreezeDistance,
                                                               widgetFreezeDistance, widgetFreezeDistance);
                     if(expandedRect.contains(event->scenePos()))
                     {
@@ -5639,28 +5722,28 @@ void ModernScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
                 }
             }
         }
-        
+
         // Обновляем состояние заморозки
         m_owner->m_isLineFrozen = shouldFreezeLine;
         if(shouldFreezeLine)
         {
             m_owner->m_frozenTargetPortPos = targetPortPos;
         }
-        
+
         // Обновляем геометрию временной линии только если не ожидается выбор порта
         // и нет видимого окна выбора портов
         if(!m_owner->m_isWaitingForPortSelection && !hasVisiblePortListWidget)
         {
-            QPointF targetPos = m_owner->m_isLineFrozen ? 
+            QPointF targetPos = m_owner->m_isLineFrozen ?
                                 m_owner->m_frozenTargetPortPos : event->scenePos();
             m_owner->m_activeTempLink->updateGeometry(targetPos);
-            
+
             // Обновляем узлы для отображения подсветки входных портов
             for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
             {
                 node->update();
             }
-            
+
             event->accept();
             return;
         }
@@ -5673,15 +5756,15 @@ void ModernScene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
             return;
         }
     }
-    
+
     QGraphicsScene::mouseMoveEvent(event);
-    
+
     // Set canvas tooltip when hovering over empty area (not over node or link)
     if(m_owner && m_owner->m_mainView)
     {
         QGraphicsItem* item = itemAt(event->scenePos(), QTransform());
         // Only set canvas tooltip if not hovering over a node or link
-        if(!item || (!dynamic_cast<UModernDiagramWidget::NodeItem*>(item) && 
+        if(!item || (!dynamic_cast<UModernDiagramWidget::NodeItem*>(item) &&
                      !dynamic_cast<UModernDiagramWidget::LinkItem*>(item)))
         {
             QString tooltip = m_owner->generateCanvasTooltip();
@@ -5699,7 +5782,7 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
     // Устанавливаем флаг обработки событий мыши для пропуска pollHover
     m_isProcessingMouseEvent = true;
-    
+
     // Сначала обрабатываем drag & drop связь (m_tempLink), если она активна
     if(m_owner->m_tempLink && event->button() == Qt::LeftButton)
     {
@@ -5714,25 +5797,25 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             QString dstName = targetNode->nodeName;
             QString fullSrc = m_owner->m_componentName.isEmpty() ? srcName : m_owner->m_componentName + "." + srcName;
             QString fullDst = m_owner->m_componentName.isEmpty() ? dstName : m_owner->m_componentName + "." + dstName;
-            
+
             // Формируем пути свойств
-            QString srcProp = m_owner->m_dragSourcePort->fullPath.isEmpty() ? 
+            QString srcProp = m_owner->m_dragSourcePort->fullPath.isEmpty() ?
                              m_owner->m_dragSourcePort->name : m_owner->m_dragSourcePort->fullPath;
-            QString dstProp = targetPort->fullPath.isEmpty() ? 
+            QString dstProp = targetPort->fullPath.isEmpty() ?
                              targetPort->name : targetPort->fullPath;
-            
+
             // Учитываем вложенные компоненты
-            if(!m_owner->m_dragSourcePort->componentName.isEmpty() && 
+            if(!m_owner->m_dragSourcePort->componentName.isEmpty() &&
                m_owner->m_dragSourcePort->componentName != srcName)
             {
                 srcProp = m_owner->m_dragSourcePort->componentName + "." + srcProp;
             }
-            if(!targetPort->componentName.isEmpty() && 
+            if(!targetPort->componentName.isEmpty() &&
                targetPort->componentName != dstName)
             {
                 dstProp = targetPort->componentName + "." + dstProp;
             }
-            
+
             // Применяем связь к ядру
             int result = Model_CreateLinkByName(
                 fullSrc.toStdString().c_str(),
@@ -5740,16 +5823,16 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                 fullDst.toStdString().c_str(),
                 dstProp.toStdString().c_str()
             );
-            
+
             // Удаляем временную линию
             m_owner->m_scene->removeItem(m_owner->m_tempLink);
             delete m_owner->m_tempLink;
             m_owner->m_tempLink = nullptr;
-            
+
             // Сбрасываем состояние
             m_owner->m_dragSourceNode = nullptr;
             m_owner->m_dragSourcePort = nullptr;
-            
+
             // Обновляем схему (перестраиваем связи)
             if(result == 0) // Только при успешном создании связи
             {
@@ -5759,7 +5842,7 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             {
             }
             emit m_owner->updateComponentsList();
-            
+
             // Сбрасываем флаг после обработки события
             m_isProcessingMouseEvent = false;
             event->accept();
@@ -5779,7 +5862,7 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             return;
         }
     }
-    
+
     // Обработка завершения связи из дерева портов
     // ВАЖНО: Проверяем только если НЕТ активной drag & drop связи
     if(m_owner->m_activeTempLink && !m_owner->m_tempLink && event->button() == Qt::LeftButton)
@@ -5800,13 +5883,13 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                 }
             }
         }
-        
+
         // Если клик попал на окно выбора, обрабатываем выбор порта напрямую
         if(clickedOnPortListWidget)
         {
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO,
                 "mouseReleaseEvent: Click detected on port list widget", 0);
-            
+
             // Находим узел с открытым окном выбора портов
             for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
             {
@@ -5816,20 +5899,20 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                         node->m_portListWidgetProxy->boundingRect()).boundingRect();
                     if(widgetRect.contains(event->scenePos()))
                     {
-                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO,
                             "mouseReleaseEvent: Found visible port list widget", 0);
-                        
+
                         // Преобразуем позицию клика в локальные координаты виджета
                         QPointF widgetLocalPos = node->m_portListWidgetProxy->mapFromScene(event->scenePos());
                         QPoint widgetPoint = widgetLocalPos.toPoint();
-                        
-                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+
+                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO,
                             "mouseReleaseEvent: Converting coordinates for itemAt", 0);
-                        
+
                         // Попробуем несколько способов найти элемент:
                         // 1. Через itemAt с преобразованными координатами
                         QTreeWidgetItem* itemUnderCursor = node->m_portListWidget->itemAt(widgetPoint);
-                        
+
                         // 2. Если не нашли, попробуем через mapFromGlobal
                         if(!itemUnderCursor)
                         {
@@ -5838,18 +5921,18 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                             QPoint widgetGlobalPoint = node->m_portListWidget->mapFromGlobal(globalPos);
                             itemUnderCursor = node->m_portListWidget->itemAt(widgetGlobalPoint);
                         }
-                        
+
                         // 3. Если все еще не нашли, используем currentItem
                         if(!itemUnderCursor)
                         {
                             itemUnderCursor = node->m_portListWidget->currentItem();
                         }
-                        
+
                         if(itemUnderCursor)
                         {
-                            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO,
                                 "mouseReleaseEvent: itemUnderCursor found", 0);
-                            
+
                             if(itemUnderCursor->parent() != nullptr)
                             {
                                 // Это элемент порта (не категория) - завершаем соединение
@@ -5859,45 +5942,45 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                                     QMap<QString, QVariant> portData = data.value<QMap<QString, QVariant>>();
                                     bool isInput = portData["isInput"].toBool();
                                     QString portName = portData["name"].toString();
-                                    
+
                                     QString logMsg = QString("mouseReleaseEvent: Clicked on %1 port '%2' in list, completing connection")
                                         .arg(isInput ? "input" : "output").arg(portName);
                                     MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
-                                    
+
                                     node->onPortItemActivated(itemUnderCursor, 0);
                                     event->accept();
                                     return;
                                 }
                                 else
                                 {
-                                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
+                                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING,
                                         "mouseReleaseEvent: Item data is invalid", 0);
                                 }
                             }
                         }
                         else
                         {
-                            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, 
+                            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING,
                                 "mouseReleaseEvent: No item found at cursor position", 0);
                         }
-                        
+
                         // Если не удалось найти элемент напрямую, передаем событие виджету
                         // чтобы он мог обработать клик через свой механизм
-                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO,
                             "mouseReleaseEvent: Forwarding event to QTreeWidget", 0);
                     }
                 }
             }
-            
+
             // Если не попали на элемент порта, передаем событие дальше
             QGraphicsScene::mouseReleaseEvent(event);
             return;
         }
-        
+
         QPointF portPos;
         UModernDiagramWidget::NodeItem* targetNode = nullptr;
         const UModernDiagramWidget::Port* targetPort = m_owner->pickPortDetailed(event->scenePos(), true, targetNode, portPos);
-        
+
         // Проверяем, что все необходимые указатели валидны
         // И что это НЕ категоризированный порт (для категоризированных портов нужно выбрать из списка)
         if(targetNode && targetPort && m_owner->m_activeSourceNode && m_owner->m_activeSourcePort &&
@@ -5905,16 +5988,16 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         {
             // Если это категоризированный порт (Own/Child/Alias), не завершаем соединение напрямую
             // Пользователь должен выбрать конкретный порт из открытого окна выбора
-            if(targetPort->fullPath.isEmpty() && 
-               (targetPort->category == UModernDiagramWidget::PortCategory::Own || 
-                targetPort->category == UModernDiagramWidget::PortCategory::Child || 
+            if(targetPort->fullPath.isEmpty() &&
+               (targetPort->category == UModernDiagramWidget::PortCategory::Own ||
+                targetPort->category == UModernDiagramWidget::PortCategory::Child ||
                 targetPort->category == UModernDiagramWidget::PortCategory::Alias))
             {
                 // Это категоризированный порт - не завершаем соединение, оставляем окно выбора открытым
                 event->accept();
                 return;
             }
-            
+
             // Это конкретный входной порт (не категоризированный) - завершаем соединение
             // Дополнительная проверка валидности указателя на порт
             // Сохраняем значения в локальные переменные для безопасности
@@ -5925,7 +6008,7 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                 event->accept();
                 return;
             }
-            
+
             // Дополнительная проверка: убеждаемся, что узел все еще валиден
             UModernDiagramWidget::NodeItem* activeSourceNode = m_owner->m_activeSourceNode;
             if(!activeSourceNode)
@@ -5933,18 +6016,18 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                 event->accept();
                 return;
             }
-            
+
             // Используем сохраненные копии строковых полей порта вместо обращения к указателю
             // Это безопаснее, так как указатель может стать невалидным
             QString srcPortFullPath = m_owner->m_activeSourcePortFullPath;
             QString srcPortName = m_owner->m_activeSourcePortName;
             QString srcPortComponentName = m_owner->m_activeSourcePortComponentName;
-            
+
             // Копируем только строковые поля целевого порта
             QString dstPortFullPath;
             QString dstPortName;
             QString dstPortComponentName;
-            
+
             try
             {
                 dstPortFullPath = targetPort->fullPath;
@@ -5957,13 +6040,13 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                 event->accept();
                 return;
             }
-            
+
             // Формируем полные имена компонентов
             QString srcName = activeSourceNode->nodeName;
             QString dstName = targetNode->nodeName;
             QString fullSrc = m_owner->m_componentName.isEmpty() ? srcName : m_owner->m_componentName + "." + srcName;
             QString fullDst = m_owner->m_componentName.isEmpty() ? dstName : m_owner->m_componentName + "." + dstName;
-            
+
             // Формируем пути свойств с использованием скопированных значений
             QString srcProp;
             if(srcPortFullPath.isEmpty())
@@ -5974,7 +6057,7 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             {
                 srcProp = srcPortFullPath;
             }
-            
+
             QString dstProp;
             if(dstPortFullPath.isEmpty())
             {
@@ -5984,19 +6067,19 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             {
                 dstProp = dstPortFullPath;
             }
-            
+
             // Учитываем вложенные компоненты
-            if(!srcPortComponentName.isEmpty() && 
+            if(!srcPortComponentName.isEmpty() &&
                srcPortComponentName != srcName)
             {
                 srcProp = srcPortComponentName + "." + srcProp;
             }
-            if(!dstPortComponentName.isEmpty() && 
+            if(!dstPortComponentName.isEmpty() &&
                dstPortComponentName != dstName)
             {
                 dstProp = dstPortComponentName + "." + dstProp;
             }
-            
+
             // Применяем связь к ядру
             int result = Model_CreateLinkByName(
                 fullSrc.toStdString().c_str(),
@@ -6004,30 +6087,30 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                 fullDst.toStdString().c_str(),
                 dstProp.toStdString().c_str()
             );
-            
+
             // Удаляем временную линию
             m_owner->m_scene->removeItem(m_owner->m_activeTempLink);
             delete m_owner->m_activeTempLink;
             m_owner->m_activeTempLink = nullptr;
-            
+
             // Сбрасываем состояние
             m_owner->m_activeSourceNode = nullptr;
             m_owner->m_activeSourcePort = nullptr;
             m_owner->m_isLineFrozen = false;
             m_owner->m_isWaitingForPortSelection = false;
-            
+
             // Сбрасываем курсор
             if(m_owner->m_mainView)
             {
                 m_owner->m_mainView->unsetCursor();
             }
-            
+
             // Закрываем все открытые деревья портов
             for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
             {
                 node->hidePortListWidget();
             }
-            
+
             // Обновляем схему (перестраиваем связи)
             // Сначала отправляем сигнал, затем перестраиваем связи (чтобы избежать обращения к удаленным объектам)
             emit m_owner->updateComponentsList();
@@ -6038,7 +6121,7 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             else
             {
             }
-            
+
             event->accept();
             return;
         }
@@ -6050,7 +6133,7 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             return;
         }
     }
-    
+
     if(m_owner->m_tempLink)
     {
         QPointF portPos;
@@ -6071,19 +6154,19 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             m_owner->m_dragSourceNode->m_cacheValid = false;
             targetNode->m_cacheValid = false;
             m_owner->m_tempLink = nullptr;
-            
+
             // Создание связи в ядре с использованием конкретных портов
             QString srcName = m_owner->m_dragSourceNode->nodeName;
             QString dstName = targetNode->nodeName;
             QString fullSrc = m_owner->m_componentName.isEmpty() ? srcName : m_owner->m_componentName + "." + srcName;
             QString fullDst = m_owner->m_componentName.isEmpty() ? dstName : m_owner->m_componentName + "." + dstName;
-            
+
             // Проверяем, являются ли порты алиасами (по пометке [Alias] в displayName)
             bool srcIsAlias = m_owner->m_dragSourcePort->displayName.contains("[Alias]");
             bool dstIsAlias = targetPort->displayName.contains("[Alias]");
-            
+
             int result = RDK_SUCCESS;
-            
+
             // Если оба порта - алиасы, пытаемся использовать CreateLinkByAlias
             // Примечание: CreateLinkByAlias работает только если оба алиаса находятся в одной сети
             // Если они в разных сетях, используем обычный метод создания связи
@@ -6136,35 +6219,35 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                 // Не используем алиасы, переходим к обычному методу
                 result = -1;
             }
-            
+
             // Если не удалось использовать алиасы, используем обычный метод
             if(result != RDK_SUCCESS)
             {
                 // Используем полные пути для вложенных портов
-                QString srcProp = m_owner->m_dragSourcePort->fullPath.isEmpty() ? 
+                QString srcProp = m_owner->m_dragSourcePort->fullPath.isEmpty() ?
                                  m_owner->m_dragSourcePort->name : m_owner->m_dragSourcePort->fullPath;
-                QString dstProp = targetPort->fullPath.isEmpty() ? 
+                QString dstProp = targetPort->fullPath.isEmpty() ?
                                  targetPort->name : targetPort->fullPath;
-                
+
                 // Если порт принадлежит вложенному компоненту, добавляем путь компонента
-                if(!m_owner->m_dragSourcePort->componentName.isEmpty() && 
+                if(!m_owner->m_dragSourcePort->componentName.isEmpty() &&
                    m_owner->m_dragSourcePort->componentName != srcName)
                 {
                     srcProp = m_owner->m_dragSourcePort->componentName + "." + srcProp;
                 }
-                if(!targetPort->componentName.isEmpty() && 
+                if(!targetPort->componentName.isEmpty() &&
                    targetPort->componentName != dstName)
                 {
                     dstProp = targetPort->componentName + "." + dstProp;
                 }
-                
+
                 result = Model_CreateLinkByName(fullSrc.toStdString().c_str(), srcProp.toStdString().c_str(),
                                                fullDst.toStdString().c_str(), dstProp.toStdString().c_str());
             }
             if(result != RDK_SUCCESS)
             {
                 // На этом этапе мы можем не знать конкретные src/dst свойства, поэтому выводим только имена компонентов
-                QMessageBox::warning(m_owner, "Error", 
+                QMessageBox::warning(m_owner, "Error",
                     QString("Failed to create link between %1 and %2")
                     .arg(fullSrc, fullDst));
             }
@@ -6185,7 +6268,7 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         event->accept();
         return;
     }
-    
+
     // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Если группа была перемещена, сохраняем выделение перед вызовом
     // базового класса, чтобы восстановить его после, так как базовый класс может сбросить выделение
     bool wasGroupMoving = m_isGroupMoving;
@@ -6203,12 +6286,12 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             }
         }
     }
-    
+
     // Вызываем базовый класс для обработки событий
     // Базовый класс QGraphicsView::mouseReleaseEvent уже был вызван в ModernGraphicsView,
     // и он передал событие в сцену, поэтому здесь мы обрабатываем событие на уровне сцены
     QGraphicsScene::mouseReleaseEvent(event);
-    
+
     // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Если группа была перемещена, восстанавливаем выделение,
     // так как базовый класс мог его сбросить
     // Используем отложенный вызов, чтобы восстановление произошло после всех обработчиков событий
@@ -6216,11 +6299,11 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     {
         // Сохраняем список узлов для отложенного восстановления
         QList<UModernDiagramWidget::NodeItem*> nodesToRestore = savedSelectedNodes;
-        
+
         // Восстанавливаем выделение немедленно
         m_owner->m_isBatchSelecting = true;
         m_owner->m_scene->blockSignals(true);
-        
+
         for(UModernDiagramWidget::NodeItem* node : nodesToRestore)
         {
             if(node)
@@ -6228,16 +6311,16 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                 node->setSelected(true);
             }
         }
-        
+
         m_owner->m_isBatchSelecting = false;
         m_owner->m_scene->blockSignals(false);
-        
+
         // Отложенное восстановление выделения, чтобы оно произошло после всех обработчиков событий
         QTimer::singleShot(0, [this, nodesToRestore]() {
             // Восстанавливаем выделение для всех сохраненных узлов
             m_owner->m_isBatchSelecting = true;
             m_owner->m_scene->blockSignals(true);
-            
+
             for(UModernDiagramWidget::NodeItem* node : nodesToRestore)
             {
                 if(node)
@@ -6245,12 +6328,12 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                     node->setSelected(true);
                 }
             }
-            
+
             m_owner->m_isBatchSelecting = false;
             m_owner->m_scene->blockSignals(false);
         });
     }
-    
+
     // После обработки базовым классом проверяем выделение и устанавливаем флаги
     if(event->button() == Qt::LeftButton && !(event->modifiers() & Qt::ControlModifier))
     {
@@ -6267,17 +6350,17 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                 selectedNodeNames << node->nodeName;
             }
         }
-        
+
         // Устанавливаем флаг группы, если выделено больше одного объекта
         m_isGroupSelected = (selectedNodeCount > 1);
-        
+
         // Сбрасываем флаг RubberBandDrag
         m_isRubberBandActive = false;
     }
-    
+
     // Сбрасываем флаг после обработки события
     m_isProcessingMouseEvent = false;
-    
+
     // Сбрасываем флаг перемещения группы при отпускании кнопки
     // НО НЕ сбрасываем выделение - оно должно остаться до клика на фоне или Esc
     if(m_isGroupMoving)
@@ -6303,13 +6386,13 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                     // Преобразуем позицию клика в локальные координаты виджета
                     QPointF widgetLocalPos = node->m_portListWidgetProxy->mapFromScene(event->scenePos());
                     QPoint widgetPoint = widgetLocalPos.toPoint();
-                    
+
                     // Находим элемент под курсором
                     QTreeWidgetItem* itemUnderCursor = node->m_portListWidget->itemAt(widgetPoint);
                     if(itemUnderCursor && itemUnderCursor->parent() != nullptr)
                     {
                         // Это элемент порта (не категория) - завершаем соединение
-                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, 
+                        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO,
                             "mouseDoubleClickEvent: Double-clicked on port item in list, completing connection", 0);
                         node->onPortItemActivated(itemUnderCursor, 0);
                         event->accept();
@@ -6321,12 +6404,12 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                 }
             }
         }
-        
+
         // Проверяем, попали ли мы в порт
         QPointF portPos;
         UModernDiagramWidget::NodeItem* portNode = nullptr;
         const UModernDiagramWidget::Port* port = m_owner->pickPortDetailed(event->scenePos(), false, portNode, portPos);
-        
+
         if(portNode && port)
         {
             // Если это выходной порт - начинаем создание связи
@@ -6351,20 +6434,20 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                     return;
                 }
                 m_owner->m_activeSourcePortPos = portPos;
-                
+
                 // Создаем временную линию с сохраненной позицией порта
                 m_owner->m_activeTempLink = new UModernDiagramWidget::LinkItem(portNode, portPos, portPos);
                 m_owner->m_scene->addItem(m_owner->m_activeTempLink);
-                
+
                 // Сбрасываем состояние заморозки при создании новой связи
                 m_owner->m_isLineFrozen = false;
-                
+
                 // Закрываем все открытые деревья портов
                 for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
                 {
                     node->hidePortListWidget();
                 }
-                
+
                 event->accept();
                 return;
             }
@@ -6376,7 +6459,7 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                 QString dstName = portNode->nodeName;
                 QString fullSrc = m_owner->m_componentName.isEmpty() ? srcName : m_owner->m_componentName + "." + srcName;
                 QString fullDst = m_owner->m_componentName.isEmpty() ? dstName : m_owner->m_componentName + "." + dstName;
-                
+
                 // Формируем пути свойств, используя сохраненные копии вместо указателя
                 QString srcProp;
                 if(m_owner->m_activeSourcePortFullPath.isEmpty())
@@ -6387,7 +6470,7 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                 {
                     srcProp = m_owner->m_activeSourcePortFullPath;
                 }
-                
+
                 QString dstProp;
                 QString dstPortFullPath;
                 QString dstPortName;
@@ -6403,7 +6486,7 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                     event->accept();
                     return;
                 }
-                
+
                 if(dstPortFullPath.isEmpty())
                 {
                     dstProp = dstPortName;
@@ -6412,9 +6495,9 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                 {
                     dstProp = dstPortFullPath;
                 }
-                
+
                 // Учитываем вложенные компоненты
-                if(!m_owner->m_activeSourcePortComponentName.isEmpty() && 
+                if(!m_owner->m_activeSourcePortComponentName.isEmpty() &&
                    m_owner->m_activeSourcePortComponentName != srcName)
                 {
                     srcProp = m_owner->m_activeSourcePortComponentName + "." + srcProp;
@@ -6423,7 +6506,7 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                 {
                     dstProp = dstPortComponentName + "." + dstProp;
                 }
-                
+
                 // Применяем связь к ядру
                 int result = Model_CreateLinkByName(
                     fullSrc.toStdString().c_str(),
@@ -6431,7 +6514,7 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                     fullDst.toStdString().c_str(),
                     dstProp.toStdString().c_str()
                 );
-                
+
                 // Удаляем временную линию
                 if(m_owner->m_activeTempLink)
                 {
@@ -6439,24 +6522,24 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                     delete m_owner->m_activeTempLink;
                     m_owner->m_activeTempLink = nullptr;
                 }
-                
+
                 // Сбрасываем состояние
                 m_owner->m_activeSourceNode = nullptr;
                 m_owner->m_activeSourcePort = nullptr;
                 m_owner->m_isLineFrozen = false;
-                
+
                 // Сбрасываем курсор
                 if(m_owner->m_mainView)
                 {
                     m_owner->m_mainView->unsetCursor();
                 }
-                
+
                 // Закрываем все открытые деревья портов
                 for(UModernDiagramWidget::NodeItem* node : m_owner->m_nodes)
                 {
                     node->hidePortListWidget();
                 }
-                
+
             // Обновляем схему (перестраиваем связи)
             // Сначала отправляем сигнал, затем перестраиваем связи (чтобы избежать обращения к удаленным объектам)
             emit m_owner->updateComponentsList();
@@ -6467,19 +6550,19 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
             else
             {
             }
-            
+
             event->accept();
                 return;
             }
         }
-        
+
         // Проверяем, попали ли мы в узел (но не в порт)
         auto* node = m_owner->pickNode(event->scenePos());
         if(node)
         {
             // Сохраняем состояние текущего компонента перед переходом
             m_owner->saveCurrentViewState();
-            
+
             // Вход внутрь компонента: добавляем имя узла к пути
             QString newPath;
             if(m_owner->m_componentName.isEmpty())
@@ -6500,7 +6583,7 @@ void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
         {
             // Сохраняем состояние текущего компонента перед переходом
             m_owner->saveCurrentViewState();
-            
+
             QStringList pathParts = m_owner->m_componentName.split(".");
             if(pathParts.size() > 0)
             {
@@ -6523,7 +6606,7 @@ void UModernDiagramWidget::componentDoubleClick(QString name)
 {
     // Сохраняем состояние текущего компонента перед переходом
     saveCurrentViewState();
-    
+
     SetComponentName(name);
     Reload();
 }
@@ -6550,7 +6633,7 @@ void UModernDiagramWidget::updateTheme()
             node->update();
         }
     }
-    
+
     // Обновляем все связи
     for(auto* link : m_links)
     {
@@ -6559,13 +6642,13 @@ void UModernDiagramWidget::updateTheme()
             link->update();
         }
     }
-    
+
     // Обновляем всю сцену
     if(m_scene)
     {
         m_scene->update();
     }
-    
+
     // Обновляем стили кнопки сброса масштаба
     updateResetZoomButtonStyle();
 }
@@ -6574,10 +6657,10 @@ void UModernDiagramWidget::updateResetZoomButtonStyle()
 {
     if(!m_resetZoomButton)
         return;
-    
+
     UStyleManager* styleManager = UStyleManager::instance();
     QString themeName = styleManager->getThemeName();
-    
+
     if(themeName == "Modern Dark" || themeName == "dark")
     {
         // Темная тема
@@ -6634,32 +6717,32 @@ void UModernDiagramWidget::selectComponent(QString name)
         m_selectComponentRetryCount = 0;
         return;
     }
-    
+
     // Защита от бесконечной рекурсии
     if(m_selectComponentRetryCount >= 3)
     {
         m_selectComponentRetryCount = 0;
         return;
     }
-    
+
     // Если имя совпадает с текущим путём, значит мы на верхнем уровне
     if(!m_componentName.isEmpty() && name == m_componentName)
     {
         m_selectComponentRetryCount = 0;
         return;
     }
-    
+
     // Определяем относительное имя компонента в текущем контексте
     QString componentName = name;
     bool needToNavigate = false;
     QString targetPath;
-    
+
     if(m_componentName.isEmpty())
     {
         // Мы на корневом уровне, компонент должен быть прямым потомком
         // Берем только первую часть пути
         componentName = name.split(".").first();
-        
+
         // Если компонент имеет вложенность, нужно перейти внутрь
         if(name.contains("."))
         {
@@ -6671,7 +6754,7 @@ void UModernDiagramWidget::selectComponent(QString name)
     {
         // Компонент находится внутри текущего контекста
         componentName = name.mid(m_componentName.size() + 1);
-        
+
         // Проверяем, есть ли вложенность (например, Component1.Component2.Component3)
         QStringList relativePathParts = componentName.split(".");
         if(relativePathParts.size() > 1)
@@ -6689,7 +6772,7 @@ void UModernDiagramWidget::selectComponent(QString name)
         // Компонент находится вне текущего контекста
         // Нужно перейти на нужный уровень
         QStringList pathParts = name.split(".");
-        
+
         if(pathParts.size() > 1)
         {
             // Компонент находится внутри другого компонента
@@ -6703,20 +6786,20 @@ void UModernDiagramWidget::selectComponent(QString name)
         }
         needToNavigate = true;
     }
-    
+
     // Если нужно перейти на другой уровень, используем componentDoubleClick
     if(needToNavigate)
     {
         m_selectComponentRetryCount++;
         componentDoubleClick(targetPath);
-        
+
         // После перезагрузки выбираем компонент
         QTimer::singleShot(300, [this, name]() {
             selectComponent(name);
         });
         return;
     }
-    
+
     // Компонент должен быть на текущем уровне - пытаемся найти и выделить его
     if(auto it = m_nodeByName.find(componentName); it != m_nodeByName.end())
     {
@@ -6726,10 +6809,10 @@ void UModernDiagramWidget::selectComponent(QString name)
         // Прокручиваем к выбранному узлу
         if(m_mainView)
             m_mainView->centerOn(it.value());
-        
+
         // Сбрасываем счетчик после успешного выбора
         m_selectComponentRetryCount = 0;
-        
+
         // Сигнал componentSelected будет эмитирован автоматически через механизм выделения узлов в схеме
         // (через itemChange в NodeItem)
     }
@@ -6756,7 +6839,7 @@ void UModernDiagramWidget::selectComponent(QString name)
 void UModernDiagramWidget::createContextMenu()
 {
     m_contextMenu = new QMenu(this);
-    
+
     // Separators
     QAction* actionSeparator1 = new QAction(this);
     actionSeparator1->setSeparator(true);
@@ -6774,87 +6857,87 @@ void UModernDiagramWidget::createContextMenu()
     actionSeparator7->setSeparator(true);
     QAction* actionSeparator8 = new QAction(this);
     actionSeparator8->setSeparator(true);
-    
+
     // Actions
     m_actionViewOrBreakLink = new QAction(m_contextMenu);
     m_actionViewOrBreakLink->setText("View/Break link");
-    
+
     m_actionCreateLink = new QAction(m_contextMenu);
     m_actionCreateLink->setText("Create link");
-    
+
     m_actionFinishLink = new QAction(m_contextMenu);
     m_actionFinishLink->setText("Finish link");
     m_actionFinishLink->setEnabled(false);
-    
+
     m_actionCancelLink = new QAction(m_contextMenu);
     m_actionCancelLink->setText("Cancel link");
     m_actionCancelLink->setEnabled(false);
-    
+
     m_actionStartMoving = new QAction(m_contextMenu);
     m_actionStartMoving->setText("Start moving");
-    
+
     m_actionFinishMoving = new QAction(m_contextMenu);
     m_actionFinishMoving->setText("Finish moving");
     m_actionFinishMoving->setEnabled(false);
-    
+
     m_actionCancelMoving = new QAction(m_contextMenu);
     m_actionCancelMoving->setText("Cancel moving");
     m_actionCancelMoving->setEnabled(false);
-    
+
     m_actionSwitchLink = new QAction(m_contextMenu);
     m_actionSwitchLink->setText("Switch link");
-    
+
     m_actionFinishSwitching = new QAction(m_contextMenu);
     m_actionFinishSwitching->setText("Finish switching");
     m_actionFinishSwitching->setEnabled(false);
-    
+
     m_actionCancelSwitching = new QAction(m_contextMenu);
     m_actionCancelSwitching->setText("Cancel switching");
     m_actionCancelSwitching->setEnabled(false);
-    
+
     m_actionCloneComponent = new QAction(m_contextMenu);
     m_actionCloneComponent->setText("Clone");
-    
+
     m_actionQuickLink = new QAction(m_contextMenu);
     m_actionQuickLink->setText("Quick Link...");
-    
+
     QAction* actionRenameComponent = new QAction(m_contextMenu);
     actionRenameComponent->setText("Rename");
-    
+
     QAction* actionClassDescription = new QAction(m_contextMenu);
     actionClassDescription->setText("Class Description");
-    
+
     QAction* actionDeleteComponent = new QAction(m_contextMenu);
     actionDeleteComponent->setText("Delete");
-    
+
     QAction* actionCopyNameToClipboard = new QAction(m_contextMenu);
     actionCopyNameToClipboard->setText("Copy name to Clipboard");
-    
+
     QAction* actionCopyLongNameToClipboard = new QAction(m_contextMenu);
     actionCopyLongNameToClipboard->setText("Copy long name to Clipboard");
-    
+
     QAction* actionCopyClassNameToClipboard = new QAction(m_contextMenu);
     actionCopyClassNameToClipboard->setText("Copy class to Clipboard");
-    
+
     QAction* actionResetComponent = new QAction(m_contextMenu);
     actionResetComponent->setText("Reset");
-    
+
     QAction* actionCalculateComponent = new QAction(m_contextMenu);
     actionCalculateComponent->setText("Calculate");
-    
+
     QAction* actionDefaultComponent = new QAction(m_contextMenu);
     actionDefaultComponent->setText("Default");
-    
+
     QAction* actionGUI = new QAction(m_contextMenu);
     actionGUI->setText("GUI (not implemented)");
     actionGUI->setEnabled(false);
-    
+
     QAction* actionCopyComponentXMLDescription = new QAction(m_contextMenu);
     actionCopyComponentXMLDescription->setText("Copy component XML description");
-    
+
     QAction* actionClearComponentCache = new QAction(m_contextMenu);
     actionClearComponentCache->setText("Clear component cache");
-    
+
     // Add actions to menu
     m_contextMenu->addAction(m_actionViewOrBreakLink);
     m_contextMenu->addAction(actionSeparator1);
@@ -6888,7 +6971,7 @@ void UModernDiagramWidget::createContextMenu()
     m_contextMenu->addAction(m_actionCloneComponent);
     m_contextMenu->addAction(m_actionQuickLink);
     m_contextMenu->addAction(actionClearComponentCache);
-    
+
     // Connect signals
     connect(m_actionViewOrBreakLink, SIGNAL(triggered(bool)), this, SLOT(componentViewOrBreakLink()));
     connect(m_actionCreateLink, SIGNAL(triggered(bool)), this, SLOT(componentCreateLink()));
@@ -6938,11 +7021,11 @@ void UModernDiagramWidget::componentCreateLink()
     m_actionCreateLink->setEnabled(false);
     m_actionFinishLink->setEnabled(true);
     m_actionCancelLink->setEnabled(true);
-    
+
     m_actionStartMoving->setEnabled(false);
     m_actionFinishMoving->setEnabled(false);
     m_actionCancelMoving->setEnabled(false);
-    
+
     m_actionSwitchLink->setEnabled(false);
     m_actionFinishSwitching->setEnabled(false);
     m_actionCancelSwitching->setEnabled(false);
@@ -6960,11 +7043,11 @@ void UModernDiagramWidget::componentCancelLink()
     m_actionCreateLink->setEnabled(true);
     m_actionFinishLink->setEnabled(false);
     m_actionCancelLink->setEnabled(false);
-    
+
     m_actionStartMoving->setEnabled(true);
     m_actionFinishMoving->setEnabled(false);
     m_actionCancelMoving->setEnabled(false);
-    
+
     m_actionSwitchLink->setEnabled(true);
     m_actionFinishSwitching->setEnabled(false);
     m_actionCancelSwitching->setEnabled(false);
@@ -6976,11 +7059,11 @@ void UModernDiagramWidget::componentStartSwitching()
     m_actionFinishMoving->setEnabled(false);
     m_actionCancelMoving->setEnabled(false);
     m_actionStartMoving->setEnabled(false);
-    
+
     m_actionCreateLink->setEnabled(false);
     m_actionFinishLink->setEnabled(false);
     m_actionCancelLink->setEnabled(false);
-    
+
     m_actionSwitchLink->setEnabled(false);
     m_actionFinishSwitching->setEnabled(true);
     m_actionCancelSwitching->setEnabled(true);
@@ -6997,11 +7080,11 @@ void UModernDiagramWidget::componentCancelSwitching()
     m_actionFinishMoving->setEnabled(false);
     m_actionCancelMoving->setEnabled(false);
     m_actionStartMoving->setEnabled(true);
-    
+
     m_actionCreateLink->setEnabled(true);
     m_actionFinishLink->setEnabled(false);
     m_actionCancelLink->setEnabled(false);
-    
+
     m_actionSwitchLink->setEnabled(true);
     m_actionFinishSwitching->setEnabled(false);
     m_actionCancelSwitching->setEnabled(false);
@@ -7013,11 +7096,11 @@ void UModernDiagramWidget::componentStartMoving()
     m_actionFinishMoving->setEnabled(true);
     m_actionCancelMoving->setEnabled(true);
     m_actionStartMoving->setEnabled(false);
-    
+
     m_actionCreateLink->setEnabled(false);
     m_actionFinishLink->setEnabled(false);
     m_actionCancelLink->setEnabled(false);
-    
+
     m_actionSwitchLink->setEnabled(false);
     m_actionFinishSwitching->setEnabled(false);
     m_actionCancelSwitching->setEnabled(false);
@@ -7026,10 +7109,10 @@ void UModernDiagramWidget::componentStartMoving()
 void UModernDiagramWidget::componentFinishMoving()
 {
     QString endMoveComponent = getSelectedComponentLongName();
-    
+
     if(Model_MoveComponent(m_startMoveComponent.toStdString().c_str(), endMoveComponent.toStdString().c_str()) != RDK_SUCCESS)
         QMessageBox::critical(this, "Error", "Component move error", QMessageBox::Ok);
-    
+
     Reload();
     emit updateComponentsList();
     componentCancelMoving();
@@ -7040,11 +7123,11 @@ void UModernDiagramWidget::componentCancelMoving()
     m_actionFinishMoving->setEnabled(false);
     m_actionCancelMoving->setEnabled(false);
     m_actionStartMoving->setEnabled(true);
-    
+
     m_actionCreateLink->setEnabled(true);
     m_actionFinishLink->setEnabled(false);
     m_actionCancelLink->setEnabled(false);
-    
+
     m_actionSwitchLink->setEnabled(true);
     m_actionFinishSwitching->setEnabled(false);
     m_actionCancelSwitching->setEnabled(false);
@@ -7054,7 +7137,7 @@ void UModernDiagramWidget::componentRename()
 {
     if(!m_contextMenuNode)
         return;
-        
+
     bool ok;
     QString text = QInputDialog::getText(this, tr("Rename component"),
                                          tr("Enter new component name: "), QLineEdit::Normal,
@@ -7063,7 +7146,7 @@ void UModernDiagramWidget::componentRename()
     {
         std::string new_name(text.toLocal8Bit().constData());
         Model_SetComponentPropertyData(getSelectedComponentLongName().toLocal8Bit().constData(), "Name", &new_name);
-        
+
         emit updateComponentsList();
         Reload();
         // Выбрать компонент с новым именем
@@ -7077,7 +7160,7 @@ void UModernDiagramWidget::actionClassDescriptionTriggered()
 {
     if(!m_contextMenuNode)
         return;
-        
+
     const char* class_name = Model_GetComponentClassName(getSelectedComponentLongName().toLocal8Bit().constData());
     if(class_name && strlen(class_name) > 0)
     {
@@ -7086,7 +7169,7 @@ void UModernDiagramWidget::actionClassDescriptionTriggered()
         UClassDescriptionDisplay* display = new UClassDescriptionDisplay(std::string(class_name));
         classDescWindow->setCentralWidget(display);
         classDescWindow->setWindowTitle("Class Description");
-        
+
         classDescWindow->resize(display->size());
         display->show();
         classDescWindow->showNormal();
@@ -7099,7 +7182,7 @@ void UModernDiagramWidget::deleteComponents(const QList<NodeItem*>& nodesToDelet
 {
     if(nodesToDelete.isEmpty())
         return;
-    
+
     // Запрос подтверждения пользователю (если не нажат Shift)
     if(QApplication::keyboardModifiers() != Qt::ShiftModifier)
     {
@@ -7114,13 +7197,13 @@ void UModernDiagramWidget::deleteComponents(const QList<NodeItem*>& nodesToDelet
         {
             message = "Are you sure you want to delete " + QString::number(nodesToDelete.size()) + " components?";
         }
-        
-        QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", message, 
+
+        QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", message,
             QMessageBox::Yes|QMessageBox::Cancel);
         if(reply == QMessageBox::Cancel)
             return;
     }
-    
+
     // Удаляем все компоненты
     for(NodeItem* node : nodesToDelete)
     {
@@ -7128,13 +7211,13 @@ void UModernDiagramWidget::deleteComponents(const QList<NodeItem*>& nodesToDelet
                                                      : m_componentName + "." + node->nodeName;
         Model_DelComponent("", fullName.toLocal8Bit().constData());
     }
-    
+
     // Очищаем сохраненные позиции удаленных узлов
     for(NodeItem* node : nodesToDelete)
     {
         m_lastNodePositions.remove(node);
     }
-    
+
     Reload();
     emit updateComponentsList();
 }
@@ -7143,7 +7226,7 @@ void UModernDiagramWidget::componentDelete()
 {
     if(!m_contextMenuNode)
         return;
-    
+
     QList<NodeItem*> nodesToDelete;
     nodesToDelete.append(m_contextMenuNode);
     deleteComponents(nodesToDelete);
@@ -7193,13 +7276,13 @@ void UModernDiagramWidget::componentDefault()
     QString selectedComponentLongName = getSelectedComponentLongName();
     if(QApplication::keyboardModifiers() != Qt::ShiftModifier)
     {
-        QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", 
-            "Are you sure you want to reset all parameters for component " + selectedComponentLongName + " to default values?", 
+        QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning",
+            "Are you sure you want to reset all parameters for component " + selectedComponentLongName + " to default values?",
             QMessageBox::Yes|QMessageBox::Cancel);
-        if (reply == QMessageBox::Cancel) 
+        if (reply == QMessageBox::Cancel)
             return;
     }
-    
+
     RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock();
     std::string stringid = selectedComponentLongName.toLocal8Bit().constData();
     RDK::UEPtr<RDK::UNet> object;
@@ -7207,16 +7290,16 @@ void UModernDiagramWidget::componentDefault()
         object = RDK::dynamic_pointer_cast<RDK::UNet>(RDK::GetModel());
     else
         object = RDK::dynamic_pointer_cast<RDK::UNet>(RDK::GetEngine()->FindComponent(stringid.c_str()));
-    
+
     RDK::UEPtr<RDK::UNet> owner = RDK::dynamic_pointer_cast<RDK::UNet>(object->GetOwner());
     RDK::UStringLinksList links_list;
-    
+
     if(owner)
         object->GetLinks(links_list, owner, true, object);
     storage->DefaultObject(object);
     if(owner)
         object->CreateLinks(links_list, owner);
-    
+
     Reload();
     emit updateComponentsList();
 }
@@ -7251,23 +7334,23 @@ void UModernDiagramWidget::componentQuickLink()
 {
     if(!m_contextMenuNode)
         return;
-        
+
     UQuickLinkDialog dialog(this, m_componentName, m_application);
-    
+
     if(dialog.exec() == QDialog::Accepted)
     {
         QString srcComp = dialog.getSourceComponent();
         QString srcProp = dialog.getSourceProperty();
         QString dstComp = dialog.getTargetComponent();
         QString dstProp = dialog.getTargetProperty();
-        
+
         if(!srcProp.isEmpty() && !dstProp.isEmpty())
         {
             int result = Model_CreateLinkByName(srcComp.toStdString().c_str(),
                                                srcProp.toStdString().c_str(),
                                                dstComp.toStdString().c_str(),
                                                dstProp.toStdString().c_str());
-            
+
             if(result == RDK_SUCCESS)
             {
                 Reload();
@@ -7279,7 +7362,7 @@ void UModernDiagramWidget::componentQuickLink()
 
 void UModernDiagramWidget::componentClearCache()
 {
-    int ret = QMessageBox::question(this, tr("Clear Component Cache"), 
+    int ret = QMessageBox::question(this, tr("Clear Component Cache"),
                                     tr("Are you sure you want to clear the component cache? This will remove all cached component information."),
                                     QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
     if(ret == QMessageBox::Yes)
@@ -7295,13 +7378,13 @@ void UModernDiagramWidget::saveCurrentViewState()
 {
     if(m_componentName.isEmpty() || !m_mainView)
         return;
-    
+
     ViewState state;
     QTransform transform = m_mainView->transform();
     state.scale = transform.m11();  // Масштаб по X (обычно равен масштабу по Y)
     state.center = m_mainView->mapToScene(m_mainView->viewport()->rect().center());
     state.isValid = true;
-    
+
     m_viewStates[m_componentName] = state;
 }
 
@@ -7309,7 +7392,7 @@ void UModernDiagramWidget::restoreViewState(const QString& componentName)
 {
     if(componentName.isEmpty() || !m_mainView || m_scene->items().isEmpty())
         return;
-    
+
     // Проверяем, есть ли сохраненное состояние для этого компонента
     if(m_viewStates.contains(componentName))
     {
@@ -7319,27 +7402,27 @@ void UModernDiagramWidget::restoreViewState(const QString& componentName)
             // Восстанавливаем масштаб
             m_mainView->resetTransform();
             m_mainView->scale(state.scale, state.scale);
-            
+
             // Восстанавливаем центр
             m_mainView->centerOn(state.center);
             return;
         }
     }
-    
+
     // Если сохраненного состояния нет, устанавливаем начальный масштаб 2.5x
     QRectF bounds = m_scene->itemsBoundingRect();
     if(!bounds.isNull())
     {
         QRectF padded = bounds.adjusted(-200, -200, 200, 200);
         m_scene->setSceneRect(padded);
-        
+
         // Устанавливаем начальный масштаб 2.5x
         m_mainView->resetTransform();
         m_mainView->scale(DEFAULT_SCALE, DEFAULT_SCALE);
-        
+
         // Центрируем на содержимом
         m_mainView->centerOn(bounds.center());
-        
+
         // Сохраняем это состояние
         ViewState state;
         state.scale = DEFAULT_SCALE;
@@ -7353,17 +7436,17 @@ void UModernDiagramWidget::resetZoom()
 {
     if(!m_mainView || m_scene->items().isEmpty())
         return;
-    
+
     QRectF bounds = m_scene->itemsBoundingRect();
     if(!bounds.isNull())
     {
         // Сбрасываем масштаб к начальному значению 2.5x
         m_mainView->resetTransform();
         m_mainView->scale(DEFAULT_SCALE, DEFAULT_SCALE);
-        
+
         // Центрируем на содержимом
         m_mainView->centerOn(bounds.center());
-        
+
         // Обновляем сохраненное состояние
         if(!m_componentName.isEmpty())
         {
@@ -7385,18 +7468,18 @@ void UModernDiagramWidget::SaveViewState()
 {
     if(!m_application)
         return;
-    
+
     // Сохраняем текущее состояние перед сохранением
     saveCurrentViewState();
-    
+
     QSettings settings(QString::fromLocal8Bit(
                          m_application->GetProjectPath().c_str())+"settings.qt",
                        QSettings::IniFormat);
     settings.beginGroup("UModernDiagramWidget_ViewStates");
-    
+
     // Сохраняем количество состояний
     settings.setValue("count", m_viewStates.size());
-    
+
     // Сохраняем каждое состояние
     int index = 0;
     for(auto it = m_viewStates.begin(); it != m_viewStates.end(); ++it, ++index)
@@ -7408,7 +7491,7 @@ void UModernDiagramWidget::SaveViewState()
         settings.setValue(key + "_center_y", it.value().center.y());
         settings.setValue(key + "_valid", it.value().isValid);
     }
-    
+
     settings.endGroup();
 }
 
@@ -7416,15 +7499,15 @@ void UModernDiagramWidget::LoadViewState()
 {
     if(!m_application)
         return;
-    
+
     QSettings settings(QString::fromLocal8Bit(
                          m_application->GetProjectPath().c_str())+"settings.qt",
                        QSettings::IniFormat);
     settings.beginGroup("UModernDiagramWidget_ViewStates");
-    
+
     int count = settings.value("count", 0).toInt();
     m_viewStates.clear();
-    
+
     // Загружаем каждое состояние
     for(int i = 0; i < count; ++i)
     {
@@ -7437,55 +7520,55 @@ void UModernDiagramWidget::LoadViewState()
             state.center.setX(settings.value(key + "_center_x", 0.0).toDouble());
             state.center.setY(settings.value(key + "_center_y", 0.0).toDouble());
             state.isValid = settings.value(key + "_valid", false).toBool();
-            
+
             if(state.isValid)
             {
                 m_viewStates[name] = state;
             }
         }
     }
-    
+
     settings.endGroup();
 }
 
 int UModernDiagramWidget::selectNodesInRect(const QRectF& selectionRect, bool addToSelection)
 {
     QString logMsg;
-    
+
     if(!m_scene)
     {
         return 0;
     }
-    
+
     // Очищаем предыдущее выделение, если не добавляем к выделению
     if(!addToSelection)
     {
         m_scene->clearSelection();
     }
-    
+
     // Используем прямой перебор всех узлов для более надежного выделения
     // Это гарантирует, что мы проверяем все NodeItem, а не только те, что вернул items()
     int selectedCount = 0;
     int totalNodes = m_nodes.size();
-    
+
     if(totalNodes == 0)
     {
         return 0;
     }
-    
+
     // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Собираем все узлы для выделения в список,
     // а затем устанавливаем выделение для всех одновременно.
     // Это предотвращает автоматический сброс выделения Qt при последовательном вызове setSelected(true)
     QList<NodeItem*> nodesToSelect;
-    
+
     for(NodeItem* node : m_nodes)
     {
         if(!node)
             continue;
-        
+
         // Получаем boundingRect узла в координатах scene
         QRectF nodeRect = node->sceneBoundingRect();
-        
+
         // Проверяем, пересекается ли узел с прямоугольником выделения
         bool intersects = selectionRect.intersects(nodeRect);
         if(intersects)
@@ -7494,7 +7577,7 @@ int UModernDiagramWidget::selectNodesInRect(const QRectF& selectionRect, bool ad
             selectedCount++;
         }
     }
-    
+
     // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Устанавливаем выделение для всех узлов одновременно,
     // используя флаг m_isBatchSelecting, чтобы предотвратить обработку ItemSelectedHasChanged
     // в itemChange, которая сбрасывает выделение Qt
@@ -7503,7 +7586,7 @@ int UModernDiagramWidget::selectNodesInRect(const QRectF& selectionRect, bool ad
         // Блокируем сигналы сцены и устанавливаем флаг batch-выделения
         m_scene->blockSignals(true);
         m_isBatchSelecting = true;
-        
+
         // ДИАГНОСТИКА: Проверяем выделение ПЕРЕД установкой для всех узлов
         QList<QGraphicsItem*> beforeBatchSelect = m_scene->selectedItems();
         int beforeBatchSelectCount = 0;
@@ -7519,17 +7602,17 @@ int UModernDiagramWidget::selectNodesInRect(const QRectF& selectionRect, bool ad
         }
         QString beforeBatchMsg = QString("selectNodesInRect: ПЕРЕД batch setSelected выделено %1 объектов: %2")
             .arg(beforeBatchSelectCount).arg(beforeBatchSelectNames.join(", "));
-        
+
         // Устанавливаем выделение для всех узлов одновременно
         for(NodeItem* node : nodesToSelect)
         {
             node->setSelected(true);
         }
-        
+
         // Сбрасываем флаг batch-выделения и разблокируем сигналы сцены
         m_isBatchSelecting = false;
         m_scene->blockSignals(false);
-        
+
         // ДИАГНОСТИКА: Проверяем выделение ПОСЛЕ установки для всех узлов
         QList<QGraphicsItem*> afterBatchSelect = m_scene->selectedItems();
         int afterBatchSelectCount = 0;
@@ -7545,7 +7628,7 @@ int UModernDiagramWidget::selectNodesInRect(const QRectF& selectionRect, bool ad
         }
         QString afterBatchMsg = QString("selectNodesInRect: ПОСЛЕ batch setSelected выделено %1 объектов: %2")
             .arg(afterBatchSelectCount).arg(afterBatchSelectNames.join(", "));
-        
+
         if(afterBatchSelectCount != nodesToSelect.size())
         {
             QStringList expectedNames;
@@ -7558,7 +7641,7 @@ int UModernDiagramWidget::selectNodesInRect(const QRectF& selectionRect, bool ad
             MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_WARNING, warningMsg.toStdString().c_str(), 0);
         }
     }
-    
+
     return selectedCount;
 }
 
@@ -7583,7 +7666,7 @@ QString UModernDiagramWidget::generateNodeTooltip(NodeItem* node) const
 {
     if(!node)
         return QString();
-    
+
     QString tooltip = tr(
         "<b>%1</b><br/>"
         "<i>Class: %2</i><br/><br/>"
@@ -7598,7 +7681,7 @@ QString UModernDiagramWidget::generateNodeTooltip(NodeItem* node) const
         "• Shift + Delete - Delete without confirmation<br/>"
         "• Esc - Cancel operation"
     ).arg(node->nodeName, node->className);
-    
+
     return tooltip;
 }
 
@@ -7606,10 +7689,10 @@ QString UModernDiagramWidget::generatePortTooltip(const Port& port) const
 {
     QString portType = port.isInput ? tr("Input") : tr("Output");
     QString categoryName = getPortCategoryName(port.category);
-    QString actionText = port.isInput 
+    QString actionText = port.isInput
         ? tr("• Left Click - Complete connection")
         : tr("• Left Click - Start connection");
-    
+
     QString tooltip = tr(
         "<b>%1</b><br/>"
         "<i>%2</i><br/>"
@@ -7619,7 +7702,7 @@ QString UModernDiagramWidget::generatePortTooltip(const Port& port) const
         "• Shift + Left Click - Show nested ports<br/>"
         "• Enter - Select port (in selection window)"
     ).arg(port.displayName, port.fullPath, portType, categoryName, actionText);
-    
+
     return tooltip;
 }
 
@@ -7627,11 +7710,11 @@ QString UModernDiagramWidget::generateLinkTooltip(LinkItem* link) const
 {
     if(!link || !link->getSourceNode())
         return QString();
-    
+
     QString srcName = link->getSourceNode()->nodeName;
     NodeItem* dstNode = link->getDestinationNode();
     QString dstName = dstNode ? dstNode->nodeName : tr("(temporary)");
-    
+
     QString tooltip = tr(
         "<b>Connection</b><br/>"
         "From: %1<br/>"
@@ -7639,7 +7722,7 @@ QString UModernDiagramWidget::generateLinkTooltip(LinkItem* link) const
         "<b>Actions:</b><br/>"
         "• Right Click - Context menu"
     ).arg(srcName, dstName);
-    
+
     return tooltip;
 }
 
@@ -7657,7 +7740,7 @@ QString UModernDiagramWidget::generateCanvasTooltip() const
         "<b>Connections:</b><br/>"
         "• Right Click - Cancel connection"
     );
-    
+
     return tooltip;
 }
 
@@ -7696,9 +7779,9 @@ QString UModernDiagramWidget::getCacheFilePath(const QString& extension) const
 {
     if(!m_application)
         return QString();
-    
+
     QString cacheDirPath;
-    
+
     // Пытаемся использовать путь к текущему открытому проекту
     QString projectPath = QString::fromLocal8Bit(m_application->GetProjectPath().c_str());
     if(!projectPath.isEmpty())
@@ -7712,7 +7795,7 @@ QString UModernDiagramWidget::getCacheFilePath(const QString& extension) const
         // Fallback: используем старую логику, если проект не открыт
         QString configsPath = QString::fromLocal8Bit(m_application->GetConfigsMainPath().c_str());
         QString workDir = QString::fromLocal8Bit(m_application->GetWorkDirectory().c_str());
-        
+
         // Определяем полный путь к папке конфигураций
         QString fullConfigsPath;
         if(QDir::isAbsolutePath(configsPath))
@@ -7725,7 +7808,7 @@ QString UModernDiagramWidget::getCacheFilePath(const QString& extension) const
             QDir workDirObj(workDir);
             fullConfigsPath = workDirObj.absoluteFilePath(configsPath);
         }
-        
+
         // Получаем имя проекта из имени файла приложения или используем "default"
         QString projectName = "default";
         QString appFileName = QString::fromLocal8Bit(m_application->GetApplicationFileName().c_str());
@@ -7736,19 +7819,19 @@ QString UModernDiagramWidget::getCacheFilePath(const QString& extension) const
             if(projectName.isEmpty())
                 projectName = "default";
         }
-        
+
         // Создаем путь к папке кэша: {ConfigsMainPath}/{ProjectName}/.cache/
         QDir configsDir(fullConfigsPath);
         cacheDirPath = configsDir.absoluteFilePath(projectName + "/.cache");
     }
-    
+
     // Создаем папку кэша, если она не существует
     QDir cacheDir(cacheDirPath);
     if(!cacheDir.exists())
     {
         cacheDir.mkpath(".");
     }
-    
+
     // Возвращаем путь к файлу кэша
     return cacheDir.absoluteFilePath("component_cache." + extension);
 }
@@ -7761,26 +7844,26 @@ bool UModernDiagramWidget::saveComponentCacheToFile(const QString& filePath, boo
         QFile file(filePath);
         if(!file.open(QIODevice::WriteOnly))
             return false;
-        
+
         QDataStream stream(&file);
         stream.setVersion(QDataStream::Qt_5_15);
-        
+
         // Заголовок: магическое число и версия
         const quint32 MAGIC = 0x4E4D5344; // "NMSD" (NeuroModeler SDK)
         const quint32 VERSION = 1;
         stream << MAGIC << VERSION;
-        
+
         const QHash<QString, ComponentCacheEntry>& entries = m_componentCache.getAllEntries();
         stream << static_cast<quint32>(entries.size());
-        
+
         for(auto it = entries.begin(); it != entries.end(); ++it)
         {
             const QString& componentName = it.key();
             const ComponentCacheEntry& entry = it.value();
-            
+
             // Имя компонента
             stream << componentName;
-            
+
             // Метаданные
             stream << entry.timestamp;
             stream << entry.hash;
@@ -7790,7 +7873,7 @@ bool UModernDiagramWidget::saveComponentCacheToFile(const QString& filePath, boo
             {
                 stream << entry.kernelPos.x() << entry.kernelPos.y();
             }
-            
+
             // Вспомогательная функция для сериализации портов
             auto serializePorts = [&stream](const QVector<Port>& ports)
             {
@@ -7806,7 +7889,7 @@ bool UModernDiagramWidget::saveComponentCacheToFile(const QString& filePath, boo
                     stream << static_cast<quint32>(port.category);
                 }
             };
-            
+
             // Сериализуем все массивы портов
             serializePorts(entry.ownInputPorts);
             serializePorts(entry.childInputPorts);
@@ -7814,7 +7897,7 @@ bool UModernDiagramWidget::saveComponentCacheToFile(const QString& filePath, boo
             serializePorts(entry.ownOutputPorts);
             serializePorts(entry.childOutputPorts);
             serializePorts(entry.aliasOutputPorts);
-            
+
             // Сериализуем portCategoryCache
             stream << static_cast<quint32>(entry.portCategoryCache.size());
             for(auto cacheIt = entry.portCategoryCache.begin(); cacheIt != entry.portCategoryCache.end(); ++cacheIt)
@@ -7824,26 +7907,26 @@ bool UModernDiagramWidget::saveComponentCacheToFile(const QString& filePath, boo
                 stream << static_cast<quint32>(cacheIt.value()); // category
             }
         }
-        
+
         file.close();
         return true;
     }
-    
+
     // JSON формат
     QJsonObject root;
     root["version"] = 1;
-    
+
     QJsonObject components;
     const QHash<QString, ComponentCacheEntry>& entries = m_componentCache.getAllEntries();
     for(auto it = entries.begin(); it != entries.end(); ++it)
     {
         const QString& componentName = it.key();
         const ComponentCacheEntry& entry = it.value();
-        
+
         QJsonObject componentObj;
         componentObj["timestamp"] = entry.timestamp;
         componentObj["hash"] = entry.hash;
-        
+
         // Сохраняем данные, используемые в buildScene
         componentObj["className"] = entry.className;
         componentObj["hasKernelPos"] = entry.hasKernelPos;
@@ -7854,9 +7937,9 @@ bool UModernDiagramWidget::saveComponentCacheToFile(const QString& filePath, boo
             kernelPosObj["y"] = entry.kernelPos.y();
             componentObj["kernelPos"] = kernelPosObj;
         }
-        
+
         QJsonObject portsObj;
-        
+
         // Сериализуем порты
         QJsonArray ownInputArray;
         for(const Port& port : entry.ownInputPorts)
@@ -7871,7 +7954,7 @@ bool UModernDiagramWidget::saveComponentCacheToFile(const QString& filePath, boo
             ownInputArray.append(portObj);
         }
         portsObj["ownInput"] = ownInputArray;
-        
+
         QJsonArray childInputArray;
         for(const Port& port : entry.childInputPorts)
         {
@@ -7885,7 +7968,7 @@ bool UModernDiagramWidget::saveComponentCacheToFile(const QString& filePath, boo
             childInputArray.append(portObj);
         }
         portsObj["childInput"] = childInputArray;
-        
+
         QJsonArray aliasInputArray;
         for(const Port& port : entry.aliasInputPorts)
         {
@@ -7899,7 +7982,7 @@ bool UModernDiagramWidget::saveComponentCacheToFile(const QString& filePath, boo
             aliasInputArray.append(portObj);
         }
         portsObj["aliasInput"] = aliasInputArray;
-        
+
         QJsonArray ownOutputArray;
         for(const Port& port : entry.ownOutputPorts)
         {
@@ -7913,7 +7996,7 @@ bool UModernDiagramWidget::saveComponentCacheToFile(const QString& filePath, boo
             ownOutputArray.append(portObj);
         }
         portsObj["ownOutput"] = ownOutputArray;
-        
+
         QJsonArray childOutputArray;
         for(const Port& port : entry.childOutputPorts)
         {
@@ -7927,7 +8010,7 @@ bool UModernDiagramWidget::saveComponentCacheToFile(const QString& filePath, boo
             childOutputArray.append(portObj);
         }
         portsObj["childOutput"] = childOutputArray;
-        
+
         QJsonArray aliasOutputArray;
         for(const Port& port : entry.aliasOutputPorts)
         {
@@ -7941,21 +8024,21 @@ bool UModernDiagramWidget::saveComponentCacheToFile(const QString& filePath, boo
             aliasOutputArray.append(portObj);
         }
         portsObj["aliasOutput"] = aliasOutputArray;
-        
+
         componentObj["ports"] = portsObj;
         components[componentName] = componentObj;
     }
-    
+
     root["components"] = components;
-    
+
     QJsonDocument doc(root);
     QFile file(filePath);
     if(!file.open(QIODevice::WriteOnly | QIODevice::Text))
         return false;
-    
+
     file.write(doc.toJson());
     file.close();
-    
+
     return true;
 }
 
@@ -7967,10 +8050,10 @@ bool UModernDiagramWidget::loadComponentCacheFromFile(const QString& filePath, b
         QFile file(filePath);
         if(!file.exists() || !file.open(QIODevice::ReadOnly))
             return false;
-        
+
         QDataStream stream(&file);
         stream.setVersion(QDataStream::Qt_5_15);
-        
+
         // Проверяем заголовок
         quint32 magic, version;
         stream >> magic >> version;
@@ -7979,20 +8062,20 @@ bool UModernDiagramWidget::loadComponentCacheFromFile(const QString& filePath, b
             file.close();
             return false;
         }
-        
+
         quint32 componentCount;
         stream >> componentCount;
-        
+
         QHash<QString, ComponentCacheEntry> entries;
-        
+
         for(quint32 i = 0; i < componentCount; ++i)
         {
             ComponentCacheEntry entry;
             QString componentName;
-            
+
             // Имя компонента
             stream >> componentName;
-            
+
             // Метаданные
             stream >> entry.timestamp;
             stream >> entry.hash;
@@ -8005,7 +8088,7 @@ bool UModernDiagramWidget::loadComponentCacheFromFile(const QString& filePath, b
                 entry.kernelPos.setX(x);
                 entry.kernelPos.setY(y);
             }
-            
+
             // Вспомогательная функция для десериализации портов
             auto deserializePorts = [&stream](QVector<Port>& ports)
             {
@@ -8030,7 +8113,7 @@ bool UModernDiagramWidget::loadComponentCacheFromFile(const QString& filePath, b
                     ports.append(port);
                 }
             };
-            
+
             // Десериализуем все массивы портов
             deserializePorts(entry.ownInputPorts);
             deserializePorts(entry.childInputPorts);
@@ -8038,7 +8121,7 @@ bool UModernDiagramWidget::loadComponentCacheFromFile(const QString& filePath, b
             deserializePorts(entry.ownOutputPorts);
             deserializePorts(entry.childOutputPorts);
             deserializePorts(entry.aliasOutputPorts);
-            
+
             // Десериализуем portCategoryCache
             quint32 cacheSize;
             stream >> cacheSize;
@@ -8050,56 +8133,56 @@ bool UModernDiagramWidget::loadComponentCacheFromFile(const QString& filePath, b
                 stream >> propertyName >> isInput >> category;
                 entry.portCategoryCache.insert(qMakePair(propertyName, isInput), static_cast<PortCategory>(category));
             }
-            
+
             entries[componentName] = entry;
         }
-        
+
         file.close();
-        
+
         if(stream.status() != QDataStream::Ok)
         {
             QString logMsg = QString("[UModernDiagramWidget] Failed to load component cache from binary file: %1 (stream error)").arg(filePath);
             MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
             return false;
         }
-        
+
         m_componentCache.setAllEntries(entries);
         QString logMsg = QString("[UModernDiagramWidget] Component cache loaded from binary file: %1 (%2 entries)")
             .arg(filePath).arg(entries.size());
         MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
         return true;
     }
-    
+
     // JSON формат
     QFile file(filePath);
     if(!file.exists() || !file.open(QIODevice::ReadOnly | QIODevice::Text))
         return false;
-    
+
     QByteArray rawData = file.readAll();
     file.close();
-    
+
     QJsonParseError error;
     QJsonDocument doc = QJsonDocument::fromJson(rawData, &error);
     if(error.error != QJsonParseError::NoError || !doc.isObject())
         return false;
-    
+
     QJsonObject root = doc.object();
     int version = root["version"].toInt();
     if(version != 1)
         return false;  // Неподдерживаемая версия
-    
+
     QJsonObject components = root["components"].toObject();
     QHash<QString, ComponentCacheEntry> entries;
-    
+
     for(auto it = components.begin(); it != components.end(); ++it)
     {
         const QString& componentName = it.key();
         QJsonObject componentObj = it.value().toObject();
-        
+
         ComponentCacheEntry entry;
         entry.timestamp = componentObj["timestamp"].toVariant().toLongLong();
         entry.hash = componentObj["hash"].toString();
-        
+
         // Восстанавливаем данные, используемые в buildScene
         entry.className = componentObj["className"].toString();
         entry.hasKernelPos = componentObj["hasKernelPos"].toBool(false);
@@ -8109,9 +8192,9 @@ bool UModernDiagramWidget::loadComponentCacheFromFile(const QString& filePath, b
             entry.kernelPos.setX(kernelPosObj["x"].toDouble());
             entry.kernelPos.setY(kernelPosObj["y"].toDouble());
         }
-        
+
         QJsonObject portsObj = componentObj["ports"].toObject();
-        
+
         // Десериализуем порты
         QJsonArray ownInputArray = portsObj["ownInput"].toArray();
         for(const QJsonValue& val : ownInputArray)
@@ -8126,7 +8209,7 @@ bool UModernDiagramWidget::loadComponentCacheFromFile(const QString& filePath, b
             port.category = static_cast<PortCategory>(portObj["category"].toInt());
             entry.ownInputPorts.append(port);
         }
-        
+
         QJsonArray childInputArray = portsObj["childInput"].toArray();
         for(const QJsonValue& val : childInputArray)
         {
@@ -8140,7 +8223,7 @@ bool UModernDiagramWidget::loadComponentCacheFromFile(const QString& filePath, b
             port.category = static_cast<PortCategory>(portObj["category"].toInt());
             entry.childInputPorts.append(port);
         }
-        
+
         QJsonArray aliasInputArray = portsObj["aliasInput"].toArray();
         for(const QJsonValue& val : aliasInputArray)
         {
@@ -8154,7 +8237,7 @@ bool UModernDiagramWidget::loadComponentCacheFromFile(const QString& filePath, b
             port.category = static_cast<PortCategory>(portObj["category"].toInt());
             entry.aliasInputPorts.append(port);
         }
-        
+
         QJsonArray ownOutputArray = portsObj["ownOutput"].toArray();
         for(const QJsonValue& val : ownOutputArray)
         {
@@ -8168,7 +8251,7 @@ bool UModernDiagramWidget::loadComponentCacheFromFile(const QString& filePath, b
             port.category = static_cast<PortCategory>(portObj["category"].toInt());
             entry.ownOutputPorts.append(port);
         }
-        
+
         QJsonArray childOutputArray = portsObj["childOutput"].toArray();
         for(const QJsonValue& val : childOutputArray)
         {
@@ -8182,7 +8265,7 @@ bool UModernDiagramWidget::loadComponentCacheFromFile(const QString& filePath, b
             port.category = static_cast<PortCategory>(portObj["category"].toInt());
             entry.childOutputPorts.append(port);
         }
-        
+
         QJsonArray aliasOutputArray = portsObj["aliasOutput"].toArray();
         for(const QJsonValue& val : aliasOutputArray)
         {
@@ -8196,10 +8279,10 @@ bool UModernDiagramWidget::loadComponentCacheFromFile(const QString& filePath, b
             port.category = static_cast<PortCategory>(portObj["category"].toInt());
             entry.aliasOutputPorts.append(port);
         }
-        
+
         entries[componentName] = entry;
     }
-    
+
     m_componentCache.setAllEntries(entries);
     QString logMsg = QString("[UModernDiagramWidget] Component cache loaded from JSON file: %1 (%2 entries)")
         .arg(filePath).arg(entries.size());
@@ -8211,12 +8294,12 @@ QString UModernDiagramWidget::computeComponentHash(const QString& componentFullN
 {
     if(!m_application)
         return QString();
-    
+
     QCryptographicHash hash(QCryptographicHash::Sha256);
-    
+
     // Добавляем имя компонента
     hash.addData(componentFullName.toUtf8());
-    
+
     // Добавляем список дочерних компонентов
     const char* compList = Model_GetComponentsNameList(componentFullName.toStdString().c_str());
     if(compList)
@@ -8225,7 +8308,7 @@ QString UModernDiagramWidget::computeComponentHash(const QString& componentFullN
         hash.addData(compList, len);
         Engine_FreeBufString(compList);
     }
-    
+
     // Добавляем список портов (входных и выходных)
     const char* inputProps = Model_GetComponentPropertiesLookupList(componentFullName.toStdString().c_str(), ptPubInput | ptInput);
     if(inputProps)
@@ -8234,7 +8317,7 @@ QString UModernDiagramWidget::computeComponentHash(const QString& componentFullN
         hash.addData(inputProps, len);
         Engine_FreeBufString(inputProps);
     }
-    
+
     const char* outputProps = Model_GetComponentPropertiesLookupList(componentFullName.toStdString().c_str(), ptPubOutput | ptOutput);
     if(outputProps)
     {
@@ -8242,7 +8325,7 @@ QString UModernDiagramWidget::computeComponentHash(const QString& componentFullN
         hash.addData(outputProps, len);
         Engine_FreeBufString(outputProps);
     }
-    
+
     // Добавляем список связей
     const char* xmlRaw = Model_GetComponentInternalLinks(componentFullName.toStdString().c_str(), nullptr);
     if(xmlRaw)
@@ -8251,7 +8334,7 @@ QString UModernDiagramWidget::computeComponentHash(const QString& componentFullN
         hash.addData(xmlRaw, len);
         Engine_FreeBufString(xmlRaw);
     }
-    
+
     return QString::fromLatin1(hash.result().toHex());
 }
 
@@ -8272,11 +8355,11 @@ void UModernDiagramWidget::invalidateComponentCache(const QString& componentFull
 void UModernDiagramWidget::clearComponentCache()
 {
     m_componentCache.clear();
-    
+
     // Также удаляем файлы кэша
     QString jsonPath = getCacheFilePath("json");
     QString binPath = getCacheFilePath("bin");
-    
+
     if(QFile::exists(jsonPath))
         QFile::remove(jsonPath);
     if(QFile::exists(binPath))
