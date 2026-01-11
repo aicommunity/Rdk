@@ -13,6 +13,7 @@
 #include <QTreeWidget>
 #include <QHash>
 #include <QMap>
+#include <QSet>
 #include <QPushButton>
 #include <QSettings>
 #include <QJsonDocument>
@@ -24,6 +25,9 @@
 #include <rdk_application.h>
 #include "../Core/Engine/UXMLEnvSerialize.h"
 #include "../Core/Engine/UEnvSupport.h"
+
+// Forward declaration for test friend class
+class UModernDiagramWidgetMovementTest;
 
 /// Простой современный виджет диаграммы на основе QGraphicsView/QGraphicsScene.
 /// Отображает компоненты как узлы с портами, поддерживает drag&drop связей и миникарту.
@@ -88,6 +92,8 @@ protected:
 private:
     friend class ModernScene;
     friend class ModernGraphicsView;
+    // Friend class for unit tests
+    friend class UModernDiagramWidgetMovementTest;
 
     /// Категория порта для категоризации выходных портов
     enum class PortCategory {
@@ -380,6 +386,22 @@ private:
     // Флаг для предотвращения сохранения координат во время инициализации сцены
     bool m_isBuildingScene = false;
 
+    // Флаг для предотвращения эмиссии сигнала componentSelected при программном выделении
+    mutable bool m_isProgrammaticSelection = false;
+
+    // Флаг для предотвращения рекурсивных вызовов itemChange при сохранении координат
+    mutable bool m_isSavingCoordinates = false;
+
+    // Флаг для предотвращения повторных вызовов updateNormalizationOffsetForMovement во время обновления позиций
+    mutable bool m_isUpdatingNormalizationOffset = false;
+
+    // Компоненты с отрицательными позициями во время движения (для обновления offset при завершении движения)
+    QSet<NodeItem*> m_componentsWithNegativePos;
+
+    // Исходные абсолютные координаты компонентов ДО перемещения в отрицательную область
+    // Ключ: NodeItem*, значение: исходные абсолютные координаты (normalizedPos + offset)
+    QMap<NodeItem*, QPointF> m_originalAbsolutePositions;
+
     // Кнопка сброса масштаба
     QPushButton* m_resetZoomButton;
 
@@ -444,6 +466,16 @@ private slots:
     bool loadCoord(const QString& fullName, QPointF& outPos) const;
     void saveCoord(const QString& fullName, const QPointF& scenePos) const;
     QPointF currentMinScenePos() const;
+    /// Пересчитывает m_normalizationOffset на основе текущих kernel координат всех компонентов на сцене
+    /// Это гарантирует, что offset соответствует тому, что будет использоваться при загрузке
+    /// @param pendingComponentPos Опциональная позиция компонента, который еще не сохранен (в абсолютных scene координатах)
+    /// @param pendingComponentName Опциональное имя компонента, который еще не сохранен
+    void recalculateNormalizationOffset(const QPointF& pendingComponentPos = QPointF(), const QString& pendingComponentName = QString());
+
+    /// Обновляет m_normalizationOffset во время перемещения компонента, если он стал новым минимумом
+    /// Это предотвращает сохранение отрицательных координат и "прыжки" компонентов
+    /// @param newMinNormalizedPos Новая минимальная нормализованная позиция компонента
+    void updateNormalizationOffsetForMovement(const QPointF& newMinNormalizedPos, const QSet<NodeItem*>& componentsToAdjust = QSet<NodeItem*>());
 
     // Viewport state management methods
     void saveCurrentViewState();
@@ -456,6 +488,13 @@ private slots:
     QString generateLinkTooltip(LinkItem* link) const;
     QString generateCanvasTooltip() const;
     QString getPortCategoryName(PortCategory category) const;
+
+public:
+    // Test accessors for unit tests (always available for testing)
+    // Implementation in .cpp file to avoid issues with incomplete type NodeItem
+    // These methods are placed at the end of the class after NodeItem is fully defined
+    QPointF testGetNormalizationOffset() const;
+    const QSet<NodeItem*>& testGetComponentsWithNegativePos() const;
 };
 
 #endif // UMODERNDIAGRAMWIDGET_H

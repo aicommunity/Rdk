@@ -1,4 +1,4 @@
-#include "UModernDiagramWidget.h"
+ #include "UModernDiagramWidget.h"
 #include "UStyleManager.h"
 
 #include <QVBoxLayout>
@@ -476,7 +476,7 @@ protected:
             QString fullName = QString::fromStdString(name);
 
             // Вычисляем абсолютные координаты для сохранения в ядро
-            // Используем текущий m_normalizationOffset для правильного вычисления абсолютных координат
+            // Используем текущий offset без пересчета, чтобы избежать бесконечных циклов
             QPointF absoluteScenePos = scenePos + m_owner->m_normalizationOffset;
             m_owner->saveCoord(fullName, absoluteScenePos);
 
@@ -1487,20 +1487,104 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
             m_owner->m_lastNodePositions[this] = newPos;
         }
 
+        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Отслеживаем компоненты с отрицательными позициями во время движения
+        // Это должно происходить ВСЕГДА при изменении позиции, не только при сохранении координат
+        // Offset будет обновлен только при завершении движения (в mouseReleaseEvent), чтобы предотвратить
+        // каскадные обновления во время drag-операции
+        // ВАЖНО: Эта проверка должна быть ВНЕ блока if(isSelected()), чтобы работать для всех компонентов
+        if(m_owner && !m_owner->m_isUpdatingNormalizationOffset)
+        {
+            // CRITICAL FIX: Use pos() to get normalized coordinates for negative position check
+            // pos() returns normalized coordinates (relative to m_normalizationOffset)
+            // scenePos() returns absolute scene coordinates (pos() + m_normalizationOffset)
+            QPointF normalizedPos = pos();
+
+            // CRITICAL: Don't add to m_componentsWithNegativePos if we're currently updating offset
+            if(normalizedPos.x() < 0 || normalizedPos.y() < 0)
+            {
+                // Если компонент еще не в set, сохраняем его исходные абсолютные координаты
+                // ВАЖНО: Делаем это ДО обновления m_lastNodePositions, чтобы сохранить исходную позицию
+                if(!m_owner->m_componentsWithNegativePos.contains(this))
+                {
+                    // Сохраняем исходные абсолютные координаты ДО перемещения в отрицательную область
+                    // Используем последнюю нормализованную позицию из m_lastNodePositions (ДО обновления)
+                    QPointF originalNormalizedPos = m_owner->m_lastNodePositions.value(this, normalizedPos);
+                    QPointF originalAbsolutePos = originalNormalizedPos + m_owner->m_normalizationOffset;
+                    m_owner->m_originalAbsolutePositions[this] = originalAbsolutePos;
+
+                    QString fullName = m_owner->m_componentName.isEmpty() ? nodeName
+                                                                          : m_owner->m_componentName + "." + nodeName;
+                    QString logMsg = QString("[UModernDiagramWidget::NodeItem::itemChange] Component '%1' moved to negative: originalNormalized=(%2, %3), originalAbsolute=(%4, %5), newNormalized=(%6, %7)")
+                        .arg(fullName)
+                        .arg(originalNormalizedPos.x()).arg(originalNormalizedPos.y())
+                        .arg(originalAbsolutePos.x()).arg(originalAbsolutePos.y())
+                        .arg(normalizedPos.x()).arg(normalizedPos.y());
+                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+                }
+
+                // Добавляем компонент в set для последующего обновления offset при завершении движения
+                m_owner->m_componentsWithNegativePos.insert(this);
+
+                QString fullName = m_owner->m_componentName.isEmpty() ? nodeName
+                                                                      : m_owner->m_componentName + "." + nodeName;
+                // Logging for debugging negative position detection
+                QString logMsg = QString("[UModernDiagramWidget::NodeItem::itemChange] Component '%1' has negative position: normalizedPos=(%2, %3), will update offset on mouse release")
+                    .arg(fullName)
+                    .arg(normalizedPos.x()).arg(normalizedPos.y());
+                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+            }
+        }
+
         // Сохранить координаты
         // Важно: сохраняем абсолютные координаты (с учетом визуальной нормализации)
         // Не сохраняем координаты во время инициализации сцены
-        if(m_owner && !m_owner->m_isBuildingScene)
+        // Используем флаг m_isSavingCoordinates для предотвращения рекурсивных вызовов
+        if(m_owner && !m_owner->m_isBuildingScene && !m_owner->m_isSavingCoordinates)
         {
+            // Set flag to prevent recursive calls to itemChange when saving coordinates
+            m_owner->m_isSavingCoordinates = true;
+
             QString fullName = m_owner->m_componentName.isEmpty() ? nodeName
                                                                   : m_owner->m_componentName + "." + nodeName;
-            // Сохраняем координаты напрямую из scenePos() без учета нормализации
-            // Нормализация применяется только для визуального отображения, координаты в ядре должны быть абсолютными
-            QPointF normalizedPos = scenePos();
+            // CRITICAL FIX: Use pos() to get normalized coordinates for negative position check
+            // pos() returns normalized coordinates (relative to m_normalizationOffset)
+            // scenePos() returns absolute scene coordinates (pos() + m_normalizationOffset)
+            QPointF normalizedPos = pos();
+
             // Денормализуем: scenePos() уже нормализован, добавляем offset для получения абсолютных координат
             QPointF absoluteScenePos = normalizedPos + m_owner->m_normalizationOffset;
-            // Удалено избыточное логирование - создавало спам в INFO логах
-            m_owner->saveCoord(fullName, absoluteScenePos);
+
+            // Logging for debugging component movement
+            QString logMsg = QString("[UModernDiagramWidget::NodeItem::itemChange] Component '%1' moved: normalizedPos=(%2, %3), offset=(%4, %5), absoluteScenePos=(%6, %7)")
+                .arg(fullName)
+                .arg(normalizedPos.x()).arg(normalizedPos.y())
+                .arg(m_owner->m_normalizationOffset.x()).arg(m_owner->m_normalizationOffset.y())
+                .arg(absoluteScenePos.x()).arg(absoluteScenePos.y());
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+
+            // Сохраняем координаты без пересчета offset
+            // Offset пересчитывается только при загрузке сцены, чтобы избежать бесконечных циклов
+            // CRITICAL: Don't save coordinates or update sceneRect during offset update
+            // This prevents components from affecting each other's positions during offset adjustment
+            if(!m_owner->m_isUpdatingNormalizationOffset && !m_owner->m_isBuildingScene)
+            {
+                m_owner->saveCoord(fullName, absoluteScenePos);
+
+                // Обновляем sceneRect после перемещения компонента, чтобы холст соответствовал новым размерам
+                // Note: setSceneRect() may trigger scene updates, but m_isSavingCoordinates flag prevents recursion
+                if(m_owner && m_owner->m_scene)
+                {
+                    QRectF bounds = m_owner->m_scene->itemsBoundingRect();
+                    if(!bounds.isNull())
+                    {
+                        QRectF padded = bounds.adjusted(-200, -200, 200, 200);
+                        m_owner->m_scene->setSceneRect(padded);
+                    }
+                }
+            }
+
+            // Clear flag after saving coordinates
+            m_owner->m_isSavingCoordinates = false;
         }
     }
     else if(change == QGraphicsItem::ItemSelectedHasChanged && m_owner)
@@ -1510,6 +1594,12 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
         if(m_owner->m_isBatchSelecting)
         {
             // Пропускаем обработку ItemSelectedHasChanged во время batch-выделения
+            return QGraphicsRectItem::itemChange(change, value);
+        }
+
+        // Don't emit componentSelected during programmatic selection to prevent recursion
+        if(m_owner->m_isProgrammaticSelection)
+        {
             return QGraphicsRectItem::itemChange(change, value);
         }
 
@@ -4001,34 +4091,25 @@ void UModernDiagramWidget::buildScene()
         QPointF kernelPos;
         bool loaded = false;
 
-        // Пытаемся взять координаты из сессионного кэша компонентов
+        // Always load coordinates from XML to ensure we get the latest saved values
+        // Cache is updated when coordinates are saved, but we want to ensure consistency
+        loaded = loadCoord(fullName, kernelPos);
+
+        // Update cache with loaded coordinates for future use
         ComponentCacheEntry* cacheEntry = m_componentCache.getEntry(fullName);
-        bool usedCache = false;
-        if(cacheEntry && cacheEntry->hasKernelPos)
+        if(cacheEntry)
         {
-            kernelPos = cacheEntry->kernelPos;
-            loaded = true;
-            usedCache = true;
+            cacheEntry->kernelPos = kernelPos;
+            cacheEntry->hasKernelPos = loaded;
+            cacheEntry->timestamp = QDateTime::currentMSecsSinceEpoch();
         }
         else
         {
-            loaded = loadCoord(fullName, kernelPos);
-
-            // Сохраняем координаты в кэш для ускорения последующих Reload
-            if(cacheEntry)
-            {
-                cacheEntry->kernelPos = kernelPos;
-                cacheEntry->hasKernelPos = loaded;
-                cacheEntry->timestamp = QDateTime::currentMSecsSinceEpoch();
-            }
-            else
-            {
-                ComponentCacheEntry newEntry;
-                newEntry.kernelPos = kernelPos;
-                newEntry.hasKernelPos = loaded;
-                newEntry.timestamp = QDateTime::currentMSecsSinceEpoch();
-                m_componentCache.setEntry(fullName, newEntry);
-            }
+            ComponentCacheEntry newEntry;
+            newEntry.kernelPos = kernelPos;
+            newEntry.hasKernelPos = loaded;
+            newEntry.timestamp = QDateTime::currentMSecsSinceEpoch();
+            m_componentCache.setEntry(fullName, newEntry);
         }
 
         coordCache[fullName] = kernelPos;
@@ -4056,7 +4137,15 @@ void UModernDiagramWidget::buildScene()
     // Сохраняем смещение нормализации ДО создания узлов, чтобы оно было доступно при сохранении координат
     // ВАЖНО: это смещение используется только для визуального отображения, координаты в ядре остаются абсолютными
     m_normalizationOffset = minScenePos;
-    // Удалено избыточное логирование - создавало спам в INFO логах
+
+    // Logging for debugging coordinate loading
+    QString logMsg = QString("[UModernDiagramWidget::buildScene] Loading components: coordsLoaded=%1, minKernel=(%2, %3), minScenePos=(%4, %5), m_normalizationOffset=(%6, %7), m_coordScale=%8")
+        .arg(coordsLoaded ? "true" : "false")
+        .arg(minKernel.x()).arg(minKernel.y())
+        .arg(minScenePos.x()).arg(minScenePos.y())
+        .arg(m_normalizationOffset.x()).arg(m_normalizationOffset.y())
+        .arg(m_coordScale);
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 
     // Оптимизация: создаем все узлы сначала, затем добавляем в сцену пакетами
     QList<NodeItem*> nodesToAdd;
@@ -4111,11 +4200,23 @@ void UModernDiagramWidget::buildScene()
             // Используем абсолютные координаты из ядра, нормализуем только для визуального отображения
             QPointF absoluteScenePos = scenePosFromKernel(kernelPos);
             loaded = absoluteScenePos - minScenePos;
-            // Удалено избыточное логирование - создавало спам в INFO логах
+
+            // Logging for debugging component placement
+            QString logMsg = QString("[UModernDiagramWidget::buildScene] Component '%1': kernelPos=(%2, %3), absoluteScenePos=(%4, %5), minScenePos=(%6, %7), loaded=(%8, %9)")
+                .arg(fullName)
+                .arg(kernelPos.x()).arg(kernelPos.y())
+                .arg(absoluteScenePos.x()).arg(absoluteScenePos.y())
+                .arg(minScenePos.x()).arg(minScenePos.y())
+                .arg(loaded.x()).arg(loaded.y());
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
         }
         else
         {
             loaded = QPointF((idx%4)*180, (idx/4)*140);
+            QString logMsg = QString("[UModernDiagramWidget::buildScene] Component '%1': coordinates not loaded, using grid: loaded=(%2, %3)")
+                .arg(fullName)
+                .arg(loaded.x()).arg(loaded.y());
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
         }
 
         nodesToAdd.append(node);
@@ -4147,6 +4248,17 @@ void UModernDiagramWidget::buildScene()
         // нет координат из ядра — оставляем как есть и не перезаписываем в ядро,
         // чтобы при первом отображении не было автосжатия старого вида
         layoutGrid();
+    }
+
+    // Обновляем sceneRect после добавления всех компонентов
+    if(!m_nodes.isEmpty())
+    {
+        QRectF bounds = m_scene->itemsBoundingRect();
+        if(!bounds.isNull())
+        {
+            QRectF padded = bounds.adjusted(-200, -200, 200, 200);
+            m_scene->setSceneRect(padded);
+        }
     }
 
     // Создаем связи сразу после узлов (синхронно)
@@ -4987,21 +5099,34 @@ void UModernDiagramWidget::keyPressEvent(QKeyEvent *event)
 
 QPointF UModernDiagramWidget::scenePosFromKernel(const QPointF& kernel) const
 {
-    return kernel * m_coordScale;
+    QPointF result = kernel * m_coordScale;
+    // Логирование для отладки преобразования координат (только при необходимости, чтобы не было спама)
+    // Раскомментируйте при необходимости:
+    // QString logMsg = QString("[UModernDiagramWidget::scenePosFromKernel] kernel=(%1, %2) -> scene=(%3, %4), scale=%5")
+    //     .arg(kernel.x()).arg(kernel.y()).arg(result.x()).arg(result.y()).arg(m_coordScale);
+    // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+    return result;
 }
 
 QPointF UModernDiagramWidget::kernelPosFromScene(const QPointF& scene) const
 {
-    return scene / m_coordScale;
+    QPointF result = scene / m_coordScale;
+    // Логирование для отладки преобразования координат (только при необходимости, чтобы не было спама)
+    // Раскомментируйте при необходимости:
+    // QString logMsg = QString("[UModernDiagramWidget::kernelPosFromScene] scene=(%1, %2) -> kernel=(%3, %4), scale=%5")
+    //     .arg(scene.x()).arg(scene.y()).arg(result.x()).arg(result.y()).arg(m_coordScale);
+    // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+    return result;
 }
 
 bool UModernDiagramWidget::loadCoord(const QString& fullName, QPointF& outPos) const
 {
-    // Удалено избыточное логирование - создавало спам в INFO логах
     const char* coordRaw = Model_GetComponentParameterValue(fullName.toStdString().c_str(), "Coord");
     if(!coordRaw)
     {
-        // Удалено избыточное логирование - создавало спам в INFO логах
+        QString logMsg = QString("[UModernDiagramWidget::loadCoord] Coordinates not found for '%1'")
+            .arg(fullName);
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
         return false;
     }
     std::string coordBuf(coordRaw);
@@ -5012,8 +5137,14 @@ bool UModernDiagramWidget::loadCoord(const QString& fullName, QPointF& outPos) c
         if(iss >> x >> y >> z)
         {
             QPointF kernel(x,y);
-            // Удалено избыточное логирование - создавало спам в INFO логах
             outPos = kernel; // возвращаем ядровые координаты, сцену вычисляем выше
+
+            // Logging for debugging coordinate loading
+            QString logMsg = QString("[UModernDiagramWidget::loadCoord] Loaded coordinates for '%1' (string): kernel=(%2, %3)")
+                .arg(fullName)
+                .arg(kernel.x()).arg(kernel.y());
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+
             Engine_FreeBufString(coordRaw);
             return true;
         }
@@ -5023,24 +5154,40 @@ bool UModernDiagramWidget::loadCoord(const QString& fullName, QPointF& outPos) c
     Engine_FreeBufString(coordRaw);
     if(!ok)
     {
-        // Удалено избыточное логирование - создавало спам в INFO логах
+        QString logMsg = QString("[UModernDiagramWidget::loadCoord] Error loading XML coordinates for '%1'")
+            .arg(fullName);
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
         return false;
     }
     RDK::MVector<double,3> pos;
     xml >> pos;
     QPointF kernel(pos[0], pos[1]);
-    // Удалено избыточное логирование - создавало спам в INFO логах
     outPos = kernel; // возвращаем ядровые координаты, сцену вычисляем выше
+
+    // Logging for debugging coordinate loading
+    QString logMsg = QString("[UModernDiagramWidget::loadCoord] Loaded coordinates for '%1' (XML): kernel=(%2, %3)")
+        .arg(fullName)
+        .arg(kernel.x()).arg(kernel.y());
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+
     return true;
 }
 
 void UModernDiagramWidget::saveCoord(const QString& fullName, const QPointF& scenePos) const
 {
     QPointF kernelPos = kernelPosFromScene(scenePos);
-    // нормализация: гарантируем неотрицательные координаты в ядре
-    if(kernelPos.x() < 0) kernelPos.setX(0);
-    if(kernelPos.y() < 0) kernelPos.setY(0);
-    // Удалено избыточное логирование - создавало спам в INFO логах
+    // Сохраняем реальные координаты, включая отрицательные
+    // Не обрезаем отрицательные координаты, так как это приводит к потере информации о позиции
+    // При загрузке m_normalizationOffset будет вычислен на основе минимальных координат
+
+    // Logging for debugging coordinate saving
+    QString logMsg = QString("[UModernDiagramWidget::saveCoord] Saving coordinates for '%1': scenePos=(%2, %3), kernelPos=(%4, %5), m_coordScale=%6")
+        .arg(fullName)
+        .arg(scenePos.x()).arg(scenePos.y())
+        .arg(kernelPos.x()).arg(kernelPos.y())
+        .arg(m_coordScale);
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+
     RDK::USerStorageXML xml;
     xml.Create("Coord");
     RDK::MVector<double,3> posVec;
@@ -5051,6 +5198,25 @@ void UModernDiagramWidget::saveCoord(const QString& fullName, const QPointF& sce
     std::string buffer;
     xml.Save(buffer);
     Model_SetComponentParameterValue(fullName.toStdString().c_str(), "Coord", buffer.c_str());
+
+    // Update cache with new coordinates so buildScene() uses fresh data on next load
+    // m_componentCache is mutable, so we can modify it in this const method
+    ComponentCacheEntry* cacheEntry = m_componentCache.getEntry(fullName);
+    if(cacheEntry)
+    {
+        cacheEntry->kernelPos = kernelPos;
+        cacheEntry->hasKernelPos = true;
+        cacheEntry->timestamp = QDateTime::currentMSecsSinceEpoch();
+    }
+    else
+    {
+        // If entry doesn't exist, create it with new coordinates
+        ComponentCacheEntry newEntry;
+        newEntry.kernelPos = kernelPos;
+        newEntry.hasKernelPos = true;
+        newEntry.timestamp = QDateTime::currentMSecsSinceEpoch();
+        m_componentCache.setEntry(fullName, newEntry);
+    }
 }
 
 QPointF UModernDiagramWidget::currentMinScenePos() const
@@ -5073,6 +5239,321 @@ QPointF UModernDiagramWidget::currentMinScenePos() const
     }
     if(first) return QPointF(0,0);
     return min;
+}
+
+void UModernDiagramWidget::recalculateNormalizationOffset(const QPointF& pendingComponentPos, const QString& pendingComponentName)
+{
+    // Recalculate m_normalizationOffset based on kernel coordinates from the engine
+    // This ensures that offset corresponds to saved coordinates, not current scene positions
+    // which may be normalized and cause infinite loops
+    QPointF oldOffset = m_normalizationOffset;
+    QPointF minKernel(0, 0);
+    bool minSet = false;
+    bool coordsLoaded = false;
+    int nodeCount = 0;
+
+    // Collect all kernel coordinates from the engine (not from scene positions)
+    // This avoids the infinite loop when components are moved
+    for(auto* node : m_nodes)
+    {
+        if(!node)
+            continue;
+
+        nodeCount++;
+        QString fullName = m_componentName.isEmpty() ? node->nodeName
+                                                     : m_componentName + "." + node->nodeName;
+
+        // Skip the component that is being moved - we'll use pendingComponentPos for it
+        if(!pendingComponentName.isEmpty() && fullName == pendingComponentName)
+            continue;
+
+        // Load kernel coordinates from the engine
+        QPointF kernelPos;
+        bool loaded = loadCoord(fullName, kernelPos);
+
+        if(loaded)
+        {
+            coordsLoaded = true;
+            if(!minSet)
+            {
+                minKernel = kernelPos;
+                minSet = true;
+            }
+            else
+            {
+                if(kernelPos.x() < minKernel.x()) minKernel.setX(kernelPos.x());
+                if(kernelPos.y() < minKernel.y()) minKernel.setY(kernelPos.y());
+            }
+        }
+    }
+
+    // If there's a component that is being moved, use its pending position
+    if(!pendingComponentPos.isNull() && !pendingComponentName.isEmpty())
+    {
+        // Convert absolute scene position to kernel coordinates
+        QPointF pendingKernelPos = kernelPosFromScene(pendingComponentPos);
+        if(!minSet)
+        {
+            minKernel = pendingKernelPos;
+            minSet = true;
+            coordsLoaded = true;
+        }
+        else
+        {
+            if(pendingKernelPos.x() < minKernel.x()) minKernel.setX(pendingKernelPos.x());
+            if(pendingKernelPos.y() < minKernel.y()) minKernel.setY(pendingKernelPos.y());
+        }
+    }
+
+    // Calculate normalization offset
+    QPointF minScenePos = coordsLoaded ? scenePosFromKernel(minKernel) : QPointF(0, 0);
+    m_normalizationOffset = minScenePos;
+
+    // Logging for debugging offset recalculation
+    QString logMsg = QString("[UModernDiagramWidget::recalculateNormalizationOffset] Recalculating offset: nodeCount=%1, oldOffset=(%2, %3), minKernel=(%4, %5), minScenePos=(%6, %7), newOffset=(%8, %9), m_coordScale=%10, pendingComponent='%11'")
+        .arg(nodeCount)
+        .arg(oldOffset.x()).arg(oldOffset.y())
+        .arg(minKernel.x()).arg(minKernel.y())
+        .arg(minScenePos.x()).arg(minScenePos.y())
+        .arg(m_normalizationOffset.x()).arg(m_normalizationOffset.y())
+        .arg(m_coordScale)
+        .arg(pendingComponentName.isEmpty() ? "none" : pendingComponentName);
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+}
+
+void UModernDiagramWidget::updateNormalizationOffsetForMovement(const QPointF& newMinNormalizedPos, const QSet<NodeItem*>& componentsToAdjust)
+{
+    // Only update if the new minimum is less than current (component moved left/up)
+    // This prevents components from being saved with negative kernel coordinates
+    if(newMinNormalizedPos.x() >= 0 && newMinNormalizedPos.y() >= 0)
+    {
+        return; // No update needed
+    }
+
+    // Calculate the change in offset
+    // If newMinNormalizedPos is negative, we need to adjust the offset to make it 0
+    QPointF oldOffset = m_normalizationOffset;
+    QPointF deltaOffset;
+
+    // Calculate how much we need to adjust the offset
+    // If normalizedPos is -10, we need to add 10 to the offset to make normalizedPos become 0
+    if(newMinNormalizedPos.x() < 0)
+    {
+        deltaOffset.setX(-newMinNormalizedPos.x());
+    }
+    if(newMinNormalizedPos.y() < 0)
+    {
+        deltaOffset.setY(-newMinNormalizedPos.y());
+    }
+
+    // Update the offset
+    QPointF newOffset = oldOffset + deltaOffset;
+    m_normalizationOffset = newOffset;
+
+    // CRITICAL FIX: Clear m_componentsWithNegativePos BEFORE updating positions
+    // to prevent components from being re-added during offset update
+    // This prevents cascade updates where itemChange() adds components back to the set
+    m_componentsWithNegativePos.clear();
+
+    // Set flag to prevent recursive calls to updateNormalizationOffsetForMovement
+    // when we adjust positions of all components
+    m_isUpdatingNormalizationOffset = true;
+
+    // CRITICAL FIX: Correctly update positions of components
+    // Problem: When offset increases by deltaOffset, normalized positions should decrease by deltaOffset
+    // to maintain absolute scene coordinates. However, we should only adjust components that were
+    // in m_componentsWithNegativePos, not all components.
+    // Solution: For components in m_componentsWithNegativePos, adjust their positions.
+    // For the component with newMinNormalizedPos, set its position to 0.
+    // For other components in the set, subtract deltaOffset from their normalized positions.
+    // Components NOT in the set should NOT be adjusted - they already have positive normalized positions.
+
+    // No need to find minNode anymore - we apply the same logic to all components
+
+    // Update positions only for components that were in m_componentsWithNegativePos
+    // We need to iterate through m_componentsWithNegativePos, but it's already cleared in mouseReleaseEvent
+    // So we need to adjust all components, but only subtract deltaOffset from those that need it
+    // Actually, the correct approach is: when offset increases, ALL normalized positions should decrease
+    // by deltaOffset to maintain absolute scene coordinates. But we need to be careful not to make
+    // positive positions negative.
+
+    // CRITICAL FIX: We should NOT adjust positions of components that are NOT in m_componentsWithNegativePos
+    // because they already have positive normalized positions and don't need adjustment.
+    // The problem is that m_componentsWithNegativePos is cleared before this function is called.
+    // So we need to check if a component's current normalized position would become negative after adjustment.
+
+    // Actually, wait - the issue is different. When we increase offset by deltaOffset, we need to
+    // decrease ALL normalized positions by deltaOffset to maintain absolute scene coordinates.
+    // But components that already have positive positions will remain positive after subtraction.
+    // The problem in the logs shows that components get huge negative positions, which suggests
+    // they were already negative before the adjustment, or the adjustment is being applied incorrectly.
+
+    // Let me reconsider: The correct logic should be:
+    // 1. For the component with newMinNormalizedPos, set its position to 0
+    // 2. For ALL other components, subtract deltaOffset from their normalized positions
+    //    This maintains their absolute scene coordinates (normalizedPos + offset = absoluteScenePos)
+    //    But we should only do this if the result is >= 0, otherwise there's a problem
+
+    // Actually, I think the real issue is that we're adjusting components that shouldn't be adjusted.
+    // Components that were NOT moved into negative territory should keep their positions unchanged.
+    // But since offset changed, their normalized positions MUST change to maintain absolute coordinates.
+
+    // Wait, I see the issue now. In the logs, after offset update, components get huge negative positions.
+    // This means their normalized positions BEFORE the update were already very negative, which shouldn't happen.
+    // Unless... they were adjusted incorrectly in a previous update.
+
+    // Let me check the logic again: when offset increases by deltaOffset, normalized positions should decrease
+    // by deltaOffset. But if a component had normalizedPos = 1000, and deltaOffset = 500, then after
+    // adjustment it should be 500, not -4000. So the issue must be that we're applying the adjustment
+    // incorrectly or multiple times.
+
+    // CRITICAL FIX: Only adjust components that were in m_componentsWithNegativePos.
+    // Since m_componentsWithNegativePos is cleared before calling this function, we need to pass it
+    // as a parameter or store it temporarily.
+
+    // Actually, the simplest fix: don't adjust components that have positive normalized positions.
+    // Only adjust components that need adjustment (those with negative positions).
+
+    // CRITICAL FIX: When offset increases by deltaOffset, ALL normalized positions must decrease by deltaOffset
+    // to maintain absolute scene coordinates: absoluteScenePos = normalizedPos + offset
+    // However, we need to be careful:
+    // 1. For the component with minimum position (minNode), set its position to 0
+    // 2. For components in componentsToAdjust, subtract deltaOffset (they already have negative positions)
+    // 3. For other components, subtract deltaOffset ONLY if the result would be >= 0
+    //    If result would be < 0, it means the component was already in negative territory but not tracked
+    //    In this case, we should also adjust it to maintain absolute coordinates
+
+    // CRITICAL FIX: Adjust ALL components to maintain absolute scene coordinates
+    // When offset increases by deltaOffset, normalizedPos must decrease by deltaOffset
+    // for ALL components to keep absoluteScenePos constant: absoluteScenePos = normalizedPos + offset
+    // This ensures that all components maintain their visual positions on screen
+    //
+    // IMPORTANT: For components that were moved into negative territory, we need to preserve
+    // their ORIGINAL absolute coordinates (before they were moved to negative positions).
+    // We do this by calculating their absolute position BEFORE the offset update, then
+    // setting their normalized position to maintain that absolute position after offset update.
+    for(NodeItem* node : m_nodes)
+    {
+        if(node)
+        {
+            QPointF currentNormalizedPos = node->pos();
+            QPointF adjustedPos;
+
+            // Calculate absolute position BEFORE offset update
+            QPointF absolutePosBeforeUpdate = currentNormalizedPos + oldOffset;
+
+            // For components that were in negative territory (componentsToAdjust),
+            // we need to preserve their ORIGINAL absolute coordinates.
+            // The original absolute coordinates are stored in m_lastNodePositions BEFORE
+            // the component was moved to negative territory.
+            // However, if the component was just moved to negative territory, its
+            // absolute position is (currentNormalizedPos + oldOffset), which is negative.
+            //
+            // The correct approach: if the component is in componentsToAdjust, it means
+            // it was moved into negative territory. In this case, we should restore its
+            // position to maintain the absolute coordinates it had BEFORE being moved
+            // to negative territory. But we don't have that information directly.
+            //
+            // Actually, the issue is different: when a component is moved to (-50, -30)
+            // with offset (0, 0), its absolute position becomes (-50, -30). After offset
+            // update to (50, 30), to maintain absolute position (-50, -30), we need:
+            // normalizedPos = (-50, -30) - (50, 30) = (-100, -60), which gets clamped to (0, 0).
+            // This gives final absolute = (0, 0) + (50, 30) = (50, 30), which is wrong.
+            //
+            // The correct logic: when a component is moved to negative territory, we should
+            // NOT change its absolute position. Instead, we should adjust the offset so that
+            // the component's normalized position becomes 0, and its absolute position remains
+            // the same as it was BEFORE being moved to negative territory.
+            //
+            // But we don't have the original absolute position. The solution is to use
+            // the absolute position from BEFORE the component was moved to negative territory,
+            // which is stored in m_lastNodePositions (but that stores normalized positions).
+            //
+            // Actually, wait: m_lastNodePositions stores the last normalized position.
+            // If a component was at (100, 100) with offset (0, 0), then moved to (-50, -30),
+            // m_lastNodePositions[node] = (100, 100) (the last normalized position before
+            // moving to negative). So the original absolute position was (100, 100) + (0, 0) = (100, 100).
+            //
+            // So the fix: for components in componentsToAdjust, use their last normalized
+            // position from m_lastNodePositions to calculate their original absolute position,
+            // then set their new normalized position to maintain that absolute position.
+
+            if(componentsToAdjust.contains(node))
+            {
+                // This component was moved into negative territory
+                // Get its original absolute position (before being moved to negative)
+                QPointF originalAbsolutePos = m_originalAbsolutePositions.value(node, currentNormalizedPos + oldOffset);
+
+                // Calculate new normalized position to maintain original absolute position
+                // absolutePos = normalizedPos + offset
+                // normalizedPos = absolutePos - offset
+                adjustedPos = originalAbsolutePos - newOffset;
+
+                // Clamp to 0 to prevent negative positions
+                adjustedPos.setX(qMax(0.0, adjustedPos.x()));
+                adjustedPos.setY(qMax(0.0, adjustedPos.y()));
+
+                QString logMsg = QString("[UModernDiagramWidget::updateNormalizationOffsetForMovement] Component '%1' restored: originalAbsolute=(%2, %3), newNormalized=(%4, %5), newOffset=(%6, %7), finalAbsolute=(%8, %9)")
+                    .arg(node->nodeName)
+                    .arg(originalAbsolutePos.x()).arg(originalAbsolutePos.y())
+                    .arg(adjustedPos.x()).arg(adjustedPos.y())
+                    .arg(newOffset.x()).arg(newOffset.y())
+                    .arg(adjustedPos.x() + newOffset.x()).arg(adjustedPos.y() + newOffset.y());
+                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+            }
+            else
+            {
+                // This component was NOT moved into negative territory
+                // Subtract deltaOffset from normalized positions to maintain absolute scene coordinates
+                double newX = currentNormalizedPos.x() - deltaOffset.x();
+                double newY = currentNormalizedPos.y() - deltaOffset.y();
+
+                // CRITICAL: Clamp to 0 to prevent negative positions
+                // This ensures that after offset update, no component has negative normalized position
+                adjustedPos.setX(qMax(0.0, newX));
+                adjustedPos.setY(qMax(0.0, newY));
+
+                // Log if a component would have become negative (or was adjusted)
+                if(newX < 0 || newY < 0)
+                {
+                    QString logMsg = QString("[UModernDiagramWidget::updateNormalizationOffsetForMovement] Component '%1' adjusted from (%2, %3) to (%4, %5) to maintain absolute coordinates")
+                        .arg(node->nodeName)
+                        .arg(currentNormalizedPos.x()).arg(currentNormalizedPos.y())
+                        .arg(adjustedPos.x()).arg(adjustedPos.y());
+                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+                }
+            }
+
+            // CRITICAL: Set flag before setPos to prevent itemChange from adding components
+            // to m_componentsWithNegativePos during offset update
+            // The flag is already set at the beginning of the function, but we ensure it's still set
+            m_isUpdatingNormalizationOffset = true;
+            node->setPos(adjustedPos);
+            m_lastNodePositions[node] = adjustedPos;
+        }
+    }
+
+    // Clear flag after adjusting all positions
+    m_isUpdatingNormalizationOffset = false;
+
+    // Update sceneRect after offset update to reflect new component positions
+    if(m_scene)
+    {
+        QRectF bounds = m_scene->itemsBoundingRect();
+        if(!bounds.isNull())
+        {
+            QRectF padded = bounds.adjusted(-200, -200, 200, 200);
+            m_scene->setSceneRect(padded);
+        }
+    }
+
+    // Logging for debugging offset update
+    QString logMsg = QString("[UModernDiagramWidget::updateNormalizationOffsetForMovement] Updated offset: newMinNormalizedPos=(%1, %2), oldOffset=(%3, %4), deltaOffset=(%5, %6), newOffset=(%7, %8)")
+        .arg(newMinNormalizedPos.x()).arg(newMinNormalizedPos.y())
+        .arg(oldOffset.x()).arg(oldOffset.y())
+        .arg(deltaOffset.x()).arg(deltaOffset.y())
+        .arg(m_normalizationOffset.x()).arg(m_normalizationOffset.y());
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 }
 
 // --------------------------- Scene events ---------------------------
@@ -6368,6 +6849,58 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         m_isGroupMoving = false;
         m_savedSelection.clear();
     }
+
+    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Обновляем offset только при завершении движения
+    // Это предотвращает каскадные обновления во время drag-операции
+    if(!m_owner->m_componentsWithNegativePos.isEmpty())
+    {
+        // Находим минимальную позицию среди всех компонентов с отрицательными позициями
+        QPointF minNormalizedPos(0, 0);
+        bool first = true;
+
+        for(UModernDiagramWidget::NodeItem* node : m_owner->m_componentsWithNegativePos)
+        {
+            if(node)
+            {
+                // CRITICAL FIX: Use pos() instead of scenePos() to get normalized coordinates
+                // pos() returns normalized coordinates (relative to m_normalizationOffset)
+                // scenePos() returns absolute scene coordinates (pos() + m_normalizationOffset)
+                QPointF normalizedPos = node->pos();
+                if(first)
+                {
+                    minNormalizedPos = normalizedPos;
+                    first = false;
+                }
+                else
+                {
+                    if(normalizedPos.x() < minNormalizedPos.x())
+                        minNormalizedPos.setX(normalizedPos.x());
+                    if(normalizedPos.y() < minNormalizedPos.y())
+                        minNormalizedPos.setY(normalizedPos.y());
+                }
+            }
+        }
+
+        // Если есть компоненты с отрицательными позициями, обновляем offset один раз
+        if(!first && (minNormalizedPos.x() < 0 || minNormalizedPos.y() < 0))
+        {
+            QString logMsg = QString("[ModernScene::mouseReleaseEvent] Updating offset after movement completion: componentsWithNegativePos=%1, minNormalizedPos=(%2, %3)")
+                .arg(m_owner->m_componentsWithNegativePos.size())
+                .arg(minNormalizedPos.x()).arg(minNormalizedPos.y());
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+
+            // CRITICAL FIX: Save the set before clearing it, so updateNormalizationOffsetForMovement
+            // knows which components to adjust
+            QSet<UModernDiagramWidget::NodeItem*> componentsToAdjust = m_owner->m_componentsWithNegativePos;
+            m_owner->updateNormalizationOffsetForMovement(minNormalizedPos, componentsToAdjust);
+        }
+
+        // Очищаем set после обновления offset
+        m_owner->m_componentsWithNegativePos.clear();
+
+        // Очищаем сохраненные исходные абсолютные координаты
+        m_owner->m_originalAbsolutePositions.clear();
+    }
 }
 
 void ModernScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
@@ -6803,8 +7336,15 @@ void UModernDiagramWidget::selectComponent(QString name)
     // Компонент должен быть на текущем уровне - пытаемся найти и выделить его
     if(auto it = m_nodeByName.find(componentName); it != m_nodeByName.end())
     {
+        m_isProgrammaticSelection = true;
         m_scene->clearSelection();
         it.value()->setSelected(true);
+        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Откладываем сброс флага m_isProgrammaticSelection,
+        // чтобы он оставался установленным во время обработки всех событий ItemSelectedHasChanged,
+        // которые могут быть вызваны setSelected(true). Это предотвращает эмиссию componentSelected и рекурсию.
+        QTimer::singleShot(0, [this]() {
+            m_isProgrammaticSelection = false;
+        });
         m_contextMenuNode = it.value();
         // Прокручиваем к выбранному узлу
         if(m_mainView)
@@ -7405,6 +7945,15 @@ void UModernDiagramWidget::restoreViewState(const QString& componentName)
 
             // Восстанавливаем центр
             m_mainView->centerOn(state.center);
+
+            // Logging for debugging viewport restoration
+            QTransform transform = m_mainView->transform();
+            QString logMsg = QString("[UModernDiagramWidget::restoreViewState] Restored state for '%1': scale=%2, center=(%3, %4), transform.m11()=%5")
+                .arg(componentName)
+                .arg(state.scale)
+                .arg(state.center.x()).arg(state.center.y())
+                .arg(transform.m11());
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
             return;
         }
     }
@@ -7429,6 +7978,17 @@ void UModernDiagramWidget::restoreViewState(const QString& componentName)
         state.center = bounds.center();
         state.isValid = true;
         m_viewStates[componentName] = state;
+
+        // Logging for debugging initial state setup
+        QTransform transform = m_mainView->transform();
+        QString logMsg = QString("[UModernDiagramWidget::restoreViewState] Set initial state for '%1': bounds=(%2, %3, %4, %5), padded=(%6, %7, %8, %9), scale=%10, center=(%11, %12), transform.m11()=%13")
+            .arg(componentName)
+            .arg(bounds.x()).arg(bounds.y()).arg(bounds.width()).arg(bounds.height())
+            .arg(padded.x()).arg(padded.y()).arg(padded.width()).arg(padded.height())
+            .arg(DEFAULT_SCALE)
+            .arg(state.center.x()).arg(state.center.y())
+            .arg(transform.m11());
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
     }
 }
 
@@ -7585,6 +8145,7 @@ int UModernDiagramWidget::selectNodesInRect(const QRectF& selectionRect, bool ad
     {
         // Блокируем сигналы сцены и устанавливаем флаг batch-выделения
         m_scene->blockSignals(true);
+        m_isProgrammaticSelection = true;
         m_isBatchSelecting = true;
 
         // ДИАГНОСТИКА: Проверяем выделение ПЕРЕД установкой для всех узлов
@@ -7612,6 +8173,13 @@ int UModernDiagramWidget::selectNodesInRect(const QRectF& selectionRect, bool ad
         // Сбрасываем флаг batch-выделения и разблокируем сигналы сцены
         m_isBatchSelecting = false;
         m_scene->blockSignals(false);
+
+        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Откладываем сброс флага m_isProgrammaticSelection,
+        // чтобы он оставался установленным во время обработки всех накопленных событий ItemSelectedHasChanged
+        // после разблокировки сигналов. Это предотвращает эмиссию componentSelected и рекурсию.
+        QTimer::singleShot(0, [this]() {
+            m_isProgrammaticSelection = false;
+        });
 
         // ДИАГНОСТИКА: Проверяем выделение ПОСЛЕ установки для всех узлов
         QList<QGraphicsItem*> afterBatchSelect = m_scene->selectedItems();
@@ -8389,3 +8957,13 @@ void UModernDiagramWidget::scheduleCacheSave()
     });
 }
 
+// Test accessors for unit tests
+QPointF UModernDiagramWidget::testGetNormalizationOffset() const
+{
+    return m_normalizationOffset;
+}
+
+const QSet<UModernDiagramWidget::NodeItem*>& UModernDiagramWidget::testGetComponentsWithNegativePos() const
+{
+    return m_componentsWithNegativePos;
+}
