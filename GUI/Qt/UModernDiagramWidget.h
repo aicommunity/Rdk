@@ -233,12 +233,18 @@ private:
     void buildScene();
     void clearScene();
     void layoutGrid();
+    /// Обновляет sceneRect на основе текущих границ всех элементов сцены
+    /// Вызывается после завершения движения компонентов для предотвращения прыжков
+    void updateSceneRect();
     /// Добавляет один компонент в сцену без полного перестроения
     /// Использует текущий m_normalizationOffset, чтобы не сдвигать существующие компоненты
     NodeItem* addSingleComponent(const QString& fullName);
     NodeItem* pickPort(const QPointF& scenePos, bool requireInput, QPointF& portPos);
     const Port* pickPortDetailed(const QPointF& scenePos, bool requireInput, NodeItem*& node, QPointF& portPos);
     NodeItem* pickNode(const QPointF& scenePos) const;
+    /// Проверяет, выходит ли компонент за видимую область viewport
+    /// Возвращает true, если компонент находится вне видимой области (с учетом масштаба)
+    bool isComponentOutsideVisibleArea(NodeItem* node) const;
     void buildLinks();
     void rebuildLinks(); // Перестраивает только связи без перезагрузки всей сцены
     void invalidateLevelCache(const QString& componentName = QString()); // Инвалидирует кэш уровня (пустая строка = все уровни)
@@ -382,6 +388,10 @@ private:
     // Флаг для предотвращения рекурсивного перемещения группы объектов
     // Когда один узел перемещается и перемещает другие, мы не должны снова перемещать их
     bool m_isMovingGroup = false;
+
+    // Флаг для отслеживания движения компонентов (для отложенного обновления sceneRect)
+    // Устанавливается в mousePressEvent, сбрасывается в mouseReleaseEvent
+    bool m_isComponentMoving = false;
 
     // Флаг для предотвращения сохранения координат во время инициализации сцены
     bool m_isBuildingScene = false;

@@ -90,6 +90,81 @@ public:
         // Включаем кэширование фона для ускорения прокрутки
         setCacheMode(QGraphicsView::CacheBackground);
     }
+
+    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Переопределяем ensureVisible для блокировки автоматической прокрутки при выделении
+    // Примечание: ensureVisible не является виртуальным в QGraphicsView, но мы можем скрыть его
+    void ensureVisible(const QRectF& rect, int xmargin = 50, int ymargin = 50)
+    {
+        // Блокируем автоматическую прокрутку при выделении компонентов
+        // Это предотвращает движение скроллбаров при выделении
+        if(m_owner)
+        {
+            // Блокируем прокрутку во время движения компонента
+            if(m_owner->m_isComponentMoving)
+            {
+                return; // Не прокручиваем во время движения компонента
+            }
+
+            // Блокируем прокрутку при выделении компонентов (проверяем, есть ли выделенные NodeItem)
+            QList<QGraphicsItem*> selectedItems = scene()->selectedItems();
+            for(QGraphicsItem* item : selectedItems)
+            {
+                // Если есть выделенные NodeItem, блокируем автоматическую прокрутку
+                if(dynamic_cast<UModernDiagramWidget::NodeItem*>(item))
+                {
+                    return; // Не прокручиваем при выделении компонентов
+                }
+            }
+        }
+        QGraphicsView::ensureVisible(rect, xmargin, ymargin);
+    }
+
+    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Переопределяем centerOn для блокировки автоматического центрирования при выделении
+    // Примечание: centerOn не является виртуальным в QGraphicsView, но мы можем скрыть его
+    void centerOn(const QPointF& pos)
+    {
+        // Блокируем автоматическое центрирование при выделении компонентов
+        if(m_owner)
+        {
+            // Блокируем центрирование во время движения компонента
+            if(m_owner->m_isComponentMoving)
+            {
+                return; // Не центрируем во время движения компонента
+            }
+
+            // Блокируем центрирование при выделении компонентов
+            QList<QGraphicsItem*> selectedItems = scene()->selectedItems();
+            for(QGraphicsItem* item : selectedItems)
+            {
+                // Если есть выделенные NodeItem, блокируем автоматическое центрирование
+                if(dynamic_cast<UModernDiagramWidget::NodeItem*>(item))
+                {
+                    return; // Не центрируем при выделении компонентов
+                }
+            }
+        }
+        QGraphicsView::centerOn(pos);
+    }
+
+    void centerOn(const QGraphicsItem* item)
+    {
+        // Блокируем автоматическое центрирование при выделении компонентов
+        if(m_owner)
+        {
+            // Блокируем центрирование во время движения компонента
+            if(m_owner->m_isComponentMoving)
+            {
+                return; // Не центрируем во время движения компонента
+            }
+
+            // Блокируем центрирование, если это NodeItem
+            if(dynamic_cast<const UModernDiagramWidget::NodeItem*>(item))
+            {
+                return; // Не центрируем при выделении компонентов
+            }
+        }
+        QGraphicsView::centerOn(item);
+    }
 protected:
     void mousePressEvent(QMouseEvent *event) override
     {
@@ -104,9 +179,38 @@ protected:
             return;
         }
 
-        // Сохраняем начальную позицию для RubberBandDrag (если не Ctrl)
+        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Проверяем, кликнули ли на компонент
+        // Если кликнули на компонент, блокируем автоматическое центрирование Qt
+        // Это предотвращает движение скроллбара при клике на компонент
         if(event->button() == Qt::LeftButton && !(event->modifiers() & Qt::ControlModifier))
         {
+            QPointF scenePos = mapToScene(event->pos());
+            auto* clickedNode = m_owner ? m_owner->pickNode(scenePos) : nullptr;
+
+            if(clickedNode)
+            {
+                // Кликнули на компонент - блокируем автоматическое центрирование
+                // Сохраняем текущую позицию прокрутки
+                QPointF currentCenter = mapToScene(viewport()->rect().center());
+
+                // Сохраняем начальную позицию для RubberBandDrag
+                m_rubberBandStartViewPos = event->pos();
+                m_isRubberBandDragging = true;
+
+                // Передаем событие в базовый класс, но затем восстанавливаем позицию
+                QGraphicsView::mousePressEvent(event);
+
+                // Восстанавливаем позицию прокрутки, если она изменилась
+                QPointF newCenter = mapToScene(viewport()->rect().center());
+                if(currentCenter != newCenter)
+                {
+                    centerOn(currentCenter);
+                }
+
+                return;
+            }
+
+            // Не кликнули на компонент - обычная обработка
             m_rubberBandStartViewPos = event->pos();
             m_isRubberBandDragging = true;
         }
@@ -129,6 +233,31 @@ protected:
             // Обновляем последнюю позицию
             m_lastPanPoint = event->pos();
             event->accept();
+            return;
+        }
+
+        // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Блокируем автоматическую прокрутку во время RubberBandDrag
+        // Qt автоматически прокручивает viewport, когда курсор выходит за границы видимой области
+        // Это вызывает движение скроллбара при выделении группы объектов
+        if(m_isRubberBandDragging)
+        {
+            // Сохраняем текущую позицию прокрутки
+            int savedHScroll = horizontalScrollBar()->value();
+            int savedVScroll = verticalScrollBar()->value();
+
+            // Передаем событие в базовый класс
+            QGraphicsView::mouseMoveEvent(event);
+
+            // Восстанавливаем позицию прокрутки, если она изменилась
+            if(horizontalScrollBar()->value() != savedHScroll)
+            {
+                horizontalScrollBar()->setValue(savedHScroll);
+            }
+            if(verticalScrollBar()->value() != savedVScroll)
+            {
+                verticalScrollBar()->setValue(savedVScroll);
+            }
+
             return;
         }
 
@@ -1499,14 +1628,16 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
             // scenePos() returns absolute scene coordinates (pos() + m_normalizationOffset)
             QPointF normalizedPos = pos();
 
-            // CRITICAL: Don't add to m_componentsWithNegativePos if we're currently updating offset
-            if(normalizedPos.x() < 0 || normalizedPos.y() < 0)
+            // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Полностью отключаем проверку видимости во время движения
+            // Никакие параметры канвы не должны меняться с момента клика до окончания перетаскивания
+            // Проверку видимости выполняем только если компонент НЕ двигается
+            if(!m_owner->m_isComponentMoving && m_owner->isComponentOutsideVisibleArea(this))
             {
                 // Если компонент еще не в set, сохраняем его исходные абсолютные координаты
                 // ВАЖНО: Делаем это ДО обновления m_lastNodePositions, чтобы сохранить исходную позицию
                 if(!m_owner->m_componentsWithNegativePos.contains(this))
                 {
-                    // Сохраняем исходные абсолютные координаты ДО перемещения в отрицательную область
+                    // Сохраняем исходные абсолютные координаты ДО перемещения за видимую область
                     // Используем последнюю нормализованную позицию из m_lastNodePositions (ДО обновления)
                     QPointF originalNormalizedPos = m_owner->m_lastNodePositions.value(this, normalizedPos);
                     QPointF originalAbsolutePos = originalNormalizedPos + m_owner->m_normalizationOffset;
@@ -1514,7 +1645,7 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
 
                     QString fullName = m_owner->m_componentName.isEmpty() ? nodeName
                                                                           : m_owner->m_componentName + "." + nodeName;
-                    QString logMsg = QString("[UModernDiagramWidget::NodeItem::itemChange] Component '%1' moved to negative: originalNormalized=(%2, %3), originalAbsolute=(%4, %5), newNormalized=(%6, %7)")
+                    QString logMsg = QString("[UModernDiagramWidget::NodeItem::itemChange] Component '%1' moved outside visible area: originalNormalized=(%2, %3), originalAbsolute=(%4, %5), newNormalized=(%6, %7)")
                         .arg(fullName)
                         .arg(originalNormalizedPos.x()).arg(originalNormalizedPos.y())
                         .arg(originalAbsolutePos.x()).arg(originalAbsolutePos.y())
@@ -1527,8 +1658,8 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
 
                 QString fullName = m_owner->m_componentName.isEmpty() ? nodeName
                                                                       : m_owner->m_componentName + "." + nodeName;
-                // Logging for debugging negative position detection
-                QString logMsg = QString("[UModernDiagramWidget::NodeItem::itemChange] Component '%1' has negative position: normalizedPos=(%2, %3), will update offset on mouse release")
+                // Logging for debugging visibility check
+                QString logMsg = QString("[UModernDiagramWidget::NodeItem::itemChange] Component '%1' is outside visible area: normalizedPos=(%2, %3), will update offset on mouse release")
                     .arg(fullName)
                     .arg(normalizedPos.x()).arg(normalizedPos.y());
                 MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
@@ -1570,17 +1701,9 @@ QVariant UModernDiagramWidget::NodeItem::itemChange(QGraphicsItem::GraphicsItemC
             {
                 m_owner->saveCoord(fullName, absoluteScenePos);
 
-                // Обновляем sceneRect после перемещения компонента, чтобы холст соответствовал новым размерам
-                // Note: setSceneRect() may trigger scene updates, but m_isSavingCoordinates flag prevents recursion
-                if(m_owner && m_owner->m_scene)
-                {
-                    QRectF bounds = m_owner->m_scene->itemsBoundingRect();
-                    if(!bounds.isNull())
-                    {
-                        QRectF padded = bounds.adjusted(-200, -200, 200, 200);
-                        m_owner->m_scene->setSceneRect(padded);
-                    }
-                }
+                // CRITICAL FIX: Не обновляем sceneRect во время движения компонентов
+                // Обновление sceneRect отложено до завершения движения (mouseReleaseEvent)
+                // Это предотвращает прыжки компонентов при перемещении, особенно групп
             }
 
             // Clear flag after saving coordinates
@@ -5323,6 +5446,13 @@ void UModernDiagramWidget::recalculateNormalizationOffset(const QPointF& pending
 
 void UModernDiagramWidget::updateNormalizationOffsetForMovement(const QPointF& newMinNormalizedPos, const QSet<NodeItem*>& componentsToAdjust)
 {
+    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Полностью блокируем обновление offset во время движения
+    // Никакие параметры канвы не должны меняться с момента клика до окончания перетаскивания
+    if(m_isComponentMoving)
+    {
+        return; // Блокируем обновление во время движения
+    }
+
     // Only update if the new minimum is less than current (component moved left/up)
     // This prevents components from being saved with negative kernel coordinates
     if(newMinNormalizedPos.x() >= 0 && newMinNormalizedPos.y() >= 0)
@@ -5537,15 +5667,7 @@ void UModernDiagramWidget::updateNormalizationOffsetForMovement(const QPointF& n
     m_isUpdatingNormalizationOffset = false;
 
     // Update sceneRect after offset update to reflect new component positions
-    if(m_scene)
-    {
-        QRectF bounds = m_scene->itemsBoundingRect();
-        if(!bounds.isNull())
-        {
-            QRectF padded = bounds.adjusted(-200, -200, 200, 200);
-            m_scene->setSceneRect(padded);
-        }
-    }
+    updateSceneRect();
 
     // Logging for debugging offset update
     QString logMsg = QString("[UModernDiagramWidget::updateNormalizationOffsetForMovement] Updated offset: newMinNormalizedPos=(%1, %2), oldOffset=(%3, %4), deltaOffset=(%5, %6), newOffset=(%7, %8)")
@@ -5554,6 +5676,127 @@ void UModernDiagramWidget::updateNormalizationOffsetForMovement(const QPointF& n
         .arg(deltaOffset.x()).arg(deltaOffset.y())
         .arg(m_normalizationOffset.x()).arg(m_normalizationOffset.y());
     MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+}
+
+void UModernDiagramWidget::updateSceneRect()
+{
+    if(!m_scene)
+        return;
+
+    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Полностью блокируем обновление sceneRect во время движения
+    // Никакие параметры канвы не должны меняться с момента клика до окончания перетаскивания
+    if(m_isComponentMoving)
+    {
+        return; // Блокируем обновление во время движения
+    }
+
+    // Получаем видимую область viewport в координатах сцены
+    // ВАЖНО: Это должно быть вычислено ПЕРВЫМ, так как это минимальный размер канвы
+    // ВАЖНО: При масштабировании нужно использовать все четыре угла viewport для правильного вычисления
+    QRectF visibleRect;
+    if(m_mainView && m_mainView->viewport())
+    {
+        QRectF viewportRect = m_mainView->viewport()->rect();
+        if(!viewportRect.isEmpty())
+        {
+            // Преобразуем все четыре угла viewport в координаты сцены
+            // Это важно при масштабировании, так как два угла могут дать неправильный результат
+            QPointF topLeft = m_mainView->mapToScene(viewportRect.topLeft().toPoint());
+            QPointF topRight = m_mainView->mapToScene(viewportRect.topRight().toPoint());
+            QPointF bottomLeft = m_mainView->mapToScene(viewportRect.bottomLeft().toPoint());
+            QPointF bottomRight = m_mainView->mapToScene(viewportRect.bottomRight().toPoint());
+
+            // Находим минимальные и максимальные координаты для создания правильного прямоугольника
+            double minX = qMin(qMin(topLeft.x(), topRight.x()), qMin(bottomLeft.x(), bottomRight.x()));
+            double minY = qMin(qMin(topLeft.y(), topRight.y()), qMin(bottomLeft.y(), bottomRight.y()));
+            double maxX = qMax(qMax(topLeft.x(), topRight.x()), qMax(bottomLeft.x(), bottomRight.x()));
+            double maxY = qMax(qMax(topLeft.y(), topRight.y()), qMax(bottomLeft.y(), bottomRight.y()));
+
+            visibleRect = QRectF(minX, minY, maxX - minX, maxY - minY);
+        }
+    }
+
+    // Получаем границы всех элементов
+    QRectF bounds = m_scene->itemsBoundingRect();
+
+    // Определяем финальный размер канвы
+    QRectF finalRect;
+
+    // Если видимая область доступна, она является минимальным размером
+    if(!visibleRect.isNull())
+    {
+        if(bounds.isNull() || bounds.width() < 10 || bounds.height() < 10)
+        {
+            // Если границы элементов пусты или очень маленькие (все элементы в одной точке),
+            // используем только видимую область
+            finalRect = visibleRect;
+        }
+        else
+        {
+            // Объединяем видимую область и границы элементов
+            // Это гарантирует, что канва будет не меньше видимой области
+            finalRect = visibleRect.united(bounds);
+        }
+    }
+    else
+    {
+        // Если viewport не инициализирован, используем границы элементов
+        if(bounds.isNull())
+        {
+            // Если и границы пусты, не обновляем sceneRect
+            return;
+        }
+        finalRect = bounds;
+    }
+
+    // Добавляем отступы
+    QRectF padded = finalRect.adjusted(-200, -200, 200, 200);
+    m_scene->setSceneRect(padded);
+
+    // Логирование для диагностики
+    QString logMsg = QString("[UModernDiagramWidget::updateSceneRect] bounds=(%1, %2, %3, %4), visibleRect=(%5, %6, %7, %8), finalRect=(%9, %10, %11, %12), padded=(%13, %14, %15, %16)")
+        .arg(bounds.x()).arg(bounds.y()).arg(bounds.width()).arg(bounds.height())
+        .arg(visibleRect.x()).arg(visibleRect.y()).arg(visibleRect.width()).arg(visibleRect.height())
+        .arg(finalRect.x()).arg(finalRect.y()).arg(finalRect.width()).arg(finalRect.height())
+        .arg(padded.x()).arg(padded.y()).arg(padded.width()).arg(padded.height());
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+}
+
+bool UModernDiagramWidget::isComponentOutsideVisibleArea(NodeItem* node) const
+{
+    if(!node || !m_mainView || !m_mainView->viewport())
+        return false;
+
+    // Получаем видимую область viewport в координатах сцены
+    QRectF viewportRect = m_mainView->viewport()->rect();
+    if(viewportRect.isEmpty())
+        return false;
+
+    // Преобразуем все четыре угла viewport в координаты сцены
+    // Это важно при масштабировании, так как два угла могут дать неправильный результат
+    QPointF topLeft = m_mainView->mapToScene(viewportRect.topLeft().toPoint());
+    QPointF topRight = m_mainView->mapToScene(viewportRect.topRight().toPoint());
+    QPointF bottomLeft = m_mainView->mapToScene(viewportRect.bottomLeft().toPoint());
+    QPointF bottomRight = m_mainView->mapToScene(viewportRect.bottomRight().toPoint());
+
+    // Находим минимальные и максимальные координаты для создания правильного прямоугольника
+    double minX = qMin(qMin(topLeft.x(), topRight.x()), qMin(bottomLeft.x(), bottomRight.x()));
+    double minY = qMin(qMin(topLeft.y(), topRight.y()), qMin(bottomLeft.y(), bottomRight.y()));
+    double maxX = qMax(qMax(topLeft.x(), topRight.x()), qMax(bottomLeft.x(), bottomRight.x()));
+    double maxY = qMax(qMax(topLeft.y(), topRight.y()), qMax(bottomLeft.y(), bottomRight.y()));
+
+    QRectF visibleRect(minX, minY, maxX - minX, maxY - minY);
+
+    // Получаем boundingRect компонента в координатах сцены
+    QRectF componentRect = node->sceneBoundingRect();
+
+    // Добавляем небольшой запас (например, 50 пикселей) для предотвращения частых обновлений
+    // при движении компонента вблизи границы видимой области
+    QRectF expandedVisibleRect = visibleRect.adjusted(-50, -50, 50, 50);
+
+    // Проверяем, пересекается ли компонент с расширенной видимой областью
+    // Если не пересекается, компонент находится вне видимой области
+    return !expandedVisibleRect.intersects(componentRect);
 }
 
 // --------------------------- Scene events ---------------------------
@@ -6002,6 +6245,9 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         // Если клик на выделенном узле и есть группа выделенных объектов, сохраняем выделение для перемещения
         if(event->button() == Qt::LeftButton && !(event->modifiers() & Qt::ControlModifier) && clickedNode->isSelected())
         {
+            // Устанавливаем флаг движения компонентов для отложенного обновления sceneRect
+            m_owner->m_isComponentMoving = true;
+
             QList<QGraphicsItem*> selectedItems = m_owner->m_scene->selectedItems();
             int selectedNodeCount = 0;
             for(QGraphicsItem* item : selectedItems)
@@ -6028,6 +6274,12 @@ void ModernScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
                 m_isGroupMoving = true;
                 m_isGroupSelected = true;
             }
+        }
+        else if(event->button() == Qt::LeftButton && !(event->modifiers() & Qt::ControlModifier))
+        {
+            // Клик на узле (даже если не выделен) - может начаться движение
+            // Устанавливаем флаг движения компонентов
+            m_owner->m_isComponentMoving = true;
         }
     }
 
@@ -6850,56 +7102,83 @@ void ModernScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         m_savedSelection.clear();
     }
 
-    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Обновляем offset только при завершении движения
-    // Это предотвращает каскадные обновления во время drag-операции
+    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Все обновления параметров канвы выполняются ТОЛЬКО в mouseReleaseEvent
+    // и ТОЛЬКО после временного сброса флага m_isComponentMoving
+    // Это гарантирует, что во время движения (от mousePressEvent до mouseReleaseEvent) ничего не меняется
+
+    // Временно сбрасываем флаг для выполнения обновлений
+    bool wasComponentMoving = m_owner->m_isComponentMoving;
+    m_owner->m_isComponentMoving = false;
+
+    // Обновляем offset только если компоненты действительно вышли за видимую область
     if(!m_owner->m_componentsWithNegativePos.isEmpty())
     {
-        // Находим минимальную позицию среди всех компонентов с отрицательными позициями
-        QPointF minNormalizedPos(0, 0);
-        bool first = true;
-
+        // Дополнительная проверка: убеждаемся, что компоненты действительно вне видимой области
+        // (на случай, если они вернулись в видимую область до mouseReleaseEvent)
+        QSet<UModernDiagramWidget::NodeItem*> componentsOutsideVisibleArea;
         for(UModernDiagramWidget::NodeItem* node : m_owner->m_componentsWithNegativePos)
         {
-            if(node)
+            if(node && m_owner->isComponentOutsideVisibleArea(node))
             {
-                // CRITICAL FIX: Use pos() instead of scenePos() to get normalized coordinates
-                // pos() returns normalized coordinates (relative to m_normalizationOffset)
-                // scenePos() returns absolute scene coordinates (pos() + m_normalizationOffset)
-                QPointF normalizedPos = node->pos();
-                if(first)
-                {
-                    minNormalizedPos = normalizedPos;
-                    first = false;
-                }
-                else
-                {
-                    if(normalizedPos.x() < minNormalizedPos.x())
-                        minNormalizedPos.setX(normalizedPos.x());
-                    if(normalizedPos.y() < minNormalizedPos.y())
-                        minNormalizedPos.setY(normalizedPos.y());
-                }
+                componentsOutsideVisibleArea.insert(node);
             }
         }
 
-        // Если есть компоненты с отрицательными позициями, обновляем offset один раз
-        if(!first && (minNormalizedPos.x() < 0 || minNormalizedPos.y() < 0))
+        // Обновляем offset только если есть компоненты, которые действительно вне видимой области
+        if(!componentsOutsideVisibleArea.isEmpty())
         {
-            QString logMsg = QString("[ModernScene::mouseReleaseEvent] Updating offset after movement completion: componentsWithNegativePos=%1, minNormalizedPos=(%2, %3)")
-                .arg(m_owner->m_componentsWithNegativePos.size())
-                .arg(minNormalizedPos.x()).arg(minNormalizedPos.y());
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+            // Находим минимальную позицию среди всех компонентов вне видимой области
+            QPointF minNormalizedPos(0, 0);
+            bool first = true;
 
-            // CRITICAL FIX: Save the set before clearing it, so updateNormalizationOffsetForMovement
-            // knows which components to adjust
-            QSet<UModernDiagramWidget::NodeItem*> componentsToAdjust = m_owner->m_componentsWithNegativePos;
-            m_owner->updateNormalizationOffsetForMovement(minNormalizedPos, componentsToAdjust);
+            for(UModernDiagramWidget::NodeItem* node : componentsOutsideVisibleArea)
+            {
+                if(node)
+                {
+                    // CRITICAL FIX: Use pos() instead of scenePos() to get normalized coordinates
+                    // pos() returns normalized coordinates (relative to m_normalizationOffset)
+                    // scenePos() returns absolute scene coordinates (pos() + m_normalizationOffset)
+                    QPointF normalizedPos = node->pos();
+                    if(first)
+                    {
+                        minNormalizedPos = normalizedPos;
+                        first = false;
+                    }
+                    else
+                    {
+                        if(normalizedPos.x() < minNormalizedPos.x())
+                            minNormalizedPos.setX(normalizedPos.x());
+                        if(normalizedPos.y() < minNormalizedPos.y())
+                            minNormalizedPos.setY(normalizedPos.y());
+                    }
+                }
+            }
+
+            // Если есть компоненты вне видимой области, обновляем offset один раз
+            if(!first && (minNormalizedPos.x() < 0 || minNormalizedPos.y() < 0))
+            {
+                QString logMsg = QString("[ModernScene::mouseReleaseEvent] Updating offset after movement completion: componentsOutsideVisibleArea=%1, minNormalizedPos=(%2, %3)")
+                    .arg(componentsOutsideVisibleArea.size())
+                    .arg(minNormalizedPos.x()).arg(minNormalizedPos.y());
+                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+
+                // CRITICAL FIX: Save the set before clearing it, so updateNormalizationOffsetForMovement
+                // knows which components to adjust
+                m_owner->updateNormalizationOffsetForMovement(minNormalizedPos, componentsOutsideVisibleArea);
+            }
         }
 
-        // Очищаем set после обновления offset
+        // Очищаем set после обновления offset (или если обновление не потребовалось)
         m_owner->m_componentsWithNegativePos.clear();
 
         // Очищаем сохраненные исходные абсолютные координаты
         m_owner->m_originalAbsolutePositions.clear();
+    }
+
+    // Обновляем sceneRect после завершения движения
+    if(wasComponentMoving)
+    {
+        m_owner->updateSceneRect();
     }
 }
 
@@ -7346,8 +7625,9 @@ void UModernDiagramWidget::selectComponent(QString name)
             m_isProgrammaticSelection = false;
         });
         m_contextMenuNode = it.value();
-        // Прокручиваем к выбранному узлу
-        if(m_mainView)
+        // Прокручиваем к выбранному узлу только если компонент не двигается
+        // Это предотвращает движение скроллбара при клике на компонент во время перетаскивания
+        if(m_mainView && !m_isComponentMoving)
             m_mainView->centerOn(it.value());
 
         // Сбрасываем счетчик после успешного выбора
