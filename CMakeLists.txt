@@ -127,12 +127,13 @@ find_package(Qt5 REQUIRED COMPONENTS Sql)
 target_link_libraries(${TARGET_NAME} PUBLIC Qt5::Sql)
 
 # Boost libraries (required components)
+# Используем MODULE режим для всех платформ (FindBoost.cmake правильно определяет имена библиотек)
 find_package(Boost QUIET COMPONENTS program_options thread filesystem system chrono atomic)
 if(Boost_FOUND)
-  target_link_libraries(${TARGET_NAME} PUBLIC 
-    Boost::program_options 
-    Boost::thread 
-    Boost::filesystem 
+  target_link_libraries(${TARGET_NAME} PUBLIC
+    Boost::program_options
+    Boost::thread
+    Boost::filesystem
     Boost::system
     Boost::chrono
     Boost::atomic
@@ -192,4 +193,4 @@ endif()
 if(BUILD_TESTING)
   add_subdirectory(Tests)
 endif()
- 
+

@@ -1025,7 +1025,6 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
 
         // ОПТИМИЗАЦИЯ: загружаем порты только если кэш портов невалиден
         // Это позволяет избежать повторных вызовов API ядра при каждой инвалидации кэша paint
-        qint64 portsLoadTime = 0;
         if(!m_portsCacheValid)
         {
             // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
@@ -1049,7 +1048,6 @@ void UModernDiagramWidget::NodeItem::paint(QPainter *painter, const QStyleOption
         m_hasOutputPortsCache[PortCategory::Alias] = !m_cachedAliasOutputPorts.isEmpty();
 
         // Кэшируем результаты проверки соединений с детальным профилированием
-        qint64 connectionsCheckTime = 0;
         {
             // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
             // NMSDK::UGuiTelemetryScope connectionsTelemetry(QStringLiteral("UModernDiagramWidget.NodeItem.paint.checkConnections"), nodeName);
@@ -2271,7 +2269,6 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToInputCategory(PortCategory 
     //         .arg(componentDisplayName).arg(nodeName).arg(categoryStr).arg(m_connectedLinks.size());
     //     MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
     // }
-    bool isPGenerator = false;  // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
 
     for(LinkItem* link : m_connectedLinks)
     {
@@ -2668,7 +2665,6 @@ bool UModernDiagramWidget::NodeItem::hasConnectionsToOutputCategory(PortCategory
     //         .arg(componentDisplayName).arg(nodeName).arg(categoryStr).arg(m_connectedLinks.size());
     //     MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
     // }
-    bool isPGenerator = false;  // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
 
     for(LinkItem* link : m_connectedLinks)
     {
@@ -3965,7 +3961,7 @@ void UModernDiagramWidget::SetApplication(RDK::UApplication* app)
         bool loaded = loadComponentCacheFromFile(binPath, true);
         if(loaded)
         {
-            QString logMsg = QString("[UModernDiagramWidget] Component cache loaded from binary file: %1").arg(binPath);
+            logMsg = QString("[UModernDiagramWidget] Component cache loaded from binary file: %1").arg(binPath);
             MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
         }
         else
@@ -3977,12 +3973,12 @@ void UModernDiagramWidget::SetApplication(RDK::UApplication* app)
             loaded = loadComponentCacheFromFile(jsonPath, false);
             if(loaded)
             {
-                QString logMsg = QString("[UModernDiagramWidget] Component cache loaded from JSON file: %1").arg(jsonPath);
+                logMsg = QString("[UModernDiagramWidget] Component cache loaded from JSON file: %1").arg(jsonPath);
                 MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
             }
             else
             {
-                QString logMsg = QString("[UModernDiagramWidget] Component cache not found, starting with empty cache (checked: bin=%1, json=%2)")
+                logMsg = QString("[UModernDiagramWidget] Component cache not found, starting with empty cache (checked: bin=%1, json=%2)")
                     .arg(binPath.isEmpty() ? "<empty>" : binPath)
                     .arg(jsonPath.isEmpty() ? "<empty>" : jsonPath);
                 MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
@@ -3991,8 +3987,8 @@ void UModernDiagramWidget::SetApplication(RDK::UApplication* app)
     }
     else
     {
-        QString logMsg = QString("[UModernDiagramWidget] SetApplication called with nullptr, cache loading skipped");
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+        QString logMsg2 = QString("[UModernDiagramWidget] SetApplication called with nullptr, cache loading skipped");
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg2.toStdString().c_str(), 0);
     }
 }
 
@@ -4107,8 +4103,6 @@ void UModernDiagramWidget::clearScene()
     // Профилирование: начало операции clearScene
     // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
     // QString componentDisplayName = m_componentName.isEmpty() ? "root" : m_componentName;
-    int nodesCount = m_nodes.size();
-    int linksCount = m_links.size();
     // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
     // NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UModernDiagramWidget.clearScene"),
     //     componentDisplayName + " (" + QString::number(nodesCount) + " nodes)");
@@ -4325,21 +4319,21 @@ void UModernDiagramWidget::buildScene()
             loaded = absoluteScenePos - minScenePos;
 
             // Logging for debugging component placement
-            QString logMsg = QString("[UModernDiagramWidget::buildScene] Component '%1': kernelPos=(%2, %3), absoluteScenePos=(%4, %5), minScenePos=(%6, %7), loaded=(%8, %9)")
+            QString logMsg2 = QString("[UModernDiagramWidget::buildScene] Component '%1': kernelPos=(%2, %3), absoluteScenePos=(%4, %5), minScenePos=(%6, %7), loaded=(%8, %9)")
                 .arg(fullName)
                 .arg(kernelPos.x()).arg(kernelPos.y())
                 .arg(absoluteScenePos.x()).arg(absoluteScenePos.y())
                 .arg(minScenePos.x()).arg(minScenePos.y())
                 .arg(loaded.x()).arg(loaded.y());
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg2.toStdString().c_str(), 0);
         }
         else
         {
             loaded = QPointF((idx%4)*180, (idx/4)*140);
-            QString logMsg = QString("[UModernDiagramWidget::buildScene] Component '%1': coordinates not loaded, using grid: loaded=(%2, %3)")
+            QString logMsg3 = QString("[UModernDiagramWidget::buildScene] Component '%1': coordinates not loaded, using grid: loaded=(%2, %3)")
                 .arg(fullName)
                 .arg(loaded.x()).arg(loaded.y());
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg3.toStdString().c_str(), 0);
         }
 
         nodesToAdd.append(node);
@@ -4894,7 +4888,6 @@ void UModernDiagramWidget::buildLinks()
     }
     // telemetry3.Stop();
     // qint64 updateGeometryElapsed = telemetry3.Elapsed();
-    qint64 updateGeometryElapsed = 0;  // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
 
     // Инвалидируем кэш paint() для всех узлов после создания связей
     for(auto* node : m_nodes)
