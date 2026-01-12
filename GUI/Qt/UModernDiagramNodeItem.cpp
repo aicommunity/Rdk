@@ -794,13 +794,30 @@ QPointF UModernDiagramNodeItem::scenePortPos(bool output) const
 QPointF UModernDiagramNodeItem::scenePortPosByCategory(bool output, PortCategory category) const
 {
     const QVector<Port>& ports = output ? outputs : inputs;
+    const Port* fallbackPort = nullptr;
+
+    // Сначала пытаемся найти «заголовочный» порт категории (Own/Children/Aliases),
+    // у которого fullPath пустой. Если такого нет, используем любой первый порт
+    // нужной категории (включая вложенные, где fullPath не пустой).
     for(const Port& port : ports)
     {
-        if(port.category == category && port.fullPath.isEmpty())
+        if(port.category != category)
+            continue;
+
+        if(port.fullPath.isEmpty())
         {
+            // Групповой порт категории — используем его сразу
             return mapToScene(port.pos);
         }
+
+        if(!fallbackPort)
+            fallbackPort = &port;
     }
+    // Если нет заголовочного порта категории, но есть порты с нужной категорией —
+    // используем первый найденный.
+    if(fallbackPort)
+        return mapToScene(fallbackPort->pos);
+
     // Fallback: возвращаем позицию первого порта
     return scenePortPos(output);
 }

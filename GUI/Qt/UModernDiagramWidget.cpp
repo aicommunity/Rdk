@@ -893,15 +893,123 @@ void UModernDiagramWidget::buildLinks()
                 portCategoryCache[srcKey] = srcCategory;
             }
 
-            // Для определения категории входного порта нужно нормализовать connName
+            // Для определения категории входного порта нужно нормализовать connName.
+            // Цель нормализации — получить путь свойства ОТНОСИТЕЛЬНО dstNode (его nodeName),
+            // сохраняя при этом информацию о вложенных компонентах (например, "ChildComp.Prop").
             QString normalizedConnName = connName;
             QString dstNodeName;
             QString connIdStr = QString::fromStdString(connId);
 
-            // Если dstNode найден, используем его имя для нормализации
+            // Если dstNode найден, используем его имя как опорную точку для нормализации
             if(dstNode)
             {
                 dstNodeName = dstNode->nodeName;
+
+                // Полный путь к dstNode в текущем уровне диаграммы
+                QString fullDstNodePath = m_componentName.isEmpty()
+                    ? dstNodeName
+                    : m_componentName + "." + dstNodeName;
+
+                // Приоритет 1: нормализуем по connName, если оно не пустое
+                if(!connName.isEmpty())
+                {
+                    // На верхнем уровне (m_componentName.isEmpty()) connName может содержать
+                    // полный путь вида "PNeuronS1D2Syn1.ChildComp.Property" или просто "Property".
+                    // На вложенных уровнях connName уже относительный.
+                    if(m_componentName.isEmpty())
+                    {
+                        // Формат: "<NodeName>.<ChildPath>" - извлекаем часть после nodeName
+                        if(connName.startsWith(dstNodeName + "."))
+                        {
+                            normalizedConnName = connName.mid(dstNodeName.length() + 1);
+                        }
+                        // Формат: просто имя свойства без префикса - проверяем connId для определения пути
+                        else if(!connName.contains('.'))
+                        {
+                            // Если connId содержит путь к дочернему компоненту, используем его
+                            if(!connIdStr.isEmpty() && connIdStr.startsWith(dstNodeName + "."))
+                            {
+                                QString pathFromConnId = connIdStr.mid(dstNodeName.length() + 1);
+                                // Если pathFromConnId содержит точку, значит это путь к дочернему компоненту
+                                // Объединяем путь из connId с именем свойства из connName
+                                if(pathFromConnId.contains('.'))
+                                {
+                                    // pathFromConnId уже содержит полный путь, включая имя свойства
+                                    normalizedConnName = pathFromConnId;
+                                }
+                                else
+                                {
+                                    // pathFromConnId - это имя дочернего компонента, добавляем connName
+                                    normalizedConnName = pathFromConnId + "." + connName;
+                                }
+                            }
+                            else
+                            {
+                                // Иначе считаем, что это собственное свойство
+                                normalizedConnName = connName;
+                            }
+                        }
+                        else
+                        {
+                            // connName содержит точку, но не начинается с dstNodeName
+                            // Возможно, это уже относительный путь или путь с другим форматом
+                            // Проверяем connId для уточнения
+                            if(!connIdStr.isEmpty() && connIdStr.startsWith(dstNodeName + "."))
+                            {
+                                QString pathFromConnId = connIdStr.mid(dstNodeName.length() + 1);
+                                // Если connId указывает на дочерний компонент, используем путь из connId
+                                if(pathFromConnId.contains('.'))
+                                {
+                                    normalizedConnName = pathFromConnId;
+                                }
+                                else
+                                {
+                                    // Используем connName как есть (он уже может быть относительным)
+                                    normalizedConnName = connName;
+                                }
+                            }
+                            else
+                            {
+                                normalizedConnName = connName;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // На вложенных уровнях: connName уже относительный путь
+                        // Формат: "<FullComponentPath>.<ChildPath>"
+                        if(connName.startsWith(fullDstNodePath + "."))
+                        {
+                            normalizedConnName = connName.mid(fullDstNodePath.length() + 1);
+                        }
+                        // Формат: "<NodeName>.<ChildPath>"
+                        else if(connName.startsWith(dstNodeName + "."))
+                        {
+                            normalizedConnName = connName.mid(dstNodeName.length() + 1);
+                        }
+                        else
+                        {
+                            // Иначе считаем, что connName уже относительный путь от dstNode
+                            normalizedConnName = connName;
+                        }
+                    }
+                }
+                // Приоритет 2: если connName пуст, пробуем использовать connId
+                else if(!connIdStr.isEmpty())
+                {
+                    if(connIdStr.startsWith(fullDstNodePath + "."))
+                    {
+                        normalizedConnName = connIdStr.mid(fullDstNodePath.length() + 1);
+                    }
+                    else if(connIdStr.startsWith(dstNodeName + "."))
+                    {
+                        normalizedConnName = connIdStr.mid(dstNodeName.length() + 1);
+                    }
+                    else
+                    {
+                        normalizedConnName = connIdStr;
+                    }
+                }
             }
             else
             {
@@ -925,67 +1033,67 @@ void UModernDiagramWidget::buildLinks()
                     int dot = connName.indexOf('.');
                     dstNodeName = dot >= 0 ? connName.left(dot) : connName;
                 }
-            }
 
-            // На верхнем уровне (m_componentName.isEmpty()) connName уже является относительным путем
-            // и не требует нормализации через удаление dstNodeName
-            // НО: если connName - это просто имя свойства (без точки), а connId содержит путь к дочернему компоненту,
-            // нужно извлечь путь из connId относительно dstNodeName
-            if(m_componentName.isEmpty())
-            {
-                // Если connId указывает на dstNode напрямую (без дочерних компонентов), используем connName как есть
-                if(connIdStr == dstNodeName)
+                // На верхнем уровне (m_componentName.isEmpty()) connName уже является относительным путем
+                // и не требует нормализации через удаление dstNodeName.
+                // НО: если connName - это просто имя свойства (без точки), а connId содержит путь к дочернему компоненту,
+                // нужно извлечь путь из connId относительно dstNodeName.
+                if(m_componentName.isEmpty())
                 {
-                    normalizedConnName = connName;
-                }
-                // Если connId содержит путь к дочернему компоненту (начинается с dstNodeName + ".")
-                else if(connIdStr.startsWith(dstNodeName + "."))
-                {
-                    // Извлекаем путь к дочернему компоненту из connId
-                    QString pathFromConnId = connIdStr.mid(dstNodeName.length() + 1);
-                    // Если connName не содержит точки (просто имя свойства), используем путь из connId
-                    if(!connName.contains('.'))
-                    {
-                        normalizedConnName = pathFromConnId + "." + connName;
-                    }
-                    // Если connName уже содержит путь, используем его
-                    else
+                    // Если connId указывает на dstNode напрямую (без дочерних компонентов), используем connName как есть
+                    if(connIdStr == dstNodeName)
                     {
                         normalizedConnName = connName;
                     }
-                }
-                // Если connName начинается с dstNodeName, извлекаем часть после nodeName
-                else if(connName.startsWith(dstNodeName + "."))
-                {
-                    normalizedConnName = connName.mid(dstNodeName.length() + 1);
-                }
-            }
-            else
-            {
-                // Для вложенных уровней проверяем различные возможные форматы пути
-                if(connName.startsWith(dstNodeName + "."))
-                {
-                    // connName начинается с dstNodeName, извлекаем часть после nodeName
-                    normalizedConnName = connName.mid(dstNodeName.length() + 1);
+                    // Если connId содержит путь к дочернему компоненту (начинается с dstNodeName + ".")
+                    else if(connIdStr.startsWith(dstNodeName + "."))
+                    {
+                        // Извлекаем путь к дочернему компоненту из connId
+                        QString pathFromConnId = connIdStr.mid(dstNodeName.length() + 1);
+                        // Если connName не содержит точки (просто имя свойства), используем путь из connId
+                        if(!connName.contains('.'))
+                        {
+                            normalizedConnName = pathFromConnId + "." + connName;
+                        }
+                        // Если connName уже содержит путь, используем его
+                        else
+                        {
+                            normalizedConnName = connName;
+                        }
+                    }
+                    // Если connName начинается с dstNodeName, извлекаем часть после nodeName
+                    else if(connName.startsWith(dstNodeName + "."))
+                    {
+                        normalizedConnName = connName.mid(dstNodeName.length() + 1);
+                    }
                 }
                 else
                 {
-                    // Проверяем, начинается ли connName с полного пути через m_componentName
-                    QString fullPath = m_componentName + "." + dstNodeName;
-                    if(connName.startsWith(fullPath + "."))
+                    // Для вложенных уровней проверяем различные возможные форматы пути
+                    if(connName.startsWith(dstNodeName + "."))
                     {
-                        normalizedConnName = connName.mid(fullPath.length() + 1);
+                        // connName начинается с dstNodeName, извлекаем часть после nodeName
+                        normalizedConnName = connName.mid(dstNodeName.length() + 1);
                     }
                     else
                     {
-                        // Если connId указывает на dstNode, используем connName как есть
-                        // (он уже является относительным путем)
-                        if(connIdStr == dstNodeName ||
-                           connIdStr.endsWith("." + dstNodeName) ||
-                           connIdStr == fullPath ||
-                           connIdStr.endsWith("." + fullPath))
+                        // Проверяем, начинается ли connName с полного пути через m_componentName
+                        QString fullPath = m_componentName + "." + dstNodeName;
+                        if(connName.startsWith(fullPath + "."))
                         {
-                            normalizedConnName = connName;
+                            normalizedConnName = connName.mid(fullPath.length() + 1);
+                        }
+                        else
+                        {
+                            // Если connId указывает на dstNode, используем connName как есть
+                            // (он уже является относительным путем)
+                            if(connIdStr == dstNodeName ||
+                               connIdStr.endsWith("." + dstNodeName) ||
+                               connIdStr == fullPath ||
+                               connIdStr.endsWith("." + fullPath))
+                            {
+                                normalizedConnName = connName;
+                            }
                         }
                     }
                 }
