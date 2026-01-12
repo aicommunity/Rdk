@@ -96,11 +96,11 @@ UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
     m_mainView->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     m_mainView->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
-    m_miniMap->setFixedHeight(140);
+    m_miniMap->setFixedHeight(UModernDiagramConstants::MINIMAP_HEIGHT);
     m_miniMap->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_miniMap->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     m_miniMap->setInteractive(false);
-    m_miniMap->scale(0.2, 0.2);
+    m_miniMap->scale(UModernDiagramConstants::MINIMAP_SCALE, UModernDiagramConstants::MINIMAP_SCALE);
 
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0,0,0,0);
@@ -303,7 +303,10 @@ void UModernDiagramWidget::updateSceneRect()
     QRectF bounds = m_scene->itemsBoundingRect();
     if(!bounds.isNull())
     {
-        QRectF padded = bounds.adjusted(-200, -200, 200, 200);
+            QRectF padded = bounds.adjusted(-UModernDiagramConstants::SCENE_RECT_PADDING,
+                                            -UModernDiagramConstants::SCENE_RECT_PADDING,
+                                            UModernDiagramConstants::SCENE_RECT_PADDING,
+                                            UModernDiagramConstants::SCENE_RECT_PADDING);
         m_scene->setSceneRect(padded);
     }
 }
@@ -533,7 +536,8 @@ void UModernDiagramWidget::createNodes(const QStringList& components, const QHas
         }
         else
         {
-            loaded = QPointF((idx % 4) * 180, (idx / 4) * 140);
+            loaded = QPointF((idx % UModernDiagramConstants::GRID_COLUMNS) * UModernDiagramConstants::GRID_CELL_WIDTH,
+                            (idx / UModernDiagramConstants::GRID_COLUMNS) * UModernDiagramConstants::GRID_CELL_HEIGHT);
             QString logMsg3 = QString("[UModernDiagramWidget::buildScene] Component '%1': coordinates not loaded, using grid: loaded=(%2, %3)")
                 .arg(fullName)
                 .arg(loaded.x()).arg(loaded.y());
@@ -662,7 +666,8 @@ UModernDiagramNodeItem* UModernDiagramWidget::addSingleComponent(const QString& 
     {
         // Если координат нет, размещаем в сетке
         int idx = m_nodes.size();
-        loaded = QPointF((idx%4)*180, (idx/4)*140);
+        loaded = QPointF((idx % UModernDiagramConstants::GRID_COLUMNS) * UModernDiagramConstants::GRID_CELL_WIDTH,
+                        (idx / UModernDiagramConstants::GRID_COLUMNS) * UModernDiagramConstants::GRID_CELL_HEIGHT);
     }
 
     // Создаем узел

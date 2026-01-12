@@ -27,6 +27,28 @@
 #include "../Core/Engine/UEnvSupport.h"
 #include "UModernDiagramPort.h"  // Для Port и PortCategory
 
+// Константы для диаграммы
+namespace UModernDiagramConstants {
+    // Размеры и отступы
+    constexpr int MINIMAP_HEIGHT = 140;                    // Высота миникарты
+    constexpr double MINIMAP_SCALE = 0.2;                  // Масштаб миникарты
+    constexpr int SCENE_RECT_PADDING = 200;                // Отступ для sceneRect
+
+    // Сетка размещения компонентов
+    constexpr int GRID_COLUMNS = 4;                        // Количество колонок в сетке
+    constexpr int GRID_CELL_WIDTH = 180;                   // Ширина ячейки сетки
+    constexpr int GRID_CELL_HEIGHT = 140;                  // Высота ячейки сетки
+
+    // Размеры виджета списка портов
+    constexpr int PORT_LIST_MAX_HEIGHT = 300;              // Максимальная высота списка портов
+    constexpr int PORT_LIST_MIN_WIDTH = 250;               // Минимальная ширина списка портов
+    constexpr int PORT_LIST_MAX_WIDTH = 350;               // Максимальная ширина списка портов
+
+    // Таймеры
+    constexpr int PORT_LIST_HIDE_DELAY_MS = 1000;          // Задержка скрытия списка портов (мс)
+    constexpr int PORT_LIST_HIDE_RETRY_DELAY_MS = 300;     // Повторная задержка скрытия списка портов (мс)
+}
+
 // Forward declarations
 class UModernDiagramWidgetMovementTest;
 class UModernDiagramLinkItem;

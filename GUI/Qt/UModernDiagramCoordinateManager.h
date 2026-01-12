@@ -53,8 +53,9 @@ private:
     UModernDiagramWidget* m_owner;
 
     // Coord scaling (scene units per kernel unit)
-    // Set to 30 to match UDrawEngine's ZoomCoeff for 1:1 scale with classic diagram
-    double m_coordScale = 30.0;
+    // Set to DEFAULT_COORD_SCALE to match UDrawEngine's ZoomCoeff for 1:1 scale with classic diagram
+    static constexpr double DEFAULT_COORD_SCALE = 30.0;
+    double m_coordScale = DEFAULT_COORD_SCALE;
 
     // Минимальная позиция, использованная для нормализации при загрузке
     // Нужна для правильной денормализации координат при сохранении

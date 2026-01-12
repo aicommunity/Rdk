@@ -60,22 +60,22 @@ UModernDiagramNodeItem::UModernDiagramNodeItem(UModernDiagramWidget* owner, cons
     m_portListWidget->setHeaderHidden(true);
     m_portListWidget->setRootIsDecorated(true);
     m_portListWidget->setAlternatingRowColors(true);
-    m_portListWidget->setMaximumHeight(300);
-    m_portListWidget->setMinimumWidth(250);
-    m_portListWidget->setMaximumWidth(350);
+    m_portListWidget->setMaximumHeight(UModernDiagramConstants::PORT_LIST_MAX_HEIGHT);
+    m_portListWidget->setMinimumWidth(UModernDiagramConstants::PORT_LIST_MIN_WIDTH);
+    m_portListWidget->setMaximumWidth(UModernDiagramConstants::PORT_LIST_MAX_WIDTH);
     m_portListWidget->setStyleSheet(UStyleManager::instance()->getTreeWidgetStyleSheet());
     // Устанавливаем политику фокуса при создании
     m_portListWidget->setFocusPolicy(Qt::StrongFocus);
 
     // Таймер для отложенного скрытия списка портов
     m_hideTimer->setSingleShot(true);
-    m_hideTimer->setInterval(1000); // 1 секунда после ухода курсора
+    m_hideTimer->setInterval(UModernDiagramConstants::PORT_LIST_HIDE_DELAY_MS);
     QObject::connect(m_hideTimer, &QTimer::timeout, [this]()
     {
         if(m_portListWidget && (m_portListWidget->underMouse() || m_portListWidget->hasFocus()))
         {
             // Пока мышь или фокус внутри списка, откладываем скрытие
-            m_hideTimer->start(300);
+            m_hideTimer->start(UModernDiagramConstants::PORT_LIST_HIDE_RETRY_DELAY_MS);
             return;
         }
         hidePortListWidget();
