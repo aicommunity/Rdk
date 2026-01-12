@@ -193,9 +193,12 @@ bool UModernDiagramCacheManager::hasLevelCache(const QString& componentName) con
 const UModernDiagramSceneCache& UModernDiagramCacheManager::getLevelCache(const QString& componentName) const
 {
     static UModernDiagramSceneCache emptyCache;
-    if(componentName.isEmpty() || !m_levelCache.contains(componentName))
+    if(componentName.isEmpty())
         return emptyCache;
-    return m_levelCache[componentName];
+    auto it = m_levelCache.constFind(componentName);
+    if(it == m_levelCache.constEnd())
+        return emptyCache;
+    return it.value();
 }
 
 QString UModernDiagramCacheManager::computeComponentHash(const QString& componentFullName) const

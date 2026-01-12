@@ -10,6 +10,7 @@
 #include <QGraphicsProxyWidget>
 #include <QTimer>
 #include <QGraphicsSceneHoverEvent>
+#include <memory>
 
 // Forward declarations
 class UModernDiagramWidget;
@@ -54,7 +55,7 @@ public:
     mutable const Port* m_hoveredPort;
     QGraphicsProxyWidget* m_portListWidgetProxy;
     QTreeWidget* m_portListWidget;
-    QTimer* m_hideTimer;
+    std::unique_ptr<QTimer> m_hideTimer;
     // Кэш связей, подключенных к этому узлу (для оптимизации обновления при перемещении)
     QList<UModernDiagramLinkItem*> m_connectedLinks;
     // Кэш для результатов дорогих вычислений в paint()

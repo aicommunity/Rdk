@@ -24,6 +24,7 @@
 #include <QPointF>
 #include <QRectF>
 #include <QLineF>
+#include <QTimer>
 #include <cmath>
 
 // RDK includes
@@ -44,7 +45,7 @@ UModernDiagramNodeItem::UModernDiagramNodeItem(UModernDiagramWidget* owner, cons
     , m_hoveredPort(nullptr)
     , m_portListWidgetProxy(nullptr)
     , m_portListWidget(nullptr)
-    , m_hideTimer(new QTimer())
+    , m_hideTimer(std::make_unique<QTimer>())
     , m_cacheValid(false)
     , m_portsCacheValid(false)
 {
@@ -70,7 +71,7 @@ UModernDiagramNodeItem::UModernDiagramNodeItem(UModernDiagramWidget* owner, cons
     // Таймер для отложенного скрытия списка портов
     m_hideTimer->setSingleShot(true);
     m_hideTimer->setInterval(UModernDiagramConstants::PORT_LIST_HIDE_DELAY_MS);
-    QObject::connect(m_hideTimer, &QTimer::timeout, [this]()
+    QObject::connect(m_hideTimer.get(), &QTimer::timeout, [this]()
     {
         if(m_portListWidget && (m_portListWidget->underMouse() || m_portListWidget->hasFocus()))
         {
@@ -365,12 +366,10 @@ UModernDiagramNodeItem::UModernDiagramNodeItem(UModernDiagramWidget* owner, cons
 
 UModernDiagramNodeItem::~UModernDiagramNodeItem()
 {
-    // Останавливаем таймер
-    if(m_hideTimer)
+    // Останавливаем таймер (std::unique_ptr автоматически удалит объект)
+    if(m_hideTimer && m_hideTimer->isActive())
     {
         m_hideTimer->stop();
-        delete m_hideTimer;
-        m_hideTimer = nullptr;
     }
 
     // Если указатели обнулены (clearScene() был вызван), то сцена
