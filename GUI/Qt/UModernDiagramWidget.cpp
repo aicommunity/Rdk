@@ -396,60 +396,30 @@ void UModernDiagramWidget::clearScene()
     // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 }
 
-void UModernDiagramWidget::buildScene()
+QStringList UModernDiagramWidget::loadComponentList() const
 {
-    // Удалено избыточное логирование - создавало спам в INFO логах
-    if(!m_application)
-    {
-        // Удалено избыточное логирование - создавало спам в INFO логах
-        return;
-    }
-
-    // Профилирование: начало операции buildScene
-    // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
-    // QString componentDisplayName = m_componentName.isEmpty() ? "root" : m_componentName;
-    // NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UModernDiagramWidget.buildScene"), componentDisplayName);
-
-    // Оптимизация: отключаем обновления во время массового создания узлов
-    setUpdatesEnabled(false);
-    if(m_mainView)
-        m_mainView->setUpdatesEnabled(false);
-
     const char* compRaw = Model_GetComponentsNameList(m_componentName.toStdString().c_str());
     QString compListStr = QString::fromUtf8(compRaw ? compRaw : "");
     QStringList components = compListStr.split(",", Qt::SkipEmptyParts);
     Engine_FreeBufString(compRaw);
-    // Удалено избыточное логирование - создавало спам в INFO логах
+    return components;
+}
 
-    // Обновляем имя телеметрии с количеством узлов
-    // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
-    // telemetry.Stop();
-    // NMSDK::UGuiTelemetryScope telemetry2(QStringLiteral("UModernDiagramWidget.buildScene"),
-    //     componentDisplayName + " (" + QString::number(components.size()) + " nodes)");
+QPointF UModernDiagramWidget::loadAndCacheCoordinates(const QStringList& components, bool& coordsLoaded,
+                                                       QHash<QString, QPointF>& coordCache, QHash<QString, bool>& coordLoadedCache)
+{
+    coordsLoaded = false;
+    QPointF minKernel(0, 0);
+    bool minSet = false;
 
-    // Оптимизация: кэшируем имена классов компонентов для минимизации вызовов API
-    QHash<QString, QString> classNameCache;
-
-    // Оптимизация: кэшируем координаты компонентов, чтобы не вызывать loadCoord() дважды
-    QHash<QString, QPointF> coordCache;
-    QHash<QString, bool> coordLoadedCache;
-
-    int idx = 0;
-    bool coordsLoaded = false;
-    QPointF minKernel(0,0);
-    bool minSet=false;
-    // Сначала загружаем все координаты и находим минимальную для визуальной нормализации
+    // Загружаем все координаты и находим минимальную для визуальной нормализации
     for(const QString& comp : components)
     {
         QString fullName = m_componentName.isEmpty() ? comp : m_componentName + "." + comp;
         QPointF kernelPos;
-        bool loaded = false;
+        bool loaded = m_coordinateManager->loadCoord(fullName, kernelPos);
 
-        // Always load coordinates from XML to ensure we get the latest saved values
-        // Cache is updated when coordinates are saved, but we want to ensure consistency
-        loaded = m_coordinateManager->loadCoord(fullName, kernelPos);
-
-        // Update cache with loaded coordinates for future use
+        // Обновляем кэш с загруженными координатами
         UModernDiagramComponentCacheEntry* cacheEntry = m_cacheManager->getComponentCache().getEntry(fullName);
         if(cacheEntry)
         {
@@ -486,13 +456,10 @@ void UModernDiagramWidget::buildScene()
     }
 
     // Вычисляем смещение для визуальной нормализации (только для отображения)
-    // Это смещение НЕ сохраняется в ядре и пересчитывается при каждой загрузке
-    QPointF minScenePos = coordsLoaded ? m_coordinateManager->scenePosFromKernel(minKernel) : QPointF(0,0);
-    // Сохраняем смещение нормализации ДО создания узлов, чтобы оно было доступно при сохранении координат
-    // ВАЖНО: это смещение используется только для визуального отображения, координаты в ядре остаются абсолютными
+    QPointF minScenePos = coordsLoaded ? m_coordinateManager->scenePosFromKernel(minKernel) : QPointF(0, 0);
     m_coordinateManager->setNormalizationOffset(minScenePos);
 
-    // Logging for debugging coordinate loading
+    // Логирование для отладки загрузки координат
     QString logMsg = QString("[UModernDiagramWidget::buildScene] Loading components: coordsLoaded=%1, minKernel=(%2, %3), minScenePos=(%4, %5), m_normalizationOffset=(%6, %7), m_coordScale=%8")
         .arg(coordsLoaded ? "true" : "false")
         .arg(minKernel.x()).arg(minKernel.y())
@@ -501,9 +468,15 @@ void UModernDiagramWidget::buildScene()
         .arg(m_coordinateManager->getCoordScale());
     MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 
-    // Оптимизация: создаем все узлы сначала, затем добавляем в сцену пакетами
-    QList<UModernDiagramNodeItem*> nodesToAdd;
-    QHash<QString, QPointF> nodePositions;
+    return minScenePos;
+}
+
+void UModernDiagramWidget::createNodes(const QStringList& components, const QHash<QString, QPointF>& coordCache,
+                                       const QHash<QString, bool>& coordLoadedCache, const QPointF& minScenePos,
+                                       QList<UModernDiagramNodeItem*>& nodesToAdd, QHash<QString, QPointF>& nodePositions)
+{
+    QHash<QString, QString> classNameCache;
+    int idx = 0;
 
     for(const QString& comp : components)
     {
@@ -511,13 +484,10 @@ void UModernDiagramWidget::buildScene()
 
         // Кэшируем имя класса для минимизации вызовов API
         QString cls;
-        bool classNameFromCache = false;
         UModernDiagramComponentCacheEntry* cacheEntry = m_cacheManager->getComponentCache().getEntry(fullName);
         if(cacheEntry && !cacheEntry->className.isEmpty())
         {
-            // Берем имя класса из сессионного кэша
             cls = cacheEntry->className;
-            classNameFromCache = true;
         }
         else if(classNameCache.contains(fullName))
         {
@@ -530,7 +500,7 @@ void UModernDiagramWidget::buildScene()
             Engine_FreeBufString(clsRaw);
             classNameCache[fullName] = cls;
 
-            // Сохраняем имя класса в сессионный кэш для ускорения последующих Reload
+            // Сохраняем имя класса в сессионный кэш
             if(cacheEntry)
             {
                 cacheEntry->className = cls;
@@ -547,15 +517,12 @@ void UModernDiagramWidget::buildScene()
 
         auto* node = new UModernDiagramNodeItem(this, comp, cls);
         QPointF loaded;
-        // Используем кэшированные координаты вместо повторного вызова loadCoord()
         QPointF kernelPos = coordCache.value(fullName);
         if(coordLoadedCache.value(fullName, false))
         {
-            // Используем абсолютные координаты из ядра, нормализуем только для визуального отображения
             QPointF absoluteScenePos = m_coordinateManager->scenePosFromKernel(kernelPos);
             loaded = absoluteScenePos - minScenePos;
 
-            // Logging for debugging component placement
             QString logMsg2 = QString("[UModernDiagramWidget::buildScene] Component '%1': kernelPos=(%2, %3), absoluteScenePos=(%4, %5), minScenePos=(%6, %7), loaded=(%8, %9)")
                 .arg(fullName)
                 .arg(kernelPos.x()).arg(kernelPos.y())
@@ -566,7 +533,7 @@ void UModernDiagramWidget::buildScene()
         }
         else
         {
-            loaded = QPointF((idx%4)*180, (idx/4)*140);
+            loaded = QPointF((idx % 4) * 180, (idx / 4) * 140);
             QString logMsg3 = QString("[UModernDiagramWidget::buildScene] Component '%1': coordinates not loaded, using grid: loaded=(%2, %3)")
                 .arg(fullName)
                 .arg(loaded.x()).arg(loaded.y());
@@ -578,11 +545,12 @@ void UModernDiagramWidget::buildScene()
         m_nodeByName.insert(comp, node);
         idx++;
     }
+}
 
-    // Устанавливаем флаг, чтобы предотвратить сохранение координат во время инициализации
+void UModernDiagramWidget::addNodesToScene(const QList<UModernDiagramNodeItem*>& nodesToAdd, const QHash<QString, QPointF>& nodePositions)
+{
     m_isBuildingScene = true;
 
-    // Добавляем узлы в сцену пакетами
     for(auto* node : nodesToAdd)
     {
         m_scene->addItem(node);
@@ -590,72 +558,64 @@ void UModernDiagramWidget::buildScene()
         QString comp = node->nodeName;
         QPointF loaded = nodePositions[comp];
         node->setPos(loaded);
-        // Инициализируем сохраненную позицию для перемещения группы
         m_lastNodePositions[node] = loaded;
     }
 
-    // Сбрасываем флаг после установки всех позиций
     m_isBuildingScene = false;
+}
 
+void UModernDiagramWidget::buildScene()
+{
+    if(!m_application)
+        return;
+
+    // Отключаем обновления во время массового создания узлов
+    setUpdatesEnabled(false);
+    if(m_mainView)
+        m_mainView->setUpdatesEnabled(false);
+
+    // Загружаем список компонентов
+    QStringList components = loadComponentList();
+    if(components.isEmpty())
+    {
+        setUpdatesEnabled(true);
+        if(m_mainView)
+            m_mainView->setUpdatesEnabled(true);
+        return;
+    }
+
+    // Загружаем и кэшируем координаты
+    bool coordsLoaded = false;
+    QHash<QString, QPointF> coordCache;
+    QHash<QString, bool> coordLoadedCache;
+    QPointF minScenePos = loadAndCacheCoordinates(components, coordsLoaded, coordCache, coordLoadedCache);
+
+    // Создаем узлы
+    QList<UModernDiagramNodeItem*> nodesToAdd;
+    QHash<QString, QPointF> nodePositions;
+    createNodes(components, coordCache, coordLoadedCache, minScenePos, nodesToAdd, nodePositions);
+
+    // Добавляем узлы в сцену
+    addNodesToScene(nodesToAdd, nodePositions);
+
+    // Если координаты не загружены, используем сетку
     if(!coordsLoaded)
     {
-        // нет координат из ядра — оставляем как есть и не перезаписываем в ядро,
-        // чтобы при первом отображении не было автосжатия старого вида
         layoutGrid();
     }
 
-    // Обновляем sceneRect после добавления всех компонентов
-    if(!m_nodes.isEmpty())
-    {
-        QRectF bounds = m_scene->itemsBoundingRect();
-        if(!bounds.isNull())
-        {
-            QRectF padded = bounds.adjusted(-200, -200, 200, 200);
-            m_scene->setSceneRect(padded);
-        }
-    }
+    // Обновляем sceneRect
+    updateSceneRect();
 
-    // Создаем связи сразу после узлов (синхронно)
-    // Включаем обновления перед созданием связей для корректного отображения
+    // Включаем обновления перед созданием связей
     setUpdatesEnabled(true);
     if(m_mainView)
         m_mainView->setUpdatesEnabled(true);
 
-    // Создаем связи после всех узлов
+    // Создаем связи
     buildLinks();
 
-    // ВРЕМЕННО ОТКЛЮЧЕНО: сохранение в кэш вызывает падения при повторном входе
-    // Проблема: после clearScene() указатели становятся невалидными
-    // TODO: переделать кэш на сохранение данных вместо указателей
-    // saveSceneToCache(m_componentName);
-
-    // Логируем результат профилирования buildScene
-    // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
-    // qint64 elapsed = telemetry2.Elapsed();
-    //
-    // // Подсчитываем статистику использования кэша
-    // int coordsFromCache = 0;
-    // int classNamesFromCache = 0;
-    // for(const QString& comp : components)
-    // {
-    //     QString fullName = m_componentName.isEmpty() ? comp : m_componentName + "." + comp;
-    //     ComponentCacheEntry* cacheEntry = m_componentCache.getEntry(fullName);
-    //     if(cacheEntry)
-    //     {
-    //         if(cacheEntry->hasKernelPos)
-    //             coordsFromCache++;
-    //         if(!cacheEntry->className.isEmpty())
-    //             classNamesFromCache++;
-    //     }
-    // }
-    //
-    // QString details = QString("created %1 nodes, coordsFromCache: %2/%3, classNamesFromCache: %4/%3")
-    //     .arg(components.size()).arg(coordsFromCache).arg(components.size()).arg(classNamesFromCache);
-    // QString logMsg = QString("[UModernDiagramWidget] Component: %1, Operation: buildScene, Duration: %2ms, Details: %3")
-    //     .arg(componentDisplayName).arg(elapsed).arg(details);
-    // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
-
-    // Планируем отложенное сохранение кэша после завершения buildScene
+    // Планируем отложенное сохранение кэша
     if(m_cacheManager) m_cacheManager->scheduleCacheSave();
 }
 
@@ -1730,4 +1690,5 @@ int UModernDiagramWidget::selectNodesInRect(const QRectF& selectionRect, bool ad
 // Tooltip generation methods теперь в UModernDiagramTooltipGenerator
 
 // --------------------------- ComponentCache ---------------------------
+
 

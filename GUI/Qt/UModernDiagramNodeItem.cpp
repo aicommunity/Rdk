@@ -3,6 +3,7 @@
 #include "UModernDiagramScene.h"
 #include "UModernDiagramView.h"
 #include "UModernDiagramLinkItem.h"
+#include "UModernDiagramPortManager.h"
 #include "UModernDiagramTooltipGenerator.h"
 #include "UModernDiagramCoordinateManager.h"
 #include "UModernDiagramCacheManager.h"
@@ -863,71 +864,13 @@ PortCategory UModernDiagramNodeItem::determinePortCategory(const QString& proper
         propName = propName.split('.').last();
     }
 
-    // Проверяем фактическое наличие свойства в каждой категории
-    // Сначала проверяем алиасы (они имеют приоритет)
-    QVector<Port> aliasPorts = isInput ? getAliasInputPorts() : getAliasOutputPorts();
-    for(const Port& port : aliasPorts)
-    {
-        if(port.name == propName ||
-           port.fullPath == propertyName ||
-           port.fullPath.endsWith("." + propName))
-        {
-            return PortCategory::Alias;
-        }
-    }
-
-    // Затем проверяем дочерние компоненты
-    // Проверяем точное совпадение с портами из getChildInputPorts/getChildOutputPorts
-    QVector<Port> childPorts = isInput ? getChildInputPorts() : getChildOutputPorts();
-    for(const Port& port : childPorts)
-    {
-        // Проверяем различные форматы сопоставления
-        if(port.name == propName ||
-           port.fullPath == propertyName ||
-           port.fullPath.endsWith("." + propName) ||
-           propertyName.contains(port.componentName + "." + propName))
-        {
-            return PortCategory::Child;
-        }
-
-        // Проверяем, начинается ли propertyName с пути к дочернему компоненту
-        if(propertyName.startsWith(port.componentName + "."))
-        {
-            return PortCategory::Child;
-        }
-
-        // Проверяем, содержит ли propertyName путь к дочернему компоненту
-        if(propertyName.contains("." + port.componentName + ".") ||
-           propertyName.startsWith(port.componentName + "."))
-        {
-            return PortCategory::Child;
-        }
-    }
-
-    // Наконец проверяем собственные свойства
+    // Загружаем порты для проверки категории
     QVector<Port> ownPorts = isInput ? getOwnInputPorts() : getOwnOutputPorts();
-    for(const Port& port : ownPorts)
-    {
-        if(port.name == propName ||
-           port.fullPath == propertyName ||
-           port.fullPath == propName)
-        {
-            return PortCategory::Own;
-        }
-    }
+    QVector<Port> childPorts = isInput ? getChildInputPorts() : getChildOutputPorts();
+    QVector<Port> aliasPorts = isInput ? getAliasInputPorts() : getAliasOutputPorts();
 
-    // Если свойство не найдено ни в одной категории, определяем по имени:
-    // Если содержит точку и начинается с nodeName - проверяем, является ли первый компонент дочерним
-    if(propertyName.contains('.'))
-    {
-        // Если не начинается с nodeName, это может быть дочерний компонент
-        if(!propertyName.startsWith(nodeName + "."))
-        {
-            return PortCategory::Child;
-        }
-        // Если начинается с nodeName, но не нашли в категориях - по умолчанию Child
-        return PortCategory::Child;
-    }
+    // Используем менеджер портов для определения категории
+    return UModernDiagramPortManager::determinePortCategory(fullName, nodeName, propertyName, isInput, ownPorts, childPorts, aliasPorts);
 
     return PortCategory::Own;
 }
@@ -1162,116 +1105,13 @@ void UModernDiagramNodeItem::refreshHoverAtScenePos(const QPointF& scenePos)
 
 QVector<Port> UModernDiagramNodeItem::getNestedPorts(bool isInput, bool includeNested) const
 {
-    QVector<Port> result;
     if(!m_owner || !m_owner->m_application)
-        return result;
+        return QVector<Port>();
 
     QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
 
-    // Получаем порты текущего компонента
-    unsigned int mask = isInput ? (ptPubInput | ptInput) : (ptPubOutput | ptOutput);
-    const char* propsList = Model_GetComponentPropertiesLookupList(fullName.toStdString().c_str(), mask);
-    if(propsList)
-    {
-        QStringList props = QString::fromUtf8(propsList).split(",", Qt::SkipEmptyParts);
-        for(const QString& prop : props)
-        {
-            QStringList parts = prop.split(":");
-            if(parts.size() >= 1)
-            {
-                QString propName = parts[0].trimmed();
-                Port port;
-                port.isInput = isInput;
-                port.name = propName;
-                port.componentName = nodeName;
-                port.fullPath = propName;
-                port.displayName = nodeName + "." + propName;
-                result.append(port);
-            }
-        }
-        Engine_FreeBufString(propsList);
-    }
-
-    // Добавляем алиасы свойств из UNet (если компонент является UNet)
-    try
-    {
-        RDK::UEPtr<RDK::UContainer> model = RDK::GetModel();
-        if(model)
-        {
-            RDK::UEPtr<RDK::UContainer> component;
-            if(fullName.isEmpty())
-                component = model;
-            else
-                component = model->GetComponentL(fullName.toStdString(), true);
-
-            if(component)
-            {
-                RDK::UEPtr<RDK::UNet> net = RDK::dynamic_pointer_cast<RDK::UNet>(component);
-                if(net)
-                {
-                    // Получаем алиасы нужного типа
-                    // Константы типов свойств определены в rdk_init.h в глобальном пространстве имен
-                    unsigned int aliasTypeMask = isInput ? (ptInput | ptPubInput) : (ptOutput | ptPubOutput);
-                    std::vector<RDK::UPropertyAlias> aliases = net->GetPropertyAliasesByType(aliasTypeMask);
-
-                    for(const auto& alias : aliases)
-                    {
-                        Port port;
-                        port.isInput = isInput;
-                        port.name = QString::fromStdString(alias.AliasName);
-                        port.componentName = nodeName;
-                        // Для алиаса fullPath содержит полный путь к свойству
-                        port.fullPath = QString::fromStdString(alias.GetFullPropertyPath());
-                        port.displayName = QString::fromStdString(alias.AliasName) + " [Alias]";
-                        result.append(port);
-                    }
-                }
-            }
-        }
-    }
-    catch(...)
-    {
-        // Игнорируем ошибки при получении алиасов
-    }
-
-    // Если нужно включить вложенные порты
-    if(includeNested)
-    {
-        const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
-        if(compList)
-        {
-            QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
-            for(const QString& comp : components)
-            {
-                QString nestedFullName = fullName + "." + comp;
-                const char* nestedProps = Model_GetComponentPropertiesLookupList(
-                    nestedFullName.toStdString().c_str(), mask);
-                if(nestedProps)
-                {
-                    QStringList nestedPropsList = QString::fromUtf8(nestedProps).split(",", Qt::SkipEmptyParts);
-                    for(const QString& prop : nestedPropsList)
-                    {
-                        QStringList parts = prop.split(":");
-                        if(parts.size() >= 1)
-                        {
-                            QString propName = parts[0].trimmed();
-                            Port port;
-                            port.isInput = isInput;
-                            port.name = propName;
-                            port.componentName = comp;
-                            port.fullPath = comp + "." + propName;
-                            port.displayName = nodeName + "." + comp + "." + propName;
-                            result.append(port);
-                        }
-                    }
-                    Engine_FreeBufString(nestedProps);
-                }
-            }
-            Engine_FreeBufString(compList);
-        }
-    }
-
-    return result;
+    // Используем менеджер портов для загрузки
+    return UModernDiagramPortManager::loadNestedPorts(fullName, nodeName, isInput, includeNested);
 }
 
 QVector<Port> UModernDiagramNodeItem::getOwnOutputPorts() const
@@ -1282,44 +1122,43 @@ QVector<Port> UModernDiagramNodeItem::getOwnOutputPorts() const
         return m_cachedOwnOutputPorts;
     }
 
-    QVector<Port> result;
-    if(!m_owner || !m_owner->m_application)
-        return result;
-
-    QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
-
-    // Получаем собственные выходные свойства компонента (без точки в пути)
-    const char* outputProps = Model_GetComponentPropertiesLookupList(
-        fullName.toStdString().c_str(), ptPubOutput | ptOutput);
-    if(outputProps)
+    // ОПТИМИЗАЦИЯ: проверяем глобальный кэш компонентов
+    QString fullName = m_owner ? (m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName) : nodeName;
+    UModernDiagramComponentCacheEntry* cacheEntry = m_owner ? m_owner->m_cacheManager->getComponentCache().getEntry(fullName) : nullptr;
+    if(cacheEntry && !cacheEntry->ownOutputPorts.isEmpty())
     {
-        QStringList outputList = QString::fromUtf8(outputProps).split(",", Qt::SkipEmptyParts);
-        for(const QString& prop : outputList)
-        {
-            QStringList parts = prop.split(":");
-            if(parts.size() >= 1)
-            {
-                QString propName = parts[0].trimmed();
-                // Собственные свойства не содержат точки в пути
-                if(!propName.contains('.'))
-                {
-                    Port port;
-                    port.isInput = false;
-                    port.name = propName;
-                    port.componentName = nodeName;
-                    port.fullPath = propName;
-                    port.displayName = propName;
-                    port.category = PortCategory::Own;
-                    result.append(port);
-                }
-            }
-        }
-        Engine_FreeBufString(outputProps);
+        // Восстанавливаем из глобального кэша в локальный
+        m_cachedOwnOutputPorts = cacheEntry->ownOutputPorts;
+        m_portsCacheValid = true;
+        return m_cachedOwnOutputPorts;
     }
 
-    // Сохраняем в кэш
+    if(!m_owner || !m_owner->m_application)
+        return QVector<Port>();
+
+    // Используем менеджер портов для загрузки
+    QVector<Port> result = UModernDiagramPortManager::loadOwnOutputPorts(fullName, nodeName);
+
+    // Сохраняем в локальный кэш
     m_cachedOwnOutputPorts = result;
     m_portsCacheValid = true;
+
+    // Сохраняем в глобальный кэш
+    if(m_owner)
+    {
+        if(!cacheEntry)
+        {
+            UModernDiagramComponentCacheEntry newEntry;
+            newEntry.ownOutputPorts = result;
+            newEntry.timestamp = QDateTime::currentMSecsSinceEpoch();
+            m_owner->m_cacheManager->getComponentCache().setEntry(fullName, newEntry);
+        }
+        else
+        {
+            cacheEntry->ownOutputPorts = result;
+            cacheEntry->timestamp = QDateTime::currentMSecsSinceEpoch();
+        }
+    }
 
     return result;
 }
@@ -1332,50 +1171,43 @@ QVector<Port> UModernDiagramNodeItem::getChildOutputPorts() const
         return m_cachedChildOutputPorts;
     }
 
-    QVector<Port> result;
-    if(!m_owner || !m_owner->m_application)
-        return result;
-
-    QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
-
-    // Получаем список дочерних компонентов
-    const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
-    if(compList)
+    // ОПТИМИЗАЦИЯ: проверяем глобальный кэш компонентов
+    QString fullName = m_owner ? (m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName) : nodeName;
+    UModernDiagramComponentCacheEntry* cacheEntry = m_owner ? m_owner->m_cacheManager->getComponentCache().getEntry(fullName) : nullptr;
+    if(cacheEntry && !cacheEntry->childOutputPorts.isEmpty())
     {
-        QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
-        for(const QString& comp : components)
-        {
-            QString nestedFullName = fullName + "." + comp;
-            const char* nestedProps = Model_GetComponentPropertiesLookupList(
-                nestedFullName.toStdString().c_str(), ptPubOutput | ptOutput);
-            if(nestedProps)
-            {
-                QStringList nestedPropsList = QString::fromUtf8(nestedProps).split(",", Qt::SkipEmptyParts);
-                for(const QString& prop : nestedPropsList)
-                {
-                    QStringList parts = prop.split(":");
-                    if(parts.size() >= 1)
-                    {
-                        QString propName = parts[0].trimmed();
-                        Port port;
-                        port.isInput = false;
-                        port.name = propName;
-                        port.componentName = comp;
-                        port.fullPath = comp + "." + propName;
-                        port.displayName = nodeName + "." + comp + "." + propName;
-                        port.category = PortCategory::Child;
-                        result.append(port);
-                    }
-                }
-                Engine_FreeBufString(nestedProps);
-            }
-        }
-        Engine_FreeBufString(compList);
+        // Восстанавливаем из глобального кэша в локальный
+        m_cachedChildOutputPorts = cacheEntry->childOutputPorts;
+        m_portsCacheValid = true;
+        return m_cachedChildOutputPorts;
     }
 
-    // Сохраняем в кэш
+    if(!m_owner || !m_owner->m_application)
+        return QVector<Port>();
+
+    // Используем менеджер портов для загрузки
+    QVector<Port> result = UModernDiagramPortManager::loadChildOutputPorts(fullName, nodeName);
+
+    // Сохраняем в локальный кэш
     m_cachedChildOutputPorts = result;
     m_portsCacheValid = true;
+
+    // Сохраняем в глобальный кэш
+    if(m_owner)
+    {
+        if(!cacheEntry)
+        {
+            UModernDiagramComponentCacheEntry newEntry;
+            newEntry.childOutputPorts = result;
+            newEntry.timestamp = QDateTime::currentMSecsSinceEpoch();
+            m_owner->m_cacheManager->getComponentCache().setEntry(fullName, newEntry);
+        }
+        else
+        {
+            cacheEntry->childOutputPorts = result;
+            cacheEntry->timestamp = QDateTime::currentMSecsSinceEpoch();
+        }
+    }
 
     return result;
 }
@@ -1388,57 +1220,43 @@ QVector<Port> UModernDiagramNodeItem::getAliasOutputPorts() const
         return m_cachedAliasOutputPorts;
     }
 
-    QVector<Port> result;
+    // ОПТИМИЗАЦИЯ: проверяем глобальный кэш компонентов
+    QString fullName = m_owner ? (m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName) : nodeName;
+    UModernDiagramComponentCacheEntry* cacheEntry = m_owner ? m_owner->m_cacheManager->getComponentCache().getEntry(fullName) : nullptr;
+    if(cacheEntry && !cacheEntry->aliasOutputPorts.isEmpty())
+    {
+        // Восстанавливаем из глобального кэша в локальный
+        m_cachedAliasOutputPorts = cacheEntry->aliasOutputPorts;
+        m_portsCacheValid = true;
+        return m_cachedAliasOutputPorts;
+    }
+
     if(!m_owner || !m_owner->m_application)
-        return result;
+        return QVector<Port>();
 
-    QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
+    // Используем менеджер портов для загрузки
+    QVector<Port> result = UModernDiagramPortManager::loadAliasOutputPorts(fullName, nodeName);
 
-    // Получаем алиасы свойств из UNet (если компонент является UNet)
-    try
-    {
-        RDK::UEPtr<RDK::UContainer> model = RDK::GetModel();
-        if(model)
-        {
-            RDK::UEPtr<RDK::UContainer> component;
-            if(fullName.isEmpty())
-                component = model;
-            else
-                component = model->GetComponentL(fullName.toStdString(), true);
-
-            if(component)
-            {
-                RDK::UEPtr<RDK::UNet> net = RDK::dynamic_pointer_cast<RDK::UNet>(component);
-                if(net)
-                {
-                    // Получаем алиасы выходных свойств
-                    unsigned int aliasTypeMask = ptOutput | ptPubOutput;
-                    std::vector<RDK::UPropertyAlias> aliases = net->GetPropertyAliasesByType(aliasTypeMask);
-
-                    for(const auto& alias : aliases)
-                    {
-                        Port port;
-                        port.isInput = false;
-                        port.name = QString::fromStdString(alias.AliasName);
-                        port.componentName = nodeName;
-                        // Для алиаса fullPath содержит полный путь к свойству
-                        port.fullPath = QString::fromStdString(alias.GetFullPropertyPath());
-                        port.displayName = QString::fromStdString(alias.AliasName) + " [Alias]";
-                        port.category = PortCategory::Alias;
-                        result.append(port);
-                    }
-                }
-            }
-        }
-    }
-    catch(...)
-    {
-        // Игнорируем ошибки при получении алиасов
-    }
-
-    // Сохраняем в кэш
+    // Сохраняем в локальный кэш
     m_cachedAliasOutputPorts = result;
     m_portsCacheValid = true;
+
+    // Сохраняем в глобальный кэш
+    if(m_owner)
+    {
+        if(!cacheEntry)
+        {
+            UModernDiagramComponentCacheEntry newEntry;
+            newEntry.aliasOutputPorts = result;
+            newEntry.timestamp = QDateTime::currentMSecsSinceEpoch();
+            m_owner->m_cacheManager->getComponentCache().setEntry(fullName, newEntry);
+        }
+        else
+        {
+            cacheEntry->aliasOutputPorts = result;
+            cacheEntry->timestamp = QDateTime::currentMSecsSinceEpoch();
+        }
+    }
 
     return result;
 }
@@ -1462,38 +1280,11 @@ QVector<Port> UModernDiagramNodeItem::getOwnInputPorts() const
         return m_cachedOwnInputPorts;
     }
 
-    QVector<Port> result;
     if(!m_owner || !m_owner->m_application)
-        return result;
+        return QVector<Port>();
 
-    // Получаем собственные входные свойства компонента (без точки в пути)
-    const char* inputProps = Model_GetComponentPropertiesLookupList(
-        fullName.toStdString().c_str(), ptPubInput | ptInput);
-    if(inputProps)
-    {
-        QStringList inputList = QString::fromUtf8(inputProps).split(",", Qt::SkipEmptyParts);
-        for(const QString& prop : inputList)
-        {
-            QStringList parts = prop.split(":");
-            if(parts.size() >= 1)
-            {
-                QString propName = parts[0].trimmed();
-                // Собственные свойства не содержат точки в пути
-                if(!propName.contains('.'))
-                {
-                    Port port;
-                    port.isInput = true;
-                    port.name = propName;
-                    port.componentName = nodeName;
-                    port.fullPath = propName;
-                    port.displayName = propName;
-                    port.category = PortCategory::Own;
-                    result.append(port);
-                }
-            }
-        }
-        Engine_FreeBufString(inputProps);
-    }
+    // Используем менеджер портов для загрузки
+    QVector<Port> result = UModernDiagramPortManager::loadOwnInputPorts(fullName, nodeName);
 
     // Сохраняем в локальный кэш
     m_cachedOwnInputPorts = result;

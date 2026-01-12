@@ -129,6 +129,25 @@ private:
     void buildScene();
     void clearScene();
     void layoutGrid();
+
+private:
+    // Вспомогательные методы для buildScene()
+    /// Загружает список компонентов из ядра
+    QStringList loadComponentList() const;
+    /// Загружает и кэширует координаты всех компонентов, возвращает минимальную позицию сцены
+    /// @param components Список компонентов для загрузки
+    /// @param coordsLoaded Выходной параметр: true, если хотя бы одна координата загружена
+    /// @param coordCache Выходной параметр: кэш координат компонентов
+    /// @param coordLoadedCache Выходной параметр: кэш флагов загрузки координат
+    /// @return Минимальная позиция сцены для нормализации
+    QPointF loadAndCacheCoordinates(const QStringList& components, bool& coordsLoaded,
+                                     QHash<QString, QPointF>& coordCache, QHash<QString, bool>& coordLoadedCache);
+    /// Создает узлы для всех компонентов
+    void createNodes(const QStringList& components, const QHash<QString, QPointF>& coordCache,
+                     const QHash<QString, bool>& coordLoadedCache, const QPointF& minScenePos,
+                     QList<UModernDiagramNodeItem*>& nodesToAdd, QHash<QString, QPointF>& nodePositions);
+    /// Добавляет узлы в сцену и устанавливает их позиции
+    void addNodesToScene(const QList<UModernDiagramNodeItem*>& nodesToAdd, const QHash<QString, QPointF>& nodePositions);
     /// Обновляет sceneRect на основе текущих границ всех элементов сцены
     /// Вызывается после завершения движения компонентов для предотвращения прыжков
     void updateSceneRect();
