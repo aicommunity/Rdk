@@ -50,6 +50,20 @@ public:
     /// @return Вектор портов категории Alias
     static QVector<UModernDiagramPort> loadAliasInputPorts(const QString& fullName, const QString& nodeName);
 
+    /// @brief Загружает входные порты дочерних компонентов рекурсивно на всю глубину.
+    /// @param fullName Полное имя компонента
+    /// @param nodeName Короткое имя узла
+    /// @param prefixPath Префикс пути для отображения (используется при рекурсии)
+    /// @return Вектор портов категории Child со всех уровней вложенности
+    static QVector<UModernDiagramPort> loadChildInputPortsRecursive(const QString& fullName, const QString& nodeName, const QString& prefixPath = QString());
+
+    /// @brief Загружает выходные порты дочерних компонентов рекурсивно на всю глубину.
+    /// @param fullName Полное имя компонента
+    /// @param nodeName Короткое имя узла
+    /// @param prefixPath Префикс пути для отображения (используется при рекурсии)
+    /// @return Вектор портов категории Child со всех уровней вложенности
+    static QVector<UModernDiagramPort> loadChildOutputPortsRecursive(const QString& fullName, const QString& nodeName, const QString& prefixPath = QString());
+
     /// @brief Загружает вложенные порты компонента.
     /// @param fullName Полное имя компонента
     /// @param nodeName Короткое имя узла

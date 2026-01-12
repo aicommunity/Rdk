@@ -262,11 +262,11 @@ private:
     QDialog *treePopupDialog;
     QWidget *treePopupContainer;
     QVBoxLayout *treePopupLayout;
-    
+
     /// Показывает/скрывает popup окно с деревом
     void showTreePopup();
     void hideTreePopup();
-    
+
 protected:
     /// Обработка клавиши Esc для закрытия popup
     bool eventFilter(QObject *obj, QEvent *event) override;

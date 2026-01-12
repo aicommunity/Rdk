@@ -1054,15 +1054,25 @@ void UModernDiagramScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             }
 
             // Учитываем вложенные компоненты
+            // Проверяем, нужно ли добавлять componentName к srcProp
             if(!srcPortComponentName.isEmpty() &&
                srcPortComponentName != srcName)
             {
-                srcProp = srcPortComponentName + "." + srcProp;
+                // Проверяем, начинается ли srcProp уже с componentName, чтобы избежать дублирования
+                if(!srcProp.startsWith(srcPortComponentName + ".") && !srcProp.startsWith(srcPortComponentName))
+                {
+                    srcProp = srcPortComponentName + "." + srcProp;
+                }
             }
+            // Проверяем, нужно ли добавлять componentName к dstProp
             if(!dstPortComponentName.isEmpty() &&
                dstPortComponentName != dstName)
             {
-                dstProp = dstPortComponentName + "." + dstProp;
+                // Проверяем, начинается ли dstProp уже с componentName, чтобы избежать дублирования
+                if(!dstProp.startsWith(dstPortComponentName + ".") && !dstProp.startsWith(dstPortComponentName))
+                {
+                    dstProp = dstPortComponentName + "." + dstProp;
+                }
             }
 
             // Применяем связь к ядру
@@ -1215,15 +1225,27 @@ void UModernDiagramScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                                  targetPort->name : targetPort->fullPath;
 
                 // Если порт принадлежит вложенному компоненту, добавляем путь компонента
+                // Проверяем, нужно ли добавлять componentName к srcProp
                 if(!m_owner->m_dragSourcePort->componentName.isEmpty() &&
                    m_owner->m_dragSourcePort->componentName != srcName)
                 {
-                    srcProp = m_owner->m_dragSourcePort->componentName + "." + srcProp;
+                    // Проверяем, начинается ли srcProp уже с componentName, чтобы избежать дублирования
+                    if(!srcProp.startsWith(m_owner->m_dragSourcePort->componentName + ".") &&
+                       !srcProp.startsWith(m_owner->m_dragSourcePort->componentName))
+                    {
+                        srcProp = m_owner->m_dragSourcePort->componentName + "." + srcProp;
+                    }
                 }
+                // Проверяем, нужно ли добавлять componentName к dstProp
                 if(!targetPort->componentName.isEmpty() &&
                    targetPort->componentName != dstName)
                 {
-                    dstProp = targetPort->componentName + "." + dstProp;
+                    // Проверяем, начинается ли dstProp уже с componentName, чтобы избежать дублирования
+                    if(!dstProp.startsWith(targetPort->componentName + ".") &&
+                       !dstProp.startsWith(targetPort->componentName))
+                    {
+                        dstProp = targetPort->componentName + "." + dstProp;
+                    }
                 }
 
                 result = Model_CreateLinkByName(fullSrc.toStdString().c_str(), srcProp.toStdString().c_str(),
@@ -1584,14 +1606,26 @@ void UModernDiagramScene::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
                 }
 
                 // Учитываем вложенные компоненты
+                // Проверяем, нужно ли добавлять componentName к srcProp
                 if(!m_owner->m_activeSourcePortComponentName.isEmpty() &&
                    m_owner->m_activeSourcePortComponentName != srcName)
                 {
-                    srcProp = m_owner->m_activeSourcePortComponentName + "." + srcProp;
+                    // Проверяем, начинается ли srcProp уже с componentName, чтобы избежать дублирования
+                    if(!srcProp.startsWith(m_owner->m_activeSourcePortComponentName + ".") &&
+                       !srcProp.startsWith(m_owner->m_activeSourcePortComponentName))
+                    {
+                        srcProp = m_owner->m_activeSourcePortComponentName + "." + srcProp;
+                    }
                 }
+                // Проверяем, нужно ли добавлять componentName к dstProp
                 if(!dstPortComponentName.isEmpty() && dstPortComponentName != dstName)
                 {
-                    dstProp = dstPortComponentName + "." + dstProp;
+                    // Проверяем, начинается ли dstProp уже с componentName, чтобы избежать дублирования
+                    if(!dstProp.startsWith(dstPortComponentName + ".") &&
+                       !dstProp.startsWith(dstPortComponentName))
+                    {
+                        dstProp = dstPortComponentName + "." + dstProp;
+                    }
                 }
 
                 // Применяем связь к ядру

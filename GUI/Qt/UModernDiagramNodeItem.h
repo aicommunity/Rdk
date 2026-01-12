@@ -92,6 +92,10 @@ public:
     QVector<Port> getChildInputPorts() const;
     QVector<Port> getAliasInputPorts() const;
 
+    // Рекурсивные методы для получения портов на всю глубину вложенности
+    QVector<Port> getChildInputPortsRecursive() const;
+    QVector<Port> getChildOutputPortsRecursive() const;
+
     // Методы для проверки наличия соединений к портам категории
     bool hasConnectionsToInputCategory(UModernDiagramPortCategory category) const;
     bool hasConnectionsToOutputCategory(UModernDiagramPortCategory category) const;

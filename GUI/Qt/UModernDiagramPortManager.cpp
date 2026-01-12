@@ -202,6 +202,104 @@ QVector<UModernDiagramPort> UModernDiagramPortManager::loadAliasInputPorts(const
     return loadAliasPortsFromNet(fullName, nodeName, ptInput | ptPubInput, true);
 }
 
+QVector<UModernDiagramPort> UModernDiagramPortManager::loadChildInputPortsRecursive(const QString& fullName, const QString& nodeName, const QString& prefixPath)
+{
+    QVector<UModernDiagramPort> result;
+
+    // Получаем список дочерних компонентов
+    const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
+    if(!compList)
+        return result;
+
+    QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
+    for(const QString& comp : components)
+    {
+        QString nestedFullName = fullName + "." + comp;
+        QString displayPrefix = prefixPath.isEmpty() ? comp : prefixPath + "." + comp;
+
+        // Получаем порты текущего дочернего компонента
+        const char* nestedProps = Model_GetComponentPropertiesLookupList(
+            nestedFullName.toStdString().c_str(), ptPubInput | ptInput);
+        if(nestedProps)
+        {
+            QStringList nestedPropsList = QString::fromUtf8(nestedProps).split(",", Qt::SkipEmptyParts);
+            for(const QString& prop : nestedPropsList)
+            {
+                QStringList parts = prop.split(":");
+                if(parts.size() >= 1)
+                {
+                    QString propName = parts[0].trimmed();
+                    UModernDiagramPort port;
+                    port.isInput = true;
+                    port.name = propName;
+                    port.componentName = displayPrefix;  // Сохраняем полный путь к компоненту-владельцу
+                    port.fullPath = displayPrefix + "." + propName;
+                    port.displayName = nodeName + "." + displayPrefix + "." + propName;
+                    port.category = UModernDiagramPortCategory::Child;
+                    result.append(port);
+                }
+            }
+            Engine_FreeBufString(nestedProps);
+        }
+
+        // Рекурсивно получаем порты вложенных компонентов
+        QVector<UModernDiagramPort> nestedPorts = loadChildInputPortsRecursive(nestedFullName, nodeName, displayPrefix);
+        result.append(nestedPorts);
+    }
+    Engine_FreeBufString(compList);
+
+    return result;
+}
+
+QVector<UModernDiagramPort> UModernDiagramPortManager::loadChildOutputPortsRecursive(const QString& fullName, const QString& nodeName, const QString& prefixPath)
+{
+    QVector<UModernDiagramPort> result;
+
+    // Получаем список дочерних компонентов
+    const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
+    if(!compList)
+        return result;
+
+    QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
+    for(const QString& comp : components)
+    {
+        QString nestedFullName = fullName + "." + comp;
+        QString displayPrefix = prefixPath.isEmpty() ? comp : prefixPath + "." + comp;
+
+        // Получаем порты текущего дочернего компонента
+        const char* nestedProps = Model_GetComponentPropertiesLookupList(
+            nestedFullName.toStdString().c_str(), ptPubOutput | ptOutput);
+        if(nestedProps)
+        {
+            QStringList nestedPropsList = QString::fromUtf8(nestedProps).split(",", Qt::SkipEmptyParts);
+            for(const QString& prop : nestedPropsList)
+            {
+                QStringList parts = prop.split(":");
+                if(parts.size() >= 1)
+                {
+                    QString propName = parts[0].trimmed();
+                    UModernDiagramPort port;
+                    port.isInput = false;
+                    port.name = propName;
+                    port.componentName = displayPrefix;  // Сохраняем полный путь к компоненту-владельцу
+                    port.fullPath = displayPrefix + "." + propName;
+                    port.displayName = nodeName + "." + displayPrefix + "." + propName;
+                    port.category = UModernDiagramPortCategory::Child;
+                    result.append(port);
+                }
+            }
+            Engine_FreeBufString(nestedProps);
+        }
+
+        // Рекурсивно получаем порты вложенных компонентов
+        QVector<UModernDiagramPort> nestedPorts = loadChildOutputPortsRecursive(nestedFullName, nodeName, displayPrefix);
+        result.append(nestedPorts);
+    }
+    Engine_FreeBufString(compList);
+
+    return result;
+}
+
 QVector<UModernDiagramPort> UModernDiagramPortManager::loadNestedPorts(const QString& fullName, const QString& nodeName, bool isInput, bool includeNested)
 {
     QVector<UModernDiagramPort> result;

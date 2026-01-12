@@ -1449,6 +1449,60 @@ QVector<Port> UModernDiagramNodeItem::getAliasInputPorts() const
     return result;
 }
 
+QVector<Port> UModernDiagramNodeItem::getChildInputPortsRecursive() const
+{
+    if(!m_owner || !m_owner->m_application)
+        return QVector<Port>();
+
+    QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
+
+    // Используем менеджер портов для рекурсивной загрузки
+    QVector<UModernDiagramPort> ports = UModernDiagramPortManager::loadChildInputPortsRecursive(fullName, nodeName);
+
+    // Конвертируем UModernDiagramPort в Port
+    QVector<Port> result;
+    for(const UModernDiagramPort& p : ports)
+    {
+        Port port;
+        port.isInput = p.isInput;
+        port.name = p.name;
+        port.componentName = p.componentName;
+        port.fullPath = p.fullPath;
+        port.displayName = p.displayName;
+        port.category = static_cast<PortCategory>(p.category);
+        result.append(port);
+    }
+
+    return result;
+}
+
+QVector<Port> UModernDiagramNodeItem::getChildOutputPortsRecursive() const
+{
+    if(!m_owner || !m_owner->m_application)
+        return QVector<Port>();
+
+    QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
+
+    // Используем менеджер портов для рекурсивной загрузки
+    QVector<UModernDiagramPort> ports = UModernDiagramPortManager::loadChildOutputPortsRecursive(fullName, nodeName);
+
+    // Конвертируем UModernDiagramPort в Port
+    QVector<Port> result;
+    for(const UModernDiagramPort& p : ports)
+    {
+        Port port;
+        port.isInput = p.isInput;
+        port.name = p.name;
+        port.componentName = p.componentName;
+        port.fullPath = p.fullPath;
+        port.displayName = p.displayName;
+        port.category = static_cast<PortCategory>(p.category);
+        result.append(port);
+    }
+
+    return result;
+}
+
 bool UModernDiagramNodeItem::hasConnectionsToInputCategory(PortCategory category) const
 {
     if(!m_owner || !m_owner->m_application)
@@ -2466,19 +2520,20 @@ void UModernDiagramNodeItem::onPortItemActivated(QTreeWidgetItem* item, int colu
         return;
     }
 
-    QMap<QString, QVariant> portData = data.value<QMap<QString, QVariant>>();
-    bool isInput = portData["isInput"].toBool();
-    QString portName = portData["name"].toString();
-    QString componentName = portData["componentName"].toString();
-    QString fullPath = portData["fullPath"].toString();
+            QMap<QString, QVariant> portData = data.value<QMap<QString, QVariant>>();
+            bool isInput = portData["isInput"].toBool();
+            QString portName = portData["name"].toString();
+            QString componentName = portData["componentName"].toString();
+            QString fullPath = portData["fullPath"].toString();
 
-    // Логируем начало обработки
-    QString logMsg = QString("onPortItemActivated: Processing %1 port '%2' in component '%3', activeTempLink=%4")
-        .arg(isInput ? "input" : "output")
-        .arg(portName)
-        .arg(componentName)
-        .arg(m_owner->m_activeTempLink ? "yes" : "no");
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+            // Логируем начало обработки с детальной информацией
+            QString logMsg = QString("onPortItemActivated: Processing %1 port '%2' in component '%3', fullPath='%4', activeTempLink=%5")
+                .arg(isInput ? "input" : "output")
+                .arg(portName)
+                .arg(componentName)
+                .arg(fullPath)
+                .arg(m_owner->m_activeTempLink ? "yes" : "no");
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 
     // НЕ закрываем дерево портов сразу - оно закроется автоматически через таймер
     // Это предотвращает случайные клики на фон сразу после закрытия дерева
@@ -2509,35 +2564,103 @@ void UModernDiagramNodeItem::onPortItemActivated(QTreeWidgetItem* item, int colu
             }
 
             // Формируем полные имена компонентов
+            // Важно: пути должны быть полными от корня модели, независимо от текущего уровня вложенности
             QString srcName = m_owner->m_activeSourceNode->nodeName;
-            // Для собственных портов используем nodeName, для дочерних - componentName
-            // componentName равен nodeName для собственных портов, поэтому проверяем это
-            QString dstName = (componentName.isEmpty() || componentName == nodeName) ? nodeName : componentName;
             QString fullSrc = m_owner->m_componentName.isEmpty() ? srcName : m_owner->m_componentName + "." + srcName;
 
-            // Формируем fullDst: если componentName == nodeName, это собственный порт,
-            // и мы должны использовать только nodeName (без добавления m_componentName, если оно уже содержит nodeName)
-            QString fullDst;
-            if(m_owner->m_componentName.isEmpty())
+            // Если источник имеет componentName, добавляем его к fullSrc
+            if(!m_owner->m_activeSourcePortComponentName.isEmpty() &&
+               m_owner->m_activeSourcePortComponentName != srcName)
             {
-                fullDst = dstName;
-            }
-            else
-            {
-                // Проверяем, не содержит ли m_componentName уже dstName (чтобы избежать дублирования)
-                if(m_owner->m_componentName == dstName || m_owner->m_componentName.endsWith("." + dstName))
+                // Проверяем, начинается ли m_activeSourcePortComponentName с fullSrc
+                if(!m_owner->m_activeSourcePortComponentName.startsWith(fullSrc + "."))
                 {
-                    fullDst = m_owner->m_componentName;
+                    // m_activeSourcePortComponentName - это путь относительно srcName
+                    // Добавляем его к fullSrc
+                    fullSrc = fullSrc + "." + m_owner->m_activeSourcePortComponentName;
                 }
                 else
                 {
-                    fullDst = m_owner->m_componentName + "." + dstName;
+                    // m_activeSourcePortComponentName уже содержит полный путь
+                    fullSrc = m_owner->m_activeSourcePortComponentName;
                 }
             }
+
+            // Формируем fullDst с учетом того, что componentName может содержать полный путь
+            // fullDst должен быть полным путем к компоненту от корня модели
+            QString fullDst;
+            if(componentName.isEmpty() || componentName == nodeName)
+            {
+                // Собственный порт компонента
+                if(m_owner->m_componentName.isEmpty())
+                {
+                    fullDst = nodeName;
+                }
+                else
+                {
+                    // Проверяем, не содержит ли m_componentName уже nodeName
+                    if(m_owner->m_componentName == nodeName || m_owner->m_componentName.endsWith("." + nodeName))
+                    {
+                        fullDst = m_owner->m_componentName;
+                    }
+                    else
+                    {
+                        fullDst = m_owner->m_componentName + "." + nodeName;
+                    }
+                }
+            }
+            else
+            {
+                // Порты дочерних компонентов - componentName содержит путь относительно nodeName
+                // Например: componentName = "Dendrite1_1.InhSynapse1" относительно "Neuron"
+                // fullPath формируется относительно fullName = "NeuronTrainer.Neuron"
+                // Поэтому fullDst должен быть "NeuronTrainer.Neuron.Dendrite1_1.InhSynapse1"
+                if(m_owner->m_componentName.isEmpty())
+                {
+                    // Мы на корневом уровне модели
+                    // componentName - это путь относительно nodeName
+                    // fullDst должен быть nodeName + "." + componentName
+                    // Например: nodeName = "NeuronTrainer", componentName = "Source1"
+                    // Результат: fullDst = "NeuronTrainer.Source1"
+                    fullDst = nodeName + "." + componentName;
+                }
+                else
+                {
+                    // Проверяем, начинается ли componentName с m_componentName (уже полный путь)
+                    if(componentName.startsWith(m_owner->m_componentName + "."))
+                    {
+                        // componentName уже содержит полный путь от корня
+                        fullDst = componentName;
+                    }
+                    else if(componentName.startsWith(nodeName + "."))
+                    {
+                        // componentName начинается с nodeName, добавляем m_componentName
+                        // Например: componentName = "Neuron.Source1", nodeName = "Neuron"
+                        // Результат: fullDst = "NeuronTrainer.Neuron.Source1"
+                        fullDst = m_owner->m_componentName + "." + componentName;
+                    }
+                    else
+                    {
+                        // componentName - это путь относительно nodeName (не m_componentName!)
+                        // Например: componentName = "Source1", nodeName = "Neuron"
+                        // fullPath формируется относительно fullName = m_componentName + "." + nodeName
+                        // Поэтому fullDst должен быть m_componentName + "." + nodeName + "." + componentName
+                        // Например: "NeuronTrainer.Neuron.Source1"
+                        QString basePath = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
+                        fullDst = basePath + "." + componentName;
+                    }
+                }
+            }
+
+            // Диагностическое логирование для отладки
+            QString fullDstDebugMsg = QString("onPortItemActivated: fullDst formation - m_componentName='%1', nodeName='%2', componentName='%3', fullPath='%4', portName='%5', result fullDst='%6'")
+                .arg(m_owner->m_componentName).arg(nodeName).arg(componentName).arg(fullPath).arg(portName).arg(fullDst);
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, fullDstDebugMsg.toStdString().c_str(), 0);
 
             // Логируем промежуточные значения для диагностики
 
             // Формируем пути свойств, используя сохраненные копии вместо указателя
+            // srcProp должен быть путем к свойству ОТНОСИТЕЛЬНО компонента fullSrc
             QString srcProp;
             if(m_owner->m_activeSourcePortFullPath.isEmpty())
             {
@@ -2545,22 +2668,117 @@ void UModernDiagramNodeItem::onPortItemActivated(QTreeWidgetItem* item, int colu
             }
             else
             {
-                srcProp = m_owner->m_activeSourcePortFullPath;
+                // fullPath может содержать путь относительно текущего компонента
+                // Нужно извлечь только путь к свойству относительно fullSrc
+                QString fullPath = m_owner->m_activeSourcePortFullPath;
+
+                // Если fullPath начинается с componentName, извлекаем только имя свойства
+                if(!m_owner->m_activeSourcePortComponentName.isEmpty() &&
+                   fullPath.startsWith(m_owner->m_activeSourcePortComponentName + "."))
+                {
+                    // fullPath = "LTZone.Output", componentName = "LTZone"
+                    // Извлекаем только "Output"
+                    srcProp = fullPath.mid(m_owner->m_activeSourcePortComponentName.length() + 1);
+                }
+                else
+                {
+                    // fullPath не начинается с componentName, используем его как есть
+                    srcProp = fullPath;
+                }
             }
 
-            QString dstProp = fullPath.isEmpty() ? portName : fullPath;
+            // Формируем dstProp - путь к свойству ОТНОСИТЕЛЬНО компонента fullDst
+            // fullDst уже содержит полный путь к компоненту, поэтому dstProp должен быть только путем к свойству
+            QString dstProp;
+            if(!fullPath.isEmpty())
+            {
+                if(!componentName.isEmpty() && componentName != nodeName)
+                {
+                    // Порты дочерних компонентов
+                    if(fullPath.startsWith(componentName + "."))
+                    {
+                        // fullPath начинается с componentName + ".", извлекаем только часть после componentName
+                        // Например: fullPath = "Dendrite1_1.ExcSynapse1.Input", componentName = "Dendrite1_1.ExcSynapse1"
+                        // Результат: dstProp = "Input"
+                        dstProp = fullPath.mid(componentName.length() + 1);
+                    }
+                    else if(fullPath.startsWith(componentName))
+                    {
+                        // fullPath начинается с componentName (возможно без точки)
+                        // Извлекаем часть после componentName
+                        int skipLength = componentName.length();
+                        if(fullPath.length() > skipLength && fullPath[skipLength] == '.')
+                            skipLength++;
+                        dstProp = fullPath.mid(skipLength);
+                    }
+                    else
+                    {
+                        // fullPath не начинается с componentName
+                        // Проверяем, является ли fullPath просто именем свойства
+                        if(fullPath == portName || (!fullPath.contains('.') && fullPath == portName))
+                        {
+                            // fullPath - это просто имя свойства, используем его как есть
+                            dstProp = portName;
+                        }
+                        else
+                        {
+                            // fullPath содержит путь, но не начинается с componentName
+                            // Это может быть путь к более глубоко вложенному компоненту
+                            // Используем fullPath как есть (он должен быть относительным к fullDst)
+                            dstProp = fullPath;
+                        }
+                    }
+                }
+                else
+                {
+                    // componentName пуст или равен nodeName (собственный порт компонента)
+                    // Используем fullPath или portName
+                    if(fullPath == portName || !fullPath.contains('.'))
+                    {
+                        dstProp = portName;
+                    }
+                    else
+                    {
+                        dstProp = fullPath;
+                    }
+                }
+            }
+            else
+            {
+                // fullPath пуст - это может быть порт первого уровня дочернего компонента
+                // В этом случае componentName содержит путь к компоненту, а portName - имя свойства
+                // Но fullDst уже содержит полный путь к компоненту, поэтому dstProp должен быть просто portName
+                if(!componentName.isEmpty() && componentName != nodeName)
+                {
+                    // Для дочерних компонентов без fullPath используем только portName
+                    // потому что fullDst уже содержит путь к компоненту
+                    dstProp = portName;
+                }
+                else
+                {
+                    dstProp = portName;
+                }
+            }
 
-            // Учитываем вложенные компоненты
-            if(!m_owner->m_activeSourcePortComponentName.isEmpty() &&
-               m_owner->m_activeSourcePortComponentName != srcName)
-            {
-                srcProp = m_owner->m_activeSourcePortComponentName + "." + srcProp;
-            }
-            // Для дочерних компонентов добавляем componentName к dstProp только если он отличается от nodeName
-            if(!componentName.isEmpty() && componentName != nodeName)
-            {
-                dstProp = componentName + "." + dstProp;
-            }
+            // Диагностическое логирование для отладки
+            QString debugMsg = QString("onPortItemActivated: dstProp formation - componentName='%1', fullPath='%2', portName='%3', nodeName='%4', result dstProp='%5'")
+                .arg(componentName).arg(fullPath).arg(portName).arg(nodeName).arg(dstProp);
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, debugMsg.toStdString().c_str(), 0);
+
+            // Учитываем вложенные компоненты для источника
+            // fullSrc уже содержит полный путь к компоненту порта (например, "PNeuronS1D1Syn1.LTZone")
+            // srcProp должен быть только путем к свойству относительно этого компонента
+            // НЕ добавляем componentName к srcProp, так как fullSrc уже содержит его
+            // Например: fullSrc = "PNeuronS1D1Syn1.LTZone", srcProp = "Output"
+
+            // Диагностическое логирование для источника
+            QString srcDebugMsg = QString("onPortItemActivated: srcProp formation - activeSourcePortComponentName='%1', activeSourcePortFullPath='%2', activeSourcePortName='%3', srcName='%4', result srcProp='%5'")
+                .arg(m_owner->m_activeSourcePortComponentName)
+                .arg(m_owner->m_activeSourcePortFullPath)
+                .arg(m_owner->m_activeSourcePortName)
+                .arg(srcName)
+                .arg(srcProp);
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, srcDebugMsg.toStdString().c_str(), 0);
 
             // Логируем параметры перед созданием соединения
             QString preMsg = QString("onPortItemActivated: Creating connection: %1.%2 -> %3.%4")
@@ -2774,16 +2992,17 @@ void UModernDiagramNodeItem::updatePortListWidget(bool isInput, bool includeNest
         if(showAll)
         {
             // Показываем все категории портов при нажатии Shift
+            // При Shift используем рекурсивные методы для Child портов (на всю глубину)
             if(isInput)
             {
                 availablePorts.append(getOwnInputPorts());
-                availablePorts.append(getChildInputPorts());
+                availablePorts.append(getChildInputPortsRecursive());
                 availablePorts.append(getAliasInputPorts());
             }
             else
             {
                 availablePorts.append(getOwnOutputPorts());
-                availablePorts.append(getChildOutputPorts());
+                availablePorts.append(getChildOutputPortsRecursive());
                 availablePorts.append(getAliasOutputPorts());
             }
         }
@@ -2799,7 +3018,9 @@ void UModernDiagramNodeItem::updatePortListWidget(bool isInput, bool includeNest
                 }
                 else if(m_hoveredPort->category == PortCategory::Child)
                 {
-                    availablePorts = getChildInputPorts();
+                    // При Shift используем рекурсивный метод для показа портов на всю глубину
+                    bool shiftPressed = QApplication::keyboardModifiers() & Qt::ShiftModifier;
+                    availablePorts = shiftPressed ? getChildInputPortsRecursive() : getChildInputPorts();
                 }
                 else if(m_hoveredPort->category == PortCategory::Alias)
                 {
@@ -2820,7 +3041,9 @@ void UModernDiagramNodeItem::updatePortListWidget(bool isInput, bool includeNest
                 }
                 else if(m_hoveredPort->category == PortCategory::Child)
                 {
-                    availablePorts = getChildOutputPorts();
+                    // При Shift используем рекурсивный метод для показа портов на всю глубину
+                    bool shiftPressed = QApplication::keyboardModifiers() & Qt::ShiftModifier;
+                    availablePorts = shiftPressed ? getChildOutputPortsRecursive() : getChildOutputPorts();
                 }
                 else if(m_hoveredPort->category == PortCategory::Alias)
                 {
@@ -2861,25 +3084,60 @@ void UModernDiagramNodeItem::updatePortListWidget(bool isInput, bool includeNest
     }
     else
     {
-        // Группируем порты по компонентам
-        QMap<QString, QTreeWidgetItem*> componentItems;
+        // Группируем порты по компонентам с иерархической структурой
+        // Используем полный путь компонента для создания иерархии
+        QMap<QString, QTreeWidgetItem*> componentItems;  // Ключ - полный путь компонента
         QTreeWidgetItem* currentPortItem = nullptr;
 
         for(const Port& p : availablePorts)
         {
-            QTreeWidgetItem* compItem = nullptr;
-            if(componentItems.contains(p.componentName))
+            // Определяем родительский элемент для порта
+            QTreeWidgetItem* parentItem = m_portListWidget->invisibleRootItem();
+
+            // Если componentName содержит точки, создаем иерархическую структуру
+            if(!p.componentName.isEmpty() && p.componentName.contains('.'))
             {
-                compItem = componentItems[p.componentName];
+                QStringList pathParts = p.componentName.split('.');
+                QString currentPath;
+
+                // Создаем иерархию компонентов
+                for(int i = 0; i < pathParts.size(); ++i)
+                {
+                    if(i > 0)
+                        currentPath += ".";
+                    currentPath += pathParts[i];
+
+                    if(!componentItems.contains(currentPath))
+                    {
+                        QTreeWidgetItem* compItem = new QTreeWidgetItem(parentItem);
+                        compItem->setText(0, pathParts[i]);
+                        componentItems[currentPath] = compItem;
+                        parentItem = compItem;
+                    }
+                    else
+                    {
+                        parentItem = componentItems[currentPath];
+                    }
+                }
             }
             else
             {
-                compItem = new QTreeWidgetItem(m_portListWidget);
-                compItem->setText(0, p.componentName);
-                componentItems[p.componentName] = compItem;
+                // Простой случай - один уровень компонента
+                if(!componentItems.contains(p.componentName))
+                {
+                    QTreeWidgetItem* compItem = new QTreeWidgetItem(parentItem);
+                    compItem->setText(0, p.componentName.isEmpty() ? nodeName : p.componentName);
+                    componentItems[p.componentName] = compItem;
+                    parentItem = compItem;
+                }
+                else
+                {
+                    parentItem = componentItems[p.componentName];
+                }
             }
 
-            QTreeWidgetItem* portItem = new QTreeWidgetItem(compItem);
+            // Создаем элемент порта
+            QTreeWidgetItem* portItem = new QTreeWidgetItem(parentItem);
             QString portText = p.name;
             if(p.name == m_hoveredPort->name && p.componentName == nodeName)
             {
@@ -2897,7 +3155,7 @@ void UModernDiagramNodeItem::updatePortListWidget(bool isInput, bool includeNest
             portItem->setData(0, Qt::UserRole, QVariant::fromValue(portData));
         }
 
-        // Разворачиваем все элементы
+        // Разворачиваем все элементы для показа иерархии
         for(QTreeWidgetItem* item : componentItems.values())
         {
             item->setExpanded(true);
