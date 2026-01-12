@@ -1316,6 +1316,9 @@ void UModernDiagramWidget::componentDoubleClick(QString name)
 
 void UModernDiagramWidget::componentSingleClick(QString name)
 {
+    QString logMsg = QString("[SELECTION_DEBUG] UModernDiagramWidget::componentSingleClick: called with name='%1'")
+        .arg(name);
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
     selectComponent(name);
 }
 
@@ -1359,6 +1362,11 @@ void UModernDiagramWidget::updateTheme()
 
 void UModernDiagramWidget::selectComponent(QString name)
 {
+    QString logMsg = QString("[SELECTION_DEBUG] UModernDiagramWidget::selectComponent: called with name='%1', retryCount=%2")
+        .arg(name)
+        .arg(m_selectComponentRetryCount);
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+
     // Если имя пустое, ничего не делаем
     if(name.isEmpty())
     {
@@ -1451,6 +1459,9 @@ void UModernDiagramWidget::selectComponent(QString name)
     // Компонент должен быть на текущем уровне - пытаемся найти и выделить его
     if(auto it = m_nodeByName.find(componentName); it != m_nodeByName.end())
     {
+        QString logMsg2 = QString("[SELECTION_DEBUG] UModernDiagramWidget::selectComponent: found node '%1', setting m_isProgrammaticSelection=true, calling clearSelection() and setSelected(true)")
+            .arg(componentName);
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg2.toStdString().c_str(), 0);
         m_isProgrammaticSelection = true;
         m_scene->clearSelection();
         it.value()->setSelected(true);

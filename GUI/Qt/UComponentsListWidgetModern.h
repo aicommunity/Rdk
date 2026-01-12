@@ -213,6 +213,9 @@ private:
     /// таким образом избегается перерисовка при множественном выделении одного компонента.
     QString selectedComponentLongName;
 
+    /// Флаг для предотвращения эмиссии componentSelected при программном обновлении выделения из схемы
+    bool m_isUpdatingFromScheme = false;
+
     // имена выбранных строк Property
     QString selectedParameterName;
     QString selectedStateName;

@@ -37,7 +37,7 @@ UComponentsListWidgetModern::UComponentsListWidgetModern(QWidget *parent, RDK::U
     toggleModeButton->setMaximumWidth(30);
     ui->horizontalLayoutTreeWidget->insertWidget(1, toggleModeButton);
     connect(toggleModeButton, &QToolButton::clicked, this, &UComponentsListWidgetModern::toggleTreeViewMode);
-    
+
     // Создание дерева компонентов
     componentsTree = new UComponentListTreeWidgetModern(this);
     QWidget *treeContainer = ui->treeContainer;
@@ -55,7 +55,7 @@ UComponentsListWidgetModern::UComponentsListWidgetModern(QWidget *parent, RDK::U
     // Виджеты будут перемещаться между контейнерами
     treeLayout->addWidget(filterLineEdit);
     treeLayout->addWidget(componentsTree);
-    
+
     // Создание popup окна для дерева компонентов
     treePopupDialog = new QDialog(this, Qt::Popup);
     treePopupDialog->setWindowModality(Qt::NonModal);
@@ -77,17 +77,17 @@ UComponentsListWidgetModern::UComponentsListWidgetModern(QWidget *parent, RDK::U
     treePopupLayout = new QVBoxLayout(treePopupContainer);
     treePopupLayout->setContentsMargins(4, 4, 4, 4);
     treePopupLayout->setSpacing(4);
-    
+
     QVBoxLayout *dialogLayout = new QVBoxLayout(treePopupDialog);
     dialogLayout->setContentsMargins(0, 0, 0, 0);
     dialogLayout->addWidget(treePopupContainer);
-    
+
     // Устанавливаем фильтр событий для обработки Esc
     treePopupDialog->installEventFilter(this);
-    
+
     connect(componentsTree, SIGNAL(moveComponentUp()), this, SLOT(componentMoveUp()));
     connect(componentsTree, SIGNAL(moveComponentDown()), this, SLOT(componentMoveDown()));
-    
+
     // Всегда используем компактный режим - дерево скрыто в основном layout
     ui->treeContainer->hide();
     toggleModeButton->setChecked(false);
@@ -233,6 +233,12 @@ void UComponentsListWidgetModern::AUpdateInterface()
     int componentsListScrollMaximum = componentsTree->verticalScrollBar()->maximum();
     int componentsListScrollPosition = componentsTree->verticalScrollBar()->value();
 
+    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Блокируем сигналы во время обновления интерфейса,
+    // чтобы предотвратить вызов componentListItemSelectionChanged при восстановлении выделения
+    // через setCurrentItem() в addComponentSons()
+    m_isUpdatingFromScheme = true;
+    componentsTree->blockSignals(true);
+
     componentsTree->clear();
 
     QTreeWidgetItem *rootItem = new QTreeWidgetItem(componentsTree);
@@ -244,6 +250,14 @@ void UComponentsListWidgetModern::AUpdateInterface()
     applyFilter(rootItem);
     componentsTree->verticalScrollBar()->setMaximum(componentsListScrollMaximum);
     componentsTree->verticalScrollBar()->setValue(componentsListScrollPosition);
+
+    // Разблокируем сигналы после завершения обновления
+    componentsTree->blockSignals(false);
+
+    // Сбрасываем флаг после небольшой задержки, чтобы все события успели обработаться
+    QTimer::singleShot(0, [this]() {
+        m_isUpdatingFromScheme = false;
+    });
 
     if(channelsSelectionVisible)
     {
@@ -401,9 +415,29 @@ void UComponentsListWidgetModern::setChannelsListVisible(bool value)
 void UComponentsListWidgetModern::componentListItemSelectionChanged()
 {
     QTreeWidgetItem * item = componentsTree->currentItem();
-    if(!item) return;
-    
+    if(!item)
+    {
+        QString logMsg = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentListItemSelectionChanged: no current item, returning");
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+        return;
+    }
+
     selectedComponentLongName = item->data(0,Qt::UserRole).toString();
+
+    // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Не эмитируем componentSelected если выделение обновляется программно из схемы
+    // Это предотвращает бесконечный цикл: selectComponent -> componentSelected -> componentSingleClick -> selectComponent
+    if(m_isUpdatingFromScheme)
+    {
+        QString logMsg = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentListItemSelectionChanged: skipping emit (m_isUpdatingFromScheme=true) for '%1'")
+            .arg(selectedComponentLongName);
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+        reloadPropertys();
+        return;
+    }
+
+    QString logMsg = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentListItemSelectionChanged: current item changed, emitting componentSelected('%1')")
+        .arg(selectedComponentLongName);
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 
     reloadPropertys();
 
@@ -617,7 +651,7 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
             // Parse path - для алиасов путь может быть в формате "ComponentPath.PropertyName"
             QString component_long_name;
             QString prop_name;
-            
+
             if (isAlias && class_desc)
             {
                 // Для алиаса разбираем путь через ParseFavoritePath
@@ -847,11 +881,11 @@ try
      QString favoriteName = item->text(0);
      // Убираем пометку [Alias] если есть
      favoriteName = favoriteName.replace(" [Alias]", "");
-     
+
      // Parse path
      QString component_long_name;
      QString prop_name;
-     
+
      bool isAlias = class_desc && class_desc->IsFavoriteAlias(favoriteName.toStdString());
      if (isAlias && class_desc)
      {
@@ -951,10 +985,10 @@ void UComponentsListWidgetModern::handleFilterTextChanged(const QString &text)
 {
     if(!componentsTree)
         return;
-    
+
     componentFilterText = text.trimmed();
     applyFilter(componentsTree->invisibleRootItem());
-    
+
     // Обновляем виджет для отображения изменений
     componentsTree->update();
 }
@@ -1026,6 +1060,17 @@ bool UComponentsListWidgetModern::applyFilter(QTreeWidgetItem *item)
 
 void UComponentsListWidgetModern::componentSelectedFromScheme(QString name)
 {
+    QString logMsg = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentSelectedFromScheme: called with name='%1', blocking signals")
+        .arg(name);
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+
+    // Устанавливаем флаг для предотвращения эмиссии componentSelected при программном обновлении
+    m_isUpdatingFromScheme = true;
+
+    // Блокируем сигналы, чтобы предотвратить вызов componentListItemSelectionChanged
+    // и последующую эмиссию componentSelected, которая вызовет повторное выделение в диаграмме
+    componentsTree->blockSignals(true);
+
     QTreeWidgetItemIterator iterator(componentsTree);
     while(*iterator)
     {
@@ -1037,21 +1082,39 @@ void UComponentsListWidgetModern::componentSelectedFromScheme(QString name)
                 item->setExpanded(true);
                 item = item->parent();
             }
-            
+
             // Устанавливаем текущий элемент
             componentsTree->setCurrentItem(*iterator);
-            
+
             // Прокручиваем к выбранному элементу
             componentsTree->scrollToItem(*iterator, QAbstractItemView::EnsureVisible);
-            
+
             // Обновляем выбранный компонент и свойства
             selectedComponentLongName = name;
             reloadPropertys();
-            
+
+            QString logMsg2 = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentSelectedFromScheme: found item, unblocking signals")
+                .arg(name);
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg2.toStdString().c_str(), 0);
+            componentsTree->blockSignals(false);
+
+            // Сбрасываем флаг после небольшой задержки, чтобы все события успели обработаться
+            QTimer::singleShot(0, [this]() {
+                m_isUpdatingFromScheme = false;
+            });
             return;
         }
         ++iterator;
     }
+
+    QString logMsg3 = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentSelectedFromScheme: item not found, unblocking signals");
+    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg3.toStdString().c_str(), 0);
+    componentsTree->blockSignals(false);
+
+    // Сбрасываем флаг после небольшой задержки, чтобы все события успели обработаться
+    QTimer::singleShot(0, [this]() {
+        m_isUpdatingFromScheme = false;
+    });
 }
 
 void UComponentsListWidgetModern::componentDoubleClickFromScheme(QString name)
@@ -1091,22 +1154,22 @@ void UComponentsListWidgetModern::onComponentItemClicked(QTreeWidgetItem* item, 
 {
     Q_UNUSED(column);
     if(!item) return;
-    
+
     // Раскрываем путь к компоненту (все родительские элементы)
     QTreeWidgetItem *currentItem = item;
     while (currentItem) {
         currentItem->setExpanded(true);
         currentItem = currentItem->parent();
     }
-    
+
     // Устанавливаем текущий элемент (если еще не установлен)
     if(componentsTree->currentItem() != item) {
         componentsTree->setCurrentItem(item);
     }
-    
+
     // Прокручиваем к выбранному элементу
     componentsTree->scrollToItem(item, QAbstractItemView::EnsureVisible);
-    
+
     // Вызываем обработчик выбора компонента
     componentListItemSelectionChanged();
 }
@@ -1116,7 +1179,7 @@ void UComponentsListWidgetModern::drawSelectedComponent(QModelIndex index)
     // Получаем данные компонента из index
     QString componentName = index.data(Qt::UserRole).toString();
     if(componentName.isEmpty()) return;
-    
+
     // Находим элемент в дереве по данным
     QTreeWidgetItemIterator iterator(componentsTree);
     while(*iterator)
@@ -1125,10 +1188,10 @@ void UComponentsListWidgetModern::drawSelectedComponent(QModelIndex index)
         {
             // Устанавливаем текущий элемент
             componentsTree->setCurrentItem(*iterator);
-            
+
             // Вызываем обработчик выбора компонента (как при одинарном клике)
             componentListItemSelectionChanged();
-            
+
             // Закрываем popup после выбора компонента
             if (treePopupDialog->isVisible()) {
                 hideTreePopup();
@@ -1532,13 +1595,13 @@ void UComponentsListWidgetModern::showTreePopup()
     // Перемещаем виджеты из основного контейнера в popup
     QWidget *treeContainer = ui->treeContainer;
     QVBoxLayout *treeLayout = qobject_cast<QVBoxLayout*>(treeContainer->layout());
-    
+
     if (treeLayout) {
         // Удаляем виджеты из основного layout
         treeLayout->removeWidget(filterLineEdit);
         treeLayout->removeWidget(componentsTree);
     }
-    
+
     // Добавляем виджеты в popup layout (если их еще нет)
     if (treePopupLayout->indexOf(filterLineEdit) == -1) {
         treePopupLayout->addWidget(filterLineEdit);
@@ -1546,17 +1609,17 @@ void UComponentsListWidgetModern::showTreePopup()
     if (treePopupLayout->indexOf(componentsTree) == -1) {
         treePopupLayout->addWidget(componentsTree);
     }
-    
+
     // Вычисляем размер и позицию popup
     QPoint globalPos = toggleModeButton->mapToGlobal(QPoint(0, toggleModeButton->height()));
     QRect screenGeometry = QApplication::desktop()->availableGeometry(this);
-    
+
     // Ширина popup = минимальная ширина
     int popupWidth = 300;
     // Высота = доступная высота экрана минус позиция минус отступ
     int popupHeight = qMin(screenGeometry.height() - globalPos.y() - 10, 600);
     popupHeight = qMax(popupHeight, 200); // Минимальная высота
-    
+
     // Проверяем, не выходит ли popup за границы экрана
     if (globalPos.x() + popupWidth > screenGeometry.right()) {
         globalPos.setX(screenGeometry.right() - popupWidth);
@@ -1564,18 +1627,18 @@ void UComponentsListWidgetModern::showTreePopup()
     if (globalPos.x() < screenGeometry.left()) {
         globalPos.setX(screenGeometry.left());
     }
-    
+
     treePopupDialog->setGeometry(globalPos.x(), globalPos.y(), popupWidth, popupHeight);
     treePopupDialog->show();
     treePopupDialog->raise();
     treePopupDialog->activateWindow();
-    
+
     // Разворачиваем все элементы дерева
     componentsTree->expandAll();
-    
+
     // Устанавливаем фокус на поле фильтра
     filterLineEdit->setFocus();
-    
+
     toggleModeButton->setChecked(true);
     toggleModeButton->setText(tr("☷"));
     toggleModeButton->setToolTip(tr("Скрыть дерево компонентов"));
@@ -1586,20 +1649,20 @@ void UComponentsListWidgetModern::hideTreePopup()
     if (!treePopupDialog->isVisible()) {
         return;
     }
-    
+
     // Перемещаем виджеты обратно в основной контейнер
     treePopupLayout->removeWidget(filterLineEdit);
     treePopupLayout->removeWidget(componentsTree);
-    
+
     QWidget *treeContainer = ui->treeContainer;
     QVBoxLayout *treeLayout = qobject_cast<QVBoxLayout*>(treeContainer->layout());
     if (treeLayout) {
         treeLayout->addWidget(filterLineEdit);
         treeLayout->addWidget(componentsTree);
     }
-    
+
     treePopupDialog->hide();
-    
+
     toggleModeButton->setChecked(false);
     toggleModeButton->setText(tr("☰"));
     toggleModeButton->setToolTip(tr("Показать дерево компонентов"));
@@ -1615,7 +1678,7 @@ bool UComponentsListWidgetModern::eventFilter(QObject *obj, QEvent *event)
             return true;
         }
     }
-    
+
     return UVisualControllerWidget::eventFilter(obj, event);
 }
 

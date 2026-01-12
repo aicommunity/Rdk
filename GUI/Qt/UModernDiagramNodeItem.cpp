@@ -1066,7 +1066,28 @@ QVariant UModernDiagramNodeItem::itemChange(QGraphicsItem::GraphicsItemChange ch
         {
             QString fullName = m_owner->m_componentName.isEmpty() ? nodeName
                                                                   : m_owner->m_componentName + "." + nodeName;
-            emit m_owner->componentSelected(fullName);
+            // Эмитируем сигнал только если имя не пустое
+            // При снятии выделения (isNowSelected = false) сигнал не эмитируется - это предотвращает циклы
+            if(!fullName.isEmpty())
+            {
+                QString logMsg = QString("[SELECTION_DEBUG] UModernDiagramNodeItem::itemChange: emitting componentSelected('%1'), isProgrammatic=%2, isBatch=%3")
+                    .arg(fullName)
+                    .arg(m_owner->m_isProgrammaticSelection ? "true" : "false")
+                    .arg(m_owner->m_isBatchSelecting ? "true" : "false");
+                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+                emit m_owner->componentSelected(fullName);
+            }
+        }
+        else
+        {
+            // Логируем снятие выделения для диагностики
+            QString fullName = m_owner->m_componentName.isEmpty() ? nodeName
+                                                                  : m_owner->m_componentName + "." + nodeName;
+            QString logMsg = QString("[SELECTION_DEBUG] UModernDiagramNodeItem::itemChange: deselected '%1', isProgrammatic=%2, isBatch=%3")
+                .arg(fullName)
+                .arg(m_owner->m_isProgrammaticSelection ? "true" : "false")
+                .arg(m_owner->m_isBatchSelecting ? "true" : "false");
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
         }
     }
     return QGraphicsRectItem::itemChange(change, value);

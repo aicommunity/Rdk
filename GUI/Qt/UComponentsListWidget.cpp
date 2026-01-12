@@ -343,7 +343,7 @@ void UComponentsListWidget::componentListItemSelectionChanged()
 {
     QTreeWidgetItem * item = componentsTree->currentItem();
     if(!item) return;
-    
+
     selectedComponentLongName = item->data(0,Qt::UserRole).toString();
 
     reloadPropertys();
@@ -558,7 +558,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
             // Parse path - для алиасов путь может быть в формате "ComponentPath.PropertyName"
             QString component_long_name;
             QString prop_name;
-            
+
             if (isAlias && class_desc)
             {
                 // Для алиаса разбираем путь через ParseFavoritePath
@@ -788,11 +788,11 @@ try
      QString favoriteName = item->text(0);
      // Убираем пометку [Alias] если есть
      favoriteName = favoriteName.replace(" [Alias]", "");
-     
+
      // Parse path
      QString component_long_name;
      QString prop_name;
-     
+
      bool isAlias = class_desc && class_desc->IsFavoriteAlias(favoriteName.toStdString());
      if (isAlias && class_desc)
      {
@@ -961,16 +961,23 @@ bool UComponentsListWidget::applyFilter(QTreeWidgetItem *item)
 
 void UComponentsListWidget::componentSelectedFromScheme(QString name)
 {
+    // Блокируем сигналы, чтобы предотвратить вызов componentListItemSelectionChanged
+    // и последующую эмиссию componentSelected, которая вызовет повторное выделение в диаграмме
+    componentsTree->blockSignals(true);
+
     QTreeWidgetItemIterator iterator(componentsTree);
     while(*iterator)
     {
         if((*iterator)->data(0, Qt::UserRole) == name)
         {
             componentsTree->setCurrentItem(*iterator);
+            componentsTree->blockSignals(false);
             return;
         }
         ++iterator;
     }
+
+    componentsTree->blockSignals(false);
 }
 
 void UComponentsListWidget::componentDoubleClickFromScheme(QString name)

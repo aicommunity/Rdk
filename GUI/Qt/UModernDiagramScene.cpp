@@ -447,10 +447,19 @@ void UModernDiagramScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         auto* node = m_owner->pickNode(event->scenePos());
         if(node)
         {
-            m_owner->m_scene->clearSelection();
-            node->setSelected(true);
             QString fullName = m_owner->m_componentName.isEmpty() ? node->nodeName
                                                                   : m_owner->m_componentName + "." + node->nodeName;
+            QString logMsg = QString("[SELECTION_DEBUG] UModernDiagramScene::mousePressEvent: right click on node '%1', setting m_isProgrammaticSelection=true, calling clearSelection() and setSelected(true)")
+                .arg(fullName);
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+
+            // Используем флаг m_isProgrammaticSelection, чтобы предотвратить эмиссию componentSelected
+            // при программном изменении выделения (эмиттим сигнал вручную ниже)
+            m_owner->m_isProgrammaticSelection = true;
+            m_owner->m_scene->clearSelection();
+            node->setSelected(true);
+            // Сбрасываем флаг перед эмиссией сигнала, чтобы сигнал был обработан
+            m_owner->m_isProgrammaticSelection = false;
             emit m_owner->componentSelected(fullName);
             // Показываем контекстное меню
             QPoint globalPos = m_owner->m_mainView->mapToGlobal(m_owner->m_mainView->mapFromScene(event->scenePos()));
@@ -558,13 +567,28 @@ void UModernDiagramScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             m_owner->m_isLineFrozen = false;
         }
 
-        // Сбрасываем выделение группы при клике на фоне (левой или правой кнопкой)
-        if(m_isGroupSelected || m_isGroupMoving)
+        // Сбрасываем выделение при клике на фоне (левой или правой кнопкой)
+        // Используем флаг m_isProgrammaticSelection, чтобы предотвратить эмиссию componentSelected
+        // при программном сбросе выделения
+        if(m_isGroupSelected || m_isGroupMoving || !m_owner->m_scene->selectedItems().isEmpty())
         {
+            int selectedCount = m_owner->m_scene->selectedItems().size();
+            QString logMsg = QString("[SELECTION_DEBUG] UModernDiagramScene::mousePressEvent: clicked on background, isGroupSelected=%1, isGroupMoving=%2, selectedItems.count=%3, setting m_isProgrammaticSelection=true, calling clearSelection()")
+                .arg(m_isGroupSelected ? "true" : "false")
+                .arg(m_isGroupMoving ? "true" : "false")
+                .arg(selectedCount);
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+
+            m_owner->m_isProgrammaticSelection = true;
             m_owner->m_scene->clearSelection();
             m_isGroupSelected = false;
             m_isGroupMoving = false;
             m_savedSelection.clear();
+
+            // Отложенный сброс флага, чтобы он оставался установленным во время обработки всех событий
+            QTimer::singleShot(0, [this]() {
+                m_owner->m_isProgrammaticSelection = false;
+            });
         }
 
         // Если клик на фоне и ЛКМ без Ctrl (не прокрутка), передаем событие для RubberBandDrag
@@ -1258,10 +1282,16 @@ void UModernDiagramScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     // Используем отложенный вызов, чтобы восстановление произошло после всех обработчиков событий
     if(wasGroupMoving && !savedSelectedNodes.isEmpty())
     {
+        QString logMsg = QString("[SELECTION_DEBUG] UModernDiagramScene::mouseReleaseEvent: restoring group selection, nodes count=%1")
+            .arg(savedSelectedNodes.size());
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+
         // Сохраняем список узлов для отложенного восстановления
         QList<UModernDiagramNodeItem*> nodesToRestore = savedSelectedNodes;
 
         // Восстанавливаем выделение немедленно
+        // Используем флаг m_isProgrammaticSelection, чтобы предотвратить эмиссию componentSelected
+        m_owner->m_isProgrammaticSelection = true;
         m_owner->m_isBatchSelecting = true;
         m_owner->m_scene->blockSignals(true);
 
@@ -1278,7 +1308,12 @@ void UModernDiagramScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
         // Отложенное восстановление выделения, чтобы оно произошло после всех обработчиков событий
         QTimer::singleShot(0, [this, nodesToRestore]() {
+            QString logMsg2 = QString("[SELECTION_DEBUG] UModernDiagramScene::mouseReleaseEvent: delayed restore, nodes count=%1, setting m_isProgrammaticSelection=true")
+                .arg(nodesToRestore.size());
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg2.toStdString().c_str(), 0);
+
             // Восстанавливаем выделение для всех сохраненных узлов
+            m_owner->m_isProgrammaticSelection = true;
             m_owner->m_isBatchSelecting = true;
             m_owner->m_scene->blockSignals(true);
 
@@ -1292,6 +1327,13 @@ void UModernDiagramScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
             m_owner->m_isBatchSelecting = false;
             m_owner->m_scene->blockSignals(false);
+
+            // Отложенный сброс флага, чтобы он оставался установленным во время обработки всех событий
+            QTimer::singleShot(0, [this]() {
+                QString logMsg3 = QString("[SELECTION_DEBUG] UModernDiagramScene::mouseReleaseEvent: resetting m_isProgrammaticSelection=false");
+                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg3.toStdString().c_str(), 0);
+                m_owner->m_isProgrammaticSelection = false;
+            });
         });
     }
 
@@ -1311,6 +1353,11 @@ void UModernDiagramScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                 selectedNodeNames << node->nodeName;
             }
         }
+
+        QString logMsg4 = QString("[SELECTION_DEBUG] UModernDiagramScene::mouseReleaseEvent: after base class, selectedNodeCount=%1, nodeNames=[%2]")
+            .arg(selectedNodeCount)
+            .arg(selectedNodeNames.join(", "));
+        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg4.toStdString().c_str(), 0);
 
         // Устанавливаем флаг группы, если выделено больше одного объекта
         m_isGroupSelected = (selectedNodeCount > 1);
