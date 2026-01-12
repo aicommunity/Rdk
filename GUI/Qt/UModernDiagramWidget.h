@@ -25,9 +25,18 @@
 #include <rdk_application.h>
 #include "../Core/Engine/UXMLEnvSerialize.h"
 #include "../Core/Engine/UEnvSupport.h"
+#include "UModernDiagramPort.h"  // Для Port и PortCategory
 
-// Forward declaration for test friend class
+// Forward declarations
 class UModernDiagramWidgetMovementTest;
+class UModernDiagramLinkItem;
+class UModernDiagramNodeItem;
+class UModernDiagramViewportManager;
+class UModernDiagramCoordinateManager;
+class UModernDiagramCacheManager;
+// Forward declarations for extracted classes
+class UModernDiagramScene;
+class UModernDiagramView;
 
 /// Простой современный виджет диаграммы на основе QGraphicsView/QGraphicsScene.
 /// Отображает компоненты как узлы с портами, поддерживает drag&drop связей и миникарту.
@@ -67,7 +76,7 @@ public slots:
     /// Обновление темы - инвалидирует кэш всех узлов и обновляет сцену
     void updateTheme();
     /// Обновление стилей кнопки сброса масштаба в соответствии с текущей темой
-    void updateResetZoomButtonStyle();
+    // updateResetZoomButtonStyle теперь в UModernDiagramViewportManager
 
 signals:
     /// Компонент выбран (одиночный клик)
@@ -90,145 +99,30 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
 
 private:
-    friend class ModernScene;
-    friend class ModernGraphicsView;
+    friend class UModernDiagramScene;
+    friend class UModernDiagramView;
+    friend class UModernDiagramLinkItem;  // Для доступа к NodeItem и PortCategory
+    friend class UModernDiagramNodeItem;  // Для доступа к Port и PortCategory
+    friend class UModernDiagramCacheManager;  // Для доступа к данным кэша
+    friend class UModernDiagramCoordinateManager;  // Для доступа к данным координат
+    friend class UModernDiagramViewportManager;  // Для доступа к m_mainView и m_scene
     // Friend class for unit tests
     friend class UModernDiagramWidgetMovementTest;
 
-    /// Категория порта для категоризации выходных портов
-    enum class PortCategory {
-        Own,        // Собственные свойства компонента
-        Child,      // Свойства дочерних компонентов
-        Alias       // Алиасы свойств
-    };
+    // Port и PortCategory теперь выделены в отдельный файл UModernDiagramPort.h
+    // Используем typedef для обратной совместимости
+    using Port = UModernDiagramPort;
+    using PortCategory = UModernDiagramPortCategory;
 
-    struct Port
-    {
-        QPointF pos;
-        bool isInput;
-        QString name;           // Имя порта (например, "Output", "ChannelInputs")
-        QString fullPath;       // Полный путь для вложенных портов (например, "SubComp.Output")
-        QString componentName;  // Имя компонента-владельца
-        QString displayName;    // Отображаемое имя (для tooltip)
-        PortCategory category;  // Категория порта (для выходных портов)
+    // Forward declarations для извлеченных классов
+    class LinkItem;  // Теперь это UModernDiagramLinkItem
+    class NodeItem;  // Теперь это UModernDiagramNodeItem
 
-        Port() : isInput(false), category(PortCategory::Own) {}
-        Port(const QPointF& p, bool input, const QString& n)
-            : pos(p), isInput(input), name(n), componentName(n), displayName(n), category(PortCategory::Own) {}
-    };
+    // NodeItem теперь выделен в отдельный класс UModernDiagramNodeItem
+    // Forward declaration остается для обратной совместимости
 
-    // Forward declaration для LinkItem
-    class LinkItem;
-
-    class NodeItem : public QGraphicsRectItem
-    {
-    public:
-        NodeItem(class UModernDiagramWidget* owner, const QString& name, const QString& cls);
-        ~NodeItem() override;
-        QRectF boundingRect() const override;
-        void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
-        QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
-        void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
-        void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
-        void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
-        QPointF scenePortPos(bool output) const;
-        QPointF scenePortPosByCategory(bool output, PortCategory category) const;
-        PortCategory determinePortCategory(const QString& propertyName, bool isInput) const;
-        const Port* getPortAtPosition(const QPointF& localPos) const;
-        // Принудительно обновляет hover-состояние по координате сцены (для периодического опроса)
-        void refreshHoverAtScenePos(const QPointF& scenePos);
-        QVector<Port> getNestedPorts(bool isInput, bool includeNested) const;
-        QVector<Port> inputs;
-        QVector<Port> outputs;
-        QString nodeName;
-        QString className;
-    public:
-        // Доступ к членам для UModernDiagramWidget::clearScene() и ModernScene
-        UModernDiagramWidget* m_owner;
-        mutable const Port* m_hoveredPort;
-        QGraphicsProxyWidget* m_portListWidgetProxy;
-        QTreeWidget* m_portListWidget;
-        QTimer* m_hideTimer;
-        // Кэш связей, подключенных к этому узлу (для оптимизации обновления при перемещении)
-        QList<LinkItem*> m_connectedLinks;
-        // Кэш для результатов дорогих вычислений в paint()
-        mutable bool m_cacheValid;
-        // Используем QMap вместо QHash, так как для QMap не нужна функция qHash
-        mutable QMap<PortCategory, bool> m_hasConnectionsToInputCache;
-        mutable QMap<PortCategory, bool> m_hasConnectionsToOutputCache;
-        mutable QMap<PortCategory, bool> m_hasInputPortsCache;
-        mutable QMap<PortCategory, bool> m_hasOutputPortsCache;
-        // Кэш для самих портов (ленивая загрузка)
-        mutable bool m_portsCacheValid = false;
-        mutable QVector<Port> m_cachedOwnInputPorts;
-        mutable QVector<Port> m_cachedChildInputPorts;
-        mutable QVector<Port> m_cachedAliasInputPorts;
-        mutable QVector<Port> m_cachedOwnOutputPorts;
-        mutable QVector<Port> m_cachedChildOutputPorts;
-        mutable QVector<Port> m_cachedAliasOutputPorts;
-        // Последняя позиция курсора для throttling в hoverMoveEvent
-        QPointF m_lastHoverMovePos;
-
-        friend class ModernScene;
-    public:
-        void showPortListWidget(const QPointF& scenePos);
-        void hidePortListWidget();
-        void updatePortListWidget(bool isInput, bool includeNested);
-        void onPortItemActivated(QTreeWidgetItem* item, int column);
-
-        // Методы для получения портов по категориям
-        QVector<Port> getOwnOutputPorts() const;
-        QVector<Port> getChildOutputPorts() const;
-        QVector<Port> getAliasOutputPorts() const;
-        QVector<Port> getOwnInputPorts() const;
-        QVector<Port> getChildInputPorts() const;
-        QVector<Port> getAliasInputPorts() const;
-
-        // Методы для проверки наличия соединений к портам категории
-        bool hasConnectionsToInputCategory(PortCategory category) const;
-        bool hasConnectionsToOutputCategory(PortCategory category) const;
-    };
-
-    class LinkItem : public QGraphicsPathItem
-    {
-    public:
-        // Финальная линия между узлами
-        LinkItem(class NodeItem* src, class NodeItem* dst, bool useOutput=true, bool useInput=true);
-        // Финальная линия с указанием категорий портов
-        LinkItem(class NodeItem* src, class NodeItem* dst, PortCategory srcCategory, PortCategory dstCategory);
-        // Временная линия до курсора
-        LinkItem(class NodeItem* src, const QPointF& tempEnd, const QPointF& startPos = QPointF());
-        void updateGeometry(const QPointF& cursorOverride = QPointF());
-
-        // Hover events for tooltips
-        void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
-        void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
-
-        // Getters for tooltip generation
-        NodeItem* getSourceNode() const { return m_src; }
-        NodeItem* getDestinationNode() const { return m_dst; }
-
-        // Геттеры для доступа к данным связи (для оптимизации проверки соединений)
-        NodeItem* src() const { return m_src; }
-        NodeItem* dst() const { return m_dst; }
-        bool hasCategories() const { return m_hasCategories; }
-        PortCategory srcCategory() const { return m_srcCategory; }
-        PortCategory dstCategory() const { return m_dstCategory; }
-        bool useOutput() const { return m_useOutput; }
-        bool useInput() const { return m_useInput; }
-    private:
-        class UModernDiagramWidget* m_owner;
-        class NodeItem* m_src;
-        class NodeItem* m_dst;
-        bool m_useOutput;
-        bool m_useInput;
-        bool m_isTemp;
-        QPointF m_tempEnd;
-        QPointF m_startPos; // Начальная позиция для временной линии
-        PortCategory m_srcCategory;  // Категория исходного порта (если известна)
-        PortCategory m_dstCategory;   // Категория целевого порта (если известна)
-        bool m_hasCategories;        // Флаг, указывающий, что категории заданы
-    };
+    // LinkItem теперь выделен в отдельный класс UModernDiagramLinkItem
+    // Forward declaration остается для обратной совместимости
 
     void buildScene();
     void clearScene();
@@ -238,156 +132,71 @@ private:
     void updateSceneRect();
     /// Добавляет один компонент в сцену без полного перестроения
     /// Использует текущий m_normalizationOffset, чтобы не сдвигать существующие компоненты
-    NodeItem* addSingleComponent(const QString& fullName);
-    NodeItem* pickPort(const QPointF& scenePos, bool requireInput, QPointF& portPos);
-    const Port* pickPortDetailed(const QPointF& scenePos, bool requireInput, NodeItem*& node, QPointF& portPos);
-    NodeItem* pickNode(const QPointF& scenePos) const;
+    UModernDiagramNodeItem* addSingleComponent(const QString& fullName);
+    UModernDiagramNodeItem* pickPort(const QPointF& scenePos, bool requireInput, QPointF& portPos);
+    const Port* pickPortDetailed(const QPointF& scenePos, bool requireInput, UModernDiagramNodeItem*& node, QPointF& portPos);
+    UModernDiagramNodeItem* pickNode(const QPointF& scenePos) const;
     /// Проверяет, выходит ли компонент за видимую область viewport
     /// Возвращает true, если компонент находится вне видимой области (с учетом масштаба)
-    bool isComponentOutsideVisibleArea(NodeItem* node) const;
+    bool isComponentOutsideVisibleArea(UModernDiagramNodeItem* node) const;
     void buildLinks();
     void rebuildLinks(); // Перестраивает только связи без перезагрузки всей сцены
-    void invalidateLevelCache(const QString& componentName = QString()); // Инвалидирует кэш уровня (пустая строка = все уровни)
-    void restoreSceneFromCache(const QString& componentName); // Восстанавливает сцену из кэша
-    void saveSceneToCache(const QString& componentName); // Сохраняет текущую сцену в кэш
-
-    // Методы для работы с кэшем компонентов
-    QString computeComponentHash(const QString& componentFullName) const; // Вычисляет хеш содержимого компонента
-    void invalidateComponentCache(const QString& componentFullName = QString()); // Инвалидирует кэш компонента (пустая строка = все компоненты)
-    void clearComponentCache(); // Очищает весь кэш компонентов
-    QString getCacheFilePath(const QString& extension) const; // Получает путь к файлу кэша
-    bool saveComponentCacheToFile(const QString& filePath, bool useBinary = false) const; // Сохраняет кэш в файл (JSON или бинарный)
-    bool loadComponentCacheFromFile(const QString& filePath, bool useBinary = false); // Загружает кэш из файла (JSON или бинарный)
-    void scheduleCacheSave(); // Планирует отложенное сохранение кэша
-
-    // UI
-    QGraphicsScene* m_scene;
-    QGraphicsView*  m_mainView;
-    QGraphicsView*  m_miniMap;
-
-    // Drag state (for port-to-port drag & drop)
-    LinkItem* m_tempLink;
-    NodeItem* m_dragSourceNode;
+    // Cache management methods теперь в UModernDiagramCacheManager
+    // Используйте m_cacheManager для доступа к этим методам
     const Port* m_dragSourcePort;
     QPointF   m_dragSourcePortPos;
 
     // Active connection state (for tree widget selection)
-    NodeItem* m_activeSourceNode;
+    UModernDiagramNodeItem* m_activeSourceNode;
     const Port* m_activeSourcePort;  // Указатель для быстрого доступа (может стать невалидным)
     // Копии данных порта для безопасного использования (избегаем проблем с невалидными указателями)
     QString m_activeSourcePortName;
     QString m_activeSourcePortFullPath;
     QString m_activeSourcePortComponentName;
     QPointF m_activeSourcePortPos;
-    LinkItem* m_activeTempLink;
+    UModernDiagramLinkItem* m_activeTempLink;
     bool m_isLineFrozen;  // Флаг, указывающий, что соединение "заморожено" на порту
     QPointF m_frozenTargetPortPos;  // Позиция порта, к которому "прилипло" соединение
     bool m_isWaitingForPortSelection;  // Флаг, указывающий, что ожидается выбор порта из окна выбора
 
+    // Scene and view
+    UModernDiagramScene* m_scene;
+    UModernDiagramView* m_mainView;
+    QGraphicsView* m_miniMap;
+
+    // Temporary link during drag
+    UModernDiagramLinkItem* m_tempLink;
+    UModernDiagramNodeItem* m_dragSourceNode;
+
+    // Viewport manager
+    UModernDiagramViewportManager* m_viewportManager;
+
+    // Coordinate manager
+    UModernDiagramCoordinateManager* m_coordinateManager;
+
     // Data
     RDK::UApplication* m_application;
     QString m_componentName;
-    QList<NodeItem*> m_nodes;
-    QHash<QString, NodeItem*> m_nodeByName;
-    QList<LinkItem*> m_links;
+    QList<UModernDiagramNodeItem*> m_nodes;
+    QHash<QString, UModernDiagramNodeItem*> m_nodeByName;
+    QList<UModernDiagramLinkItem*> m_links;
 
     // Защита от бесконечной рекурсии при выборе компонента
+    // Cache manager
+    UModernDiagramCacheManager* m_cacheManager;
+
     int m_selectComponentRetryCount;
 
     // Для перемещения группы объектов - храним предыдущие позиции
-    QHash<NodeItem*, QPointF> m_lastNodePositions;
+    QHash<UModernDiagramNodeItem*, QPointF> m_lastNodePositions;
 
-    // Coord scaling (scene units per kernel unit)
-    // Set to 30 to match UDrawEngine's ZoomCoeff for 1:1 scale with classic diagram
-    double m_coordScale = 30.0;
+    // Coord scaling и normalization offset теперь в UModernDiagramCoordinateManager
 
-    // Минимальная позиция, использованная для нормализации при загрузке
-    // Нужна для правильной денормализации координат при сохранении
-    QPointF m_normalizationOffset;
+    // Viewport state management теперь в UModernDiagramViewportManager
 
-    // Viewport state management
-    struct ViewState {
-        double scale = 1.0;
-        QPointF center;
-        bool isValid = false;
-    };
-    QHash<QString, ViewState> m_viewStates;  // Состояние viewport для каждого компонента
-    static constexpr double DEFAULT_SCALE = 1.0;  // Начальный масштаб по умолчанию (уменьшен в 2.5 раза от предыдущего значения 2.5)
-
-    // Кэш загруженных уровней для быстрого повторного перехода
-    // ВАЖНО: не используем QPointer, так как элементы управляются сценой
-    // Вместо этого сохраняем указатели только если элементы еще в сцене
-    struct SceneCache {
-        QList<NodeItem*> nodes;
-        QList<LinkItem*> links;
-        QHash<QString, NodeItem*> nodeByName;
-        QHash<NodeItem*, QPointF> lastNodePositions;
-        QPointF normalizationOffset;
-        QStringList componentNames;  // Список компонентов для проверки изменений структуры
-        bool isValid = false;
-    };
-    QHash<QString, SceneCache> m_levelCache;  // Кэш уровней по имени компонента
-
-    // Кэш информации о компонентах для ускорения отрисовки
-    struct ComponentCacheEntry {
-        // Кэш портов (для NodeItem::paint и determinePortCategory)
-        QVector<Port> ownInputPorts;
-        QVector<Port> childInputPorts;
-        QVector<Port> aliasInputPorts;
-        QVector<Port> ownOutputPorts;
-        QVector<Port> childOutputPorts;
-        QVector<Port> aliasOutputPorts;
-        QHash<QPair<QString, bool>, PortCategory> portCategoryCache;  // Кэш для determinePortCategory: (propertyName, isInput) -> PortCategory
-
-        // Данные, используемые в buildScene (для ускорения Reload)
-        QString className;      // Имя класса компонента
-        QPointF kernelPos;      // Координаты компонента в ядре
-        bool hasKernelPos = false; // Флаг, что kernelPos загружен и валиден
-
-        qint64 timestamp;  // Временная метка последнего обновления
-        QString hash;      // Хеш содержимого компонента для инвалидации
-
-        ComponentCacheEntry() : timestamp(0) {}
-    };
-
-    class ComponentCache {
-    public:
-        ComponentCache() {}
-
-        // Получить запись кэша для компонента
-        ComponentCacheEntry* getEntry(const QString& componentFullName);
-
-        // Создать или обновить запись кэша
-        void setEntry(const QString& componentFullName, const ComponentCacheEntry& entry);
-
-        // Проверить, есть ли запись в кэше
-        bool hasEntry(const QString& componentFullName) const;
-
-        // Инвалидировать запись кэша
-        void invalidateEntry(const QString& componentFullName);
-
-        // Очистить весь кэш
-        void clear();
-
-        // Получить все записи кэша (для сохранения в файл)
-        const QHash<QString, ComponentCacheEntry>& getAllEntries() const { return m_cache; }
-
-        // Установить все записи кэша (для загрузки из файла)
-        void setAllEntries(const QHash<QString, ComponentCacheEntry>& entries) { m_cache = entries; }
-
-    private:
-        QHash<QString, ComponentCacheEntry> m_cache;
-    };
-
-    mutable ComponentCache m_componentCache;  // Сессионный кэш компонентов (mutable для использования в const методах)
-
-    // Флаг для временного отключения обработки ItemSelectedHasChanged в itemChange
-    // во время batch-выделения, чтобы предотвратить сброс выделения Qt
-    bool m_isBatchSelecting = false;
-
-    // Флаг для предотвращения рекурсивного перемещения группы объектов
-    // Когда один узел перемещается и перемещает другие, мы не должны снова перемещать их
+    // Кэш загруженных уровней и компонентов теперь в UModernDiagramCacheManager
     bool m_isMovingGroup = false;
+    bool m_isBatchSelecting = false;  // Флаг для отслеживания выделения прямоугольником
 
     // Флаг для отслеживания движения компонентов (для отложенного обновления sceneRect)
     // Устанавливается в mousePressEvent, сбрасывается в mouseReleaseEvent
@@ -406,14 +215,13 @@ private:
     mutable bool m_isUpdatingNormalizationOffset = false;
 
     // Компоненты с отрицательными позициями во время движения (для обновления offset при завершении движения)
-    QSet<NodeItem*> m_componentsWithNegativePos;
+    QSet<UModernDiagramNodeItem*> m_componentsWithNegativePos;
 
     // Исходные абсолютные координаты компонентов ДО перемещения в отрицательную область
-    // Ключ: NodeItem*, значение: исходные абсолютные координаты (normalizedPos + offset)
-    QMap<NodeItem*, QPointF> m_originalAbsolutePositions;
+    // Ключ: UModernDiagramNodeItem*, значение: исходные абсолютные координаты (normalizedPos + offset)
+    QMap<UModernDiagramNodeItem*, QPointF> m_originalAbsolutePositions;
 
-    // Кнопка сброса масштаба
-    QPushButton* m_resetZoomButton;
+    // Кнопка сброса масштаба теперь в UModernDiagramViewportManager
 
     // Context menu
     QMenu* m_contextMenu;
@@ -434,14 +242,14 @@ private:
     QString m_firstComponentToConnection;
     QString m_startMoveComponent;
     QString m_startSwitchComponent;
-    NodeItem* m_contextMenuNode;
+    UModernDiagramNodeItem* m_contextMenuNode;
 
     void createContextMenu();
     QString getSelectedComponentLongName() const;
 
     /// Удаляет указанные компоненты с запросом подтверждения
     /// @param nodesToDelete Список NodeItem для удаления
-    void deleteComponents(const QList<NodeItem*>& nodesToDelete);
+    void deleteComponents(const QList<UModernDiagramNodeItem*>& nodesToDelete);
 
     // Context menu slots
 private slots:
@@ -469,43 +277,38 @@ private slots:
     void componentCloneComponent();
     void componentQuickLink();
     void componentClearCache();
-    void onResetZoomClicked();
+    // onResetZoomClicked теперь в UModernDiagramViewportManager
 
+private:
+    // Coordinate management methods теперь в UModernDiagramCoordinateManager
+    // (делегируются в менеджер для обратной совместимости API)
     QPointF scenePosFromKernel(const QPointF& kernel) const;
     QPointF kernelPosFromScene(const QPointF& scene) const;
     bool loadCoord(const QString& fullName, QPointF& outPos) const;
     void saveCoord(const QString& fullName, const QPointF& scenePos) const;
     QPointF currentMinScenePos() const;
-    /// Пересчитывает m_normalizationOffset на основе текущих kernel координат всех компонентов на сцене
-    /// Это гарантирует, что offset соответствует тому, что будет использоваться при загрузке
-    /// @param pendingComponentPos Опциональная позиция компонента, который еще не сохранен (в абсолютных scene координатах)
-    /// @param pendingComponentName Опциональное имя компонента, который еще не сохранен
     void recalculateNormalizationOffset(const QPointF& pendingComponentPos = QPointF(), const QString& pendingComponentName = QString());
+    void updateNormalizationOffsetForMovement(const QPointF& newMinNormalizedPos, const QSet<UModernDiagramNodeItem*>& componentsToAdjust = QSet<UModernDiagramNodeItem*>());
 
-    /// Обновляет m_normalizationOffset во время перемещения компонента, если он стал новым минимумом
-    /// Это предотвращает сохранение отрицательных координат и "прыжки" компонентов
-    /// @param newMinNormalizedPos Новая минимальная нормализованная позиция компонента
-    void updateNormalizationOffsetForMovement(const QPointF& newMinNormalizedPos, const QSet<NodeItem*>& componentsToAdjust = QSet<NodeItem*>());
+    // Viewport state management methods теперь в UModernDiagramViewportManager
 
-    // Viewport state management methods
-    void saveCurrentViewState();
-    void restoreViewState(const QString& componentName);
-    void resetZoom();
-
-    // Tooltip generation methods
-    QString generateNodeTooltip(NodeItem* node) const;
-    QString generatePortTooltip(const Port& port) const;
-    QString generateLinkTooltip(LinkItem* link) const;
-    QString generateCanvasTooltip() const;
-    QString getPortCategoryName(PortCategory category) const;
+    // Tooltip generation methods теперь в UModernDiagramTooltipGenerator
 
 public:
     // Test accessors for unit tests (always available for testing)
     // Implementation in .cpp file to avoid issues with incomplete type NodeItem
     // These methods are placed at the end of the class after NodeItem is fully defined
     QPointF testGetNormalizationOffset() const;
-    const QSet<NodeItem*>& testGetComponentsWithNegativePos() const;
+    const QSet<UModernDiagramNodeItem*>& testGetComponentsWithNegativePos() const;
 };
+
+// Forward declarations для извлеченных классов (включаем только в .cpp для избежания циклических зависимостей)
+class UModernDiagramLinkItem;
+class UModernDiagramNodeItem;
+
+// Typedef для обратной совместимости
+typedef UModernDiagramLinkItem LinkItem;
+typedef UModernDiagramNodeItem NodeItem;
 
 #endif // UMODERNDIAGRAMWIDGET_H
 
