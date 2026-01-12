@@ -6,6 +6,7 @@
 #include "UModernDiagramTooltipGenerator.h"
 #include "UModernDiagramViewportManager.h"
 #include "UModernDiagramCoordinateManager.h"
+#include "UModernDiagramContextMenu.h"
 
 #include <QGraphicsSceneMouseEvent>
 #include <QTimer>
@@ -448,13 +449,13 @@ void UModernDiagramScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         {
             m_owner->m_scene->clearSelection();
             node->setSelected(true);
-            m_owner->m_contextMenuNode = node;
             QString fullName = m_owner->m_componentName.isEmpty() ? node->nodeName
                                                                   : m_owner->m_componentName + "." + node->nodeName;
             emit m_owner->componentSelected(fullName);
             // Показываем контекстное меню
             QPoint globalPos = m_owner->m_mainView->mapToGlobal(m_owner->m_mainView->mapFromScene(event->scenePos()));
-            m_owner->m_contextMenu->popup(globalPos);
+            if(m_owner->m_contextMenuManager)
+                m_owner->m_contextMenuManager->showMenu(globalPos, node);
             event->accept();
             return;
         }

@@ -34,6 +34,7 @@ class UModernDiagramNodeItem;
 class UModernDiagramViewportManager;
 class UModernDiagramCoordinateManager;
 class UModernDiagramCacheManager;
+class UModernDiagramContextMenu;
 // Forward declarations for extracted classes
 class UModernDiagramScene;
 class UModernDiagramView;
@@ -106,6 +107,7 @@ private:
     friend class UModernDiagramCacheManager;  // Для доступа к данным кэша
     friend class UModernDiagramCoordinateManager;  // Для доступа к данным координат
     friend class UModernDiagramViewportManager;  // Для доступа к m_mainView и m_scene
+    friend class UModernDiagramContextMenu;  // Для доступа к данным виджета
     // Friend class for unit tests
     friend class UModernDiagramWidgetMovementTest;
 
@@ -185,6 +187,9 @@ private:
     // Cache manager
     UModernDiagramCacheManager* m_cacheManager;
 
+    // Context menu manager
+    UModernDiagramContextMenu* m_contextMenuManager;
+
     int m_selectComponentRetryCount;
 
     // Для перемещения группы объектов - храним предыдущие позиции
@@ -223,60 +228,20 @@ private:
 
     // Кнопка сброса масштаба теперь в UModernDiagramViewportManager
 
-    // Context menu
-    QMenu* m_contextMenu;
-    QAction* m_actionViewOrBreakLink;
-    QAction* m_actionCreateLink;
-    QAction* m_actionFinishLink;
-    QAction* m_actionCancelLink;
-    QAction* m_actionStartMoving;
-    QAction* m_actionFinishMoving;
-    QAction* m_actionCancelMoving;
-    QAction* m_actionSwitchLink;
-    QAction* m_actionFinishSwitching;
-    QAction* m_actionCancelSwitching;
-    QAction* m_actionCloneComponent;
-    QAction* m_actionQuickLink;
-
-    // Context menu state
-    QString m_firstComponentToConnection;
-    QString m_startMoveComponent;
-    QString m_startSwitchComponent;
-    UModernDiagramNodeItem* m_contextMenuNode;
-
-    void createContextMenu();
-    QString getSelectedComponentLongName() const;
+    // Context menu теперь в UModernDiagramContextMenu
 
     /// Удаляет указанные компоненты с запросом подтверждения
     /// @param nodesToDelete Список NodeItem для удаления
     void deleteComponents(const QList<UModernDiagramNodeItem*>& nodesToDelete);
 
+    // Public methods for context menu manager to emit signals
+    void emitViewLinks(const QString& componentName);
+    void emitCreateLinks(const QString& firstComponentName, const QString& secondComponentName);
+    void emitSwitchLinks(const QString& firstComponentName, const QString& secondComponentName);
+
     // Context menu slots
 private slots:
-    void componentViewOrBreakLink();
-    void componentCreateLink();
-    void componentFinishLink();
-    void componentCancelLink();
-    void componentStartMoving();
-    void componentFinishMoving();
-    void componentCancelMoving();
-    void componentStartSwitching();
-    void componentFinishSwitching();
-    void componentCancelSwitching();
-    void componentRename();
-    void actionClassDescriptionTriggered();
-    void componentDelete();
-    void componentCopyNameToClipboard();
-    void componentCopyLongNameToClipboard();
-    void componentCopyClassNameToClipboard();
-    void componentReset();
-    void componentCalculate();
-    void componentDefault();
-    void componentGUI();
-    void componentCopyXMLDescription();
-    void componentCloneComponent();
-    void componentQuickLink();
-    void componentClearCache();
+    // Context menu slots теперь в UModernDiagramContextMenu
     // onResetZoomClicked теперь в UModernDiagramViewportManager
 
 private:
