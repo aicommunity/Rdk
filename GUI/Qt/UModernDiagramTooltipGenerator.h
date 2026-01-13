@@ -2,12 +2,11 @@
 #define UMODERNDIAGRAMTOOLTIPGENERATOR_H
 
 #include <QString>
+#include "UModernDiagramPort.h"
 
 // Forward declarations
 class UModernDiagramNodeItem;
 class UModernDiagramLinkItem;
-class UModernDiagramPort;
-enum class UModernDiagramPortCategory;
 
 /// Генератор tooltips для элементов диаграммы
 /// Инкапсулирует логику генерации подсказок для узлов, портов, связей и канвы
@@ -31,4 +30,3 @@ public:
 };
 
 #endif // UMODERNDIAGRAMTOOLTIPGENERATOR_H
-

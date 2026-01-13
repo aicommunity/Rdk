@@ -51,14 +51,14 @@ void UModernDiagramViewportManager::restoreViewState(const QString& componentNam
             // Восстанавливаем центр
             m_owner->m_mainView->centerOn(state.center);
 
-            // Logging for debugging viewport restoration
-            QTransform transform = m_owner->m_mainView->transform();
-            QString logMsg = QString("[UModernDiagramViewportManager::restoreViewState] Restored state for '%1': scale=%2, center=(%3, %4), transform.m11()=%5")
-                .arg(componentName)
-                .arg(state.scale)
-                .arg(state.center.x()).arg(state.center.y())
-                .arg(transform.m11());
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+            // DEBUG: Commented out to reduce log flood - Logging for debugging viewport restoration
+            // QTransform transform = m_owner->m_mainView->transform();
+            // QString logMsg = QString("[UModernDiagramViewportManager::restoreViewState] Restored state for '%1': scale=%2, center=(%3, %4), transform.m11()=%5")
+            //     .arg(componentName)
+            //     .arg(state.scale)
+            //     .arg(state.center.x()).arg(state.center.y())
+            //     .arg(transform.m11());
+            // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
             return;
         }
     }
@@ -84,16 +84,16 @@ void UModernDiagramViewportManager::restoreViewState(const QString& componentNam
         state.isValid = true;
         m_viewStates[componentName] = state;
 
-        // Logging for debugging initial state setup
-        QTransform transform = m_owner->m_mainView->transform();
-        QString logMsg = QString("[UModernDiagramViewportManager::restoreViewState] Set initial state for '%1': bounds=(%2, %3, %4, %5), padded=(%6, %7, %8, %9), scale=%10, center=(%11, %12), transform.m11()=%13")
-            .arg(componentName)
-            .arg(bounds.x()).arg(bounds.y()).arg(bounds.width()).arg(bounds.height())
-            .arg(padded.x()).arg(padded.y()).arg(padded.width()).arg(padded.height())
-            .arg(DEFAULT_SCALE)
-            .arg(state.center.x()).arg(state.center.y())
-            .arg(transform.m11());
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+        // DEBUG: Commented out to reduce log flood - Logging for debugging initial state setup
+        // QTransform transform = m_owner->m_mainView->transform();
+        // QString logMsg = QString("[UModernDiagramViewportManager::restoreViewState] Set initial state for '%1': bounds=(%2, %3, %4, %5), padded=(%6, %7, %8, %9), scale=%10, center=(%11, %12), transform.m11()=%13")
+        //     .arg(componentName)
+        //     .arg(bounds.x()).arg(bounds.y()).arg(bounds.width()).arg(bounds.height())
+        //     .arg(padded.x()).arg(padded.y()).arg(padded.width()).arg(padded.height())
+        //     .arg(DEFAULT_SCALE)
+        //     .arg(state.center.x()).arg(state.center.y())
+        //     .arg(transform.m11());
+        // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
     }
 }
 

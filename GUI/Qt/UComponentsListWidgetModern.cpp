@@ -417,8 +417,9 @@ void UComponentsListWidgetModern::componentListItemSelectionChanged()
     QTreeWidgetItem * item = componentsTree->currentItem();
     if(!item)
     {
-        QString logMsg = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentListItemSelectionChanged: no current item, returning");
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+        // DEBUG: Commented out to reduce log flood
+        // QString logMsg = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentListItemSelectionChanged: no current item, returning");
+        // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
         return;
     }
 
@@ -428,16 +429,18 @@ void UComponentsListWidgetModern::componentListItemSelectionChanged()
     // Это предотвращает бесконечный цикл: selectComponent -> componentSelected -> componentSingleClick -> selectComponent
     if(m_isUpdatingFromScheme)
     {
-        QString logMsg = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentListItemSelectionChanged: skipping emit (m_isUpdatingFromScheme=true) for '%1'")
-            .arg(selectedComponentLongName);
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+        // DEBUG: Commented out to reduce log flood
+        // QString logMsg = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentListItemSelectionChanged: skipping emit (m_isUpdatingFromScheme=true) for '%1'")
+        //     .arg(selectedComponentLongName);
+        // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
         reloadPropertys();
         return;
     }
 
-    QString logMsg = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentListItemSelectionChanged: current item changed, emitting componentSelected('%1')")
-        .arg(selectedComponentLongName);
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+    // DEBUG: Commented out to reduce log flood
+    // QString logMsg = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentListItemSelectionChanged: current item changed, emitting componentSelected('%1')")
+    //     .arg(selectedComponentLongName);
+    // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 
     reloadPropertys();
 
@@ -1060,9 +1063,10 @@ bool UComponentsListWidgetModern::applyFilter(QTreeWidgetItem *item)
 
 void UComponentsListWidgetModern::componentSelectedFromScheme(QString name)
 {
-    QString logMsg = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentSelectedFromScheme: called with name='%1', blocking signals")
-        .arg(name);
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+    // DEBUG: Commented out to reduce log flood
+    // QString logMsg = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentSelectedFromScheme: called with name='%1', blocking signals")
+    //     .arg(name);
+    // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 
     // Устанавливаем флаг для предотвращения эмиссии componentSelected при программном обновлении
     m_isUpdatingFromScheme = true;
@@ -1093,9 +1097,10 @@ void UComponentsListWidgetModern::componentSelectedFromScheme(QString name)
             selectedComponentLongName = name;
             reloadPropertys();
 
-            QString logMsg2 = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentSelectedFromScheme: found item, unblocking signals")
-                .arg(name);
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg2.toStdString().c_str(), 0);
+            // DEBUG: Commented out to reduce log flood
+            // QString logMsg2 = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentSelectedFromScheme: found item, unblocking signals")
+            //     .arg(name);
+            // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg2.toStdString().c_str(), 0);
             componentsTree->blockSignals(false);
 
             // Сбрасываем флаг после небольшой задержки, чтобы все события успели обработаться
@@ -1107,8 +1112,9 @@ void UComponentsListWidgetModern::componentSelectedFromScheme(QString name)
         ++iterator;
     }
 
-    QString logMsg3 = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentSelectedFromScheme: item not found, unblocking signals");
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg3.toStdString().c_str(), 0);
+    // DEBUG: Commented out to reduce log flood
+    // QString logMsg3 = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentSelectedFromScheme: item not found, unblocking signals");
+    // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg3.toStdString().c_str(), 0);
     componentsTree->blockSignals(false);
 
     // Сбрасываем флаг после небольшой задержки, чтобы все события успели обработаться

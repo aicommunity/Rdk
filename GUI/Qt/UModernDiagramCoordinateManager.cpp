@@ -42,9 +42,10 @@ bool UModernDiagramCoordinateManager::loadCoord(const QString& fullName, QPointF
     const char* coordRaw = Model_GetComponentParameterValue(fullName.toStdString().c_str(), "Coord");
     if(!coordRaw)
     {
-        QString logMsg = QString("[UModernDiagramCoordinateManager::loadCoord] Coordinates not found for '%1'")
-            .arg(fullName);
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+        // DEBUG: Commented out to reduce log flood
+        // QString logMsg = QString("[UModernDiagramCoordinateManager::loadCoord] Coordinates not found for '%1'")
+        //     .arg(fullName);
+        // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
         return false;
     }
     std::string coordBuf(coordRaw);
@@ -57,11 +58,11 @@ bool UModernDiagramCoordinateManager::loadCoord(const QString& fullName, QPointF
             QPointF kernel(x,y);
             outPos = kernel; // возвращаем ядровые координаты, сцену вычисляем выше
 
-            // Logging for debugging coordinate loading
-            QString logMsg = QString("[UModernDiagramCoordinateManager::loadCoord] Loaded coordinates for '%1' (string): kernel=(%2, %3)")
-                .arg(fullName)
-                .arg(kernel.x()).arg(kernel.y());
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+            // DEBUG: Commented out to reduce log flood - Logging for debugging coordinate loading
+            // QString logMsg = QString("[UModernDiagramCoordinateManager::loadCoord] Loaded coordinates for '%1' (string): kernel=(%2, %3)")
+            //     .arg(fullName)
+            //     .arg(kernel.x()).arg(kernel.y());
+            // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 
             Engine_FreeBufString(coordRaw);
             return true;
@@ -72,9 +73,10 @@ bool UModernDiagramCoordinateManager::loadCoord(const QString& fullName, QPointF
     Engine_FreeBufString(coordRaw);
     if(!ok)
     {
-        QString logMsg = QString("[UModernDiagramCoordinateManager::loadCoord] Error loading XML coordinates for '%1'")
-            .arg(fullName);
-        MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+        // DEBUG: Commented out to reduce log flood
+        // QString logMsg = QString("[UModernDiagramCoordinateManager::loadCoord] Error loading XML coordinates for '%1'")
+        //     .arg(fullName);
+        // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
         return false;
     }
     RDK::MVector<double,3> pos;
@@ -82,11 +84,11 @@ bool UModernDiagramCoordinateManager::loadCoord(const QString& fullName, QPointF
     QPointF kernel(pos[0], pos[1]);
     outPos = kernel; // возвращаем ядровые координаты, сцену вычисляем выше
 
-    // Logging for debugging coordinate loading
-    QString logMsg = QString("[UModernDiagramCoordinateManager::loadCoord] Loaded coordinates for '%1' (XML): kernel=(%2, %3)")
-        .arg(fullName)
-        .arg(kernel.x()).arg(kernel.y());
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+    // DEBUG: Commented out to reduce log flood - Logging for debugging coordinate loading
+    // QString logMsg = QString("[UModernDiagramCoordinateManager::loadCoord] Loaded coordinates for '%1' (XML): kernel=(%2, %3)")
+    //     .arg(fullName)
+    //     .arg(kernel.x()).arg(kernel.y());
+    // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 
     return true;
 }
@@ -98,13 +100,13 @@ void UModernDiagramCoordinateManager::saveCoord(const QString& fullName, const Q
     // Не обрезаем отрицательные координаты, так как это приводит к потере информации о позиции
     // При загрузке m_normalizationOffset будет вычислен на основе минимальных координат
 
-    // Logging for debugging coordinate saving
-    QString logMsg = QString("[UModernDiagramCoordinateManager::saveCoord] Saving coordinates for '%1': scenePos=(%2, %3), kernelPos=(%4, %5), m_coordScale=%6")
-        .arg(fullName)
-        .arg(scenePos.x()).arg(scenePos.y())
-        .arg(kernelPos.x()).arg(kernelPos.y())
-        .arg(m_coordScale);
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+    // DEBUG: Commented out to reduce log flood - Logging for debugging coordinate saving
+    // QString logMsg = QString("[UModernDiagramCoordinateManager::saveCoord] Saving coordinates for '%1': scenePos=(%2, %3), kernelPos=(%4, %5), m_coordScale=%6")
+    //     .arg(fullName)
+    //     .arg(scenePos.x()).arg(scenePos.y())
+    //     .arg(kernelPos.x()).arg(kernelPos.y())
+    //     .arg(m_coordScale);
+    // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 
     RDK::USerStorageXML xml;
     xml.Create("Coord");
@@ -236,16 +238,16 @@ void UModernDiagramCoordinateManager::recalculateNormalizationOffset(const QPoin
     QPointF minScenePos = coordsLoaded ? scenePosFromKernel(minKernel) : QPointF(0, 0);
     m_normalizationOffset = minScenePos;
 
-    // Logging for debugging offset recalculation
-    QString logMsg = QString("[UModernDiagramCoordinateManager::recalculateNormalizationOffset] Recalculating offset: nodeCount=%1, oldOffset=(%2, %3), minKernel=(%4, %5), minScenePos=(%6, %7), newOffset=(%8, %9), m_coordScale=%10, pendingComponent='%11'")
-        .arg(nodeCount)
-        .arg(oldOffset.x()).arg(oldOffset.y())
-        .arg(minKernel.x()).arg(minKernel.y())
-        .arg(minScenePos.x()).arg(minScenePos.y())
-        .arg(m_normalizationOffset.x()).arg(m_normalizationOffset.y())
-        .arg(m_coordScale)
-        .arg(pendingComponentName.isEmpty() ? "none" : pendingComponentName);
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+    // DEBUG: Commented out to reduce log flood - Logging for debugging offset recalculation
+    // QString logMsg = QString("[UModernDiagramCoordinateManager::recalculateNormalizationOffset] Recalculating offset: nodeCount=%1, oldOffset=(%2, %3), minKernel=(%4, %5), minScenePos=(%6, %7), newOffset=(%8, %9), m_coordScale=%10, pendingComponent='%11'")
+    //     .arg(nodeCount)
+    //     .arg(oldOffset.x()).arg(oldOffset.y())
+    //     .arg(minKernel.x()).arg(minKernel.y())
+    //     .arg(minScenePos.x()).arg(minScenePos.y())
+    //     .arg(m_normalizationOffset.x()).arg(m_normalizationOffset.y())
+    //     .arg(m_coordScale)
+    //     .arg(pendingComponentName.isEmpty() ? "none" : pendingComponentName);
+    // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 }
 
 void UModernDiagramCoordinateManager::updateNormalizationOffsetForMovement(const QPointF& newMinNormalizedPos, const QSet<UModernDiagramNodeItem*>& componentsToAdjust)
@@ -325,13 +327,14 @@ void UModernDiagramCoordinateManager::updateNormalizationOffsetForMovement(const
                 adjustedPos.setX(qMax(0.0, adjustedPos.x()));
                 adjustedPos.setY(qMax(0.0, adjustedPos.y()));
 
-                QString logMsg = QString("[UModernDiagramCoordinateManager::updateNormalizationOffsetForMovement] Component '%1' restored: originalAbsolute=(%2, %3), newNormalized=(%4, %5), newOffset=(%6, %7), finalAbsolute=(%8, %9)")
-                    .arg(node->nodeName)
-                    .arg(originalAbsolutePos.x()).arg(originalAbsolutePos.y())
-                    .arg(adjustedPos.x()).arg(adjustedPos.y())
-                    .arg(newOffset.x()).arg(newOffset.y())
-                    .arg(adjustedPos.x() + newOffset.x()).arg(adjustedPos.y() + newOffset.y());
-                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+                // DEBUG: Commented out to reduce log flood
+                // QString logMsg = QString("[UModernDiagramCoordinateManager::updateNormalizationOffsetForMovement] Component '%1' restored: originalAbsolute=(%2, %3), newNormalized=(%4, %5), newOffset=(%6, %7), finalAbsolute=(%8, %9)")
+                //     .arg(node->nodeName)
+                //     .arg(originalAbsolutePos.x()).arg(originalAbsolutePos.y())
+                //     .arg(adjustedPos.x()).arg(adjustedPos.y())
+                //     .arg(newOffset.x()).arg(newOffset.y())
+                //     .arg(adjustedPos.x() + newOffset.x()).arg(adjustedPos.y() + newOffset.y());
+                // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
             }
             else
             {
@@ -345,15 +348,15 @@ void UModernDiagramCoordinateManager::updateNormalizationOffsetForMovement(const
                 adjustedPos.setX(qMax(0.0, newX));
                 adjustedPos.setY(qMax(0.0, newY));
 
-                // Log if a component would have become negative (or was adjusted)
-                if(newX < 0 || newY < 0)
-                {
-                    QString logMsg = QString("[UModernDiagramCoordinateManager::updateNormalizationOffsetForMovement] Component '%1' adjusted from (%2, %3) to (%4, %5) to maintain absolute coordinates")
-                        .arg(node->nodeName)
-                        .arg(currentNormalizedPos.x()).arg(currentNormalizedPos.y())
-                        .arg(adjustedPos.x()).arg(adjustedPos.y());
-                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
-                }
+                // DEBUG: Commented out to reduce log flood - Log if a component would have become negative (or was adjusted)
+                // if(newX < 0 || newY < 0)
+                // {
+                //     QString logMsg = QString("[UModernDiagramCoordinateManager::updateNormalizationOffsetForMovement] Component '%1' adjusted from (%2, %3) to (%4, %5) to maintain absolute coordinates")
+                //         .arg(node->nodeName)
+                //         .arg(currentNormalizedPos.x()).arg(currentNormalizedPos.y())
+                //         .arg(adjustedPos.x()).arg(adjustedPos.y());
+                //     MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+                // }
             }
 
             // CRITICAL: Set flag before setPos to prevent itemChange from adding components
@@ -371,12 +374,12 @@ void UModernDiagramCoordinateManager::updateNormalizationOffsetForMovement(const
     // Update sceneRect after offset update to reflect new component positions
     m_owner->updateSceneRect();
 
-    // Logging for debugging offset update
-    QString logMsg = QString("[UModernDiagramCoordinateManager::updateNormalizationOffsetForMovement] Updated offset: newMinNormalizedPos=(%1, %2), oldOffset=(%3, %4), deltaOffset=(%5, %6), newOffset=(%7, %8)")
-        .arg(newMinNormalizedPos.x()).arg(newMinNormalizedPos.y())
-        .arg(oldOffset.x()).arg(oldOffset.y())
-        .arg(deltaOffset.x()).arg(deltaOffset.y())
-        .arg(m_normalizationOffset.x()).arg(m_normalizationOffset.y());
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+    // DEBUG: Commented out to reduce log flood - Logging for debugging offset update
+    // QString logMsg = QString("[UModernDiagramCoordinateManager::updateNormalizationOffsetForMovement] Updated offset: newMinNormalizedPos=(%1, %2), oldOffset=(%3, %4), deltaOffset=(%5, %6), newOffset=(%7, %8)")
+    //     .arg(newMinNormalizedPos.x()).arg(newMinNormalizedPos.y())
+    //     .arg(oldOffset.x()).arg(oldOffset.y())
+    //     .arg(deltaOffset.x()).arg(deltaOffset.y())
+    //     .arg(m_normalizationOffset.x()).arg(m_normalizationOffset.y());
+    // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 }
 

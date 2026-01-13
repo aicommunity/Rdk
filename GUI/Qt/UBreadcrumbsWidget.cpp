@@ -27,9 +27,10 @@ UBreadcrumbsWidget::~UBreadcrumbsWidget()
 
 void UBreadcrumbsWidget::updateBreadcrumbs(const QString &componentPath)
 {
-    QString logMsg = QString("[SELECTION_DEBUG] UBreadcrumbsWidget::updateBreadcrumbs: called with componentPath='%1'")
-        .arg(componentPath);
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+    // DEBUG: Commented out to reduce log flood
+    // QString logMsg = QString("[SELECTION_DEBUG] UBreadcrumbsWidget::updateBreadcrumbs: called with componentPath='%1'")
+    //     .arg(componentPath);
+    // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 
     // Очищаем все кнопки breadcrumbs и разделители
     QList<QLayoutItem*> itemsToRemove;
@@ -104,9 +105,10 @@ void UBreadcrumbsWidget::updateBreadcrumbs(const QString &componentPath)
 
 void UBreadcrumbsWidget::onBreadcrumbClicked(const QString &componentPath)
 {
-    QString logMsg = QString("[SELECTION_DEBUG] UBreadcrumbsWidget::onBreadcrumbClicked: clicked on path='%1', emitting componentPathSelected")
-        .arg(componentPath);
-    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+    // DEBUG: Commented out to reduce log flood
+    // QString logMsg = QString("[SELECTION_DEBUG] UBreadcrumbsWidget::onBreadcrumbClicked: clicked on path='%1', emitting componentPathSelected")
+    //     .arg(componentPath);
+    // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 
     // Эмитируем сигнал для внешних обработчиков
     emit componentPathSelected(componentPath);

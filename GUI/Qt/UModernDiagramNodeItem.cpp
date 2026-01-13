@@ -996,12 +996,13 @@ QVariant UModernDiagramNodeItem::itemChange(QGraphicsItem::GraphicsItemChange ch
 
                     QString fullName = m_owner->m_componentName.isEmpty() ? nodeName
                                                                           : m_owner->m_componentName + "." + nodeName;
-                    QString logMsg = QString("[UModernDiagramNodeItem::itemChange] Component '%1' moved outside visible area: originalNormalized=(%2, %3), originalAbsolute=(%4, %5), newNormalized=(%6, %7)")
-                        .arg(fullName)
-                        .arg(originalNormalizedPos.x()).arg(originalNormalizedPos.y())
-                        .arg(originalAbsolutePos.x()).arg(originalAbsolutePos.y())
-                        .arg(normalizedPos.x()).arg(normalizedPos.y());
-                    MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+                    // DEBUG: Commented out to reduce log flood
+                    // QString logMsg = QString("[UModernDiagramNodeItem::itemChange] Component '%1' moved outside visible area: originalNormalized=(%2, %3), originalAbsolute=(%4, %5), newNormalized=(%6, %7)")
+                    //     .arg(fullName)
+                    //     .arg(originalNormalizedPos.x()).arg(originalNormalizedPos.y())
+                    //     .arg(originalAbsolutePos.x()).arg(originalAbsolutePos.y())
+                    //     .arg(normalizedPos.x()).arg(normalizedPos.y());
+                    // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
                 }
 
                 // Добавляем компонент в set для последующего обновления offset при завершении движения
@@ -1009,11 +1010,11 @@ QVariant UModernDiagramNodeItem::itemChange(QGraphicsItem::GraphicsItemChange ch
 
                 QString fullName = m_owner->m_componentName.isEmpty() ? nodeName
                                                                       : m_owner->m_componentName + "." + nodeName;
-                // Logging for debugging visibility check
-                QString logMsg = QString("[UModernDiagramNodeItem::itemChange] Component '%1' is outside visible area: normalizedPos=(%2, %3), will update offset on mouse release")
-                    .arg(fullName)
-                    .arg(normalizedPos.x()).arg(normalizedPos.y());
-                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+                // DEBUG: Commented out to reduce log flood - Logging for debugging visibility check
+                // QString logMsg = QString("[UModernDiagramNodeItem::itemChange] Component '%1' is outside visible area: normalizedPos=(%2, %3), will update offset on mouse release")
+                //     .arg(fullName)
+                //     .arg(normalizedPos.x()).arg(normalizedPos.y());
+                // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
             }
         }
 
@@ -1036,13 +1037,13 @@ QVariant UModernDiagramNodeItem::itemChange(QGraphicsItem::GraphicsItemChange ch
             // Денормализуем: scenePos() уже нормализован, добавляем offset для получения абсолютных координат
             QPointF absoluteScenePos = normalizedPos + m_owner->m_coordinateManager->getNormalizationOffset();
 
-            // Logging for debugging component movement
-            QString logMsg = QString("[UModernDiagramNodeItem::itemChange] Component '%1' moved: normalizedPos=(%2, %3), offset=(%4, %5), absoluteScenePos=(%6, %7)")
-                .arg(fullName)
-                .arg(normalizedPos.x()).arg(normalizedPos.y())
-                .arg(m_owner->m_coordinateManager->getNormalizationOffset().x()).arg(m_owner->m_coordinateManager->getNormalizationOffset().y())
-                .arg(absoluteScenePos.x()).arg(absoluteScenePos.y());
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+            // DEBUG: Commented out to reduce log flood - Logging for debugging component movement
+            // QString logMsg = QString("[UModernDiagramNodeItem::itemChange] Component '%1' moved: normalizedPos=(%2, %3), offset=(%4, %5), absoluteScenePos=(%6, %7)")
+            //     .arg(fullName)
+            //     .arg(normalizedPos.x()).arg(normalizedPos.y())
+            //     .arg(m_owner->m_coordinateManager->getNormalizationOffset().x()).arg(m_owner->m_coordinateManager->getNormalizationOffset().y())
+            //     .arg(absoluteScenePos.x()).arg(absoluteScenePos.y());
+            // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 
             // Сохраняем координаты без пересчета offset
             // Offset пересчитывается только при загрузке сцены, чтобы избежать бесконечных циклов
@@ -1087,24 +1088,25 @@ QVariant UModernDiagramNodeItem::itemChange(QGraphicsItem::GraphicsItemChange ch
             // При снятии выделения (isNowSelected = false) сигнал не эмитируется - это предотвращает циклы
             if(!fullName.isEmpty())
             {
-                QString logMsg = QString("[SELECTION_DEBUG] UModernDiagramNodeItem::itemChange: emitting componentSelected('%1'), isProgrammatic=%2, isBatch=%3")
-                    .arg(fullName)
-                    .arg(m_owner->m_isProgrammaticSelection ? "true" : "false")
-                    .arg(m_owner->m_isBatchSelecting ? "true" : "false");
-                MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+                // DEBUG: Commented out to reduce log flood
+                // QString logMsg = QString("[SELECTION_DEBUG] UModernDiagramNodeItem::itemChange: emitting componentSelected('%1'), isProgrammatic=%2, isBatch=%3")
+                //     .arg(fullName)
+                //     .arg(m_owner->m_isProgrammaticSelection ? "true" : "false")
+                //     .arg(m_owner->m_isBatchSelecting ? "true" : "false");
+                // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
                 emit m_owner->componentSelected(fullName);
             }
         }
         else
         {
-            // Логируем снятие выделения для диагностики
-            QString fullName = m_owner->m_componentName.isEmpty() ? nodeName
-                                                                  : m_owner->m_componentName + "." + nodeName;
-            QString logMsg = QString("[SELECTION_DEBUG] UModernDiagramNodeItem::itemChange: deselected '%1', isProgrammatic=%2, isBatch=%3")
-                .arg(fullName)
-                .arg(m_owner->m_isProgrammaticSelection ? "true" : "false")
-                .arg(m_owner->m_isBatchSelecting ? "true" : "false");
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+            // DEBUG: Commented out to reduce log flood - Логируем снятие выделения для диагностики
+            // QString fullName = m_owner->m_componentName.isEmpty() ? nodeName
+            //                                                       : m_owner->m_componentName + "." + nodeName;
+            // QString logMsg = QString("[SELECTION_DEBUG] UModernDiagramNodeItem::itemChange: deselected '%1', isProgrammatic=%2, isBatch=%3")
+            //     .arg(fullName)
+            //     .arg(m_owner->m_isProgrammaticSelection ? "true" : "false")
+            //     .arg(m_owner->m_isBatchSelecting ? "true" : "false");
+            // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
         }
     }
     return QGraphicsRectItem::itemChange(change, value);

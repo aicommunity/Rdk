@@ -43,6 +43,7 @@ QString UModernDiagramTooltipGenerator::generateNodeTooltip(const UModernDiagram
     return tooltip;
 }
 
+// Explicitly mark as non-inline to ensure proper linking on Windows
 QString UModernDiagramTooltipGenerator::generatePortTooltip(const UModernDiagramPort& port)
 {
     QString portType = port.isInput
