@@ -119,7 +119,7 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
     ui->comboBoxGroupingMethod->addItem("By Inheritance", static_cast<int>(GroupingMethod::ByInheritance));
     ui->comboBoxGroupingMethod->addItem("By Base Component", static_cast<int>(GroupingMethod::ByBaseComponent));
     ui->comboBoxGroupingMethod->setCurrentIndex(0); // По умолчанию без группировки
-    
+
     connect(ui->comboBoxGroupingMethod, SIGNAL(currentIndexChanged(int)), this, SLOT(on_comboBoxGroupingMethod_currentIndexChanged(int)));
 
     setAcceptDrops(true);
@@ -278,9 +278,9 @@ void UClassesListWidget::on_listWidgetRTlibs_itemSelectionChanged()
     {
         if(className != "")
         {
-             QListWidgetItem* item = new QListWidgetItem(className);
-             ui->listWidgetRTlibClasses->addItem(item);
-             item->setToolTip(GetClassTooltip(className));
+             QListWidgetItem* newItem = new QListWidgetItem(className);
+             ui->listWidgetRTlibClasses->addItem(newItem);
+             newItem->setToolTip(GetClassTooltip(className));
         }
     }
 }
@@ -868,7 +868,7 @@ QString UClassesListWidget::GetClassGroup(const QString& className, GroupingMeth
     {
         return GroupingCache[cacheKey];
     }
-    
+
     QString group;
     switch (method)
     {
@@ -886,7 +886,7 @@ QString UClassesListWidget::GetClassGroup(const QString& className, GroupingMeth
             group = "";
             break;
     }
-    
+
     // Сохранение в кэш
     GroupingCache[cacheKey] = group;
     return group;
@@ -897,15 +897,15 @@ QString UClassesListWidget::GroupByDescription(const QString& className) const
     auto storage = RDK::GetStorageLock();
     if (!storage)
         return "Other";
-    
+
     RDK::UEPtr<RDK::UContainerDescription> desc = storage->GetClassDescription(className.toStdString(), true);
     if (!desc)
         return "Other";
-    
+
     QString header = QString::fromStdString(desc->GetHeader()).toLower();
     QString description = QString::fromStdString(desc->GetDescription()).toLower();
     QString combined = header + " " + description;
-    
+
     // Поиск ключевых слов
     if (combined.contains("нейрон", Qt::CaseInsensitive) || combined.contains("neuron", Qt::CaseInsensitive))
         return "Neurons";
@@ -925,7 +925,7 @@ QString UClassesListWidget::GroupByDescription(const QString& className) const
         return "Models";
     if (combined.contains("сеть", Qt::CaseInsensitive) || combined.contains("net", Qt::CaseInsensitive))
         return "Networks";
-    
+
     return "Other";
 }
 
@@ -934,10 +934,10 @@ QString UClassesListWidget::GroupByInheritance(const QString& className) const
     // Используем анализ имени класса вместо создания объекта
     // Это безопаснее, так как не требует инициализации объекта и его связей
     QString classNameLower = className.toLower();
-    
+
     // Анализ имен классов из NPulseLib и других библиотек
     // Нейроны
-    if (classNameLower.contains("neuron", Qt::CaseInsensitive) || 
+    if (classNameLower.contains("neuron", Qt::CaseInsensitive) ||
         classNameLower.contains("нейрон", Qt::CaseInsensitive))
     {
         // Исключаем мембраны нейронов и другие компоненты
@@ -947,57 +947,57 @@ QString UClassesListWidget::GroupByInheritance(const QString& className) const
             return "Neurons";
         }
     }
-    
+
     // Синапсы
-    if (classNameLower.contains("synapse", Qt::CaseInsensitive) || 
+    if (classNameLower.contains("synapse", Qt::CaseInsensitive) ||
         classNameLower.contains("синапс", Qt::CaseInsensitive))
     {
         return "Synapses";
     }
-    
+
     // Мембраны
-    if (classNameLower.contains("membrane", Qt::CaseInsensitive) || 
+    if (classNameLower.contains("membrane", Qt::CaseInsensitive) ||
         classNameLower.contains("мембрана", Qt::CaseInsensitive))
     {
         return "Membranes";
     }
-    
+
     // Каналы
-    if (classNameLower.contains("channel", Qt::CaseInsensitive) || 
+    if (classNameLower.contains("channel", Qt::CaseInsensitive) ||
         classNameLower.contains("канал", Qt::CaseInsensitive))
     {
         return "Channels";
     }
-    
+
     // Генераторы
-    if (classNameLower.contains("generator", Qt::CaseInsensitive) || 
+    if (classNameLower.contains("generator", Qt::CaseInsensitive) ||
         classNameLower.contains("генератор", Qt::CaseInsensitive))
     {
         return "Generators";
     }
-    
+
     // Зоны
-    if (classNameLower.contains("zone", Qt::CaseInsensitive) || 
+    if (classNameLower.contains("zone", Qt::CaseInsensitive) ||
         classNameLower.contains("зона", Qt::CaseInsensitive) ||
         classNameLower.contains("ltzone", Qt::CaseInsensitive))
     {
         return "Zones";
     }
-    
+
     // Слои
-    if (classNameLower.contains("layer", Qt::CaseInsensitive) || 
+    if (classNameLower.contains("layer", Qt::CaseInsensitive) ||
         classNameLower.contains("слой", Qt::CaseInsensitive))
     {
         return "Layers";
     }
-    
+
     // Попытка определить через паттерны имен классов из известных библиотек
     // NPulseLib паттерны
     if (classNameLower.startsWith("np") || classNameLower.startsWith("nc"))
     {
         // NP - обычно нейроны в PulseLib
-        if (classNameLower.startsWith("np") && 
-            (classNameLower.contains("neuron") || 
+        if (classNameLower.startsWith("np") &&
+            (classNameLower.contains("neuron") ||
              classNameLower.contains("hebb") ||
              classNameLower.contains("afferent")))
         {
@@ -1018,7 +1018,7 @@ QString UClassesListWidget::GroupByInheritance(const QString& className) const
                 return "Neurons";
         }
     }
-    
+
     return "Other";
 }
 
@@ -1026,9 +1026,9 @@ QString UClassesListWidget::GroupByBaseComponent(const QString& className) const
 {
     // Анализ имени класса и библиотеки для определения базового компонента
     QString classNameLower = className.toLower();
-    
+
     // Для NPulseLib: анализ паттернов имен
-    if (classNameLower.contains("neuron", Qt::CaseInsensitive) || 
+    if (classNameLower.contains("neuron", Qt::CaseInsensitive) ||
         classNameLower.contains("нейрон", Qt::CaseInsensitive))
     {
         // Проверяем, не является ли это конкретным типом нейрона
@@ -1039,43 +1039,43 @@ QString UClassesListWidget::GroupByBaseComponent(const QString& className) const
         if (classNameLower.startsWith("np") || classNameLower.startsWith("nc"))
             return "Neurons";
     }
-    
-    if (classNameLower.contains("synapse", Qt::CaseInsensitive) || 
+
+    if (classNameLower.contains("synapse", Qt::CaseInsensitive) ||
         classNameLower.contains("синапс", Qt::CaseInsensitive))
     {
         return "Synapses";
     }
-    
-    if (classNameLower.contains("membrane", Qt::CaseInsensitive) || 
+
+    if (classNameLower.contains("membrane", Qt::CaseInsensitive) ||
         classNameLower.contains("мембрана", Qt::CaseInsensitive))
     {
         return "Membranes";
     }
-    
-    if (classNameLower.contains("channel", Qt::CaseInsensitive) || 
+
+    if (classNameLower.contains("channel", Qt::CaseInsensitive) ||
         classNameLower.contains("канал", Qt::CaseInsensitive))
     {
         return "Channels";
     }
-    
-    if (classNameLower.contains("generator", Qt::CaseInsensitive) || 
+
+    if (classNameLower.contains("generator", Qt::CaseInsensitive) ||
         classNameLower.contains("генератор", Qt::CaseInsensitive))
     {
         return "Generators";
     }
-    
-    if (classNameLower.contains("zone", Qt::CaseInsensitive) || 
+
+    if (classNameLower.contains("zone", Qt::CaseInsensitive) ||
         classNameLower.contains("зона", Qt::CaseInsensitive))
     {
         return "Zones";
     }
-    
-    if (classNameLower.contains("layer", Qt::CaseInsensitive) || 
+
+    if (classNameLower.contains("layer", Qt::CaseInsensitive) ||
         classNameLower.contains("слой", Qt::CaseInsensitive))
     {
         return "Layers";
     }
-    
+
     // Попытка определить через библиотеку
     auto storage = RDK::GetStorageLock();
     if (storage)
@@ -1088,7 +1088,7 @@ QString UClassesListWidget::GroupByBaseComponent(const QString& className) const
             if (libName.contains("pulse", Qt::CaseInsensitive))
             {
                 // Дополнительный анализ для PulseLib
-                if (classNameLower.startsWith("np") && 
+                if (classNameLower.startsWith("np") &&
                     (classNameLower.contains("neuron") || classNameLower.contains("neuron")))
                 {
                     return "Neurons";
@@ -1096,7 +1096,7 @@ QString UClassesListWidget::GroupByBaseComponent(const QString& className) const
             }
         }
     }
-    
+
     return "Other";
 }
 
@@ -1112,15 +1112,15 @@ void UClassesListWidget::on_comboBoxGroupingMethod_currentIndexChanged(int index
 void UClassesListWidget::BuildGroupedTree(const QString& searchText)
 {
     ui->treeWidgetStorageByLibs->clear();
-    
+
     GroupingMethod method = GetCurrentGroupingMethod();
-    
+
     // Список RT библиотек
     auto storage = RDK::GetStorageLock();
     std::string buff;
     storage->GetLibsNameListByType(buff, 2);
     QStringList RTlibsNames = QString(buff.c_str()).split(",");
-    
+
     // Список всех компонентов из RT библиотек
     QStringList RTclassesNames;
     QString str;
@@ -1137,11 +1137,11 @@ void UClassesListWidget::BuildGroupedTree(const QString& searchText)
         Engine_FreeBufString(stringBuff);
         RTclassesNames += libClasses;
     }
-    
+
     // Список Mock библиотек
     storage->GetLibsNameListByType(buff, 3);
     QStringList MockLibsNames = QString(buff.c_str()).split(",");
-    
+
     // Список всех компонентов из Mock библиотек
     QStringList MockClassesNames;
     foreach(str, MockLibsNames)
@@ -1157,54 +1157,54 @@ void UClassesListWidget::BuildGroupedTree(const QString& searchText)
         Engine_FreeBufString(stringBuff);
         MockClassesNames += libClasses;
     }
-    
+
     // Получение списка всех библиотек
     const char * stringBuff = Storage_GetClassLibrariesList();
     QStringList libraryNames = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);
-    
+
     bool isRTlib = false;
     bool isMocklib = false;
-    
+
     foreach(str, libraryNames)
     {
         if(str == "")
             continue;
-        
+
         isMocklib = false;
         isRTlib = false;
-        
+
         if(MockLibsNames.indexOf(str) != -1)
             isMocklib = true;
         if(RTlibsNames.indexOf(str) != -1)
             isRTlib = true;
-        
+
         // Получение классов библиотеки
         stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
         QStringList libClasses = QString(stringBuff).split(",");
         Engine_FreeBufString(stringBuff);
-        
+
         // Фильтрация по поисковому запросу
         QStringList filteredClasses;
         bool libMatchesSearch = str.contains(searchText, Qt::CaseInsensitive);
-        
+
         foreach(QString className, libClasses)
         {
             if(className == "")
                 continue;
-            
+
             bool classMatchesSearch = className.contains(searchText, Qt::CaseInsensitive);
-            
+
             if(searchText.isEmpty() || libMatchesSearch || classMatchesSearch)
             {
                 filteredClasses.append(className);
             }
         }
-        
+
         // Если нет классов после фильтрации, пропускаем библиотеку
         if(filteredClasses.isEmpty() && !libMatchesSearch)
             continue;
-        
+
         // Создание элемента библиотеки
         QTreeWidgetItem* libItem = new QTreeWidgetItem(ui->treeWidgetStorageByLibs);
         libItem->setExpanded(true);
@@ -1213,7 +1213,7 @@ void UClassesListWidget::BuildGroupedTree(const QString& searchText)
             libItem->setForeground(0, QBrush(Qt::darkMagenta));
         if(isRTlib)
             libItem->setForeground(0, QBrush(Qt::darkBlue));
-        
+
         if(method == GroupingMethod::None)
         {
             // Без группировки - двухуровневая структура
@@ -1232,31 +1232,31 @@ void UClassesListWidget::BuildGroupedTree(const QString& searchText)
         {
             // С группировкой - трехуровневая структура
             QHash<QString, QStringList> groups;
-            
+
             foreach(QString className, filteredClasses)
             {
                 QString group = GetClassGroup(className, method);
                 if(group.isEmpty())
                     group = "Other";
-                
+
                 if(!groups.contains(group))
                     groups[group] = QStringList();
                 groups[group].append(className);
             }
-            
+
             // Создание групп и классов
             QStringList groupNames = groups.keys();
             groupNames.sort();
-            
+
             foreach(QString groupName, groupNames)
             {
                 QTreeWidgetItem* groupItem = new QTreeWidgetItem(libItem);
                 groupItem->setExpanded(true);
                 groupItem->setText(0, groupName);
-                
+
                 QStringList classesInGroup = groups[groupName];
                 classesInGroup.sort();
-                
+
                 foreach(QString className, classesInGroup)
                 {
                     QTreeWidgetItem* classItem = new QTreeWidgetItem(groupItem);
@@ -1270,7 +1270,7 @@ void UClassesListWidget::BuildGroupedTree(const QString& searchText)
             }
         }
     }
-    
+
     ui->treeWidgetStorageByLibs->sortItems(0, Qt::AscendingOrder);
 }
 
@@ -1278,16 +1278,16 @@ QString UClassesListWidget::GetClassTooltip(const QString& className) const
 {
     if (className.isEmpty())
         return QString();
-    
+
     auto storage = RDK::GetStorageLock();
     if (!storage)
         return QString();
-    
+
     QString tooltip;
     QString header;
     QString description;
     QString defaultComponentName;
-    
+
     // Пытаемся получить описание класса
     RDK::UEPtr<RDK::UContainerDescription> desc = storage->GetClassDescription(className.toStdString(), true);
     if (desc)
@@ -1295,7 +1295,7 @@ QString UClassesListWidget::GetClassTooltip(const QString& className) const
         header = QString::fromStdString(desc->GetHeader()).trimmed();
         description = QString::fromStdString(desc->GetDescription()).trimmed();
     }
-    
+
     // Получаем имя компонента по умолчанию через factory
     try
     {
@@ -1303,7 +1303,7 @@ QString UClassesListWidget::GetClassTooltip(const QString& className) const
         if (factory)
         {
             // Проверяем тип factory
-            RDK::UEPtr<RDK::UVirtualMethodFactory> virtualFactory = 
+            RDK::UEPtr<RDK::UVirtualMethodFactory> virtualFactory =
                 RDK::dynamic_pointer_cast<RDK::UVirtualMethodFactory>(factory);
             if (virtualFactory)
             {
@@ -1319,7 +1319,7 @@ QString UClassesListWidget::GetClassTooltip(const QString& className) const
                 RDK::UEPtr<RDK::UComponent> tempComponent = factory->New();
                 if (tempComponent)
                 {
-                    RDK::UEPtr<RDK::UContainer> container = 
+                    RDK::UEPtr<RDK::UContainer> container =
                         RDK::dynamic_pointer_cast<RDK::UContainer>(tempComponent);
                     if (container)
                     {
@@ -1333,19 +1333,19 @@ QString UClassesListWidget::GetClassTooltip(const QString& className) const
     {
         // Игнорируем ошибки при получении имени компонента
     }
-    
+
     // Формируем tooltip с именем класса и именем компонента по умолчанию
     QStringList tooltipParts;
-    
+
     // Добавляем имя класса
     tooltipParts << QString("<b>Class:</b> %1").arg(className);
-    
+
     // Добавляем имя компонента по умолчанию, если оно есть
     if (!defaultComponentName.isEmpty())
     {
         tooltipParts << QString("<b>Default component name:</b> %1").arg(defaultComponentName);
     }
-    
+
     // Добавляем Header и Description, если они есть
     if (!header.isEmpty() || !description.isEmpty())
     {
@@ -1372,7 +1372,7 @@ QString UClassesListWidget::GetClassTooltip(const QString& className) const
             tooltipParts << QString("<b>Library:</b> %1").arg(libName);
         }
     }
-    
+
     tooltip = tooltipParts.join("<br/>");
     return tooltip;
 }

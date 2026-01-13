@@ -573,7 +573,6 @@ void UModernDiagramScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
         // при программном сбросе выделения
         if(m_isGroupSelected || m_isGroupMoving || !m_owner->m_scene->selectedItems().isEmpty())
         {
-            int selectedCount = m_owner->m_scene->selectedItems().size();
             // DEBUG: Commented out to reduce log flood
             // QString logMsg = QString("[SELECTION_DEBUG] UModernDiagramScene::mousePressEvent: clicked on background, isGroupSelected=%1, isGroupMoving=%2, selectedItems.count=%3, setting m_isProgrammaticSelection=true, calling clearSelection()")
             //     .arg(m_isGroupSelected ? "true" : "false")

@@ -134,7 +134,7 @@ UStorage::~UStorage(void)
    }
   }
   CollectionList.clear();
-  
+
   // Один вызов DelAbandonedClasses() в конце вместо вызова для каждой библиотеки
   DelAbandonedClasses();
 
@@ -193,7 +193,7 @@ const NameT UStorage::FindClassName(const UId &id) const
  {
   return std::string("(ForbiddenId/Uninitialized)");
  }
- 
+
  for(auto I=ClassesLookupTable.begin(),
 									J=ClassesLookupTable.end();I != J;++I)
  {
@@ -271,8 +271,8 @@ void UStorage::DelClass(const UId &classid, bool force)
   if(temp != ObjectsStorage.end())
   {
    // Удалено избыточное логирование - создавало спам в DEBUG логах
-   
-   for(list<UInstancesStorageElement>::iterator I=temp->second.begin(), 
+
+   for(list<UInstancesStorageElement>::iterator I=temp->second.begin(),
        J=temp->second.end(); I!=J; ++I)
    {
     if(I->UseFlag && I->Object)
@@ -281,7 +281,7 @@ void UStorage::DelClass(const UId &classid, bool force)
      {
       UEPtr<UContainer> owner = I->Object->GetOwner();
       bool activity = I->Object->Activity;
-      
+
       // Если объект не имеет владельца и не активен, очищаем UseFlag
       if(!owner && !activity)
       {
@@ -296,13 +296,13 @@ void UStorage::DelClass(const UId &classid, bool force)
     }
    }
   }
-  
+
   ClearObjectsStorageByClass(classid);
  }
 
  UClassesStorageIterator I=ClassesStorage.find(classid);
  std::string name;
- 
+
  // КРИТИЧНО: Получаем имя класса перед удалением из ClassesStorage
  // Если класс уже удален, используем альтернативный способ
  try
@@ -314,8 +314,8 @@ void UStorage::DelClass(const UId &classid, bool force)
   // Если класс уже не существует, используем пустое имя
   name = std::string("(unknown)");
   if(Logger)
-   Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__, 
-    std::string("Class with id ") + sntoa(classid) + 
+   Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__,
+    std::string("Class with id ") + sntoa(classid) +
     std::string(" not found in ClassesLookupTable"));
  }
 
@@ -456,7 +456,7 @@ void UStorage::ClearClassesStorage(bool force)
    }
    // При force пропускаем проверку и продолжаем удаление
   }
-  
+
   // Удаление класса
   RDK_SYS_TRY
   {
@@ -479,17 +479,17 @@ void UStorage::ClearClassesStorage(bool force)
    if(Logger)
     Logger->ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
   }
-  
+
   // Безопасное удаление из map (erase возвращает следующий итератор)
   I = ClassesStorage.erase(I);
  }
- 
+
  // ClassesStorage уже очищен в цикле выше
 
- for(UClassesDescriptionCIterator I = ClassesDescription.begin(), J=ClassesDescription.end(); I != J; ++I)
+ for(UClassesDescriptionCIterator descI = ClassesDescription.begin(), J=ClassesDescription.end(); descI != J; ++descI)
  {
-  if(I->second)
-   delete I->second.Get();
+  if(descI->second)
+   delete descI->second.Get();
  }
  ClassesDescription.clear();
  LastClassId=0;
@@ -511,16 +511,16 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
  if(classid == ForbiddenId)
  {
   if(Logger)
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, 
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__,
     std::string("Attempt to take object with ForbiddenId (0) - class not initialized"));
   throw EClassIdNotExist(classid);
  }
- 
+
  UClassesStorageIterator tmplI=ClassesStorage.find(classid);
  if(tmplI == ClassesStorage.end())
  {
   if(Logger)
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, 
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__,
     std::string("Class with id ") + sntoa(classid) + std::string(" not found in Storage"));
   throw EClassIdNotExist(classid);
  }
@@ -548,12 +548,12 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
    if(obj)
    {
     element->UseFlag=true;
-    
+
     // КРИТИЧНО: Сохраняем ClassId перед операциями, которые могут его изменить
     UId saved_class_id = obj->GetClass();
     if(saved_class_id == ForbiddenId || saved_class_id != classid)
      saved_class_id = classid; // Используем правильный classid если текущий невалидный
-    
+
     obj->Default();
     if(!prototype)
      tmpl->ResetComponent(static_pointer_cast<UComponent>(obj));
@@ -691,7 +691,7 @@ void UStorage::FreeObjectsStorage(bool force)
   // Если класс уже удален, используем альтернативный способ получения информации
   std::string object_class_name;
   UId class_id = instances->first;
-  
+
   try
   {
    // Проверяем, существует ли класс в ClassesStorage
@@ -704,8 +704,8 @@ void UStorage::FreeObjectsStorage(bool force)
     // Класс уже удален, используем альтернативное имя
     object_class_name = std::string("(deleted class id=") + sntoa(class_id) + std::string(")");
     if(Logger)
-     Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, 
-      std::string("Class with id ") + sntoa(class_id) + 
+     Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+      std::string("Class with id ") + sntoa(class_id) +
       std::string(" already deleted, using alternative name"));
    }
   }
@@ -714,11 +714,11 @@ void UStorage::FreeObjectsStorage(bool force)
    // В случае ошибки используем альтернативное имя
    object_class_name = std::string("(unknown class id=") + sntoa(class_id) + std::string(")");
    if(Logger)
-    Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__, 
-     std::string("Failed to get class name for id ") + sntoa(class_id) + 
+    Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__,
+     std::string("Failed to get class name for id ") + sntoa(class_id) +
      std::string(", using alternative name"));
   }
-  
+
   if(instances->second.empty())
    continue;
 
@@ -729,12 +729,12 @@ void UStorage::FreeObjectsStorage(bool force)
   {
    std::string object_name=I->Object->GetName();
    UEPtr<UContainer> object=I->Object;
-   
+
    // КРИТИЧНО: Сначала восстанавливаем ClassId и проверяем UseFlag ПЕРЕД логированием ошибки
    bool actually_in_use = false;
    bool class_id_restored = false;
    UId restored_class_id = ForbiddenId;
-   
+
    if(I->UseFlag)
    {
 	try
@@ -744,7 +744,7 @@ void UStorage::FreeObjectsStorage(bool force)
 	  // КРИТИЧНО: Проверяем валидность ClassId объекта и восстанавливаем из ключа контейнера
 	  UId object_class_id = object->GetClass();
 	  UId container_class_id = instances->first; // Ключ контейнера в ObjectsStorage
-	  
+
 	  // Если ClassId = ForbiddenId или не соответствует ключу контейнера, восстанавливаем его
 	  if(object_class_id == ForbiddenId || object_class_id != container_class_id)
 	  {
@@ -759,23 +759,23 @@ void UStorage::FreeObjectsStorage(bool force)
 	  {
 	   restored_class_id = object_class_id;
 	  }
-	  
+
 	  // Проверяем существование класса
 	  if(ClassesStorage.find(object_class_id) == ClassesStorage.end())
 	  {
 	   // Класс объекта уже удален, объект в невалидном состоянии
 	   if(Logger)
-	    Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__, 
-	     std::string("Object ") + object_name + 
-	     std::string(" has class id ") + sntoa(object_class_id) + 
+	    Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__,
+	     std::string("Object ") + object_name +
+	     std::string(" has class id ") + sntoa(object_class_id) +
 	     std::string(" which no longer exists - class was deleted"));
 	  }
-	  
+
 	  UEPtr<UContainer> owner = object->GetOwner();
 	  // Если объект имеет владельца, он может быть в использовании
 	  if(owner)
 	   actually_in_use = true;
-	   
+
 	  // Дополнительная проверка: если Activity=false и нет владельца,
 	  // объект скорее всего не используется, можно очистить UseFlag
 	  if(!actually_in_use && !object->Activity)
@@ -799,7 +799,7 @@ void UStorage::FreeObjectsStorage(bool force)
 	if(Logger)
 	{
 	 std::string context_info = std::string("FORCED destroy objects by name ") + object_name + ": object in use!";
-	 
+
 	 // Добавляем информацию о контексте использования объекта
 	 try
 	 {
@@ -811,10 +811,10 @@ void UStorage::FreeObjectsStorage(bool force)
 	    std::string owner_name = owner->GetName();
 	    context_info += std::string(" Owner=") + owner_name;
 	   }
-	   
+
 	   bool activity = object->Activity;
 	   context_info += std::string(" Activity=") + (activity ? "true" : "false");
-	   
+
 	   // Используем восстановленный ClassId (если был восстановлен) или текущий
 	   UId current_class_id = restored_class_id != ForbiddenId ? restored_class_id : object->GetClass();
 	   if(current_class_id == 0)
@@ -831,7 +831,7 @@ void UStorage::FreeObjectsStorage(bool force)
 	 {
 	  context_info += " (failed to get context info)";
 	 }
-	 
+
 	 Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, context_info);
 	}
    }
@@ -994,7 +994,7 @@ void UStorage::ClearObjectsStorageByClass(const UId &classid)
  for(list<UInstancesStorageElement>::iterator I=instances->second.begin(), J=instances->second.end(); I!=J; ++I)
  {
   UEPtr<UContainer> object=I->Object;
-  
+
   // КРИТИЧНО: Проверяем и восстанавливаем ClassId объекта из параметра classid
   if(object)
   {
@@ -1006,7 +1006,7 @@ void UStorage::ClearObjectsStorageByClass(const UId &classid)
     // Удалено избыточное логирование - создавало спам в DEBUG логах
    }
   }
-  
+
   // Очищаем UseFlag для объектов без активных ссылок (без Owner и с Activity=false)
   if(I->UseFlag && object)
   {
@@ -1014,7 +1014,7 @@ void UStorage::ClearObjectsStorageByClass(const UId &classid)
    {
     UEPtr<UContainer> owner = object->GetOwner();
     bool activity = object->Activity;
-    
+
     // Если объект не имеет владельца и не активен, он больше не используется
     if(!owner && !activity)
     {
@@ -1027,10 +1027,10 @@ void UStorage::ClearObjectsStorageByClass(const UId &classid)
     // В случае ошибки оставляем UseFlag как есть
    }
   }
-  
+
   // Вызываем Free() для объекта
   I->Object->Free();
-  
+
   // КРИТИЧНО: НЕ сбрасываем ClassId объекта здесь, так как объект может все еще существовать
   // и использоваться. ClassId будет сохранен до полного уничтожения объекта.
  }
@@ -1139,29 +1139,29 @@ void UStorage::LoadClassesDescription()
 {
     std::vector<string> lib_names;
     RDK::FindFilesList(ClDesc, "*", false, lib_names);
-    
+
     // Кэшируем результаты FindFilesList для каждой библиотеки, чтобы избежать двойного вызова
     struct LibFileCache {
         std::string lib_name;
         std::string lib_cl_desc_path;
         std::vector<string> cl_desc_files;
     };
-    
+
     std::vector<LibFileCache> lib_files_cache;
     size_t total_files = 0;
-    
+
     // Собираем все файлы заранее (кэширование FindFilesList)
     for(std::vector<string>::iterator lib_name = lib_names.begin(); lib_name != lib_names.end(); ++lib_name)
     {
         std::string lib_cl_desc_path = ClDesc + *lib_name +"/ru-RU/";
         std::vector<string> cl_desc_files;
         RDK::FindFilesList(lib_cl_desc_path, "*.xml", true, cl_desc_files);
-        
+
         if(!cl_desc_files.empty())
         {
             // Игнорируем проверки для ускорения загрузки
         }
-        
+
         LibFileCache cache;
         cache.lib_name = *lib_name;
         cache.lib_cl_desc_path = lib_cl_desc_path;
@@ -1169,18 +1169,18 @@ void UStorage::LoadClassesDescription()
         total_files += cache.cl_desc_files.size();
         lib_files_cache.push_back(std::move(cache));
     }
-    
+
     // Структура для хранения информации о файле для параллельной загрузки
     struct FileLoadInfo {
         std::string file_path;
         std::string lib_cl_desc_path;
         std::string file_name;
     };
-    
+
     // Собираем все пути к файлам заранее
     std::vector<FileLoadInfo> files_to_load;
     files_to_load.reserve(total_files);
-    
+
     for(const auto& cache : lib_files_cache)
     {
         for(const auto& file_name : cache.cl_desc_files)
@@ -1192,13 +1192,13 @@ void UStorage::LoadClassesDescription()
             files_to_load.push_back(std::move(info));
         }
     }
-    
+
     // Структура для результатов параллельной загрузки
     struct LoadedFileData {
         std::string class_name;
         std::string xml_string; // Сохраняем XML как строку, чтобы избежать проблем с копированием
         bool valid;
-        
+
         // Метод для получения XML объекта
         USerStorageXML GetXML() const {
             USerStorageXML xml;
@@ -1207,17 +1207,17 @@ void UStorage::LoadClassesDescription()
             return xml;
         }
     };
-    
+
     // Параллельно загружаем XML файлы (только чтение, безопасно)
     std::vector<std::future<LoadedFileData>> futures;
     futures.reserve(files_to_load.size());
-    
+
     for(const auto& file_info : files_to_load)
     {
         futures.push_back(std::async(std::launch::async, [file_info]() {
             LoadedFileData result;
             result.valid = false;
-            
+
             try
             {
                 // Каждый поток работает со своей копией XML структуры
@@ -1228,7 +1228,7 @@ void UStorage::LoadClassesDescription()
                     return result;
                 }
                 // После LoadFromFile мы находимся в корне узла ClassDescription
-                
+
                 // Проверяем, что мы в правильном узле
                 std::string root_name = xml.GetNodeName();
                 if(root_name != "ClassDescription")
@@ -1241,21 +1241,21 @@ void UStorage::LoadClassesDescription()
                         return result;
                     }
                 }
-                
+
                 xml.SelectNodeForce("ClassName");
                 result.class_name = xml.GetNodeText();
                 // Возвращаемся к корню ClassDescription (не к корню документа!)
                 // SelectUp() вернет нас из ClassName обратно к ClassDescription
                 xml.SelectUp();
-                
+
                 // Убеждаемся, что мы в корне ClassDescription
                 xml.SelectRoot();
-                
+
                 // Сохраняем XML как строку, чтобы избежать проблем с копированием USerStorageXML
                 xml.SaveFromNode(result.xml_string);
                 result.valid = true;
             }
-            catch(const std::exception& ex)
+            catch(const std::exception&)
             {
                 // Игнорируем ошибки загрузки отдельных файлов
                 result.valid = false;
@@ -1265,27 +1265,27 @@ void UStorage::LoadClassesDescription()
                 // Игнорируем другие ошибки загрузки отдельных файлов
                 result.valid = false;
             }
-            
+
             return result;
         }));
     }
-    
+
     // Последовательно добавляем загруженные описания в Storage (с синхронизацией)
     std::mutex desc_mutex;
     size_t processed_files = 0;
-    
+
     for(auto& future : futures)
     {
         LoadedFileData loaded_data = future.get();
-        
+
         if(!loaded_data.valid)
         {
             continue;
         }
-        
+
         // Синхронизируем доступ к ClassesDescription
         std::lock_guard<std::mutex> lock(desc_mutex);
-        
+
         try
         {
             SetClassDescription(loaded_data.class_name, new RDK::UContainerDescription());
@@ -1301,13 +1301,13 @@ void UStorage::LoadClassesDescription()
             // Пробрасываем другие исключения дальше
             throw;
         }
-        
+
         // Обновление прогресса после каждого загруженного описания класса (19-20%)
         processed_files++;
         if(FuncProgressBarCallback && total_files > 0)
         {
             int progress = 19 + (int)(processed_files / total_files);
-            std::string msg = "Launching application: loading class descriptions (" + 
+            std::string msg = "Launching application: loading class descriptions (" +
                              RDK::sntoa(processed_files) + "/" + RDK::sntoa(total_files) + ")...";
             FuncProgressBarCallback(progress, msg);
         }
@@ -1348,10 +1348,10 @@ void UStorage::LoadClassDescription(const std::string &classname,
  {
   return;
  }
- 
+
  // ВАЖНО: xml уже должен быть позиционирован в корне ClassDescription после LoadFromFile
  xml.SelectRoot(); // Убеждаемся, что мы в корне ClassDescription
- 
+
  // Загружаем описание
  desc->Load(xml);
 }
@@ -1804,7 +1804,7 @@ void UStorage::InitRTlibs(void)
     if (lib_names.empty())
     {
         if (Logger)
-            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, 
+            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__,
                 "RTlibs directory is empty, skipping library loading");
         return;
     }
@@ -1812,12 +1812,12 @@ void UStorage::InitRTlibs(void)
     for(size_t i = 0 ; i < lib_names.size(); i++)
     {
        LoadRuntimeCollection(lib_names[i]);
-       
+
        // Обновление прогресса после каждой загруженной библиотеки (15-17%)
        if(FuncProgressBarCallback && lib_names.size() > 0)
        {
            int progress = 15 + (int)((i + 1) * 2 / lib_names.size());
-           std::string msg = "Launching application: loading library " + lib_names[i] + " (" + 
+           std::string msg = "Launching application: loading library " + lib_names[i] + " (" +
                             RDK::sntoa(i + 1) + "/" + RDK::sntoa(lib_names.size()) + ")...";
            FuncProgressBarCallback(progress, msg);
        }
@@ -1889,7 +1889,7 @@ bool UStorage::AddCollection(ULibrary *library, bool force_build)
  }
 
  CollectionList.push_back(library);
- 
+
  // Обновляем индекс классов -> библиотек для оптимизации поиска
  // Это позволяет FindCollection() работать за O(1) вместо O(m)
  const std::vector<std::string>& complete_classes = newlib->GetComplete();
@@ -1897,7 +1897,7 @@ bool UStorage::AddCollection(ULibrary *library, bool force_build)
  {
   ClassLibraryIndex[class_name] = newlib;
  }
- 
+
  if(force_build)
   BuildStorage();
  return true;
@@ -1911,7 +1911,7 @@ bool UStorage::DelCollection(int index)
   return false;
  std::vector<ULibrary*>::iterator I=CollectionList.begin()+index;
  UEPtr<ULibrary> lib_to_remove = *I;
- 
+
  // Удаляем библиотеку из индекса классов -> библиотек
  if(lib_to_remove)
  {
@@ -1926,7 +1926,7 @@ bool UStorage::DelCollection(int index)
    }
   }
  }
- 
+
  if((*I)->GetType() == 2)
  {
   //static_cast<URuntimeLibrary*>(*I)->DeleteOwnDirectory();
@@ -2173,7 +2173,7 @@ bool UStorage::BuildStorage(int lib_type)
         if(CollectionList[i] && CollectionList[i]->GetType()==lib_type)
             total_libs++;
     }
-    
+
     size_t processed_libs = 0;
     for(size_t i=0;i<CollectionList.size();i++)
     {
@@ -2213,13 +2213,13 @@ bool UStorage::BuildStorage(int lib_type)
       IncompletedClassNames.insert(IncompletedClassNames.end(),
                                 lib->GetIncomplete().begin(),
                                 lib->GetIncomplete().end());
-      
+
       // Обновление прогресса после каждой обработанной библиотеки (17-19%)
       processed_libs++;
       if(FuncProgressBarCallback && total_libs > 0)
       {
           int progress = 17 + (int)(processed_libs * 2 / total_libs);
-          std::string msg = "Launching application: building library " + lib->GetName() + " (" + 
+          std::string msg = "Launching application: building library " + lib->GetName() + " (" +
                            RDK::sntoa(processed_libs) + "/" + RDK::sntoa(total_libs) + ")...";
           FuncProgressBarCallback(progress, msg);
       }
@@ -2237,7 +2237,7 @@ void UStorage::DelAbandonedClasses(void)
  // Это уменьшает сложность с O(n*m) до O(n+m), где n - классы, m - библиотеки
  std::unordered_set<std::string> classes_with_libs;
  classes_with_libs.reserve(ClassesStorage.size());
- 
+
  // Проходим по всем библиотекам и собираем имена классов
  for(size_t i=0; i<CollectionList.size(); i++)
  {
@@ -2252,7 +2252,7 @@ void UStorage::DelAbandonedClasses(void)
    }
   }
  }
- 
+
  // Теперь проходим по классам и удаляем только те, для которых нет библиотек
  UClassesStorageIterator I=ClassesStorage.begin(),J;
  while(I != ClassesStorage.end())
@@ -2275,7 +2275,7 @@ UEPtr<ULibrary> UStorage::FindCollection(const std::string &class_name)
  {
   return index_it->second;
  }
- 
+
  // Fallback: если индекс не содержит класс (например, при старых данных), используем линейный поиск
  for(size_t i=0;i<CollectionList.size();i++)
  {
@@ -2339,9 +2339,9 @@ void UStorage::PushObject(const UId &classid, UEPtr<UContainer> object)
    // Если ClassId не соответствует, устанавливаем правильный
    if(Logger && object_class_id != ForbiddenId)
    {
-    Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__, 
-     std::string("Object ") + object->GetName() + 
-     std::string(" ClassId mismatch: expected ") + sntoa(classid) + 
+    Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__,
+     std::string("Object ") + object->GetName() +
+     std::string(" ClassId mismatch: expected ") + sntoa(classid) +
      std::string(", got ") + sntoa(object_class_id) + std::string(" - correcting"));
    }
    object->SetClass(classid);
@@ -2416,7 +2416,7 @@ void UStorage::ReturnObject(UEPtr<UComponent> object)
  if(!obj)
  {
   if(Logger)
-   Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__, 
+   Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__,
     std::string("Attempt to return null object"));
   return;
  }
@@ -2425,12 +2425,12 @@ void UStorage::ReturnObject(UEPtr<UComponent> object)
  obj->BreakOwner();
 
  UId class_id = object->GetClass();
- 
+
  // Если ClassId = ForbiddenId, объект уже был удален из хранилища
  if(class_id == ForbiddenId)
  {
   if(Logger)
-   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, 
+   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
     std::string("Object ") + obj->GetName() + std::string(" has ForbiddenId - already removed from storage"));
   return;
  }
@@ -2439,7 +2439,7 @@ void UStorage::ReturnObject(UEPtr<UComponent> object)
  if(instances == ObjectsStorage.end())
  {
   if(Logger)
-   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, 
+   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
     std::string("Object ") + obj->GetName() + std::string(" class not found in ObjectsStorage"));
   return;
  }
@@ -2494,13 +2494,13 @@ UId UStorage::PopObject(UObjectsStorageIterator instance_iterator, list<UInstanc
  UId classid=object->GetClass();
  //object->SetObjectIterator(0);
  object->SetStorage(0);
- 
+
  // НЕ сбрасываем ClassId на ForbiddenId здесь, так как объект может все еще существовать
  // и использоваться. ClassId будет сброшен только при полном уничтожении объекта
  // в деструкторе или явном удалении. Это предотвращает ошибки EClassIdNotExist
  // при попытке получить имя класса через FindClassName().
  // object->SetClass(ForbiddenId);
- 
+
  return classid;
 }
 // --------------------------

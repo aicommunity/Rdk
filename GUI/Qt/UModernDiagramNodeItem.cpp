@@ -2689,20 +2689,20 @@ void UModernDiagramNodeItem::onPortItemActivated(QTreeWidgetItem* item, int colu
             {
                 // fullPath может содержать путь относительно текущего компонента
                 // Нужно извлечь только путь к свойству относительно fullSrc
-                QString fullPath = m_owner->m_activeSourcePortFullPath;
+                QString sourceFullPath = m_owner->m_activeSourcePortFullPath;
 
-                // Если fullPath начинается с componentName, извлекаем только имя свойства
+                // Если sourceFullPath начинается с componentName, извлекаем только имя свойства
                 if(!m_owner->m_activeSourcePortComponentName.isEmpty() &&
-                   fullPath.startsWith(m_owner->m_activeSourcePortComponentName + "."))
+                   sourceFullPath.startsWith(m_owner->m_activeSourcePortComponentName + "."))
                 {
-                    // fullPath = "LTZone.Output", componentName = "LTZone"
+                    // sourceFullPath = "LTZone.Output", componentName = "LTZone"
                     // Извлекаем только "Output"
-                    srcProp = fullPath.mid(m_owner->m_activeSourcePortComponentName.length() + 1);
+                    srcProp = sourceFullPath.mid(m_owner->m_activeSourcePortComponentName.length() + 1);
                 }
                 else
                 {
-                    // fullPath не начинается с componentName, используем его как есть
-                    srcProp = fullPath;
+                    // sourceFullPath не начинается с componentName, используем его как есть
+                    srcProp = sourceFullPath;
                 }
             }
 
