@@ -26,6 +26,8 @@ public:
     {
         setContextMenuPolicy(Qt::ActionsContextMenu);
         header()->setVisible(false);
+        // Включаем визуальные элементы разворота-сворачивания узлов (стрелки)
+        setRootIsDecorated(true);
     }
     virtual ~UComponentListTreeWidget(){}
 
@@ -226,7 +228,7 @@ private:
     QString currentDrawComponentName;
 
     /// Скрытый рекурсивный метод заполнения списка компонентов
-    void addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem);
+    void addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem, const QSet<QString> &expandedItems = QSet<QString>());
 
     /// Перерисовка виджета со списком каналов
     void redrawChannelsList();

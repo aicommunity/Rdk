@@ -6,6 +6,7 @@
 #include <QMenu>
 #include <QToolButton>
 #include <QList>
+#include <QSet>
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QClipboard>
@@ -174,13 +175,64 @@ void UComponentsListWidget::AUpdateInterface()
     int componentsListScrollMaximum = componentsTree->verticalScrollBar()->maximum();
     int componentsListScrollPosition = componentsTree->verticalScrollBar()->value();
 
+    // Сохраняем состояние развернутости всех узлов перед очисткой дерева
+    // Только если UpdateInterval != 0 (т.е. не в диалоге), чтобы не перезаписывать ручные изменения пользователя
+    QSet<QString> expandedItems;
+    if(UpdateInterval.Get() != 0)
+    {
+        QTreeWidgetItemIterator iterator(componentsTree);
+        while(*iterator)
+        {
+            QTreeWidgetItem *item = *iterator;
+            if(item->isExpanded() && item->childCount() > 0)
+            {
+                QString itemName = item->data(0, Qt::UserRole).toString();
+                if(!itemName.isEmpty())
+                {
+                    expandedItems.insert(itemName);
+                }
+            }
+            ++iterator;
+        }
+    }
+
     componentsTree->clear();
 
     QTreeWidgetItem *rootItem = new QTreeWidgetItem(componentsTree);
     rootItem->setText(0, "Model");
     rootItem->setData(0, Qt::UserRole, QString());
     rootItem->setExpanded(true);
-    addComponentSons("", rootItem, oldRootItem, oldSelectedItem);
+    addComponentSons("", rootItem, oldRootItem, oldSelectedItem, expandedItems);
+
+    // Восстанавливаем состояние развернутости узлов только если UpdateInterval != 0
+    if(UpdateInterval.Get() != 0)
+    {
+        if(!expandedItems.isEmpty())
+        {
+            // Восстанавливаем сохраненное состояние развернутости
+            QTreeWidgetItemIterator restoreIterator(componentsTree);
+            while(*restoreIterator)
+            {
+                QTreeWidgetItem *item = *restoreIterator;
+                QString itemName = item->data(0, Qt::UserRole).toString();
+                if(expandedItems.contains(itemName))
+                {
+                    item->setExpanded(true);
+                }
+                ++restoreIterator;
+            }
+        }
+        else
+        {
+            // При первой загрузке в главном окне разворачиваем все дерево
+            componentsTree->expandAll();
+        }
+    }
+    else
+    {
+        // В диалоге разворачиваем все дерево по умолчанию при первоначальной загрузке
+        componentsTree->expandAll();
+    }
 
     applyFilter(rootItem);
     componentsTree->verticalScrollBar()->setMaximum(componentsListScrollMaximum);
@@ -881,6 +933,11 @@ void UComponentsListWidget::handleSnapshotUpdated(NMSDK::UGuiSnapshotPtr snapsho
     if (!snapshot)
         return;
 
+    // В диалоге (UpdateInterval == 0) не обновляем интерфейс автоматически,
+    // чтобы не перезаписывать ручные изменения пользователя
+    if(UpdateInterval.Get() == 0)
+        return;
+
     if (UpdateInterfaceFlag) {
         QMetaObject::invokeMethod(this, [this]() { UpdateInterface(true); }, Qt::QueuedConnection);
     } else {
@@ -891,7 +948,45 @@ void UComponentsListWidget::handleSnapshotUpdated(NMSDK::UGuiSnapshotPtr snapsho
 void UComponentsListWidget::handleFilterTextChanged(const QString &text)
 {
     componentFilterText = text.trimmed();
+    
+    // В диалоге сохраняем состояние развернутости перед применением фильтра
+    // и восстанавливаем после, чтобы не терять ручные изменения пользователя
+    QSet<QString> expandedItems;
+    if(UpdateInterval.Get() == 0)
+    {
+        QTreeWidgetItemIterator iterator(componentsTree);
+        while(*iterator)
+        {
+            QTreeWidgetItem *item = *iterator;
+            if(item->isExpanded() && item->childCount() > 0)
+            {
+                QString itemName = item->data(0, Qt::UserRole).toString();
+                if(!itemName.isEmpty())
+                {
+                    expandedItems.insert(itemName);
+                }
+            }
+            ++iterator;
+        }
+    }
+    
     applyFilter(componentsTree->invisibleRootItem());
+    
+    // Восстанавливаем состояние развернутости в диалоге после применения фильтра
+    if(UpdateInterval.Get() == 0 && !expandedItems.isEmpty())
+    {
+        QTreeWidgetItemIterator restoreIterator(componentsTree);
+        while(*restoreIterator)
+        {
+            QTreeWidgetItem *item = *restoreIterator;
+            QString itemName = item->data(0, Qt::UserRole).toString();
+            if(expandedItems.contains(itemName))
+            {
+                item->setExpanded(true);
+            }
+            ++restoreIterator;
+        }
+    }
 }
 
 void UComponentsListWidget::rebuildTreeFromSnapshot(const NMSDK::UGuiSnapshotPtr &snapshot)
@@ -953,7 +1048,9 @@ bool UComponentsListWidget::applyFilter(QTreeWidgetItem *item)
     const bool isRoot = item->data(0, Qt::UserRole).toString().isEmpty();
     const bool visible = matches || childMatches || isRoot;
     item->setHidden(!visible);
-    if (visible && matches && !isRoot) {
+    // Разворачиваем узлы только если есть активный фильтр (не пустая строка)
+    // Это позволяет пользователю вручную управлять развернутостью при отсутствии фильтра
+    if (visible && matches && !isRoot && !componentFilterText.isEmpty()) {
         item->setExpanded(true);
     }
     return visible;
@@ -1151,7 +1248,7 @@ void UComponentsListWidget::setUpdateInterval(long value)
   UpdateInterval = value;
 }
 
-void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem)
+void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem, const QSet<QString> &expandedItems)
 {
  // Use timeout to avoid blocking UI during calculation
  RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLockTimeout<RDK::UEngine>(getWorkChannelIndex(), 100);
@@ -1164,25 +1261,37 @@ void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetI
     if(!componentNames.empty()&&componentNames[0]!="")
     {
         QString father;
-        if(treeWidgetFather) treeWidgetFather->setExpanded(false);
+        // Не сворачиваем родительский узел принудительно - состояние развернутости будет восстановлено позже
+        // if(treeWidgetFather) treeWidgetFather->setExpanded(false);
         if(!componentName.isEmpty()) father = componentName + ".";
         foreach(str, componentNames)
         {
             QTreeWidgetItem* childItem = new QTreeWidgetItem(treeWidgetFather);
             childItem->setText(0, str);
-            childItem->setData(0, Qt::UserRole, father+str);
-            if(oldRootItem == father+str)
+            QString fullName = father+str;
+            childItem->setData(0, Qt::UserRole, fullName);
+            
+            // Устанавливаем состояние развернутости на основе сохраненного состояния
+            // Если expandedItems пустой (диалог), не устанавливаем состояние здесь - оно будет установлено позже через expandAll()
+            if(!expandedItems.isEmpty() && expandedItems.contains(fullName))
             {
-                componentsTree->setCurrentItem(childItem);
-                childItem->setExpanded(false);
+                childItem->setExpanded(true);
             }
-            if(oldSelectedItem == father+str)
+            
+            if(oldRootItem == fullName)
             {
                 componentsTree->setCurrentItem(childItem);
-                childItem->setExpanded(false);
+                // Не сворачиваем выбранный элемент принудительно - пользователь может захотеть видеть его развернутым
+                // childItem->setExpanded(false);
+            }
+            if(oldSelectedItem == fullName)
+            {
+                componentsTree->setCurrentItem(childItem);
+                // Не сворачиваем выбранный элемент принудительно - пользователь может захотеть видеть его развернутым
+                // childItem->setExpanded(false);
             }
 
-            addComponentSons(father+str, childItem, oldRootItem, oldSelectedItem);
+            addComponentSons(father+str, childItem, oldRootItem, oldSelectedItem, expandedItems);
         }
     }
 }
