@@ -31,6 +31,25 @@
 - `UEnvironment` - окружение выполнения
 - `UStorage` - хранилище компонентов
 
+**Взаимодействие классов:**
+
+```mermaid
+flowchart TB
+    Engine[UEngine] --> Env[UEnvironment]
+    Engine --> Storage[UStorage]
+    Env --> RootContainer[UContainer]
+    RootContainer --> Child1[UComponent]
+    RootContainer --> Child2[UComponent]
+    Storage -->|Factories| Child1
+    Storage -->|Factories| Child2
+```
+
+В коде это соответствует тому, что:
+- `UEngine` инициализирует `UStorage` и `UEnvironment` (см. `UEngine::Init` и связанные методы),
+- `UStorage` загружает библиотеки (`ULibrary`) и регистрирует классы компонентов через фабрики,
+- `UEnvironment` управляет жизненным циклом компонентов, вызывая `Reset/Calculate` у корневых контейнеров,
+- `UContainer` и `UNet` группируют компоненты и делегируют вызовы их методам жизненного цикла.
+
 См. [Docs/Rdk-Core/Engine-Architecture.md](../Docs/Rdk-Core/Engine-Architecture.md)
 
 #### Core/Graphics
@@ -68,7 +87,13 @@
 
 ### Диаграммы
 
-Диаграммы классов и последовательностей доступны в соответствующих разделах корневой документации.
+Диаграммы классов и последовательностей для каждой подсистемы доступны в корневой документации:
+
+- [Архитектура приложения](../Docs/Rdk-Core/Application-Architecture.md)
+- [Архитектура движка](../Docs/Rdk-Core/Engine-Architecture.md)
+- [Архитектура графики](../Docs/Rdk-Core/Graphics-Architecture.md)
+- [Архитектура сериализации](../Docs/Rdk-Core/Serialize-Architecture.md)
+- [Системные абстракции](../Docs/Rdk-Core/System-Platform-Abstraction.md)
 
 ---
 
@@ -88,6 +113,25 @@ Application management, RPC, server, projects.
 
 Engine and component system.
 
+**Class interaction:**
+
+```mermaid
+flowchart TB
+    EngineEn[UEngine] --> EnvEn[UEnvironment]
+    EngineEn --> StorageEn[UStorage]
+    EnvEn --> RootContainerEn[UContainer]
+    RootContainerEn --> Child1En[UComponent]
+    RootContainerEn --> Child2En[UComponent]
+    StorageEn -->|"Factories"| Child1En
+    StorageEn -->|"Factories"| Child2En
+```
+
+This reflects the actual roles in code:
+- `UEngine` initializes `UStorage` and `UEnvironment`,
+- `UStorage` loads `ULibrary` instances and registers component classes via factories,
+- `UEnvironment` drives the execution lifecycle (`Reset/Calculate`) for root containers,
+- `UContainer` / `UNet` group components and propagate lifecycle calls to them.
+
 #### Core/Graphics
 
 Graphics system for visualization.
@@ -102,4 +146,10 @@ Cross-platform system abstractions.
 
 ### Diagrams
 
-Class and sequence diagrams are available in the corresponding sections of the root documentation.
+Class and sequence diagrams for each subsystem are available in the root documentation:
+
+- [Application Architecture](../Docs/Rdk-Core/Application-Architecture.md)
+- [Engine Architecture](../Docs/Rdk-Core/Engine-Architecture.md)
+- [Graphics Architecture](../Docs/Rdk-Core/Graphics-Architecture.md)
+- [Serialization Architecture](../Docs/Rdk-Core/Serialize-Architecture.md)
+- [System Abstractions](../Docs/Rdk-Core/System-Platform-Abstraction.md)

@@ -38,24 +38,26 @@ sequenceDiagram
 
 ```mermaid
 flowchart TB
-    Client[Клиент]
-    Transport[UServerTransport<br/>TCP/HTTP]
-    Dispatcher[URpcDispatcher<br/>Диспетчер]
-    Decoder[URpcDecoder<br/>Декодер]
-    App[UApplication]
-    Engine[UEngine]
+    clientNode["Клиент"]
+    transportNode["UServerTransport TCP/HTTP"]
+    dispatcherNode["URpcDispatcher (диспетчер)"]
+    decoderNode["URpcDecoder (декодер)"]
+    appNode["UApplication"]
+    engineNode["UEngine"]
     
-    Client --> Transport
-    Transport --> Dispatcher
-    Dispatcher --> Decoder
-    Decoder --> App
-    App --> Engine
-    Engine --> App
-    App --> Decoder
-    Decoder --> Dispatcher
-    Dispatcher --> Transport
-    Transport --> Client
+    clientNode --> transportNode
+    transportNode --> dispatcherNode
+    dispatcherNode --> decoderNode
+    decoderNode --> appNode
+    appNode --> engineNode
+    engineNode --> appNode
+    appNode --> decoderNode
+    decoderNode --> dispatcherNode
+    dispatcherNode --> transportNode
+    transportNode --> clientNode
 ```
+
+В совокупности эти две диаграммы иллюстрируют, как входящие RPC‑команды проходят через транспорт, диспетчер, декодер и приложение до движка и обратно к клиенту. Они непосредственно соответствуют коду в `URpcDispatcher`, `URpcDecoder`, `UServerTransport` и методам `UApplication`, вызываемым декодером.
 
 ---
 
@@ -63,4 +65,16 @@ flowchart TB
 
 ### RPC Command Processing Sequence
 
+The sequence diagram above shows how an incoming RPC command is processed:
+- the client sends a command via TCP/HTTP transport,
+- `UServerTransport` pushes the command into `URpcDispatcher`,
+- the dispatcher selects a suitable decoder, which executes the command by calling `UApplication` / engine methods,
+- the result is returned back to the client through the dispatcher and transport.
+
 ### RPC System Architecture
+
+The flowchart describes the static architecture of the RPC system:
+- the client only talks to `UServerTransport`,
+- `URpcDispatcher` and `URpcDecoder` form the core of the routing/decoding logic,
+- `UApplication` and `UEngine` are the ultimate handlers of most RPC commands.
+
