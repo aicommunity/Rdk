@@ -15,7 +15,7 @@
 ### См. также
 
 - [Architecture.md](../Architecture.md) - общая архитектура
-- [Docs/Rdk-Core/](../Docs/Rdk-Core/) - корневая документация Rdk Core
+- [Docs/Rdk-Core/Overview.md](../../../Docs/Rdk-Core/Overview.md) - корневая документация Rdk Core
 
 ---
 
@@ -34,4 +34,4 @@ This directory contains additional mermaid diagrams for detailed description of 
 ### See Also
 
 - [Architecture.md](../Architecture.md) - general architecture
-- [Docs/Rdk-Core/](../Docs/Rdk-Core/) - root Rdk Core documentation
+- [Docs/Rdk-Core/Overview.md](../../../Docs/Rdk-Core/Overview.md) - root Rdk Core documentation

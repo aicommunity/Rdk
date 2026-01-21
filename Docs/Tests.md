@@ -48,8 +48,8 @@ cmake --build . --target test
 
 ### См. также
 
-- [Docs/Performance-And-Testing/Testing-Strategy.md](../Docs/Performance-And-Testing/Testing-Strategy.md) - общая стратегия тестирования
-- [Reports/33-34](../Reports/) - результаты тестирования
+- [Docs/Performance-And-Testing/Testing-Strategy.md](../../Docs/Performance-And-Testing/Testing-Strategy.md) - общая стратегия тестирования
+- [Reports/33-34](../../Reports/) - результаты тестирования
 
 ---
 
@@ -80,5 +80,5 @@ Description of Rdk Core test structure and strategy.
 
 ### See Also
 
-- [Docs/Performance-And-Testing/Testing-Strategy.md](../Docs/Performance-And-Testing/Testing-Strategy.md) - general testing strategy
-- [Reports/33-34](../Reports/) - test results
+- [Docs/Performance-And-Testing/Testing-Strategy.md](../../Docs/Performance-And-Testing/Testing-Strategy.md) - general testing strategy
+- [Reports/33-34](../../Reports/) - test results

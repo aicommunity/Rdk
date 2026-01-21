@@ -632,9 +632,9 @@ protected:
 
 ### См. также
 
-- [Engine Architecture](Engine-Architecture.md) - архитектура движка и компонентов
-- [GUI Widgets Reference](../GUI/Widgets-Reference.md) - GUI виджеты
-- [Property System](../Rdk/Docs/Diagrams/Property-System.md) - система свойств
+- [Engine Architecture](../../Docs/Rdk-Core/Engine-Architecture.md) - архитектура движка и компонентов
+- [GUI Widgets Reference](../../Docs/GUI/Widgets-Reference.md) - GUI виджеты
+- [Property System](Diagrams/Property-System.md) - система свойств
 
 ---
 
@@ -755,6 +755,6 @@ Controllers integrate with GUI widgets through `UVisualControllerWidget` - base 
 
 ### See Also
 
-- [Engine Architecture](Engine-Architecture.md) - engine and component architecture
-- [GUI Widgets Reference](../GUI/Widgets-Reference.md) - GUI widgets
-- [Property System](../Rdk/Docs/Diagrams/Property-System.md) - property system
+- [Engine Architecture](../../Docs/Rdk-Core/Engine-Architecture.md) - engine and component architecture
+- [GUI Widgets Reference](../../Docs/GUI/Widgets-Reference.md) - GUI widgets
+- [Property System](Diagrams/Property-System.md) - property system

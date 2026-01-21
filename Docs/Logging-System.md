@@ -651,8 +651,8 @@ void GlobalFunction() {
 ### См. также
 
 - [Exception Handling](Utilities-Reference.md#uexception---система-исключений) - обработка исключений
-- [GUI Widgets Reference](../GUI/Widgets-Reference.md) - ULoggerWidget
-- [Engine Architecture](Engine-Architecture.md) - использование логирования в компонентах
+- [GUI Widgets Reference](../../Docs/GUI/Widgets-Reference.md) - ULoggerWidget
+- [Engine Architecture](../../Docs/Rdk-Core/Engine-Architecture.md) - использование логирования в компонентах
 
 ---
 
@@ -824,5 +824,5 @@ void SetupLogging(const std::string& log_directory) {
 ### See Also
 
 - [Exception Handling](Utilities-Reference.md#uexception---exception-system) - exception handling
-- [GUI Widgets Reference](../GUI/Widgets-Reference.md) - ULoggerWidget
-- [Engine Architecture](Engine-Architecture.md) - logging usage in components
+- [GUI Widgets Reference](../../Docs/GUI/Widgets-Reference.md) - ULoggerWidget
+- [Engine Architecture](../../Docs/Rdk-Core/Engine-Architecture.md) - logging usage in components

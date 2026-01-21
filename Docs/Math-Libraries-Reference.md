@@ -547,7 +547,7 @@ flowchart TB
 ### См. также
 
 - [Utilities Reference](Utilities-Reference.md) - вспомогательные функции
-- [Graphics Architecture](../Rdk-Core/Graphics-Architecture.md) - использование математики в графике
+- [Graphics Architecture](../../Docs/Rdk-Core/Graphics-Architecture.md) - использование математики в графике
 - [Rdk-CvBasicLib](../../Libraries/Rdk-CvBasicLib/Docs/Architecture.md) - использование в компьютерном зрении
 
 ---
@@ -717,5 +717,5 @@ triangle.Vertex(2) = RDK::MVector<double, 3>(0.5, 1, 0);
 ### See Also
 
 - [Utilities Reference](Utilities-Reference.md) - utility functions
-- [Graphics Architecture](../Rdk-Core/Graphics-Architecture.md) - math usage in graphics
+- [Graphics Architecture](../../Docs/Rdk-Core/Graphics-Architecture.md) - math usage in graphics
 - [Rdk-CvBasicLib](../../Libraries/Rdk-CvBasicLib/Docs/Architecture.md) - usage in computer vision

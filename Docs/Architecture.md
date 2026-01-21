@@ -18,7 +18,7 @@
 - `URpcDispatcher` - диспетчер RPC команд
 - `UServerTransport` - транспорт сервера
 
-См. [Docs/Rdk-Core/Application-Architecture.md](../Docs/Rdk-Core/Application-Architecture.md)
+См. [Docs/Rdk-Core/Application-Architecture.md](../../Docs/Rdk-Core/Application-Architecture.md)
 
 #### Core/Engine
 
@@ -50,7 +50,7 @@ flowchart TB
 - `UEnvironment` управляет жизненным циклом компонентов, вызывая `Reset/Calculate` у корневых контейнеров,
 - `UContainer` и `UNet` группируют компоненты и делегируют вызовы их методам жизненного цикла.
 
-См. [Docs/Rdk-Core/Engine-Architecture.md](../Docs/Rdk-Core/Engine-Architecture.md)
+См. [Docs/Rdk-Core/Engine-Architecture.md](../../Docs/Rdk-Core/Engine-Architecture.md)
 
 #### Core/Graphics
 
@@ -61,7 +61,7 @@ flowchart TB
 - `UDrawEngine` - движок отрисовки
 - `UBitmap` - растровое изображение
 
-См. [Docs/Rdk-Core/Graphics-Architecture.md](../Docs/Rdk-Core/Graphics-Architecture.md)
+См. [Docs/Rdk-Core/Graphics-Architecture.md](../../Docs/Rdk-Core/Graphics-Architecture.md)
 
 #### Core/Serialize
 
@@ -72,7 +72,7 @@ flowchart TB
 - `UXMLStdSerialize` - XML сериализация
 - `UBinaryStdSerialize` - бинарная сериализация
 
-См. [Docs/Rdk-Core/Serialize-Architecture.md](../Docs/Rdk-Core/Serialize-Architecture.md)
+См. [Docs/Rdk-Core/Serialize-Architecture.md](../../Docs/Rdk-Core/Serialize-Architecture.md)
 
 #### Core/System
 
@@ -83,17 +83,17 @@ flowchart TB
 - `UGenericEvent` - универсальное событие
 - `UDllLoader` - загрузчик DLL/SO
 
-См. [Docs/Rdk-Core/System-Platform-Abstraction.md](../Docs/Rdk-Core/System-Platform-Abstraction.md)
+См. [Docs/Rdk-Core/System-Platform-Abstraction.md](../../Docs/Rdk-Core/System-Platform-Abstraction.md)
 
 ### Диаграммы
 
 Диаграммы классов и последовательностей для каждой подсистемы доступны в корневой документации:
 
-- [Архитектура приложения](../Docs/Rdk-Core/Application-Architecture.md)
-- [Архитектура движка](../Docs/Rdk-Core/Engine-Architecture.md)
-- [Архитектура графики](../Docs/Rdk-Core/Graphics-Architecture.md)
-- [Архитектура сериализации](../Docs/Rdk-Core/Serialize-Architecture.md)
-- [Системные абстракции](../Docs/Rdk-Core/System-Platform-Abstraction.md)
+- [Архитектура приложения](../../Docs/Rdk-Core/Application-Architecture.md)
+- [Архитектура движка](../../Docs/Rdk-Core/Engine-Architecture.md)
+- [Архитектура графики](../../Docs/Rdk-Core/Graphics-Architecture.md)
+- [Архитектура сериализации](../../Docs/Rdk-Core/Serialize-Architecture.md)
+- [Системные абстракции](../../Docs/Rdk-Core/System-Platform-Abstraction.md)
 
 ---
 
@@ -148,8 +148,8 @@ Cross-platform system abstractions.
 
 Class and sequence diagrams for each subsystem are available in the root documentation:
 
-- [Application Architecture](../Docs/Rdk-Core/Application-Architecture.md)
-- [Engine Architecture](../Docs/Rdk-Core/Engine-Architecture.md)
-- [Graphics Architecture](../Docs/Rdk-Core/Graphics-Architecture.md)
-- [Serialization Architecture](../Docs/Rdk-Core/Serialize-Architecture.md)
-- [System Abstractions](../Docs/Rdk-Core/System-Platform-Abstraction.md)
+- [Application Architecture](../../Docs/Rdk-Core/Application-Architecture.md)
+- [Engine Architecture](../../Docs/Rdk-Core/Engine-Architecture.md)
+- [Graphics Architecture](../../Docs/Rdk-Core/Graphics-Architecture.md)
+- [Serialization Architecture](../../Docs/Rdk-Core/Serialize-Architecture.md)
+- [System Abstractions](../../Docs/Rdk-Core/System-Platform-Abstraction.md)

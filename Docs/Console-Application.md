@@ -539,8 +539,8 @@ protected:
 
 ### См. также
 
-- [Application Architecture](../Rdk-Core/Application-Architecture.md) - архитектура приложения
-- [Engine Architecture](../Rdk-Core/Engine-Architecture.md) - архитектура движка
+- [Application Architecture](../../Docs/Rdk-Core/Application-Architecture.md) - архитектура приложения
+- [Engine Architecture](../../Docs/Rdk-Core/Engine-Architecture.md) - архитектура движка
 
 ---
 
@@ -665,5 +665,5 @@ To extend console functionality:
 
 ### See Also
 
-- [Application Architecture](../Rdk-Core/Application-Architecture.md) - application architecture
-- [Engine Architecture](../Rdk-Core/Engine-Architecture.md) - engine architecture
+- [Application Architecture](../../Docs/Rdk-Core/Application-Architecture.md) - application architecture
+- [Engine Architecture](../../Docs/Rdk-Core/Engine-Architecture.md) - engine architecture
