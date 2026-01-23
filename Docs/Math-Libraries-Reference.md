@@ -6,13 +6,7 @@
 
 Модуль `Rdk/Core/Math/` содержит математические классы и функции для работы с матрицами, векторами, фильтрами Калмана, геометрией и камерными преобразованиями. Эти библиотеки используются во всем проекте Nmsdk для математических вычислений.
 
-### Основные классы
-
-#### MMatrix / MDMatrix - Матричные операции
-
-Шаблонные классы для работы с матрицами фиксированного размера (`MMatrix`) и динамического размера (`MDMatrix`).
-
-**Иерархия классов:**
+### UML диаграмма классов математических библиотек
 
 ```mermaid
 classDiagram
@@ -25,7 +19,7 @@ classDiagram
         +Resize(MMatrixSize) bool
     }
     
-    class MMatrix {
+    class MMatrix~T,Rows,Cols~ {
         +T Data[Rows][Cols]
         +GetRows() unsigned
         +GetCols() unsigned
@@ -35,9 +29,10 @@ classDiagram
         +Det() T
         +operator*(MMatrix) MMatrix
         +operator+(MMatrix) MMatrix
+        +Eye() MMatrix
     }
     
-    class MDMatrix {
+    class MDMatrix~T~ {
         +Resize(int, int) bool
         +GetRows() int
         +GetCols() int
@@ -47,9 +42,69 @@ classDiagram
         +Det() T
     }
     
+    class MVector~T~ {
+        +T Data[Size]
+        +GetSize() unsigned
+        +operator[](int) T&
+        +operator*(MVector) T
+        +operator+(MVector) MVector
+        +Norm() T
+    }
+    
+    class MDVector~T~ {
+        +Resize(int) bool
+        +GetSize() int
+        +operator[](int) T&
+    }
+    
+    class MKalmanFilter {
+        #MDMatrix~double~ F
+        #MDMatrix~double~ H
+        #MDMatrix~double~ Q
+        #MDMatrix~double~ R
+        #MDMatrix~double~ P
+        +Predict() void
+        +Update(MDVector~double~) void
+        +GetState() MDVector~double~
+    }
+    
+    class MDKalmanFilter {
+        +Predict() void
+        +Update(MDVector~double~) void
+    }
+    
+    class MCorrelation {
+        +Calculate(MDMatrix~double~, MDMatrix~double~) MDMatrix~double~
+    }
+    
+    class NCC2D {
+        +Calculate(UBitmap, UBitmap) double
+    }
+    
+    class MGeometry {
+        +TransformPoint(MVector~double,3~, MMatrix~double,4,4~) MVector~double,3~
+    }
+    
+    class MCamera {
+        +ProjectPoint(MVector~double,3~) MVector~double,2~
+    }
+    
     MMatrixBase <|-- MMatrix
     MMatrixBase <|-- MDMatrix
+    MVector <|-- MDVector
+    UModule <|-- MKalmanFilter
+    MKalmanFilter <|-- MDKalmanFilter
+    UModule <|-- MCorrelation
+    UModule <|-- NCC2D
+    MGeometry --> MMatrix
+    MCamera --> MGeometry
 ```
+
+### Основные классы
+
+#### MMatrix / MDMatrix - Матричные операции
+
+Шаблонные классы для работы с матрицами фиксированного размера (`MMatrix`) и динамического размера (`MDMatrix`).
 
 **Основные операции:**
 
@@ -518,23 +573,23 @@ double correlation = RDK::Correlation(signal1, signal2);
 ```mermaid
 flowchart TB
     subgraph "Матричные операции"
-        MMatrix[MMatrix<br/>Фиксированный размер]
-        MDMatrix[MDMatrix<br/>Динамический размер]
+        MMatrix["MMatrix (Фиксированный размер)"]
+        MDMatrix["MDMatrix (Динамический размер)"]
     end
     
     subgraph "Векторные операции"
-        MVector[MVector<br/>Фиксированный размер]
-        MDVector[MDVector<br/>Динамический размер]
+        MVector["MVector (Фиксированный размер)"]
+        MDVector["MDVector (Динамический размер)"]
     end
     
     subgraph "Фильтрация"
-        MKalman[MKalmanFilter<br/>Фиксированный размер]
-        MDKalman[MDKalmanFilter<br/>Динамический размер]
+        MKalman["MKalmanFilter (Фиксированный размер)"]
+        MDKalman["MDKalmanFilter (Динамический размер)"]
     end
     
     subgraph "Геометрия и камеры"
-        MCamera[MCamera<br/>Камерные преобразования]
-        MGeometry[MGeometry<br/>Геометрические объекты]
+        MCamera["MCamera (Камерные преобразования)"]
+        MGeometry["MGeometry (Геометрические объекты)"]
     end
     
     MMatrix --> MKalman

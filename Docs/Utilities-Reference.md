@@ -6,6 +6,139 @@
 
 Модуль `Rdk/Core/Utilities/` содержит вспомогательные классы и функции, используемые во всем проекте Nmsdk. Эти утилиты обеспечивают базовую функциональность для работы с исключениями, временными метками, передачей данных, строками и другими общими задачами.
 
+### UML диаграмма классов утилит
+
+```mermaid
+classDiagram
+    class UException {
+        <<abstract>>
+        #int Number
+        #int Type
+        #time_t Time
+        #string Message
+        #string ObjectName
+        +GetNumber() int
+        +GetType() int
+        +GetTime() time_t
+        +what() const char*
+        +Wrap(UException, string) UException
+    }
+    
+    class EFatal {
+        +EFatal()
+    }
+    
+    class EError {
+        +EError()
+    }
+    
+    class EWarning {
+        +EWarning()
+    }
+    
+    class EInfo {
+        +EInfo()
+    }
+    
+    class EDebug {
+        +EDebug()
+    }
+    
+    class EApp {
+        +EApp()
+    }
+    
+    class EStringError {
+        #string Str
+        +EStringError(string, int)
+    }
+    
+    class EIdError {
+        #int Id
+        +EIdError(int)
+    }
+    
+    class ENameError {
+        #string Name
+        +ENameError(string)
+    }
+    
+    class EIndexError {
+        #int Index
+        +EIndexError(int)
+    }
+    
+    class UTransferPacket {
+        #void* Data
+        #int Size
+        +GetData() void*
+        +GetSize() int
+    }
+    
+    class UTransferReader {
+        +Read(UTransferPacket) bool
+    }
+    
+    class UIniFile {
+        #map~string,string~ Values
+        +Read(string, string) string
+        +Write(string, string) bool
+        +LoadFromFile(string) bool
+        +SaveToFile(string) bool
+    }
+    
+    class URegistry {
+        +Read(string) string
+        +Write(string, string) bool
+    }
+    
+    class UTimeStamp {
+        #time_t Time
+        +GetTime() time_t
+        +ToString() string
+    }
+    
+    class UTree~T~ {
+        #T Value
+        #vector~UTree*~ Children
+        +GetValue() T&
+        +AddChild(UTree) void
+        +GetChildren() vector~UTree*~
+    }
+    
+    class UQueue~T~ {
+        #queue~T~ Queue
+        +Push(T) void
+        +Pop() T
+        +Empty() bool
+    }
+    
+    class UDoubleBuffer~T~ {
+        #T* Front
+        #T* Back
+        +GetFront() T*
+        +GetBack() T*
+        +Swap() void
+    }
+    
+    class UPtr~T~ {
+        #T* Ptr
+        +Get() T*
+        +Reset(T*) void
+    }
+    
+    UException <|-- EFatal
+    UException <|-- EError
+    UException <|-- EWarning
+    UException <|-- EInfo
+    UException <|-- EDebug
+    UException <|-- EApp
+    EError <|-- EStringError
+    EError <|-- EIdError
+    EError <|-- ENameError
+    EError <|-- EIndexError
+```
+
 ### Основные классы
 
 #### UException - Система исключений
@@ -119,6 +252,26 @@ classDiagram
 - `RDK_EX_INFO` (4) - Информационное сообщение (порт открыт, клиент подключен)
 - `RDK_EX_APP` (5) - Событие уровня приложения
 - `RDK_EX_DEBUG` (6) - Отладочные сообщения (можно отключить)
+
+**Диаграмма последовательности обработки исключения:**
+
+```mermaid
+sequenceDiagram
+    participant Component as UComponent
+    participant Exception as UException
+    participant Logger as UExceptionLogger
+    participant Sink as Log Sink
+    
+    Component->>Component: throw EStringError("Error")
+    Component->>Exception: Exception created
+    Exception->>Exception: Set Type, Number, Time
+    Component->>Logger: ProcessException(exception)
+    Logger->>Logger: Check severity level
+    Logger->>Sink: Consume(LogItem)
+    Sink->>Sink: Write to file/GUI/JSON
+    Sink-->>Logger: Logged
+    Logger-->>Component: Exception processed
+```
 
 **Примеры использования:**
 
@@ -254,12 +407,12 @@ void ProcessVideoFrame(RDK::UTimeStamp current_time, double fps) {
 
 ```mermaid
 flowchart TB
-    Start[Начало пакета] --> Prefix[UPacketPrefix<br/>16 байт]
-    Prefix --> Size[PacketSize<br/>4 байта]
-    Size --> CmdId[CmdId<br/>4 байта]
-    CmdId --> NumParams[NumParams<br/>4 байта]
-    NumParams --> Params[Params<br/>массив параметров]
-    Params --> Checksum[Checksum<br/>4 байта]
+    Start[Начало пакета] --> Prefix["UPacketPrefix (16 байт)"]
+    Prefix --> Size["PacketSize (4 байта)"]
+    Size --> CmdId["CmdId (4 байта)"]
+    CmdId --> NumParams["NumParams (4 байта)"]
+    NumParams --> Params["Params (массив параметров)"]
+    Params --> Checksum["Checksum (4 байта)"]
     Checksum --> End[Конец пакета]
     
     style Prefix fill:#e1f5ff
@@ -790,3 +943,4 @@ ini_file.WriteString("Section", "Key", "Value");
 - [Exception Handling](../../Docs/Rdk-Core/Engine-Architecture.md) - exception handling in components
 - [Logging System](Logging-System.md) - logging system
 - [System Platform Abstraction](../../Docs/Rdk-Core/System-Platform-Abstraction.md) - system abstractions
+- [Error-Handling.md](Guides/Error-Handling.md) - руководство по обработке ошибок

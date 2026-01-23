@@ -102,7 +102,7 @@ flowchart TB
     
     SysChannel --> SysLogger[SystemLogger]
     GlobChannel --> GlobLogger[GlobalLogger]
-    UserChannel --> UserLogger[LoggerList[channel]]
+    UserChannel --> UserLogger["LoggerList[channel]"]
     
     SysLogger --> Preprocessor{ExceptionPreprocessor?}
     GlobLogger --> Preprocessor
