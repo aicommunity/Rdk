@@ -59,6 +59,7 @@
 - [Guides/RPC-Integration.md](Guides/RPC-Integration.md) - интеграция RPC
 - [Guides/Threading-Guide.md](Guides/Threading-Guide.md) - многопоточность
 - [Guides/Error-Handling.md](Guides/Error-Handling.md) - обработка ошибок
+- [Configuration-Management.md](Configuration-Management.md) - управление конфигурациями (UProject, UApplication, деплой)
 
 ### Быстрый старт
 
@@ -75,12 +76,12 @@
 ### Связь с корневой документацией
 
 Для обзорной информации см.:
-- [Docs/Rdk-Core/Overview.md](../../Docs/Rdk-Core/Overview.md) - обзор Rdk Core
-- [Docs/Rdk-Core/Application-Architecture.md](../../Docs/Rdk-Core/Application-Architecture.md) - архитектура приложения
-- [Docs/Rdk-Core/Engine-Architecture.md](../../Docs/Rdk-Core/Engine-Architecture.md) - архитектура движка
-- [Docs/Rdk-Core/Graphics-Architecture.md](../../Docs/Rdk-Core/Graphics-Architecture.md) - архитектура графики
-- [Docs/Rdk-Core/Serialize-Architecture.md](../../Docs/Rdk-Core/Serialize-Architecture.md) - архитектура сериализации
-- [Docs/Rdk-Core/System-Platform-Abstraction.md](../../Docs/Rdk-Core/System-Platform-Abstraction.md) - системные абстракции
+- [Architecture/Overview.md](Architecture/Overview.md) - обзор Rdk Core
+- [Architecture/Application-Architecture.md](Architecture/Application-Architecture.md) - архитектура приложения
+- [Architecture/Engine-Architecture.md](Architecture/Engine-Architecture.md) - архитектура движка
+- [Architecture/Graphics-Architecture.md](Architecture/Graphics-Architecture.md) - архитектура графики
+- [Architecture/Serialize-Architecture.md](Architecture/Serialize-Architecture.md) - архитектура сериализации
+- [Architecture/System-Platform-Abstraction.md](Architecture/System-Platform-Abstraction.md) - системные абстракции
 - [Docs/Troubleshooting/Troubleshooting-Guide.md](../../Docs/Troubleshooting/Troubleshooting-Guide.md) - руководство по устранению неполадок
 
 ### Старая документация
@@ -148,6 +149,7 @@ This directory contains detailed documentation of the Rdk core - the main module
 - [Guides/RPC-Integration.md](Guides/RPC-Integration.md) - RPC integration
 - [Guides/Threading-Guide.md](Guides/Threading-Guide.md) - multithreading
 - [Guides/Error-Handling.md](Guides/Error-Handling.md) - error handling
+- [Configuration-Management.md](Configuration-Management.md) - configuration management (UProject, UApplication, deployment)
 
 ### Quick Start
 
@@ -164,12 +166,12 @@ This directory contains detailed documentation of the Rdk core - the main module
 ### Link to Root Documentation
 
 For overview information see:
-- [Docs/Rdk-Core/Overview.md](../../Docs/Rdk-Core/Overview.md) - Rdk Core overview
-- [Docs/Rdk-Core/Application-Architecture.md](../../Docs/Rdk-Core/Application-Architecture.md) - application architecture
-- [Docs/Rdk-Core/Engine-Architecture.md](../../Docs/Rdk-Core/Engine-Architecture.md) - engine architecture
-- [Docs/Rdk-Core/Graphics-Architecture.md](../../Docs/Rdk-Core/Graphics-Architecture.md) - graphics architecture
-- [Docs/Rdk-Core/Serialize-Architecture.md](../../Docs/Rdk-Core/Serialize-Architecture.md) - serialization architecture
-- [Docs/Rdk-Core/System-Platform-Abstraction.md](../../Docs/Rdk-Core/System-Platform-Abstraction.md) - system abstractions
+- [Architecture/Overview.md](Architecture/Overview.md) - Rdk Core overview
+- [Architecture/Application-Architecture.md](Architecture/Application-Architecture.md) - application architecture
+- [Architecture/Engine-Architecture.md](Architecture/Engine-Architecture.md) - engine architecture
+- [Architecture/Graphics-Architecture.md](Architecture/Graphics-Architecture.md) - graphics architecture
+- [Architecture/Serialize-Architecture.md](Architecture/Serialize-Architecture.md) - serialization architecture
+- [Architecture/System-Platform-Abstraction.md](Architecture/System-Platform-Abstraction.md) - system abstractions
 - [Docs/Troubleshooting/Troubleshooting-Guide.md](../../Docs/Troubleshooting/Troubleshooting-Guide.md) - troubleshooting guide
 
 ### Old Documentation

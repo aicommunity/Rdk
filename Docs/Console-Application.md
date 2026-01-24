@@ -539,8 +539,8 @@ protected:
 
 ### См. также
 
-- [Application Architecture](../../Docs/Rdk-Core/Application-Architecture.md) - архитектура приложения
-- [Engine Architecture](../../Docs/Rdk-Core/Engine-Architecture.md) - архитектура движка
+- [Application Architecture](Architecture/Application-Architecture.md) - архитектура приложения
+- [Engine Architecture](Architecture/Engine-Architecture.md) - архитектура движка
 
 ---
 

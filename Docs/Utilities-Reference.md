@@ -734,9 +734,9 @@ ini_file.WriteBool("Section", "BoolKey", true);
 
 ### См. также
 
-- [Exception Handling](../../Docs/Rdk-Core/Engine-Architecture.md) - обработка исключений в компонентах
+- [Exception Handling](Architecture/Engine-Architecture.md) - обработка исключений в компонентах
 - [Logging System](Logging-System.md) - система логирования
-- [System Platform Abstraction](../../Docs/Rdk-Core/System-Platform-Abstraction.md) - системные абстракции
+- [System Platform Abstraction](Architecture/System-Platform-Abstraction.md) - системные абстракции
 
 ---
 

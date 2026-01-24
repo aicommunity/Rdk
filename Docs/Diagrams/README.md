@@ -15,7 +15,7 @@
 ### См. также
 
 - [Architecture.md](../Architecture.md) - общая архитектура
-- [Docs/Rdk-Core/Overview.md](../../../Docs/Rdk-Core/Overview.md) - корневая документация Rdk Core
+- [Architecture/Overview.md](../../Architecture/Overview.md) - обзорная документация Rdk Core
 
 ---
 

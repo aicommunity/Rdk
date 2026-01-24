@@ -602,7 +602,7 @@ flowchart TB
 ### См. также
 
 - [Utilities Reference](Utilities-Reference.md) - вспомогательные функции
-- [Graphics Architecture](../../Docs/Rdk-Core/Graphics-Architecture.md) - использование математики в графике
+- [Graphics Architecture](Architecture/Graphics-Architecture.md) - использование математики в графике
 - [Rdk-CvBasicLib](../../Libraries/Rdk-CvBasicLib/Docs/Architecture.md) - использование в компьютерном зрении
 
 ---

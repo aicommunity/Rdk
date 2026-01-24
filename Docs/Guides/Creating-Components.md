@@ -79,9 +79,15 @@ extern "C" RDK_LIB_TYPE bool RDK_CALL LoadLibrary(RDK::UStorage* storage) {
 }
 ```
 
+### Детальное руководство
+
+Для более подробной информации см. [Component-Development.md](Component-Development.md) - полное руководство по разработке компонентов с примерами, best practices и паттернами.
+
 ### Примеры
 
-См. [Engine-Detailed.md](../Engine-Detailed.md) для детальных примеров.
+См. также:
+- [Engine-Detailed.md](../Engine-Detailed.md) - детальные примеры
+- [Component-Development.md](Component-Development.md) - полное руководство
 
 ---
 
@@ -106,3 +112,7 @@ Use `RegisterProperty()` in `ABuild()`.
 ### Step 4: Register in Library
 
 Register component in library's `LoadLibrary()` function.
+
+### Detailed Guide
+
+For more detailed information, see [Component-Development.md](Component-Development.md) - complete component development guide with examples, best practices, and patterns.

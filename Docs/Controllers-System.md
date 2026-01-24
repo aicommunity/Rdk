@@ -632,7 +632,7 @@ protected:
 
 ### См. также
 
-- [Engine Architecture](../../Docs/Rdk-Core/Engine-Architecture.md) - архитектура движка и компонентов
+- [Engine Architecture](Architecture/Engine-Architecture.md) - архитектура движка и компонентов
 - [GUI Widgets Reference](../../Docs/GUI/Widgets-Reference.md) - GUI виджеты
 - [Property System](Diagrams/Property-System.md) - система свойств
 

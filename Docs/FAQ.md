@@ -20,7 +20,7 @@ Rdk Core - это ядро системы Nmsdk, предоставляющее 
 
 #### Где найти обзорную информацию о Rdk Core?
 
-См. [Docs/Rdk-Core/Overview.md](../../Docs/Rdk-Core/Overview.md) в корневой документации проекта.
+См. [Architecture/Overview.md](Architecture/Overview.md) в документации Rdk.
 
 ### Компоненты
 
@@ -194,7 +194,7 @@ Rdk Core is the core of the Nmsdk system, providing the basic infrastructure for
 
 #### Where can I find overview information about Rdk Core?
 
-See [Docs/Rdk-Core/Overview.md](../../Docs/Rdk-Core/Overview.md) in the root project documentation.
+See [Architecture/Overview.md](Architecture/Overview.md) in Rdk documentation.
 
 ### Components
 

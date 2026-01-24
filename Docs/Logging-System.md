@@ -652,7 +652,7 @@ void GlobalFunction() {
 
 - [Exception Handling](Utilities-Reference.md#uexception---система-исключений) - обработка исключений
 - [GUI Widgets Reference](../../Docs/GUI/Widgets-Reference.md) - ULoggerWidget
-- [Engine Architecture](../../Docs/Rdk-Core/Engine-Architecture.md) - использование логирования в компонентах
+- [Engine Architecture](Architecture/Engine-Architecture.md) - использование логирования в компонентах
 
 ---
 
