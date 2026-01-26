@@ -14,6 +14,10 @@ See file license.txt for more information
 
 #include "UItem.h"
 #include "UStorage.h"
+#include <type_traits>
+// Включаем полное определение TProjectLoadDiagnostics для использования в шаблонных функциях
+// (нужно для доступа к полю errors в шаблонной функции CreateLink)
+#include "TProjectLoadDiagnostics.h"
 
 
 namespace RDK {
@@ -105,12 +109,13 @@ virtual bool ADelComponent(UEPtr<UContainer> comp);
 public:
 // Устанавливает новую связь 'link'
 template<typename T>
-bool CreateLink(const ULinkT<T> &link, bool forced_connect_same_item=false);
+bool CreateLink(const ULinkT<T> &link, bool forced_connect_same_item=false, void* diagnostics = nullptr);
 
 // Устанавливает новую связь между выходом элемента сети
 // 'item' и коннектором 'connector'
+// diagnostics - опциональный указатель на структуру для накопления ошибок установки связей
 template<typename T>
-bool CreateLink(const ULinkSideT<T> &itemid, const ULinkSideT<T> &connectorid, bool forced_connect_same_item=false);
+bool CreateLink(const ULinkSideT<T> &itemid, const ULinkSideT<T> &connectorid, bool forced_connect_same_item=false, void* diagnostics = nullptr);
 
 // Устанавливает новую связь между выходом элемента сети
 // 'item' и коннектором 'connector'
@@ -118,8 +123,8 @@ virtual bool CreateLink(const NameT &item, const NameT &item_index,
 						const NameT &connector, const NameT &connector_index, int connector_c_index=-1, bool forced_connect_same_item=false);
 
 // Устанавливает все связи из массива 'linkslist'
-template<typename T>
-bool CreateLinks(const ULinksListT<T> &linkslist, UEPtr<UNet> owner_level=0);
+ template<typename T>
+ bool CreateLinks(const ULinksListT<T> &linkslist, UEPtr<UNet> owner_level=0, void* diagnostics = nullptr);
 
 // Разрывает связь 'link'
 template<typename T>
@@ -246,7 +251,8 @@ virtual bool SaveComponent(RDK::USerStorageXML *serstorage, bool links, unsigned
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
-virtual bool LoadComponent(RDK::USerStorageXML *serstorage, bool links);
+// diagnostics - опциональный указатель на структуру для накопления ошибок загрузки
+virtual bool LoadComponent(RDK::USerStorageXML *serstorage, bool links, void* diagnostics = nullptr);
 
 // Сохраняет все свойства компонента и его дочерних компонент в xml
 virtual bool SaveComponentProperties(RDK::USerStorageXML *serstorage, unsigned int type_mask);
@@ -273,7 +279,8 @@ virtual int GetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
 // Имена применяются до уровня компонента owner_level
 // Если owner_level не задан, то имена применяются до уровня текущего компонента
-virtual int SetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level);
+// diagnostics - опциональный указатель на структуру для накопления ошибок установки связей
+virtual int SetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, void* diagnostics = nullptr);
 
 // Возращает все входные связи к компоненту stringid в виде xml в буфер buffer
 // если 'sublevel' == -2, то возвращает связи всех элементов включая
@@ -359,21 +366,35 @@ ULinksListT<T>& UNet::GetPersonalLinks(UEPtr<RDK::UNet> cont, ULinksListT<T> &li
 
 // Устанавливает новую связь 'link'
 template<typename T>
-bool UNet::CreateLink(const ULinkT<T> &link, bool forced_connect_same_item)
+bool UNet::CreateLink(const ULinkT<T> &link, bool forced_connect_same_item, void* diagnostics)
 {
  bool res=true;
  for(size_t i=0;i<link.Connector.size();i++)
  {
-  res &=CreateLink(link.Item, link.Connector[i], forced_connect_same_item);
+  res &=CreateLink(link.Item, link.Connector[i], forced_connect_same_item, diagnostics);
  }
 
  return res;
 }
 
+// Вспомогательные функции для преобразования Id в строку (используются в шаблонных функциях)
+// Перегрузка для std::string
+inline void ConvertIdToStdString(const std::string& id, std::string& result)
+{
+ result = id;
+}
+
+// Перегрузка для UIdVector
+inline void ConvertIdToStdString(const UIdVector& id, std::string& result)
+{
+ id.EncodeToString(result);
+}
+
 // Устанавливает новую связь между выходом элемента сети
 // 'item' и коннектором 'connector'
+// diagnostics - опциональный указатель на структуру для накопления ошибок установки связей
 template<typename T>
-bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector, bool forced_connect_same_item)
+bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector, bool forced_connect_same_item, void* diagnostics)
 {
  UEPtr<UItem> pitem;
  if(!CheckLongId(item.Id))
@@ -387,15 +408,42 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector,
  else
   pconnector=dynamic_pointer_cast<UConnector>(GetComponentL(connector.Id,true));
 
+ // Приводим diagnostics к правильному типу для накопления ошибок
+ TProjectLoadDiagnostics* diag = diagnostics ? static_cast<TProjectLoadDiagnostics*>(diagnostics) : nullptr;
+ 
  if(!pitem)
  {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Item not found: ")+item.Name);
+  // Преобразуем Id в строку
+  std::string id_str;
+  // Для std::string просто присваиваем, для UIdVector используем EncodeToString
+  // Используем SFINAE через перегрузку функции
+  ConvertIdToStdString(item.Id, id_str);
+  std::string error_msg = std::string("Source component '") + id_str + std::string("' not found");
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, error_msg);
+  if(diag)
+  {
+   std::string full_name;
+   GetFullName(full_name);
+   diag->errors.push_back(full_name.empty() ? error_msg : full_name + std::string(": ") + error_msg);
+  }
   return false;
  }
 
  if(!pconnector)
  {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Connector not found: ")+connector.Name);
+  // Преобразуем Id в строку
+  std::string id_str;
+  // Для std::string просто присваиваем, для UIdVector используем EncodeToString
+  // Используем SFINAE через перегрузку функции
+  ConvertIdToStdString(connector.Id, id_str);
+  std::string error_msg = std::string("Destination component '") + id_str + std::string("' not found");
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, error_msg);
+  if(diag)
+  {
+   std::string full_name;
+   GetFullName(full_name);
+   diag->errors.push_back(full_name.empty() ? error_msg : full_name + std::string(": ") + error_msg);
+  }
   return false;
  }
 
@@ -404,7 +452,7 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector,
  if(!item.Name.empty() || !connector.Name.empty())
  {
   int c_index=connector.Index;
-  if(!(pitem->Connect(pconnector,item.Name,connector.Name,c_index, forced_connect_same_item)))
+  if(!(pitem->Connect(pconnector,item.Name,connector.Name,c_index, forced_connect_same_item, diagnostics)))
    return false;
  }
 
@@ -412,8 +460,9 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector,
 }
 
 // Устанавливает все связи из массива 'linkslist'.
+// diagnostics - опциональный указатель на структуру для накопления ошибок установки связей
 template<typename T>
-bool UNet::CreateLinks(const ULinksListT<T> &linkslist, UEPtr<UNet> owner_level)
+bool UNet::CreateLinks(const ULinksListT<T> &linkslist, UEPtr<UNet> owner_level, void* diagnostics)
 {
  bool res=true;
 
@@ -421,9 +470,9 @@ bool UNet::CreateLinks(const ULinksListT<T> &linkslist, UEPtr<UNet> owner_level)
  for(i=0;i<linkslist.GetSize();i++)
  {
   if(owner_level)
-   res&=owner_level->CreateLink(linkslist[i]);
+   res&=owner_level->CreateLink(linkslist[i], false, diagnostics);
   else
-   res&=CreateLink(linkslist[i]);
+   res&=CreateLink(linkslist[i], false, diagnostics);
  }
 
  if(!res)

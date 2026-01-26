@@ -19,13 +19,18 @@
 #include <sstream>
 #include <system_error>
 #include <vector>
+#include <set>
+#include <map>
+#include <functional>
 #include <ctime>
 
 #include "../Engine/UGlogGuiSink.h"
 #include "../Engine/UGlogMirrorSink.h"
 #include "../Engine/UJsonLogSink.h"
 #include "../Engine/UExceptionLogger.h"
+#include "../Engine/UEnvSupport.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
+#include "../../Deploy/Include/rdk_cpp_init.h"
 #include "../../Deploy/Include/rdk_logging.h"
 #include "../../../Rdk/Deploy/Include/rdk.h"
 #ifdef RDK_USE_GLOG
@@ -2024,15 +2029,26 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
  return SaveProject();
 }
 
-/// Открывает проект
-bool UApplication::OpenProject(const std::string &filename)
+/// Открывает проект с диагностикой
+bool UApplication::OpenProject(const std::string &filename, TProjectLoadDiagnostics* diagnostics)
 {
  CloseProject();
+
+ if(diagnostics)
+ {
+  *diagnostics = TProjectLoadDiagnostics();
+ }
 
  bool is_loaded(false);
  if(!ProjectXml.LoadFromFile(filename,""))
  {
-  RLOG(RDK_EX_WARNING, RDK_SYS_MESSAGE, "sys", std::string("Can't read project file ") + filename);
+  std::string error_msg = std::string("Can't read project file ") + filename;
+  RLOG(RDK_EX_WARNING, RDK_SYS_MESSAGE, "sys", error_msg);
+  if(diagnostics)
+  {
+   diagnostics->errors.push_back(error_msg);
+   diagnostics->isValid = false;
+  }
   return false;
  }
 
@@ -2052,6 +2068,11 @@ RLOG(RDK_EX_INFO, RDK_SYS_MESSAGE, "sys", std::string("Open configuration ") + f
  EngineControl->SetThreadMode(config.MultiThreadingMode);
  CalcAppCaption();
 
+ if(diagnostics)
+ {
+  diagnostics->channelsTotal = config.NumChannels;
+ }
+
 try{
 
  EngineControl->SetNumChannels(config.NumChannels);
@@ -2066,6 +2087,11 @@ try{
  Project->SetConfig(config);
  MirrorLogsToWorkDirFlag=config.EventsLogFlag;
   Project->ResetModified();
+ }
+ else if(diagnostics && !config.DescriptionFileName.empty())
+ {
+  std::string warning_msg = std::string("Can't load description file: ") + config.DescriptionFileName;
+  diagnostics->warnings.push_back(warning_msg);
  }
 
  for(int i=0;i<config.NumChannels;i++)
@@ -2098,51 +2124,126 @@ try{
 
    if(channel_config.PredefinedStructure == 0 && !channel_config.ModelFileName.empty())
    {
+	std::string model_file_path;
 	if(extract_file_path(channel_config.ModelFileName).empty())
 	{
-	 is_loaded=LoadModelFromFile(i,ProjectPath+channel_config.ModelFileName);
+	 model_file_path = ProjectPath+channel_config.ModelFileName;
+	 is_loaded=LoadModelFromFile(i,model_file_path, diagnostics);
 	}
 	else
-	 is_loaded=LoadModelFromFile(i,channel_config.ModelFileName);
+	{
+	 model_file_path = channel_config.ModelFileName;
+	 is_loaded=LoadModelFromFile(i,model_file_path, diagnostics);
+	}
 
 	if(!is_loaded)
-	 RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-OpenProject: Can't open model file: ") + channel_config.ModelFileName);
+	{
+	 std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + std::string(": Can't open model file: ") + channel_config.ModelFileName;
+	 RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", error_msg);
+	 if(diagnostics)
+	 {
+	  diagnostics->errors.push_back(error_msg);
+	  diagnostics->missingFiles.push_back(model_file_path);
+	  diagnostics->failedChannels.push_back(i);
+	 }
+	}
    }
 
 
    if(!channel_config.ParametersFileName.empty())
    {
+	std::string params_file_path;
 	if(extract_file_path(channel_config.ParametersFileName).empty())
-	 is_loaded=LoadParametersFromFile(i,ProjectPath+channel_config.ParametersFileName);
+	{
+	 params_file_path = ProjectPath+channel_config.ParametersFileName;
+	 is_loaded=LoadParametersFromFile(i,params_file_path);
+	}
 	else
-	 is_loaded=LoadParametersFromFile(i,channel_config.ParametersFileName);
+	{
+	 params_file_path = channel_config.ParametersFileName;
+	 is_loaded=LoadParametersFromFile(i,params_file_path);
+	}
 
  	if(!is_loaded)
-	 RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-OpenProject: Can't open parameters file: ") + channel_config.ParametersFileName);
+	{
+	 std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + std::string(": Can't open parameters file: ") + channel_config.ParametersFileName;
+	 RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", error_msg);
+	 if(diagnostics)
+	 {
+	  diagnostics->errors.push_back(error_msg);
+	  diagnostics->missingFiles.push_back(params_file_path);
+	 }
+	}
    }
 
    if(config.ProjectAutoSaveStatesFlag)
    {
 	if(!channel_config.StatesFileName.empty())
 	{
+	 std::string states_file_path;
 	 if(extract_file_path(channel_config.StatesFileName).empty())
-	  is_loaded=LoadStatesFromFile(i,ProjectPath+channel_config.StatesFileName);
+	 {
+	  states_file_path = ProjectPath+channel_config.StatesFileName;
+	  is_loaded=LoadStatesFromFile(i,states_file_path);
+	 }
 	 else
-	  is_loaded=LoadStatesFromFile(i,channel_config.StatesFileName);
+	 {
+	  states_file_path = channel_config.StatesFileName;
+	  is_loaded=LoadStatesFromFile(i,states_file_path);
+	 }
 
 	 if(!is_loaded)
-	  RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-OpenProject: Can't open states file: ") + channel_config.StatesFileName);
+	 {
+	  std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + std::string(": Can't open states file: ") + channel_config.StatesFileName;
+	  RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", error_msg);
+	  if(diagnostics)
+	  {
+	   diagnostics->errors.push_back(error_msg);
+	   diagnostics->missingFiles.push_back(states_file_path);
+	  }
+	 }
 	}
    }
 
-   if(Model_Check())
+   // Проверка модели после загрузки
+   bool channel_has_model = Model_Check();
+   int channel_components = 0;
+   if(channel_has_model)
    {
+	channel_components = Model_GetNumComponents("");
+	if(diagnostics)
+	{
+	 diagnostics->componentsCount.push_back(channel_components);
+	 if(channel_components == 0)
+	 {
+	  std::string warning_msg = std::string("Channel ") + RDK::sntoa(i) + std::string(": Model is empty (no components)");
+	  diagnostics->warnings.push_back(warning_msg);
+	  diagnostics->modelEmpty = true;
+	 }
+	 else
+	 {
+	  diagnostics->modelExists = true;
+	 }
+	}
+
 	if(!channel_config.UseIndTimeStepFlag)
 	 Model_SetGlobalTimeStep("",channel_config.GlobalTimeStep);
 	if(channel_config.InitAfterLoad)
      MEnv_ModelInit(i,0);
 	if(channel_config.ResetAfterLoad)
 	 MEnv_Reset(i,0);
+   }
+   else if(diagnostics)
+   {
+	diagnostics->componentsCount.push_back(0);
+	std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + std::string(": Model does not exist after loading");
+	diagnostics->errors.push_back(error_msg);
+	diagnostics->failedChannels.push_back(i);
+   }
+
+   if(diagnostics && channel_has_model && channel_components > 0)
+   {
+	diagnostics->channelsLoaded++;
    }
 
    EngineControl->SetCalculateMode(i, channel_config.CalculationMode);
@@ -2151,7 +2252,13 @@ try{
   }
   catch(RDK::UException &exception)
   {
+   std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + std::string(": Exception during loading: ") + exception.what();
    RLOG(exception.GetType(), RDK_SYS_MESSAGE, "sys", std::string("Core-OpenProject(Load Channel) Exception: (Name=") + std::string(Name.c_str()) + std::string(") ") + exception.what());
+   if(diagnostics)
+   {
+	diagnostics->errors.push_back(error_msg);
+	diagnostics->failedChannels.push_back(i);
+   }
   }
   Sleep(0);
  }
@@ -2166,13 +2273,28 @@ try{
 
  if(!config.InterfaceFileName.empty())
  {
+  std::string interface_file_path;
   if(extract_file_path(config.InterfaceFileName).empty())
-   is_loaded=InterfaceXml.LoadFromFile(ProjectPath+config.InterfaceFileName,"Interfaces");
+  {
+   interface_file_path = ProjectPath+config.InterfaceFileName;
+   is_loaded=InterfaceXml.LoadFromFile(interface_file_path,"Interfaces");
+  }
   else
-   is_loaded=InterfaceXml.LoadFromFile(config.InterfaceFileName,"Interfaces");
+  {
+   interface_file_path = config.InterfaceFileName;
+   is_loaded=InterfaceXml.LoadFromFile(interface_file_path,"Interfaces");
+  }
 
   if(!is_loaded)
-   RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-OpenProject: Can't open interface file: ") + config.InterfaceFileName);
+  {
+   std::string error_msg = std::string("Can't open interface file: ") + config.InterfaceFileName;
+   RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", error_msg);
+   if(diagnostics)
+   {
+	diagnostics->errors.push_back(error_msg);
+	diagnostics->missingFiles.push_back(interface_file_path);
+   }
+  }
 
   InterfaceXml.SelectNodeRoot(std::string("Interfaces"));
  }
@@ -2189,7 +2311,13 @@ try{
 catch(RDK::UException &exception)
 {
 // UShowProgressBarForm->Hide();
-RLOG(exception.GetType(), RDK_SYS_MESSAGE, "sys", std::string("Core-OpenProject Exception: (Name=") + Name + std::string(") ") + exception.what());
+ std::string error_msg = std::string("Exception during project loading: ") + exception.what();
+ RLOG(exception.GetType(), RDK_SYS_MESSAGE, "sys", std::string("Core-OpenProject Exception: (Name=") + Name + std::string(") ") + exception.what());
+ if(diagnostics)
+ {
+  diagnostics->errors.push_back(error_msg);
+  diagnostics->isValid = false;
+ }
 }
 
  std::list<std::string> last_list=LastProjectsList;
@@ -2204,8 +2332,20 @@ RLOG(exception.GetType(), RDK_SYS_MESSAGE, "sys", std::string("Core-OpenProject 
 
  SaveProjectsHistory();
 
+ if(diagnostics)
+ {
+  // Определяем общую валидность
+  diagnostics->isValid = (diagnostics->errors.empty() && diagnostics->channelsLoaded > 0);
+ }
+
 RLOG(RDK_EX_INFO, RDK_SYS_MESSAGE, "sys", std::string("Configuration ") + filename + " has been opened.");
  return true;
+}
+
+/// Открывает проект (без диагностики)
+bool UApplication::OpenProject(const std::string &filename)
+{
+ return OpenProject(filename, nullptr);
 }
 
 /// Сохраняет проект
@@ -2722,7 +2862,7 @@ UEngineControl::UCalcState UApplication::CheckCalcState(int channel_id) const
 // --------------------------
 // Методы загрузки сохранения данных в файл
 // --------------------------
-bool UApplication::LoadModelFromFile(int channel_index, const std::string &file_name)
+bool UApplication::LoadModelFromFile(int channel_index, const std::string &file_name, TProjectLoadDiagnostics* diagnostics)
 {
  if(!MCore_IsChannelInit(channel_index))
   return false;
@@ -2737,7 +2877,42 @@ bool UApplication::LoadModelFromFile(int channel_index, const std::string &file_
  if(!data.empty())
  {
   MModel_Destroy(channel_index);
-  if(MModel_LoadComponent(channel_index, "",data.c_str()) == RDK_SUCCESS)
+  // Передаем диагностику в Model_LoadComponent через Engine
+  // Используем GetEngineLock для получения правильного Engine для канала
+  // ВАЖНО: GetEngineLock должен возвращать указатель на тот же Engine из EngineList[channel_index]
+  RDK::UELockPtr<RDK::UEngine> engine_lock = RDK::GetEngineLock(channel_index);
+  RDK::UEngine* engine_ptr = engine_lock.Get();
+  
+  if(engine_ptr && diagnostics)
+  {
+   // Временно сохраняем диагностику в Engine для использования в Model_LoadComponent
+   // Это не идеально, но позволяет избежать изменения C API
+   // Проверяем, что Engine действительно тот же, что и в EngineList[channel_index]
+   RDK::UEPtr<RDK::UEngine> engine_direct = RDK::GetEngine(channel_index);
+   if(engine_direct.Get() == engine_ptr)
+   {
+	engine_ptr->SetLoadDiagnostics(diagnostics);
+   }
+   else
+   {
+	// Это не должно происходить, но на всякий случай логируем
+	RLOG(RDK_EX_WARNING, channel_index, nullptr, 
+		 std::string("Warning: Engine pointer mismatch in LoadModelFromFile for channel ") + RDK::sntoa(channel_index));
+   }
+  }
+  
+  int result = MModel_LoadComponent(channel_index, "",data.c_str());
+  
+  // Проверяем, что Engine все еще тот же, и очищаем диагностику
+  if(engine_ptr && diagnostics)
+  {
+   RDK::UEPtr<RDK::UEngine> engine_direct = RDK::GetEngine(channel_index);
+   if(engine_direct.Get() == engine_ptr)
+   {
+	engine_ptr->SetLoadDiagnostics(nullptr);
+   }
+  }
+  if(result == RDK_SUCCESS)
    return true;
  }
  return false;
@@ -3170,6 +3345,430 @@ RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("SaveFileSafe file: ") + 
  return false;
 }
 // --------------------------
+
+/// Валидирует конфигурацию проекта
+TProjectLoadDiagnostics UApplication::ValidateProject(const std::string &filename)
+{
+ TProjectLoadDiagnostics diagnostics;
+ 
+ // Сначала парсим XML проекта для предварительной проверки классов компонентов и связей
+ // Важно: делаем это ДО загрузки проекта, чтобы XML не был изменен
+ std::string project_path = extract_file_path(filename);
+ RDK::USerStorageXML project_xml_check;
+ std::map<int, std::set<std::string> > xml_components_by_channel; // Компоненты из XML по каналам
+ std::map<int, std::map<std::string, std::string> > xml_component_classes_by_channel; // Классы компонентов из XML по каналам
+ std::map<int, RDK::UStringLinksList> xml_links_by_channel; // Связи из XML по каналам
+ 
+ if(project_xml_check.LoadFromFile(filename, ""))
+ {
+  project_xml_check.SelectNodeRoot("Project");
+  if(project_xml_check.SelectNode("Channels"))
+  {
+   int channels_count = project_xml_check.GetNumNodes();
+   for(int ch_idx = 0; ch_idx < channels_count; ch_idx++)
+   {
+	if(project_xml_check.SelectNode(ch_idx))
+	{
+	 std::string model_file = project_xml_check.ReadString("ModelFileName", "");
+	 if(!model_file.empty())
+	 {
+	  std::string model_file_path;
+	  if(extract_file_path(model_file).empty())
+	  {
+	   model_file_path = project_path + model_file;
+	  }
+	  else
+	  {
+	   model_file_path = model_file;
+	  }
+	  
+	   // Парсим XML модели для проверки классов компонентов
+	   RDK::USerStorageXML model_xml;
+	   if(model_xml.LoadFromFile(model_file_path, "Save"))
+	   {
+		model_xml.SelectNodeRoot("Save");
+		if(model_xml.SelectNode("Model"))
+		{
+		 // Рекурсивная функция для парсинга компонентов (как в UNet::LoadComponent)
+		 std::function<void(RDK::USerStorageXML&, const std::string&)> parseComponents = [&](RDK::USerStorageXML& xml, const std::string& parent_path) {
+		  if(xml.SelectNode("Components"))
+		  {
+		   int components_count = xml.GetNumNodes();
+		   for(int comp_idx = 0; comp_idx < components_count; comp_idx++)
+		   {
+			if(xml.SelectNode(comp_idx))
+			{
+			 std::string comp_name = xml.GetNodeName();
+			 std::string comp_class = xml.GetNodeAttribute("Class");
+			 std::string full_comp_name = parent_path.empty() ? comp_name : parent_path + "." + comp_name;
+			 
+			 xml_components_by_channel[ch_idx].insert(full_comp_name);
+			 xml_component_classes_by_channel[ch_idx][full_comp_name] = comp_class;
+			 
+			 // Класс будет проверен после загрузки проекта, когда Storage будет инициализирован
+			 // Пока просто сохраняем информацию
+			 
+			 // Рекурсивно парсим дочерние компоненты
+			 parseComponents(xml, full_comp_name);
+			 xml.SelectUp();
+			}
+		   }
+		  xml.SelectUp();
+		 }
+		};
+		
+		parseComponents(model_xml, "");
+		
+		// Возвращаемся к узлу Model для парсинга связей
+		model_xml.SelectNodeRoot("Save");
+		model_xml.SelectNode("Model");
+		
+		// Парсим связи из XML модели
+		if(model_xml.SelectNode("Links"))
+		{
+		 model_xml >> xml_links_by_channel[ch_idx];
+		 model_xml.SelectUp();
+		}
+		
+		model_xml.SelectUp();
+	   }
+	  }
+	 }
+	 project_xml_check.SelectUp();
+	}
+   }
+  }
+ }
+ 
+ // Загружаем проект с диагностикой
+ bool loaded = OpenProject(filename, &diagnostics);
+ 
+ if(!loaded)
+ {
+  if(diagnostics.errors.empty())
+  {
+   diagnostics.errors.push_back(std::string("Failed to open project file: ") + filename);
+  }
+  diagnostics.isValid = false;
+  return diagnostics;
+ }
+
+ // Дополнительные проверки после загрузки
+ const TProjectConfig& config = GetProjectConfig();
+ 
+ // Проверяем каждый канал на наличие компонентов и связей
+ for(int i = 0; i < config.NumChannels; i++)
+ {
+  Core_SelectChannel(i);
+  
+  // Объявляем переменную до проверки Model_Check, чтобы она была доступна в конце цикла
+  std::set<std::string> loaded_components;
+  
+  if(!Model_Check())
+  {
+   std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + std::string(": Model does not exist");
+   diagnostics.errors.push_back(error_msg);
+   continue;
+  }
+
+  // Получаем загруженные компоненты
+  const char* components_list = Model_GetComponentsNameList("");
+  if(components_list && strlen(components_list) > 0)
+  {
+   std::string comp_list_str = components_list;
+   std::istringstream iss(comp_list_str);
+   std::string component;
+   while(std::getline(iss, component, ','))
+   {
+	loaded_components.insert(component);
+   }
+  }
+  
+  // Проверяем классы компонентов из XML для этого канала
+  if(xml_component_classes_by_channel.find(i) != xml_component_classes_by_channel.end())
+  {
+   const std::map<std::string, std::string>& xml_classes = xml_component_classes_by_channel[i];
+   std::set<std::string> checked_top_level_components; // Чтобы не проверять один компонент дважды
+   
+   for(const auto& pair : xml_classes)
+   {
+	const std::string& comp_name = pair.first;
+	const std::string& comp_class = pair.second;
+	
+	// Извлекаем имя компонента верхнего уровня
+	std::string top_level_comp = comp_name;
+	size_t dot_pos = comp_name.find('.');
+	if(dot_pos != std::string::npos)
+	{
+	 top_level_comp = comp_name.substr(0, dot_pos);
+	}
+	
+	// Проверяем класс только для компонентов верхнего уровня и только один раз
+	if(checked_top_level_components.find(top_level_comp) == checked_top_level_components.end())
+	{
+	 checked_top_level_components.insert(top_level_comp);
+	 
+	 // Проверяем класс независимо от того, загрузился ли компонент
+	 if(!comp_class.empty())
+	 {
+	  try
+	  {
+	   int class_id = Storage_GetClassId(comp_class.c_str());
+	   if(class_id == 0)
+	   {
+		std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + 
+								 std::string(", Component '") + top_level_comp + 
+								 std::string("': Class '") + comp_class + std::string("' does not exist in storage (ID=0)");
+		diagnostics.errors.push_back(error_msg);
+	   }
+	  }
+	  catch(...)
+	  {
+	   std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + 
+								std::string(", Component '") + top_level_comp + 
+								std::string("': Class '") + comp_class + std::string("' does not exist in storage");
+	   diagnostics.errors.push_back(error_msg);
+	  }
+	 }
+	 
+	 // Если компонент не загрузился, это дополнительная ошибка
+	 if(loaded_components.find(top_level_comp) == loaded_components.end())
+	 {
+	  std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + 
+							   std::string(", Component '") + top_level_comp + 
+							   std::string("': Component failed to load (possibly due to invalid class)");
+	  diagnostics.errors.push_back(error_msg);
+	 }
+	}
+   }
+  }
+  
+  // Проверяем связи из XML для этого канала
+  if(xml_links_by_channel.find(i) != xml_links_by_channel.end())
+  {
+   const RDK::UStringLinksList& xml_linkslist = xml_links_by_channel[i];
+   const std::set<std::string>& xml_components = xml_components_by_channel[i];
+   
+   // Проверяем каждую связь из XML
+   for(int link_idx = 0; link_idx < xml_linkslist.GetSize(); link_idx++)
+   {
+	const RDK::UStringLink& link = xml_linkslist[link_idx];
+	
+	// Извлекаем имя компонента-источника (до первой точки)
+	std::string source_comp = link.Item.Id;
+	size_t dot_pos = source_comp.find('.');
+	if(dot_pos != std::string::npos)
+	{
+	 source_comp = source_comp.substr(0, dot_pos);
+	}
+	
+	// Проверяем, существует ли компонент-источник в XML
+	bool source_exists = false;
+	for(const std::string& xml_comp : xml_components)
+	{
+	 std::string top_level = xml_comp;
+	 size_t dot = xml_comp.find('.');
+	 if(dot != std::string::npos)
+	 {
+	  top_level = xml_comp.substr(0, dot);
+	 }
+	 if(top_level == source_comp)
+	 {
+	  source_exists = true;
+	  break;
+	 }
+	}
+	
+	if(!source_exists)
+	{
+	 std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + 
+							 std::string(", Link ") + RDK::sntoa(link_idx) + 
+							 std::string(": Source component '") + source_comp + std::string("' does not exist in model");
+	 diagnostics.errors.push_back(error_msg);
+	}
+	else if(loaded_components.find(source_comp) == loaded_components.end())
+	{
+	 // Компонент есть в XML, но не загрузился
+	 std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + 
+							 std::string(", Link ") + RDK::sntoa(link_idx) + 
+							 std::string(": Source component '") + source_comp + std::string("' failed to load");
+	 diagnostics.errors.push_back(error_msg);
+	}
+	
+	// Проверяем приемники связи
+	for(size_t conn_idx = 0; conn_idx < link.Connector.size(); conn_idx++)
+	{
+	 const RDK::ULinkSideT<std::string>& connector = link.Connector[conn_idx];
+	 std::string dest_comp_full = connector.Id;
+	 
+	 // Извлекаем имя компонента-приемника (до первой точки)
+	 std::string dest_comp = dest_comp_full;
+	 dot_pos = dest_comp_full.find('.');
+	 if(dot_pos != std::string::npos)
+	 {
+	  dest_comp = dest_comp_full.substr(0, dot_pos);
+	 }
+	 
+	 // Проверяем, существует ли компонент-приемник в XML
+	 bool dest_exists = false;
+	 for(const std::string& xml_comp : xml_components)
+	 {
+	  std::string top_level = xml_comp;
+	  size_t dot = xml_comp.find('.');
+	  if(dot != std::string::npos)
+	  {
+	   top_level = xml_comp.substr(0, dot);
+	  }
+	  if(top_level == dest_comp)
+	  {
+	   dest_exists = true;
+	   break;
+	  }
+	 }
+	 
+	 if(!dest_exists)
+	 {
+	  std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + 
+							  std::string(", Link ") + RDK::sntoa(link_idx) + 
+							  std::string(", Connector ") + RDK::sntoa(conn_idx) + 
+							  std::string(": Destination component '") + dest_comp + std::string("' does not exist in model");
+	  diagnostics.errors.push_back(error_msg);
+	 }
+	 else if(loaded_components.find(dest_comp) == loaded_components.end())
+	 {
+	  // Компонент есть в XML, но не загрузился
+	  std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + 
+							  std::string(", Link ") + RDK::sntoa(link_idx) + 
+							  std::string(", Connector ") + RDK::sntoa(conn_idx) + 
+							  std::string(": Destination component '") + dest_comp + std::string("' failed to load");
+	  diagnostics.errors.push_back(error_msg);
+	 }
+	}
+   }
+  }
+  
+  // Проверяем классы загруженных компонентов
+  for(const std::string& comp_name : loaded_components)
+  {
+	// Проверяем класс компонента
+	const char* class_name = Model_GetComponentClassName(comp_name.c_str());
+	if(class_name)
+	{
+	 try
+	 {
+	  int class_id = Storage_GetClassId(class_name);
+	  if(class_id == 0)
+	  {
+	   std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + 
+								std::string(", Component ") + comp_name + 
+								std::string(": Class '") + class_name + std::string("' does not exist (ID=0)");
+	   diagnostics.errors.push_back(error_msg);
+	  }
+	 }
+	 catch(...)
+	 {
+	  std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + 
+							   std::string(", Component ") + comp_name + 
+							   std::string(": Class '") + class_name + std::string("' does not exist");
+	  diagnostics.errors.push_back(error_msg);
+	 }
+	 Engine_FreeBufString(class_name);
+	}
+	
+	// Проверяем связи для каждого компонента
+	const char* links_xml = Model_GetComponentInternalLinks(comp_name.c_str(), nullptr);
+	if(links_xml)
+	{
+	 // Парсим XML связей используя UStringLinksList
+	 RDK::USerStorageXML links_xml_storage;
+	 if(links_xml_storage.Load(links_xml, "Links"))
+	 {
+	  RDK::UStringLinksList linkslist;
+	  links_xml_storage >> linkslist;
+	  
+	  // Проверяем каждую связь
+	  for(int link_idx = 0; link_idx < linkslist.GetSize(); link_idx++)
+	  {
+	   const RDK::UStringLink& link = linkslist[link_idx];
+	   
+	   // Извлекаем имя компонента-источника (до первой точки, если есть)
+	   std::string source_comp = link.Item.Id;
+	   size_t dot_pos = source_comp.find('.');
+	   if(dot_pos != std::string::npos)
+	   {
+		source_comp = source_comp.substr(0, dot_pos);
+	   }
+	   
+	   // Проверяем, существует ли компонент-источник
+	   if(!source_comp.empty() && loaded_components.find(source_comp) == loaded_components.end())
+	   {
+		std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + 
+								std::string(", Component ") + comp_name + 
+								std::string(", Link ") + RDK::sntoa(link_idx) + 
+								std::string(": Source component '") + source_comp + std::string("' does not exist");
+		diagnostics.errors.push_back(error_msg);
+	   }
+	   
+	   // Проверяем приемники связи
+	   for(size_t conn_idx = 0; conn_idx < link.Connector.size(); conn_idx++)
+	   {
+		const RDK::ULinkSideT<std::string>& connector = link.Connector[conn_idx];
+		std::string dest_comp_full = connector.Id;
+		
+		// Извлекаем имя компонента-приемника (до первой точки)
+		std::string dest_comp = dest_comp_full;
+		dot_pos = dest_comp_full.find('.');
+		if(dot_pos != std::string::npos)
+		{
+		 dest_comp = dest_comp_full.substr(0, dot_pos);
+		}
+		
+		// Проверяем, существует ли компонент-приемник
+		if(!dest_comp.empty() && loaded_components.find(dest_comp) == loaded_components.end())
+		{
+		 std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + 
+								 std::string(", Component ") + comp_name + 
+								 std::string(", Link ") + RDK::sntoa(link_idx) + 
+								 std::string(", Connector ") + RDK::sntoa(conn_idx) + 
+								 std::string(": Destination component '") + dest_comp + std::string("' does not exist");
+		 diagnostics.errors.push_back(error_msg);
+		}
+	   }
+	  }
+	 }
+	 else
+	 {
+	  std::string warning_msg = std::string("Channel ") + RDK::sntoa(i) + 
+								std::string(", Component ") + comp_name + 
+								std::string(": Invalid links XML");
+	  diagnostics.warnings.push_back(warning_msg);
+	 }
+	 Engine_FreeBufString(links_xml);
+	}
+  }
+  
+  // Проверяем, что модель существует, но список компонентов пуст
+  if(Model_Check() && loaded_components.empty() && i < static_cast<int>(diagnostics.componentsCount.size()) && diagnostics.componentsCount[i] > 0)
+  {
+   // Модель существует, но список компонентов пуст - это предупреждение
+   std::string warning_msg = std::string("Channel ") + RDK::sntoa(i) + 
+							std::string(": Model exists but component list is empty");
+   diagnostics.warnings.push_back(warning_msg);
+  }
+ }
+
+ // Финальная проверка валидности
+ if(diagnostics.errors.empty() && diagnostics.channelsLoaded > 0)
+ {
+  diagnostics.isValid = true;
+ }
+ else
+ {
+  diagnostics.isValid = false;
+ }
+
+ return diagnostics;
+}
 
 }
 

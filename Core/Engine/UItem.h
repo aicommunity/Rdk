@@ -76,10 +76,12 @@ public:
 // Устанавливает связь с элементом сети 'na' со входом по индексу index.
 // Возвращает false если na уже подключен к этому входу.
 // При успешном подключении c_index содержит реальный индекс подключенного входа
-virtual bool ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false);
+// diagnostics - опциональный указатель на структуру для накопления ошибок установки связей
+virtual bool ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false, void* diagnostics = nullptr);
 
 // Устанавливает связь с коннектором 'c'
-virtual bool Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false);
+// diagnostics - опциональный указатель на структуру для накопления ошибок установки связей
+virtual bool Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item=false, void* diagnostics = nullptr);
 
 /// Разрывает все связи выхода этого объекта с коннектором 'c'.
 virtual void Disconnect(UEPtr<UConnector> c);

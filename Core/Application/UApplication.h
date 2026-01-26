@@ -32,6 +32,8 @@ namespace boost { namespace program_options { class variables_map; } }
 #include "Bcb/Application.bcb.h"
 #endif
 
+#include "../Engine/TProjectLoadDiagnostics.h"
+
 namespace RDK {
 
 class UEngineControl;
@@ -445,6 +447,14 @@ virtual bool UpdateProject(RDK::TProjectConfig &project_config);
 /// Открывает проект
 virtual bool OpenProject(const std::string &filename);
 
+/// Открывает проект с диагностикой
+/// Если diagnostics != nullptr, собирает информацию о состоянии загрузки
+virtual bool OpenProject(const std::string &filename, TProjectLoadDiagnostics* diagnostics);
+
+/// Валидирует конфигурацию проекта
+/// Загружает проект, выполняет проверки и возвращает диагностику
+virtual TProjectLoadDiagnostics ValidateProject(const std::string &filename);
+
 /// Сохраняет проект
 virtual bool SaveProject(void);
 virtual bool SaveProjectAs(const std::string &filename);
@@ -504,7 +514,7 @@ virtual UEngineControl::UCalcState CheckCalcState(int channel_id) const;
 // --------------------------
 // Методы загрузки сохранения данных в файл
 // --------------------------
-bool LoadModelFromFile(int channel_index, const std::string &file_name);
+bool LoadModelFromFile(int channel_index, const std::string &file_name, TProjectLoadDiagnostics* diagnostics = nullptr);
 bool SaveModelToFile(int channel_index, const std::string &file_name);
 
 bool LoadParametersFromFile(int channel_index, const std::string &file_name);

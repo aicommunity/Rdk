@@ -125,6 +125,9 @@ mutable string CompName;
 
 UBitmap TempBmp;
 
+// Временное хранилище диагностики загрузки (для передачи в LoadComponent)
+void* LoadDiagnostics;
+
 public:
 // Временное хранилище строк
 //mutable string PubTempString;
@@ -246,6 +249,12 @@ virtual const char * Storage_GetClassName(int id) const;
 
 // Возвращает Id класса по его имени
 virtual int Storage_GetClassId(const char *name) const;
+
+// Устанавливает временную диагностику загрузки (для использования в Model_LoadComponent)
+void SetLoadDiagnostics(void* diagnostics) { LoadDiagnostics = diagnostics; }
+
+// Получает временную диагностику загрузки
+void* GetLoadDiagnostics() const { return LoadDiagnostics; }
 
 // Удаляет образец класса объекта из хранилища
 // Если 'force' == true то принудительно удаляет из хранилища

@@ -15,6 +15,8 @@ See file license.txt for more information
 #include "UNet.h"
 #include "UXMLEnvSerialize.h"
 #include "UComponent.h"
+// Включаем заголовок для доступа к TProjectLoadDiagnostics
+#include "TProjectLoadDiagnostics.h"
 
 namespace RDK {
 
@@ -738,17 +740,61 @@ bool UNet::SaveComponentStructure(RDK::USerStorageXML *serstorage, bool links, u
 
 // Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
 // переменные состояния из xml
-bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
+bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links, void* diagnostics)
 {
   if(!serstorage)
    return false;
 
+  // Приводим diagnostics к правильному типу для накопления ошибок
+  TProjectLoadDiagnostics* diag = diagnostics ? static_cast<TProjectLoadDiagnostics*>(diagnostics) : nullptr;
+
   std::string name=serstorage->GetNodeAttribute("Class");
-  UId id=Storage->FindClassId(name);
+  UId id;
+  try
+  {
+   id=Storage->FindClassId(name);
+  }
+  catch(UStorage::EClassNameNotExist &exception)
+  {
+   // Класс не существует - это критическая ошибка для корневого компонента
+   std::string full_name;
+   GetFullName(full_name);
+   std::string error_msg = std::string("Component '") + serstorage->GetNodeName() + 
+						   std::string("': Class '") + name + 
+						   std::string("' does not exist in storage");
+   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, error_msg);
+   if(diag)
+   {
+	diag->errors.push_back(full_name.empty() ? error_msg : full_name + std::string(": ") + error_msg);
+   }
+   ProcessException(exception);
+   return false;
+  }
+  catch(UException &exception)
+  {
+   std::string full_name;
+   GetFullName(full_name);
+   std::string error_msg = std::string("Exception finding class '") + name + 
+						   std::string("': ") + exception.what();
+   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, error_msg);
+   if(diag)
+   {
+	diag->errors.push_back(full_name.empty() ? error_msg : full_name + std::string(": ") + error_msg);
+   }
+   ProcessException(exception);
+   return false;
+  }
 
   if(GetClass() != id)
   {
-   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Wrong class id: expected ")+sntoa(GetClass())+std::string(" found ")+sntoa(id));
+   std::string full_name;
+   GetFullName(full_name);
+   std::string error_msg = std::string("Wrong class id: expected ")+sntoa(GetClass())+std::string(" found ")+sntoa(id);
+   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, error_msg);
+   if(diag)
+   {
+	diag->errors.push_back(full_name.empty() ? error_msg : full_name + std::string(": ") + error_msg);
+   }
    return false;
   }
 
@@ -783,6 +829,8 @@ bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
    return false;
   }
   UStorage* storage=GetStorage();
+  // diag уже определен выше в начале функции
+  
   for(int i=0;i<serstorage->GetNumNodes();i++)
   {
    serstorage->SelectNode(i);
@@ -791,27 +839,101 @@ bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
    try
    {
     id=Storage->FindClassId(name);
+	
+	// Проверяем, существует ли класс (FindClassId бросает исключение, но на всякий случай проверяем)
+	if(id == 0 || id == ForbiddenId)
+	{
+	 std::string full_name;
+	 GetFullName(full_name);
+	 std::string error_msg = std::string("Component '") + nodename + 
+							 std::string("': Class '") + name + 
+							 std::string("' does not exist in storage (ID=0 or ForbiddenId)");
+	 LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, error_msg);
+	 if(diag)
+	 {
+	  diag->errors.push_back(full_name.empty() ? error_msg : full_name + std::string(": ") + error_msg);
+	 }
+	 serstorage->SelectUp();
+	 continue;
+	}
+	
 	UEPtr<UNet> newcont=dynamic_pointer_cast<UNet>(storage->TakeObject(id));
 	if(!newcont)
+	{
+	 std::string full_name;
+	 GetFullName(full_name);
+	 std::string error_msg = std::string("Component '") + nodename + 
+							 std::string("' with class '") + name + 
+							 std::string("' failed to create");
+	 LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, error_msg);
+	 if(diag)
+	 {
+	  diag->errors.push_back(full_name.empty() ? error_msg : full_name + std::string(": ") + error_msg);
+	 }
+	 serstorage->SelectUp();
 	 continue;
+	}
+	
 	if(FindStaticComponent(name,nodename) == 0) // Это НЕ уже существующий статический компонент
 	{
 	 if(AddComponent(static_pointer_cast<UContainer>(newcont)) == ForbiddenId)
 	 {
 	  storage->ReturnObject(newcont);
+	  std::string full_name;
+	  GetFullName(full_name);
+	  std::string error_msg = std::string("Component '") + nodename + 
+							  std::string("' failed to add");
+	  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, error_msg);
+	  if(diag)
+	  {
+	   diag->errors.push_back(full_name.empty() ? error_msg : full_name + std::string(": ") + error_msg);
+	  }
+	  serstorage->SelectUp();
 	  continue;
 	 }
 	}
 
-	if(!newcont->LoadComponent(serstorage,false))
+	if(!newcont->LoadComponent(serstorage,false, diagnostics))
 	{
 	 std::string tempname;
-	 LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("LoadComponent failed: ")+newcont->GetFullName(tempname));
+	 newcont->GetFullName(tempname);
+	 std::string error_msg = std::string("LoadComponent failed: ") + tempname;
+	 LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, error_msg);
+	 if(diag)
+	 {
+	  diag->errors.push_back(error_msg);
+	 }
 //	 return false;
     }
    }
+   catch(UStorage::EClassNameNotExist &exception)
+   {
+	// Специальная обработка для несуществующих классов
+	std::string full_name;
+	GetFullName(full_name);
+	std::string error_msg = std::string("Component '") + nodename + 
+							std::string("': Class '") + name + 
+							std::string("' does not exist in storage");
+	LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, error_msg);
+	if(diag)
+	{
+	 diag->errors.push_back(full_name.empty() ? error_msg : full_name + std::string(": ") + error_msg);
+	}
+	ProcessException(exception);
+	serstorage->SelectUp();
+	continue;
+   }
    catch(UException &exception)
    {
+	std::string full_name;
+	GetFullName(full_name);
+	std::string error_msg = std::string("Exception loading component '") + nodename + 
+							std::string("': ") + exception.what();
+	LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, error_msg);
+	if(diag)
+	{
+	 diag->errors.push_back(full_name.empty() ? error_msg : full_name + std::string(": ") + error_msg);
+	}
 	ProcessException(exception);
    }
    serstorage->SelectUp();
@@ -821,7 +943,7 @@ bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links)
   if(links)
   {
    serstorage->SelectNode("Links");
-   if(!SetComponentInternalLinks(serstorage,0))
+   if(!SetComponentInternalLinks(serstorage,0, diagnostics))
 	return false;
    serstorage->SelectUp();
   }
@@ -1023,7 +1145,7 @@ int UNet::GetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
 // Устанавливает все связи внутри компонента stringid из строки xml в буфере buffer
 // Имена применяются до уровня компонента owner_level
 // Если owner_level не задан, то имена применяются до уровня текущего компонента
-int UNet::SetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level)
+int UNet::SetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* owner_level, void* diagnostics)
 {
   if(!serstorage)
    return 1;
@@ -1032,7 +1154,7 @@ int UNet::SetComponentInternalLinks(RDK::USerStorageXML *serstorage, RDK::UNet* 
   *serstorage>>linkslist;
 
   BreakLinks();
-  CreateLinks(linkslist, owner_level);
+  CreateLinks(linkslist, owner_level, diagnostics);
 
  return true;
 }

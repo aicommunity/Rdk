@@ -14,6 +14,8 @@ See file license.txt for more information
 
 #include <string.h>
 #include "UItem.h"
+// Включаем заголовок для доступа к TProjectLoadDiagnostics
+#include "TProjectLoadDiagnostics.h"
 
 namespace RDK {
 
@@ -117,9 +119,9 @@ void UItem::Free(void)
 // Защищенные коммуникационные методы
 // ----------------------
 
-bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
+bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item, void* diagnostics)
 {
- if(!UConnector::ConnectToItem(na, item_property_name, connector_property_name,c_index, forced_connect_same_item))
+ if(!UConnector::ConnectToItem(na, item_property_name, connector_property_name,c_index, forced_connect_same_item, diagnostics))
   return false;
 
  // Ищем указатель на выходные данные (они гарантированно существуют, мы это проверили выше)
@@ -144,7 +146,7 @@ bool UItem::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, cons
 }
 
 // Устанавливает связь с коннектором 'c'.
-bool UItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
+bool UItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item, void* diagnostics)
 {
  if(!c)
   return false;

@@ -17,6 +17,8 @@ See file license.txt for more information
 #include "UConnector.h"
 #include "UStorage.h"
 #include "UItem.h"
+// Включаем заголовок для доступа к TProjectLoadDiagnostics
+#include "TProjectLoadDiagnostics.h"
 
 namespace RDK {
 
@@ -422,7 +424,7 @@ void UConnector::FindInputProperty(const NameT &connector_property_name, UIPrope
 // Коммуникационные методы
 // ----------------------
 // Устанавливает связь с элементом сети 'na'.
-bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item)
+bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name, const NameT &connector_property_name, int &c_index, bool forced_connect_same_item, void* diagnostics)
 {
  if(!na)
   return false;
@@ -451,15 +453,32 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
  UIPropertyOutput* i_item_property=dynamic_pointer_cast<UIPropertyOutput>(na->FindProperty(item_property_name));
  UIPropertyInput* i_conn_property=dynamic_pointer_cast<UIPropertyInput>(FindProperty(connector_property_name));
 
+ // Приводим diagnostics к правильному типу для накопления ошибок
+ TProjectLoadDiagnostics* diag = diagnostics ? static_cast<TProjectLoadDiagnostics*>(diagnostics) : nullptr;
+ 
  if(!i_item_property)
  {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Output not found: ")+item_property_name);
+  std::string error_msg = std::string("Output port '") + std::string(item_property_name) + std::string("' not found");
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, error_msg);
+  if(diag)
+  {
+   std::string item_full_name = na->GetFullName();
+   std::string conn_full_name = GetFullName();
+   diag->errors.push_back(item_full_name + std::string(": ") + error_msg + std::string(" in component '") + item_full_name + std::string("'"));
+  }
   return false;
  }
 
  if(!i_conn_property)
  {
-  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Input ")+connector_property_name+std::string(" not found or empty and AutoNumInputs disabled"));
+  std::string error_msg = std::string("Input port '") + std::string(connector_property_name) + std::string("' not found or empty and AutoNumInputs disabled");
+  LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, error_msg);
+  if(diag)
+  {
+   std::string item_full_name = na->GetFullName();
+   std::string conn_full_name = GetFullName();
+   diag->errors.push_back(conn_full_name + std::string(": ") + error_msg + std::string(" in component '") + conn_full_name + std::string("'"));
+  }
   return false;
  }
 
@@ -469,9 +488,15 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
   std::string conn_full_name = GetFullName();
   std::string item_property_type = i_item_property->GetLanguageType().name();
   std::string conn_property_type = i_conn_property->GetLanguageType().name();
-  LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Linking error: ")+item_full_name+":"+item_property_name+
+  std::string error_msg = std::string("Linking error: ")+item_full_name+":"+item_property_name+
                 " have incompatible type for "+conn_full_name+":"+connector_property_name+" ["+
-                item_property_type+ " != " + conn_property_type+"]");
+                item_property_type+ " != " + conn_property_type+"]";
+  LogMessageEx(RDK_EX_ERROR, __FUNCTION__, error_msg);
+  // Накопляем ошибку в диагностике
+  if(diag)
+  {
+   diag->errors.push_back(error_msg);
+  }
   return false;
  }
 

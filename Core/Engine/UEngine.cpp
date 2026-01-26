@@ -58,7 +58,7 @@ namespace RDK{
 // Конструкторы и деструкторы
 // --------------------------
 UEngine::UEngine(void)
- : Storage(0), Environment(0)
+ : Storage(0), Environment(0), LoadDiagnostics(nullptr)
 {
 // Runned=-1;
  ChannelIndex=0;
@@ -5079,7 +5079,9 @@ int UEngine::Model_SetComponentInternalLinks(const char* stringid, const char* b
 
    XmlStorage.Load(buffer,"Links");
 
-   if(!cont->SetComponentInternalLinks(&XmlStorage,owner))
+   // Получаем диагностику из временного хранилища Engine
+   void* load_diagnostics = GetLoadDiagnostics();
+   if(!cont->SetComponentInternalLinks(&XmlStorage,owner, load_diagnostics))
 	return RDK_E_MODEL_CREARE_INTERNAL_LINKS_FAIL;
    res=RDK_SUCCESS;
   }
@@ -5607,7 +5609,15 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
 	 cont=dynamic_pointer_cast<RDK::UNet>(Environment->GetModel()).Get();
 	}
 
-	if(!cont->LoadComponent(&XmlStorage,true))
+	// Получаем диагностику из временного хранилища Engine
+	// ВАЖНО: GetLoadDiagnostics должен возвращать диагностику, установленную в LoadModelFromFile
+	void* load_diagnostics = GetLoadDiagnostics();
+	if(!load_diagnostics)
+	{
+	 // Диагностика не была установлена - это нормально для обратной совместимости
+	 // но может означать проблему, если диагностика должна была быть передана
+	}
+	if(!cont->LoadComponent(&XmlStorage,true, load_diagnostics))
 	 return RDK_E_MODEL_LOAD_COMPONENT_FAIL;
    }
    else
@@ -5620,7 +5630,15 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
 	if(!cont)
 	 return RDK_E_MODEL_COMPONENT_NOT_FOUND;
 
-	if(!cont->LoadComponent(&XmlStorage,true))
+	// Получаем диагностику из временного хранилища Engine
+	// ВАЖНО: GetLoadDiagnostics должен возвращать диагностику, установленную в LoadModelFromFile
+	void* load_diagnostics = GetLoadDiagnostics();
+	if(!load_diagnostics)
+	{
+	 // Диагностика не была установлена - это нормально для обратной совместимости
+	 // но может означать проблему, если диагностика должна была быть передана
+	}
+	if(!cont->LoadComponent(&XmlStorage,true, load_diagnostics))
 	 return RDK_E_MODEL_LOAD_COMPONENT_FAIL;
    }
    res=RDK_SUCCESS;
