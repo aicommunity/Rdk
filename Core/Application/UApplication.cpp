@@ -3860,6 +3860,29 @@ TProjectLoadDiagnostics UApplication::ValidateProject(const std::string &filenam
 	const char* links_xml = Model_GetComponentInternalLinks(comp_name.c_str(), nullptr);
 	if(links_xml)
 	{
+	 // Собираем множество непосредственных дочерних компонентов данного comp_name по данным XML текущего канала.
+	 // (нужно для корректной валидации внутренних ссылок, где имена могут быть относительными)
+	 std::set<std::string> internal_children;
+	 auto xml_it = xml_components_by_channel.find(i);
+	 if(xml_it != xml_components_by_channel.end())
+	 {
+	  const std::set<std::string>& xml_components = xml_it->second;
+	  const std::string prefix = comp_name + ".";
+	  for(const std::string& xml_comp : xml_components)
+	  {
+	   if(xml_comp.rfind(prefix, 0) != 0)
+		continue;
+	   // xml_comp = "<comp_name>.<child>...."
+	   const size_t child_start = prefix.size();
+	   const size_t dot = xml_comp.find('.', child_start);
+	   const std::string child = (dot == std::string::npos)
+								? xml_comp.substr(child_start)
+								: xml_comp.substr(child_start, dot - child_start);
+	   if(!child.empty())
+		internal_children.insert(child);
+	  }
+	 }
+
 	 // Парсим XML связей используя UStringLinksList
 	 RDK::USerStorageXML links_xml_storage;
 	 if(links_xml_storage.Load(links_xml, "Links"))
@@ -3881,7 +3904,7 @@ TProjectLoadDiagnostics UApplication::ValidateProject(const std::string &filenam
 	   }
 	   
 	   // Проверяем, существует ли компонент-источник
-	   if(!source_comp.empty() && loaded_components.find(source_comp) == loaded_components.end())
+	   if(!source_comp.empty() && internal_children.find(source_comp) == internal_children.end())
 	   {
 		std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + 
 								std::string(", Component ") + comp_name + 
@@ -3905,7 +3928,7 @@ TProjectLoadDiagnostics UApplication::ValidateProject(const std::string &filenam
 		}
 		
 		// Проверяем, существует ли компонент-приемник
-		if(!dest_comp.empty() && loaded_components.find(dest_comp) == loaded_components.end())
+		if(!dest_comp.empty() && internal_children.find(dest_comp) == internal_children.end())
 		{
 		 std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + 
 								 std::string(", Component ") + comp_name + 

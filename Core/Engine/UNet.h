@@ -15,6 +15,9 @@ See file license.txt for more information
 #include "UItem.h"
 #include "UStorage.h"
 #include <type_traits>
+// Для диагностического вывода CreateLink (по env-флагу)
+#include <cstdlib>
+#include <iostream>
 // Включаем полное определение TProjectLoadDiagnostics для использования в шаблонных функциях
 // (нужно для доступа к полю errors в шаблонной функции CreateLink)
 #include "TProjectLoadDiagnostics.h"
@@ -390,6 +393,39 @@ inline void ConvertIdToStdString(const UIdVector& id, std::string& result)
  id.EncodeToString(result);
 }
 
+inline bool IsEnabledByEnv(const char* name)
+{
+ const char* v = std::getenv(name);
+ if(!v || !*v)
+  return false;
+ return !(v[0] == '0' && v[1] == '\0');
+}
+
+inline void DumpDirectChildrenForDiag(UNet* self, const char* prefix, int max_items = 60)
+{
+ if(!self)
+  return;
+ std::string self_full_name;
+ self->GetFullName(self_full_name);
+
+ const int n = self->GetNumComponents();
+ std::cerr << prefix << " net=" << (self_full_name.empty() ? "<root>" : self_full_name)
+           << " direct_children=" << n << "\n";
+
+ const int limit = (n < max_items) ? n : max_items;
+ for(int i = 0; i < limit; ++i)
+ {
+  UEPtr<UContainer> c = self->GetComponentByIndex(i);
+  if(!c)
+   continue;
+  std::cerr << prefix << "  child[" << i << "] name=" << c->Name.GetData() << "\n";
+ }
+ if(n > max_items)
+ {
+  std::cerr << prefix << "  ... (" << (n - max_items) << " more)\n";
+ }
+}
+
 // Устанавливает новую связь между выходом элемента сети
 // 'item' и коннектором 'connector'
 // diagnostics - опциональный указатель на структуру для накопления ошибок установки связей
@@ -419,6 +455,15 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector,
   // Используем SFINAE через перегрузку функции
   ConvertIdToStdString(item.Id, id_str);
   std::string error_msg = std::string("Source component '") + id_str + std::string("' not found");
+  if(IsEnabledByEnv("NMSDK_LINK_DIAG"))
+  {
+   std::cerr << "[NMSDK_LINK_DIAG] CreateLink failed (source not found). id=" << id_str
+             << " item_name=" << item.Name << " connector_id=";
+   std::string conn_id_str;
+   ConvertIdToStdString(connector.Id, conn_id_str);
+   std::cerr << conn_id_str << " connector_name=" << connector.Name << "\n";
+   DumpDirectChildrenForDiag(this, "[NMSDK_LINK_DIAG]");
+  }
   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, error_msg);
   if(diag)
   {
@@ -437,6 +482,15 @@ bool UNet::CreateLink(const ULinkSideT<T> &item, const ULinkSideT<T> &connector,
   // Используем SFINAE через перегрузку функции
   ConvertIdToStdString(connector.Id, id_str);
   std::string error_msg = std::string("Destination component '") + id_str + std::string("' not found");
+  if(IsEnabledByEnv("NMSDK_LINK_DIAG"))
+  {
+   std::string item_id_str;
+   ConvertIdToStdString(item.Id, item_id_str);
+   std::cerr << "[NMSDK_LINK_DIAG] CreateLink failed (destination not found). id=" << id_str
+             << " item_id=" << item_id_str << " item_name=" << item.Name
+             << " connector_name=" << connector.Name << "\n";
+   DumpDirectChildrenForDiag(this, "[NMSDK_LINK_DIAG]");
+  }
   LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, error_msg);
   if(diag)
   {
