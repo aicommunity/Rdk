@@ -1238,6 +1238,7 @@ GoogleLoggingInitialized = true;
   UGlogGuiSink::Instance().AddDirectory(initial_log_dir);
  
  // Set log level based on DebugMode
+ // DebugMode включен по умолчанию для записи всех сообщений в лог до загрузки конфига
  if(GetLogger() && GetLogger()->GetDebugMode())
  {
   FLAGS_minloglevel = google::GLOG_INFO;
@@ -1245,8 +1246,9 @@ GoogleLoggingInitialized = true;
  }
  else
  {
-  FLAGS_minloglevel = google::GLOG_WARNING; // Only warnings and above
-  FLAGS_v = 0; // Disable VLOG
+  // Если DebugMode отключен, все равно включаем INFO уровень для начальной диагностики
+  FLAGS_minloglevel = google::GLOG_INFO;
+  FLAGS_v = 1; // Enable VLOG(1) for debug messages
  }
  
 // Install failure signal handler
@@ -3351,15 +3353,201 @@ TProjectLoadDiagnostics UApplication::ValidateProject(const std::string &filenam
 {
  TProjectLoadDiagnostics diagnostics;
  
+ // Сохраняем оригинальный путь к project.ini
+ std::string original_project_file = filename;
+ std::string project_path_orig = extract_file_path(original_project_file);
+ 
+ // Создаем временную директорию для копий файлов проекта
+ // Это гарантирует, что оригинальные файлы не будут изменены при валидации
+ std::string temp_dir;
+ std::string temp_project_file;
+ std::vector<std::string> temp_files_to_cleanup;
+ 
+ try
+ {
+  // Создаем временную директорию
+  std::filesystem::path temp_base = std::filesystem::temp_directory_path();
+  std::string project_name = extract_file_name(original_project_file);
+  if(project_name.size() > 4 && project_name.substr(project_name.size() - 4) == ".ini")
+  {
+   project_name = project_name.substr(0, project_name.size() - 4);
+  }
+  
+  // Создаем уникальное имя директории с временной меткой
+  std::time_t now = std::time(nullptr);
+  char time_str[64];
+  std::strftime(time_str, sizeof(time_str), "%Y%m%d_%H%M%S", std::localtime(&now));
+  std::string temp_dir_name = std::string("nmsdk_validate_") + project_name + "_" + time_str;
+  temp_dir = (temp_base / temp_dir_name).string();
+  
+  if(!std::filesystem::create_directories(temp_dir))
+  {
+   RLOG(RDK_EX_WARNING, RDK_SYS_MESSAGE, "sys", std::string("Failed to create temp directory for validation: ") + temp_dir);
+   // Продолжаем без временных копий (fallback к оригинальной логике)
+   temp_dir.clear();
+  }
+  else
+  {
+   RLOG(RDK_EX_INFO, RDK_SYS_MESSAGE, "sys", std::string("Created temp directory for validation: ") + temp_dir);
+  }
+ }
+ catch(const std::exception& e)
+ {
+  RLOG(RDK_EX_WARNING, RDK_SYS_MESSAGE, "sys", std::string("Exception creating temp directory: ") + e.what());
+  temp_dir.clear();
+ }
+ 
+ // Если удалось создать временную директорию, копируем файлы
+ if(!temp_dir.empty())
+ {
+  try
+  {
+   RDK::USerStorageXML project_xml_orig;
+   
+   if(project_xml_orig.LoadFromFile(original_project_file, ""))
+   {
+	// Копируем project.ini
+	std::filesystem::path orig_project_path(original_project_file);
+	std::filesystem::path temp_project_path = std::filesystem::path(temp_dir) / orig_project_path.filename();
+	std::filesystem::copy_file(orig_project_path, temp_project_path, std::filesystem::copy_options::overwrite_existing);
+	temp_project_file = temp_project_path.string();
+	temp_files_to_cleanup.push_back(temp_project_file);
+	
+	// Читаем project.ini для извлечения путей к файлам
+	project_xml_orig.SelectNodeRoot("Project");
+	
+	// Копируем InterfaceFileName (если есть)
+	if(project_xml_orig.SelectNode("General"))
+	{
+	 std::string interface_file = project_xml_orig.ReadString("InterfaceFileName", "");
+	 if(!interface_file.empty())
+	 {
+	  std::string interface_path;
+	  if(extract_file_path(interface_file).empty())
+	  {
+	   interface_path = project_path_orig + interface_file;
+	  }
+	  else
+	  {
+	   interface_path = interface_file;
+	  }
+	  
+	  if(std::filesystem::exists(interface_path))
+	  {
+	   std::filesystem::path temp_interface = std::filesystem::path(temp_dir) / std::filesystem::path(interface_file).filename();
+	   std::filesystem::copy_file(interface_path, temp_interface, std::filesystem::copy_options::overwrite_existing);
+	   temp_files_to_cleanup.push_back(temp_interface.string());
+	  }
+	 }
+	 project_xml_orig.SelectUp();
+	}
+	
+	// Копируем файлы для каждого канала
+	if(project_xml_orig.SelectNode("Channels"))
+	{
+	 int channels_count = project_xml_orig.GetNumNodes();
+	 for(int ch_idx = 0; ch_idx < channels_count; ch_idx++)
+	 {
+	  if(project_xml_orig.SelectNode(ch_idx))
+	  {
+	   // ModelFileName
+	   std::string model_file = project_xml_orig.ReadString("ModelFileName", "");
+	   if(!model_file.empty())
+	   {
+		std::string model_path;
+		if(extract_file_path(model_file).empty())
+		{
+		 model_path = project_path_orig + model_file;
+		}
+		else
+		{
+		 model_path = model_file;
+		}
+		
+		if(std::filesystem::exists(model_path))
+		{
+		 std::filesystem::path temp_model = std::filesystem::path(temp_dir) / std::filesystem::path(model_file).filename();
+		 std::filesystem::copy_file(model_path, temp_model, std::filesystem::copy_options::overwrite_existing);
+		 temp_files_to_cleanup.push_back(temp_model.string());
+		}
+	   }
+	   
+	   // ParametersFileName
+	   std::string params_file = project_xml_orig.ReadString("ParametersFileName", "");
+	   if(!params_file.empty())
+	   {
+		std::string params_path;
+		if(extract_file_path(params_file).empty())
+		{
+		 params_path = project_path_orig + params_file;
+		}
+		else
+		{
+		 params_path = params_file;
+		}
+		
+		if(std::filesystem::exists(params_path))
+		{
+		 std::filesystem::path temp_params = std::filesystem::path(temp_dir) / std::filesystem::path(params_file).filename();
+		 std::filesystem::copy_file(params_path, temp_params, std::filesystem::copy_options::overwrite_existing);
+		 temp_files_to_cleanup.push_back(temp_params.string());
+		}
+	   }
+	   
+	   // StatesFileName (опционально)
+	   std::string states_file = project_xml_orig.ReadString("StatesFileName", "");
+	   if(!states_file.empty())
+	   {
+		std::string states_path;
+		if(extract_file_path(states_file).empty())
+		{
+		 states_path = project_path_orig + states_file;
+		}
+		else
+		{
+		 states_path = states_file;
+		}
+		
+		if(std::filesystem::exists(states_path))
+		{
+		 std::filesystem::path temp_states = std::filesystem::path(temp_dir) / std::filesystem::path(states_file).filename();
+		 std::filesystem::copy_file(states_path, temp_states, std::filesystem::copy_options::overwrite_existing);
+		 temp_files_to_cleanup.push_back(temp_states.string());
+		}
+	   }
+	   
+	   project_xml_orig.SelectUp();
+	  }
+	 }
+	 project_xml_orig.SelectUp();
+	}
+	
+	RLOG(RDK_EX_INFO, RDK_SYS_MESSAGE, "sys", std::string("Copied ") + RDK::sntoa(static_cast<int>(temp_files_to_cleanup.size())) + std::string(" files to temp directory for validation"));
+   }
+  }
+  catch(const std::exception& e)
+  {
+   RLOG(RDK_EX_WARNING, RDK_SYS_MESSAGE, "sys", std::string("Exception copying files for validation: ") + e.what());
+   // Продолжаем с оригинальным файлом
+   temp_dir.clear();
+   temp_project_file.clear();
+   temp_files_to_cleanup.clear();
+  }
+ }
+ 
+ // Определяем, какой файл использовать для валидации
+ std::string validation_project_file = temp_project_file.empty() ? original_project_file : temp_project_file;
+ 
  // Сначала парсим XML проекта для предварительной проверки классов компонентов и связей
  // Важно: делаем это ДО загрузки проекта, чтобы XML не был изменен
- std::string project_path = extract_file_path(filename);
+ // Используем ОРИГИНАЛЬНЫЙ файл для парсинга, чтобы получить правильные пути к оригинальным файлам
+ std::string project_path = extract_file_path(original_project_file);
  RDK::USerStorageXML project_xml_check;
  std::map<int, std::set<std::string> > xml_components_by_channel; // Компоненты из XML по каналам
  std::map<int, std::map<std::string, std::string> > xml_component_classes_by_channel; // Классы компонентов из XML по каналам
  std::map<int, RDK::UStringLinksList> xml_links_by_channel; // Связи из XML по каналам
  
- if(project_xml_check.LoadFromFile(filename, ""))
+ if(project_xml_check.LoadFromFile(original_project_file, ""))
  {
   project_xml_check.SelectNodeRoot("Project");
   if(project_xml_check.SelectNode("Channels"))
@@ -3441,16 +3629,20 @@ TProjectLoadDiagnostics UApplication::ValidateProject(const std::string &filenam
  }
  
  // Загружаем проект с диагностикой
- bool loaded = OpenProject(filename, &diagnostics);
+ // Используем временный project.ini, если он был создан, иначе оригинальный
+ bool loaded = OpenProject(validation_project_file, &diagnostics);
+ 
+ // Флаг для отслеживания, нужно ли выполнить cleanup
+ bool need_cleanup = !temp_dir.empty();
  
  if(!loaded)
  {
   if(diagnostics.errors.empty())
   {
-   diagnostics.errors.push_back(std::string("Failed to open project file: ") + filename);
+   diagnostics.errors.push_back(std::string("Failed to open project file: ") + original_project_file);
   }
   diagnostics.isValid = false;
-  return diagnostics;
+  // Продолжаем выполнение для cleanup временных файлов
  }
 
  // Дополнительные проверки после загрузки
@@ -3511,23 +3703,18 @@ TProjectLoadDiagnostics UApplication::ValidateProject(const std::string &filenam
 	 // Проверяем класс независимо от того, загрузился ли компонент
 	 if(!comp_class.empty())
 	 {
-	  try
+	  // Используем CheckClass вместо GetClassId для более надежной проверки
+	  // CheckClass не бросает исключения, просто возвращает bool
+	  RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock(i);
+	  if(storage)
 	  {
-	   int class_id = Storage_GetClassId(comp_class.c_str());
-	   if(class_id == 0)
+	   if(!storage->CheckClass(comp_class))
 	   {
 		std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + 
 								 std::string(", Component '") + top_level_comp + 
-								 std::string("': Class '") + comp_class + std::string("' does not exist in storage (ID=0)");
+								 std::string("': Class '") + comp_class + std::string("' does not exist in storage");
 		diagnostics.errors.push_back(error_msg);
 	   }
-	  }
-	  catch(...)
-	  {
-	   std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + 
-								std::string(", Component '") + top_level_comp + 
-								std::string("': Class '") + comp_class + std::string("' does not exist in storage");
-	   diagnostics.errors.push_back(error_msg);
 	  }
 	 }
 	 
@@ -3654,23 +3841,17 @@ TProjectLoadDiagnostics UApplication::ValidateProject(const std::string &filenam
 	const char* class_name = Model_GetComponentClassName(comp_name.c_str());
 	if(class_name)
 	{
-	 try
+	 // Используем CheckClass вместо GetClassId для более надежной проверки
+	 RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock(i);
+	 if(storage)
 	 {
-	  int class_id = Storage_GetClassId(class_name);
-	  if(class_id == 0)
+	  if(!storage->CheckClass(std::string(class_name)))
 	  {
 	   std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + 
 								std::string(", Component ") + comp_name + 
-								std::string(": Class '") + class_name + std::string("' does not exist (ID=0)");
+								std::string(": Class '") + class_name + std::string("' does not exist in storage");
 	   diagnostics.errors.push_back(error_msg);
 	  }
-	 }
-	 catch(...)
-	 {
-	  std::string error_msg = std::string("Channel ") + RDK::sntoa(i) + 
-							   std::string(", Component ") + comp_name + 
-							   std::string(": Class '") + class_name + std::string("' does not exist");
-	  diagnostics.errors.push_back(error_msg);
 	 }
 	 Engine_FreeBufString(class_name);
 	}
@@ -3765,6 +3946,43 @@ TProjectLoadDiagnostics UApplication::ValidateProject(const std::string &filenam
  else
  {
   diagnostics.isValid = false;
+ }
+
+ // Удаляем временные файлы и директорию (гарантированно, даже при ошибках)
+ if(need_cleanup && !temp_dir.empty())
+ {
+  try
+  {
+   // Закрываем проект перед удалением временных файлов
+   CloseProject();
+   
+   // Удаляем все временные файлы
+   for(const std::string& temp_file : temp_files_to_cleanup)
+   {
+	try
+	{
+	 if(std::filesystem::exists(temp_file))
+	 {
+	  std::filesystem::remove(temp_file);
+	 }
+	}
+	catch(const std::exception& e)
+	{
+	 RLOG(RDK_EX_WARNING, RDK_SYS_MESSAGE, "sys", std::string("Failed to remove temp file: ") + temp_file + " - " + e.what());
+	}
+   }
+   
+   // Удаляем временную директорию
+   if(std::filesystem::exists(temp_dir))
+   {
+	std::filesystem::remove_all(temp_dir);
+	RLOG(RDK_EX_INFO, RDK_SYS_MESSAGE, "sys", std::string("Removed temp validation directory: ") + temp_dir);
+   }
+  }
+  catch(const std::exception& e)
+  {
+   RLOG(RDK_EX_WARNING, RDK_SYS_MESSAGE, "sys", std::string("Exception cleaning up temp files: ") + e.what());
+  }
  }
 
  return diagnostics;

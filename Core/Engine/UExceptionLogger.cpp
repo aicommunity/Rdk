@@ -22,7 +22,7 @@ namespace RDK
 static bool g_initialization_mode = true;
 
 UExceptionLogger::UExceptionLogger()
-: DebugMode(false)
+: DebugMode(true)  // Включен по умолчанию для записи всех сообщений в лог до загрузки конфига
 , DebugSysEventsMask(0)
 , DebuggerMessageFlag(false)
 , ChannelIndex(0)

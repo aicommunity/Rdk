@@ -209,10 +209,24 @@ int ULibrary::Upload(UStorage *storage)
  Storage=storage;
 
  if(!Storage)
+ {
   return 0;
+ }
 
  Incomplete.clear();
- CreateClassSamples(Storage);
+ try {
+   CreateClassSamples(Storage);
+ }
+ catch(const std::exception& e) {
+   if(Storage && Storage->GetLogger())
+     Storage->GetLogger()->LogMessage(RDK_EX_ERROR, std::string("Exception in CreateClassSamples() for ") + GetName() + ": " + e.what());
+   throw; // Пробрасываем исключение дальше
+ }
+ catch(...) {
+   if(Storage && Storage->GetLogger())
+     Storage->GetLogger()->LogMessage(RDK_EX_ERROR, std::string("Unknown exception in CreateClassSamples() for ") + GetName());
+   throw; // Пробрасываем исключение дальше
+ }
  count=int(Complete.size());
 
  //Оставление ссылки на Storage для RunTime библиотек

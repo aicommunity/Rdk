@@ -20,6 +20,10 @@ See file license.txt for more information
 #include "../../Deploy/Include/rdk_exceptions.h"
 #include "UEnvException.h"
 #include "../../Deploy/Include/rdk_init.h"
+#include "../../Deploy/Include/rdk_logging.h"
+#ifdef RDK_USE_GLOG
+#include <glog/logging.h>
+#endif
 #include <future>
 #include <mutex>
 #include <unordered_set>
@@ -2193,16 +2197,27 @@ bool UStorage::BuildStorage(int lib_type)
       else
        Logger->LogMessage(RDK_EX_WARNING, lib->GetName()+std::string(" core version compatibility DOES NOT checked."));
 
-      Logger->LogMessage(RDK_EX_DEBUG, std::string("Adding components from ")+lib->GetName()+" collection...");
       unsigned long long total_used_memory_before(0);
       unsigned long long largest_free_block_before(0);
       ReadUsedMemoryInfo(total_used_memory_before, largest_free_block_before);
 
-      CollectionList[i]->Upload(this);
+      try {
+        CollectionList[i]->Upload(this);
+      }
+      catch(const std::exception& e) {
+        if(Logger)
+          Logger->LogMessage(RDK_EX_ERROR, std::string("Exception in Upload() for ") + lib->GetName() + ": " + e.what());
+      }
+      catch(...) {
+        if(Logger)
+          Logger->LogMessage(RDK_EX_ERROR, std::string("Unknown exception in Upload() for ") + lib->GetName());
+      }
       unsigned long long total_used_memory_after(0);
       unsigned long long largest_free_block_after(0);
       if(ReadUsedMemoryInfo(total_used_memory_after, largest_free_block_after))
        Logger->LogMessage(RDK_EX_DEBUG, lib->GetName()+std::string(" eats ")+sntoa(total_used_memory_after-total_used_memory_before)+std::string(" bytes of RAM. Largest RAM block decreased to ")+sntoa(largest_free_block_before-largest_free_block_after)+" bytes");
+      
+      processed_libs++;
 
       Logger->LogMessage(RDK_EX_DEBUG, std::string("Successfully added [")+sntoa(lib->GetComplete().size())+std::string("]: ")+concat_strings(lib->GetComplete(),std::string(",")));
       if(!lib->GetIncomplete().empty())
