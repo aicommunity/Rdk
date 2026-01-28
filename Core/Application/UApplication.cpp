@@ -3439,6 +3439,84 @@ TProjectLoadDiagnostics UApplication::ValidateProject(const std::string &filenam
 	   temp_files_to_cleanup.push_back(temp_interface.string());
 	  }
 	 }
+
+     // Старый формат project.ini (без Channels): Model/Parameters/States лежат в <General>
+     // Важно скопировать именно те имена, которые указаны в project.ini, чтобы относительные пути
+     // разрешались внутри temp_dir.
+     {
+      // ModelFileName (опционально в старом формате)
+      std::string model_file = project_xml_orig.ReadString("ModelFileName", "");
+      if(!model_file.empty())
+      {
+       std::string model_path;
+       if(extract_file_path(model_file).empty())
+        model_path = project_path_orig + model_file;
+       else
+        model_path = model_file;
+
+       if(std::filesystem::exists(model_path))
+       {
+        std::filesystem::path temp_model = std::filesystem::path(temp_dir) / std::filesystem::path(model_file).filename();
+        std::filesystem::copy_file(model_path, temp_model, std::filesystem::copy_options::overwrite_existing);
+        temp_files_to_cleanup.push_back(temp_model.string());
+       }
+      }
+
+      // ParametersFileName (опционально в старом формате)
+      std::string params_file = project_xml_orig.ReadString("ParametersFileName", "");
+      if(!params_file.empty())
+      {
+       std::string params_path;
+       if(extract_file_path(params_file).empty())
+        params_path = project_path_orig + params_file;
+       else
+        params_path = params_file;
+
+       if(std::filesystem::exists(params_path))
+       {
+        std::filesystem::path temp_params = std::filesystem::path(temp_dir) / std::filesystem::path(params_file).filename();
+        std::filesystem::copy_file(params_path, temp_params, std::filesystem::copy_options::overwrite_existing);
+        temp_files_to_cleanup.push_back(temp_params.string());
+       }
+      }
+
+      // StatesFileName (опционально в старом формате)
+      std::string states_file = project_xml_orig.ReadString("StatesFileName", "");
+      if(!states_file.empty())
+      {
+       std::string states_path;
+       if(extract_file_path(states_file).empty())
+        states_path = project_path_orig + states_file;
+       else
+        states_path = states_file;
+
+       if(std::filesystem::exists(states_path))
+       {
+        std::filesystem::path temp_states = std::filesystem::path(temp_dir) / std::filesystem::path(states_file).filename();
+        std::filesystem::copy_file(states_path, temp_states, std::filesystem::copy_options::overwrite_existing);
+        temp_files_to_cleanup.push_back(temp_states.string());
+       }
+      }
+
+      // ProjectDescriptionFileName (не критично для валидации, но полезно для чистоты логов)
+      std::string desc_file = project_xml_orig.ReadString("ProjectDescriptionFileName", "");
+      if(!desc_file.empty())
+      {
+       std::string desc_path;
+       if(extract_file_path(desc_file).empty())
+        desc_path = project_path_orig + desc_file;
+       else
+        desc_path = desc_file;
+
+       if(std::filesystem::exists(desc_path))
+       {
+        std::filesystem::path temp_desc = std::filesystem::path(temp_dir) / std::filesystem::path(desc_file).filename();
+        std::filesystem::copy_file(desc_path, temp_desc, std::filesystem::copy_options::overwrite_existing);
+        temp_files_to_cleanup.push_back(temp_desc.string());
+       }
+      }
+     }
+
 	 project_xml_orig.SelectUp();
 	}
 	
