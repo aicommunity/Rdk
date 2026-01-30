@@ -81,7 +81,14 @@
      </widget>
     </item>
     <item>
-     <widget class="QPlainTextEdit" name="plainTextEditProjectDescription"/>
+     <widget class="QWidget" name="widgetMarkdownViewer" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>200</height>
+       </size>
+      </property>
+     </widget>
     </item>
    </layout>
   </widget>

@@ -1,0 +1,57 @@
+#ifndef UMARKDOWNVIEWERWIDGET_H
+#define UMARKDOWNVIEWERWIDGET_H
+
+#include <QWidget>
+#include <QUrl>
+
+#ifdef RDK_USE_QT_WEBENGINE
+#include <QWebEngineView>
+class QWebEnginePage;
+#else
+class QTextEdit;
+#endif
+
+/// Виджет для отображения Markdown (с поддержкой mermaid при наличии Qt WebEngine)
+class UMarkdownViewerWidget : public QWidget
+{
+    Q_OBJECT
+
+public:
+    explicit UMarkdownViewerWidget(QWidget *parent = nullptr);
+    ~UMarkdownViewerWidget();
+
+    /// Установить markdown текст для отображения
+    void setMarkdown(const QString& markdown);
+
+    /// Загрузить markdown из файла
+    bool loadMarkdownFromFile(const QString& filePath);
+
+    /// Установить базовый URL для разрешения относительных ссылок
+    void setBaseUrl(const QUrl& url);
+
+    /// Очистить содержимое
+    void clear();
+
+private slots:
+#ifdef RDK_USE_QT_WEBENGINE
+    void onLoadFinished(bool success);
+#endif
+
+private:
+#ifdef RDK_USE_QT_WEBENGINE
+    QWebEngineView* m_webView;
+#else
+    QTextEdit* m_textEdit;
+#endif
+    QUrl m_baseUrl;
+    QString m_currentMarkdown;
+
+#ifdef RDK_USE_QT_WEBENGINE
+    /// Инициализация WebEngine
+    void initializeWebEngine();
+    /// Создать HTML из markdown
+    QString createHtmlFromMarkdown(const QString& markdown) const;
+#endif
+};
+
+#endif // UMARKDOWNVIEWERWIDGET_H

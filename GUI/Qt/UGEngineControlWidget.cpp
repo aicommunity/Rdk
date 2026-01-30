@@ -66,11 +66,12 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     profilingWindowWidget=NULL;
  //   watchFormWidget=NULL;
     watchWindow = NULL;
+    projectDescriptionWindow = NULL;
     clDescWindow = NULL;
     tcpServerControlWindow=NULL;
     tcpServerControlWidget=0;
     curlFtpClientTestWidget=NULL;
-    
+
     // Initialize theme menu actions
     m_lightThemeAction = NULL;
     m_darkThemeAction = NULL;
@@ -98,7 +99,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
             }
         }
     };
-    
+
     // Обновляем стили при активации subWindow (когда QTabBar может быть пересоздан)
     connect(ui->mdiArea, &QMdiArea::subWindowActivated, this, [updateMdiAreaTabBarStyles](QMdiSubWindow* window) {
         Q_UNUSED(window);
@@ -271,6 +272,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     connect(ui->actionLogger, SIGNAL(triggered(bool)), this, SLOT(actionLogger()));
     connect(ui->actionTestCreator, SIGNAL(triggered(bool)), this, SLOT(actionTestCreator()));
     connect(ui->actionWatchWindow, SIGNAL(triggered(bool)), this, SLOT(actionWatchWindow()));
+    connect(ui->actionProjectDescription, SIGNAL(triggered(bool)), this, SLOT(actionProjectDescription()));
     connect(ui->actionProfiling, SIGNAL(triggered(bool)), this, SLOT(actionProfiling()));
 #ifndef RDK_DISABLE_EXT_GUI
     connect(ui->actionVASimpleSettings, SIGNAL(triggered(bool)), this, SIGNAL(showSimpleSettings()));
@@ -285,7 +287,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     clDesc->hide();
 
     connect(ui->actionClDesc, SIGNAL(triggered(bool)), this, SLOT(actionClDesc()));
-    
+
     // Theme switcher menu
     createThemeMenu();
 
@@ -294,24 +296,24 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     // и убеждаемся, что меню правильно позиционировано
     if (ui->menuBar) {
         ui->menuBar->setNativeMenuBar(false);
-        
+
         // Убеждаемся, что меню видимо и правильно позиционировано
         ui->menuBar->setVisible(true);
         ui->menuBar->raise(); // Поднимаем меню наверх z-order
-        
+
         // Диагностика: проверяем виджеты в области меню
         QTimer::singleShot(100, this, [this]() {
             if (ui->menuBar) {
                 QRect menuBarRect = ui->menuBar->geometry();
                 QPoint globalTopLeft = ui->menuBar->mapToGlobal(menuBarRect.topLeft());
-                
+
                 // Проверяем несколько точек в области меню File (первый пункт)
                 for (int x = 0; x < 100 && x < menuBarRect.width(); x += 20) {
                     QPoint testPoint = globalTopLeft + QPoint(x, menuBarRect.height() / 2);
                     QWidget* widget = QApplication::widgetAt(testPoint);
-                    
+
                     if (widget && widget != ui->menuBar && !ui->menuBar->isAncestorOf(widget)) {
-                        qWarning() << "MenuBar: Potential blocking widget at position" << testPoint 
+                        qWarning() << "MenuBar: Potential blocking widget at position" << testPoint
                                    << ":" << widget->objectName() << widget->metaObject()->className();
                         // Если найден блокирующий виджет, поднимаем меню еще выше
                         ui->menuBar->raise();
@@ -451,7 +453,7 @@ void UGEngineControlWidget::actionCreateConfig()
       raise();
       activateWindow();
   }
-  
+
   QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Another configuration is open. Close?", QMessageBox::Save|QMessageBox::Close|QMessageBox::Cancel);
   if (reply == QMessageBox::Save)
   {
@@ -485,7 +487,7 @@ void UGEngineControlWidget::actionCreateSimple()
             raise();
             activateWindow();
         }
-        
+
         QMessageBox::StandardButton reply = QMessageBox::question(this, "Info", "Close current config?", QMessageBox::Yes|QMessageBox::No);
         if (reply != QMessageBox::Yes)
         {
@@ -524,7 +526,7 @@ void UGEngineControlWidget::actionCreateSimple()
         raise();
         activateWindow();
     }
-    
+
     QMessageBox::StandardButton reply2 = QMessageBox::question(this, "Info", "Autocreate configuration folder?", QMessageBox::Yes|QMessageBox::No);
     if (reply2 == QMessageBox::Yes)
     {
@@ -610,7 +612,7 @@ void UGEngineControlWidget::actionCopyConfig()
      raise();
      activateWindow();
  }
- 
+
  QMessageBox::StandardButton reply = QMessageBox::question(this, "Info", "Current configuration has been copied to selected destination. Switch to new destination? If you select NO we continue work with previous configuration.", QMessageBox::Yes|QMessageBox::No);
  if(reply == QMessageBox::Yes)
  {
@@ -642,13 +644,13 @@ void UGEngineControlWidget::actionAutoCopyConfig()
         raise();
         activateWindow();
     }
-    
+
     if(!application->GetProjectOpenFlag())
     {
         QMessageBox::question(this, "Error", "Please open configuration for copy first!", QMessageBox::Ok);
         return;
     }
-    
+
     QMessageBox::StandardButton reply = QMessageBox::question(this, "Info", "Are you sure to autocreate copy of current config?", QMessageBox::Yes|QMessageBox::No);
     if (reply != QMessageBox::Yes)
     {
@@ -693,7 +695,7 @@ void UGEngineControlWidget::actionRenameConfig()
         raise();
         activateWindow();
     }
-    
+
     if(!application->GetProjectOpenFlag())
     {
         QMessageBox::question(this, "Error", "Please open configuration for copy first!", QMessageBox::Ok);
@@ -908,29 +910,27 @@ void UGEngineControlWidget::actionWatchWindow()
         watchWindow->setWindowTitle("Watch window");
         watchWindow->show();
     }
-    /*
- if(!graphWindow )
- {
-     graphWindow = new QMainWindow(this);
-     graphWindow->setWindowTitle("Watches");
-     //graphWindow->setCentralWidget(graphWindowWidget);
-     //graphWindowWidget->show();
-     graphWindow->setCentralWidget(watchFormWidget);
-     watchFormWidget->show();
- }
+}
 
-    if (!graphWindow->isVisible())
+void UGEngineControlWidget::actionProjectDescription()
+{
+    if(projectDescriptionWindow != NULL)
     {
-        graphWindow->resize(watchFormWidget->size());
-//        graphWindow->resize(graphWindowWidget->size());
-        graphWindow->setWindowTitle("");
-        graphWindow->show();
-        graphWindow->showNormal();
+        projectDescriptionWindow->show();
+        projectDescriptionWindow->showNormal();
+        projectDescriptionWindow->activateWindow();
+        // Обновляем содержимое при показе окна (на случай, если проект был открыт после создания окна)
+        if(application && application->GetProjectOpenFlag())
+        {
+            projectDescriptionWindow->AUpdateInterface();
+        }
     }
-
-    graphWindow->activateWindow();
-    //отобразить *graphWindowWidget
-//    ui->dockWidgetGraph->show();*/
+    else
+    {
+        projectDescriptionWindow = new UProjectDescriptionWindow(this, application);
+        projectDescriptionWindow->setWindowTitle("Project Description");
+        projectDescriptionWindow->show();
+    }
 }
 
 void UGEngineControlWidget::actionProfiling()
@@ -1177,7 +1177,7 @@ void UGEngineControlWidget::writeSettings()
 
     projectSettings.setValue("geometry", saveGeometry());
     projectSettings.setValue("state",    saveState());
-    
+
     // Save current theme
     UStyleManager* styleManager = UStyleManager::instance();
     projectSettings.setValue("theme", styleManager->getThemeName());
@@ -1202,7 +1202,7 @@ void UGEngineControlWidget::readSettings()
 
     restoreGeometry(projectSettings.value("geometry").toByteArray());
     restoreState(projectSettings.value("state").toByteArray());
-    
+
     // Load saved theme (defaults to "Modern Light" if not saved)
     QString savedTheme = projectSettings.value("theme", "Modern Light").toString();
     switchToTheme(savedTheme);
@@ -1484,18 +1484,18 @@ void UGEngineControlWidget::createThemeMenu()
 {
     // Create Theme submenu in Window menu
     QMenu* themeMenu = new QMenu(tr("Theme"), this);
-    
+
     QActionGroup* themeGroup = new QActionGroup(this);
     themeGroup->setExclusive(true);
-    
+
     m_lightThemeAction = themeMenu->addAction(tr("Light"));
     m_lightThemeAction->setCheckable(true);
     themeGroup->addAction(m_lightThemeAction);
-    
+
     m_darkThemeAction = themeMenu->addAction(tr("Dark"));
     m_darkThemeAction->setCheckable(true);
     themeGroup->addAction(m_darkThemeAction);
-    
+
     // Connect theme actions
     connect(m_lightThemeAction, &QAction::triggered, this, [this]() {
         switchToTheme("Modern Light");
@@ -1510,7 +1510,7 @@ void UGEngineControlWidget::createThemeMenu()
             projectSettings.endGroup();
         }
     });
-    
+
     connect(m_darkThemeAction, &QAction::triggered, this, [this]() {
         switchToTheme("Modern Dark");
         // Save theme to settings when user manually switches
@@ -1524,11 +1524,11 @@ void UGEngineControlWidget::createThemeMenu()
             projectSettings.endGroup();
         }
     });
-    
+
     // Add theme menu to Window menu
     ui->menuWindow->addSeparator();
     ui->menuWindow->addMenu(themeMenu);
-    
+
     // Update menu state based on current theme
     updateThemeMenuState();
 }
@@ -1537,10 +1537,10 @@ void UGEngineControlWidget::updateThemeMenuState()
 {
     if (!m_lightThemeAction || !m_darkThemeAction)
         return;
-    
+
     UStyleManager* styleManager = UStyleManager::instance();
     QString currentTheme = styleManager->getThemeName();
-    
+
     // Update checkboxes based on current theme
     m_lightThemeAction->setChecked(currentTheme == "Modern Light");
     m_darkThemeAction->setChecked(currentTheme == "Modern Dark");
@@ -1550,7 +1550,7 @@ void UGEngineControlWidget::switchToTheme(const QString& themeName)
 {
     UStyleManager* styleManager = UStyleManager::instance();
     QApplication* app = qobject_cast<QApplication*>(QCoreApplication::instance());
-    
+
     if (styleManager->switchTheme(themeName, app))
     {
         // Force update of all widgets
@@ -1560,7 +1560,7 @@ void UGEngineControlWidget::switchToTheme(const QString& themeName)
             widget->style()->polish(widget);
             widget->update();
         }
-        
+
         // Принудительно обновляем стили QTabBar в QMdiArea
         // Это необходимо, так как QMdiArea создает свой собственный QTabBar
         // Используем QTimer для гарантированного обновления после применения глобальных стилей
@@ -1578,20 +1578,20 @@ void UGEngineControlWidget::switchToTheme(const QString& themeName)
                 }
             }
         });
-        
+
         // Update the modern diagram widget if it exists
         // This invalidates cache and forces repaint of all nodes with new theme colors
         if (modernDiagram)
         {
             modernDiagram->updateTheme();
         }
-        
+
         // Update Watch window if it exists
         if (watchWindow)
         {
             watchWindow->updateTheme();
         }
-        
+
         // Update all Watch tabs in MDI area
         for(size_t i = 0; i < watchesVector.size(); i++)
         {
@@ -1600,7 +1600,7 @@ void UGEngineControlWidget::switchToTheme(const QString& themeName)
                 watchesVector[i]->updateTheme();
             }
         }
-        
+
         // Update menu state
         updateThemeMenuState();
     }

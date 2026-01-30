@@ -712,7 +712,7 @@ bool UProject::WriteToXmlOld(USerStorageXML &xml)
  xml.WriteString("InterfaceFileName",Config.InterfaceFileName);
 
  if(Config.DescriptionFileName.empty())
-  Config.DescriptionFileName="Description.rtf";
+  Config.DescriptionFileName="README.md";
  xml.WriteString("ProjectDescriptionFileName",Config.DescriptionFileName);
 
  xml.WriteInteger("ProjectAutoSaveFlag",Config.ProjectAutoSaveFlag);
@@ -888,7 +888,7 @@ bool UProject::WriteToXmlNew(USerStorageXML &xml)
  xml.WriteString("InterfaceFileName",Config.InterfaceFileName);
 
  if(Config.DescriptionFileName.empty())
-  Config.DescriptionFileName="Description.rtf";
+  Config.DescriptionFileName="README.md";
  xml.WriteString("ProjectDescriptionFileName",Config.DescriptionFileName);
 
  xml.WriteInteger("ProjectAutoSaveFlag",Config.ProjectAutoSaveFlag);

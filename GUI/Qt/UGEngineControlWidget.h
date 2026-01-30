@@ -32,6 +32,7 @@
 #include "UCurlFtpClientTestWidget.h"
 #include "UAboutDialog.h"
 #include "UHelpWindow.h"
+#include "UProjectDescriptionWindow.h"
 
 #ifndef RDK_DISABLE_EXT_GUI
 #include "UVideoAnalyticsSimpleSettingsWidget.h"
@@ -89,7 +90,7 @@ public:
 
     ///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ)
     void loadProjectExternal(const QString &config_path);
-    
+
     /// Open help window (public method for use by child widgets)
     void openHelpWindow();
 
@@ -103,7 +104,7 @@ public slots:
     // settings
     void readSettings();
     void writeSettings();
-    
+
     // Theme switching
     void switchToTheme(const QString& themeName);
 
@@ -148,6 +149,7 @@ public slots:
     void actionTestCreator();
     void actionWatchWindow();
     void actionNewWatches();
+    void actionProjectDescription();
     void actionProfiling();
     void actionTcpServer();
 #ifndef RDK_DISABLE_EXT_GUI
@@ -183,10 +185,10 @@ private:
     // Helper methods
     void createThemeMenu();
     void updateThemeMenuState();
-    
+
     // data
     Ui::UGEngineControllWidget *ui;
-    
+
     // Theme menu actions
     QAction* m_lightThemeAction;
     QAction* m_darkThemeAction;
@@ -211,6 +213,7 @@ private:
  //   UWatchFormWidget *watchFormWidget;
     UTableInfo *profilingWindowWidget;
     UWatch *watchWindow;
+    UProjectDescriptionWindow *projectDescriptionWindow;
     UClDescEditor *clDesc;
     QMainWindow *tcpServerControlWindow;
     UTcpServerControlWidget *tcpServerControlWidget;

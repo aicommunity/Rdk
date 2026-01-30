@@ -1,11 +1,13 @@
 #include "UCreateConfigurationWizardWidget.h"
 #include "ui_UCreateConfigurationWizardWidget.h"
+#include "UMarkdownViewerWidget.h"
 
 #include <QFileDialog>
 #include <QMessageBox>
 #include "QStandardItemModel"
 #include "QStandardItem"
 #include <QTextCodec>
+#include <QVBoxLayout>
 
 #define SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(param, value) \
   if(ui->checkBoxSettingToAllChannels->isChecked()) \
@@ -26,6 +28,13 @@ UCreateConfigurationWizardWidget::UCreateConfigurationWizardWidget(QWidget *pare
   ChangeCheckDebugState=false;
 
   application = app;
+
+  // Создаем виджет для отображения Markdown вместо QPlainTextEdit
+  markdownViewer = new UMarkdownViewerWidget(this);
+  QVBoxLayout* markdownLayout = new QVBoxLayout(ui->widgetMarkdownViewer);
+  markdownLayout->setContentsMargins(0, 0, 0, 0);
+  markdownLayout->addWidget(markdownViewer);
+  ui->widgetMarkdownViewer->setLayout(markdownLayout);
 
   classesList = new UClassesListWidget(this);
   ui->horizontalLayoutFromComponent->addWidget(classesList);
@@ -134,7 +143,38 @@ void UCreateConfigurationWizardWidget::UpdateInterface(void)
  // обновляем интерфейс в соответствии с ProjectConfig
  ui->lineEditProjectName->setText(ProjectConfig.ProjectName.c_str());//codec->toUnicode(ProjectConfig.ProjectName.c_str()));
 
- ui->plainTextEditProjectDescription->setPlainText(codec->toUnicode(ProjectConfig.ProjectDescription.c_str()));
+ // Загружаем описание из README.md или Description.rtf
+ if(markdownViewer && application && application->GetProjectOpenFlag())
+ {
+  QString projectPath = QString::fromStdString(application->GetProjectPath());
+  QString readmePath = projectPath + "README.md";
+  QString rtfPath = projectPath + "Description.rtf";
+
+  // Пытаемся загрузить README.md, затем Description.rtf
+  if(!markdownViewer->loadMarkdownFromFile(readmePath))
+  {
+   // Fallback: загружаем Description.rtf как plain text
+   QFile rtfFile(rtfPath);
+   if(rtfFile.open(QIODevice::ReadOnly | QIODevice::Text))
+   {
+    QTextStream in(&rtfFile);
+    in.setCodec("Windows-1251");
+    QString rtfContent = in.readAll();
+    rtfFile.close();
+    // Отображаем RTF как plain text (упрощенное отображение)
+    markdownViewer->setMarkdown("# Description\n\n" + rtfContent);
+   }
+   else
+   {
+    markdownViewer->clear();
+   }
+  }
+ }
+ else if(markdownViewer)
+ {
+  // Если проекта нет, показываем пустое описание
+  markdownViewer->clear();
+ }
  ui->checkBoxAutosaveProject->setChecked(ProjectConfig.ProjectAutoSaveFlag);
  ui->checkBoxAutosaveStates->setChecked(ProjectConfig.ProjectAutoSaveStatesFlag);
  ui->checkBoxLogEvents->setChecked(ProjectConfig.EventsLogFlag);
@@ -867,7 +907,8 @@ void UCreateConfigurationWizardWidget::accept()
 
  // first page
  ProjectConfig.ProjectName = ui->lineEditProjectName->text().toLocal8Bit().constData();
- ProjectConfig.ProjectDescription = ui->plainTextEditProjectDescription->toPlainText().toLocal8Bit().constData();
+ // Описание теперь загружается из README.md, не редактируется вручную
+ // ProjectConfig.ProjectDescription будет установлено при загрузке проекта
 
  if(ui->radioButtonSimplePM->isChecked())
    ProjectConfig.ProjectMode = 0;

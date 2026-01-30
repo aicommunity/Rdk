@@ -23,4 +23,9 @@
     <file alias="show_pool.png">images/show_pool_mini.png</file>
     <file alias="hide_pool.png">images/hide_pool_mini.png</file>
   </qresource>
+  <qresource prefix="/markdown">
+    <file alias="README.md">markdown/README.md</file>
+    <file alias="marked.min.js">markdown/marked.min.js</file>
+    <file alias="mermaid.min.js">markdown/mermaid.min.js</file>
+  </qresource>
 </RCC>

@@ -175,6 +175,7 @@
      <addaction name="actionImages"/>
     </widget>
     <addaction name="actionWatchWindow"/>
+    <addaction name="actionProjectDescription"/>
     <addaction name="actionImagesFromWindow"/>
     <addaction name="menuNew_Tab"/>
     <addaction name="separator"/>
@@ -526,6 +527,14 @@
    </property>
    <property name="text">
     <string>Watches</string>
+   </property>
+  </action>
+  <action name="actionProjectDescription">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Project Description</string>
    </property>
   </action>
   <action name="actionEngineMonitor">

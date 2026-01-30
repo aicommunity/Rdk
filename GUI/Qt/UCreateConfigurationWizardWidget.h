@@ -8,6 +8,8 @@
 #include <rdk_application.h>
 #include "UClassesListWidget.h"
 
+class UMarkdownViewerWidget;
+
 
 
 namespace Ui {
@@ -122,6 +124,9 @@ private:
 
   bool ChangeCheckDebugStateChannel;
   bool ChangeCheckDebugState;
+
+  /// Виджет для отображения Markdown описания проекта
+  UMarkdownViewerWidget* markdownViewer;
 };
 
 #endif // UCREATEPROJECTWIZARDWIDGET_H
