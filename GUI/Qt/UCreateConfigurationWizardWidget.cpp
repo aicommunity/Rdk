@@ -8,6 +8,12 @@
 #include "QStandardItem"
 #include <QTextCodec>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QPlainTextEdit>
+#include <QPushButton>
+#include <QFile>
+#include <QTextStream>
+#include <QFileInfo>
 
 #define SET_CHANNEL_CONFIG_TO_SINGLE_OR_ALL_CHANNELS(param, value) \
   if(ui->checkBoxSettingToAllChannels->isChecked()) \
@@ -29,12 +35,44 @@ UCreateConfigurationWizardWidget::UCreateConfigurationWizardWidget(QWidget *pare
 
   application = app;
 
-  // Создаем виджет для отображения Markdown вместо QPlainTextEdit
+  // Инициализация режима редактирования
+  isEditMode = false;
+  markdownViewer = nullptr;
+  markdownEditor = nullptr;
+  toggleEditButton = nullptr;
+  readmeFilePath.clear();
+
+  // Создаем виджет для отображения Markdown
   markdownViewer = new UMarkdownViewerWidget(this);
+
+  // Создаем виджет для редактирования Markdown
+  markdownEditor = new QPlainTextEdit(this);
+  markdownEditor->setFont(QFont("Courier", 10));
+  markdownEditor->setPlaceholderText(tr("Enter project description in Markdown format..."));
+  markdownEditor->hide(); // По умолчанию скрыт
+
+  // Создаем кнопку переключения режимов
+  toggleEditButton = new QPushButton(tr("Edit"), this);
+  toggleEditButton->setMaximumWidth(100);
+
+  // Создаем layout для виджета markdown с кнопкой
   QVBoxLayout* markdownLayout = new QVBoxLayout(ui->widgetMarkdownViewer);
   markdownLayout->setContentsMargins(0, 0, 0, 0);
+
+  // Горизонтальный layout для кнопки
+  QHBoxLayout* buttonLayout = new QHBoxLayout();
+  buttonLayout->addStretch();
+  buttonLayout->addWidget(toggleEditButton);
+  buttonLayout->setContentsMargins(0, 0, 0, 4);
+
+  markdownLayout->addLayout(buttonLayout);
   markdownLayout->addWidget(markdownViewer);
+  markdownLayout->addWidget(markdownEditor);
+
   ui->widgetMarkdownViewer->setLayout(markdownLayout);
+
+  // Подключаем сигнал кнопки переключения режимов
+  connect(toggleEditButton, &QPushButton::clicked, this, &UCreateConfigurationWizardWidget::toggleEditMode);
 
   classesList = new UClassesListWidget(this);
   ui->horizontalLayoutFromComponent->addWidget(classesList);
@@ -147,11 +185,47 @@ void UCreateConfigurationWizardWidget::UpdateInterface(void)
  if(markdownViewer && application && application->GetProjectOpenFlag())
  {
   QString projectPath = QString::fromStdString(application->GetProjectPath());
-  QString readmePath = projectPath + "README.md";
+
+  // Определяем имя файла описания из конфигурации проекта
+  QString descriptionFileName = QString::fromStdString(ProjectConfig.DescriptionFileName);
+  if(descriptionFileName.isEmpty())
+  {
+   descriptionFileName = "README.md"; // По умолчанию
+  }
+
+  QString readmePath = projectPath + descriptionFileName;
   QString rtfPath = projectPath + "Description.rtf";
 
-  // Пытаемся загрузить README.md, затем Description.rtf
-  if(!markdownViewer->loadMarkdownFromFile(readmePath))
+  // Сохраняем путь к файлу README.md для последующего сохранения
+  if(descriptionFileName == "README.md" || descriptionFileName.endsWith(".md"))
+  {
+   readmeFilePath = readmePath;
+  }
+  else
+  {
+   readmeFilePath = projectPath + "README.md"; // Используем README.md по умолчанию
+  }
+
+  // Пытаемся загрузить указанный файл описания
+  bool loaded = false;
+  if(descriptionFileName.endsWith(".md"))
+  {
+   loaded = markdownViewer->loadMarkdownFromFile(readmePath);
+   if(loaded && markdownEditor)
+   {
+    // Загружаем содержимое в редактор для возможности редактирования
+    QFile file(readmePath);
+    if(file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+     QTextStream in(&file);
+     in.setCodec("UTF-8");
+     markdownEditor->setPlainText(in.readAll());
+     file.close();
+    }
+   }
+  }
+
+  if(!loaded)
   {
    // Fallback: загружаем Description.rtf как plain text
    QFile rtfFile(rtfPath);
@@ -163,10 +237,18 @@ void UCreateConfigurationWizardWidget::UpdateInterface(void)
     rtfFile.close();
     // Отображаем RTF как plain text (упрощенное отображение)
     markdownViewer->setMarkdown("# Description\n\n" + rtfContent);
+    if(markdownEditor)
+    {
+     markdownEditor->setPlainText("# Description\n\n" + rtfContent);
+    }
    }
    else
    {
     markdownViewer->clear();
+    if(markdownEditor)
+    {
+     markdownEditor->clear();
+    }
    }
   }
  }
@@ -174,6 +256,11 @@ void UCreateConfigurationWizardWidget::UpdateInterface(void)
  {
   // Если проекта нет, показываем пустое описание
   markdownViewer->clear();
+  if(markdownEditor)
+  {
+   markdownEditor->clear();
+  }
+  readmeFilePath.clear();
  }
  ui->checkBoxAutosaveProject->setChecked(ProjectConfig.ProjectAutoSaveFlag);
  ui->checkBoxAutosaveStates->setChecked(ProjectConfig.ProjectAutoSaveStatesFlag);
@@ -905,10 +992,25 @@ void UCreateConfigurationWizardWidget::accept()
  if(!application)
   return;
 
+ // Сохраняем README.md если мы в режиме редактирования
+ if(isEditMode)
+ {
+  saveReadme();
+ }
+
  // first page
  ProjectConfig.ProjectName = ui->lineEditProjectName->text().toLocal8Bit().constData();
- // Описание теперь загружается из README.md, не редактируется вручную
- // ProjectConfig.ProjectDescription будет установлено при загрузке проекта
+
+ // Устанавливаем ProjectDescriptionFileName в README.md если файл существует или был создан
+ if(!readmeFilePath.isEmpty() && QFile::exists(readmeFilePath))
+ {
+  ProjectConfig.DescriptionFileName = "README.md";
+ }
+ else if(ProjectConfig.DescriptionFileName.empty())
+ {
+  // Если файла нет, используем README.md по умолчанию
+  ProjectConfig.DescriptionFileName = "README.md";
+ }
 
  if(ui->radioButtonSimplePM->isChecked())
    ProjectConfig.ProjectMode = 0;
@@ -968,13 +1070,56 @@ void UCreateConfigurationWizardWidget::accept()
 
  if(application->GetProjectOpenFlag())
  {
+  // Сохраняем README.md если мы редактировали описание
+  if(isEditMode && !markdownEditor->toPlainText().isEmpty())
+  {
+   saveReadme();
+  }
+
+  // Обновляем ProjectDescriptionFileName если README.md существует
+  QString projectPath = QString::fromStdString(application->GetProjectPath());
+  QString readmePath = projectPath + "README.md";
+  if(QFile::exists(readmePath))
+  {
+   ProjectConfig.DescriptionFileName = "README.md";
+  }
+
   application->UpdateProject(ProjectConfig);
  }
  else
  {
-    application->CreateProject(
-          (ui->lineEditProjectDirectory->text()
-           + "/project.ini").toLocal8Bit().constData(), ProjectConfig);
+    QString projectDir = ui->lineEditProjectDirectory->text();
+    QString projectIniPath = projectDir + "/project.ini";
+
+    // Создаем проект
+    application->CreateProject(projectIniPath.toLocal8Bit().constData(), ProjectConfig);
+
+    // Создаем README.md если его нет и мы редактировали описание
+    if(isEditMode && !markdownEditor->toPlainText().isEmpty())
+    {
+     QString readmePath = projectDir + "/README.md";
+     saveReadme(); // Сохраняем README.md
+    }
+    else if(!readmeFilePath.isEmpty() && QFile::exists(readmeFilePath))
+    {
+     // Если README.md уже существует, убеждаемся что ProjectDescriptionFileName установлен
+     ProjectConfig.DescriptionFileName = "README.md";
+    }
+    else
+    {
+     // Создаем пустой README.md для нового проекта
+     QString readmePath = projectDir + "/README.md";
+     QFile file(readmePath);
+     if(file.open(QIODevice::WriteOnly | QIODevice::Text))
+     {
+      QTextStream out(&file);
+      out.setCodec("UTF-8");
+      out << "# " << ProjectConfig.ProjectName.c_str() << "\n\n";
+      out << "Project description.\n";
+      file.close();
+      ProjectConfig.DescriptionFileName = "README.md";
+     }
+    }
  }
 
  QWizard::accept();
@@ -1070,4 +1215,76 @@ void UCreateConfigurationWizardWidget::on_checkBoxDebugSysEventsNone_clicked()
   ui->checkBoxDebugSysEventsOutputs->setChecked(false);
  }
  ChangeCheckDebugState=false;
+}
+
+void UCreateConfigurationWizardWidget::toggleEditMode()
+{
+ if(!markdownViewer || !markdownEditor)
+  return;
+
+ if(isEditMode)
+ {
+  // Переключаемся в режим просмотра
+  saveReadme(); // Сохраняем изменения перед переключением
+
+  markdownViewer->show();
+  markdownEditor->hide();
+  toggleEditButton->setText(tr("Edit"));
+  isEditMode = false;
+ }
+ else
+ {
+  // Переключаемся в режим редактирования
+  // Загружаем текущий markdown из файла в редактор, если редактор пуст
+  QString currentMarkdown = markdownEditor->toPlainText();
+  if(currentMarkdown.isEmpty() && !readmeFilePath.isEmpty() && QFile::exists(readmeFilePath))
+  {
+   QFile file(readmeFilePath);
+   if(file.open(QIODevice::ReadOnly | QIODevice::Text))
+   {
+    QTextStream in(&file);
+    in.setCodec("UTF-8");
+    markdownEditor->setPlainText(in.readAll());
+    file.close();
+   }
+  }
+
+  markdownViewer->hide();
+  markdownEditor->show();
+  markdownEditor->setFocus();
+  toggleEditButton->setText(tr("View"));
+  isEditMode = true;
+ }
+}
+
+void UCreateConfigurationWizardWidget::saveReadme()
+{
+ if(!markdownEditor || readmeFilePath.isEmpty())
+  return;
+
+ QString markdownContent = markdownEditor->toPlainText();
+
+ // Сохраняем в файл README.md
+ QFile file(readmeFilePath);
+ if(file.open(QIODevice::WriteOnly | QIODevice::Text))
+ {
+  QTextStream out(&file);
+  out.setCodec("UTF-8");
+  out << markdownContent;
+  file.close();
+
+  // Обновляем отображение в viewer
+  if(markdownViewer)
+  {
+   markdownViewer->setMarkdown(markdownContent);
+  }
+
+  // Обновляем ProjectDescriptionFileName в конфигурации
+  ProjectConfig.DescriptionFileName = "README.md";
+ }
+ else
+ {
+  QMessageBox::warning(this, tr("Error"),
+    tr("Failed to save README.md:\n%1").arg(file.errorString()));
+ }
 }

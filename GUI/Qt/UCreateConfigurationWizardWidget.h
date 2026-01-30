@@ -4,6 +4,8 @@
 #include <QWizard>
 #include <QListWidgetItem>
 #include <QStringListModel>
+#include <QPlainTextEdit>
+#include <QPushButton>
 
 #include <rdk_application.h>
 #include "UClassesListWidget.h"
@@ -127,6 +129,25 @@ private:
 
   /// Виджет для отображения Markdown описания проекта
   UMarkdownViewerWidget* markdownViewer;
+
+  /// Виджет для редактирования Markdown (показывается в режиме редактирования)
+  QPlainTextEdit* markdownEditor;
+
+  /// Кнопка переключения режимов просмотр/редактирование
+  QPushButton* toggleEditButton;
+
+  /// Текущий режим: true = редактирование, false = просмотр
+  bool isEditMode;
+
+  /// Путь к файлу README.md проекта
+  QString readmeFilePath;
+
+private slots:
+  /// Переключение между режимами просмотра и редактирования
+  void toggleEditMode();
+
+  /// Сохранение README.md при выходе из режима редактирования
+  void saveReadme();
 };
 
 #endif // UCREATEPROJECTWIZARDWIDGET_H

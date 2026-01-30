@@ -916,6 +916,9 @@ void UGEngineControlWidget::actionProjectDescription()
 {
     if(projectDescriptionWindow != NULL)
     {
+        // Устанавливаем размер окна равным размеру главного окна
+        projectDescriptionWindow->resize(this->size());
+
         projectDescriptionWindow->show();
         projectDescriptionWindow->showNormal();
         projectDescriptionWindow->activateWindow();
@@ -929,6 +932,10 @@ void UGEngineControlWidget::actionProjectDescription()
     {
         projectDescriptionWindow = new UProjectDescriptionWindow(this, application);
         projectDescriptionWindow->setWindowTitle("Project Description");
+
+        // Устанавливаем размер окна равным размеру главного окна
+        projectDescriptionWindow->resize(this->size());
+
         projectDescriptionWindow->show();
     }
 }

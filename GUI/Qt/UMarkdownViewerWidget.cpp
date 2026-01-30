@@ -6,8 +6,6 @@
 #include <QTextStream>
 #include <QDebug>
 #include <QByteArray>
-#include <QJsonDocument>
-#include <QJsonObject>
 
 #ifdef RDK_USE_QT_WEBENGINE
 #include <QWebEnginePage>
@@ -211,46 +209,88 @@ QString UMarkdownViewerWidget::createHtmlFromMarkdown(const QString& markdown) c
         .mermaid { text-align: center; margin: 20px 0; }
     </style>
     <script>
+        // Polyfill для Array.prototype.at и String.prototype.at
+        // Необходим для работы современных версий marked/mermaid в Qt WebEngine (Chromium < 92)
+        (function() {
+            if (!Array.prototype.at) {
+                Array.prototype.at = function(n) {
+                    n = Math.trunc(n) || 0;
+                    if (n < 0) n += this.length;
+                    if (n < 0 || n >= this.length) return undefined;
+                    return this[n];
+                };
+            }
+            if (!String.prototype.at) {
+                String.prototype.at = function(n) {
+                    n = Math.trunc(n) || 0;
+                    if (n < 0) n += this.length;
+                    if (n < 0 || n >= this.length) return "";
+                    return this.charAt(n);
+                };
+            }
+        })();
+
         const marked = {
+            // Единая точка входа: всегда используем встроенный парсер
             parse: function(md) {
-                if (typeof window.marked !== 'undefined' && window.marked.parse)
-                    return window.marked.parse(md);
                 return this.simpleParse(md);
             },
             simpleParse: function(md) {
                 let html = md;
-                // Обрабатываем код блоки (до обработки inline кода и других элементов)
-                html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, function(match, lang, code) {
+
+                // 0) Сохраняем mermaid-блоки во временный массив, чтобы остальная обработка
+                // (жирный, списки, переносы строк и т.п.) не ломала синтаксис диаграмм.
+                const mermaidPlaceholders = [];
+                html = html.replace(/```mermaid\s*[\r\n]+([\s\S]*?)```/g, function(match, code) {
+                    const id = mermaidPlaceholders.length;
+                    mermaidPlaceholders.push(code);
+                    return '[[[MERMAID_BLOCK_' + id + ']]]';
+                });
+
+                // 1) Обычные кодовые блоки (до обработки inline-кода и других элементов)
+                html = html.replace(/```(\w+)?\s*[\r\n]+([\s\S]*?)```/g, function(match, lang, code) {
                     return '<pre><code>' + code + '</code></pre>';
                 });
-                // Обрабатываем заголовки (важно: от большего к меньшему)
+
+                // 2) Заголовки (от большего к меньшему)
                 html = html.replace(/^#### (.*$)/gim, '<h4>$1</h4>');
                 html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
                 html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
                 html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
-                // Обрабатываем списки (маркированные)
+
+                // 3) Маркированные списки
                 html = html.replace(/^\- (.*$)/gim, '<li>$1</li>');
-                html = html.replace(/(<li>.*?<\/li>)/gs, function(match) {
+                html = html.replace(/(<li>[\s\S]*?<\/li>)/g, function(match) {
                     return '<ul>' + match + '</ul>';
                 });
-                // Обрабатываем жирный текст
+
+                // 4) Жирный и курсив
                 html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                // Обрабатываем курсив
                 html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-                // Обрабатываем inline код
+
+                // 5) Встроенный код
                 html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-                // Обрабатываем ссылки
+
+                // 6) Ссылки
                 html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
-                // Обрабатываем переводы строк
+
+                // 7) Переводы строк
                 html = html.replace(/\n\n/g, '</p><p>');
                 html = html.replace(/\n/g, '<br>');
+
+                // 8) Восстанавливаем mermaid-блоки без дальнейших преобразований
+                html = html.replace(/\[\[\[MERMAID_BLOCK_(\d+)\]\]\]/g, function(match, id) {
+                    const idx = parseInt(id, 10);
+                    const code = mermaidPlaceholders[idx] || '';
+                    return '<div class="mermaid">' + code + '</div>';
+                });
+
                 return '<p>' + html + '</p>';
             },
             setOptions: function() {}
         };
     </script>
-    <!-- Внешние библиотеки загружаются опционально, встроенный парсер используется по умолчанию -->
-    <script src="marked.min.js" onerror="console.warn('marked.min.js failed to load, using built-in parser')"></script>
+    <!-- Внешняя библиотека marked.min.js не используется, оставляем только mermaid -->
     <script src="mermaid.min.js" onerror="console.warn('mermaid.min.js failed to load, mermaid diagrams will not be rendered')"></script>
 </head>
 <body>
@@ -297,8 +337,7 @@ QString UMarkdownViewerWidget::createHtmlFromMarkdown(const QString& markdown) c
                         return;
                     }
 
-                    // Парсим и отображаем markdown используя встроенный парсер
-                    // (встроенный парсер более надежен и не зависит от внешних библиотек)
+                    // Парсим и отображаем markdown, используя встроенный парсер
                     if (typeof marked !== 'undefined' && marked.simpleParse) {
                         el.innerHTML = marked.simpleParse(markdown);
                     } else {
@@ -306,24 +345,20 @@ QString UMarkdownViewerWidget::createHtmlFromMarkdown(const QString& markdown) c
                         el.innerHTML = markdown.replace(/\n/g, '<br>');
                     }
 
-                    // Пробуем обработать mermaid диаграммы (если библиотека доступна)
+                    // Рендерим mermaid-диаграммы (если библиотека доступна)
                     if (typeof mermaid !== 'undefined') {
                         try {
-                            mermaid.initialize({ startOnLoad: true, theme: 'default', securityLevel: 'loose' });
-                            var mels = document.querySelectorAll('code.language-mermaid, pre code.language-mermaid');
-                            for (var i = 0; i < mels.length; i++) {
-                                var mel = mels[i], parent = mel.parentElement;
-                                if (!parent) continue;
-                                var div = document.createElement('div');
-                                div.className = 'mermaid';
-                                div.textContent = mel.textContent;
-                                var replaceTarget = (parent.tagName === 'PRE') ? parent : mel;
-                                var replaceParent = (parent.tagName === 'PRE') ? parent.parentNode : mel.parentNode;
-                                if (replaceParent && replaceTarget) {
-                                    replaceParent.replaceChild(div, replaceTarget);
+                            // Инициализация mermaid (однократно безопасна)
+                            mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
+                            // Ищем все div.mermaid внутри контента
+                            var mermaidBlocks = document.querySelectorAll('#content .mermaid');
+                            if (mermaidBlocks && mermaidBlocks.length > 0) {
+                                if (typeof mermaid.init === 'function') {
+                                    mermaid.init(undefined, mermaidBlocks);
+                                } else if (typeof mermaid.run === 'function') {
+                                    mermaid.run();
                                 }
                             }
-                            mermaid.run();
                         } catch (mermaidError) {
                             console.warn('Mermaid processing error (non-critical):', mermaidError);
                         }

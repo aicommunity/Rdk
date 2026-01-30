@@ -32,6 +32,11 @@ public:
     /// Очистить содержимое
     void clear();
 
+    /// Создать HTML из markdown (публично, чтобы использовать в автотестах)
+#ifdef RDK_USE_QT_WEBENGINE
+    QString createHtmlFromMarkdown(const QString& markdown) const;
+#endif
+
 private slots:
 #ifdef RDK_USE_QT_WEBENGINE
     void onLoadFinished(bool success);
@@ -49,8 +54,6 @@ private:
 #ifdef RDK_USE_QT_WEBENGINE
     /// Инициализация WebEngine
     void initializeWebEngine();
-    /// Создать HTML из markdown
-    QString createHtmlFromMarkdown(const QString& markdown) const;
 #endif
 };
 
