@@ -243,7 +243,7 @@ UModernDiagramNodeItem::UModernDiagramNodeItem(UModernDiagramWidget* owner, cons
         ownInputPort.name = QStringLiteral("Own");
         ownInputPort.componentName = name;
         ownInputPort.fullPath = QStringLiteral("");  // Маркер для фильтрации
-        ownInputPort.displayName = QStringLiteral("Собственные");
+        ownInputPort.displayName = QStringLiteral("Own");
         ownInputPort.category = PortCategory::Own;
         inputs.append(ownInputPort);
 
@@ -253,7 +253,7 @@ UModernDiagramNodeItem::UModernDiagramNodeItem(UModernDiagramWidget* owner, cons
         childInputPort.name = QStringLiteral("Children");
         childInputPort.componentName = name;
         childInputPort.fullPath = QStringLiteral("");  // Маркер для фильтрации
-        childInputPort.displayName = QStringLiteral("Дочерние");
+        childInputPort.displayName = QStringLiteral("Child");
         childInputPort.category = PortCategory::Child;
         inputs.append(childInputPort);
 
@@ -263,7 +263,7 @@ UModernDiagramNodeItem::UModernDiagramNodeItem(UModernDiagramWidget* owner, cons
         aliasInputPort.name = QStringLiteral("Aliases");
         aliasInputPort.componentName = name;
         aliasInputPort.fullPath = QStringLiteral("");  // Маркер для фильтрации
-        aliasInputPort.displayName = QStringLiteral("Алиасы");
+        aliasInputPort.displayName = QStringLiteral("Alias");
         aliasInputPort.category = PortCategory::Alias;
         inputs.append(aliasInputPort);
 
@@ -277,7 +277,7 @@ UModernDiagramNodeItem::UModernDiagramNodeItem(UModernDiagramWidget* owner, cons
         ownPort.name = QStringLiteral("Own");
         ownPort.componentName = name;
         ownPort.fullPath = QStringLiteral("");  // Маркер для фильтрации
-        ownPort.displayName = QStringLiteral("Собственные");
+        ownPort.displayName = QStringLiteral("Own");
         ownPort.category = PortCategory::Own;
         outputs.append(ownPort);
 
@@ -287,7 +287,7 @@ UModernDiagramNodeItem::UModernDiagramNodeItem(UModernDiagramWidget* owner, cons
         childPort.name = QStringLiteral("Children");
         childPort.componentName = name;
         childPort.fullPath = QStringLiteral("");  // Маркер для фильтрации
-        childPort.displayName = QStringLiteral("Дочерние");
+        childPort.displayName = QStringLiteral("Child");
         childPort.category = PortCategory::Child;
         outputs.append(childPort);
 
@@ -297,7 +297,7 @@ UModernDiagramNodeItem::UModernDiagramNodeItem(UModernDiagramWidget* owner, cons
         aliasPort.name = QStringLiteral("Aliases");
         aliasPort.componentName = name;
         aliasPort.fullPath = QStringLiteral("");  // Маркер для фильтрации
-        aliasPort.displayName = QStringLiteral("Алиасы");
+        aliasPort.displayName = QStringLiteral("Alias");
         aliasPort.category = PortCategory::Alias;
         outputs.append(aliasPort);
     }
