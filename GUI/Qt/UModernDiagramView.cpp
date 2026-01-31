@@ -468,18 +468,36 @@ void UModernDiagramView::dropEvent(QDropEvent *event)
         {
             std::string file_name;
 
-            QString default_path = QString::fromLocal8Bit(
+            QString configs_path = QString::fromLocal8Bit(
                 (m_owner->m_application->GetWorkDirectory() + "/../../Configs/").c_str());
-            QDir path1(default_path);
-            if(!path1.exists(default_path))
+            QDir path1(configs_path);
+            if(!path1.exists(configs_path))
             {
-                default_path = QString::fromLocal8Bit(
+                configs_path = QString::fromLocal8Bit(
                     (m_owner->m_application->GetWorkDirectory() + "/../../../Configs/").c_str());
-                QDir path2(default_path);
-                if(!path2.exists(default_path))
+                QDir path2(configs_path);
+                if(!path2.exists(configs_path))
                 {
-                    default_path = QString::fromLocal8Bit(
+                    configs_path = QString::fromLocal8Bit(
                         m_owner->m_application->GetWorkDirectory().c_str());
+                }
+            }
+
+            QString default_path = configs_path;
+            if(!m_owner->m_application->GetUserName().empty())
+            {
+                std::string userPathRel = m_owner->m_application->GetUserConfigPath();
+                if(!userPathRel.empty())
+                {
+                    QString users_dir = configs_path + "Users";
+                    QDir pathUsers(users_dir);
+                    if(!pathUsers.exists())
+                        RDK::CreateNewDirectory(users_dir.toLocal8Bit());
+                    QString user_path = configs_path + QString::fromLocal8Bit(userPathRel.c_str());
+                    QDir pathUser(user_path);
+                    if(!pathUser.exists())
+                        RDK::CreateNewDirectory(user_path.toLocal8Bit());
+                    default_path = user_path;
                 }
             }
 

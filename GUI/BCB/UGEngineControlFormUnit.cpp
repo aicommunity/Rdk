@@ -3322,15 +3322,27 @@ void __fastcall TUGEngineControlForm::CreateSimpleProject1Click(TObject *Sender)
  }
   std::string file_name;
 
-  std::string default_path=RdkApplication.GetWorkDirectory()+"..\\..\\Configs";
+  std::string configs_path=RdkApplication.GetWorkDirectory()+"..\\..\\Configs";
 
-  if(!DirectoryExists(default_path.c_str()))
+  if(!DirectoryExists(configs_path.c_str()))
   {
-   default_path=RdkApplication.GetWorkDirectory()+"..\\..\\..\\Configs";
-   if(!DirectoryExists(default_path.c_str()))
+   configs_path=RdkApplication.GetWorkDirectory()+"..\\..\\..\\Configs";
+   if(!DirectoryExists(configs_path.c_str()))
    {
-	default_path=RdkApplication.GetWorkDirectory();
+	configs_path=RdkApplication.GetWorkDirectory();
    }
+  }
+
+  std::string default_path=configs_path;
+  if(!RdkApplication.GetUserName().empty())
+  {
+   std::string users_dir=configs_path+"\\Users";
+   if(!DirectoryExists(users_dir.c_str()))
+    RDK::CreateNewDirectory(users_dir.c_str());
+   std::string default_user_path=configs_path+"\\Users\\"+RdkApplication.GetUserName();
+   if(!DirectoryExists(default_user_path.c_str()))
+    RDK::CreateNewDirectory(default_user_path.c_str());
+   default_path=default_user_path;
   }
 
   String path_dialog=default_path.c_str();
@@ -3340,7 +3352,7 @@ void __fastcall TUGEngineControlForm::CreateSimpleProject1Click(TObject *Sender)
    time(&curr_time);
   /// Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
    std::string folder=RDK::get_text_time(curr_time, '.', '_');
-   path_dialog+=String("\\Autocreate ")+folder.c_str();
+   path_dialog=String((default_path+"\\Autocreate "+folder).c_str());
    if(RDK::CreateNewDirectory(AnsiString(path_dialog).c_str()) != 0)
     return;
   }

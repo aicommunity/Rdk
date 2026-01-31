@@ -299,6 +299,14 @@ bool UApplication::SetConfigsMainPath(const std::string &value)
  return true;
 }
 
+/// Путь к папке конфигураций текущего пользователя относительно Configs (Configs/Users/UserName/)
+std::string UApplication::GetUserConfigPath(void) const
+{
+ if(UserName.empty())
+  return std::string();
+ return std::string("Users/") + UserName + "/";
+}
+
 /// Относительный путь до папки с библиотеками (в данном пути сформируется две папки - MockLibs, RTlibs)
 const std::string& UApplication::GetLibrariesPath(void) const
 {

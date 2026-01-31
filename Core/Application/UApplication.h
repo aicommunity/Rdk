@@ -238,6 +238,9 @@ bool SetWorkDirectory(const std::string& value);
 const std::string& GetConfigsMainPath(void) const;
 bool SetConfigsMainPath(const std::string &value);
 
+/// Путь к папке конфигураций текущего пользователя относительно Configs (Configs/Users/UserName/)
+std::string GetUserConfigPath(void) const;
+
 const std::string& GetDatabaseMainPath(void) const;
 bool SetDatabaseMainPath(const std::string &value);
 
