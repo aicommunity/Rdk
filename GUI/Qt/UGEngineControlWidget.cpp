@@ -169,6 +169,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     connect(modernDiagram, SIGNAL(viewLinksFromScheme(QString)), this, SLOT(showLinksForSingleComponent(QString)));
     connect(modernDiagram, SIGNAL(createLinksFromScheme(QString,QString)), this, SLOT(showLinksForTwoComponents(QString,QString)));
     connect(modernDiagram, SIGNAL(switchLinksFromScheme(QString,QString)), this, SLOT(switchLinksForTwoComponents(QString,QString)));
+    connect(modernDiagram, SIGNAL(openProjectDescriptionRequested()), this, SLOT(actionProjectDescription()));
 
     images = new UImagesWidget(this, application);
     images->hide();
