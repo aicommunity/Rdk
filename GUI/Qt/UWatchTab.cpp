@@ -129,8 +129,8 @@ void UWatchTab::AUpdateInterface()
             points.resize(pointCount);
 
             int pointIndex = 0;
-            for (auto itx = XData.begin(), ity = YData.begin(); 
-                 itx != XData.end() && ity != YData.end(); 
+            for (auto itx = XData.begin(), ity = YData.begin();
+                 itx != XData.end() && ity != YData.end();
                  ++itx, ++ity, ++pointIndex)
             {
                 points[pointIndex] = QPointF(*itx, *ity + current_serie->YShift);
@@ -198,7 +198,7 @@ void UWatchTab::AClearInterface()
 
 
 /// Безопасно считывает данные серии из ядра
-/// @deprecated Используется только для обратной совместимости. 
+/// @deprecated Используется только для обратной совместимости.
 /// В AUpdateInterface теперь используется прямой доступ с единой блокировкой.
 void UWatchTab::ReadSeriesDataSafe(int graphIndex, int serieIndex, std::list<double> &xdata, std::list<double> &ydata)
 {
@@ -221,14 +221,14 @@ void UWatchTab::ReadSeriesDataSafe(int graphIndex, int serieIndex, std::list<dou
         serie->nameProperty.toStdString(),
         serie->Jx,
         serie->Jy);
-    
+
     if (!data_reader)
     {
         xdata.clear();
         ydata.clear();
         return;
     }
-    
+
     xdata = data_reader->XData;
     ydata = data_reader->YData;
 }
@@ -366,7 +366,7 @@ void UWatchTab::createSelectionDialog(int chartIndex)
     //    return;
 
     //создаем окно для выбора источника данных
-    UComponentPropertySelectionWidget dialog(this, 3,application);
+    UComponentPropertySelectionWidget dialog(this, 3, application, 1);
     dialog.setModal(true);
   //  dialog.show();
     if (dialog.exec())

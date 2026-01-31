@@ -13,7 +13,7 @@ class UComponentPropertySelectionWidget : public QDialog
     Q_OBJECT
 
 public:
-    explicit UComponentPropertySelectionWidget(QWidget *parent = 0, int mode = 0, RDK::UApplication *app = NULL);
+    explicit UComponentPropertySelectionWidget(QWidget *parent = 0, int mode = 0, RDK::UApplication *app = NULL, int treeExpansionPolicy = 0);
     virtual ~UComponentPropertySelectionWidget();
 
     UComponentsListWidget *componentsList;

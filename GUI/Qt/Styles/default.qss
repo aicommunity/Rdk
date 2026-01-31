@@ -1,6 +1,6 @@
 /*
  * NeuroModeler Modern Light Theme
- * 
+ *
  * A clean, professional design with subtle gradients and refined colors
  * Primary accent: #5B8DEF (vibrant blue)
  * Secondary accent: #10B981 (emerald green)
@@ -363,25 +363,6 @@ QTreeView::item:selected {
 QTreeWidget::item:hover,
 QTreeView::item:hover {
     background-color: #EEF2FF;
-}
-
-QTreeWidget::branch,
-QTreeView::branch {
-    background-color: transparent;
-}
-
-QTreeWidget::branch:has-children:!has-siblings:closed,
-QTreeWidget::branch:closed:has-children:has-siblings,
-QTreeView::branch:has-children:!has-siblings:closed,
-QTreeView::branch:closed:has-children:has-siblings {
-    border-image: none;
-}
-
-QTreeWidget::branch:open:has-children:!has-siblings,
-QTreeWidget::branch:open:has-children:has-siblings,
-QTreeView::branch:open:has-children:!has-siblings,
-QTreeView::branch:open:has-children:has-siblings {
-    border-image: none;
 }
 
 /* ===== Table Widget / Table View ===== */

@@ -120,6 +120,9 @@ public:
     /// Устанавливает режим видимости для виджета выбора канала расчёта
     void setChannelsListVisible(bool value);
 
+    /// Режим раскрытия дерева в диалоге: 0 — все узлы развёрнуты, 1 — только Model и при одном компоненте он развёрнут
+    void setTreeExpansionPolicy(int policy);
+
 signals:
     void componentSelected(QString name); //single click
     void componentDoubleClick(QString name);
@@ -220,6 +223,9 @@ private:
 
     /// Флаг видимости компонента выбора канала
     bool channelsSelectionVisible;
+
+    /// Режим раскрытия дерева в диалоге (0 = expandAll, 1 = только Model + один компонент при одном)
+    int m_treeExpansionPolicy;
 
     /// Указатель на кастомный класс TreeWidget с перемещением компонентов при нажатом shift
     UComponentListTreeWidget *componentsTree;

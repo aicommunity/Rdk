@@ -21,6 +21,7 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication 
     ui(new Ui::UComponentsListWidget)
 {
     channelMode=channel_mode;
+    m_treeExpansionPolicy=0;
     CheckModelFlag=false;
     ui->setupUi(this);
 
@@ -230,8 +231,17 @@ void UComponentsListWidget::AUpdateInterface()
     }
     else
     {
-        // В диалоге разворачиваем все дерево по умолчанию при первоначальной загрузке
-        componentsTree->expandAll();
+        // В диалоге: по умолчанию разворачиваем всё дерево; при policy 1 — только Model и при одном компоненте его
+        if (m_treeExpansionPolicy == 1)
+        {
+            rootItem->setExpanded(true);
+            if (rootItem->childCount() == 1)
+                rootItem->child(0)->setExpanded(true);
+        }
+        else
+        {
+            componentsTree->expandAll();
+        }
     }
 
     applyFilter(rootItem);
@@ -948,7 +958,7 @@ void UComponentsListWidget::handleSnapshotUpdated(NMSDK::UGuiSnapshotPtr snapsho
 void UComponentsListWidget::handleFilterTextChanged(const QString &text)
 {
     componentFilterText = text.trimmed();
-    
+
     // В диалоге сохраняем состояние развернутости перед применением фильтра
     // и восстанавливаем после, чтобы не терять ручные изменения пользователя
     QSet<QString> expandedItems;
@@ -969,9 +979,9 @@ void UComponentsListWidget::handleFilterTextChanged(const QString &text)
             ++iterator;
         }
     }
-    
+
     applyFilter(componentsTree->invisibleRootItem());
-    
+
     // Восстанавливаем состояние развернутости в диалоге после применения фильтра
     if(UpdateInterval.Get() == 0 && !expandedItems.isEmpty())
     {
@@ -1248,6 +1258,11 @@ void UComponentsListWidget::setUpdateInterval(long value)
   UpdateInterval = value;
 }
 
+void UComponentsListWidget::setTreeExpansionPolicy(int policy)
+{
+  m_treeExpansionPolicy = policy;
+}
+
 void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem, const QSet<QString> &expandedItems)
 {
  // Use timeout to avoid blocking UI during calculation
@@ -1270,14 +1285,14 @@ void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetI
             childItem->setText(0, str);
             QString fullName = father+str;
             childItem->setData(0, Qt::UserRole, fullName);
-            
+
             // Устанавливаем состояние развернутости на основе сохраненного состояния
             // Если expandedItems пустой (диалог), не устанавливаем состояние здесь - оно будет установлено позже через expandAll()
             if(!expandedItems.isEmpty() && expandedItems.contains(fullName))
             {
                 childItem->setExpanded(true);
             }
-            
+
             if(oldRootItem == fullName)
             {
                 componentsTree->setCurrentItem(childItem);

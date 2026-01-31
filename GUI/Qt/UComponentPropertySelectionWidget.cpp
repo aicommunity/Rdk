@@ -3,7 +3,7 @@
 
 #include <QDebug>
 
-UComponentPropertySelectionWidget::UComponentPropertySelectionWidget(QWidget *parent, int mode, RDK::UApplication *app) :
+UComponentPropertySelectionWidget::UComponentPropertySelectionWidget(QWidget *parent, int mode, RDK::UApplication *app, int treeExpansionPolicy) :
     QDialog(parent),
     ui(new Ui::UComponentPropertySelectionWidget)
 {
@@ -14,6 +14,7 @@ UComponentPropertySelectionWidget::UComponentPropertySelectionWidget(QWidget *pa
     // Отключаем автоматические обновления в диалоге, чтобы дерево не сворачивалось автоматически
     componentsList->setUpdateInterval(0);
     componentsList->setVerticalOrientation(false);
+    componentsList->setTreeExpansionPolicy(treeExpansionPolicy);
     componentsList->openTabN(mode);
     ui->horizontalLayoutComponentsList->addWidget(componentsList);
     if(application)

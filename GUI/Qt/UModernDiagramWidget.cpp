@@ -321,6 +321,8 @@ bool UModernDiagramWidget::isComponentOutsideVisibleArea(UModernDiagramNodeItem*
 {
     if(!node || !m_mainView || !m_scene)
         return false;
+    if(node->scene() != m_scene)
+        return false;
 
     // Получаем видимую область viewport в координатах сцены
     QRectF viewportRect = m_mainView->mapToScene(m_mainView->viewport()->rect()).boundingRect();
@@ -386,6 +388,8 @@ void UModernDiagramWidget::clearScene()
     m_nodeByName.clear();
     m_links.clear();
     m_lastNodePositions.clear();  // Очищаем сохраненные позиции
+    m_componentsWithNegativePos.clear();
+    m_originalAbsolutePositions.clear();
     m_scene->clear();  // Удаляет все элементы, включая NodeItem и прокси-виджеты
     m_tempLink = nullptr;
     m_dragSourceNode = nullptr;
