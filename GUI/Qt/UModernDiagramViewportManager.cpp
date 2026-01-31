@@ -262,16 +262,16 @@ void UModernDiagramViewportManager::updateOverlayButtonsPosition(int width, int 
 {
     Q_UNUSED(height);
     const int margin = 10;
-    const int buttonSize = 32;
+    const int buttonWidth = 32;   // ширина кнопки (горизонталь)
+    const int buttonHeight = 32;  // высота кнопки (вертикаль)
     const int gap = 8;
-    // Сдвиг влево на половину ширины кнопки
-    const int leftShift = buttonSize / 2;
 
-    int rightEdge = width - margin - leftShift;
+    int x = width - margin - buttonWidth;
+    // Кнопка масштаба сверху, описание проекта снизу
     if(m_resetZoomButton)
-        m_resetZoomButton->move(rightEdge - buttonSize, margin);
+        m_resetZoomButton->move(x, margin);
     if(m_projectDescriptionButton)
-        m_projectDescriptionButton->move(rightEdge - buttonSize - gap - buttonSize, margin);
+        m_projectDescriptionButton->move(x, margin + buttonHeight + gap);
 }
 
 void UModernDiagramViewportManager::updateResetZoomButtonPosition(int width, int height)
@@ -286,6 +286,8 @@ void UModernDiagramViewportManager::updateOverlayButtonsStyle()
 
     QString darkStyle =
             "QPushButton {"
+            "    min-width: 32px; max-width: 32px; min-height: 32px; max-height: 32px;"
+            "    padding: 0;"
             "    background-color: rgba(33, 37, 43, 220);"
             "    border: 1px solid #5C6370;"
             "    border-radius: 4px;"
@@ -304,6 +306,8 @@ void UModernDiagramViewportManager::updateOverlayButtonsStyle()
             "}";
     QString lightStyle =
             "QPushButton {"
+            "    min-width: 32px; max-width: 32px; min-height: 32px; max-height: 32px;"
+            "    padding: 0;"
             "    background-color: rgba(255, 255, 255, 200);"
             "    border: 1px solid #ccc;"
             "    border-radius: 4px;"
