@@ -181,9 +181,10 @@
      <addaction name="actionImages"/>
     </widget>
     <addaction name="actionWatchWindow"/>
-    <addaction name="actionProjectDescription"/>
     <addaction name="actionImagesFromWindow"/>
     <addaction name="menuNew_Tab"/>
+    <addaction name="separator"/>
+    <addaction name="actionProjectDescription"/>
     <addaction name="separator"/>
     <addaction name="actionEngineMonitor"/>
     <addaction name="actionVideoSources"/>
