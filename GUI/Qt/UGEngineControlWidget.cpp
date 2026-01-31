@@ -919,9 +919,10 @@ void UGEngineControlWidget::actionProjectDescription()
     {
         // Устанавливаем размер окна равным размеру главного окна
         projectDescriptionWindow->resize(this->size());
-
+        projectDescriptionWindow->setWindowState(projectDescriptionWindow->windowState() & ~Qt::WindowMaximized);
         projectDescriptionWindow->show();
         projectDescriptionWindow->showNormal();
+        projectDescriptionWindow->raise();
         projectDescriptionWindow->activateWindow();
         // Обновляем содержимое при показе окна (на случай, если проект был открыт после создания окна)
         if(application && application->GetProjectOpenFlag())
@@ -936,8 +937,10 @@ void UGEngineControlWidget::actionProjectDescription()
 
         // Устанавливаем размер окна равным размеру главного окна
         projectDescriptionWindow->resize(this->size());
-
+        projectDescriptionWindow->setWindowState(Qt::WindowNoState);
         projectDescriptionWindow->show();
+        projectDescriptionWindow->raise();
+        projectDescriptionWindow->activateWindow();
     }
 }
 

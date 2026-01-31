@@ -108,7 +108,8 @@ UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
     // Миникарта скрыта
     m_miniMap->hide();
 
-    // Создание кнопки сброса масштаба через viewport manager
+    // Кнопка «Описание проекта» слева от кнопки сброса масштаба
+    m_viewportManager->createProjectDescriptionButton(this);
     m_viewportManager->createResetZoomButton(this);
 }
 
@@ -192,6 +193,11 @@ void UModernDiagramWidget::SetApplication(RDK::UApplication* app)
 void UModernDiagramWidget::SetComponentName(const QString& name)
 {
     m_componentName = name;
+}
+
+void UModernDiagramWidget::requestOpenProjectDescription()
+{
+    emit openProjectDescriptionRequested();
 }
 
 void UModernDiagramWidget::Reload()

@@ -9,26 +9,26 @@ UModernDiagramContainerWidget::UModernDiagramContainerWidget(QWidget *parent, RD
 
     // Создаем splitter для разделения диаграммы и списка классов
     splitter = new QSplitter(Qt::Horizontal, this);
-    
+
     // Современная диаграмма
     modernScheme = new UModernDiagramWidget(splitter);
     modernScheme->SetApplication(app);
     modernScheme->SetComponentName("");
     splitter->addWidget(modernScheme);
-    
+
     // Список классов
     classesList = new UClassesListWidget(splitter, app);
     splitter->addWidget(classesList);
-    
+
     // Настройка пропорций splitter
     splitter->setStretchFactor(0, 1);
     splitter->setStretchFactor(1, 0);
-    
+
     // Установка layout
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(splitter);
-    
+
     // Подключение сигналов от современной диаграммы
     connect(modernScheme, SIGNAL(componentSelected(QString)), this, SIGNAL(componentSelectedFromScheme(QString)));
     connect(modernScheme, SIGNAL(componentDoubleClicked(QString)), this, SIGNAL(componentDoubleClickFromScheme(QString)));
@@ -37,6 +37,7 @@ UModernDiagramContainerWidget::UModernDiagramContainerWidget(QWidget *parent, RD
     connect(modernScheme, SIGNAL(viewLinks(QString)), this, SIGNAL(viewLinksFromScheme(QString)));
     connect(modernScheme, SIGNAL(createLinks(QString,QString)), this, SIGNAL(createLinksFromScheme(QString,QString)));
     connect(modernScheme, SIGNAL(switchLinks(QString,QString)), this, SIGNAL(switchLinksFromScheme(QString,QString)));
+    connect(modernScheme, SIGNAL(openProjectDescriptionRequested()), this, SIGNAL(openProjectDescriptionRequested()));
 
     UpdateInterval = 0; // don't update by core ticks
     setAccessibleName("UModernDiagramContainerWidget"); // имя класса для сериализации
@@ -64,7 +65,7 @@ void UModernDiagramContainerWidget::ASaveParameters()
     settings.beginGroup(accessibleName());
     settings.setValue("splitterState", splitter->saveState());
     settings.endGroup();
-    
+
     // Сохраняем состояние viewport для современной диаграммы
     if(modernScheme)
     {
@@ -82,7 +83,7 @@ void UModernDiagramContainerWidget::ALoadParameters()
     settings.beginGroup(accessibleName());
     splitter->restoreState(settings.value("splitterState").toByteArray());
     settings.endGroup();
-    
+
     // Загружаем состояние viewport для современной диаграммы
     if(modernScheme)
     {
