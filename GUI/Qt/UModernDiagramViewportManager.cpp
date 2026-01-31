@@ -9,12 +9,16 @@
 #include <QGraphicsScene>
 #include <QTransform>
 #include <QRectF>
+#include <QSize>
 #include <QPushButton>
 #include <QTimer>
+#include <QStyle>
+#include <QApplication>
 #include "UGuiTelemetry.h"
 
 UModernDiagramViewportManager::UModernDiagramViewportManager(UModernDiagramWidget* owner)
     : m_owner(owner)
+    , m_projectDescriptionButton(nullptr)
     , m_resetZoomButton(nullptr)
 {
 }
@@ -193,16 +197,48 @@ void UModernDiagramViewportManager::loadFromSettings()
     settings.endGroup();
 }
 
+QPushButton* UModernDiagramViewportManager::createProjectDescriptionButton(QWidget* parent)
+{
+    if(m_projectDescriptionButton)
+        return m_projectDescriptionButton;
+
+    m_projectDescriptionButton = new QPushButton(parent);
+    QStyle* style = QApplication::style();
+    if(style)
+        m_projectDescriptionButton->setIcon(style->standardIcon(QStyle::SP_FileIcon));
+    m_projectDescriptionButton->setIconSize(QSize(20, 20));
+    m_projectDescriptionButton->setToolTip(QCoreApplication::translate("UModernDiagramViewportManager", "Project Description"));
+    m_projectDescriptionButton->setFixedSize(32, 32);
+    m_projectDescriptionButton->raise();
+
+    if(m_owner)
+    {
+        QObject::connect(m_projectDescriptionButton, &QPushButton::clicked, m_owner, &UModernDiagramWidget::requestOpenProjectDescription);
+    }
+
+    updateOverlayButtonsStyle();
+
+    QTimer::singleShot(0, parent, [this, parent]() {
+        if((m_projectDescriptionButton || m_resetZoomButton) && parent)
+            updateOverlayButtonsPosition(parent->width(), parent->height());
+    });
+
+    return m_projectDescriptionButton;
+}
+
 QPushButton* UModernDiagramViewportManager::createResetZoomButton(QWidget* parent)
 {
     if(m_resetZoomButton)
         return m_resetZoomButton;
 
     m_resetZoomButton = new QPushButton(parent);
-    m_resetZoomButton->setText("⟲");
+    QStyle* style = QApplication::style();
+    if(style)
+        m_resetZoomButton->setIcon(style->standardIcon(QStyle::SP_BrowserReload));
+    m_resetZoomButton->setIconSize(QSize(20, 20));
     m_resetZoomButton->setToolTip(QCoreApplication::translate("UModernDiagramViewportManager", "Reset zoom"));
     m_resetZoomButton->setFixedSize(32, 32);
-    updateResetZoomButtonStyle();
+    updateOverlayButtonsStyle();
     m_resetZoomButton->raise();
 
     // Подключаем сигнал к слоту виджета
@@ -213,40 +249,42 @@ QPushButton* UModernDiagramViewportManager::createResetZoomButton(QWidget* paren
         });
     }
 
-    // Позиционируем кнопку при первом создании
+    // Позиционируем кнопки при первом создании
     QTimer::singleShot(0, parent, [this, parent]() {
-        if(m_resetZoomButton && parent)
-        {
-            int margin = 10;
-            m_resetZoomButton->move(parent->width() - m_resetZoomButton->width() - margin, margin);
-        }
+        if(parent)
+            updateOverlayButtonsPosition(parent->width(), parent->height());
     });
 
     return m_resetZoomButton;
 }
 
-void UModernDiagramViewportManager::updateResetZoomButtonPosition(int width, int height)
+void UModernDiagramViewportManager::updateOverlayButtonsPosition(int width, int height)
 {
     Q_UNUSED(height);
+    const int margin = 10;
+    const int buttonSize = 32;
+    const int gap = 8;
+    // Сдвиг влево на половину ширины кнопки
+    const int leftShift = buttonSize / 2;
+
+    int rightEdge = width - margin - leftShift;
     if(m_resetZoomButton)
-    {
-        int margin = 10;
-        m_resetZoomButton->move(width - m_resetZoomButton->width() - margin, margin);
-    }
+        m_resetZoomButton->move(rightEdge - buttonSize, margin);
+    if(m_projectDescriptionButton)
+        m_projectDescriptionButton->move(rightEdge - buttonSize - gap - buttonSize, margin);
 }
 
-void UModernDiagramViewportManager::updateResetZoomButtonStyle()
+void UModernDiagramViewportManager::updateResetZoomButtonPosition(int width, int height)
 {
-    if(!m_resetZoomButton)
-        return;
+    updateOverlayButtonsPosition(width, height);
+}
 
+void UModernDiagramViewportManager::updateOverlayButtonsStyle()
+{
     UStyleManager* styleManager = UStyleManager::instance();
     QString themeName = styleManager->getThemeName();
 
-    if(themeName == "Modern Dark" || themeName == "dark")
-    {
-        // Темная тема
-        m_resetZoomButton->setStyleSheet(
+    QString darkStyle =
             "QPushButton {"
             "    background-color: rgba(33, 37, 43, 220);"
             "    border: 1px solid #5C6370;"
@@ -263,13 +301,8 @@ void UModernDiagramViewportManager::updateResetZoomButtonStyle()
             "    background-color: rgba(30, 58, 95, 250);"
             "    border-color: #61AFEF;"
             "    color: #61AFEF;"
-            "}"
-        );
-    }
-    else
-    {
-        // Светлая тема (по умолчанию)
-        m_resetZoomButton->setStyleSheet(
+            "}";
+    QString lightStyle =
             "QPushButton {"
             "    background-color: rgba(255, 255, 255, 200);"
             "    border: 1px solid #ccc;"
@@ -286,8 +319,26 @@ void UModernDiagramViewportManager::updateResetZoomButtonStyle()
             "    background-color: rgba(220, 220, 220, 240);"
             "    border-color: #3B82F6;"
             "    color: #1E40AF;"
-            "}"
-        );
+            "}";
+
+    if(themeName == "Modern Dark" || themeName == "dark")
+    {
+        if(m_resetZoomButton)
+            m_resetZoomButton->setStyleSheet(darkStyle);
+        if(m_projectDescriptionButton)
+            m_projectDescriptionButton->setStyleSheet(darkStyle);
     }
+    else
+    {
+        if(m_resetZoomButton)
+            m_resetZoomButton->setStyleSheet(lightStyle);
+        if(m_projectDescriptionButton)
+            m_projectDescriptionButton->setStyleSheet(lightStyle);
+    }
+}
+
+void UModernDiagramViewportManager::updateResetZoomButtonStyle()
+{
+    updateOverlayButtonsStyle();
 }
 

@@ -98,6 +98,8 @@ public slots:
     int selectNodesInRect(const QRectF& selectionRect, bool addToSelection = false);
     /// Обновление темы - инвалидирует кэш всех узлов и обновляет сцену
     void updateTheme();
+    /// Вызвать открытие окна описания проекта (используется кнопкой на диаграмме)
+    void requestOpenProjectDescription();
     /// Обновление стилей кнопки сброса масштаба в соответствии с текущей темой
     // updateResetZoomButtonStyle теперь в UModernDiagramViewportManager
 
@@ -116,6 +118,8 @@ signals:
     void createLinks(QString firstComponentName, QString secondComponentName);
     /// Переключение связи между двумя компонентами
     void switchLinks(QString firstComponentName, QString secondComponentName);
+    /// Запрос на открытие окна описания проекта (кнопка на диаграмме)
+    void openProjectDescriptionRequested();
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
