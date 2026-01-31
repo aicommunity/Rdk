@@ -14,6 +14,7 @@
 #include <QThread>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QDir>
 #include <QMessageBox>
 #include <QTimer>
 #include <QInputDialog>
@@ -293,6 +294,8 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     // Theme switcher menu
     createThemeMenu();
 
+    updateRecentConfigsMenu();
+
     // Исправление проблемы с кликами в меню File
     // На Linux нативное меню может блокировать клики, поэтому отключаем его
     // и убеждаемся, что меню правильно позиционировано
@@ -426,6 +429,8 @@ void UGEngineControlWidget::actionLoadConfig()
 
       settings.setValue("LastConfigDialogDir", QFileInfo(fileName).absolutePath());
 
+      addToRecentConfigs(fileName);
+
       /*QStringList list = configFileName.split("/");
       list.pop_back();*/
 
@@ -445,13 +450,18 @@ void UGEngineControlWidget::loadProjectExternal(const QString &config_path)
 {
  try
  {
+  if (watchWindow == NULL)
+  {
+      watchWindow = new UWatch(this);
+      watchWindow->setWindowTitle("Watch window");
+  }
+
   application->OpenProject(config_path.toLocal8Bit().constData());
   UpdateInterface();
 
-  /*QStringList list = configFileName.split("/");
-  list.pop_back();*/
+  addToRecentConfigs(config_path);
 
-  //RDK::UIVisualControllerStorage::UpdateInterface(true);
+  RDK::UIVisualControllerStorage::UpdateInterface(true);
  }
  catch(RDK::UException& e)
  {
@@ -651,6 +661,7 @@ void UGEngineControlWidget::actionCopyConfig()
   open_file_name+=project_file_name;
   application->OpenProject(open_file_name);
   RDK::UIVisualControllerStorage::UpdateInterface(true);
+  addToRecentConfigs(QString::fromLocal8Bit((application->GetProjectPath()+application->GetProjectFileName()).c_str()));
  }
 
  }
@@ -704,6 +715,7 @@ void UGEngineControlWidget::actionAutoCopyConfig()
     application->CopyProject(config_path);
     std::string name = application->GetProjectFileName();
     application->OpenProject(config_path+application->GetProjectFileName());
+    addToRecentConfigs(QString::fromLocal8Bit((application->GetProjectPath()+application->GetProjectFileName()).c_str()));
   }
   catch(RDK::UException& e)
   {
@@ -1583,6 +1595,72 @@ void UGEngineControlWidget::updateThemeMenuState()
     // Update checkboxes based on current theme
     m_lightThemeAction->setChecked(currentTheme == "Modern Light");
     m_darkThemeAction->setChecked(currentTheme == "Modern Dark");
+}
+
+static QString recentConfigDisplayName(const QString& path)
+{
+    QFileInfo info(path);
+    QString canonical = QDir::cleanPath(info.absoluteFilePath());
+    QString fileName = info.fileName();
+    QString parentDirName = info.dir().dirName();
+
+    if (fileName.isEmpty())
+        return path;
+
+    QString pathWithSlash = QDir::fromNativeSeparators(canonical);
+    QString basePath;
+    int configsIdx = pathWithSlash.indexOf(QStringLiteral("Configs"));
+    if (configsIdx >= 0)
+        basePath = pathWithSlash.mid(configsIdx);
+    else
+        basePath = pathWithSlash;
+
+    QStringList segments = basePath.split(QLatin1Char('/'), Qt::SkipEmptyParts);
+    if (segments.size() <= 2)
+        return basePath;
+    return segments.first() + QStringLiteral("/.../") + parentDirName + QLatin1Char('/') + fileName;
+}
+
+void UGEngineControlWidget::updateRecentConfigsMenu()
+{
+    ui->menuRecentConfigs->clear();
+
+    QSettings settings("NeuroModeler", "NeuroModeler");
+    QStringList paths = settings.value("RecentConfigs").toStringList();
+
+    if (paths.isEmpty())
+    {
+        QAction* noRecent = ui->menuRecentConfigs->addAction(tr("No recent configs"));
+        noRecent->setEnabled(false);
+        return;
+    }
+
+    for (const QString& path : paths)
+    {
+        QString displayName = recentConfigDisplayName(path);
+        if (displayName.isEmpty())
+            displayName = path;
+        QAction* action = ui->menuRecentConfigs->addAction(displayName);
+        action->setData(path);
+        action->setToolTip(path);
+        connect(action, &QAction::triggered, this, [this, path]() { loadProjectExternal(path); });
+    }
+}
+
+void UGEngineControlWidget::addToRecentConfigs(const QString& path)
+{
+    QString canonical = QDir::cleanPath(QFileInfo(path).absoluteFilePath());
+    if (canonical.isEmpty())
+        return;
+
+    QSettings settings("NeuroModeler", "NeuroModeler");
+    QStringList paths = settings.value("RecentConfigs").toStringList();
+    paths.removeAll(canonical);
+    paths.prepend(canonical);
+    while (paths.size() > kMaxRecentConfigs)
+        paths.removeLast();
+    settings.setValue("RecentConfigs", paths);
+    updateRecentConfigsMenu();
 }
 
 void UGEngineControlWidget::switchToTheme(const QString& themeName)

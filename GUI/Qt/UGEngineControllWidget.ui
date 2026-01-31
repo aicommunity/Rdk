@@ -96,9 +96,15 @@
      <addaction name="actionBuildMode2"/>
      <addaction name="actionBuildMode3"/>
     </widget>
+    <widget class="QMenu" name="menuRecentConfigs">
+     <property name="title">
+      <string>Recent Configs</string>
+     </property>
+    </widget>
     <addaction name="actionCreateSimple"/>
     <addaction name="actionCreateConfig"/>
     <addaction name="actionLoadConfig"/>
+    <addaction name="menuRecentConfigs"/>
     <addaction name="actionSaveConfig"/>
     <addaction name="actionAutocopyConfig"/>
     <addaction name="actionCopyConfig"/>

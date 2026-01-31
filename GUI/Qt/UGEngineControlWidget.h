@@ -182,9 +182,13 @@ private slots:
     void on_actionImages_triggered();
 
 private:
+    static const int kMaxRecentConfigs = 10;
+
     // Helper methods
     void createThemeMenu();
     void updateThemeMenuState();
+    void updateRecentConfigsMenu();
+    void addToRecentConfigs(const QString& path);
 
     // data
     Ui::UGEngineControllWidget *ui;
