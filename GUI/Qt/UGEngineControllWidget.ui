@@ -113,24 +113,6 @@
     <addaction name="separator"/>
     <addaction name="actionConfigOptions"/>
     <addaction name="actionApplicationOptions"/>
-    <addaction name="actionClassesDescriptio"/>
-    <addaction name="separator"/>
-    <addaction name="menuChooseBuildStorageMode"/>
-    <addaction name="separator"/>
-    <addaction name="actionCreateModel"/>
-    <addaction name="actionLoadModel"/>
-    <addaction name="actionSaveModel"/>
-    <addaction name="separator"/>
-    <addaction name="actionReloadParameters"/>
-    <addaction name="separator"/>
-    <addaction name="actionCaptureVideo"/>
-    <addaction name="actionOpenVideoFile"/>
-    <addaction name="actionOpenImage"/>
-    <addaction name="separator"/>
-    <addaction name="actionSaveCommonDescriptions"/>
-    <addaction name="actionSaveClassesDescriptions"/>
-    <addaction name="separator"/>
-    <addaction name="actionCreateSaveMockLibs"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -164,6 +146,9 @@
     </property>
     <widget class="QMenu" name="menuBroadcasters">
      <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="visible">
       <bool>false</bool>
      </property>
      <property name="title">
