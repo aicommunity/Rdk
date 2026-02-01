@@ -23,8 +23,8 @@ public:
     /// Установить markdown текст для отображения
     void setMarkdown(const QString& markdown);
 
-    /// Загрузить markdown из файла
-    bool loadMarkdownFromFile(const QString& filePath);
+    /// Загрузить markdown из файла. При emitDocumentLoaded == true эмитит documentLoaded(filePath) после загрузки.
+    bool loadMarkdownFromFile(const QString& filePath, bool emitDocumentLoaded = true);
 
     /// Установить базовый URL для разрешения относительных ссылок
     void setBaseUrl(const QUrl& url);
@@ -32,10 +32,14 @@ public:
     /// Очистить содержимое
     void clear();
 
-    /// Создать HTML из markdown (публично, чтобы использовать в автотестах)
+    /// Создать HTML из markdown (публично, чтобы использовать в автотестах). basePath — путь каталога или file URL для разрешения относительных ссылок.
 #ifdef RDK_USE_QT_WEBENGINE
-    QString createHtmlFromMarkdown(const QString& markdown) const;
+    QString createHtmlFromMarkdown(const QString& markdown, const QString& basePath = QString()) const;
 #endif
+
+signals:
+    /// Эмитируется после загрузки документа по ссылке или loadMarkdownFromFile(..., true)
+    void documentLoaded(const QString& filePath);
 
 private slots:
 #ifdef RDK_USE_QT_WEBENGINE

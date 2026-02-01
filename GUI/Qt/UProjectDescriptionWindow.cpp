@@ -10,6 +10,8 @@
 #include <QMessageBox>
 #include <QWidget>
 #include <QCloseEvent>
+#include <QStyle>
+#include <QApplication>
 
 UProjectDescriptionWindow::UProjectDescriptionWindow(QWidget *parent, RDK::UApplication* app)
     : UVisualControllerMainWidget(parent, app)
@@ -22,6 +24,10 @@ UProjectDescriptionWindow::UProjectDescriptionWindow(QWidget *parent, RDK::UAppl
     , m_readmeFilePath()
     , m_originalContent()
     , m_hasUnsavedChanges(false)
+    , m_historyIndex(0)
+    , m_backButton(nullptr)
+    , m_forwardButton(nullptr)
+    , m_homeButton(nullptr)
 {
     setAccessibleName("UProjectDescriptionWindow");
     setWindowTitle("Project Description");
@@ -39,10 +45,43 @@ UProjectDescriptionWindow::UProjectDescriptionWindow(QWidget *parent, RDK::UAppl
     m_saveButton->setEnabled(false); // По умолчанию отключена
     m_toolBar->addWidget(m_saveButton);
 
+#ifdef RDK_USE_QT_WEBENGINE
+    m_toolBar->addSeparator();
+    QStyle* style = QApplication::style();
+    m_backButton = new QPushButton(tr("Back"), this);
+    m_backButton->setMaximumWidth(80);
+    if (style)
+        m_backButton->setIcon(style->standardIcon(QStyle::SP_ArrowBack));
+    m_toolBar->addWidget(m_backButton);
+
+    m_forwardButton = new QPushButton(tr("Forward"), this);
+    m_forwardButton->setMaximumWidth(80);
+    if (style)
+        m_forwardButton->setIcon(style->standardIcon(QStyle::SP_ArrowForward));
+    m_toolBar->addWidget(m_forwardButton);
+
+    m_homeButton = new QPushButton(tr("Home"), this);
+    m_homeButton->setMaximumWidth(80);
+    if (style)
+        m_homeButton->setIcon(style->standardIcon(QStyle::SP_DirHomeIcon));
+    m_toolBar->addWidget(m_homeButton);
+
+    m_backButton->setEnabled(false);
+    m_forwardButton->setEnabled(false);
+    m_homeButton->setEnabled(false);
+
+    connect(m_backButton, &QPushButton::clicked, this, &UProjectDescriptionWindow::goBack);
+    connect(m_forwardButton, &QPushButton::clicked, this, &UProjectDescriptionWindow::goForward);
+    connect(m_homeButton, &QPushButton::clicked, this, &UProjectDescriptionWindow::goHome);
+#endif
+
     addToolBar(m_toolBar);
 
     // Создаем виджет для отображения Markdown
     m_markdownViewer = new UMarkdownViewerWidget(this);
+#ifdef RDK_USE_QT_WEBENGINE
+    connect(m_markdownViewer, &UMarkdownViewerWidget::documentLoaded, this, &UProjectDescriptionWindow::onDocumentLoaded);
+#endif
 
     // Создаем виджет для редактирования Markdown
     m_markdownEditor = new QPlainTextEdit(this);
@@ -99,10 +138,13 @@ void UProjectDescriptionWindow::ABeforeCloseProject(void)
     m_readmeFilePath.clear();
     m_originalContent.clear();
     m_hasUnsavedChanges = false;
+    m_history.clear();
+    m_historyIndex = 0;
     if(m_saveButton)
     {
         m_saveButton->setEnabled(false);
     }
+    updateNavigationButtons();
 }
 
 void UProjectDescriptionWindow::AUpdateInterface(void)
@@ -127,10 +169,13 @@ void UProjectDescriptionWindow::AClearInterface(void)
     m_readmeFilePath.clear();
     m_originalContent.clear();
     m_hasUnsavedChanges = false;
+    m_history.clear();
+    m_historyIndex = 0;
     if(m_saveButton)
     {
         m_saveButton->setEnabled(false);
     }
+    updateNavigationButtons();
 }
 
 void UProjectDescriptionWindow::toggleEditMode()
@@ -356,11 +401,15 @@ void UProjectDescriptionWindow::loadProjectDescription()
     qDebug() << "UProjectDescriptionWindow: README path:" << readmePath;
     qDebug() << "UProjectDescriptionWindow: README exists:" << QFile::exists(readmePath);
 
-    // Пытаемся загрузить указанный файл описания
+    // Пытаемся загрузить указанный файл описания (false — не эмитить documentLoaded, историю инициализируем ниже)
     bool loaded = false;
     if(descriptionFileName.endsWith(".md"))
     {
+#ifdef RDK_USE_QT_WEBENGINE
+        loaded = m_markdownViewer->loadMarkdownFromFile(readmePath, false);
+#else
         loaded = m_markdownViewer->loadMarkdownFromFile(readmePath);
+#endif
         if(loaded && m_markdownEditor)
         {
             // Загружаем содержимое в редактор для возможности редактирования
@@ -375,6 +424,14 @@ void UProjectDescriptionWindow::loadProjectDescription()
                 file.close();
             }
         }
+#ifdef RDK_USE_QT_WEBENGINE
+        if(loaded)
+        {
+            m_history = QStringList() << readmePath;
+            m_historyIndex = 0;
+            updateNavigationButtons();
+        }
+#endif
     }
 
     if(!loaded)
@@ -421,3 +478,67 @@ void UProjectDescriptionWindow::loadProjectDescription()
     }
     setWindowTitle(tr("Project Description"));
 }
+
+#ifdef RDK_USE_QT_WEBENGINE
+void UProjectDescriptionWindow::goBack()
+{
+    if(!m_markdownViewer || m_historyIndex <= 0 || m_historyIndex >= m_history.size())
+        return;
+    m_historyIndex--;
+    m_markdownViewer->loadMarkdownFromFile(m_history.at(m_historyIndex), false);
+    updateNavigationButtons();
+}
+
+void UProjectDescriptionWindow::goForward()
+{
+    if(!m_markdownViewer || m_historyIndex < 0 || m_historyIndex >= m_history.size() - 1)
+        return;
+    m_historyIndex++;
+    m_markdownViewer->loadMarkdownFromFile(m_history.at(m_historyIndex), false);
+    updateNavigationButtons();
+}
+
+void UProjectDescriptionWindow::goHome()
+{
+    if(!m_markdownViewer || m_history.isEmpty())
+        return;
+    m_historyIndex = 0;
+    m_markdownViewer->loadMarkdownFromFile(m_history.at(0), false);
+    updateNavigationButtons();
+}
+
+void UProjectDescriptionWindow::onDocumentLoaded(const QString& filePath)
+{
+    if(filePath.isEmpty())
+        return;
+    if(m_history.isEmpty())
+    {
+        m_history = QStringList() << filePath;
+        m_historyIndex = 0;
+    }
+    else if(filePath != m_history.value(m_historyIndex))
+    {
+        while(m_history.size() > m_historyIndex + 1)
+            m_history.removeLast();
+        m_history.append(filePath);
+        m_historyIndex = m_history.size() - 1;
+    }
+    updateNavigationButtons();
+}
+
+void UProjectDescriptionWindow::updateNavigationButtons()
+{
+    if(m_backButton)
+        m_backButton->setEnabled(m_historyIndex > 0 && m_historyIndex < m_history.size());
+    if(m_forwardButton)
+        m_forwardButton->setEnabled(m_historyIndex >= 0 && m_historyIndex < m_history.size() - 1);
+    if(m_homeButton)
+        m_homeButton->setEnabled(!m_history.isEmpty() && m_historyIndex > 0);
+}
+#else
+void UProjectDescriptionWindow::goBack() {}
+void UProjectDescriptionWindow::goForward() {}
+void UProjectDescriptionWindow::goHome() {}
+void UProjectDescriptionWindow::onDocumentLoaded(const QString&) {}
+void UProjectDescriptionWindow::updateNavigationButtons() {}
+#endif

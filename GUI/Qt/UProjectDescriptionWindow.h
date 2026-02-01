@@ -7,6 +7,7 @@
 #include <QPushButton>
 #include <QToolBar>
 #include <QCloseEvent>
+#include <QStringList>
 
 /// Окно для отображения описания проекта (README.md или Description.rtf)
 class UProjectDescriptionWindow : public UVisualControllerMainWidget
@@ -43,6 +44,14 @@ private slots:
     /// Отслеживание изменений в редакторе
     void onTextChanged();
 
+    /// Навигация: назад, вперёд, домой (история просмотра .md)
+    void goBack();
+    void goForward();
+    void goHome();
+
+    /// Вызывается виджетом после загрузки документа по ссылке
+    void onDocumentLoaded(const QString& filePath);
+
 private:
     /// Загрузить описание проекта из файла
     void loadProjectDescription();
@@ -76,6 +85,18 @@ private:
 
     /// Флаг наличия несохраненных изменений
     bool m_hasUnsavedChanges;
+
+    /// История навигации по .md (абсолютные пути) и текущий индекс
+    QStringList m_history;
+    int m_historyIndex;
+
+    /// Кнопки навигации (Back, Forward, Home)
+    QPushButton* m_backButton;
+    QPushButton* m_forwardButton;
+    QPushButton* m_homeButton;
+
+    /// Обновить доступность кнопок Back/Forward по m_historyIndex
+    void updateNavigationButtons();
 };
 
 #endif // UPROJECTDESCRIPTIONWINDOW_H

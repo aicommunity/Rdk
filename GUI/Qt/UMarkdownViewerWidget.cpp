@@ -10,6 +10,7 @@
 #ifdef RDK_USE_QT_WEBENGINE
 #include <QWebEnginePage>
 #include <QWebEngineSettings>
+#include "UMarkdownWebEnginePage.h"
 #endif
 
 UMarkdownViewerWidget::UMarkdownViewerWidget(QWidget *parent)
@@ -29,6 +30,12 @@ UMarkdownViewerWidget::UMarkdownViewerWidget(QWidget *parent)
 #ifdef RDK_USE_QT_WEBENGINE
     m_webView = new QWebEngineView(this);
     m_webView->setContextMenuPolicy(Qt::NoContextMenu);
+
+    UMarkdownWebEnginePage* page = new UMarkdownWebEnginePage(this);
+    m_webView->setPage(page);
+    connect(page, &UMarkdownWebEnginePage::openLocalMarkdownRequested, this, [this](const QString& path) {
+        loadMarkdownFromFile(path, true);
+    });
 
     QWebEngineSettings* settings = m_webView->settings();
     settings->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, false);
@@ -56,7 +63,8 @@ void UMarkdownViewerWidget::setMarkdown(const QString& markdown)
     m_currentMarkdown = markdown;
 
 #ifdef RDK_USE_QT_WEBENGINE
-    QString html = createHtmlFromMarkdown(markdown);
+    QString basePath = m_baseUrl.toString();
+    QString html = createHtmlFromMarkdown(markdown, basePath);
     // Базовый URL должен быть qrc:/markdown/, иначе скрипты (marked.min.js, mermaid.min.js)
     // не загружаются из-за политики происхождения (file:// vs qrc://).
     QUrl baseUrl = QUrl(QStringLiteral("qrc:/markdown/"));
@@ -70,7 +78,7 @@ void UMarkdownViewerWidget::setMarkdown(const QString& markdown)
 #endif
 }
 
-bool UMarkdownViewerWidget::loadMarkdownFromFile(const QString& filePath)
+bool UMarkdownViewerWidget::loadMarkdownFromFile(const QString& filePath, bool emitDocumentLoaded)
 {
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -88,6 +96,8 @@ bool UMarkdownViewerWidget::loadMarkdownFromFile(const QString& filePath)
     m_baseUrl = QUrl::fromLocalFile(fileInfo.absolutePath() + "/");
 
     setMarkdown(markdown);
+    if (emitDocumentLoaded)
+        emit documentLoaded(filePath);
     return true;
 }
 
@@ -118,7 +128,7 @@ void UMarkdownViewerWidget::initializeWebEngine()
     m_webView->setHtml("<html><body></body></html>");
 }
 
-QString UMarkdownViewerWidget::createHtmlFromMarkdown(const QString& markdown) const
+QString UMarkdownViewerWidget::createHtmlFromMarkdown(const QString& markdown, const QString& basePath) const
 {
     // Используем разделитель HTML, чтобы )" внутри JS-шаблона не завершало raw string
     QString html = R"HTML(
@@ -303,6 +313,11 @@ QString UMarkdownViewerWidget::createHtmlFromMarkdown(const QString& markdown) c
     QString base64String = QString::fromLatin1(base64);
 
     html += base64String;
+    if (!basePath.isEmpty())
+    {
+        html += QStringLiteral("\" data-base-path=\"");
+        html += basePath.toHtmlEscaped();
+    }
     html += R"HTML("></div>
     <script>
         (function() {
@@ -361,6 +376,20 @@ QString UMarkdownViewerWidget::createHtmlFromMarkdown(const QString& markdown) c
                             }
                         } catch (mermaidError) {
                             console.warn('Mermaid processing error (non-critical):', mermaidError);
+                        }
+                    }
+
+                    // Переписываем относительные ссылки на .md в file:// URL для навигации внутри виджета
+                    var basePath = el.getAttribute('data-base-path');
+                    if (basePath) {
+                        var links = el.querySelectorAll('a[href]');
+                        for (var i = 0; i < links.length; i++) {
+                            var href = links[i].getAttribute('href');
+                            if (href && !href.match(/^(https?:|mailto:|#|file:)/)) {
+                                var baseNorm = basePath.replace(/\/+$/, '');
+                                var hrefNorm = href.replace(/^\/+/, '');
+                                links[i].setAttribute('href', baseNorm + '/' + hrefNorm);
+                            }
                         }
                     }
 
