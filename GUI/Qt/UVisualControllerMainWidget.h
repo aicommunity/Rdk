@@ -7,8 +7,8 @@
 #include <QMainWindow>
 #include <QSettings>
 #include <QDebug>
-#include <QApplication>
-#include <QDesktopWidget>
+#include <QGuiApplication>
+#include <QScreen>
 #undef GetClassName //заглушка на системную функцию
 
 /// The UVisualControllerMainWidget class - Базовый класс виджета

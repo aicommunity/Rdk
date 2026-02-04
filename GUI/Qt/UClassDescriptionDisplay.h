@@ -2,6 +2,8 @@
 #define UCLASSDESCRIPTIONDISPLAY_H
 
 #include <QWidget>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
 #include <QMessageBox>
 #include <QAction>
 #include <QMainWindow>

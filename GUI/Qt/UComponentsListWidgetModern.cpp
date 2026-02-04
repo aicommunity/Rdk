@@ -15,8 +15,8 @@
 #include <QTimer>
 #include <QMouseEvent>
 #include <QKeyEvent>
-#include <QDesktopWidget>
-#include <QApplication>
+#include <QGuiApplication>
+#include <QScreen>
 
 #include "UGuiTelemetry.h"
 
@@ -1618,7 +1618,24 @@ void UComponentsListWidgetModern::showTreePopup()
 
     // Вычисляем размер и позицию popup
     QPoint globalPos = toggleModeButton->mapToGlobal(QPoint(0, toggleModeButton->height()));
-    QRect screenGeometry = QApplication::desktop()->availableGeometry(this);
+
+    // Современный способ получения геометрии экрана без использования устаревшего QDesktopWidget
+    QScreen *screen = nullptr;
+    if (window()) {
+        screen = window()->screen();
+    }
+    if (!screen) {
+        screen = QGuiApplication::primaryScreen();
+    }
+
+    QRect screenGeometry;
+    if (screen) {
+        // Используем перегрузку без аргументов (совместимо с Qt 5.15.2)
+        screenGeometry = screen->availableGeometry();
+    } else {
+        // Резервный вариант на случай отсутствия данных об экране
+        screenGeometry = QRect(globalPos.x(), globalPos.y(), 800, 600);
+    }
 
     // Ширина popup = минимальная ширина
     int popupWidth = 300;

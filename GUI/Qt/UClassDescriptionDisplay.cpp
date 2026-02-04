@@ -14,7 +14,8 @@ UClassDescriptionDisplay::UClassDescriptionDisplay(std::string class_name, QWidg
 
     connect(ui->pushButtonCancel, &QPushButton::clicked, this, &UClassDescriptionDisplay::CloseForm);
 
-    ui->lineEditStep->setValidator(new QRegExpValidator(QRegExp("[+-]?\\d*\\.?\\d+"), this));
+    auto re = QRegularExpression(QStringLiteral("[+-]?\\d*\\.?\\d+"));
+    ui->lineEditStep->setValidator(new QRegularExpressionValidator(re, this));
 
     // actions для списка избранных
     QAction * createNewFavorite = new QAction("Create New", this);
