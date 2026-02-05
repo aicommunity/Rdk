@@ -4,8 +4,10 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QTextStream>
-#include <QDebug>
 #include <QByteArray>
+#ifdef RDK_USE_GLOG
+#include "../../Deploy/Include/rdk_logging.h"
+#endif
 
 #ifdef RDK_USE_QT_WEBENGINE
 #include <QWebEnginePage>
@@ -43,9 +45,19 @@ UMarkdownViewerWidget::UMarkdownViewerWidget(QWidget *parent)
     settings->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
     settings->setAttribute(QWebEngineSettings::LocalStorageEnabled, false);
 
+    // Примечание: подключение к javaScriptConsoleMessage невозможно напрямую,
+    // так как это protected сигнал в QWebEnginePage. JS-логирование будет видно
+    // только через встроенную консоль разработчика QtWebEngine (если доступна).
+    // Основная диагностика идёт через RDK::Logging в C++ коде.
+
     layout->addWidget(m_webView);
     initializeWebEngine();
     connect(m_webView, &QWebEngineView::loadFinished, this, &UMarkdownViewerWidget::onLoadFinished);
+
+#ifdef RDK_USE_GLOG
+    std::string initMsg = "UMarkdownViewerWidget: QtWebEngine initialized, JS enabled=" + std::string(settings->testAttribute(QWebEngineSettings::JavascriptEnabled) ? "true" : "false");
+    RDK::Logging::GlobalLog(RDK_EX_INFO, initMsg.c_str());
+#endif
 #else
     m_textEdit = new QTextEdit(this);
     m_textEdit->setReadOnly(true);
@@ -68,8 +80,16 @@ void UMarkdownViewerWidget::setMarkdown(const QString& markdown)
     // Базовый URL должен быть qrc:/markdown/, иначе скрипты (marked.min.js, mermaid.min.js)
     // не загружаются из-за политики происхождения (file:// vs qrc://).
     QUrl baseUrl = QUrl(QStringLiteral("qrc:/markdown/"));
+#ifdef RDK_USE_GLOG
+    std::string logMsg = "UMarkdownViewerWidget::setMarkdown: markdown length=" + std::to_string(markdown.length())
+                         + ", html length=" + std::to_string(html.length()) + ", baseUrl=" + baseUrl.toString().toStdString();
+    RDK::Logging::GlobalLog(RDK_EX_INFO, logMsg.c_str());
+#endif
     m_webView->setHtml(html, baseUrl);
 #else
+#ifdef RDK_USE_GLOG
+    RDK::Logging::GlobalLog(RDK_EX_INFO, "UMarkdownViewerWidget::setMarkdown: RDK_USE_QT_WEBENGINE not defined, using QTextEdit fallback");
+#endif
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     m_textEdit->setMarkdown(markdown);
 #else
@@ -83,7 +103,10 @@ bool UMarkdownViewerWidget::loadMarkdownFromFile(const QString& filePath, bool e
     QFile file(filePath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
-        qWarning() << "Failed to open markdown file:" << filePath;
+#ifdef RDK_USE_GLOG
+        std::string logMsg = "UMarkdownViewerWidget: Failed to open markdown file: " + filePath.toStdString();
+        RDK::Logging::GlobalLog(RDK_EX_WARNING, logMsg.c_str());
+#endif
         return false;
     }
 
@@ -119,8 +142,20 @@ void UMarkdownViewerWidget::clear()
 #ifdef RDK_USE_QT_WEBENGINE
 void UMarkdownViewerWidget::onLoadFinished(bool success)
 {
+#ifdef RDK_USE_GLOG
+    std::string logMsg = "UMarkdownViewerWidget::onLoadFinished: success=" + std::string(success ? "true" : "false");
+    RDK::Logging::GlobalLog(RDK_EX_INFO, logMsg.c_str());
     if (!success)
-        qWarning() << "Failed to load markdown content";
+    {
+        RDK::Logging::GlobalLog(RDK_EX_WARNING, "UMarkdownViewerWidget: Failed to load markdown content");
+    }
+    else
+    {
+        RDK::Logging::GlobalLog(RDK_EX_INFO, "UMarkdownViewerWidget::onLoadFinished: HTML page loaded successfully");
+    }
+#else
+    (void)success; // Suppress unused parameter warning when RDK_USE_GLOG is not defined
+#endif
 }
 
 void UMarkdownViewerWidget::initializeWebEngine()
@@ -336,26 +371,39 @@ QString UMarkdownViewerWidget::createHtmlFromMarkdown(const QString& markdown, c
                         return;
                     }
 
-                    // Декодируем Base64 обратно в байты, затем в UTF-8 строку
+                    // Декодируем Base64 обратно в байты, затем в UTF-8 строку.
+                    // На новых движках используем TextDecoder, на старых (Qt 5.15 WebEngine)
+                    // fallback через decodeURIComponent(escape(...)).
+                    console.log('Decoding Base64 markdown, length:', markdownBase64.length);
                     const binaryString = atob(markdownBase64);
-                    // Преобразуем бинарную строку в Uint8Array
-                    const bytes = new Uint8Array(binaryString.length);
-                    for (let i = 0; i < binaryString.length; i++) {
-                        bytes[i] = binaryString.charCodeAt(i);
+                    let markdown = "";
+                    if (typeof TextDecoder !== 'undefined') {
+                        console.log('Using TextDecoder for UTF-8 decoding');
+                        const bytes = new Uint8Array(binaryString.length);
+                        for (let i = 0; i < binaryString.length; i++) {
+                            bytes[i] = binaryString.charCodeAt(i);
+                        }
+                        const decoder = new TextDecoder('utf-8');
+                        markdown = decoder.decode(bytes);
+                    } else {
+                        console.log('TextDecoder not available, using fallback decodeURIComponent(escape(...))');
+                        // Fallback для старых Chromium без TextDecoder
+                        markdown = decodeURIComponent(escape(binaryString));
                     }
-                    // Декодируем UTF-8 используя TextDecoder
-                    const decoder = new TextDecoder('utf-8');
-                    const markdown = decoder.decode(bytes);
 
+                    console.log('Decoded markdown length:', markdown ? markdown.length : 0);
                     if (!markdown || markdown.length === 0) {
                         el.textContent = 'Error: Decoded markdown is empty';
+                        console.error('Decoded markdown is empty!');
                         return;
                     }
 
                     // Парсим и отображаем markdown, используя встроенный парсер
                     if (typeof marked !== 'undefined' && marked.simpleParse) {
+                        console.log('Using marked.simpleParse for markdown rendering');
                         el.innerHTML = marked.simpleParse(markdown);
                     } else {
+                        console.warn('marked parser not available, using fallback');
                         // Fallback: простая замена переводов строк
                         el.innerHTML = markdown.replace(/\n/g, '<br>');
                     }
