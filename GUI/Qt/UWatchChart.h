@@ -15,11 +15,11 @@
 #include <QString>
 #include <QVector>
 
-#include <QValueAxis>
+#include <QtCharts/QValueAxis>
 #include "UWatchSerie.h"
 #include "UWatchChartView.h"
-#include <QChart>
-#include <QChartView>
+#include <QtCharts/QChart>
+#include <QtCharts/QChartView>
 
 
 namespace Ui {

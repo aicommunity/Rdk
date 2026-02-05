@@ -5,7 +5,7 @@
 #include <QStyle>
 #include <QPen>
 #include <QColor>
-#include <QChart>
+#include <QtCharts/QChart>
 #include <QVector>
 #include <QSlider>
 #include <QLineEdit>

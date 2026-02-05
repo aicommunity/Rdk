@@ -1,7 +1,7 @@
 #ifndef UWATCHSERIE_H
 #define UWATCHSERIE_H
 
-#include <QLineSeries>
+#include <QtCharts/QLineSeries>
 #include <QString>
 
 namespace RDK

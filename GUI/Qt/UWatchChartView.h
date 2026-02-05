@@ -2,7 +2,7 @@
 #define UWATCHCHARTVIEW_H
 
 
-#include <QChartView>
+#include <QtCharts/QChartView>
 #include <QRubberBand>
 
 

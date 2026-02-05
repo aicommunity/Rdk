@@ -46,18 +46,12 @@ UMarkdownViewerWidget::UMarkdownViewerWidget(QWidget *parent)
     settings->setAttribute(QWebEngineSettings::LocalStorageEnabled, false);
 
     // Примечание: подключение к javaScriptConsoleMessage невозможно напрямую,
-    // так как это protected сигнал в QWebEnginePage. JS-логирование будет видно
-    // только через встроенную консоль разработчика QtWebEngine (если доступна).
-    // Основная диагностика идёт через RDK::Logging в C++ коде.
+    // так как это protected сигнал в QWebEnginePage. JS-логирование остаётся
+    // только во встроенной консоли разработчика QtWebEngine (если доступна).
 
     layout->addWidget(m_webView);
     initializeWebEngine();
     connect(m_webView, &QWebEngineView::loadFinished, this, &UMarkdownViewerWidget::onLoadFinished);
-
-#ifdef RDK_USE_GLOG
-    std::string initMsg = "UMarkdownViewerWidget: QtWebEngine initialized, JS enabled=" + std::string(settings->testAttribute(QWebEngineSettings::JavascriptEnabled) ? "true" : "false");
-    RDK::Logging::GlobalLog(RDK_EX_INFO, initMsg.c_str());
-#endif
 #else
     m_textEdit = new QTextEdit(this);
     m_textEdit->setReadOnly(true);
@@ -80,16 +74,8 @@ void UMarkdownViewerWidget::setMarkdown(const QString& markdown)
     // Базовый URL должен быть qrc:/markdown/, иначе скрипты (marked.min.js, mermaid.min.js)
     // не загружаются из-за политики происхождения (file:// vs qrc://).
     QUrl baseUrl = QUrl(QStringLiteral("qrc:/markdown/"));
-#ifdef RDK_USE_GLOG
-    std::string logMsg = "UMarkdownViewerWidget::setMarkdown: markdown length=" + std::to_string(markdown.length())
-                         + ", html length=" + std::to_string(html.length()) + ", baseUrl=" + baseUrl.toString().toStdString();
-    RDK::Logging::GlobalLog(RDK_EX_INFO, logMsg.c_str());
-#endif
     m_webView->setHtml(html, baseUrl);
 #else
-#ifdef RDK_USE_GLOG
-    RDK::Logging::GlobalLog(RDK_EX_INFO, "UMarkdownViewerWidget::setMarkdown: RDK_USE_QT_WEBENGINE not defined, using QTextEdit fallback");
-#endif
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     m_textEdit->setMarkdown(markdown);
 #else
@@ -143,15 +129,9 @@ void UMarkdownViewerWidget::clear()
 void UMarkdownViewerWidget::onLoadFinished(bool success)
 {
 #ifdef RDK_USE_GLOG
-    std::string logMsg = "UMarkdownViewerWidget::onLoadFinished: success=" + std::string(success ? "true" : "false");
-    RDK::Logging::GlobalLog(RDK_EX_INFO, logMsg.c_str());
     if (!success)
     {
         RDK::Logging::GlobalLog(RDK_EX_WARNING, "UMarkdownViewerWidget: Failed to load markdown content");
-    }
-    else
-    {
-        RDK::Logging::GlobalLog(RDK_EX_INFO, "UMarkdownViewerWidget::onLoadFinished: HTML page loaded successfully");
     }
 #else
     (void)success; // Suppress unused parameter warning when RDK_USE_GLOG is not defined
