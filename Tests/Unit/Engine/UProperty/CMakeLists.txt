@@ -1,13 +1,13 @@
-# Базовые тесты для UProperty
+# Basic tests for UProperty
 add_executable(Test_UProperty_Basic Test_UProperty_Basic.cpp)
 
-# Тесты для подключений свойств
+# Tests for property connections
 add_executable(Test_UProperty_Connections Test_UProperty_Connections.cpp)
 
-# Тесты для контейнерных свойств
+# Tests for container properties
 add_executable(Test_UProperty_Containers Test_UProperty_Containers.cpp)
 
-# Тесты производительности
+# Performance tests
 add_executable(Test_UProperty_Performance Test_UProperty_Performance.cpp)
 
 foreach(TARGET Test_UProperty_Basic Test_UProperty_Connections Test_UProperty_Containers Test_UProperty_Performance)
@@ -28,6 +28,6 @@ foreach(TARGET Test_UProperty_Basic Test_UProperty_Connections Test_UProperty_Co
         RDK_CALL=
     )
 
-    # Добавляем тест в CTest
+    # Register test in CTest
     add_test(NAME ${TARGET} COMMAND ${TARGET})
 endforeach()

@@ -13,7 +13,7 @@ target_include_directories(${TARGET_NAME}
     ${CMAKE_SOURCE_DIR}/Rdk/ThirdParty
 )
 
-# Источники взяты из rdk.static.qt.pro (сокращённый набор начально)
+# Sources taken from rdk.static.qt.pro (initially a reduced set)
 file(GLOB RDK_STATIC_SOURCES
   ${CMAKE_SOURCE_DIR}/Rdk/Core/Engine/*.cpp
   ${CMAKE_SOURCE_DIR}/Rdk/Core/Graphics/*.cpp
@@ -30,7 +30,7 @@ file(GLOB RDK_STATIC_SOURCES
   ${CMAKE_SOURCE_DIR}/Rdk/ThirdParty/ThirdParty.cpp
 )
 
-# Добавляем реализации C-API и инициализации RDK (нужны NeuroModeler)
+# Add C-API implementations and RDK initialization (required by NeuroModeler)
 list(APPEND RDK_STATIC_SOURCES
   ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/rdk_cpp_init.cpp
   ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/rdk_engine_support.cpp
@@ -38,63 +38,63 @@ list(APPEND RDK_STATIC_SOURCES
   ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/rdk_new.cpp
 )
 
-# Добавляем deploy-файлы из .pro
+# Add deploy files from the .pro file
 list(APPEND RDK_STATIC_SOURCES
   ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/rdk.qt.cpp
   ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/myrdk.qt.cpp
 )
 
-# Добавляем Application файлы из .pro
+# Add Application files from the .pro file
 list(APPEND RDK_STATIC_SOURCES
   ${CMAKE_SOURCE_DIR}/Rdk/Core/Application/UProjectDeployer.cpp
 )
 
-# Добавляем Gcc-специфичные файлы для Linux
+# Add GCC-specific files for Linux
 if(UNIX)
   list(APPEND RDK_STATIC_SOURCES
     ${CMAKE_SOURCE_DIR}/Rdk/Core/System/Gcc/pevents.cpp
   )
 endif()
 
-# Исключения совместимости (Linux):
-# 1) rdk_init.cpp держим исключённым, чтобы избежать дублей с rdk_cpp_init.cpp
+# Compatibility exclusions (Linux):
+# 1) keep rdk_init.cpp excluded to avoid duplicates with rdk_cpp_init.cpp
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Deploy/Include/rdk_init\\.cpp$")
-# 2) Исключаем файлы, зависящие от отсутствующих заголовков в текущей конфигурации
+# 2) Exclude files that depend on headers missing in the current configuration
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/ULocalProperty\\.cpp$")
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/UPropertyInput\\.cpp$")
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/UPropertyOutput\\.cpp$")
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/UShare\\.cpp$")
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Engine/UPropertyIO\\.cpp$")
-# 3) Исключаем специфичный Qt контрол до проверки зависимостей
-# UServerTransportHttp.cpp возвращен в компиляцию, так как класс используется в UServerControl
+# 3) Exclude a specific Qt control until dependencies are checked
+# UServerTransportHttp.cpp was returned to compilation because the class is used in UServerControl
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Application/Qt/UEngineControlQt\\.cpp$")
-# 4) Исключаем jpge.cpp и jpgd.cpp, так как они включены в JpegIntegration.cpp через #include
+# 4) Exclude jpge.cpp and jpgd.cpp, since they are included into JpegIntegration.cpp via #include
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/ThirdParty/jpeg/jpge\\.cpp$")
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/ThirdParty/jpeg/jpgd\\.cpp$")
-# 5) Исключаем UDllLoader.qt.cpp, так как он включен в rdk_system.qt.cpp через #include
+# 5) Exclude UDllLoader.qt.cpp, because it is included into rdk_system.qt.cpp via #include
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/System/Qt/UDllLoader\\.qt\\.cpp$")
-# 6) Исключаем GCC-специфичные файлы на Windows
+# 6) Exclude GCC-specific files on Windows
 if(WIN32)
   list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/System/Gcc/USharedMemoryLoader\\.gcc\\.cpp$")
 endif()
-# Подключаем Qt-зависимый деплойер всегда (NeuroModeler его использует)
-# (ранее был условным по RDK_USE_SQL)
+# Always include the Qt-dependent deployer (used by NeuroModeler)
+# (previously was conditional on RDK_USE_SQL)
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/Application/Qt/UProjectDeployerQt\\.cpp$")
 list(APPEND RDK_STATIC_SOURCES
   ${CMAKE_SOURCE_DIR}/Rdk/Core/Application/Qt/UProjectDeployerQt.cpp
 )
-# 4) Используем Qt-вариант системного модуля, исключаем gcc-вариант
+# 4) Use the Qt variant of the system module, exclude the gcc variant
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/System/Gcc/rdk_system\\.gcc\\.cpp$")
-# Исключаем GCC версию мьютекса, используем Qt версию (QReadWriteLock::Recursive)
+# Exclude the GCC version of the mutex and use the Qt version instead (QReadWriteLock::Recursive)
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/System/Gcc/UGenericMutex\\.gcc\\.cpp$")
 
-# Добавляем только необходимые deploy-файлы под Unix
+# Add only the necessary deploy files on Unix
 if (UNIX)
   list(APPEND RDK_STATIC_SOURCES
     ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/rdk_exceptions.ansi.cpp
   )
 elseif(WIN32)
-  # Добавляем реализацию GetSystemExceptionData для Windows
+  # Add GetSystemExceptionData implementation for Windows
   list(APPEND RDK_STATIC_SOURCES
     ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/rdk_exceptions.win.cpp
   )
@@ -113,10 +113,10 @@ target_compile_definitions(${TARGET_NAME}
     RDK_USE_SQL
 )
 
-# Настройка Qt (Qt5/Qt6) через общий модуль
+# Configure Qt (Qt5/Qt6) via shared module
 include(${CMAKE_SOURCE_DIR}/cmake/SelectQt.cmake)
 
-# Qt зависимости для модулей, используемых в Core/Application
+# Qt dependencies for modules used in Core/Application
 target_link_libraries(${TARGET_NAME} PUBLIC
   Nmsdk::Qt::Core
   Nmsdk::Qt::Network
@@ -124,7 +124,7 @@ target_link_libraries(${TARGET_NAME} PUBLIC
 )
 
 # Boost libraries (required components)
-# Используем MODULE режим для всех платформ (FindBoost.cmake правильно определяет имена библиотек)
+# Use MODULE mode on all platforms (FindBoost.cmake correctly determines library names)
 find_package(Boost QUIET COMPONENTS program_options thread filesystem system chrono atomic)
 if(Boost_FOUND)
   target_link_libraries(${TARGET_NAME} PUBLIC
@@ -137,12 +137,12 @@ if(Boost_FOUND)
   )
 endif()
 
-# rdk_rpc.cpp добавлен напрямую в target_sources выше
+# rdk_rpc.cpp is added directly to target_sources above
 
 find_package(Threads REQUIRED)
 target_link_libraries(${TARGET_NAME} PUBLIC Threads::Threads)
 
-# Winsock для Windows (используется в UGlogMirrorSink.cpp)
+# Winsock for Windows (used in UGlogMirrorSink.cpp)
 if(WIN32)
   target_link_libraries(${TARGET_NAME} PUBLIC ws2_32)
 endif()
@@ -184,7 +184,7 @@ if (RDK_USE_OPENCV AND OpenCV_FOUND)
   target_link_libraries(${TARGET_NAME} PUBLIC ${OpenCV_LIBS})
 endif()
 
-# Вывод артефактов уже задан глобально в корневом CMakeLists
+# Output directories are already configured globally in the root CMakeLists
 
 # Add tests subdirectory if BUILD_TESTING is enabled
 if(BUILD_TESTING)

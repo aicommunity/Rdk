@@ -1,4 +1,4 @@
-# Тесты для системы логирования
+# Tests for the logging system
 add_executable(Test_Logging_Sinks Test_Logging_Sinks.cpp)
 
 target_include_directories(Test_Logging_Sinks PRIVATE
