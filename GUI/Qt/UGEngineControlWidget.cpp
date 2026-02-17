@@ -21,6 +21,8 @@
 #include <QActionGroup>
 #include <QTabBar>
 #include <QKeyEvent>
+#include <QMenuBar>
+#include <QMenu>
 
 /*int heheheCounter = 0;
 void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
@@ -1302,6 +1304,152 @@ void UGEngineControlWidget::keyPressEvent(QKeyEvent *event)
 void UGEngineControlWidget::openHelpWindow()
 {
     on_actionUserGuide_triggered();
+}
+
+void UGEngineControlWidget::registerCustomWidget(const UCustomWidgetDescriptor &descriptor)
+{
+    if (descriptor.id.isEmpty() || !descriptor.factory)
+        return;
+
+    // Сохраняем дескриптор
+    customWidgets.push_back(descriptor);
+
+    // Создаём QAction в меню по menuPath
+    if (ui && ui->menuBar && !descriptor.menuPath.isEmpty())
+    {
+        QStringList parts = descriptor.menuPath.split(QLatin1Char('/'), Qt::SkipEmptyParts);
+        if (!parts.isEmpty())
+        {
+            QMenuBar *menuBar = ui->menuBar;
+            QMenu *currentMenu = nullptr;
+
+            // Находим/создаём первую ступень меню
+            const QString first = parts.first();
+            for (QAction *action : menuBar->actions())
+            {
+                QMenu *menu = action->menu();
+                if (menu && menu->title() == first)
+                {
+                    currentMenu = menu;
+                    break;
+                }
+            }
+            if (!currentMenu)
+            {
+                currentMenu = menuBar->addMenu(first);
+            }
+
+            // Вложенные подменю (если есть)
+            for (int i = 1; i < parts.size(); ++i)
+            {
+                const QString &segment = parts[i];
+                QMenu *nextMenu = nullptr;
+                for (QAction *action : currentMenu->actions())
+                {
+                    QMenu *submenu = action->menu();
+                    if (submenu && submenu->title() == segment)
+                    {
+                        nextMenu = submenu;
+                        break;
+                    }
+                }
+                if (!nextMenu)
+                {
+                    nextMenu = currentMenu->addMenu(segment);
+                }
+                currentMenu = nextMenu;
+            }
+
+            QAction *action = currentMenu->addAction(descriptor.title);
+            if (!descriptor.shortcut.isEmpty())
+            {
+                action->setShortcut(descriptor.shortcut);
+            }
+            action->setData(descriptor.id);
+            QObject::connect(action, &QAction::triggered,
+                             this, &UGEngineControlWidget::handleCustomWidgetActionTriggered);
+        }
+    }
+}
+
+void UGEngineControlWidget::handleCustomWidgetActionTriggered()
+{
+    QAction *action = qobject_cast<QAction *>(sender());
+    if (!action)
+        return;
+    const QString id = action->data().toString();
+    if (id.isEmpty())
+        return;
+    createOrActivateCustomWidget(id);
+}
+
+void UGEngineControlWidget::createOrActivateCustomWidget(const QString &id)
+{
+    // Находим дескриптор
+    const UCustomWidgetDescriptor *found = nullptr;
+    for (const auto &desc : customWidgets)
+    {
+        if (desc.id == id)
+        {
+            found = &desc;
+            break;
+        }
+    }
+    if (!found || !application)
+        return;
+
+    auto &instances = customWidgetInstances[id];
+
+    // Если singleInstance и уже есть живой экземпляр — просто активируем его
+    if (found->singleInstance)
+    {
+        for (auto &ptr : instances)
+        {
+            if (!ptr.isNull())
+            {
+                QWidget *w = ptr.data();
+                w->show();
+                w->raise();
+                w->activateWindow();
+                return;
+            }
+        }
+    }
+
+    // Создаём новый виджет через фабрику
+    UVisualControllerWidget *widget = found->factory(application);
+    if (!widget)
+        return;
+
+    widget->setParent(this);
+
+    if (found->placement == UCustomWidgetPlacement::Dock)
+    {
+        auto *dock = new QDockWidget(found->title, this);
+        dock->setWidget(widget);
+        addDockWidget(found->defaultDockArea, dock);
+        dock->show();
+    }
+    else
+    {
+        if (ui && ui->mdiArea)
+        {
+            QMdiSubWindow *sub = new QMdiSubWindow(ui->mdiArea, Qt::SubWindow);
+            sub->setWidget(widget);
+            sub->setAttribute(Qt::WA_DeleteOnClose);
+            ui->mdiArea->addSubWindow(sub);
+            sub->show();
+            sub->showMaximized();
+        }
+        else
+        {
+            widget->show();
+            widget->raise();
+            widget->activateWindow();
+        }
+    }
+
+    instances.push_back(QPointer<UVisualControllerWidget>(widget));
 }
 
 void UGEngineControlWidget::closeEvent(QCloseEvent *event)

@@ -5,8 +5,15 @@
 #include <QSettings>
 #include <QMdiSubWindow>
 #include <QKeyEvent>
+#include <QString>
+#include <QKeySequence>
+#include <QVector>
+#include <QHash>
+#include <QPointer>
 
 #include <rdk_application.h>
+
+#include <functional>
 
 #include "UVisualControllerMainWidget.h"
 #include "UComponentsListWidget.h"
@@ -73,6 +80,31 @@ USubTabDescriptionWatches(void)
 {};
 };
 
+// Размещение пользовательского виджета в UGEngineControlWidget
+enum class UCustomWidgetPlacement
+{
+    Dock,
+    Mdi
+};
+
+// Описатель пользовательского виджета, который может быть зарегистрирован
+// в UGEngineControlWidget и создан по требованию из меню/toolbar.
+struct UCustomWidgetDescriptor
+{
+    QString id;   // стабильный идентификатор
+    QString title;
+
+    std::function<UVisualControllerWidget*(RDK::UApplication*)> factory;
+
+    UCustomWidgetPlacement placement = UCustomWidgetPlacement::Dock;
+    Qt::DockWidgetArea defaultDockArea = Qt::RightDockWidgetArea;
+    bool singleInstance = true;
+
+    QString menuPath;     // например, "Window/NeuroModeler/Manipulator"
+    QString toolbarGroup; // опционально: имя группы/toolbar
+    QKeySequence shortcut;
+};
+
 /// UGEngineControllWidget class - пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 ///
 /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.
@@ -88,11 +120,15 @@ public:
     ///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void showChannelsWidget(void);
 
-    ///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ)
+    /// загрузка проекта извне (используется, например, пунктами меню и автозагрузкой)
     void loadProjectExternal(const QString &config_path);
 
     /// Open help window (public method for use by child widgets)
     void openHelpWindow();
+
+    // Регистрация пользовательского виджета (дополнительного окна/панели),
+    // который затем создаётся по требованию из меню/toolbar.
+    void registerCustomWidget(const UCustomWidgetDescriptor &descriptor);
 
 #ifndef RDK_DISABLE_EXT_GUI
     void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
@@ -181,6 +217,9 @@ private slots:
 
     void on_actionImages_triggered();
 
+    // обработчик нажатий на actions зарегистрированных пользовательских виджетов
+    void handleCustomWidgetActionTriggered();
+
 private:
     static const int kMaxRecentConfigs = 10;
 
@@ -237,6 +276,14 @@ private:
 
     /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     RDK::UApplication *application;
+
+    // зарегистрированные пользовательские виджеты
+    QVector<UCustomWidgetDescriptor> customWidgets;
+    // активные экземпляры по id; QPointer обнуляется при удалении виджета
+    QHash<QString, QList<QPointer<UVisualControllerWidget>>> customWidgetInstances;
+
+    // служебный метод для создания/активации пользовательского виджета
+    void createOrActivateCustomWidget(const QString &id);
 
     // methods
 
