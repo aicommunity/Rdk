@@ -14,7 +14,9 @@ class UESharedPtr
 public: // Исключения
 class EUsingZeroPtr: public EFatal {};//T::IException {};
 
-//////////////////////////
+// --------------------------
+// Скрытые методы управления
+// --------------------------
 protected:
 T* PData;
 
