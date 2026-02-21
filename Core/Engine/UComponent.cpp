@@ -473,6 +473,13 @@ void UComponent::SetPropertyValue(const NameT &name, const std::string &values)
  }
 }
 
+void UComponent::NotifyPropertyUpdated(const NameT &name)
+{
+ UEPtr<UIProperty> property=FindProperty(name);
+ if(property)
+  property->NotifyDataUpdated();
+}
+
 const UComponent::VariableMapT& UComponent::GetPropertiesList(void) const
 {
  return PropertiesLookupTable;

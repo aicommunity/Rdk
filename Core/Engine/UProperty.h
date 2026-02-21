@@ -289,6 +289,12 @@ virtual void SetUpdateTime(ULongTime value)
  }
  UpdateTime=value;
 }
+
+/// Пометить свойство как обновлённое (вызывать после записи через GetMemoryArea/AccessPropertyData)
+virtual void NotifyDataUpdated(void)
+{
+ SetUpdateTime(GetCurrentStartupTime());
+}
 // -----------------------------
 
 // -----------------------------
@@ -658,7 +664,7 @@ inline const T& GetData(void) const
     UGenericMutexExclusiveLocker exclusiveLocker(this->Mutex);
     // Re-check after acquiring exclusive lock (double-check pattern)
     outputTime = cachedOutput->GetUpdateTime();
-    if (outputTime > this->UpdateTime)
+    //if (outputTime > this->UpdateTime) // ToDo: its disables until direct access using .v used.
     {
      v = cachedOutput->GetData();
      this->UpdateTime = outputTime;
@@ -682,7 +688,7 @@ inline const T& GetData(void) const
    {
     // Cache data with update time check to avoid unnecessary copies
     ULongTime outputTime = CachedConnectedOutput->GetUpdateTime();
-    if (outputTime > this->UpdateTime)
+    //if (outputTime > this->UpdateTime) // ToDo: its disables until direct access using .v used.
     {
      v = CachedConnectedOutput->GetData();
      this->UpdateTime = outputTime;

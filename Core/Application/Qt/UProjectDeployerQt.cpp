@@ -2119,6 +2119,7 @@ int UProjectDeployerQt::SetupProjectMockParametersNeuralInterface()
     {
         std::cerr<<"sequence_path!=NULL\n";
         *sequence_path = task_src_fullpath.toUtf8().constData();
+        predictor_container->NotifyPropertyUpdated("ImagesDir");
     }
 
 
@@ -2127,6 +2128,7 @@ int UProjectDeployerQt::SetupProjectMockParametersNeuralInterface()
     {
         //std::cerr<<"weight_path!=NULL\n";
         *weight_path = absolute_weights_file.toUtf8().constData();
+        predictor_container->NotifyPropertyUpdated("WeightPath");
     }
 
     //std::cerr<<"configuration_path\n";
@@ -2136,6 +2138,11 @@ int UProjectDeployerQt::SetupProjectMockParametersNeuralInterface()
     //std::cerr<<"python_script_file_name\n";
     std::string *python_script_file_name = predictor_container->AccessPropertyData<std::string>("PythonScriptFileName");
     *python_script_file_name = absolute_script_file.toUtf8().constData();
+
+    predictor_container->NotifyPropertyUpdated("ImagesDir");
+    predictor_container->NotifyPropertyUpdated("WeightPath");
+    predictor_container->NotifyPropertyUpdated("ConfigPath");
+    predictor_container->NotifyPropertyUpdated("PythonScriptFileName");
 
     //Предположительно, это надо делать так:
     //std::cerr<<"python_script_file_name\n";
@@ -2201,6 +2208,17 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
         if(video_RestartMode)
             *video_RestartMode = 0;
 
+        video_cont->NotifyPropertyUpdated("Activity");
+        video_cont->NotifyPropertyUpdated("EnableCapture");
+        video_cont->NotifyPropertyUpdated("CameraPath");
+        video_cont->NotifyPropertyUpdated("OneShotRun");
+        video_cont->NotifyPropertyUpdated("ProcessEvenFrames");
+        video_cont->NotifyPropertyUpdated("ProcessEveryXFrame");
+        video_cont->NotifyPropertyUpdated("DllName");
+        video_cont->NotifyPropertyUpdated("RestartMode");
+        video_cont->NotifyPropertyUpdated("UseRelativePathFromConfig");
+        video_cont->NotifyPropertyUpdated("UseRelativePathFromDir");
+
         if(!imseq_names.empty())
         {
             imseq_cont = model->GetComponentL(imseq_names[0]);
@@ -2208,6 +2226,7 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
             //TODO: Brake wrong link
             model->BreakAllOutgoingLinks(imseq_names[0]);
             *act = false;
+            imseq_cont->NotifyPropertyUpdated("Activity");
         }
     }
     else if(task_src_type==1)//TODO: Проверить - картинки
@@ -2244,6 +2263,15 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
         if(imseq_UseRelativePathFromDir)
             *imseq_UseRelativePathFromDir = false;
 
+        imseq_cont->NotifyPropertyUpdated("Activity");
+        imseq_cont->NotifyPropertyUpdated("Path");
+        imseq_cont->NotifyPropertyUpdated("EnableCapture");
+        imseq_cont->NotifyPropertyUpdated("DesiredFps");
+        imseq_cont->NotifyPropertyUpdated("RepeatFlag");
+        imseq_cont->NotifyPropertyUpdated("RestartMode");
+        imseq_cont->NotifyPropertyUpdated("UseRelativePathFromConfig");
+        imseq_cont->NotifyPropertyUpdated("UseRelativePathFromDir");
+
         if(!vid_names.empty())
         {
             video_cont = model->GetComponentL(vid_names[0]);
@@ -2251,6 +2279,7 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
             //TODO: Brake wrong link
             model->BreakAllOutgoingLinks(vid_names[0]);
             *act = false;
+            video_cont->NotifyPropertyUpdated("Activity");
         }
     }
     else
@@ -2330,6 +2359,17 @@ int UProjectDeployerQt::SetupProjectMockParametersVideoAnalysis()
             *nn_ClassCount = weights_classes_number;
     }
 
+    neural_cont->NotifyPropertyUpdated("Activity");
+    if(file_tags[class_name].LibScriptFileTagName!="" && nn_ScriptFile)
+        neural_cont->NotifyPropertyUpdated(file_tags[class_name].LibScriptFileTagName);
+    neural_cont->NotifyPropertyUpdated(file_tags[class_name].LibWeightFileTagName);
+    if(file_tags[class_name].LibConfigFileTagName!="" && nn_ConfigFile)
+        neural_cont->NotifyPropertyUpdated(file_tags[class_name].LibConfigFileTagName);
+    if(file_tags[class_name].LibClassCountTagName!="" && nn_ClassCount)
+        neural_cont->NotifyPropertyUpdated(file_tags[class_name].LibClassCountTagName);
+    if(nn_UseFullPath!=NULL)
+        neural_cont->NotifyPropertyUpdated(file_tags[class_name].LibUseFullPathTagName);
+
     return 0;
 }
 
@@ -2368,6 +2408,7 @@ int UProjectDeployerQt::RunPreparedProject()
         predictor_container = model->GetComponentL(predictor_names[0]);
         bool *start_prediction = predictor_container->AccessPropertyData<bool>("StartPredict");
         *start_prediction = true;
+        predictor_container->NotifyPropertyUpdated("StartPredict");
     }
 
     //Сюда еще пойдет всякая херня типа сохранения даты и прочего, но это потом
@@ -2520,6 +2561,7 @@ bool UProjectDeployerQt::GetCaptureStateNeuralInterface(int &state, unsigned lon
             bool *start_prediction = predictor_container->AccessPropertyData<bool>("StartPredict");
             std::cerr<<"Start prediction = "<<*start_prediction<<"\n";
             *start_prediction = true;
+            predictor_container->NotifyPropertyUpdated("StartPredict");
             return true;
         }
         if(*predict_status==1)
