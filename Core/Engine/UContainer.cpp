@@ -28,6 +28,7 @@ See file license.txt for more information
 #include "UEnvironment.h"
 #include "../../Deploy/Include/rdk_exceptions.h"
 #include "UEnvException.h"
+#include "../../Deploy/Include/rdk_cpp_init.h"
 
 namespace RDK {
 
@@ -745,6 +746,18 @@ const UId& UContainer::GetComponentId(const NameT &name, bool no_throw) const
  {
   if(no_throw)
    return ForbiddenId;
+  // Диагностика отсутствующего компонента по имени через глобальный логгер
+  try
+  {
+   RDK::UEPtr<RDK::UExceptionLogger> logger = RDK::GetLogger();
+   if (logger)
+   {
+    std::ostringstream oss;
+    oss << "UContainer::GetComponentId: Component name not found in CompsLookupTable: '" << name << "'";
+    logger->LogMessageEx(RDK_EX_ERROR, "UContainer", oss.str());
+   }
+  }
+  catch (...) {}
   RDK_THROW(EComponentNameNotExist(name));
  }
 
