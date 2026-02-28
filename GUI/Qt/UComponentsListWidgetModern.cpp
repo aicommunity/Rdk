@@ -12,6 +12,7 @@
 #include <QScrollBar>
 #include <QSignalBlocker>
 #include <QVBoxLayout>
+#include <QSet>
 #include <QTimer>
 #include <QMouseEvent>
 #include <QKeyEvent>
@@ -233,6 +234,21 @@ void UComponentsListWidgetModern::AUpdateInterface()
     int componentsListScrollMaximum = componentsTree->verticalScrollBar()->maximum();
     int componentsListScrollPosition = componentsTree->verticalScrollBar()->value();
 
+    // Сохраняем состояние развернутости всех узлов перед очисткой дерева
+    QSet<QString> expandedItems;
+    {
+        QTreeWidgetItemIterator it(componentsTree);
+        while (*it) {
+            QTreeWidgetItem *item = *it;
+            if (item->isExpanded() && item->childCount() > 0) {
+                QString itemName = item->data(0, Qt::UserRole).toString();
+                if (!itemName.isEmpty())
+                    expandedItems.insert(itemName);
+            }
+            ++it;
+        }
+    }
+
     // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Блокируем сигналы во время обновления интерфейса,
     // чтобы предотвратить вызов componentListItemSelectionChanged при восстановлении выделения
     // через setCurrentItem() в addComponentSons()
@@ -245,9 +261,14 @@ void UComponentsListWidgetModern::AUpdateInterface()
     rootItem->setText(0, "Model");
     rootItem->setData(0, Qt::UserRole, QString());
     rootItem->setExpanded(true);
-    addComponentSons("", rootItem, oldRootItem, oldSelectedItem);
+    addComponentSons("", rootItem, oldRootItem, oldSelectedItem, expandedItems);
 
     applyFilter(rootItem);
+
+    // При первой загрузке (expandedItems пустой) разворачиваем всё дерево
+    if (expandedItems.isEmpty())
+        componentsTree->expandAll();
+
     componentsTree->verticalScrollBar()->setMaximum(componentsListScrollMaximum);
     componentsTree->verticalScrollBar()->setValue(componentsListScrollPosition);
 
@@ -445,6 +466,7 @@ void UComponentsListWidgetModern::componentListItemSelectionChanged()
     reloadPropertys();
 
     // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    currentDrawComponentName = selectedComponentLongName;
     emit componentSelected(selectedComponentLongName);
 }
 
@@ -1055,7 +1077,8 @@ bool UComponentsListWidgetModern::applyFilter(QTreeWidgetItem *item)
     const bool isRoot = item->data(0, Qt::UserRole).toString().isEmpty();
     const bool visible = matches || childMatches || isRoot;
     item->setHidden(!visible);
-    if (visible && matches && !isRoot) {
+    // Разворачиваем узлы только при активном фильтре; при пустом фильтре не меняем развёрнутость
+    if (visible && matches && !isRoot && !componentFilterText.isEmpty()) {
         item->setExpanded(true);
     }
     return visible;
@@ -1142,10 +1165,11 @@ void UComponentsListWidgetModern::componentDoubleClickFromScheme(QString name)
 void UComponentsListWidgetModern::componentStapBackFromScheme()
 {
     QStringList list = currentDrawComponentName.split(".");
-    QString leaveComponent = list.last();
+    if (list.isEmpty()) return;
     list.pop_back();
     currentDrawComponentName = list.join(".");
-    componentSelectedFromScheme(leaveComponent);
+    componentSelectedFromScheme(currentDrawComponentName);
+    emit componentSelected(currentDrawComponentName);
 }
 
 void UComponentsListWidgetModern::channelsListSelectionChanged()
@@ -1338,7 +1362,7 @@ void UComponentsListWidgetModern::setUpdateInterval(long value)
   UpdateInterval = value;
 }
 
-void UComponentsListWidgetModern::addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem)
+void UComponentsListWidgetModern::addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem, const QSet<QString> &expandedItems)
 {
  // Use timeout to avoid blocking UI during calculation
  RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLockTimeout<RDK::UEngine>(getWorkChannelIndex(), 100);
@@ -1351,25 +1375,29 @@ void UComponentsListWidgetModern::addComponentSons(QString componentName, QTreeW
     if(!componentNames.empty()&&componentNames[0]!="")
     {
         QString father;
-        if(treeWidgetFather) treeWidgetFather->setExpanded(true);
         if(!componentName.isEmpty()) father = componentName + ".";
         foreach(str, componentNames)
         {
+            QString fullName = father + str;
             QTreeWidgetItem* childItem = new QTreeWidgetItem(treeWidgetFather);
             childItem->setText(0, str);
-            childItem->setData(0, Qt::UserRole, father+str);
-            if(oldRootItem == father+str)
+            childItem->setData(0, Qt::UserRole, fullName);
+
+            if (!expandedItems.isEmpty() && expandedItems.contains(fullName))
+                childItem->setExpanded(true);
+
+            if(oldRootItem == fullName)
             {
                 componentsTree->setCurrentItem(childItem);
                 childItem->setExpanded(true);
             }
-            if(oldSelectedItem == father+str)
+            if(oldSelectedItem == fullName)
             {
                 componentsTree->setCurrentItem(childItem);
                 childItem->setExpanded(true);
             }
 
-            addComponentSons(father+str, childItem, oldRootItem, oldSelectedItem);
+            addComponentSons(father+str, childItem, oldRootItem, oldSelectedItem, expandedItems);
         }
     }
 }

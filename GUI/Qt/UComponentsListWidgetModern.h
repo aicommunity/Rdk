@@ -19,6 +19,7 @@
 #include <QDialog>
 #include <QVBoxLayout>
 #include <QKeyEvent>
+#include <QSet>
 
 namespace Ui {
 class UComponentsListWidgetModern;
@@ -241,7 +242,7 @@ private:
     QString currentDrawComponentName;
 
     /// Скрытый рекурсивный метод заполнения списка компонентов
-    void addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem);
+    void addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem, const QSet<QString> &expandedItems);
 
     /// Перерисовка виджета со списком каналов
     void redrawChannelsList();

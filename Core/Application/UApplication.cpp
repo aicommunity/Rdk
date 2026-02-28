@@ -67,11 +67,17 @@ std::string RemoveSpaces(const std::string& str)
 std::string EnsureDirectoryAndNormalize(const std::string& dir)
 {
  if(dir.empty())
-  return dir;
+  return {};
 
  std::string normalized = NormalizeLogDir(dir);
  std::error_code ec;
  std::filesystem::create_directories(normalized, ec);
+ if(ec)
+ {
+  // Если не удалось создать каталог, возвращаем пустую строку,
+  // чтобы вызывающий код мог безопасно перейти в fallback-режим.
+  return {};
+ }
  return normalized;
 }
 
@@ -631,7 +637,7 @@ void UApplication::ApplyPrimaryLogDestination(const std::string& directory)
   }
  }
 
- std::string work_dir_normalized = NormalizeLogDir(GetWorkLogDir());
+ std::string work_dir_normalized = EnsureDirectoryAndNormalize(GetWorkLogDir());
 
  // Ensure glog always writes to the working directory to prevent message loss
 #ifdef RDK_USE_GLOG
@@ -1230,14 +1236,22 @@ bool UApplication::Init(void)
   UGlogGuiSink::Instance().StartSession(work_log_dir, GetLogFileBaseName(), CurrentLogSessionStart);
  }
 #ifdef RDK_USE_GLOG
- std::string initial_log_dir = EnsureDirectoryAndNormalize(GetWorkLogDir());
- FLAGS_logtostderr = false;
- FLAGS_alsologtostderr = false;
+ std::string initial_log_dir = work_log_dir;
  FLAGS_log_prefix = true;
  if(initial_log_dir.empty())
+ {
+  // Если каталог для файловых логов создать не удалось,
+  // включаем вывод только в stderr и не пытаемся создавать файлы.
   FLAGS_log_dir.clear();
+  FLAGS_logtostderr = true;
+  FLAGS_alsologtostderr = false;
+ }
  else
+ {
   FLAGS_log_dir = StripTrailingSeparators(initial_log_dir);
+  FLAGS_logtostderr = false;
+  FLAGS_alsologtostderr = false;
+ }
 
 google::InitGoogleLogging(GetLogFileBaseName().c_str());
 GoogleLoggingInitialized = true;
