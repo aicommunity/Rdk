@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
-#include "../../../Deploy/Include/rdk.h"
+#include "rdk.h"
 
 using namespace RDK;
 
-class TestDirectUpdateComponent : public UComponent
+class TestDirectUpdateComponent : public UNet
 {
 public:
     UProperty<double, TestDirectUpdateComponent, ptPubParameter> Threshold;
@@ -13,7 +13,7 @@ public:
     {
     }
 
-    virtual TestDirectUpdateComponent* New(void) { return new TestDirectUpdateComponent(); }
+    TestDirectUpdateComponent* New(void) override { return new TestDirectUpdateComponent(); }
 
 protected:
     virtual bool ADefault(void)
@@ -42,11 +42,5 @@ TEST(UPropertyDirectUpdate, LastDirectUpdateWins)
     comp.Threshold.SetDataDirect(0.2);
     comp.Threshold.SetDataDirect(0.3);
     EXPECT_DOUBLE_EQ(comp.Threshold.GetData(), 0.3);
-}
-
-int main(int argc, char **argv)
-{
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
 }
 
