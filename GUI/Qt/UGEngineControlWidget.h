@@ -40,6 +40,8 @@
 #include "UAboutDialog.h"
 #include "UHelpWindow.h"
 #include "UProjectDescriptionWindow.h"
+#include "UComponentGuiService.h"
+#include "UComponentGuiContext.h"
 
 #ifndef RDK_DISABLE_EXT_GUI
 #include "UVideoAnalyticsSimpleSettingsWidget.h"
@@ -147,6 +149,7 @@ public slots:
     void showLinksForSingleComponent(QString componentName);
     void showLinksForTwoComponents(QString firstComponentName, QString secondComponentName);
     void switchLinksForTwoComponents(QString firstComponentName, QString secondComponentName);
+    void openComponentGuiFromScheme(const UComponentGuiContext& context);
 
 
     // actions:
@@ -281,6 +284,7 @@ private:
     QVector<UCustomWidgetDescriptor> customWidgets;
     // активные экземпляры по id; QPointer обнуляется при удалении виджета
     QHash<QString, QList<QPointer<UVisualControllerWidget>>> customWidgetInstances;
+    UComponentGuiService m_componentGuiService;
 
     // служебный метод для создания/активации пользовательского виджета
     void createOrActivateCustomWidget(const QString &id);

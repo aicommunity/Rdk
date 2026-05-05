@@ -26,6 +26,7 @@
 #include "../Core/Engine/UXMLEnvSerialize.h"
 #include "../Core/Engine/UEnvSupport.h"
 #include "UModernDiagramPort.h"  // Для Port и PortCategory
+#include "UComponentGuiContext.h"
 
 // Константы для диаграммы
 namespace UModernDiagramConstants {
@@ -120,6 +121,8 @@ signals:
     void switchLinks(QString firstComponentName, QString secondComponentName);
     /// Запрос на открытие окна описания проекта (кнопка на диаграмме)
     void openProjectDescriptionRequested();
+    /// Запрос на открытие специализированной GUI-формы компонента.
+    void openComponentGuiRequested(const UComponentGuiContext& context);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -283,6 +286,7 @@ private:
     void emitViewLinks(const QString& componentName);
     void emitCreateLinks(const QString& firstComponentName, const QString& secondComponentName);
     void emitSwitchLinks(const QString& firstComponentName, const QString& secondComponentName);
+    void emitOpenComponentGui(const UComponentGuiContext& context);
 
     // Context menu slots
 private slots:

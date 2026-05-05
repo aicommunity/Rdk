@@ -1,0 +1,92 @@
+#include "UComponentGuiService.h"
+
+#include <QWidget>
+
+#include "UVisualControllerWidget.h"
+
+UComponentGuiService::UComponentGuiService(RDK::UApplication* app)
+    : m_application(app)
+{
+}
+
+void UComponentGuiService::setApplication(RDK::UApplication* app)
+{
+    m_application = app;
+}
+
+bool UComponentGuiService::canOpen(const UComponentGuiContext& context) const
+{
+    return UComponentFormRegistry::instance().canOpen(context);
+}
+
+UVisualControllerWidget* UComponentGuiService::createOrActivate(QWidget* parentWindow, const UComponentGuiContext& context)
+{
+    const UComponentFormDescriptor* descriptor = UComponentFormRegistry::instance().findDescriptor(context.componentClassName);
+    if(!descriptor || !descriptor->factory || !m_application)
+        return nullptr;
+
+    clearClosedInstances();
+
+    const QString instanceKey = makeInstanceKey(context, *descriptor);
+    if(descriptor->singleInstance && m_instances.contains(instanceKey) && !m_instances[instanceKey].isNull())
+    {
+        UVisualControllerWidget* existing = m_instances[instanceKey].data();
+        applyContext(existing, context);
+        existing->show();
+        existing->raise();
+        existing->activateWindow();
+        return existing;
+    }
+
+    UVisualControllerWidget* widget = descriptor->factory(m_application);
+    if(!widget)
+        return nullptr;
+
+    if(parentWindow)
+        widget->setParent(parentWindow);
+    widget->setWindowTitle(descriptor->title);
+    widget->setAttribute(Qt::WA_DeleteOnClose, true);
+    applyContext(widget, context);
+    widget->show();
+    widget->raise();
+    widget->activateWindow();
+
+    if(descriptor->singleInstance)
+        m_instances[instanceKey] = widget;
+    return widget;
+}
+
+void UComponentGuiService::clearClosedInstances()
+{
+    for(auto it = m_instances.begin(); it != m_instances.end();)
+    {
+        if(it.value().isNull())
+            it = m_instances.erase(it);
+        else
+            ++it;
+    }
+}
+
+void UComponentGuiService::clearAllInstances()
+{
+    for(auto it = m_instances.begin(); it != m_instances.end(); ++it)
+    {
+        if(!it.value().isNull())
+            it.value().data()->close();
+    }
+    m_instances.clear();
+}
+
+QString UComponentGuiService::makeInstanceKey(const UComponentGuiContext& context, const UComponentFormDescriptor& descriptor) const
+{
+    return descriptor.formId + "|" + context.componentLongName + "|" + QString::number(context.channelIndex);
+}
+
+void UComponentGuiService::applyContext(UVisualControllerWidget* widget, const UComponentGuiContext& context) const
+{
+    IComponentControllerWidget* controller = dynamic_cast<IComponentControllerWidget*>(widget);
+    if(!controller)
+        return;
+    controller->setComponentContext(context);
+    controller->refreshFromModel(true);
+}

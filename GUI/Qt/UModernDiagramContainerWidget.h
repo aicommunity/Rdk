@@ -4,6 +4,7 @@
 #include "UVisualControllerWidget.h"
 #include "UModernDiagramWidget.h"
 #include "UClassesListWidget.h"
+#include "UComponentGuiContext.h"
 
 #include <rdk_application.h>
 #include <QWidget>
@@ -46,6 +47,7 @@ signals:
     void viewLinksFromScheme(QString componentName);
     void createLinksFromScheme(QString firstComponentName, QString secondComponentName);
     void switchLinksFromScheme(QString firstComponentName, QString secondComponentName);
+    void openComponentGuiFromScheme(const UComponentGuiContext& context);
     /// Запрос на открытие окна описания проекта (от кнопки на диаграмме)
     void openProjectDescriptionRequested();
 

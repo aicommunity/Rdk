@@ -1685,6 +1685,11 @@ void UModernDiagramWidget::emitSwitchLinks(const QString& firstComponentName, co
     emit switchLinks(firstComponentName, secondComponentName);
 }
 
+void UModernDiagramWidget::emitOpenComponentGui(const UComponentGuiContext& context)
+{
+    emit openComponentGuiRequested(context);
+}
+
 // Viewport State Management теперь в UModernDiagramViewportManager
 
 void UModernDiagramWidget::SaveViewState()

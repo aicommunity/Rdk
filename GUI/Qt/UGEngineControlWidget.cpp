@@ -1,6 +1,7 @@
 #include "UGEngineControlWidget.h"
 #include "ui_UGEngineControllWidget.h"
 #include "UStyleManager.h"
+#include "UComponentGuiBootstrap.h"
 
 
 #include <rdk_application.h>
@@ -29,7 +30,8 @@ void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
 
 UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication *app) :
     UVisualControllerMainWidget(parent,app),
-    ui(new Ui::UGEngineControllWidget)
+    ui(new Ui::UGEngineControllWidget),
+    m_componentGuiService(app)
 {
     ui->setupUi(this);
     setAccessibleName("UGEngineControllWidget");
@@ -119,6 +121,8 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 
     // Создаем современную диаграмму
     modernDiagram = new UModernDiagramContainerWidget(this, application);
+    qRegisterMetaType<UComponentGuiContext>("UComponentGuiContext");
+    RegisterComponentGuiForms(application);
     QMdiSubWindow *modernDiagramSbWindow = new SubWindowCloseIgnore(ui->mdiArea, Qt::SubWindow);
     modernDiagramSbWindow->setWidget(modernDiagram);
     modernDiagramSbWindow->setWindowTitle("Scheme");
@@ -173,6 +177,8 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     connect(modernDiagram, SIGNAL(viewLinksFromScheme(QString)), this, SLOT(showLinksForSingleComponent(QString)));
     connect(modernDiagram, SIGNAL(createLinksFromScheme(QString,QString)), this, SLOT(showLinksForTwoComponents(QString,QString)));
     connect(modernDiagram, SIGNAL(switchLinksFromScheme(QString,QString)), this, SLOT(switchLinksForTwoComponents(QString,QString)));
+    connect(modernDiagram, &UModernDiagramContainerWidget::openComponentGuiFromScheme,
+            this, &UGEngineControlWidget::openComponentGuiFromScheme);
     connect(modernDiagram, SIGNAL(openProjectDescriptionRequested()), this, SLOT(actionProjectDescription()));
 
     images = new UImagesWidget(this, application);
@@ -371,6 +377,15 @@ void UGEngineControlWidget::switchLinksForTwoComponents(QString firstComponentNa
 {
     componentLinks->initWidget(firstComponentName, secondComponentName, 3);
     execDialogUVisualControllWidget(componentLinks);
+}
+
+void UGEngineControlWidget::openComponentGuiFromScheme(const UComponentGuiContext& context)
+{
+    UVisualControllerWidget* widget = m_componentGuiService.createOrActivate(this, context);
+    if(!widget)
+    {
+        QMessageBox::information(this, "Component GUI", "No GUI form is registered for this component class.");
+    }
 }
 
 // file menu actions
@@ -1547,7 +1562,7 @@ void UGEngineControlWidget::AAfterLoadProject(void)
 // Метод, вызываемый перед закрытием проекта
 void UGEngineControlWidget::ABeforeCloseProject(void)
 {
-
+    m_componentGuiService.clearAllInstances();
 }
 
 // Метод, вызываемый перед сбросом модели

@@ -5,6 +5,7 @@
 #include <QMenu>
 #include <QAction>
 #include <QString>
+#include "UComponentGuiContext.h"
 
 // Forward declarations
 class UModernDiagramWidget;
@@ -30,6 +31,8 @@ public:
 
     /// @brief Получает полное имя выбранного компонента.
     QString getSelectedComponentLongName() const;
+    QString getSelectedComponentClassName() const;
+    UComponentGuiContext buildComponentGuiContext() const;
 
     /// @brief Обновляет состояние действий меню в зависимости от текущего состояния виджета.
     void updateActionsState();
@@ -78,6 +81,7 @@ private:
     QAction* m_actionCancelSwitching;
     QAction* m_actionCloneComponent;
     QAction* m_actionQuickLink;
+    QAction* m_actionComponentGui;
 
     // Context menu state
     QString m_firstComponentToConnection;
