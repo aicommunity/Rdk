@@ -10,7 +10,10 @@ add_executable(Test_UProperty_Containers Test_UProperty_Containers.cpp)
 # Performance tests
 add_executable(Test_UProperty_Performance Test_UProperty_Performance.cpp)
 
-foreach(TARGET Test_UProperty_Basic Test_UProperty_Connections Test_UProperty_Containers Test_UProperty_Performance)
+# Direct update visibility tests
+add_executable(Test_UProperty_DirectUpdateVisibility Test_UProperty_DirectUpdateVisibility.cpp)
+
+foreach(TARGET Test_UProperty_Basic Test_UProperty_Connections Test_UProperty_Containers Test_UProperty_Performance Test_UProperty_DirectUpdateVisibility)
     target_include_directories(${TARGET} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../Deploy/Include
         ${CMAKE_CURRENT_SOURCE_DIR}/../../../Core
