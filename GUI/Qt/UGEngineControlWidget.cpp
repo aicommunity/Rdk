@@ -153,6 +153,8 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
             modernDiagram, SLOT(componentSingleClick(QString)));
     connect(propertyChanger->componentsList, SIGNAL(updateScheme(bool)),
             modernDiagram, SLOT(updateScheme(bool)));
+    connect(propertyChanger->componentsList, &UComponentsListWidgetModern::openComponentGuiRequested,
+            this, &UGEngineControlWidget::openComponentGuiFromScheme);
 
     //  список -> схема
     connect(modernDiagram, SIGNAL(componentSelectedFromScheme(QString)),

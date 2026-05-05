@@ -20,6 +20,8 @@
 #include <QScreen>
 
 #include "UGuiTelemetry.h"
+#include "UComponentGuiService.h"
+#include "UComponentFormRegistry.h"
 
 UComponentsListWidgetModern::UComponentsListWidgetModern(QWidget *parent, RDK::UApplication *app, int channel_mode) :
     UVisualControllerWidget(parent, app),
@@ -1354,7 +1356,32 @@ void UComponentsListWidgetModern::componentUnInit()
 
 void UComponentsListWidgetModern::componentGUI()
 {
-  qDebug() << "component GUI";
+    if(!componentsTree->currentItem() || selectedComponentLongName.isEmpty())
+        return;
+
+    const char* classNameRaw = Model_GetComponentClassName(selectedComponentLongName.toLocal8Bit().constData());
+    const QString componentClassName = QString::fromUtf8(classNameRaw ? classNameRaw : "");
+    Engine_FreeBufString(classNameRaw);
+
+    UComponentGuiContext context;
+    context.componentLongName = selectedComponentLongName;
+    context.componentClassName = componentClassName;
+    context.channelIndex = Core_GetSelectedChannelIndex();
+
+    emit openComponentGuiRequested(context);
+
+    if(receivers(SIGNAL(openComponentGuiRequested(UComponentGuiContext))) == 0)
+    {
+        if(!UComponentFormRegistry::instance().canOpen(context))
+        {
+            QMessageBox::information(this, "Component GUI", "Component GUI form is not registered for this class.");
+            return;
+        }
+        static UComponentGuiService fallbackService;
+        fallbackService.setApplication(application);
+        if(!fallbackService.createOrActivate(this, context))
+            QMessageBox::information(this, "Component GUI", "Failed to open component GUI form.");
+    }
 }
 
 void UComponentsListWidgetModern::setUpdateInterval(long value)

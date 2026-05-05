@@ -4,6 +4,7 @@
 #include "UVisualControllerWidget.h"
 #include "UDrawEngineImageWidget.h"
 #include "UGuiModelSnapshot.h"
+#include "UComponentGuiContext.h"
 
 #include <QLineEdit>
 #include <QTreeWidgetItem>
@@ -134,6 +135,7 @@ signals:
     void updateScheme(bool forceUpdate);
     void selectedPropertyValue(QString value);
     void itemChanged(QTreeWidgetItem *item, int column);
+    void openComponentGuiRequested(const UComponentGuiContext& context);
 
 public slots:
     void updateComponentsListFromScheme();
