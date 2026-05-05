@@ -24,6 +24,7 @@
 #include <QKeyEvent>
 #include <QMenuBar>
 #include <QMenu>
+#include <QProcessEnvironment>
 
 /*int heheheCounter = 0;
 void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
@@ -122,7 +123,6 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     // Создаем современную диаграмму
     modernDiagram = new UModernDiagramContainerWidget(this, application);
     qRegisterMetaType<UComponentGuiContext>("UComponentGuiContext");
-    RegisterComponentGuiForms(application);
     QMdiSubWindow *modernDiagramSbWindow = new SubWindowCloseIgnore(ui->mdiArea, Qt::SubWindow);
     modernDiagramSbWindow->setWidget(modernDiagram);
     modernDiagramSbWindow->setWindowTitle("Scheme");
@@ -383,6 +383,12 @@ void UGEngineControlWidget::switchLinksForTwoComponents(QString firstComponentNa
 
 void UGEngineControlWidget::openComponentGuiFromScheme(const UComponentGuiContext& context)
 {
+    if(!m_componentSpecialFormsEnabled)
+    {
+        QMessageBox::information(this, "Component GUI", "Component special forms are disabled by feature flag.");
+        return;
+    }
+
     UVisualControllerWidget* widget = m_componentGuiService.createOrActivate(this, context);
     if(!widget)
     {
@@ -1251,6 +1257,7 @@ void UGEngineControlWidget::writeSettings()
     // Save current theme
     UStyleManager* styleManager = UStyleManager::instance();
     projectSettings.setValue("theme", styleManager->getThemeName());
+    projectSettings.setValue("EnableComponentSpecialFormsQt", m_componentSpecialFormsEnabled);
 
     if(imagesWindow)
     {
@@ -1276,6 +1283,22 @@ void UGEngineControlWidget::readSettings()
     // Load saved theme (defaults to "Modern Light" if not saved)
     QString savedTheme = projectSettings.value("theme", "Modern Light").toString();
     switchToTheme(savedTheme);
+
+    // Feature flag: component special forms
+    // Priority: environment variable > settings value > default(true)
+    const QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    if(env.contains("NMSDK_ENABLE_COMPONENT_SPECIAL_FORMS_QT"))
+    {
+        const QString envValue = env.value("NMSDK_ENABLE_COMPONENT_SPECIAL_FORMS_QT").trimmed().toLower();
+        m_componentSpecialFormsEnabled = (envValue == "1" || envValue == "true" || envValue == "yes" || envValue == "on");
+    }
+    else
+    {
+        m_componentSpecialFormsEnabled = projectSettings.value("EnableComponentSpecialFormsQt", true).toBool();
+    }
+
+    if(m_componentSpecialFormsEnabled)
+        RegisterComponentGuiForms(application);
 
     if(!imagesWindow)
     {

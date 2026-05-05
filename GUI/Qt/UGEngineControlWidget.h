@@ -285,6 +285,7 @@ private:
     // активные экземпляры по id; QPointer обнуляется при удалении виджета
     QHash<QString, QList<QPointer<UVisualControllerWidget>>> customWidgetInstances;
     UComponentGuiService m_componentGuiService;
+    bool m_componentSpecialFormsEnabled = true;
 
     // служебный метод для создания/активации пользовательского виджета
     void createOrActivateCustomWidget(const QString &id);
