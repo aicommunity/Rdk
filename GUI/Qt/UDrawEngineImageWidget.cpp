@@ -99,9 +99,9 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     QAction *actionDefaultComponent = new QAction(contextMenu);
     actionDefaultComponent->setText("Default");
     QAction *actionGUI = new QAction(contextMenu);
-    actionGUI->setText("GUI (use ModernDiagram/ComponentsList)");
-    actionGUI->setToolTip("Component GUI from DrawEngine is intentionally disabled. Use ModernDiagram or ComponentsList entrypoints.");
-    actionGUI->setEnabled(false);
+    actionGUI->setText("GUI");
+    actionGUI->setToolTip("Open component GUI form");
+    actionGUI->setEnabled(true);
     QAction *actionCopyComponentXMLDescription= new QAction(contextMenu);
     actionCopyComponentXMLDescription->setText("Copy component XML description");;
 
@@ -791,9 +791,30 @@ void UDrawEngineImageWidget::componentDefault()
 
 void UDrawEngineImageWidget::componentGUI()
 {
- QMessageBox::information(this,
-                          "Component GUI",
-                          "Component GUI is disabled for DrawEngine.\nUse ModernDiagram or ComponentsList to open component forms.");
+    const QString selectedComponentLongName = myLongName();
+    if(selectedComponentLongName.isEmpty())
+    {
+        QMessageBox::information(this, "Component GUI", "No component is selected.");
+        return;
+    }
+
+    const char* classNameRaw = Model_GetComponentClassName(selectedComponentLongName.toLocal8Bit().constData());
+    const QString componentClassName = classNameRaw ? QString::fromUtf8(classNameRaw) : QString();
+    Engine_FreeBufString(classNameRaw);
+
+    UComponentGuiContext context;
+    context.componentLongName = selectedComponentLongName;
+    context.componentClassName = componentClassName;
+    context.channelIndex = Core_GetSelectedChannelIndex();
+
+    emit openComponentGuiRequested(context);
+
+    if(receivers(SIGNAL(openComponentGuiRequested(UComponentGuiContext))) == 0)
+    {
+        QMessageBox::information(this,
+                                 "Component GUI",
+                                 "Component GUI handler is not connected for DrawEngine entrypoint.");
+    }
 }
 
 void UDrawEngineImageWidget::componentCopyXMLDescription()

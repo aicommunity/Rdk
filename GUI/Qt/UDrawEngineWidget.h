@@ -5,6 +5,7 @@
 #include "UDrawEngineImageWidget.h"
 #include "UClassesListWidget.h"
 #include "UModernDiagramWidget.h"
+#include "UComponentGuiContext.h"
 
 #include <rdk_application.h>
 
@@ -52,6 +53,7 @@ signals:
     void viewLinksFromScheme(QString componentName);
     void createLinksFromScheme(QString firstComponentName, QString secondComponentName);
     void switchLinksFromScheme(QString firstComponentName, QString secondComponentName);
+    void openComponentGuiFromScheme(const UComponentGuiContext& context);
 
 private:
 
