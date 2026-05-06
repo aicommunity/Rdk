@@ -2,8 +2,102 @@
 
 #include <QVBoxLayout>
 #include <QFrame>
+#include <QDrag>
+#include <QMimeData>
+#include <QMouseEvent>
+#include <QApplication>
 
 #include "UComponentGuiService.h"
+
+namespace
+{
+constexpr const char* kComponentGuiMime = "application/x-nmsdk-component-gui-context";
+
+QByteArray encodeContextPayload(const UComponentGuiContext& context,
+                                const QString& gridId = QString(),
+                                int row = -1,
+                                int col = -1)
+{
+    return (context.componentClassName + "\n"
+            + context.componentLongName + "\n"
+            + QString::number(context.channelIndex) + "\n"
+            + gridId + "\n"
+            + QString::number(row) + "\n"
+            + QString::number(col)).toUtf8();
+}
+
+bool decodeContextPayload(const QMimeData* mimeData,
+                          UComponentGuiContext& context,
+                          QString& sourceGridId,
+                          int& sourceRow,
+                          int& sourceCol)
+{
+    if(!mimeData || !mimeData->hasFormat(kComponentGuiMime))
+        return false;
+    const QStringList parts = QString::fromUtf8(mimeData->data(kComponentGuiMime)).split('\n');
+    if(parts.size() < 3)
+        return false;
+    context.componentClassName = parts[0];
+    context.componentLongName = parts[1];
+    context.channelIndex = parts[2].toInt();
+    sourceGridId = parts.size() > 3 ? parts[3] : QString();
+    sourceRow = parts.size() > 4 ? parts[4].toInt() : -1;
+    sourceCol = parts.size() > 5 ? parts[5].toInt() : -1;
+    return !context.componentClassName.trimmed().isEmpty();
+}
+
+class UGridDropCellFrame final : public QFrame
+{
+public:
+    UGridDropCellFrame(UComponentGuiGridContainerWidget* owner, int row, int col, QWidget* parent = nullptr)
+        : QFrame(parent), m_owner(owner), m_row(row), m_col(col)
+    {
+        setAcceptDrops(true);
+        setFrameShape(QFrame::StyledPanel);
+        setContentsMargins(0, 0, 0, 0);
+    }
+
+protected:
+    void mousePressEvent(QMouseEvent* event) override
+    {
+        if(event->button() == Qt::LeftButton)
+            m_dragStartPos = event->pos();
+        QFrame::mousePressEvent(event);
+    }
+
+    void mouseMoveEvent(QMouseEvent* event) override
+    {
+        if(!(event->buttons() & Qt::LeftButton) || !m_owner)
+            return QFrame::mouseMoveEvent(event);
+        if((event->pos() - m_dragStartPos).manhattanLength() < QApplication::startDragDistance())
+            return QFrame::mouseMoveEvent(event);
+        m_owner->startDragFromCell(m_row, m_col);
+        QFrame::mouseMoveEvent(event);
+    }
+
+    void dragEnterEvent(QDragEnterEvent* event) override
+    {
+        if(event->mimeData() && event->mimeData()->hasFormat(kComponentGuiMime))
+            event->acceptProposedAction();
+        else
+            event->ignore();
+    }
+
+    void dropEvent(QDropEvent* event) override
+    {
+        if(m_owner && m_owner->handleDropToCell(m_row, m_col, event->mimeData()))
+            event->acceptProposedAction();
+        else
+            event->ignore();
+    }
+
+private:
+    UComponentGuiGridContainerWidget* m_owner = nullptr;
+    int m_row = -1;
+    int m_col = -1;
+    QPoint m_dragStartPos;
+};
+}
 
 UComponentGuiGridContainerWidget::UComponentGuiGridContainerWidget(const QString& gridId,
                                                                    UComponentGuiService* service,
@@ -156,6 +250,45 @@ bool UComponentGuiGridContainerWidget::isValidCell(int row, int col) const
     return row >= 0 && row < m_cells.size() && col >= 0 && col < m_cells[row].size();
 }
 
+void UComponentGuiGridContainerWidget::startDragFromCell(int row, int col)
+{
+    if(!isValidCell(row, col) || !m_cells[row][col].hasContext)
+        return;
+    QDrag* drag = new QDrag(this);
+    QMimeData* mime = new QMimeData();
+    mime->setData(kComponentGuiMime, encodeContextPayload(m_cells[row][col].context, m_gridId, row, col));
+    drag->setMimeData(mime);
+    drag->exec(Qt::MoveAction);
+}
+
+bool UComponentGuiGridContainerWidget::handleDropToCell(int row, int col, const QMimeData* mimeData)
+{
+    if(!isValidCell(row, col))
+        return false;
+    UComponentGuiContext context;
+    QString sourceGridId;
+    int sourceRow = -1;
+    int sourceCol = -1;
+    if(!decodeContextPayload(mimeData, context, sourceGridId, sourceRow, sourceCol))
+        return false;
+
+    if(sourceGridId == m_gridId && sourceRow >= 0 && sourceCol >= 0 && isValidCell(sourceRow, sourceCol))
+    {
+        if(sourceRow == row && sourceCol == col)
+            return true;
+        if(m_cells[row][col].hasContext)
+            return swapCells(sourceRow, sourceCol, row, col);
+        const bool assigned = assignCell(row, col, context);
+        if(assigned)
+            clearCell(sourceRow, sourceCol);
+        return assigned;
+    }
+
+    if(m_cells[row][col].hasContext)
+        clearCell(row, col);
+    return assignCell(row, col, context);
+}
+
 void UComponentGuiGridContainerWidget::rebuildGrid()
 {
     clearGridWidgets();
@@ -169,9 +302,7 @@ void UComponentGuiGridContainerWidget::rebuildGrid()
         m_rowSplitters.push_back(rowSplitter);
         for(int c = 0; c < m_cols; ++c)
         {
-            QFrame* cellFrame = new QFrame(rowSplitter);
-            cellFrame->setFrameShape(QFrame::StyledPanel);
-            cellFrame->setContentsMargins(0, 0, 0, 0);
+            QFrame* cellFrame = new UGridDropCellFrame(this, r, c, rowSplitter);
             m_cells[r][c].host = cellFrame;
         }
     }

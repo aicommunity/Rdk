@@ -23,6 +23,7 @@
 #include <QActionGroup>
 #include <QTabBar>
 #include <QKeyEvent>
+#include <QEvent>
 #include <QMenuBar>
 #include <QMenu>
 #include <QProcessEnvironment>
@@ -30,6 +31,9 @@
 #include <QCursor>
 #include <QSet>
 #include <QDialog>
+#include <QDrag>
+#include <QMimeData>
+#include <QMouseEvent>
 
 /*int heheheCounter = 0;
 void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
@@ -148,6 +152,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
             if(!tabBar)
                 return;
             tabBar->setContextMenuPolicy(Qt::CustomContextMenu);
+            tabBar->installEventFilter(this);
             QObject::connect(tabBar, &QTabBar::customContextMenuRequested, this, [this, tabBar](const QPoint& pos) {
                 const int index = tabBar->tabAt(pos);
                 if(index < 0)
@@ -394,6 +399,56 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 
     aboutDialog = 0;
     helpWindow = 0;
+}
+
+bool UGEngineControlWidget::eventFilter(QObject* watched, QEvent* event)
+{
+    QTabBar* tabBar = ui && ui->mdiArea ? ui->mdiArea->findChild<QTabBar*>() : nullptr;
+    if(tabBar && watched == tabBar)
+    {
+        if(event->type() == QEvent::MouseButtonPress)
+        {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            if(mouseEvent->button() == Qt::LeftButton)
+            {
+                m_componentGuiTabDragStartPos = mouseEvent->pos();
+                m_componentGuiTabDragIndex = tabBar->tabAt(mouseEvent->pos());
+            }
+        }
+        else if(event->type() == QEvent::MouseMove)
+        {
+            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            if((mouseEvent->buttons() & Qt::LeftButton) && m_componentGuiTabDragIndex >= 0)
+            {
+                if((mouseEvent->pos() - m_componentGuiTabDragStartPos).manhattanLength() >= QApplication::startDragDistance())
+                {
+                    const QList<QMdiSubWindow*> list = ui->mdiArea->subWindowList(QMdiArea::CreationOrder);
+                    if(m_componentGuiTabDragIndex >= 0 && m_componentGuiTabDragIndex < list.size() && list[m_componentGuiTabDragIndex])
+                    {
+                        UVisualControllerWidget* widget = qobject_cast<UVisualControllerWidget*>(list[m_componentGuiTabDragIndex]->widget());
+                        UComponentGuiContext context;
+                        if(resolveComponentGuiWidgetContext(widget, context))
+                        {
+                            QDrag* drag = new QDrag(tabBar);
+                            QMimeData* mime = new QMimeData();
+                            const QByteArray payload = (context.componentClassName + "\n"
+                                                        + context.componentLongName + "\n"
+                                                        + QString::number(context.channelIndex) + "\n\n-1\n-1").toUtf8();
+                            mime->setData("application/x-nmsdk-component-gui-context", payload);
+                            drag->setMimeData(mime);
+                            drag->exec(Qt::MoveAction);
+                        }
+                    }
+                    m_componentGuiTabDragIndex = -1;
+                }
+            }
+        }
+        else if(event->type() == QEvent::MouseButtonRelease)
+        {
+            m_componentGuiTabDragIndex = -1;
+        }
+    }
+    return UVisualControllerMainWidget::eventFilter(watched, event);
 }
 
 

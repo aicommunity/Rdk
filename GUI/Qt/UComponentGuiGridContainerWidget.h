@@ -12,6 +12,7 @@
 
 class UComponentGuiService;
 class QVBoxLayout;
+class QMimeData;
 
 class UComponentGuiGridContainerWidget : public UVisualControllerWidget
 {
@@ -36,6 +37,8 @@ public:
     QByteArray saveRowState(int row) const;
     void restoreRowState(int row, const QByteArray& state);
     QWidget* cellHostWidget(int row, int col) const;
+    void startDragFromCell(int row, int col);
+    bool handleDropToCell(int row, int col, const QMimeData* mimeData);
 
 private:
     struct UGridCell
