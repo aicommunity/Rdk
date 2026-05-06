@@ -389,7 +389,7 @@ void UGEngineControlWidget::openComponentGuiFromScheme(const UComponentGuiContex
         return;
     }
 
-    UVisualControllerWidget* widget = m_componentGuiService.createOrActivate(this, context);
+    UVisualControllerWidget* widget = m_componentGuiService.createOrActivate(ui->mdiArea, context);
     if(!widget)
     {
         QMessageBox::information(this, "Component GUI", "No GUI form is registered for this component class.");

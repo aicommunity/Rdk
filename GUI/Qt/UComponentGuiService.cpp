@@ -1,8 +1,57 @@
 #include "UComponentGuiService.h"
 
 #include <QWidget>
+#include <QMdiArea>
+#include <QMdiSubWindow>
 
 #include "UVisualControllerWidget.h"
+
+namespace
+{
+QMdiSubWindow* resolveMdiSubWindow(UVisualControllerWidget* widget)
+{
+    if(!widget)
+        return nullptr;
+
+    if(auto* subByWindow = qobject_cast<QMdiSubWindow*>(widget->window()))
+        return subByWindow;
+    if(auto* subByParent = qobject_cast<QMdiSubWindow*>(widget->parentWidget()))
+        return subByParent;
+
+    QObject* current = widget->parent();
+    while(current)
+    {
+        if(auto* sub = qobject_cast<QMdiSubWindow*>(current))
+            return sub;
+        current = current->parent();
+    }
+    return nullptr;
+}
+
+void activateWidgetHost(UVisualControllerWidget* widget)
+{
+    if(!widget)
+        return;
+
+    if(auto* sub = resolveMdiSubWindow(widget))
+    {
+        if(auto* mdiArea = sub->mdiArea())
+        {
+            // In tabbed MDI mode, explicit subwindow activation is required,
+            // but we must not alter the window state (showNormal) to avoid
+            // breaking other MDI tabs layout.
+            sub->show();
+            mdiArea->setActiveSubWindow(sub);
+            sub->raise();
+            return;
+        }
+    }
+
+    widget->show();
+    widget->raise();
+    widget->activateWindow();
+}
+}
 
 UComponentGuiService::UComponentGuiService(RDK::UApplication* app)
     : m_application(app)
@@ -32,9 +81,7 @@ UVisualControllerWidget* UComponentGuiService::createOrActivate(QWidget* parentW
     {
         UVisualControllerWidget* existing = m_instances[instanceKey].data();
         applyContext(existing, context);
-        existing->show();
-        existing->raise();
-        existing->activateWindow();
+        activateWidgetHost(existing);
         return existing;
     }
 
@@ -42,14 +89,23 @@ UVisualControllerWidget* UComponentGuiService::createOrActivate(QWidget* parentW
     if(!widget)
         return nullptr;
 
-    if(parentWindow)
+    QMdiSubWindow* mdiSubWindow = nullptr;
+    if(auto* mdiArea = qobject_cast<QMdiArea*>(parentWindow))
+    {
+        mdiSubWindow = mdiArea->addSubWindow(widget, Qt::SubWindow);
+        if(mdiSubWindow)
+            mdiSubWindow->setAttribute(Qt::WA_DeleteOnClose, true);
+    }
+    else if(parentWindow)
+    {
         widget->setParent(parentWindow);
+    }
     widget->setWindowTitle(descriptor->title);
     widget->setAttribute(Qt::WA_DeleteOnClose, true);
     applyContext(widget, context);
-    widget->show();
-    widget->raise();
-    widget->activateWindow();
+    if(mdiSubWindow)
+        mdiSubWindow->setWindowTitle(descriptor->title);
+    activateWidgetHost(widget);
 
     if(descriptor->singleInstance)
         m_instances[instanceKey] = widget;
