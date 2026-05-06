@@ -26,6 +26,8 @@
 #include <QMenu>
 #include <QProcessEnvironment>
 #include <algorithm>
+#include <QCursor>
+#include <QSet>
 
 /*int heheheCounter = 0;
 void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
@@ -112,6 +114,45 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     connect(ui->mdiArea, &QMdiArea::subWindowActivated, this, [updateMdiAreaTabBarStyles](QMdiSubWindow* window) {
         Q_UNUSED(window);
         QTimer::singleShot(0, updateMdiAreaTabBarStyles);
+    });
+    ui->mdiArea->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->mdiArea, &QMdiArea::customContextMenuRequested, this, [this](const QPoint& pos) {
+        QMdiSubWindow* sub = nullptr;
+        const QList<QMdiSubWindow*> subwindows = ui->mdiArea->subWindowList(QMdiArea::StackingOrder);
+        for(auto it = subwindows.crbegin(); it != subwindows.crend(); ++it)
+        {
+            if(*it && (*it)->geometry().contains(pos))
+            {
+                sub = *it;
+                break;
+            }
+        }
+        if(!sub)
+            sub = ui->mdiArea->activeSubWindow();
+        if(!sub)
+            return;
+
+        UVisualControllerWidget* widget = qobject_cast<UVisualControllerWidget*>(sub->widget());
+        if(!widget)
+            return;
+
+        UComponentGuiContext context;
+        if(!m_componentGuiService.tryGetContextByWidget(widget, context))
+            return;
+
+        UComponentGuiHostMode mode = UComponentGuiHostMode::Mdi;
+        m_componentGuiService.tryGetHostModeByWidget(widget, mode);
+
+        QMenu menu(this);
+        QAction* detachAction = menu.addAction("Detach");
+        QAction* attachAction = menu.addAction("Attach to MDI");
+        detachAction->setEnabled(mode == UComponentGuiHostMode::Mdi || mode == UComponentGuiHostMode::Grid);
+        attachAction->setEnabled(mode == UComponentGuiHostMode::Floating);
+        QAction* chosen = menu.exec(QCursor::pos());
+        if(chosen == detachAction)
+            m_componentGuiService.detachToFloating(context);
+        else if(chosen == attachAction)
+            m_componentGuiService.attachToMdi(context, ui->mdiArea);
     });
 
     // Создаем breadcrumbs виджет
@@ -1834,6 +1875,8 @@ void UGEngineControlWidget::loadComponentGuiLayoutFromXml(RDK::USerStorageXML &x
         return a.orderIndex < b.orderIndex;
     });
 
+    bool hasActive = false;
+    UComponentGuiContext activeContext;
     for(const UComponentGuiSessionSnapshot& s : sessions)
     {
         UComponentGuiContext context;
@@ -1858,6 +1901,11 @@ void UGEngineControlWidget::loadComponentGuiLayoutFromXml(RDK::USerStorageXML &x
                 grid->setGridSize(qMax(grid->rowCount(), row + 1), qMax(grid->colCount(), col + 1));
             grid->assignCell(row, col, context);
         }
+        if(s.isActive && !hasActive)
+        {
+            hasActive = true;
+            activeContext = context;
+        }
     }
 
     if(application)
@@ -1868,18 +1916,40 @@ void UGEngineControlWidget::loadComponentGuiLayoutFromXml(RDK::USerStorageXML &x
         readComponentGuiSettings(projectSettings);
         projectSettings.endGroup();
     }
+
+    if(hasActive)
+        m_componentGuiService.createOrActivate(ui->mdiArea, activeContext);
 }
 
 void UGEngineControlWidget::writeComponentGuiSettings(QSettings& projectSettings)
 {
     const QList<UComponentGuiSessionSnapshot> sessions = m_componentGuiService.snapshotOpenSessions();
+    QSet<QString> liveFloatingSessions;
+    QSet<QString> liveGridIds;
+
+    projectSettings.beginGroup("ComponentGui");
+    projectSettings.beginGroup("Floating");
+    const QStringList storedFloating = projectSettings.childGroups();
+    projectSettings.endGroup();
+    projectSettings.beginGroup("Grid");
+    const QStringList storedGrids = projectSettings.childGroups();
+    projectSettings.endGroup();
+    projectSettings.endGroup();
+
     for(const UComponentGuiSessionSnapshot& s : sessions)
     {
         if(s.hostMode != UComponentGuiHostMode::Floating)
             continue;
+        liveFloatingSessions.insert(s.sessionId);
+        m_componentGuiService.captureFloatingState(s.sessionId);
         const QString prefix = QStringLiteral("ComponentGui/Floating/%1").arg(s.sessionId);
         projectSettings.setValue(prefix + "/Geometry", m_componentGuiService.floatingGeometry(s.sessionId));
         projectSettings.setValue(prefix + "/WindowState", m_componentGuiService.floatingWindowState(s.sessionId));
+    }
+    for(const QString& staleId : storedFloating)
+    {
+        if(!liveFloatingSessions.contains(staleId))
+            projectSettings.remove(QStringLiteral("ComponentGui/Floating/%1").arg(staleId));
     }
 
     for(auto it = m_componentGuiGrids.begin(); it != m_componentGuiGrids.end(); ++it)
@@ -1887,10 +1957,17 @@ void UGEngineControlWidget::writeComponentGuiSettings(QSettings& projectSettings
         if(it.value().isNull())
             continue;
         UComponentGuiGridContainerWidget* grid = it.value().data();
+        liveGridIds.insert(grid->gridId());
         const QString gridPrefix = QStringLiteral("ComponentGui/Grid/%1").arg(grid->gridId());
         projectSettings.setValue(gridPrefix + "/RootSplitterState", grid->saveGridState());
+        projectSettings.remove(gridPrefix + "/Row");
         for(int row = 0; row < grid->rowCount(); ++row)
             projectSettings.setValue(gridPrefix + QStringLiteral("/Row/%1/SplitterState").arg(row), grid->saveRowState(row));
+    }
+    for(const QString& staleGrid : storedGrids)
+    {
+        if(!liveGridIds.contains(staleGrid))
+            projectSettings.remove(QStringLiteral("ComponentGui/Grid/%1").arg(staleGrid));
     }
 }
 

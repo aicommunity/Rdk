@@ -54,6 +54,9 @@ public:
     bool applyFloatingState(const QString& sessionId, const QByteArray& geometry, const QByteArray& state);
     QByteArray floatingGeometry(const QString& sessionId) const;
     QByteArray floatingWindowState(const QString& sessionId) const;
+    bool captureFloatingState(const QString& sessionId);
+    bool tryGetContextByWidget(const UVisualControllerWidget* widget, UComponentGuiContext& outContext) const;
+    bool tryGetHostModeByWidget(const UVisualControllerWidget* widget, UComponentGuiHostMode& outMode) const;
 
 private:
     QString makeInstanceKey(const UComponentGuiContext& context, const UComponentFormDescriptor& descriptor) const;
@@ -63,6 +66,7 @@ private:
     UVisualControllerWidget* resolveInstance(const UComponentGuiContext& context, QString* outSessionKey = nullptr) const;
     void assignHostMode(const QString& key, UComponentGuiHostMode mode, const QString& containerId = QString(), int row = -1, int col = -1);
     void clearSessionState(const QString& key);
+    QString findSessionKeyByWidget(const UVisualControllerWidget* widget) const;
 
 private:
     struct UInstanceHostInfo

@@ -330,6 +330,45 @@ QByteArray UComponentGuiService::floatingWindowState(const QString& sessionId) c
     return QByteArray();
 }
 
+bool UComponentGuiService::captureFloatingState(const QString& sessionId)
+{
+    if(!m_instances.contains(sessionId) || m_instances[sessionId].isNull())
+        return false;
+    UVisualControllerWidget* widget = m_instances[sessionId].data();
+    if(!widget)
+        return false;
+
+    UInstanceHostInfo info = m_instanceHostInfo.value(sessionId);
+    if(info.mode != UComponentGuiHostMode::Floating)
+        return false;
+
+    info.floatingGeometry = widget->saveGeometry();
+    if(auto* mainWindow = qobject_cast<QMainWindow*>(widget))
+        info.floatingWindowState = mainWindow->saveState();
+    else
+        info.floatingWindowState.clear();
+    m_instanceHostInfo[sessionId] = info;
+    return true;
+}
+
+bool UComponentGuiService::tryGetContextByWidget(const UVisualControllerWidget* widget, UComponentGuiContext& outContext) const
+{
+    const QString key = findSessionKeyByWidget(widget);
+    if(key.isEmpty() || !m_instanceContexts.contains(key))
+        return false;
+    outContext = m_instanceContexts.value(key);
+    return true;
+}
+
+bool UComponentGuiService::tryGetHostModeByWidget(const UVisualControllerWidget* widget, UComponentGuiHostMode& outMode) const
+{
+    const QString key = findSessionKeyByWidget(widget);
+    if(key.isEmpty() || !m_instanceHostInfo.contains(key))
+        return false;
+    outMode = m_instanceHostInfo.value(key).mode;
+    return true;
+}
+
 QString UComponentGuiService::makeInstanceKey(const UComponentGuiContext& context, const UComponentFormDescriptor& descriptor) const
 {
     return descriptor.formId + "|" + makeSessionKeyFromContext(context) + "|" + QString::number(context.channelIndex);
@@ -410,4 +449,16 @@ void UComponentGuiService::clearSessionState(const QString& key)
     m_instanceHostInfo.remove(key);
     if(m_lastActiveSession == key)
         m_lastActiveSession.clear();
+}
+
+QString UComponentGuiService::findSessionKeyByWidget(const UVisualControllerWidget* widget) const
+{
+    if(!widget)
+        return QString();
+    for(auto it = m_instances.constBegin(); it != m_instances.constEnd(); ++it)
+    {
+        if(!it.value().isNull() && it.value().data() == widget)
+            return it.key();
+    }
+    return QString();
 }
