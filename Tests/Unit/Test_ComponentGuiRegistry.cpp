@@ -3,6 +3,7 @@
 #include <QString>
 #include <QApplication>
 #include <QWidget>
+#include <QMdiArea>
 
 #include "../../GUI/Qt/UComponentFormRegistry.h"
 #include "../../GUI/Qt/UComponentGuiService.h"
@@ -250,6 +251,42 @@ TEST(ComponentGuiPipeline, CloseAndReopenCreatesNewInstance)
     UVisualControllerWidget* reopened = service.createOrActivate(&owner, context);
     ASSERT_NE(reopened, nullptr);
     EXPECT_NE(first, reopened);
+
+    service.clearAllInstances();
+}
+
+TEST(ComponentGuiPipeline, DetachAttachAndSnapshotHostMode)
+{
+    static int argc = 1;
+    static char arg0[] = "test";
+    static char* argv[] = {arg0, nullptr};
+    if(!qApp)
+        new QApplication(argc, argv);
+
+    const QString className = QStringLiteral("TestClass_DetachAttachSnapshot");
+    UComponentFormDescriptor descriptor;
+    descriptor.formId = "test.form.detach";
+    descriptor.title = "Detach Form";
+    descriptor.singleInstance = true;
+    descriptor.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.detach.controller", "Detach Controller", nullptr, app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(className, descriptor);
+
+    UComponentGuiService service(reinterpret_cast<RDK::UApplication*>(0x1));
+    QMdiArea mdiArea;
+    const UComponentGuiContext context = MakeContext(className, QStringLiteral("Model.DetachAttach"), 1);
+    ASSERT_NE(service.createOrActivate(&mdiArea, context), nullptr);
+    EXPECT_TRUE(service.detachToFloating(context));
+
+    QList<UComponentGuiSessionSnapshot> snapshots = service.snapshotOpenSessions();
+    ASSERT_FALSE(snapshots.isEmpty());
+    EXPECT_EQ(snapshots.first().hostMode, UComponentGuiHostMode::Floating);
+
+    EXPECT_TRUE(service.attachToMdi(context, &mdiArea));
+    snapshots = service.snapshotOpenSessions();
+    ASSERT_FALSE(snapshots.isEmpty());
+    EXPECT_EQ(snapshots.first().hostMode, UComponentGuiHostMode::Mdi);
 
     service.clearAllInstances();
 }
