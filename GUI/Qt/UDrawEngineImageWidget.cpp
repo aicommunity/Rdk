@@ -99,7 +99,8 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     QAction *actionDefaultComponent = new QAction(contextMenu);
     actionDefaultComponent->setText("Default");
     QAction *actionGUI = new QAction(contextMenu);
-    actionGUI->setText("GUI (not implemented)");
+    actionGUI->setText("GUI (use ModernDiagram/ComponentsList)");
+    actionGUI->setToolTip("Component GUI from DrawEngine is intentionally disabled. Use ModernDiagram or ComponentsList entrypoints.");
     actionGUI->setEnabled(false);
     QAction *actionCopyComponentXMLDescription= new QAction(contextMenu);
     actionCopyComponentXMLDescription->setText("Copy component XML description");;
@@ -790,7 +791,9 @@ void UDrawEngineImageWidget::componentDefault()
 
 void UDrawEngineImageWidget::componentGUI()
 {
- qDebug() << "component GUI";
+ QMessageBox::information(this,
+                          "Component GUI",
+                          "Component GUI is disabled for DrawEngine.\nUse ModernDiagram or ComponentsList to open component forms.");
 }
 
 void UDrawEngineImageWidget::componentCopyXMLDescription()

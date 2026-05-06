@@ -1258,6 +1258,11 @@ void UGEngineControlWidget::writeSettings()
     UStyleManager* styleManager = UStyleManager::instance();
     projectSettings.setValue("theme", styleManager->getThemeName());
     projectSettings.setValue("EnableComponentSpecialFormsQt", m_componentSpecialFormsEnabled);
+    projectSettings.setValue("EnableComponentSpecialFormsQt.MotionControl", m_componentSpecialFormsMotionControlEnabled);
+    projectSettings.setValue("EnableComponentSpecialFormsQt.PulseLib", m_componentSpecialFormsPulseLibEnabled);
+    projectSettings.setValue("EnableComponentSpecialFormsQt.BasicLib", m_componentSpecialFormsBasicLibEnabled);
+    projectSettings.setValue("EnableComponentSpecialFormsQt.CvBasicLib", m_componentSpecialFormsCvBasicLibEnabled);
+    projectSettings.setValue("EnableComponentSpecialFormsQt.HardwareLib", m_componentSpecialFormsHardwareLibEnabled);
 
     if(imagesWindow)
     {
@@ -1284,21 +1289,43 @@ void UGEngineControlWidget::readSettings()
     QString savedTheme = projectSettings.value("theme", "Modern Light").toString();
     switchToTheme(savedTheme);
 
-    // Feature flag: component special forms
+    // Feature flags: component special forms
     // Priority: environment variable > settings value > default(true)
     const QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-    if(env.contains("NMSDK_ENABLE_COMPONENT_SPECIAL_FORMS_QT"))
+    auto parseEnabled = [](const QString& value) -> bool
     {
-        const QString envValue = env.value("NMSDK_ENABLE_COMPONENT_SPECIAL_FORMS_QT").trimmed().toLower();
-        m_componentSpecialFormsEnabled = (envValue == "1" || envValue == "true" || envValue == "yes" || envValue == "on");
-    }
-    else
+        const QString normalized = value.trimmed().toLower();
+        return (normalized == "1" || normalized == "true" || normalized == "yes" || normalized == "on");
+    };
+    auto readFlag = [&](const char* envName, const char* settingsName, bool defaultValue) -> bool
     {
-        m_componentSpecialFormsEnabled = projectSettings.value("EnableComponentSpecialFormsQt", true).toBool();
-    }
+        if(env.contains(envName))
+            return parseEnabled(env.value(envName));
+        return projectSettings.value(settingsName, defaultValue).toBool();
+    };
+    m_componentSpecialFormsEnabled =
+        readFlag("NMSDK_ENABLE_COMPONENT_SPECIAL_FORMS_QT", "EnableComponentSpecialFormsQt", true);
+    m_componentSpecialFormsMotionControlEnabled =
+        readFlag("NMSDK_ENABLE_COMPONENT_SPECIAL_FORMS_QT_MOTIONCONTROL", "EnableComponentSpecialFormsQt.MotionControl", true);
+    m_componentSpecialFormsPulseLibEnabled =
+        readFlag("NMSDK_ENABLE_COMPONENT_SPECIAL_FORMS_QT_PULSELIB", "EnableComponentSpecialFormsQt.PulseLib", true);
+    m_componentSpecialFormsBasicLibEnabled =
+        readFlag("NMSDK_ENABLE_COMPONENT_SPECIAL_FORMS_QT_BASICLIB", "EnableComponentSpecialFormsQt.BasicLib", true);
+    m_componentSpecialFormsCvBasicLibEnabled =
+        readFlag("NMSDK_ENABLE_COMPONENT_SPECIAL_FORMS_QT_CVBASICLIB", "EnableComponentSpecialFormsQt.CvBasicLib", true);
+    m_componentSpecialFormsHardwareLibEnabled =
+        readFlag("NMSDK_ENABLE_COMPONENT_SPECIAL_FORMS_QT_HARDWARELIB", "EnableComponentSpecialFormsQt.HardwareLib", true);
 
     if(m_componentSpecialFormsEnabled)
-        RegisterComponentGuiForms(application);
+    {
+        UComponentGuiRegistrationOptions options;
+        options.enableMotionControl = m_componentSpecialFormsMotionControlEnabled;
+        options.enablePulseLib = m_componentSpecialFormsPulseLibEnabled;
+        options.enableBasicLib = m_componentSpecialFormsBasicLibEnabled;
+        options.enableCvBasicLib = m_componentSpecialFormsCvBasicLibEnabled;
+        options.enableHardwareLib = m_componentSpecialFormsHardwareLibEnabled;
+        RegisterComponentGuiForms(application, options);
+    }
 
     if(!imagesWindow)
     {

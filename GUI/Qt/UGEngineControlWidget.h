@@ -286,6 +286,11 @@ private:
     QHash<QString, QList<QPointer<UVisualControllerWidget>>> customWidgetInstances;
     UComponentGuiService m_componentGuiService;
     bool m_componentSpecialFormsEnabled = true;
+    bool m_componentSpecialFormsMotionControlEnabled = true;
+    bool m_componentSpecialFormsPulseLibEnabled = true;
+    bool m_componentSpecialFormsBasicLibEnabled = true;
+    bool m_componentSpecialFormsCvBasicLibEnabled = true;
+    bool m_componentSpecialFormsHardwareLibEnabled = true;
 
     // служебный метод для создания/активации пользовательского виджета
     void createOrActivateCustomWidget(const QString &id);
