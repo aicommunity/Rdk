@@ -304,6 +304,11 @@ private:
     void readComponentGuiSettings(QSettings& projectSettings);
     QString hostModeToString(UComponentGuiHostMode mode) const;
     UComponentGuiHostMode hostModeFromString(const QString& mode) const;
+    void showComponentGuiHostMenu(UVisualControllerWidget* widget, const QPoint& globalPos);
+    bool resolveComponentGuiWidgetContext(UVisualControllerWidget* widget,
+                                          UComponentGuiContext& context,
+                                          UComponentGuiHostMode* mode = nullptr) const;
+    void promptAndOpenComponentGuiGrid();
 
     // methods
 

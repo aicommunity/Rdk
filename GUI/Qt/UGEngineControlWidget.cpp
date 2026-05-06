@@ -19,6 +19,7 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QInputDialog>
+#include <QLineEdit>
 #include <QActionGroup>
 #include <QTabBar>
 #include <QKeyEvent>
@@ -28,6 +29,7 @@
 #include <algorithm>
 #include <QCursor>
 #include <QSet>
+#include <QDialog>
 
 /*int heheheCounter = 0;
 void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
@@ -136,23 +138,29 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
         if(!widget)
             return;
 
-        UComponentGuiContext context;
-        if(!m_componentGuiService.tryGetContextByWidget(widget, context))
-            return;
-
-        UComponentGuiHostMode mode = UComponentGuiHostMode::Mdi;
-        m_componentGuiService.tryGetHostModeByWidget(widget, mode);
-
-        QMenu menu(this);
-        QAction* detachAction = menu.addAction("Detach");
-        QAction* attachAction = menu.addAction("Attach to MDI");
-        detachAction->setEnabled(mode == UComponentGuiHostMode::Mdi || mode == UComponentGuiHostMode::Grid);
-        attachAction->setEnabled(mode == UComponentGuiHostMode::Floating);
-        QAction* chosen = menu.exec(QCursor::pos());
-        if(chosen == detachAction)
-            m_componentGuiService.detachToFloating(context);
-        else if(chosen == attachAction)
-            m_componentGuiService.attachToMdi(context, ui->mdiArea);
+        showComponentGuiHostMenu(widget, QCursor::pos());
+    });
+    // Discoverable tab-level menu for component GUI tabs in tabbed MDI mode.
+    connect(ui->mdiArea, &QMdiArea::subWindowActivated, this, [this](QMdiSubWindow* window) {
+        Q_UNUSED(window);
+        QTimer::singleShot(0, this, [this]() {
+            QTabBar* tabBar = ui->mdiArea->findChild<QTabBar*>();
+            if(!tabBar)
+                return;
+            tabBar->setContextMenuPolicy(Qt::CustomContextMenu);
+            QObject::connect(tabBar, &QTabBar::customContextMenuRequested, this, [this, tabBar](const QPoint& pos) {
+                const int index = tabBar->tabAt(pos);
+                if(index < 0)
+                    return;
+                const QList<QMdiSubWindow*> list = ui->mdiArea->subWindowList(QMdiArea::CreationOrder);
+                if(index >= list.size() || !list[index])
+                    return;
+                UVisualControllerWidget* widget = qobject_cast<UVisualControllerWidget*>(list[index]->widget());
+                if(!widget)
+                    return;
+                showComponentGuiHostMenu(widget, tabBar->mapToGlobal(pos));
+            }, Qt::UniqueConnection);
+        });
     });
 
     // Создаем breadcrumbs виджет
@@ -345,6 +353,8 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 
     // Theme switcher menu
     createThemeMenu();
+    QAction* componentGuiGridAction = ui->menuWindow->addAction(tr("Component GUI Grid..."));
+    connect(componentGuiGridAction, &QAction::triggered, this, [this]() { promptAndOpenComponentGuiGrid(); });
 
     updateRecentConfigsMenu();
 
@@ -2017,6 +2027,100 @@ UComponentGuiHostMode UGEngineControlWidget::hostModeFromString(const QString& m
     if(mode == QStringLiteral("grid"))
         return UComponentGuiHostMode::Grid;
     return UComponentGuiHostMode::Mdi;
+}
+
+void UGEngineControlWidget::showComponentGuiHostMenu(UVisualControllerWidget* widget, const QPoint& globalPos)
+{
+    UComponentGuiContext context;
+    UComponentGuiHostMode mode = UComponentGuiHostMode::Mdi;
+    if(!resolveComponentGuiWidgetContext(widget, context, &mode))
+        return;
+
+    QMenu menu(this);
+    QAction* detachAction = menu.addAction("Detach");
+    QAction* attachAction = menu.addAction("Attach to MDI");
+    QAction* moveToGridAction = menu.addAction("Move to Grid...");
+    detachAction->setEnabled(mode == UComponentGuiHostMode::Mdi || mode == UComponentGuiHostMode::Grid);
+    attachAction->setEnabled(mode == UComponentGuiHostMode::Floating);
+    moveToGridAction->setEnabled(mode != UComponentGuiHostMode::Grid);
+
+    QAction* chosen = menu.exec(globalPos);
+    if(chosen == detachAction)
+    {
+        m_componentGuiService.detachToFloating(context);
+        return;
+    }
+    if(chosen == attachAction)
+    {
+        m_componentGuiService.attachToMdi(context, ui->mdiArea);
+        return;
+    }
+    if(chosen == moveToGridAction)
+    {
+        bool ok = false;
+        QString gridId = QInputDialog::getText(this, tr("Move to Grid"),
+                                               tr("Grid ID:"), QLineEdit::Normal,
+                                               QStringLiteral("MainGrid"), &ok);
+        if(!ok || gridId.trimmed().isEmpty())
+            return;
+        int rows = QInputDialog::getInt(this, tr("Move to Grid"), tr("Rows:"), 2, 1, 16, 1, &ok);
+        if(!ok)
+            return;
+        int cols = QInputDialog::getInt(this, tr("Move to Grid"), tr("Columns:"), 2, 1, 16, 1, &ok);
+        if(!ok)
+            return;
+        UComponentGuiGridContainerWidget* grid = ensureComponentGuiGrid(gridId.trimmed(), rows, cols);
+        const int row = QInputDialog::getInt(this, tr("Move to Grid"), tr("Row (0-based):"), 0, 0, qMax(0, grid->rowCount() - 1), 1, &ok);
+        if(!ok)
+            return;
+        const int col = QInputDialog::getInt(this, tr("Move to Grid"), tr("Column (0-based):"), 0, 0, qMax(0, grid->colCount() - 1), 1, &ok);
+        if(!ok)
+            return;
+        grid->assignCell(row, col, context);
+    }
+}
+
+bool UGEngineControlWidget::resolveComponentGuiWidgetContext(UVisualControllerWidget* widget,
+                                                             UComponentGuiContext& context,
+                                                             UComponentGuiHostMode* mode) const
+{
+    if(!widget)
+        return false;
+    if(!m_componentGuiService.tryGetContextByWidget(widget, context))
+        return false;
+    if(mode)
+    {
+        UComponentGuiHostMode resolved = UComponentGuiHostMode::Mdi;
+        if(m_componentGuiService.tryGetHostModeByWidget(widget, resolved))
+            *mode = resolved;
+    }
+    return true;
+}
+
+void UGEngineControlWidget::promptAndOpenComponentGuiGrid()
+{
+    bool ok = false;
+    QString gridId = QInputDialog::getText(this, tr("Component GUI Grid"),
+                                           tr("Grid ID:"), QLineEdit::Normal,
+                                           QStringLiteral("MainGrid"), &ok);
+    if(!ok || gridId.trimmed().isEmpty())
+        return;
+    int rows = QInputDialog::getInt(this, tr("Component GUI Grid"), tr("Rows:"), 2, 1, 16, 1, &ok);
+    if(!ok)
+        return;
+    int cols = QInputDialog::getInt(this, tr("Component GUI Grid"), tr("Columns:"), 2, 1, 16, 1, &ok);
+    if(!ok)
+        return;
+    UComponentGuiGridContainerWidget* grid = ensureComponentGuiGrid(gridId.trimmed(), rows, cols);
+    if(grid)
+    {
+        grid->show();
+        if(QMdiSubWindow* sub = qobject_cast<QMdiSubWindow*>(grid->parentWidget()))
+        {
+            ui->mdiArea->setActiveSubWindow(sub);
+            sub->raise();
+        }
+    }
 }
 
 void UGEngineControlWidget::on_actionAbout_triggered()
