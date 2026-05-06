@@ -217,3 +217,39 @@ TEST(ComponentGuiPipeline, DrawEngineEntrypointContextOpenAndFallback)
 
     service.clearAllInstances();
 }
+
+TEST(ComponentGuiPipeline, CloseAndReopenCreatesNewInstance)
+{
+    static int argc = 1;
+    static char arg0[] = "test";
+    static char* argv[] = {arg0, nullptr};
+    if(!qApp)
+    {
+        new QApplication(argc, argv);
+    }
+
+    const QString className = QStringLiteral("TestClass_CloseReopen");
+    UComponentFormDescriptor descriptor;
+    descriptor.formId = "test.form.closereopen";
+    descriptor.title = "Close Reopen Form";
+    descriptor.singleInstance = true;
+    descriptor.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.close.reopen.controller", "Close Reopen Controller", nullptr, app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(className, descriptor);
+
+    UComponentGuiService service(reinterpret_cast<RDK::UApplication*>(0x1));
+    QWidget owner;
+    const UComponentGuiContext context = MakeContext(className, QStringLiteral("Model.CloseReopen"), 4);
+
+    UVisualControllerWidget* first = service.createOrActivate(&owner, context);
+    ASSERT_NE(first, nullptr);
+
+    // Simulate "close all forms" and ensure the next open creates a new instance.
+    service.clearAllInstances();
+    UVisualControllerWidget* reopened = service.createOrActivate(&owner, context);
+    ASSERT_NE(reopened, nullptr);
+    EXPECT_NE(first, reopened);
+
+    service.clearAllInstances();
+}
