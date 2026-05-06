@@ -42,6 +42,7 @@
 #include "UProjectDescriptionWindow.h"
 #include "UComponentGuiService.h"
 #include "UComponentGuiContext.h"
+#include "UComponentGuiGridContainerWidget.h"
 
 #ifndef RDK_DISABLE_EXT_GUI
 #include "UVideoAnalyticsSimpleSettingsWidget.h"
@@ -225,6 +226,7 @@ private slots:
 
 private:
     static const int kMaxRecentConfigs = 10;
+    static const int kComponentGuiLayoutSchemaVersion = 1;
 
     // Helper methods
     void createThemeMenu();
@@ -291,9 +293,17 @@ private:
     bool m_componentSpecialFormsBasicLibEnabled = true;
     bool m_componentSpecialFormsCvBasicLibEnabled = true;
     bool m_componentSpecialFormsHardwareLibEnabled = true;
+    QHash<QString, QPointer<UComponentGuiGridContainerWidget>> m_componentGuiGrids;
 
     // служебный метод для создания/активации пользовательского виджета
     void createOrActivateCustomWidget(const QString &id);
+    UComponentGuiGridContainerWidget* ensureComponentGuiGrid(const QString& gridId, int rows = 1, int cols = 1);
+    void saveComponentGuiLayoutToXml(RDK::USerStorageXML &xml);
+    void loadComponentGuiLayoutFromXml(RDK::USerStorageXML &xml);
+    void writeComponentGuiSettings(QSettings& projectSettings);
+    void readComponentGuiSettings(QSettings& projectSettings);
+    QString hostModeToString(UComponentGuiHostMode mode) const;
+    UComponentGuiHostMode hostModeFromString(const QString& mode) const;
 
     // methods
 

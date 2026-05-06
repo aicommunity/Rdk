@@ -25,6 +25,7 @@
 #include <QMenuBar>
 #include <QMenu>
 #include <QProcessEnvironment>
+#include <algorithm>
 
 /*int heheheCounter = 0;
 void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
@@ -1270,6 +1271,8 @@ void UGEngineControlWidget::writeSettings()
       projectSettings.setValue("ImagesState",    imagesWindow->saveState());
     }
 
+    writeComponentGuiSettings(projectSettings);
+
     projectSettings.endGroup();
 }
 
@@ -1335,6 +1338,8 @@ void UGEngineControlWidget::readSettings()
     imagesWindow->resize(images->size());
     imagesWindow->restoreGeometry(projectSettings.value("ImagesGeometry").toByteArray());
     imagesWindow->restoreState(projectSettings.value("ImagesState").toByteArray());
+
+    readComponentGuiSettings(projectSettings);
 
     projectSettings.endGroup();
 }
@@ -1615,6 +1620,7 @@ void UGEngineControlWidget::AAfterLoadProject(void)
 void UGEngineControlWidget::ABeforeCloseProject(void)
 {
     m_componentGuiService.clearAllInstances();
+    m_componentGuiGrids.clear();
 }
 
 // Метод, вызываемый перед сбросом модели
@@ -1663,6 +1669,8 @@ void UGEngineControlWidget::ASaveParameters(RDK::USerStorageXML &xml)
         xml.WriteString("name_"+RDK::sntoa(i+1), images_name.toStdString().c_str());
     }
     xml.SelectUp();
+
+    saveComponentGuiLayoutToXml(xml);
 }
 
 // Загружает параметры интерфейса из xml
@@ -1712,6 +1720,226 @@ void UGEngineControlWidget::ALoadParameters(RDK::USerStorageXML &xml)
         imagesVector.at(i)->setWindowTitle(images_name);
     }
     xml.SelectUp();
+
+    loadComponentGuiLayoutFromXml(xml);
+}
+
+UComponentGuiGridContainerWidget* UGEngineControlWidget::ensureComponentGuiGrid(const QString& gridId, int rows, int cols)
+{
+    if(m_componentGuiGrids.contains(gridId) && !m_componentGuiGrids[gridId].isNull())
+    {
+        UComponentGuiGridContainerWidget* existing = m_componentGuiGrids[gridId].data();
+        existing->setGridSize(rows, cols);
+        return existing;
+    }
+
+    UComponentGuiGridContainerWidget* grid = new UComponentGuiGridContainerWidget(gridId, &m_componentGuiService, ui->mdiArea, application);
+    grid->setGridSize(rows, cols);
+    QMdiSubWindow* sub = ui->mdiArea->addSubWindow(grid, Qt::SubWindow);
+    if(sub)
+    {
+        sub->setAttribute(Qt::WA_DeleteOnClose, true);
+        sub->setWindowTitle(QStringLiteral("Component Grid: %1").arg(gridId));
+        sub->show();
+    }
+    m_componentGuiGrids[gridId] = grid;
+    return grid;
+}
+
+void UGEngineControlWidget::saveComponentGuiLayoutToXml(RDK::USerStorageXML &xml)
+{
+    const QList<UComponentGuiSessionSnapshot> sessions = m_componentGuiService.snapshotOpenSessions();
+
+    xml.SelectNodeForce("ComponentGuiLayout");
+    xml.DelNodeInternalContent();
+    xml.WriteInteger("SchemaVersion", kComponentGuiLayoutSchemaVersion);
+    xml.WriteInteger("SessionCount", sessions.size());
+
+    for(int i = 0; i < sessions.size(); ++i)
+    {
+        const UComponentGuiSessionSnapshot& s = sessions[i];
+        xml.SelectNodeForce("Session_" + RDK::sntoa(i + 1));
+        xml.WriteString("SessionId", s.sessionId.toStdString());
+        xml.WriteString("FormId", s.formId.toStdString());
+        xml.WriteString("ComponentClassName", s.componentClassName.toStdString());
+        xml.WriteString("ComponentLongName", s.componentLongName.toStdString());
+        xml.WriteInteger("ChannelIndex", s.channelIndex);
+        xml.WriteString("HostMode", hostModeToString(s.hostMode).toStdString());
+        xml.WriteString("ContainerId", s.containerId.toStdString());
+        xml.WriteInteger("CellRow", s.cellRow);
+        xml.WriteInteger("CellCol", s.cellCol);
+        xml.WriteInteger("OrderIndex", s.orderIndex);
+        xml.WriteBool("IsActive", s.isActive);
+        xml.SelectUp();
+    }
+
+    xml.WriteInteger("GridCount", m_componentGuiGrids.size());
+    int gridIndex = 0;
+    for(auto it = m_componentGuiGrids.begin(); it != m_componentGuiGrids.end(); ++it)
+    {
+        if(it.value().isNull())
+            continue;
+        UComponentGuiGridContainerWidget* grid = it.value().data();
+        xml.SelectNodeForce("Grid_" + RDK::sntoa(++gridIndex));
+        xml.WriteString("GridId", grid->gridId().toStdString());
+        xml.WriteInteger("Rows", grid->rowCount());
+        xml.WriteInteger("Cols", grid->colCount());
+        xml.SelectUp();
+    }
+    xml.SelectUp();
+}
+
+void UGEngineControlWidget::loadComponentGuiLayoutFromXml(RDK::USerStorageXML &xml)
+{
+    if(!xml.SelectNode("ComponentGuiLayout"))
+        return;
+
+    const int gridCount = xml.ReadInteger("GridCount", 0);
+    for(int i = 0; i < gridCount; ++i)
+    {
+        if(!xml.SelectNode("Grid_" + RDK::sntoa(i + 1)))
+            continue;
+        const QString gridId = QString::fromStdString(xml.ReadString("GridId", "DefaultGrid"));
+        const int rows = xml.ReadInteger("Rows", 1);
+        const int cols = xml.ReadInteger("Cols", 1);
+        ensureComponentGuiGrid(gridId, rows, cols);
+        xml.SelectUp();
+    }
+
+    QList<UComponentGuiSessionSnapshot> sessions;
+    const int sessionCount = xml.ReadInteger("SessionCount", 0);
+    sessions.reserve(sessionCount);
+    for(int i = 0; i < sessionCount; ++i)
+    {
+        if(!xml.SelectNode("Session_" + RDK::sntoa(i + 1)))
+            continue;
+        UComponentGuiSessionSnapshot s;
+        s.sessionId = QString::fromStdString(xml.ReadString("SessionId", ""));
+        s.formId = QString::fromStdString(xml.ReadString("FormId", ""));
+        s.componentClassName = QString::fromStdString(xml.ReadString("ComponentClassName", ""));
+        s.componentLongName = QString::fromStdString(xml.ReadString("ComponentLongName", ""));
+        s.channelIndex = xml.ReadInteger("ChannelIndex", -1);
+        s.hostMode = hostModeFromString(QString::fromStdString(xml.ReadString("HostMode", "mdi")));
+        s.containerId = QString::fromStdString(xml.ReadString("ContainerId", ""));
+        s.cellRow = xml.ReadInteger("CellRow", -1);
+        s.cellCol = xml.ReadInteger("CellCol", -1);
+        s.orderIndex = xml.ReadInteger("OrderIndex", i);
+        s.isActive = xml.ReadBool("IsActive", false);
+        sessions.push_back(s);
+        xml.SelectUp();
+    }
+    xml.SelectUp();
+
+    std::sort(sessions.begin(), sessions.end(), [](const UComponentGuiSessionSnapshot& a, const UComponentGuiSessionSnapshot& b) {
+        return a.orderIndex < b.orderIndex;
+    });
+
+    for(const UComponentGuiSessionSnapshot& s : sessions)
+    {
+        UComponentGuiContext context;
+        context.componentClassName = s.componentClassName;
+        context.componentLongName = s.componentLongName;
+        context.channelIndex = s.channelIndex;
+
+        UVisualControllerWidget* widget = m_componentGuiService.createOrActivate(ui->mdiArea, context);
+        if(!widget)
+            continue;
+
+        if(s.hostMode == UComponentGuiHostMode::Floating)
+        {
+            m_componentGuiService.detachToFloating(context);
+        }
+        else if(s.hostMode == UComponentGuiHostMode::Grid && !s.containerId.isEmpty())
+        {
+            UComponentGuiGridContainerWidget* grid = ensureComponentGuiGrid(s.containerId, 1, 1);
+            const int row = qMax(0, s.cellRow);
+            const int col = qMax(0, s.cellCol);
+            if(grid->rowCount() <= row || grid->colCount() <= col)
+                grid->setGridSize(qMax(grid->rowCount(), row + 1), qMax(grid->colCount(), col + 1));
+            grid->assignCell(row, col, context);
+        }
+    }
+
+    if(application)
+    {
+        QSettings projectSettings(QString::fromLocal8Bit(application->GetProjectPath().c_str()) + "settings.qt",
+                                  QSettings::IniFormat);
+        projectSettings.beginGroup(accessibleName());
+        readComponentGuiSettings(projectSettings);
+        projectSettings.endGroup();
+    }
+}
+
+void UGEngineControlWidget::writeComponentGuiSettings(QSettings& projectSettings)
+{
+    const QList<UComponentGuiSessionSnapshot> sessions = m_componentGuiService.snapshotOpenSessions();
+    for(const UComponentGuiSessionSnapshot& s : sessions)
+    {
+        if(s.hostMode != UComponentGuiHostMode::Floating)
+            continue;
+        const QString prefix = QStringLiteral("ComponentGui/Floating/%1").arg(s.sessionId);
+        projectSettings.setValue(prefix + "/Geometry", m_componentGuiService.floatingGeometry(s.sessionId));
+        projectSettings.setValue(prefix + "/WindowState", m_componentGuiService.floatingWindowState(s.sessionId));
+    }
+
+    for(auto it = m_componentGuiGrids.begin(); it != m_componentGuiGrids.end(); ++it)
+    {
+        if(it.value().isNull())
+            continue;
+        UComponentGuiGridContainerWidget* grid = it.value().data();
+        const QString gridPrefix = QStringLiteral("ComponentGui/Grid/%1").arg(grid->gridId());
+        projectSettings.setValue(gridPrefix + "/RootSplitterState", grid->saveGridState());
+        for(int row = 0; row < grid->rowCount(); ++row)
+            projectSettings.setValue(gridPrefix + QStringLiteral("/Row/%1/SplitterState").arg(row), grid->saveRowState(row));
+    }
+}
+
+void UGEngineControlWidget::readComponentGuiSettings(QSettings& projectSettings)
+{
+    for(auto it = m_componentGuiGrids.begin(); it != m_componentGuiGrids.end(); ++it)
+    {
+        if(it.value().isNull())
+            continue;
+        UComponentGuiGridContainerWidget* grid = it.value().data();
+        const QString gridPrefix = QStringLiteral("ComponentGui/Grid/%1").arg(grid->gridId());
+        grid->restoreGridState(projectSettings.value(gridPrefix + "/RootSplitterState").toByteArray());
+        for(int row = 0; row < grid->rowCount(); ++row)
+            grid->restoreRowState(row, projectSettings.value(gridPrefix + QStringLiteral("/Row/%1/SplitterState").arg(row)).toByteArray());
+    }
+
+    const QList<UComponentGuiSessionSnapshot> sessions = m_componentGuiService.snapshotOpenSessions();
+    for(const UComponentGuiSessionSnapshot& s : sessions)
+    {
+        if(s.hostMode != UComponentGuiHostMode::Floating)
+            continue;
+        const QString prefix = QStringLiteral("ComponentGui/Floating/%1").arg(s.sessionId);
+        const QByteArray geometry = projectSettings.value(prefix + "/Geometry").toByteArray();
+        const QByteArray state = projectSettings.value(prefix + "/WindowState").toByteArray();
+        m_componentGuiService.applyFloatingState(s.sessionId, geometry, state);
+    }
+}
+
+QString UGEngineControlWidget::hostModeToString(UComponentGuiHostMode mode) const
+{
+    switch(mode)
+    {
+    case UComponentGuiHostMode::Mdi:
+        return QStringLiteral("mdi");
+    case UComponentGuiHostMode::Floating:
+        return QStringLiteral("floating");
+    case UComponentGuiHostMode::Grid:
+        return QStringLiteral("grid");
+    }
+    return QStringLiteral("mdi");
+}
+
+UComponentGuiHostMode UGEngineControlWidget::hostModeFromString(const QString& mode) const
+{
+    if(mode == QStringLiteral("floating"))
+        return UComponentGuiHostMode::Floating;
+    if(mode == QStringLiteral("grid"))
+        return UComponentGuiHostMode::Grid;
+    return UComponentGuiHostMode::Mdi;
 }
 
 void UGEngineControlWidget::on_actionAbout_triggered()
