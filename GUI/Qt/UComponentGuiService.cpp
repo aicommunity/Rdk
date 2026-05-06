@@ -4,10 +4,26 @@
 #include <QMdiArea>
 #include <QMdiSubWindow>
 
+#include "../../Deploy/Include/rdk_cpp_init.h"
 #include "UVisualControllerWidget.h"
 
 namespace
 {
+QString resolveComponentGuiTitle(const UComponentGuiContext& context)
+{
+    if(!context.componentLongName.trimmed().isEmpty())
+        return context.componentLongName;
+
+    if(auto model = RDK::GetModel())
+    {
+        const std::string modelName = model->GetName();
+        if(!modelName.empty())
+            return QString::fromStdString(modelName);
+    }
+
+    return QStringLiteral("NModel");
+}
+
 QMdiSubWindow* resolveMdiSubWindow(UVisualControllerWidget* widget)
 {
     if(!widget)
@@ -80,6 +96,10 @@ UVisualControllerWidget* UComponentGuiService::createOrActivate(QWidget* parentW
     if(descriptor->singleInstance && m_instances.contains(instanceKey) && !m_instances[instanceKey].isNull())
     {
         UVisualControllerWidget* existing = m_instances[instanceKey].data();
+        const QString title = resolveComponentGuiTitle(context);
+        existing->setWindowTitle(title);
+        if(auto* sub = resolveMdiSubWindow(existing))
+            sub->setWindowTitle(title);
         applyContext(existing, context);
         activateWidgetHost(existing);
         return existing;
@@ -100,11 +120,12 @@ UVisualControllerWidget* UComponentGuiService::createOrActivate(QWidget* parentW
     {
         widget->setParent(parentWindow);
     }
-    widget->setWindowTitle(descriptor->title);
+    const QString title = resolveComponentGuiTitle(context);
+    widget->setWindowTitle(title);
     widget->setAttribute(Qt::WA_DeleteOnClose, true);
     applyContext(widget, context);
     if(mdiSubWindow)
-        mdiSubWindow->setWindowTitle(descriptor->title);
+        mdiSubWindow->setWindowTitle(title);
     activateWidgetHost(widget);
 
     if(descriptor->singleInstance)
