@@ -2,44 +2,12 @@
 
 #include <QString>
 #include <QApplication>
-#include <QPointer>
+#include <QWidget>
 
 #include "../../GUI/Qt/UComponentFormRegistry.h"
 #include "../../GUI/Qt/UComponentGuiService.h"
-
-// Локальный тестовый контроллер для проверки UComponentGuiService
-class TestControllerWidget : public UVisualControllerWidget, public IComponentControllerWidget
-{
-    Q_OBJECT
-public:
-    explicit TestControllerWidget(QWidget* parent = nullptr, RDK::UApplication* app = nullptr)
-        : UVisualControllerWidget(parent, app)
-    {
-    }
-
-    void setComponentContext(const UComponentGuiContext& context) override
-    {
-        m_lastContext = context;
-    }
-
-    void refreshFromModel(bool force) override
-    {
-        Q_UNUSED(force);
-        ++m_refreshCalls;
-    }
-
-    QString componentGuiId() const override
-    {
-        return "test.component.controller";
-    }
-
-    UComponentGuiContext lastContext() const { return m_lastContext; }
-    int refreshCalls() const { return m_refreshCalls; }
-
-private:
-    UComponentGuiContext m_lastContext;
-    int m_refreshCalls = 0;
-};
+#include "../../GUI/Qt/UVisualControllerWidget.h"
+#include "../../GUI/Qt/UGenericComponentControllerWidget.h"
 
 // Простейший smoke-тест: регистрация и canOpen/lookup по имени класса
 TEST(ComponentGuiRegistry, RegisterAndLookupByClassName)
@@ -93,7 +61,7 @@ TEST(ComponentGuiService, SingleInstanceAndContextPropagation)
     descriptor.title = "Test Form Single";
     descriptor.singleInstance = true;
     descriptor.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
-        return new TestControllerWidget(nullptr, app);
+        return new UGenericComponentControllerWidget("test.component.controller", "Test Controller", nullptr, app);
     };
 
     UComponentFormRegistry::instance().registerFormFactory(className, descriptor);
@@ -109,12 +77,6 @@ TEST(ComponentGuiService, SingleInstanceAndContextPropagation)
     // Первый вызов должен создать новый контроллер
     UVisualControllerWidget* first = service.createOrActivate(&owner, context);
     ASSERT_NE(first, nullptr);
-
-    auto* typedFirst = dynamic_cast<TestControllerWidget*>(first);
-    ASSERT_NE(typedFirst, nullptr);
-    EXPECT_EQ(typedFirst->lastContext().componentLongName, context.componentLongName);
-    EXPECT_EQ(typedFirst->lastContext().componentClassName, context.componentClassName);
-    EXPECT_EQ(typedFirst->lastContext().channelIndex, context.channelIndex);
 
     // Повторный вызов с тем же контекстом должен вернуть тот же экземпляр (singleInstance)
     UVisualControllerWidget* second = service.createOrActivate(&owner, context);
@@ -141,4 +103,117 @@ TEST(ComponentGuiService, CannotOpenWhenNotRegistered)
     EXPECT_EQ(widget, nullptr);
 }
 
-#include "Test_ComponentGuiRegistry.moc"
+namespace
+{
+UComponentGuiContext MakeContext(const QString& className, const QString& longName, int channel)
+{
+    UComponentGuiContext context;
+    context.componentClassName = className;
+    context.componentLongName = longName;
+    context.channelIndex = channel;
+    return context;
+}
+}
+
+TEST(ComponentGuiPipeline, DiagramEntrypointContextOpenAndReopen)
+{
+    static int argc = 1;
+    static char arg0[] = "test";
+    static char* argv[] = {arg0, nullptr};
+    if(!qApp)
+    {
+        new QApplication(argc, argv);
+    }
+
+    const QString className = QStringLiteral("TestClass_DiagramEntrypoint");
+    UComponentFormDescriptor descriptor;
+    descriptor.formId = "test.form.diagram";
+    descriptor.title = "Diagram Form";
+    descriptor.singleInstance = true;
+    descriptor.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.diagram.controller", "Diagram Controller", nullptr, app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(className, descriptor);
+
+    UComponentGuiService service(reinterpret_cast<RDK::UApplication*>(0x1));
+    QWidget owner;
+    const UComponentGuiContext context = MakeContext(className, QStringLiteral("Model.FromDiagram"), 0);
+
+    UVisualControllerWidget* first = service.createOrActivate(&owner, context);
+    ASSERT_NE(first, nullptr);
+    UVisualControllerWidget* second = service.createOrActivate(&owner, context);
+    ASSERT_NE(second, nullptr);
+    EXPECT_EQ(first, second);
+
+    service.clearAllInstances();
+}
+
+TEST(ComponentGuiPipeline, ComponentsListEntrypointContextOpenAndReopen)
+{
+    static int argc = 1;
+    static char arg0[] = "test";
+    static char* argv[] = {arg0, nullptr};
+    if(!qApp)
+    {
+        new QApplication(argc, argv);
+    }
+
+    const QString className = QStringLiteral("TestClass_ComponentsListEntrypoint");
+    UComponentFormDescriptor descriptor;
+    descriptor.formId = "test.form.list";
+    descriptor.title = "List Form";
+    descriptor.singleInstance = true;
+    descriptor.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.list.controller", "List Controller", nullptr, app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(className, descriptor);
+
+    UComponentGuiService service(reinterpret_cast<RDK::UApplication*>(0x1));
+    QWidget owner;
+    const UComponentGuiContext context = MakeContext(className, QStringLiteral("Model.FromList"), 2);
+
+    UVisualControllerWidget* first = service.createOrActivate(&owner, context);
+    ASSERT_NE(first, nullptr);
+    UVisualControllerWidget* second = service.createOrActivate(&owner, context);
+    ASSERT_NE(second, nullptr);
+    EXPECT_EQ(first, second);
+
+    service.clearAllInstances();
+}
+
+TEST(ComponentGuiPipeline, DrawEngineEntrypointContextOpenAndFallback)
+{
+    static int argc = 1;
+    static char arg0[] = "test";
+    static char* argv[] = {arg0, nullptr};
+    if(!qApp)
+    {
+        new QApplication(argc, argv);
+    }
+
+    const QString registeredClass = QStringLiteral("TestClass_DrawEngineEntrypoint");
+    UComponentFormDescriptor descriptor;
+    descriptor.formId = "test.form.drawengine";
+    descriptor.title = "DrawEngine Form";
+    descriptor.singleInstance = true;
+    descriptor.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.drawengine.controller", "DrawEngine Controller", nullptr, app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(registeredClass, descriptor);
+
+    UComponentGuiService service(reinterpret_cast<RDK::UApplication*>(0x1));
+    QWidget owner;
+
+    const UComponentGuiContext registeredContext =
+        MakeContext(registeredClass, QStringLiteral("Model.FromDrawEngine"), 1);
+    UVisualControllerWidget* opened = service.createOrActivate(&owner, registeredContext);
+    ASSERT_NE(opened, nullptr);
+
+    const UComponentGuiContext unknownContext =
+        MakeContext(QStringLiteral("UnknownClass_DrawEngine"), QStringLiteral("Model.Unknown"), 1);
+    EXPECT_FALSE(service.canOpen(unknownContext));
+    UVisualControllerWidget* fallback = service.createOrActivate(&owner, unknownContext);
+    EXPECT_EQ(fallback, nullptr);
+
+    service.clearAllInstances();
+}

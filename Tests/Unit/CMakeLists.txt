@@ -1,10 +1,18 @@
 cmake_minimum_required(VERSION 3.16)
 
+include(${CMAKE_SOURCE_DIR}/cmake/SelectQt.cmake)
+
 # Unit tests for Rdk Engine components
 add_subdirectory(Engine)
 
 add_executable(Test_ComponentGuiRegistry
     Test_ComponentGuiRegistry.cpp
+    ../../GUI/Qt/UComponentFormRegistry.cpp
+    ../../GUI/Qt/UComponentGuiService.cpp
+    ../../GUI/Qt/UGenericComponentControllerWidget.cpp
+    ../../GUI/Qt/UVisualControllerWidget.cpp
+    ../../GUI/Qt/UGuiTelemetry.cpp
+    ../../Deploy/Include/RdkDummyLibraries.cpp
 )
 
 target_include_directories(Test_ComponentGuiRegistry PRIVATE
@@ -17,6 +25,8 @@ target_link_libraries(Test_ComponentGuiRegistry PRIVATE
     GTest::gtest
     GTest::gtest_main
     rdk.static.qt
+    Nmsdk::Qt::Core
+    Nmsdk::Qt::Widgets
 )
 
 target_compile_definitions(Test_ComponentGuiRegistry PRIVATE
