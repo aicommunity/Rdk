@@ -10,6 +10,8 @@
 #include <QVector>
 #include <QHash>
 #include <QPointer>
+#include <QSet>
+#include <QPair>
 
 #include <rdk_application.h>
 
@@ -51,6 +53,7 @@
 namespace Ui {
 class UGEngineControllWidget;
 }
+class QMimeData;
 
 struct USubTabDescription
 {
@@ -309,6 +312,10 @@ private:
                                           UComponentGuiContext& context,
                                           UComponentGuiHostMode* mode = nullptr) const;
     void promptAndOpenComponentGuiGrid();
+    UComponentGuiGridContainerWidget* findComponentGuiGrid(const QString& gridId) const;
+    QStringList componentGuiGridIds() const;
+    bool moveContextToGrid(const UComponentGuiContext& context, const QString& gridId, int row, int col);
+    void startComponentGuiDrag(const UComponentGuiContext& context, QWidget* dragSource, bool detachOnIgnoredDrop);
 
     // methods
 

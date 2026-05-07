@@ -4,9 +4,12 @@
 #include <QMdiArea>
 #include <QMdiSubWindow>
 #include <QMainWindow>
+#include <QDockWidget>
+#include <QDebug>
 
 #include "../../Deploy/Include/rdk_cpp_init.h"
 #include "UVisualControllerWidget.h"
+#include "UComponentGuiGridContainerWidget.h"
 
 namespace
 {
@@ -45,6 +48,26 @@ QMdiSubWindow* resolveMdiSubWindow(UVisualControllerWidget* widget)
     return nullptr;
 }
 
+QDockWidget* resolveDockHost(UVisualControllerWidget* widget)
+{
+    if(!widget)
+        return nullptr;
+
+    if(auto* dockByWindow = qobject_cast<QDockWidget*>(widget->window()))
+        return dockByWindow;
+    if(auto* dockByParent = qobject_cast<QDockWidget*>(widget->parentWidget()))
+        return dockByParent;
+
+    QObject* current = widget->parent();
+    while(current)
+    {
+        if(auto* dock = qobject_cast<QDockWidget*>(current))
+            return dock;
+        current = current->parent();
+    }
+    return nullptr;
+}
+
 void activateWidgetHost(UVisualControllerWidget* widget)
 {
     if(!widget)
@@ -64,6 +87,14 @@ void activateWidgetHost(UVisualControllerWidget* widget)
         }
     }
 
+    if(auto* dock = resolveDockHost(widget))
+    {
+        dock->show();
+        dock->raise();
+        dock->activateWindow();
+        return;
+    }
+
     widget->show();
     widget->raise();
     widget->activateWindow();
@@ -78,6 +109,11 @@ UComponentGuiService::UComponentGuiService(RDK::UApplication* app)
 void UComponentGuiService::setApplication(RDK::UApplication* app)
 {
     m_application = app;
+}
+
+void UComponentGuiService::setHostMainWindow(QMainWindow* mainWindow)
+{
+    m_hostMainWindow = mainWindow;
 }
 
 bool UComponentGuiService::canOpen(const UComponentGuiContext& context) const
@@ -99,11 +135,14 @@ UVisualControllerWidget* UComponentGuiService::createOrActivate(QWidget* parentW
         UVisualControllerWidget* existing = m_instances[instanceKey].data();
         const QString title = resolveComponentGuiTitle(context);
         existing->setWindowTitle(title);
-        if(auto* sub = resolveMdiSubWindow(existing))
-            sub->setWindowTitle(title);
+        if(auto* dock = resolveDockHost(existing))
+            dock->setWindowTitle(title);
         applyContext(existing, context);
         activateWidgetHost(existing);
-        assignHostMode(instanceKey, resolveMdiSubWindow(existing) ? UComponentGuiHostMode::Mdi : UComponentGuiHostMode::Floating);
+        if(auto* dock = resolveDockHost(existing))
+            assignHostMode(instanceKey, dock->isFloating() ? UComponentGuiHostMode::Floating : UComponentGuiHostMode::Mdi);
+        else
+            assignHostMode(instanceKey, UComponentGuiHostMode::Mdi);
         m_lastActiveSession = instanceKey;
         ++m_activationCounter;
         return existing;
@@ -113,8 +152,29 @@ UVisualControllerWidget* UComponentGuiService::createOrActivate(QWidget* parentW
     if(!widget)
         return nullptr;
 
+    QMainWindow* hostMainWindow = m_hostMainWindow.data();
+    if(!hostMainWindow && parentWindow)
+        hostMainWindow = qobject_cast<QMainWindow*>(parentWindow->window());
+
+    QDockWidget* dockHost = nullptr;
     QMdiSubWindow* mdiSubWindow = nullptr;
-    if(auto* mdiArea = qobject_cast<QMdiArea*>(parentWindow))
+    if(hostMainWindow)
+    {
+        dockHost = new QDockWidget(resolveComponentGuiTitle(context), hostMainWindow);
+        QString objectName = QStringLiteral("ComponentGuiDock_%1").arg(instanceKey);
+        objectName.replace('|', '_');
+        objectName.replace('.', '_');
+        objectName.replace(':', '_');
+        dockHost->setObjectName(objectName);
+        dockHost->setFeatures(QDockWidget::DockWidgetMovable |
+                              QDockWidget::DockWidgetFloatable |
+                              QDockWidget::DockWidgetClosable);
+        dockHost->setWidget(widget);
+        dockHost->setAttribute(Qt::WA_DeleteOnClose, true);
+        hostMainWindow->addDockWidget(Qt::RightDockWidgetArea, dockHost);
+        dockHost->show();
+    }
+    else if(auto* mdiArea = qobject_cast<QMdiArea*>(parentWindow))
     {
         mdiSubWindow = mdiArea->addSubWindow(widget, Qt::SubWindow);
         if(mdiSubWindow)
@@ -128,6 +188,8 @@ UVisualControllerWidget* UComponentGuiService::createOrActivate(QWidget* parentW
     widget->setWindowTitle(title);
     widget->setAttribute(Qt::WA_DeleteOnClose, true);
     applyContext(widget, context);
+    if(dockHost)
+        dockHost->setWindowTitle(title);
     if(mdiSubWindow)
         mdiSubWindow->setWindowTitle(title);
     activateWidgetHost(widget);
@@ -135,9 +197,13 @@ UVisualControllerWidget* UComponentGuiService::createOrActivate(QWidget* parentW
     if(descriptor->singleInstance)
     {
         m_instances[instanceKey] = widget;
+        if(dockHost)
+            m_dockHosts[instanceKey] = dockHost;
         m_instanceContexts[instanceKey] = context;
         m_instanceFormIds[instanceKey] = descriptor->formId;
-        assignHostMode(instanceKey, mdiSubWindow ? UComponentGuiHostMode::Mdi : UComponentGuiHostMode::Floating);
+        assignHostMode(instanceKey,
+                       dockHost ? (dockHost->isFloating() ? UComponentGuiHostMode::Floating : UComponentGuiHostMode::Mdi)
+                                : (mdiSubWindow ? UComponentGuiHostMode::Mdi : UComponentGuiHostMode::Mdi));
         m_lastActiveSession = instanceKey;
         ++m_activationCounter;
     }
@@ -151,17 +217,32 @@ bool UComponentGuiService::detachToFloating(const UComponentGuiContext& context)
     if(!widget)
         return false;
 
-    if(auto* sub = resolveMdiSubWindow(widget))
+    QDockWidget* dock = m_dockHosts.value(key).data();
+    if(!dock)
+        dock = resolveDockHost(widget);
+    if(!dock)
     {
-        sub->setWidget(nullptr);
-        sub->close();
+        if(auto* sub = resolveMdiSubWindow(widget))
+        {
+            sub->setWidget(nullptr);
+            sub->close();
+        }
+        widget->setParent(nullptr);
+        widget->setWindowFlags(Qt::Window);
+        widget->show();
+        widget->raise();
+        widget->activateWindow();
+        assignHostMode(key, UComponentGuiHostMode::Floating);
+        m_lastActiveSession = key;
+        ++m_activationCounter;
+        return true;
     }
 
-    widget->setParent(nullptr);
-    widget->setWindowFlags(Qt::Window);
-    widget->show();
-    widget->raise();
-    widget->activateWindow();
+    if(!dock->isFloating())
+        dock->setFloating(true);
+    dock->show();
+    dock->raise();
+    dock->activateWindow();
     assignHostMode(key, UComponentGuiHostMode::Floating);
     m_lastActiveSession = key;
     ++m_activationCounter;
@@ -170,34 +251,73 @@ bool UComponentGuiService::detachToFloating(const UComponentGuiContext& context)
 
 bool UComponentGuiService::attachToMdi(const UComponentGuiContext& context, QMdiArea* mdiArea)
 {
-    if(!mdiArea)
-        return false;
-
     QString key;
     UVisualControllerWidget* widget = resolveInstance(context, &key);
     if(!widget)
         return false;
 
-    if(auto* sub = resolveMdiSubWindow(widget))
+    QMainWindow* hostMainWindow = m_hostMainWindow.data();
+    if(!hostMainWindow && mdiArea)
+        hostMainWindow = qobject_cast<QMainWindow*>(mdiArea->window());
+    if(!hostMainWindow && widget)
+        hostMainWindow = qobject_cast<QMainWindow*>(widget->window());
+    if(!hostMainWindow)
     {
-        mdiArea->setActiveSubWindow(sub);
+        if(!mdiArea)
+            return false;
+        if(auto* sub = resolveMdiSubWindow(widget))
+        {
+            mdiArea->setActiveSubWindow(sub);
+            sub->show();
+            sub->raise();
+            assignHostMode(key, UComponentGuiHostMode::Mdi);
+            return true;
+        }
+        widget->hide();
+        widget->setParent(nullptr);
+        widget->setWindowFlags(Qt::Widget);
+        QMdiSubWindow* sub = mdiArea->addSubWindow(widget, Qt::SubWindow);
+        if(!sub)
+            return false;
+        sub->setAttribute(Qt::WA_DeleteOnClose, true);
+        sub->setWindowTitle(widget->windowTitle());
         sub->show();
+        mdiArea->setActiveSubWindow(sub);
         sub->raise();
         assignHostMode(key, UComponentGuiHostMode::Mdi);
+        m_lastActiveSession = key;
+        ++m_activationCounter;
         return true;
     }
 
-    widget->hide();
-    widget->setParent(nullptr);
-    QMdiSubWindow* sub = mdiArea->addSubWindow(widget, Qt::SubWindow);
-    if(!sub)
-        return false;
+    QDockWidget* dock = m_dockHosts.value(key).data();
+    if(!dock)
+    {
+        dock = resolveDockHost(widget);
+        if(!dock)
+        {
+            dock = new QDockWidget(widget->windowTitle(), hostMainWindow);
+            QString objectName = QStringLiteral("ComponentGuiDock_%1").arg(key);
+            objectName.replace('|', '_');
+            objectName.replace('.', '_');
+            objectName.replace(':', '_');
+            dock->setObjectName(objectName);
+            dock->setFeatures(QDockWidget::DockWidgetMovable |
+                              QDockWidget::DockWidgetFloatable |
+                              QDockWidget::DockWidgetClosable);
+            dock->setWidget(widget);
+            dock->setAttribute(Qt::WA_DeleteOnClose, true);
+            m_dockHosts[key] = dock;
+        }
+    }
 
-    sub->setAttribute(Qt::WA_DeleteOnClose, true);
-    sub->setWindowTitle(widget->windowTitle());
-    sub->show();
-    mdiArea->setActiveSubWindow(sub);
-    sub->raise();
+    if(dock->widget() != widget)
+        dock->setWidget(widget);
+    hostMainWindow->addDockWidget(Qt::RightDockWidgetArea, dock);
+    dock->setFloating(false);
+    dock->show();
+    dock->raise();
+    dock->activateWindow();
     assignHostMode(key, UComponentGuiHostMode::Mdi);
     m_lastActiveSession = key;
     ++m_activationCounter;
@@ -218,6 +338,12 @@ bool UComponentGuiService::moveToGridCell(const UComponentGuiContext& context,
     if(!widget)
         return false;
 
+    if(QDockWidget* dock = m_dockHosts.value(key).data())
+    {
+        if(dock->widget() == widget)
+            dock->setWidget(nullptr);
+        dock->hide();
+    }
     if(auto* sub = resolveMdiSubWindow(widget))
     {
         sub->setWidget(nullptr);
@@ -229,6 +355,7 @@ bool UComponentGuiService::moveToGridCell(const UComponentGuiContext& context,
     widget->setWindowFlags(Qt::Widget);
     widget->setGeometry(cellHost->rect());
     widget->show();
+
     assignHostMode(key, UComponentGuiHostMode::Grid, gridId, row, col);
     m_lastActiveSession = key;
     ++m_activationCounter;
@@ -267,6 +394,14 @@ QList<UComponentGuiSessionSnapshot> UComponentGuiService::snapshotOpenSessions()
 
 void UComponentGuiService::clearClosedInstances()
 {
+    for(auto it = m_dockHosts.begin(); it != m_dockHosts.end();)
+    {
+        if(it.value().isNull())
+            it = m_dockHosts.erase(it);
+        else
+            ++it;
+    }
+
     for(auto it = m_instances.begin(); it != m_instances.end();)
     {
         if(it.value().isNull())
@@ -281,6 +416,13 @@ void UComponentGuiService::clearClosedInstances()
 
 void UComponentGuiService::clearAllInstances()
 {
+    for(auto it = m_dockHosts.begin(); it != m_dockHosts.end(); ++it)
+    {
+        if(!it.value().isNull())
+            it.value()->close();
+    }
+    m_dockHosts.clear();
+
     for(auto it = m_instances.begin(); it != m_instances.end(); ++it)
     {
         if(!it.value().isNull())
@@ -295,20 +437,16 @@ void UComponentGuiService::clearAllInstances()
 
 bool UComponentGuiService::applyFloatingState(const QString& sessionId, const QByteArray& geometry, const QByteArray& state)
 {
-    if(!m_instances.contains(sessionId) || m_instances[sessionId].isNull())
+    if(!m_dockHosts.contains(sessionId) || m_dockHosts[sessionId].isNull())
         return false;
 
-    UVisualControllerWidget* widget = m_instances[sessionId].data();
-    if(!widget)
+    QDockWidget* dock = m_dockHosts[sessionId].data();
+    if(!dock)
         return false;
 
     if(!geometry.isEmpty())
-        widget->restoreGeometry(geometry);
-    if(!state.isEmpty())
-    {
-        if(auto* mw = qobject_cast<QMainWindow*>(widget))
-            mw->restoreState(state);
-    }
+        dock->restoreGeometry(geometry);
+
     UInstanceHostInfo host = m_instanceHostInfo.value(sessionId);
     host.floatingGeometry = geometry;
     host.floatingWindowState = state;
@@ -334,19 +472,14 @@ bool UComponentGuiService::captureFloatingState(const QString& sessionId)
 {
     if(!m_instances.contains(sessionId) || m_instances[sessionId].isNull())
         return false;
-    UVisualControllerWidget* widget = m_instances[sessionId].data();
-    if(!widget)
-        return false;
-
     UInstanceHostInfo info = m_instanceHostInfo.value(sessionId);
     if(info.mode != UComponentGuiHostMode::Floating)
         return false;
 
-    info.floatingGeometry = widget->saveGeometry();
-    if(auto* mainWindow = qobject_cast<QMainWindow*>(widget))
-        info.floatingWindowState = mainWindow->saveState();
-    else
-        info.floatingWindowState.clear();
+    if(!m_dockHosts.contains(sessionId) || m_dockHosts[sessionId].isNull())
+        return false;
+    info.floatingGeometry = m_dockHosts[sessionId]->saveGeometry();
+    info.floatingWindowState.clear();
     m_instanceHostInfo[sessionId] = info;
     return true;
 }
@@ -363,6 +496,23 @@ bool UComponentGuiService::tryGetContextByWidget(const UVisualControllerWidget* 
 bool UComponentGuiService::tryGetHostModeByWidget(const UVisualControllerWidget* widget, UComponentGuiHostMode& outMode) const
 {
     const QString key = findSessionKeyByWidget(widget);
+    if(key.isEmpty() || !m_instanceHostInfo.contains(key))
+        return false;
+    outMode = m_instanceHostInfo.value(key).mode;
+    return true;
+}
+
+bool UComponentGuiService::tryGetWidgetByContext(const UComponentGuiContext& context, UVisualControllerWidget*& outWidget) const
+{
+    outWidget = resolveInstance(context, nullptr);
+    return outWidget != nullptr;
+}
+
+bool UComponentGuiService::tryGetHostModeByContext(const UComponentGuiContext& context, UComponentGuiHostMode& outMode) const
+{
+    QString key;
+    UVisualControllerWidget* widget = resolveInstance(context, &key);
+    Q_UNUSED(widget);
     if(key.isEmpty() || !m_instanceHostInfo.contains(key))
         return false;
     outMode = m_instanceHostInfo.value(key).mode;
@@ -433,7 +583,10 @@ void UComponentGuiService::assignHostMode(const QString& key,
     if(mode == UComponentGuiHostMode::Floating && m_instances.contains(key) && !m_instances[key].isNull())
     {
         UVisualControllerWidget* widget = m_instances[key].data();
-        info.floatingGeometry = widget->saveGeometry();
+        if(m_dockHosts.contains(key) && !m_dockHosts[key].isNull())
+            info.floatingGeometry = m_dockHosts[key]->saveGeometry();
+        else
+            info.floatingGeometry = widget->saveGeometry();
         if(auto* mainWindow = qobject_cast<QMainWindow*>(widget))
             info.floatingWindowState = mainWindow->saveState();
         else
@@ -447,6 +600,7 @@ void UComponentGuiService::clearSessionState(const QString& key)
     m_instanceContexts.remove(key);
     m_instanceFormIds.remove(key);
     m_instanceHostInfo.remove(key);
+    m_dockHosts.remove(key);
     if(m_lastActiveSession == key)
         m_lastActiveSession.clear();
 }

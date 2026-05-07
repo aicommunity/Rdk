@@ -4,9 +4,15 @@
 #include <QApplication>
 #include <QWidget>
 #include <QMdiArea>
+#include <QFrame>
+#include <QMimeData>
+#include <QMainWindow>
+#include <QDockWidget>
 
 #include "../../GUI/Qt/UComponentFormRegistry.h"
 #include "../../GUI/Qt/UComponentGuiService.h"
+#include "../../GUI/Qt/UComponentGuiGridContainerWidget.h"
+#include "../../GUI/Qt/UComponentGuiDndPayload.h"
 #include "../../GUI/Qt/UVisualControllerWidget.h"
 #include "../../GUI/Qt/UGenericComponentControllerWidget.h"
 
@@ -287,6 +293,290 @@ TEST(ComponentGuiPipeline, DetachAttachAndSnapshotHostMode)
     snapshots = service.snapshotOpenSessions();
     ASSERT_FALSE(snapshots.isEmpty());
     EXPECT_EQ(snapshots.first().hostMode, UComponentGuiHostMode::Mdi);
+
+    UVisualControllerWidget* resolvedWidget = nullptr;
+    EXPECT_TRUE(service.tryGetWidgetByContext(context, resolvedWidget));
+    EXPECT_NE(resolvedWidget, nullptr);
+    UComponentGuiHostMode hostMode = UComponentGuiHostMode::Floating;
+    EXPECT_TRUE(service.tryGetHostModeByContext(context, hostMode));
+    EXPECT_EQ(hostMode, UComponentGuiHostMode::Mdi);
+
+    service.clearAllInstances();
+}
+
+TEST(ComponentGuiPipeline, MoveToGridAndBackToMdiUpdatesHostMode)
+{
+    static int argc = 1;
+    static char arg0[] = "test";
+    static char* argv[] = {arg0, nullptr};
+    if(!qApp)
+        new QApplication(argc, argv);
+
+    const QString className = QStringLiteral("TestClass_MoveGridBack");
+    UComponentFormDescriptor descriptor;
+    descriptor.formId = "test.form.move.grid";
+    descriptor.title = "Move Grid Form";
+    descriptor.singleInstance = true;
+    descriptor.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.move.grid.controller", "Move Grid Controller", nullptr, app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(className, descriptor);
+
+    UComponentGuiService service(reinterpret_cast<RDK::UApplication*>(0x1));
+    QMdiArea mdiArea;
+    QFrame gridCellHost;
+    gridCellHost.resize(400, 300);
+
+    const UComponentGuiContext context = MakeContext(className, QStringLiteral("Model.MoveGridBack"), 2);
+    ASSERT_NE(service.createOrActivate(&mdiArea, context), nullptr);
+
+    EXPECT_TRUE(service.moveToGridCell(context, QStringLiteral("MainGrid"), 0, 0, &gridCellHost));
+    UComponentGuiHostMode hostMode = UComponentGuiHostMode::Mdi;
+    EXPECT_TRUE(service.tryGetHostModeByContext(context, hostMode));
+    EXPECT_EQ(hostMode, UComponentGuiHostMode::Grid);
+
+    EXPECT_TRUE(service.attachToMdi(context, &mdiArea));
+    EXPECT_TRUE(service.tryGetHostModeByContext(context, hostMode));
+    EXPECT_EQ(hostMode, UComponentGuiHostMode::Mdi);
+
+    service.clearAllInstances();
+}
+
+TEST(ComponentGuiPipeline, GridDropFromExternalPayloadAssignsWidgetToCell)
+{
+    static int argc = 1;
+    static char arg0[] = "test";
+    static char* argv[] = {arg0, nullptr};
+    if(!qApp)
+        new QApplication(argc, argv);
+
+    const QString className = QStringLiteral("TestClass_GridExternalDrop");
+    UComponentFormDescriptor descriptor;
+    descriptor.formId = "test.form.grid.external.drop";
+    descriptor.title = "Grid External Drop Form";
+    descriptor.singleInstance = true;
+    descriptor.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.grid.external.drop.controller", "Grid External Drop Controller", nullptr, app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(className, descriptor);
+
+    UComponentGuiService service(reinterpret_cast<RDK::UApplication*>(0x1));
+    UComponentGuiGridContainerWidget grid(QStringLiteral("MainGrid"), &service, nullptr, reinterpret_cast<RDK::UApplication*>(0x1));
+    grid.setGridSize(1, 2);
+
+    const UComponentGuiContext context = MakeContext(className, QStringLiteral("Model.GridExternalDrop"), 3);
+    auto* mime = new QMimeData();
+    mime->setData(UComponentGuiDndPayload::mimeType(), UComponentGuiDndPayload::encode(context));
+
+    ASSERT_TRUE(grid.handleDropToCell(0, 0, mime));
+    EXPECT_TRUE(grid.hasContext(0, 0));
+
+    QWidget* host = grid.cellHostWidget(0, 0);
+    ASSERT_NE(host, nullptr);
+    bool foundControllerChild = false;
+    for(QWidget* child : host->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly))
+    {
+        if(qobject_cast<UVisualControllerWidget*>(child))
+        {
+            foundControllerChild = true;
+            break;
+        }
+    }
+    EXPECT_TRUE(foundControllerChild);
+
+    service.clearAllInstances();
+}
+
+TEST(ComponentGuiPipeline, GridToGridDropClearsSourceAndSetsTarget)
+{
+    static int argc = 1;
+    static char arg0[] = "test";
+    static char* argv[] = {arg0, nullptr};
+    if(!qApp)
+        new QApplication(argc, argv);
+
+    const QString className = QStringLiteral("TestClass_GridToGridDrop");
+    UComponentFormDescriptor descriptor;
+    descriptor.formId = "test.form.grid.to.grid";
+    descriptor.title = "Grid To Grid Form";
+    descriptor.singleInstance = true;
+    descriptor.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.grid.to.grid.controller", "Grid To Grid Controller", nullptr, app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(className, descriptor);
+
+    UComponentGuiService service(reinterpret_cast<RDK::UApplication*>(0x1));
+    UComponentGuiGridContainerWidget grid(QStringLiteral("MainGrid"), &service, nullptr, reinterpret_cast<RDK::UApplication*>(0x1));
+    grid.setGridSize(1, 2);
+
+    const UComponentGuiContext context = MakeContext(className, QStringLiteral("Model.GridToGrid"), 4);
+    ASSERT_TRUE(grid.assignCell(0, 0, context));
+    ASSERT_TRUE(grid.hasContext(0, 0));
+    ASSERT_FALSE(grid.hasContext(0, 1));
+
+    auto* mime = new QMimeData();
+    mime->setData(UComponentGuiDndPayload::mimeType(),
+                  UComponentGuiDndPayload::encode(context, QStringLiteral("MainGrid"), 0, 0));
+    ASSERT_TRUE(grid.handleDropToCell(0, 1, mime));
+
+    EXPECT_FALSE(grid.hasContext(0, 0));
+    EXPECT_TRUE(grid.hasContext(0, 1));
+    EXPECT_EQ(grid.contextAt(0, 1).componentLongName, context.componentLongName);
+
+    service.clearAllInstances();
+}
+
+TEST(ComponentGuiPipeline, SwapCellsPreservesHostPointers)
+{
+    static int argc = 1;
+    static char arg0[] = "test";
+    static char* argv[] = {arg0, nullptr};
+    if(!qApp)
+        new QApplication(argc, argv);
+
+    const QString classNameA = QStringLiteral("TestClass_SwapA");
+    const QString classNameB = QStringLiteral("TestClass_SwapB");
+
+    UComponentFormDescriptor descriptorA;
+    descriptorA.formId = "test.form.swap.a";
+    descriptorA.title = "Swap A";
+    descriptorA.singleInstance = true;
+    descriptorA.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.swap.a.controller", "Swap A Controller", nullptr, app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(classNameA, descriptorA);
+
+    UComponentFormDescriptor descriptorB;
+    descriptorB.formId = "test.form.swap.b";
+    descriptorB.title = "Swap B";
+    descriptorB.singleInstance = true;
+    descriptorB.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.swap.b.controller", "Swap B Controller", nullptr, app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(classNameB, descriptorB);
+
+    UComponentGuiService service(reinterpret_cast<RDK::UApplication*>(0x1));
+    UComponentGuiGridContainerWidget grid(QStringLiteral("MainGrid"), &service, nullptr, reinterpret_cast<RDK::UApplication*>(0x1));
+    grid.setGridSize(1, 2);
+
+    const UComponentGuiContext contextA = MakeContext(classNameA, QStringLiteral("Model.SwapA"), 0);
+    const UComponentGuiContext contextB = MakeContext(classNameB, QStringLiteral("Model.SwapB"), 1);
+
+    QWidget* host00 = grid.cellHostWidget(0, 0);
+    QWidget* host01 = grid.cellHostWidget(0, 1);
+    ASSERT_NE(host00, nullptr);
+    ASSERT_NE(host01, nullptr);
+
+    ASSERT_TRUE(grid.assignCell(0, 0, contextA));
+    ASSERT_TRUE(grid.assignCell(0, 1, contextB));
+
+    ASSERT_TRUE(grid.swapCells(0, 0, 0, 1));
+
+    EXPECT_EQ(grid.cellHostWidget(0, 0), host00);
+    EXPECT_EQ(grid.cellHostWidget(0, 1), host01);
+    EXPECT_EQ(grid.contextAt(0, 0).componentLongName, contextB.componentLongName);
+    EXPECT_EQ(grid.contextAt(0, 1).componentLongName, contextA.componentLongName);
+
+    service.clearAllInstances();
+}
+
+TEST(ComponentGuiPipeline, FullHostCycleMdiFloatingGridMdi)
+{
+    static int argc = 1;
+    static char arg0[] = "test";
+    static char* argv[] = {arg0, nullptr};
+    if(!qApp)
+        new QApplication(argc, argv);
+
+    const QString className = QStringLiteral("TestClass_FullHostCycle");
+    UComponentFormDescriptor descriptor;
+    descriptor.formId = "test.form.full.host.cycle";
+    descriptor.title = "Full Host Cycle";
+    descriptor.singleInstance = true;
+    descriptor.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.full.host.cycle.controller", "Full Host Cycle Controller", nullptr, app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(className, descriptor);
+
+    UComponentGuiService service(reinterpret_cast<RDK::UApplication*>(0x1));
+    QMdiArea mdiArea;
+    QFrame gridHost;
+    gridHost.resize(320, 240);
+    const UComponentGuiContext context = MakeContext(className, QStringLiteral("Model.FullHostCycle"), 5);
+
+    ASSERT_NE(service.createOrActivate(&mdiArea, context), nullptr);
+    UComponentGuiHostMode mode = UComponentGuiHostMode::Grid;
+    ASSERT_TRUE(service.tryGetHostModeByContext(context, mode));
+    EXPECT_EQ(mode, UComponentGuiHostMode::Mdi);
+
+    ASSERT_TRUE(service.detachToFloating(context));
+    ASSERT_TRUE(service.tryGetHostModeByContext(context, mode));
+    EXPECT_EQ(mode, UComponentGuiHostMode::Floating);
+
+    ASSERT_TRUE(service.moveToGridCell(context, QStringLiteral("MainGrid"), 0, 0, &gridHost));
+    ASSERT_TRUE(service.tryGetHostModeByContext(context, mode));
+    EXPECT_EQ(mode, UComponentGuiHostMode::Grid);
+
+    ASSERT_TRUE(service.attachToMdi(context, &mdiArea));
+    ASSERT_TRUE(service.tryGetHostModeByContext(context, mode));
+    EXPECT_EQ(mode, UComponentGuiHostMode::Mdi);
+
+    service.clearAllInstances();
+}
+
+TEST(ComponentGuiPipeline, NativeDockHostFloatAndReattachCycle)
+{
+    static int argc = 1;
+    static char arg0[] = "test";
+    static char* argv[] = {arg0, nullptr};
+    if(!qApp)
+        new QApplication(argc, argv);
+
+    const QString className = QStringLiteral("TestClass_NativeDockCycle");
+    UComponentFormDescriptor descriptor;
+    descriptor.formId = "test.form.native.dock.cycle";
+    descriptor.title = "Native Dock Cycle";
+    descriptor.singleInstance = true;
+    descriptor.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.native.dock.cycle.controller", "Native Dock Cycle Controller", nullptr, app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(className, descriptor);
+
+    UComponentGuiService service(reinterpret_cast<RDK::UApplication*>(0x1));
+    QMainWindow hostMainWindow;
+    QMdiArea mdiArea;
+    hostMainWindow.setCentralWidget(&mdiArea);
+    service.setHostMainWindow(&hostMainWindow);
+
+    const UComponentGuiContext context = MakeContext(className, QStringLiteral("Model.NativeDockCycle"), 6);
+    UVisualControllerWidget* widget = service.createOrActivate(&hostMainWindow, context);
+    ASSERT_NE(widget, nullptr);
+
+    UComponentGuiHostMode mode = UComponentGuiHostMode::Floating;
+    ASSERT_TRUE(service.tryGetHostModeByContext(context, mode));
+    EXPECT_EQ(mode, UComponentGuiHostMode::Mdi);
+
+    ASSERT_TRUE(service.detachToFloating(context));
+    ASSERT_TRUE(service.tryGetHostModeByContext(context, mode));
+    EXPECT_EQ(mode, UComponentGuiHostMode::Floating);
+
+    ASSERT_TRUE(service.attachToMdi(context, &mdiArea));
+    ASSERT_TRUE(service.tryGetHostModeByContext(context, mode));
+    EXPECT_EQ(mode, UComponentGuiHostMode::Mdi);
+
+    QDockWidget* dockHost = nullptr;
+    QObject* current = widget->parent();
+    while(current)
+    {
+        dockHost = qobject_cast<QDockWidget*>(current);
+        if(dockHost)
+            break;
+        current = current->parent();
+    }
+    ASSERT_NE(dockHost, nullptr);
+    EXPECT_FALSE(dockHost->isFloating());
+    EXPECT_TRUE(dockHost->features().testFlag(QDockWidget::DockWidgetMovable));
+    EXPECT_TRUE(dockHost->features().testFlag(QDockWidget::DockWidgetFloatable));
 
     service.clearAllInstances();
 }

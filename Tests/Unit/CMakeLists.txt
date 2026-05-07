@@ -9,6 +9,9 @@ add_executable(Test_ComponentGuiRegistry
     Test_ComponentGuiRegistry.cpp
     ../../GUI/Qt/UComponentFormRegistry.cpp
     ../../GUI/Qt/UComponentGuiService.cpp
+    ../../GUI/Qt/UComponentGuiDndPayload.cpp
+    ../../GUI/Qt/UComponentGuiFloatingFrame.cpp
+    ../../GUI/Qt/UComponentGuiGridContainerWidget.cpp
     ../../GUI/Qt/UGenericComponentControllerWidget.cpp
     ../../GUI/Qt/UVisualControllerWidget.cpp
     ../../GUI/Qt/UGuiTelemetry.cpp
@@ -41,6 +44,9 @@ add_executable(Test_ComponentGuiLifecycle
     Test_ComponentGuiLifecycle.cpp
     ../../GUI/Qt/UComponentFormRegistry.cpp
     ../../GUI/Qt/UComponentGuiService.cpp
+    ../../GUI/Qt/UComponentGuiDndPayload.cpp
+    ../../GUI/Qt/UComponentGuiFloatingFrame.cpp
+    ../../GUI/Qt/UComponentGuiGridContainerWidget.cpp
     ../../GUI/Qt/UGenericComponentControllerWidget.cpp
     ../../GUI/Qt/UVisualControllerWidget.cpp
     ../../GUI/Qt/UGuiTelemetry.cpp

@@ -1,51 +1,20 @@
 #include "UComponentGuiGridContainerWidget.h"
+#include "UComponentGuiDndPayload.h"
 
 #include <QVBoxLayout>
 #include <QFrame>
 #include <QDrag>
+#include <QDragMoveEvent>
 #include <QMimeData>
 #include <QMouseEvent>
 #include <QApplication>
+#include <QDebug>
 
 #include "UComponentGuiService.h"
+#include "UVisualControllerWidget.h"
 
 namespace
 {
-constexpr const char* kComponentGuiMime = "application/x-nmsdk-component-gui-context";
-
-QByteArray encodeContextPayload(const UComponentGuiContext& context,
-                                const QString& gridId = QString(),
-                                int row = -1,
-                                int col = -1)
-{
-    return (context.componentClassName + "\n"
-            + context.componentLongName + "\n"
-            + QString::number(context.channelIndex) + "\n"
-            + gridId + "\n"
-            + QString::number(row) + "\n"
-            + QString::number(col)).toUtf8();
-}
-
-bool decodeContextPayload(const QMimeData* mimeData,
-                          UComponentGuiContext& context,
-                          QString& sourceGridId,
-                          int& sourceRow,
-                          int& sourceCol)
-{
-    if(!mimeData || !mimeData->hasFormat(kComponentGuiMime))
-        return false;
-    const QStringList parts = QString::fromUtf8(mimeData->data(kComponentGuiMime)).split('\n');
-    if(parts.size() < 3)
-        return false;
-    context.componentClassName = parts[0];
-    context.componentLongName = parts[1];
-    context.channelIndex = parts[2].toInt();
-    sourceGridId = parts.size() > 3 ? parts[3] : QString();
-    sourceRow = parts.size() > 4 ? parts[4].toInt() : -1;
-    sourceCol = parts.size() > 5 ? parts[5].toInt() : -1;
-    return !context.componentClassName.trimmed().isEmpty();
-}
-
 class UGridDropCellFrame final : public QFrame
 {
 public:
@@ -77,8 +46,22 @@ protected:
 
     void dragEnterEvent(QDragEnterEvent* event) override
     {
-        if(event->mimeData() && event->mimeData()->hasFormat(kComponentGuiMime))
+        if(event->mimeData() && event->mimeData()->hasFormat(UComponentGuiDndPayload::mimeType()))
+        {
+            qInfo() << "[ComponentGuiDnD][Grid] dragEnter cell=" << m_row << m_col;
             event->acceptProposedAction();
+        }
+        else
+            event->ignore();
+    }
+
+    void dragMoveEvent(QDragMoveEvent* event) override
+    {
+        if(event->mimeData() && event->mimeData()->hasFormat(UComponentGuiDndPayload::mimeType()))
+        {
+            qInfo() << "[ComponentGuiDnD][Grid] dragMove cell=" << m_row << m_col;
+            event->acceptProposedAction();
+        }
         else
             event->ignore();
     }
@@ -86,9 +69,15 @@ protected:
     void dropEvent(QDropEvent* event) override
     {
         if(m_owner && m_owner->handleDropToCell(m_row, m_col, event->mimeData()))
+        {
+            qInfo() << "[ComponentGuiDnD][Grid] dropAccepted cell=" << m_row << m_col;
             event->acceptProposedAction();
+        }
         else
+        {
+            qWarning() << "[ComponentGuiDnD][Grid] dropRejected cell=" << m_row << m_col;
             event->ignore();
+        }
     }
 
 private:
@@ -172,6 +161,20 @@ bool UComponentGuiGridContainerWidget::clearCell(int row, int col)
         return false;
 
     QWidget* host = cellHostWidget(row, col);
+    const UComponentGuiContext oldContext = m_cells[row][col].context;
+    const bool hadContext = m_cells[row][col].hasContext;
+
+    // If the cell currently owns a context, move it out through service transition.
+    if(hadContext && m_service)
+    {
+        UComponentGuiHostMode mode = UComponentGuiHostMode::Mdi;
+        UVisualControllerWidget* widget = nullptr;
+        const bool hasLiveWidget = m_service->tryGetWidgetByContext(oldContext, widget) && widget;
+        const bool hasMode = m_service->tryGetHostModeByContext(oldContext, mode);
+        if(hasLiveWidget && hasMode && mode == UComponentGuiHostMode::Grid && widget->parentWidget() == host)
+            m_service->detachToFloating(oldContext);
+    }
+
     if(host)
     {
         const QList<QWidget*> children = host->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly);
@@ -187,17 +190,42 @@ bool UComponentGuiGridContainerWidget::swapCells(int r1, int c1, int r2, int c2)
 {
     if(!isValidCell(r1, c1) || !isValidCell(r2, c2))
         return false;
-    qSwap(m_cells[r1][c1], m_cells[r2][c2]);
 
-    if(m_cells[r1][c1].hasContext)
-        assignCell(r1, c1, m_cells[r1][c1].context);
-    else
-        clearCell(r1, c1);
+    const bool firstHas = m_cells[r1][c1].hasContext;
+    const bool secondHas = m_cells[r2][c2].hasContext;
+    const UComponentGuiContext firstContext = m_cells[r1][c1].context;
+    const UComponentGuiContext secondContext = m_cells[r2][c2].context;
 
-    if(m_cells[r2][c2].hasContext)
-        assignCell(r2, c2, m_cells[r2][c2].context);
-    else
-        clearCell(r2, c2);
+    // Important: never swap host widgets, only context occupancy metadata.
+    m_cells[r1][c1].hasContext = secondHas;
+    m_cells[r1][c1].context = secondContext;
+    m_cells[r2][c2].hasContext = firstHas;
+    m_cells[r2][c2].context = firstContext;
+
+    if(secondHas)
+    {
+        if(!assignCell(r1, c1, secondContext))
+            return false;
+    }
+    else if(QWidget* host = cellHostWidget(r1, c1))
+    {
+        const QList<QWidget*> children = host->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly);
+        for(QWidget* child : children)
+            child->hide();
+    }
+
+    if(firstHas)
+    {
+        if(!assignCell(r2, c2, firstContext))
+            return false;
+    }
+    else if(QWidget* host = cellHostWidget(r2, c2))
+    {
+        const QList<QWidget*> children = host->findChildren<QWidget*>(QString(), Qt::FindDirectChildrenOnly);
+        for(QWidget* child : children)
+            child->hide();
+    }
+
     return true;
 }
 
@@ -254,11 +282,18 @@ void UComponentGuiGridContainerWidget::startDragFromCell(int row, int col)
 {
     if(!isValidCell(row, col) || !m_cells[row][col].hasContext)
         return;
+    qInfo() << "[ComponentGuiDnD][Grid] startDragFromCell source="
+            << m_gridId << row << col
+            << "context=" << m_cells[row][col].context.componentClassName
+            << m_cells[row][col].context.componentLongName
+            << "channel=" << m_cells[row][col].context.channelIndex;
     QDrag* drag = new QDrag(this);
     QMimeData* mime = new QMimeData();
-    mime->setData(kComponentGuiMime, encodeContextPayload(m_cells[row][col].context, m_gridId, row, col));
+    mime->setData(UComponentGuiDndPayload::mimeType(),
+                  UComponentGuiDndPayload::encode(m_cells[row][col].context, m_gridId, row, col));
     drag->setMimeData(mime);
-    drag->exec(Qt::MoveAction);
+    const Qt::DropAction result = drag->exec(Qt::MoveAction);
+    qInfo() << "[ComponentGuiDnD][Grid] dragFinished source=" << m_gridId << row << col << "result=" << result;
 }
 
 bool UComponentGuiGridContainerWidget::handleDropToCell(int row, int col, const QMimeData* mimeData)
@@ -269,24 +304,45 @@ bool UComponentGuiGridContainerWidget::handleDropToCell(int row, int col, const 
     QString sourceGridId;
     int sourceRow = -1;
     int sourceCol = -1;
-    if(!decodeContextPayload(mimeData, context, sourceGridId, sourceRow, sourceCol))
+    if(!UComponentGuiDndPayload::decode(mimeData, context, sourceGridId, sourceRow, sourceCol))
+    {
+        qWarning() << "[ComponentGuiDnD][Grid] decodeFailed targetCell=" << row << col;
         return false;
+    }
+
+    qInfo() << "[ComponentGuiDnD][Grid] decoded targetCell=" << row << col
+            << "sourceGrid=" << sourceGridId << "sourceCell=" << sourceRow << sourceCol
+            << "context=" << context.componentClassName << context.componentLongName
+            << "channel=" << context.channelIndex;
 
     if(sourceGridId == m_gridId && sourceRow >= 0 && sourceCol >= 0 && isValidCell(sourceRow, sourceCol))
     {
         if(sourceRow == row && sourceCol == col)
+        {
+            qInfo() << "[ComponentGuiDnD][Grid] noOp sameSourceAndTarget cell=" << row << col;
             return true;
+        }
         if(m_cells[row][col].hasContext)
-            return swapCells(sourceRow, sourceCol, row, col);
+        {
+            const bool swapped = swapCells(sourceRow, sourceCol, row, col);
+            qInfo() << "[ComponentGuiDnD][Grid] swapCells result=" << swapped
+                    << "from=" << sourceRow << sourceCol << "to=" << row << col;
+            return swapped;
+        }
         const bool assigned = assignCell(row, col, context);
         if(assigned)
             clearCell(sourceRow, sourceCol);
+        qInfo() << "[ComponentGuiDnD][Grid] moveWithinGrid assigned=" << assigned
+                << "from=" << sourceRow << sourceCol << "to=" << row << col;
         return assigned;
     }
 
     if(m_cells[row][col].hasContext)
         clearCell(row, col);
-    return assignCell(row, col, context);
+    const bool assigned = assignCell(row, col, context);
+    qInfo() << "[ComponentGuiDnD][Grid] externalDrop assigned=" << assigned
+            << "targetCell=" << row << col;
+    return assigned;
 }
 
 void UComponentGuiGridContainerWidget::rebuildGrid()

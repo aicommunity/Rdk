@@ -2,6 +2,8 @@
 #include "ui_UGEngineControllWidget.h"
 #include "UStyleManager.h"
 #include "UComponentGuiBootstrap.h"
+#include "UComponentGuiDndPayload.h"
+#include "UComponentGuiGridDialog.h"
 
 
 #include <rdk_application.h>
@@ -34,6 +36,9 @@
 #include <QDrag>
 #include <QMimeData>
 #include <QMouseEvent>
+#include <QDragEnterEvent>
+#include <QDragMoveEvent>
+#include <QDropEvent>
 
 /*int heheheCounter = 0;
 void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
@@ -50,6 +55,8 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 
     if(application == NULL)
       QApplication::exit(-1);
+
+    m_componentGuiService.setHostMainWindow(this);
 
     QString caption_line=(application->GetProgramName()+" ").c_str();
     caption_line += QCoreApplication::applicationVersion();
@@ -122,6 +129,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
         QTimer::singleShot(0, updateMdiAreaTabBarStyles);
     });
     ui->mdiArea->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->mdiArea->setAcceptDrops(false);
     connect(ui->mdiArea, &QMdiArea::customContextMenuRequested, this, [this](const QPoint& pos) {
         QMdiSubWindow* sub = nullptr;
         const QList<QMdiSubWindow*> subwindows = ui->mdiArea->subWindowList(QMdiArea::StackingOrder);
@@ -152,6 +160,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
             if(!tabBar)
                 return;
             tabBar->setContextMenuPolicy(Qt::CustomContextMenu);
+            tabBar->setAcceptDrops(true);
             tabBar->installEventFilter(this);
             QObject::connect(tabBar, &QTabBar::customContextMenuRequested, this, [this, tabBar](const QPoint& pos) {
                 const int index = tabBar->tabAt(pos);
@@ -404,6 +413,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 bool UGEngineControlWidget::eventFilter(QObject* watched, QEvent* event)
 {
     QTabBar* tabBar = ui && ui->mdiArea ? ui->mdiArea->findChild<QTabBar*>() : nullptr;
+
     if(tabBar && watched == tabBar)
     {
         if(event->type() == QEvent::MouseButtonPress)
@@ -429,25 +439,59 @@ bool UGEngineControlWidget::eventFilter(QObject* watched, QEvent* event)
                         UComponentGuiContext context;
                         if(resolveComponentGuiWidgetContext(widget, context))
                         {
-                            QDrag* drag = new QDrag(tabBar);
-                            QMimeData* mime = new QMimeData();
-                            const QByteArray payload = (context.componentClassName + "\n"
-                                                        + context.componentLongName + "\n"
-                                                        + QString::number(context.channelIndex) + "\n\n-1\n-1").toUtf8();
-                            mime->setData("application/x-nmsdk-component-gui-context", payload);
-                            drag->setMimeData(mime);
-                            drag->exec(Qt::MoveAction);
+                            // Reliable detach from MDI tab: do not rely on tab-level QDrag result.
+                            // Native/window-manager interactions may consume tab drag and prevent
+                            // deterministic detach. We detach immediately and then use floating drag bar.
+                            m_componentGuiService.detachToFloating(context);
                         }
                     }
                     m_componentGuiTabDragIndex = -1;
                 }
             }
         }
+        else if(event->type() == QEvent::DragEnter)
+        {
+            QDragEnterEvent* dragEvent = static_cast<QDragEnterEvent*>(event);
+            if(dragEvent->mimeData() && dragEvent->mimeData()->hasFormat(UComponentGuiDndPayload::mimeType()))
+                dragEvent->acceptProposedAction();
+            else
+                dragEvent->ignore();
+        }
+        else if(event->type() == QEvent::DragMove)
+        {
+            QDragMoveEvent* dragEvent = static_cast<QDragMoveEvent*>(event);
+            if(dragEvent->mimeData() && dragEvent->mimeData()->hasFormat(UComponentGuiDndPayload::mimeType()))
+                dragEvent->acceptProposedAction();
+            else
+                dragEvent->ignore();
+        }
+        else if(event->type() == QEvent::Drop)
+        {
+            QDropEvent* dropEvent = static_cast<QDropEvent*>(event);
+            UComponentGuiContext context;
+            QString sourceGridId;
+            int sourceRow = -1;
+            int sourceCol = -1;
+            if(UComponentGuiDndPayload::decode(dropEvent->mimeData(), context, sourceGridId, sourceRow, sourceCol) &&
+               m_componentGuiService.attachToMdi(context, ui->mdiArea))
+            {
+                if(!sourceGridId.isEmpty() && sourceRow >= 0 && sourceCol >= 0)
+                {
+                    if(auto* srcGrid = findComponentGuiGrid(sourceGridId))
+                        srcGrid->clearCell(sourceRow, sourceCol);
+                }
+                dropEvent->acceptProposedAction();
+                m_componentGuiTabDragIndex = -1;
+                return true;
+            }
+            dropEvent->ignore();
+        }
         else if(event->type() == QEvent::MouseButtonRelease)
         {
             m_componentGuiTabDragIndex = -1;
         }
     }
+
     return UVisualControllerMainWidget::eventFilter(watched, event);
 }
 
@@ -496,11 +540,13 @@ void UGEngineControlWidget::openComponentGuiFromScheme(const UComponentGuiContex
         return;
     }
 
-    UVisualControllerWidget* widget = m_componentGuiService.createOrActivate(ui->mdiArea, context);
+    UVisualControllerWidget* widget = m_componentGuiService.createOrActivate(this, context);
     if(!widget)
     {
         QMessageBox::information(this, "Component GUI", "No GUI form is registered for this component class.");
+        return;
     }
+    // DnD sources are handled by floating wrapper drag-handle + explicit drop targets.
 }
 
 // file menu actions
@@ -1834,9 +1880,7 @@ UComponentGuiGridContainerWidget* UGEngineControlWidget::ensureComponentGuiGrid(
 {
     if(m_componentGuiGrids.contains(gridId) && !m_componentGuiGrids[gridId].isNull())
     {
-        UComponentGuiGridContainerWidget* existing = m_componentGuiGrids[gridId].data();
-        existing->setGridSize(rows, cols);
-        return existing;
+        return m_componentGuiGrids[gridId].data();
     }
 
     UComponentGuiGridContainerWidget* grid = new UComponentGuiGridContainerWidget(gridId, &m_componentGuiService, ui->mdiArea, application);
@@ -1850,6 +1894,35 @@ UComponentGuiGridContainerWidget* UGEngineControlWidget::ensureComponentGuiGrid(
     }
     m_componentGuiGrids[gridId] = grid;
     return grid;
+}
+
+UComponentGuiGridContainerWidget* UGEngineControlWidget::findComponentGuiGrid(const QString& gridId) const
+{
+    if(!m_componentGuiGrids.contains(gridId) || m_componentGuiGrids.value(gridId).isNull())
+        return nullptr;
+    return m_componentGuiGrids.value(gridId).data();
+}
+
+QStringList UGEngineControlWidget::componentGuiGridIds() const
+{
+    QStringList ids;
+    for(auto it = m_componentGuiGrids.constBegin(); it != m_componentGuiGrids.constEnd(); ++it)
+    {
+        if(!it.value().isNull())
+            ids.push_back(it.key());
+    }
+    ids.sort();
+    return ids;
+}
+
+bool UGEngineControlWidget::moveContextToGrid(const UComponentGuiContext& context, const QString& gridId, int row, int col)
+{
+    UComponentGuiGridContainerWidget* grid = findComponentGuiGrid(gridId);
+    if(!grid)
+        return false;
+    if(row >= grid->rowCount() || col >= grid->colCount() || row < 0 || col < 0)
+        return false;
+    return grid->assignCell(row, col, context);
 }
 
 void UGEngineControlWidget::saveComponentGuiLayoutToXml(RDK::USerStorageXML &xml)
@@ -1949,7 +2022,7 @@ void UGEngineControlWidget::loadComponentGuiLayoutFromXml(RDK::USerStorageXML &x
         context.componentLongName = s.componentLongName;
         context.channelIndex = s.channelIndex;
 
-        UVisualControllerWidget* widget = m_componentGuiService.createOrActivate(ui->mdiArea, context);
+        UVisualControllerWidget* widget = m_componentGuiService.createOrActivate(this, context);
         if(!widget)
             continue;
 
@@ -1983,7 +2056,7 @@ void UGEngineControlWidget::loadComponentGuiLayoutFromXml(RDK::USerStorageXML &x
     }
 
     if(hasActive)
-        m_componentGuiService.createOrActivate(ui->mdiArea, activeContext);
+        m_componentGuiService.createOrActivate(this, activeContext);
 }
 
 void UGEngineControlWidget::writeComponentGuiSettings(QSettings& projectSettings)
@@ -2112,26 +2185,57 @@ void UGEngineControlWidget::showComponentGuiHostMenu(UVisualControllerWidget* wi
     }
     if(chosen == moveToGridAction)
     {
+        const QStringList grids = componentGuiGridIds();
+        if(grids.isEmpty())
+        {
+            QMessageBox::information(this, tr("Move to Grid"),
+                                     tr("No component GUI grid exists yet. Create one from Window -> Component GUI Grid..."));
+            return;
+        }
+
         bool ok = false;
-        QString gridId = QInputDialog::getText(this, tr("Move to Grid"),
-                                               tr("Grid ID:"), QLineEdit::Normal,
-                                               QStringLiteral("MainGrid"), &ok);
+        const QString gridId = QInputDialog::getItem(this,
+                                                     tr("Move to Grid"),
+                                                     tr("Grid ID:"),
+                                                     grids,
+                                                     0,
+                                                     false,
+                                                     &ok);
         if(!ok || gridId.trimmed().isEmpty())
             return;
-        int rows = QInputDialog::getInt(this, tr("Move to Grid"), tr("Rows:"), 2, 1, 16, 1, &ok);
-        if(!ok)
+
+        UComponentGuiGridContainerWidget* grid = findComponentGuiGrid(gridId);
+        if(!grid)
             return;
-        int cols = QInputDialog::getInt(this, tr("Move to Grid"), tr("Columns:"), 2, 1, 16, 1, &ok);
-        if(!ok)
+
+        int targetRow = -1;
+        int targetCol = -1;
+        for(int row = 0; row < grid->rowCount() && targetRow < 0; ++row)
+        {
+            for(int col = 0; col < grid->colCount(); ++col)
+            {
+                if(!grid->hasContext(row, col))
+                {
+                    targetRow = row;
+                    targetCol = col;
+                    break;
+                }
+            }
+        }
+
+        if(targetRow < 0 || targetCol < 0)
+        {
+            QMessageBox::warning(this, tr("Move to Grid"),
+                                 tr("Grid '%1' has no free cells.").arg(gridId));
             return;
-        UComponentGuiGridContainerWidget* grid = ensureComponentGuiGrid(gridId.trimmed(), rows, cols);
-        const int row = QInputDialog::getInt(this, tr("Move to Grid"), tr("Row (0-based):"), 0, 0, qMax(0, grid->rowCount() - 1), 1, &ok);
-        if(!ok)
-            return;
-        const int col = QInputDialog::getInt(this, tr("Move to Grid"), tr("Column (0-based):"), 0, 0, qMax(0, grid->colCount() - 1), 1, &ok);
-        if(!ok)
-            return;
-        grid->assignCell(row, col, context);
+        }
+
+        if(!moveContextToGrid(context, gridId, targetRow, targetCol))
+        {
+            QMessageBox::warning(this, tr("Move to Grid"),
+                                 tr("Failed to move GUI to grid '%1' cell [%2, %3].")
+                                 .arg(gridId).arg(targetRow).arg(targetCol));
+        }
     }
 }
 
@@ -2154,19 +2258,22 @@ bool UGEngineControlWidget::resolveComponentGuiWidgetContext(UVisualControllerWi
 
 void UGEngineControlWidget::promptAndOpenComponentGuiGrid()
 {
-    bool ok = false;
-    QString gridId = QInputDialog::getText(this, tr("Component GUI Grid"),
-                                           tr("Grid ID:"), QLineEdit::Normal,
-                                           QStringLiteral("MainGrid"), &ok);
-    if(!ok || gridId.trimmed().isEmpty())
+    UComponentGuiGridDialog dialog(this);
+    dialog.setWindowTitle(tr("Component GUI Grid"));
+    dialog.setExistingGridIds(componentGuiGridIds());
+    dialog.setInitialGridId(QStringLiteral("MainGrid"));
+    dialog.setMoveModeEnabled(false);
+    if(dialog.exec() != QDialog::Accepted)
         return;
-    int rows = QInputDialog::getInt(this, tr("Component GUI Grid"), tr("Rows:"), 2, 1, 16, 1, &ok);
-    if(!ok)
-        return;
-    int cols = QInputDialog::getInt(this, tr("Component GUI Grid"), tr("Columns:"), 2, 1, 16, 1, &ok);
-    if(!ok)
-        return;
-    UComponentGuiGridContainerWidget* grid = ensureComponentGuiGrid(gridId.trimmed(), rows, cols);
+
+    const QString gridId = dialog.selectedGridId();
+    UComponentGuiGridContainerWidget* grid = findComponentGuiGrid(gridId);
+    if(dialog.createNewGrid())
+    {
+        grid = ensureComponentGuiGrid(gridId, dialog.rows(), dialog.cols());
+        if(grid)
+            grid->setGridSize(dialog.rows(), dialog.cols());
+    }
     if(grid)
     {
         grid->show();
@@ -2176,6 +2283,22 @@ void UGEngineControlWidget::promptAndOpenComponentGuiGrid()
             sub->raise();
         }
     }
+}
+
+void UGEngineControlWidget::startComponentGuiDrag(const UComponentGuiContext& context, QWidget* dragSource, bool detachOnIgnoredDrop)
+{
+    qInfo() << "[ComponentGuiDnD][MDI] startTabDrag context="
+            << context.componentClassName << context.componentLongName
+            << "channel=" << context.channelIndex
+            << "detachOnIgnoredDrop=" << detachOnIgnoredDrop;
+    QDrag* drag = new QDrag(dragSource ? dragSource : this);
+    QMimeData* mime = new QMimeData();
+    mime->setData(UComponentGuiDndPayload::mimeType(), UComponentGuiDndPayload::encode(context));
+    drag->setMimeData(mime);
+    const Qt::DropAction result = drag->exec(Qt::MoveAction);
+    qInfo() << "[ComponentGuiDnD][MDI] tabDragFinished result=" << result;
+    if(detachOnIgnoredDrop && result != Qt::MoveAction)
+        m_componentGuiService.detachToFloating(context);
 }
 
 void UGEngineControlWidget::on_actionAbout_triggered()

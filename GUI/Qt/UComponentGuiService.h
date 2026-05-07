@@ -13,6 +13,8 @@
 class QWidget;
 class UVisualControllerWidget;
 class QMdiArea;
+class QMainWindow;
+class QDockWidget;
 
 enum class UComponentGuiHostMode
 {
@@ -48,6 +50,7 @@ public:
     bool detachToFloating(const UComponentGuiContext& context);
     bool attachToMdi(const UComponentGuiContext& context, QMdiArea* mdiArea);
     bool moveToGridCell(const UComponentGuiContext& context, const QString& gridId, int row, int col, QWidget* cellHost);
+    void setHostMainWindow(QMainWindow* mainWindow);
     QList<UComponentGuiSessionSnapshot> snapshotOpenSessions() const;
     void clearClosedInstances();
     void clearAllInstances();
@@ -57,6 +60,8 @@ public:
     bool captureFloatingState(const QString& sessionId);
     bool tryGetContextByWidget(const UVisualControllerWidget* widget, UComponentGuiContext& outContext) const;
     bool tryGetHostModeByWidget(const UVisualControllerWidget* widget, UComponentGuiHostMode& outMode) const;
+    bool tryGetWidgetByContext(const UComponentGuiContext& context, UVisualControllerWidget*& outWidget) const;
+    bool tryGetHostModeByContext(const UComponentGuiContext& context, UComponentGuiHostMode& outMode) const;
 
 private:
     QString makeInstanceKey(const UComponentGuiContext& context, const UComponentFormDescriptor& descriptor) const;
@@ -80,7 +85,9 @@ private:
     };
 
     RDK::UApplication* m_application;
+    QPointer<QMainWindow> m_hostMainWindow;
     QHash<QString, QPointer<UVisualControllerWidget>> m_instances;
+    QHash<QString, QPointer<QDockWidget>> m_dockHosts;
     QHash<QString, UComponentGuiContext> m_instanceContexts;
     QHash<QString, QString> m_instanceFormIds;
     QHash<QString, UInstanceHostInfo> m_instanceHostInfo;
