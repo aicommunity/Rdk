@@ -20,7 +20,9 @@ enum class UComponentGuiHostMode
 {
     Mdi,
     Floating,
-    Grid
+    TabHost,
+    SecondaryDock,
+    Grid // legacy compatibility mode
 };
 
 struct UComponentGuiSessionSnapshot
@@ -49,8 +51,10 @@ public:
     UVisualControllerWidget* createOrActivate(QWidget* parentWindow, const UComponentGuiContext& context);
     bool detachToFloating(const UComponentGuiContext& context);
     bool attachToMdi(const UComponentGuiContext& context, QMdiArea* mdiArea);
-    bool moveToGridCell(const UComponentGuiContext& context, const QString& gridId, int row, int col, QWidget* cellHost);
+    bool attachToSecondaryDock(const UComponentGuiContext& context);
+    bool moveToTabHost(const UComponentGuiContext& context, const QString& hostId, QWidget* hostWidget);
     void setHostMainWindow(QMainWindow* mainWindow);
+    void setSecondaryHostMainWindow(QMainWindow* mainWindow);
     QList<UComponentGuiSessionSnapshot> snapshotOpenSessions() const;
     void clearClosedInstances();
     void clearAllInstances();
@@ -86,6 +90,7 @@ private:
 
     RDK::UApplication* m_application;
     QPointer<QMainWindow> m_hostMainWindow;
+    QPointer<QMainWindow> m_secondaryHostMainWindow;
     QHash<QString, QPointer<UVisualControllerWidget>> m_instances;
     QHash<QString, QPointer<QDockWidget>> m_dockHosts;
     QHash<QString, UComponentGuiContext> m_instanceContexts;

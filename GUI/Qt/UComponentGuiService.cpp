@@ -9,7 +9,6 @@
 
 #include "../../Deploy/Include/rdk_cpp_init.h"
 #include "UVisualControllerWidget.h"
-#include "UComponentGuiGridContainerWidget.h"
 
 namespace
 {
@@ -114,6 +113,11 @@ void UComponentGuiService::setApplication(RDK::UApplication* app)
 void UComponentGuiService::setHostMainWindow(QMainWindow* mainWindow)
 {
     m_hostMainWindow = mainWindow;
+}
+
+void UComponentGuiService::setSecondaryHostMainWindow(QMainWindow* mainWindow)
+{
+    m_secondaryHostMainWindow = mainWindow;
 }
 
 bool UComponentGuiService::canOpen(const UComponentGuiContext& context) const
@@ -324,13 +328,56 @@ bool UComponentGuiService::attachToMdi(const UComponentGuiContext& context, QMdi
     return true;
 }
 
-bool UComponentGuiService::moveToGridCell(const UComponentGuiContext& context,
-                                          const QString& gridId,
-                                          int row,
-                                          int col,
-                                          QWidget* cellHost)
+bool UComponentGuiService::attachToSecondaryDock(const UComponentGuiContext& context)
 {
-    if(!cellHost)
+    QString key;
+    UVisualControllerWidget* widget = resolveInstance(context, &key);
+    if(!widget)
+        return false;
+
+    QMainWindow* hostMainWindow = m_secondaryHostMainWindow.data();
+    if(!hostMainWindow)
+        return false;
+
+    QDockWidget* dock = m_dockHosts.value(key).data();
+    if(!dock)
+    {
+        dock = resolveDockHost(widget);
+        if(!dock)
+        {
+            dock = new QDockWidget(widget->windowTitle(), hostMainWindow);
+            QString objectName = QStringLiteral("ComponentGuiDockSecondary_%1").arg(key);
+            objectName.replace('|', '_');
+            objectName.replace('.', '_');
+            objectName.replace(':', '_');
+            dock->setObjectName(objectName);
+            dock->setFeatures(QDockWidget::DockWidgetMovable |
+                              QDockWidget::DockWidgetFloatable |
+                              QDockWidget::DockWidgetClosable);
+            dock->setWidget(widget);
+            dock->setAttribute(Qt::WA_DeleteOnClose, true);
+            m_dockHosts[key] = dock;
+        }
+    }
+
+    if(dock->widget() != widget)
+        dock->setWidget(widget);
+    hostMainWindow->addDockWidget(Qt::RightDockWidgetArea, dock);
+    dock->setFloating(false);
+    dock->show();
+    dock->raise();
+    dock->activateWindow();
+    assignHostMode(key, UComponentGuiHostMode::SecondaryDock);
+    m_lastActiveSession = key;
+    ++m_activationCounter;
+    return true;
+}
+
+bool UComponentGuiService::moveToTabHost(const UComponentGuiContext& context,
+                                         const QString& hostId,
+                                         QWidget* hostWidget)
+{
+    if(!hostWidget)
         return false;
 
     QString key;
@@ -351,12 +398,12 @@ bool UComponentGuiService::moveToGridCell(const UComponentGuiContext& context,
     }
 
     widget->hide();
-    widget->setParent(cellHost);
+    widget->setParent(hostWidget);
     widget->setWindowFlags(Qt::Widget);
-    widget->setGeometry(cellHost->rect());
+    widget->setGeometry(hostWidget->rect());
     widget->show();
 
-    assignHostMode(key, UComponentGuiHostMode::Grid, gridId, row, col);
+    assignHostMode(key, UComponentGuiHostMode::TabHost, hostId, -1, -1);
     m_lastActiveSession = key;
     ++m_activationCounter;
     return true;

@@ -3,7 +3,6 @@
 #include "UStyleManager.h"
 #include "UComponentGuiBootstrap.h"
 #include "UComponentGuiDndPayload.h"
-#include "UComponentGuiGridDialog.h"
 
 
 #include <rdk_application.h>
@@ -367,8 +366,21 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 
     // Theme switcher menu
     createThemeMenu();
-    QAction* componentGuiGridAction = ui->menuWindow->addAction(tr("Component GUI Grid..."));
-    connect(componentGuiGridAction, &QAction::triggered, this, [this]() { promptAndOpenComponentGuiGrid(); });
+    QAction* componentGuiHostAction = ui->menuWindow->addAction(tr("Component GUI Tab Host..."));
+    connect(componentGuiHostAction, &QAction::triggered, this, [this]() {
+        UComponentGuiTabHostWidget* host = ensureComponentGuiTabHost(QStringLiteral("MainTabHost"));
+        if(host)
+        {
+            host->show();
+            if(QMdiSubWindow* sub = qobject_cast<QMdiSubWindow*>(host->parentWidget()))
+            {
+                ui->mdiArea->setActiveSubWindow(sub);
+                sub->raise();
+            }
+        }
+    });
+    QAction* componentGuiSecondaryHostAction = ui->menuWindow->addAction(tr("Component GUI Secondary Host..."));
+    connect(componentGuiSecondaryHostAction, &QAction::triggered, this, &UGEngineControlWidget::showComponentGuiSecondaryHostWindow);
 
     updateRecentConfigsMenu();
 
@@ -413,6 +425,42 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 bool UGEngineControlWidget::eventFilter(QObject* watched, QEvent* event)
 {
     QTabBar* tabBar = ui && ui->mdiArea ? ui->mdiArea->findChild<QTabBar*>() : nullptr;
+    if(!m_componentGuiSecondaryHostWindow.isNull() && watched == m_componentGuiSecondaryHostWindow.data())
+    {
+        if(event->type() == QEvent::DragEnter)
+        {
+            QDragEnterEvent* dragEvent = static_cast<QDragEnterEvent*>(event);
+            if(dragEvent->mimeData() && dragEvent->mimeData()->hasFormat(UComponentGuiDndPayload::mimeType()))
+                dragEvent->acceptProposedAction();
+            else
+                dragEvent->ignore();
+            return true;
+        }
+        if(event->type() == QEvent::Drop)
+        {
+            QDropEvent* dropEvent = static_cast<QDropEvent*>(event);
+            UComponentGuiContext context;
+            QString sourceHostId;
+            int sourceIndex = -1;
+            int sourceCol = -1;
+            if(UComponentGuiDndPayload::decode(dropEvent->mimeData(), context, sourceHostId, sourceIndex, sourceCol) &&
+               m_componentGuiService.attachToSecondaryDock(context))
+            {
+                Q_UNUSED(sourceCol);
+                if(!sourceHostId.isEmpty() && sourceIndex >= 0)
+                {
+                    if(auto* srcHost = findComponentGuiTabHost(sourceHostId))
+                        srcHost->removeContext(context);
+                }
+                dropEvent->acceptProposedAction();
+            }
+            else
+            {
+                dropEvent->ignore();
+            }
+            return true;
+        }
+    }
 
     if(tabBar && watched == tabBar)
     {
@@ -475,10 +523,10 @@ bool UGEngineControlWidget::eventFilter(QObject* watched, QEvent* event)
             if(UComponentGuiDndPayload::decode(dropEvent->mimeData(), context, sourceGridId, sourceRow, sourceCol) &&
                m_componentGuiService.attachToMdi(context, ui->mdiArea))
             {
-                if(!sourceGridId.isEmpty() && sourceRow >= 0 && sourceCol >= 0)
+                if(!sourceGridId.isEmpty() && sourceRow >= 0)
                 {
-                    if(auto* srcGrid = findComponentGuiGrid(sourceGridId))
-                        srcGrid->clearCell(sourceRow, sourceCol);
+                    if(auto* srcHost = findComponentGuiTabHost(sourceGridId))
+                        srcHost->removeContext(context);
                 }
                 dropEvent->acceptProposedAction();
                 m_componentGuiTabDragIndex = -1;
@@ -1772,7 +1820,7 @@ void UGEngineControlWidget::AAfterLoadProject(void)
 void UGEngineControlWidget::ABeforeCloseProject(void)
 {
     m_componentGuiService.clearAllInstances();
-    m_componentGuiGrids.clear();
+    m_componentGuiTabHosts.clear();
 }
 
 // Метод, вызываемый перед сбросом модели
@@ -1876,37 +1924,36 @@ void UGEngineControlWidget::ALoadParameters(RDK::USerStorageXML &xml)
     loadComponentGuiLayoutFromXml(xml);
 }
 
-UComponentGuiGridContainerWidget* UGEngineControlWidget::ensureComponentGuiGrid(const QString& gridId, int rows, int cols)
+UComponentGuiTabHostWidget* UGEngineControlWidget::ensureComponentGuiTabHost(const QString& hostId)
 {
-    if(m_componentGuiGrids.contains(gridId) && !m_componentGuiGrids[gridId].isNull())
+    if(m_componentGuiTabHosts.contains(hostId) && !m_componentGuiTabHosts[hostId].isNull())
     {
-        return m_componentGuiGrids[gridId].data();
+        return m_componentGuiTabHosts[hostId].data();
     }
 
-    UComponentGuiGridContainerWidget* grid = new UComponentGuiGridContainerWidget(gridId, &m_componentGuiService, ui->mdiArea, application);
-    grid->setGridSize(rows, cols);
-    QMdiSubWindow* sub = ui->mdiArea->addSubWindow(grid, Qt::SubWindow);
+    UComponentGuiTabHostWidget* host = new UComponentGuiTabHostWidget(hostId, &m_componentGuiService, ui->mdiArea, application);
+    QMdiSubWindow* sub = ui->mdiArea->addSubWindow(host, Qt::SubWindow);
     if(sub)
     {
         sub->setAttribute(Qt::WA_DeleteOnClose, true);
-        sub->setWindowTitle(QStringLiteral("Component Grid: %1").arg(gridId));
+        sub->setWindowTitle(QStringLiteral("Component Tab Host: %1").arg(hostId));
         sub->show();
     }
-    m_componentGuiGrids[gridId] = grid;
-    return grid;
+    m_componentGuiTabHosts[hostId] = host;
+    return host;
 }
 
-UComponentGuiGridContainerWidget* UGEngineControlWidget::findComponentGuiGrid(const QString& gridId) const
+UComponentGuiTabHostWidget* UGEngineControlWidget::findComponentGuiTabHost(const QString& hostId) const
 {
-    if(!m_componentGuiGrids.contains(gridId) || m_componentGuiGrids.value(gridId).isNull())
+    if(!m_componentGuiTabHosts.contains(hostId) || m_componentGuiTabHosts.value(hostId).isNull())
         return nullptr;
-    return m_componentGuiGrids.value(gridId).data();
+    return m_componentGuiTabHosts.value(hostId).data();
 }
 
-QStringList UGEngineControlWidget::componentGuiGridIds() const
+QStringList UGEngineControlWidget::componentGuiTabHostIds() const
 {
     QStringList ids;
-    for(auto it = m_componentGuiGrids.constBegin(); it != m_componentGuiGrids.constEnd(); ++it)
+    for(auto it = m_componentGuiTabHosts.constBegin(); it != m_componentGuiTabHosts.constEnd(); ++it)
     {
         if(!it.value().isNull())
             ids.push_back(it.key());
@@ -1915,14 +1962,12 @@ QStringList UGEngineControlWidget::componentGuiGridIds() const
     return ids;
 }
 
-bool UGEngineControlWidget::moveContextToGrid(const UComponentGuiContext& context, const QString& gridId, int row, int col)
+bool UGEngineControlWidget::moveContextToTabHost(const UComponentGuiContext& context, const QString& hostId)
 {
-    UComponentGuiGridContainerWidget* grid = findComponentGuiGrid(gridId);
-    if(!grid)
+    UComponentGuiTabHostWidget* host = findComponentGuiTabHost(hostId);
+    if(!host)
         return false;
-    if(row >= grid->rowCount() || col >= grid->colCount() || row < 0 || col < 0)
-        return false;
-    return grid->assignCell(row, col, context);
+    return host->assignContext(context);
 }
 
 void UGEngineControlWidget::saveComponentGuiLayoutToXml(RDK::USerStorageXML &xml)
@@ -1952,17 +1997,15 @@ void UGEngineControlWidget::saveComponentGuiLayoutToXml(RDK::USerStorageXML &xml
         xml.SelectUp();
     }
 
-    xml.WriteInteger("GridCount", m_componentGuiGrids.size());
-    int gridIndex = 0;
-    for(auto it = m_componentGuiGrids.begin(); it != m_componentGuiGrids.end(); ++it)
+    xml.WriteInteger("TabHostCount", m_componentGuiTabHosts.size());
+    int hostIndex = 0;
+    for(auto it = m_componentGuiTabHosts.begin(); it != m_componentGuiTabHosts.end(); ++it)
     {
         if(it.value().isNull())
             continue;
-        UComponentGuiGridContainerWidget* grid = it.value().data();
-        xml.SelectNodeForce("Grid_" + RDK::sntoa(++gridIndex));
-        xml.WriteString("GridId", grid->gridId().toStdString());
-        xml.WriteInteger("Rows", grid->rowCount());
-        xml.WriteInteger("Cols", grid->colCount());
+        UComponentGuiTabHostWidget* host = it.value().data();
+        xml.SelectNodeForce("TabHost_" + RDK::sntoa(++hostIndex));
+        xml.WriteString("HostId", host->hostId().toStdString());
         xml.SelectUp();
     }
     xml.SelectUp();
@@ -1973,17 +2016,20 @@ void UGEngineControlWidget::loadComponentGuiLayoutFromXml(RDK::USerStorageXML &x
     if(!xml.SelectNode("ComponentGuiLayout"))
         return;
 
-    const int gridCount = xml.ReadInteger("GridCount", 0);
-    for(int i = 0; i < gridCount; ++i)
+    const int hostCount = xml.ReadInteger("TabHostCount", 0);
+    for(int i = 0; i < hostCount; ++i)
     {
-        if(!xml.SelectNode("Grid_" + RDK::sntoa(i + 1)))
+        if(!xml.SelectNode("TabHost_" + RDK::sntoa(i + 1)))
             continue;
-        const QString gridId = QString::fromStdString(xml.ReadString("GridId", "DefaultGrid"));
-        const int rows = xml.ReadInteger("Rows", 1);
-        const int cols = xml.ReadInteger("Cols", 1);
-        ensureComponentGuiGrid(gridId, rows, cols);
+        const QString hostId = QString::fromStdString(xml.ReadString("HostId", "MainTabHost"));
+        ensureComponentGuiTabHost(hostId);
         xml.SelectUp();
     }
+
+    // Legacy compatibility: old grid layout nodes map to a tab host.
+    const int legacyGridCount = xml.ReadInteger("GridCount", 0);
+    if(legacyGridCount > 0)
+        ensureComponentGuiTabHost(QStringLiteral("MainTabHost"));
 
     QList<UComponentGuiSessionSnapshot> sessions;
     const int sessionCount = xml.ReadInteger("SessionCount", 0);
@@ -2030,14 +2076,16 @@ void UGEngineControlWidget::loadComponentGuiLayoutFromXml(RDK::USerStorageXML &x
         {
             m_componentGuiService.detachToFloating(context);
         }
-        else if(s.hostMode == UComponentGuiHostMode::Grid && !s.containerId.isEmpty())
+        else if((s.hostMode == UComponentGuiHostMode::TabHost || s.hostMode == UComponentGuiHostMode::Grid) && !s.containerId.isEmpty())
         {
-            UComponentGuiGridContainerWidget* grid = ensureComponentGuiGrid(s.containerId, 1, 1);
-            const int row = qMax(0, s.cellRow);
-            const int col = qMax(0, s.cellCol);
-            if(grid->rowCount() <= row || grid->colCount() <= col)
-                grid->setGridSize(qMax(grid->rowCount(), row + 1), qMax(grid->colCount(), col + 1));
-            grid->assignCell(row, col, context);
+            UComponentGuiTabHostWidget* host = ensureComponentGuiTabHost(s.containerId);
+            if(host)
+                host->assignContext(context);
+        }
+        else if(s.hostMode == UComponentGuiHostMode::SecondaryDock)
+        {
+            showComponentGuiSecondaryHostWindow();
+            m_componentGuiService.attachToSecondaryDock(context);
         }
         if(s.isActive && !hasActive)
         {
@@ -2063,14 +2111,14 @@ void UGEngineControlWidget::writeComponentGuiSettings(QSettings& projectSettings
 {
     const QList<UComponentGuiSessionSnapshot> sessions = m_componentGuiService.snapshotOpenSessions();
     QSet<QString> liveFloatingSessions;
-    QSet<QString> liveGridIds;
+    QSet<QString> liveTabHostIds;
 
     projectSettings.beginGroup("ComponentGui");
     projectSettings.beginGroup("Floating");
     const QStringList storedFloating = projectSettings.childGroups();
     projectSettings.endGroup();
-    projectSettings.beginGroup("Grid");
-    const QStringList storedGrids = projectSettings.childGroups();
+    projectSettings.beginGroup("TabHost");
+    const QStringList storedHosts = projectSettings.childGroups();
     projectSettings.endGroup();
     projectSettings.endGroup();
 
@@ -2090,36 +2138,37 @@ void UGEngineControlWidget::writeComponentGuiSettings(QSettings& projectSettings
             projectSettings.remove(QStringLiteral("ComponentGui/Floating/%1").arg(staleId));
     }
 
-    for(auto it = m_componentGuiGrids.begin(); it != m_componentGuiGrids.end(); ++it)
+    for(auto it = m_componentGuiTabHosts.begin(); it != m_componentGuiTabHosts.end(); ++it)
     {
         if(it.value().isNull())
             continue;
-        UComponentGuiGridContainerWidget* grid = it.value().data();
-        liveGridIds.insert(grid->gridId());
-        const QString gridPrefix = QStringLiteral("ComponentGui/Grid/%1").arg(grid->gridId());
-        projectSettings.setValue(gridPrefix + "/RootSplitterState", grid->saveGridState());
-        projectSettings.remove(gridPrefix + "/Row");
-        for(int row = 0; row < grid->rowCount(); ++row)
-            projectSettings.setValue(gridPrefix + QStringLiteral("/Row/%1/SplitterState").arg(row), grid->saveRowState(row));
+        UComponentGuiTabHostWidget* host = it.value().data();
+        liveTabHostIds.insert(host->hostId());
+        const QString hostPrefix = QStringLiteral("ComponentGui/TabHost/%1").arg(host->hostId());
+        projectSettings.setValue(hostPrefix + "/State", host->saveState());
     }
-    for(const QString& staleGrid : storedGrids)
+    for(const QString& staleHost : storedHosts)
     {
-        if(!liveGridIds.contains(staleGrid))
-            projectSettings.remove(QStringLiteral("ComponentGui/Grid/%1").arg(staleGrid));
+        if(!liveTabHostIds.contains(staleHost))
+            projectSettings.remove(QStringLiteral("ComponentGui/TabHost/%1").arg(staleHost));
+    }
+
+    if(m_componentGuiSecondaryHostWindow)
+    {
+        projectSettings.setValue("ComponentGui/SecondaryWindow/Geometry", m_componentGuiSecondaryHostWindow->saveGeometry());
+        projectSettings.setValue("ComponentGui/SecondaryWindow/State", m_componentGuiSecondaryHostWindow->saveState());
     }
 }
 
 void UGEngineControlWidget::readComponentGuiSettings(QSettings& projectSettings)
 {
-    for(auto it = m_componentGuiGrids.begin(); it != m_componentGuiGrids.end(); ++it)
+    for(auto it = m_componentGuiTabHosts.begin(); it != m_componentGuiTabHosts.end(); ++it)
     {
         if(it.value().isNull())
             continue;
-        UComponentGuiGridContainerWidget* grid = it.value().data();
-        const QString gridPrefix = QStringLiteral("ComponentGui/Grid/%1").arg(grid->gridId());
-        grid->restoreGridState(projectSettings.value(gridPrefix + "/RootSplitterState").toByteArray());
-        for(int row = 0; row < grid->rowCount(); ++row)
-            grid->restoreRowState(row, projectSettings.value(gridPrefix + QStringLiteral("/Row/%1/SplitterState").arg(row)).toByteArray());
+        UComponentGuiTabHostWidget* host = it.value().data();
+        const QString hostPrefix = QStringLiteral("ComponentGui/TabHost/%1").arg(host->hostId());
+        host->restoreState(projectSettings.value(hostPrefix + "/State").toByteArray());
     }
 
     const QList<UComponentGuiSessionSnapshot> sessions = m_componentGuiService.snapshotOpenSessions();
@@ -2132,6 +2181,20 @@ void UGEngineControlWidget::readComponentGuiSettings(QSettings& projectSettings)
         const QByteArray state = projectSettings.value(prefix + "/WindowState").toByteArray();
         m_componentGuiService.applyFloatingState(s.sessionId, geometry, state);
     }
+
+    const QByteArray secondaryGeometry = projectSettings.value("ComponentGui/SecondaryWindow/Geometry").toByteArray();
+    const QByteArray secondaryState = projectSettings.value("ComponentGui/SecondaryWindow/State").toByteArray();
+    if(!secondaryGeometry.isEmpty() || !secondaryState.isEmpty())
+    {
+        showComponentGuiSecondaryHostWindow();
+        if(m_componentGuiSecondaryHostWindow)
+        {
+            if(!secondaryGeometry.isEmpty())
+                m_componentGuiSecondaryHostWindow->restoreGeometry(secondaryGeometry);
+            if(!secondaryState.isEmpty())
+                m_componentGuiSecondaryHostWindow->restoreState(secondaryState);
+        }
+    }
 }
 
 QString UGEngineControlWidget::hostModeToString(UComponentGuiHostMode mode) const
@@ -2142,6 +2205,10 @@ QString UGEngineControlWidget::hostModeToString(UComponentGuiHostMode mode) cons
         return QStringLiteral("mdi");
     case UComponentGuiHostMode::Floating:
         return QStringLiteral("floating");
+    case UComponentGuiHostMode::TabHost:
+        return QStringLiteral("tabhost");
+    case UComponentGuiHostMode::SecondaryDock:
+        return QStringLiteral("secondary_dock");
     case UComponentGuiHostMode::Grid:
         return QStringLiteral("grid");
     }
@@ -2152,8 +2219,12 @@ UComponentGuiHostMode UGEngineControlWidget::hostModeFromString(const QString& m
 {
     if(mode == QStringLiteral("floating"))
         return UComponentGuiHostMode::Floating;
+    if(mode == QStringLiteral("tabhost"))
+        return UComponentGuiHostMode::TabHost;
+    if(mode == QStringLiteral("secondary_dock"))
+        return UComponentGuiHostMode::SecondaryDock;
     if(mode == QStringLiteral("grid"))
-        return UComponentGuiHostMode::Grid;
+        return UComponentGuiHostMode::TabHost;
     return UComponentGuiHostMode::Mdi;
 }
 
@@ -2167,10 +2238,14 @@ void UGEngineControlWidget::showComponentGuiHostMenu(UVisualControllerWidget* wi
     QMenu menu(this);
     QAction* detachAction = menu.addAction("Detach");
     QAction* attachAction = menu.addAction("Attach to MDI");
-    QAction* moveToGridAction = menu.addAction("Move to Grid...");
-    detachAction->setEnabled(mode == UComponentGuiHostMode::Mdi || mode == UComponentGuiHostMode::Grid);
+    QAction* moveToTabHostAction = menu.addAction("Move to Tab Host...");
+    QAction* moveToSecondaryDockAction = menu.addAction("Move to Secondary Host");
+    detachAction->setEnabled(mode == UComponentGuiHostMode::Mdi ||
+                             mode == UComponentGuiHostMode::TabHost ||
+                             mode == UComponentGuiHostMode::SecondaryDock);
     attachAction->setEnabled(mode == UComponentGuiHostMode::Floating);
-    moveToGridAction->setEnabled(mode != UComponentGuiHostMode::Grid);
+    moveToTabHostAction->setEnabled(mode != UComponentGuiHostMode::TabHost);
+    moveToSecondaryDockAction->setEnabled(mode != UComponentGuiHostMode::SecondaryDock);
 
     QAction* chosen = menu.exec(globalPos);
     if(chosen == detachAction)
@@ -2183,58 +2258,39 @@ void UGEngineControlWidget::showComponentGuiHostMenu(UVisualControllerWidget* wi
         m_componentGuiService.attachToMdi(context, ui->mdiArea);
         return;
     }
-    if(chosen == moveToGridAction)
+    if(chosen == moveToSecondaryDockAction)
     {
-        const QStringList grids = componentGuiGridIds();
-        if(grids.isEmpty())
+        showComponentGuiSecondaryHostWindow();
+        if(!m_componentGuiService.attachToSecondaryDock(context))
         {
-            QMessageBox::information(this, tr("Move to Grid"),
-                                     tr("No component GUI grid exists yet. Create one from Window -> Component GUI Grid..."));
-            return;
+            QMessageBox::warning(this, tr("Move to Secondary Host"),
+                                 tr("Failed to move GUI to secondary host window."));
+        }
+        return;
+    }
+    if(chosen == moveToTabHostAction)
+    {
+        const QStringList hosts = componentGuiTabHostIds();
+        if(hosts.isEmpty())
+        {
+            ensureComponentGuiTabHost(QStringLiteral("MainTabHost"));
         }
 
         bool ok = false;
-        const QString gridId = QInputDialog::getItem(this,
-                                                     tr("Move to Grid"),
-                                                     tr("Grid ID:"),
-                                                     grids,
+        const QString hostId = QInputDialog::getItem(this,
+                                                     tr("Move to Tab Host"),
+                                                     tr("Host ID:"),
+                                                     componentGuiTabHostIds(),
                                                      0,
                                                      false,
                                                      &ok);
-        if(!ok || gridId.trimmed().isEmpty())
+        if(!ok || hostId.trimmed().isEmpty())
             return;
 
-        UComponentGuiGridContainerWidget* grid = findComponentGuiGrid(gridId);
-        if(!grid)
-            return;
-
-        int targetRow = -1;
-        int targetCol = -1;
-        for(int row = 0; row < grid->rowCount() && targetRow < 0; ++row)
+        if(!moveContextToTabHost(context, hostId))
         {
-            for(int col = 0; col < grid->colCount(); ++col)
-            {
-                if(!grid->hasContext(row, col))
-                {
-                    targetRow = row;
-                    targetCol = col;
-                    break;
-                }
-            }
-        }
-
-        if(targetRow < 0 || targetCol < 0)
-        {
-            QMessageBox::warning(this, tr("Move to Grid"),
-                                 tr("Grid '%1' has no free cells.").arg(gridId));
-            return;
-        }
-
-        if(!moveContextToGrid(context, gridId, targetRow, targetCol))
-        {
-            QMessageBox::warning(this, tr("Move to Grid"),
-                                 tr("Failed to move GUI to grid '%1' cell [%2, %3].")
-                                 .arg(gridId).arg(targetRow).arg(targetCol));
+            QMessageBox::warning(this, tr("Move to Tab Host"),
+                                 tr("Failed to move GUI to tab host '%1'.").arg(hostId));
         }
     }
 }
@@ -2256,28 +2312,13 @@ bool UGEngineControlWidget::resolveComponentGuiWidgetContext(UVisualControllerWi
     return true;
 }
 
-void UGEngineControlWidget::promptAndOpenComponentGuiGrid()
+void UGEngineControlWidget::promptAndOpenComponentGuiTabHost()
 {
-    UComponentGuiGridDialog dialog(this);
-    dialog.setWindowTitle(tr("Component GUI Grid"));
-    dialog.setExistingGridIds(componentGuiGridIds());
-    dialog.setInitialGridId(QStringLiteral("MainGrid"));
-    dialog.setMoveModeEnabled(false);
-    if(dialog.exec() != QDialog::Accepted)
-        return;
-
-    const QString gridId = dialog.selectedGridId();
-    UComponentGuiGridContainerWidget* grid = findComponentGuiGrid(gridId);
-    if(dialog.createNewGrid())
+    UComponentGuiTabHostWidget* host = ensureComponentGuiTabHost(QStringLiteral("MainTabHost"));
+    if(host)
     {
-        grid = ensureComponentGuiGrid(gridId, dialog.rows(), dialog.cols());
-        if(grid)
-            grid->setGridSize(dialog.rows(), dialog.cols());
-    }
-    if(grid)
-    {
-        grid->show();
-        if(QMdiSubWindow* sub = qobject_cast<QMdiSubWindow*>(grid->parentWidget()))
+        host->show();
+        if(QMdiSubWindow* sub = qobject_cast<QMdiSubWindow*>(host->parentWidget()))
         {
             ui->mdiArea->setActiveSubWindow(sub);
             sub->raise();
@@ -2299,6 +2340,28 @@ void UGEngineControlWidget::startComponentGuiDrag(const UComponentGuiContext& co
     qInfo() << "[ComponentGuiDnD][MDI] tabDragFinished result=" << result;
     if(detachOnIgnoredDrop && result != Qt::MoveAction)
         m_componentGuiService.detachToFloating(context);
+}
+
+void UGEngineControlWidget::showComponentGuiSecondaryHostWindow()
+{
+    if(m_componentGuiSecondaryHostWindow.isNull())
+    {
+        QMainWindow* secondary = new QMainWindow(this);
+        secondary->setObjectName(QStringLiteral("ComponentGuiSecondaryHostWindow"));
+        secondary->setWindowTitle(tr("Component GUI Secondary Host"));
+        secondary->setAttribute(Qt::WA_DeleteOnClose, true);
+        secondary->setAcceptDrops(true);
+        secondary->installEventFilter(this);
+        connect(secondary, &QObject::destroyed, this, [this]() {
+            m_componentGuiSecondaryHostWindow = nullptr;
+            m_componentGuiService.setSecondaryHostMainWindow(nullptr);
+        });
+        m_componentGuiSecondaryHostWindow = secondary;
+        m_componentGuiService.setSecondaryHostMainWindow(secondary);
+    }
+    m_componentGuiSecondaryHostWindow->show();
+    m_componentGuiSecondaryHostWindow->raise();
+    m_componentGuiSecondaryHostWindow->activateWindow();
 }
 
 void UGEngineControlWidget::on_actionAbout_triggered()

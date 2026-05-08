@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
 #include <QApplication>
+#include <QFrame>
+#include <QMainWindow>
 #include <QMdiArea>
 #include <QString>
 
@@ -93,14 +95,23 @@ TEST(ComponentGuiLifecycle, SaveCloseOpenRestoresSessionsAndHostModes)
     UComponentFormRegistry::instance().registerFormFactory(classB, descriptorB);
 
     UComponentGuiService service(reinterpret_cast<RDK::UApplication*>(0x1));
+    QMainWindow mainWindow;
     QMdiArea mdiArea;
+    mainWindow.setCentralWidget(&mdiArea);
+    service.setHostMainWindow(&mainWindow);
+    QMainWindow secondaryWindow;
+    service.setSecondaryHostMainWindow(&secondaryWindow);
 
     const UComponentGuiContext contextMdi = MakeContext(classA, QStringLiteral("Model.Component.MDI"), 0);
-    const UComponentGuiContext contextFloating = MakeContext(classB, QStringLiteral("Model.Component.Floating"), 1);
+    const UComponentGuiContext contextSecondary = MakeContext(classB, QStringLiteral("Model.Component.Secondary"), 1);
 
-    ASSERT_NE(service.createOrActivate(&mdiArea, contextMdi), nullptr);
-    ASSERT_NE(service.createOrActivate(&mdiArea, contextFloating), nullptr);
-    EXPECT_TRUE(service.detachToFloating(contextFloating));
+    ASSERT_NE(service.createOrActivate(&mainWindow, contextMdi), nullptr);
+    ASSERT_NE(service.createOrActivate(&mainWindow, contextSecondary), nullptr);
+    EXPECT_TRUE(service.detachToFloating(contextMdi));
+    QFrame tabHostCell;
+    tabHostCell.resize(320, 240);
+    EXPECT_TRUE(service.moveToTabHost(contextMdi, QStringLiteral("MainTabHost"), &tabHostCell));
+    EXPECT_TRUE(service.attachToSecondaryDock(contextSecondary));
 
     QList<UComponentGuiSessionSnapshot> beforeSave = service.snapshotOpenSessions();
     ASSERT_EQ(beforeSave.size(), 2);
@@ -111,31 +122,100 @@ TEST(ComponentGuiLifecycle, SaveCloseOpenRestoresSessionsAndHostModes)
     service.clearAllInstances();
 
     UComponentGuiService reopened(reinterpret_cast<RDK::UApplication*>(0x1));
+    QMainWindow reopenedMainWindow;
+    QMdiArea reopenedMdiArea;
+    reopenedMainWindow.setCentralWidget(&reopenedMdiArea);
+    reopened.setHostMainWindow(&reopenedMainWindow);
+    QMainWindow reopenedSecondaryWindow;
+    reopened.setSecondaryHostMainWindow(&reopenedSecondaryWindow);
     QList<UComponentGuiSessionSnapshot> restored = LoadSessions(xml);
     ASSERT_EQ(restored.size(), 2);
+    QFrame reopenedTabHostCell;
+    reopenedTabHostCell.resize(320, 240);
 
     for(const UComponentGuiSessionSnapshot& s : restored)
     {
         UComponentGuiContext context = MakeContext(s.componentClassName, s.componentLongName, s.channelIndex);
-        ASSERT_NE(reopened.createOrActivate(&mdiArea, context), nullptr);
+        ASSERT_NE(reopened.createOrActivate(&reopenedMainWindow, context), nullptr);
         if(s.hostMode == UComponentGuiHostMode::Floating)
             EXPECT_TRUE(reopened.detachToFloating(context));
+        if(s.hostMode == UComponentGuiHostMode::TabHost)
+        {
+            EXPECT_TRUE(reopened.moveToTabHost(context, QStringLiteral("MainTabHost"), &reopenedTabHostCell));
+        }
+        if(s.hostMode == UComponentGuiHostMode::SecondaryDock)
+            EXPECT_TRUE(reopened.attachToSecondaryDock(context));
     }
 
     QList<UComponentGuiSessionSnapshot> afterOpen = reopened.snapshotOpenSessions();
     ASSERT_EQ(afterOpen.size(), 2);
 
-    int mdiCount = 0;
-    int floatingCount = 0;
+    int tabHostCount = 0;
+    int secondaryCount = 0;
     for(const UComponentGuiSessionSnapshot& s : afterOpen)
     {
-        if(s.hostMode == UComponentGuiHostMode::Mdi)
-            ++mdiCount;
-        if(s.hostMode == UComponentGuiHostMode::Floating)
-            ++floatingCount;
+        if(s.hostMode == UComponentGuiHostMode::TabHost)
+            ++tabHostCount;
+        if(s.hostMode == UComponentGuiHostMode::SecondaryDock)
+            ++secondaryCount;
     }
-    EXPECT_EQ(mdiCount, 1);
-    EXPECT_EQ(floatingCount, 1);
+    EXPECT_EQ(tabHostCount, 1);
+    EXPECT_EQ(secondaryCount, 1);
 
     reopened.clearAllInstances();
+}
+
+TEST(ComponentGuiLifecycle, LegacyGridHostModeRestoresToTabHost)
+{
+    static int argc = 1;
+    static char arg0[] = "test";
+    static char* argv[] = {arg0, nullptr};
+    if(!qApp)
+        new QApplication(argc, argv);
+
+    const QString classA = QStringLiteral("TestClass_Lifecycle_Legacy");
+    UComponentFormDescriptor descriptorA;
+    descriptorA.formId = "test.lifecycle.legacy";
+    descriptorA.title = "Lifecycle Legacy";
+    descriptorA.singleInstance = true;
+    descriptorA.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.lifecycle.controller.legacy", "Lifecycle Legacy Controller", nullptr, app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(classA, descriptorA);
+
+    RDK::USerStorageXML xml;
+    xml.Create("ComponentGuiLifecycleLegacy");
+    xml.SelectNodeForce("ComponentGuiLayout");
+    xml.WriteInteger("SessionCount", 1);
+    xml.SelectNodeForce("Session_1");
+    xml.WriteString("ComponentClassName", classA.toStdString());
+    xml.WriteString("ComponentLongName", QStringLiteral("Model.Component.Legacy").toStdString());
+    xml.WriteInteger("ChannelIndex", 0);
+    xml.WriteInteger("HostMode", static_cast<int>(UComponentGuiHostMode::Grid));
+    xml.WriteBool("IsActive", true);
+    xml.SelectUp();
+    xml.SelectUp();
+
+    QList<UComponentGuiSessionSnapshot> restored = LoadSessions(xml);
+    ASSERT_EQ(restored.size(), 1);
+    EXPECT_EQ(restored.first().hostMode, UComponentGuiHostMode::Grid);
+
+    UComponentGuiService service(reinterpret_cast<RDK::UApplication*>(0x1));
+    QMainWindow mainWindow;
+    QMdiArea mdiArea;
+    mainWindow.setCentralWidget(&mdiArea);
+    service.setHostMainWindow(&mainWindow);
+    const UComponentGuiContext context = MakeContext(restored.first().componentClassName,
+                                                     restored.first().componentLongName,
+                                                     restored.first().channelIndex);
+    ASSERT_NE(service.createOrActivate(&mainWindow, context), nullptr);
+    QFrame tabHostCell;
+    tabHostCell.resize(320, 240);
+    ASSERT_TRUE(service.moveToTabHost(context, QStringLiteral("MainTabHost"), &tabHostCell));
+
+    UComponentGuiHostMode mode = UComponentGuiHostMode::Mdi;
+    ASSERT_TRUE(service.tryGetHostModeByContext(context, mode));
+    EXPECT_EQ(mode, UComponentGuiHostMode::TabHost);
+
+    service.clearAllInstances();
 }

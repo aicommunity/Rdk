@@ -44,7 +44,7 @@
 #include "UProjectDescriptionWindow.h"
 #include "UComponentGuiService.h"
 #include "UComponentGuiContext.h"
-#include "UComponentGuiGridContainerWidget.h"
+#include "UComponentGuiTabHostWidget.h"
 
 #ifndef RDK_DISABLE_EXT_GUI
 #include "UVideoAnalyticsSimpleSettingsWidget.h"
@@ -296,11 +296,12 @@ private:
     bool m_componentSpecialFormsBasicLibEnabled = true;
     bool m_componentSpecialFormsCvBasicLibEnabled = true;
     bool m_componentSpecialFormsHardwareLibEnabled = true;
-    QHash<QString, QPointer<UComponentGuiGridContainerWidget>> m_componentGuiGrids;
+    QHash<QString, QPointer<UComponentGuiTabHostWidget>> m_componentGuiTabHosts;
+    QPointer<QMainWindow> m_componentGuiSecondaryHostWindow;
 
     // служебный метод для создания/активации пользовательского виджета
     void createOrActivateCustomWidget(const QString &id);
-    UComponentGuiGridContainerWidget* ensureComponentGuiGrid(const QString& gridId, int rows = 1, int cols = 1);
+    UComponentGuiTabHostWidget* ensureComponentGuiTabHost(const QString& hostId);
     void saveComponentGuiLayoutToXml(RDK::USerStorageXML &xml);
     void loadComponentGuiLayoutFromXml(RDK::USerStorageXML &xml);
     void writeComponentGuiSettings(QSettings& projectSettings);
@@ -311,11 +312,12 @@ private:
     bool resolveComponentGuiWidgetContext(UVisualControllerWidget* widget,
                                           UComponentGuiContext& context,
                                           UComponentGuiHostMode* mode = nullptr) const;
-    void promptAndOpenComponentGuiGrid();
-    UComponentGuiGridContainerWidget* findComponentGuiGrid(const QString& gridId) const;
-    QStringList componentGuiGridIds() const;
-    bool moveContextToGrid(const UComponentGuiContext& context, const QString& gridId, int row, int col);
+    void promptAndOpenComponentGuiTabHost();
+    UComponentGuiTabHostWidget* findComponentGuiTabHost(const QString& hostId) const;
+    QStringList componentGuiTabHostIds() const;
+    bool moveContextToTabHost(const UComponentGuiContext& context, const QString& hostId);
     void startComponentGuiDrag(const UComponentGuiContext& context, QWidget* dragSource, bool detachOnIgnoredDrop);
+    void showComponentGuiSecondaryHostWindow();
 
     // methods
 
