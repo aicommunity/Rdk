@@ -318,6 +318,8 @@ private:
     UComponentGuiTabHostWidget* findComponentGuiTabHost(const QString& hostId) const;
     QStringList componentGuiTabHostIds() const;
     bool moveContextToTabHost(const UComponentGuiContext& context, const QString& hostId);
+    void wireComponentGuiTabHostPruning(UComponentGuiTabHostWidget* host);
+    void pruneEmptyTabHostSlotsForContext(const UComponentGuiContext& context);
     void startComponentGuiDrag(const UComponentGuiContext& context, QWidget* dragSource, bool detachOnIgnoredDrop);
     void ensureComponentGuiDragSourcesInstalled(UVisualControllerWidget* widget);
     void installDragFilterRecursively(QWidget* root);

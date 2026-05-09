@@ -1835,6 +1835,7 @@ UComponentGuiTabHostWidget* UGEngineControlWidget::ensureComponentGuiTabHost(con
     }
     m_componentGuiTabHosts[hostId] = host;
     m_componentGuiService.setTabHostMainWindow(nullptr);
+    wireComponentGuiTabHostPruning(host);
     return host;
 }
 
@@ -1862,7 +1863,27 @@ bool UGEngineControlWidget::moveContextToTabHost(const UComponentGuiContext& con
     UComponentGuiTabHostWidget* host = findComponentGuiTabHost(hostId);
     if(!host)
         return false;
+    wireComponentGuiTabHostPruning(host);
     return host->assignContext(context);
+}
+
+void UGEngineControlWidget::wireComponentGuiTabHostPruning(UComponentGuiTabHostWidget* host)
+{
+    if(!host)
+        return;
+    host->setAfterAssignContextHook([this](const UComponentGuiContext& ctx) {
+        pruneEmptyTabHostSlotsForContext(ctx);
+    });
+}
+
+void UGEngineControlWidget::pruneEmptyTabHostSlotsForContext(const UComponentGuiContext& context)
+{
+    for(auto it = m_componentGuiTabHosts.begin(); it != m_componentGuiTabHosts.end(); ++it)
+    {
+        if(it.value().isNull())
+            continue;
+        it.value()->pruneStaleTabForContext(context);
+    }
 }
 
 void UGEngineControlWidget::saveComponentGuiLayoutToXml(RDK::USerStorageXML &xml)
@@ -1968,6 +1989,7 @@ void UGEngineControlWidget::loadComponentGuiLayoutFromXml(RDK::USerStorageXML &x
         if(s.hostMode == UComponentGuiHostMode::Floating)
         {
             m_componentGuiService.detachToFloating(context);
+            pruneEmptyTabHostSlotsForContext(context);
         }
         else if((s.hostMode == UComponentGuiHostMode::TabHost || s.hostMode == UComponentGuiHostMode::Grid) && !s.containerId.isEmpty())
         {
@@ -1979,6 +2001,7 @@ void UGEngineControlWidget::loadComponentGuiLayoutFromXml(RDK::USerStorageXML &x
         {
             showComponentGuiSecondaryHostWindow();
             m_componentGuiService.attachToSecondaryDock(context);
+            pruneEmptyTabHostSlotsForContext(context);
         }
         if(s.isActive && !hasActive)
         {
@@ -2160,11 +2183,13 @@ void UGEngineControlWidget::showComponentGuiHostMenu(UVisualControllerWidget* wi
     if(chosen == detachAction)
     {
         m_componentGuiService.detachToFloating(context);
+        pruneEmptyTabHostSlotsForContext(context);
         return;
     }
     if(chosen == attachAction)
     {
         m_componentGuiService.attachToMdi(context, ui->mdiArea);
+        pruneEmptyTabHostSlotsForContext(context);
         return;
     }
     if(chosen == moveToSecondaryDockAction)
@@ -2174,6 +2199,10 @@ void UGEngineControlWidget::showComponentGuiHostMenu(UVisualControllerWidget* wi
         {
             QMessageBox::warning(this, tr("Move to Secondary Host"),
                                  tr("Failed to move GUI to secondary host window."));
+        }
+        else
+        {
+            pruneEmptyTabHostSlotsForContext(context);
         }
         return;
     }
@@ -2239,7 +2268,10 @@ void UGEngineControlWidget::startComponentGuiDrag(const UComponentGuiContext& co
     drag->setMimeData(mime);
     const Qt::DropAction result = drag->exec(Qt::MoveAction);
     if(detachOnIgnoredDrop && result != Qt::MoveAction)
+    {
         m_componentGuiService.detachToFloating(context);
+        pruneEmptyTabHostSlotsForContext(context);
+    }
 }
 
 void UGEngineControlWidget::ensureComponentGuiDragSourcesInstalled(UVisualControllerWidget* widget)
@@ -2294,6 +2326,7 @@ void UGEngineControlWidget::ensureComponentGuiQuickActionsInstalled(UVisualContr
             if(!m_componentGuiService.tryGetContextByWidget(widget, context))
                 return;
             m_componentGuiService.attachToMdi(context, ui->mdiArea);
+            pruneEmptyTabHostSlotsForContext(context);
         });
         connect(toTab, &QToolButton::clicked, this, [this, widget]() {
             UComponentGuiContext context;
@@ -2308,6 +2341,7 @@ void UGEngineControlWidget::ensureComponentGuiQuickActionsInstalled(UVisualContr
                 return;
             showComponentGuiSecondaryHostWindow();
             m_componentGuiService.attachToSecondaryDock(context);
+            pruneEmptyTabHostSlotsForContext(context);
         });
     }
 
@@ -2377,6 +2411,7 @@ bool UGEngineControlWidget::handleDropToSecondaryHost(const QMimeData* mimeData)
 
     if(!m_componentGuiService.attachToSecondaryDock(context))
         return false;
+    pruneEmptyTabHostSlotsForContext(context);
     Q_UNUSED(sourceHostId);
     Q_UNUSED(sourceIndex);
     return true;

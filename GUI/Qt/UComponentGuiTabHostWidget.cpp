@@ -33,6 +33,7 @@ UComponentGuiTabHostWidget::UComponentGuiTabHostWidget(const QString& hostId,
     layout->setSpacing(0);
 
     m_tabWidget = new QTabWidget(this);
+    m_tabWidget->setTabPosition(QTabWidget::South);
     m_tabWidget->setTabsClosable(true);
     m_tabWidget->setMovable(true);
     m_tabWidget->setAcceptDrops(true);
@@ -101,11 +102,41 @@ bool UComponentGuiTabHostWidget::assignContext(const UComponentGuiContext& conte
         if(!m_service->moveToTabHost(context, m_hostId, host))
             return false;
     }
-    widget->setGeometry(host->rect());
-    widget->show();
+    embedWidgetInTabCell(host, widget);
     m_tabWidget->setCurrentIndex(existingIndex);
     syncCurrentTabState();
+    if(m_afterAssignContextHook)
+        m_afterAssignContextHook(context);
     return true;
+}
+
+void UComponentGuiTabHostWidget::setAfterAssignContextHook(std::function<void(const UComponentGuiContext&)> hook)
+{
+    m_afterAssignContextHook = std::move(hook);
+}
+
+void UComponentGuiTabHostWidget::embedWidgetInTabCell(QWidget* cell, UVisualControllerWidget* widget)
+{
+    if(!cell || !widget)
+        return;
+
+    if(auto* hLayout = qobject_cast<QHBoxLayout*>(cell->layout()))
+    {
+        if(hLayout->indexOf(widget) < 0)
+        {
+            while(hLayout->count())
+                delete hLayout->takeAt(0);
+            hLayout->addWidget(widget, 1);
+        }
+        widget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    }
+    else
+    {
+        widget->setParent(cell);
+        widget->setGeometry(cell->rect());
+    }
+    widget->show();
+    widget->raise();
 }
 
 bool UComponentGuiTabHostWidget::removeContext(const UComponentGuiContext& context)
@@ -165,6 +196,38 @@ void UComponentGuiTabHostWidget::restoreState(const QByteArray& state)
     const int index = QString::fromUtf8(state).toInt(&ok);
     if(ok && index >= 0 && index < m_tabWidget->count())
         m_tabWidget->setCurrentIndex(index);
+}
+
+void UComponentGuiTabHostWidget::pruneStaleTabForContext(const UComponentGuiContext& context)
+{
+    if(!m_tabWidget || !m_tabWidget->tabBar())
+        return;
+
+    const QString key = contextKey(context);
+    bool changed = false;
+
+    for(int i = m_tabWidget->count() - 1; i >= 0; --i)
+    {
+        QWidget* host = m_tabWidget->widget(i);
+        if(!host)
+            continue;
+
+        const QVariant data = m_tabWidget->tabBar()->tabData(i);
+        const bool keyedHere = (data.toString() == key) || (m_tabHosts.value(key).data() == host);
+        if(!keyedHere)
+            continue;
+
+        if(host->findChild<UVisualControllerWidget*>(QString(), Qt::FindDirectChildrenOnly))
+            continue;
+
+        m_tabWidget->removeTab(i);
+        if(m_tabHosts.contains(key) && m_tabHosts[key].data() == host)
+            m_tabHosts.remove(key);
+        changed = true;
+    }
+
+    if(changed)
+        syncCurrentTabState();
 }
 
 bool UComponentGuiTabHostWidget::eventFilter(QObject* watched, QEvent* event)

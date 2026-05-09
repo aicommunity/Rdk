@@ -457,8 +457,13 @@ bool UComponentGuiService::moveToTabHost(const UComponentGuiContext& context,
     widget->hide();
     widget->setParent(hostWidget);
     widget->setWindowFlags(Qt::Widget);
-    widget->setGeometry(hostWidget->rect());
-    widget->show();
+    // Tab host cells use a layout and often still have an empty rect right after addTab();
+    // UComponentGuiTabHostWidget::embedWidgetInTabCell finishes sizing in that case.
+    if(!hostWidget->layout())
+    {
+        widget->setGeometry(hostWidget->rect());
+        widget->show();
+    }
 
     assignHostMode(key, UComponentGuiHostMode::TabHost, hostId, -1, -1);
     m_lastActiveSession = key;

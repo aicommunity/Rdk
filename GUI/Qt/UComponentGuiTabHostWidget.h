@@ -5,6 +5,8 @@
 #include <QPointer>
 #include <QTabWidget>
 
+#include <functional>
+
 #include "UComponentGuiContext.h"
 #include "UVisualControllerWidget.h"
 
@@ -32,6 +34,11 @@ public:
     QByteArray saveState() const;
     void restoreState(const QByteArray& state);
 
+    /// Remove a tab whose cell is empty for this context (after the widget moved to another host).
+    void pruneStaleTabForContext(const UComponentGuiContext& context);
+
+    void setAfterAssignContextHook(std::function<void(const UComponentGuiContext&)> hook);
+
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
     void dragEnterEvent(QDragEnterEvent* event) override;
@@ -44,6 +51,7 @@ private:
     int tabIndexForContext(const UComponentGuiContext& context) const;
     QWidget* hostWidgetForIndex(int index) const;
     void syncCurrentTabState();
+    static void embedWidgetInTabCell(QWidget* cell, UVisualControllerWidget* widget);
     static QString contextKey(const UComponentGuiContext& context);
 
 private:
@@ -53,6 +61,7 @@ private:
     QHash<QString, QPointer<QWidget>> m_tabHosts;
     QPoint m_dragStartPos;
     int m_dragStartIndex = -1;
+    std::function<void(const UComponentGuiContext&)> m_afterAssignContextHook;
 };
 
 #endif // UCOMPONENTGUITABHOSTWIDGET_H
