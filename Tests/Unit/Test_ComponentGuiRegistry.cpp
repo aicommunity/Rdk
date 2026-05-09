@@ -117,3 +117,151 @@ TEST(ComponentGuiTabHost, AssignContextAddsTab)
     EXPECT_EQ(host.contexts().size(), 1);
     service.clearAllInstances();
 }
+
+TEST(ComponentGuiTransfer, TabHostSecondaryRoundTripViaServiceRoute)
+{
+    EnsureApp();
+    const QString className = QStringLiteral("TestClass_TabHost_Secondary_RoundTrip");
+    UComponentFormDescriptor descriptor;
+    descriptor.formId = "test.form.tabhost.secondary.roundtrip";
+    descriptor.title = "TabHost Secondary RoundTrip";
+    descriptor.singleInstance = true;
+    descriptor.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.tabhost.secondary.roundtrip.controller",
+                                                     "TabHost Secondary RoundTrip Controller",
+                                                     nullptr,
+                                                     app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(className, descriptor);
+
+    UComponentGuiService service(reinterpret_cast<RDK::UApplication*>(0x1));
+    QMainWindow mainWindow;
+    QMdiArea mdiArea;
+    mainWindow.setCentralWidget(&mdiArea);
+    service.setHostMainWindow(&mainWindow);
+
+    QMainWindow secondaryWindow;
+    service.setSecondaryHostMainWindow(&secondaryWindow);
+
+    UComponentGuiTabHostWidget tabHost(QStringLiteral("MainTabHost"),
+                                       &service,
+                                       nullptr,
+                                       reinterpret_cast<RDK::UApplication*>(0x1));
+    const UComponentGuiContext context = MakeContext(className, QStringLiteral("Model.RoundTrip"), 2);
+
+    ASSERT_NE(service.createOrActivate(&mainWindow, context), nullptr);
+    UComponentGuiHostMode mode = UComponentGuiHostMode::Floating;
+    ASSERT_TRUE(service.tryGetHostModeByContext(context, mode));
+    EXPECT_EQ(mode, UComponentGuiHostMode::Mdi);
+
+    ASSERT_TRUE(tabHost.assignContext(context));
+    ASSERT_TRUE(service.tryGetHostModeByContext(context, mode));
+    EXPECT_EQ(mode, UComponentGuiHostMode::TabHost);
+    EXPECT_TRUE(tabHost.hasContext(context));
+    EXPECT_EQ(tabHost.contexts().size(), 1);
+
+    ASSERT_TRUE(service.attachToSecondaryDock(context));
+    ASSERT_TRUE(service.tryGetHostModeByContext(context, mode));
+    EXPECT_EQ(mode, UComponentGuiHostMode::SecondaryDock);
+
+    ASSERT_TRUE(tabHost.assignContext(context));
+    ASSERT_TRUE(service.tryGetHostModeByContext(context, mode));
+    EXPECT_EQ(mode, UComponentGuiHostMode::TabHost);
+    EXPECT_TRUE(tabHost.hasContext(context));
+
+    ASSERT_TRUE(service.attachToMdi(context, &mdiArea));
+    ASSERT_TRUE(service.tryGetHostModeByContext(context, mode));
+    EXPECT_EQ(mode, UComponentGuiHostMode::Mdi);
+
+    const QList<UComponentGuiSessionSnapshot> sessions = service.snapshotOpenSessions();
+    ASSERT_EQ(sessions.size(), 1);
+    EXPECT_EQ(sessions.first().hostMode, UComponentGuiHostMode::Mdi);
+
+    service.clearAllInstances();
+}
+
+TEST(ComponentGuiTransfer, TwoContextsCrossSwapBetweenTabHostAndSecondary)
+{
+    EnsureApp();
+    const QString classA = QStringLiteral("TestClass_TabHost_Secondary_Cross_A");
+    const QString classB = QStringLiteral("TestClass_TabHost_Secondary_Cross_B");
+
+    UComponentFormDescriptor descriptorA;
+    descriptorA.formId = "test.form.tabhost.secondary.cross.a";
+    descriptorA.title = "Cross A";
+    descriptorA.singleInstance = true;
+    descriptorA.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.tabhost.secondary.cross.controller.a",
+                                                     "Cross Controller A",
+                                                     nullptr,
+                                                     app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(classA, descriptorA);
+
+    UComponentFormDescriptor descriptorB;
+    descriptorB.formId = "test.form.tabhost.secondary.cross.b";
+    descriptorB.title = "Cross B";
+    descriptorB.singleInstance = true;
+    descriptorB.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.tabhost.secondary.cross.controller.b",
+                                                     "Cross Controller B",
+                                                     nullptr,
+                                                     app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(classB, descriptorB);
+
+    UComponentGuiService service(reinterpret_cast<RDK::UApplication*>(0x1));
+    QMainWindow mainWindow;
+    QMdiArea mdiArea;
+    mainWindow.setCentralWidget(&mdiArea);
+    service.setHostMainWindow(&mainWindow);
+
+    QMainWindow secondaryWindow;
+    service.setSecondaryHostMainWindow(&secondaryWindow);
+
+    UComponentGuiTabHostWidget tabHost(QStringLiteral("MainTabHost"),
+                                       &service,
+                                       nullptr,
+                                       reinterpret_cast<RDK::UApplication*>(0x1));
+    const UComponentGuiContext contextA = MakeContext(classA, QStringLiteral("Model.Cross.A"), 10);
+    const UComponentGuiContext contextB = MakeContext(classB, QStringLiteral("Model.Cross.B"), 11);
+
+    ASSERT_NE(service.createOrActivate(&mainWindow, contextA), nullptr);
+    ASSERT_NE(service.createOrActivate(&mainWindow, contextB), nullptr);
+
+    ASSERT_TRUE(tabHost.assignContext(contextA));
+    ASSERT_TRUE(service.attachToSecondaryDock(contextB));
+
+    UComponentGuiHostMode modeA = UComponentGuiHostMode::Floating;
+    UComponentGuiHostMode modeB = UComponentGuiHostMode::Floating;
+    ASSERT_TRUE(service.tryGetHostModeByContext(contextA, modeA));
+    ASSERT_TRUE(service.tryGetHostModeByContext(contextB, modeB));
+    EXPECT_EQ(modeA, UComponentGuiHostMode::TabHost);
+    EXPECT_EQ(modeB, UComponentGuiHostMode::SecondaryDock);
+
+    // Cross swap: A -> Secondary, B -> TabHost.
+    ASSERT_TRUE(service.attachToSecondaryDock(contextA));
+    ASSERT_TRUE(tabHost.assignContext(contextB));
+
+    ASSERT_TRUE(service.tryGetHostModeByContext(contextA, modeA));
+    ASSERT_TRUE(service.tryGetHostModeByContext(contextB, modeB));
+    EXPECT_EQ(modeA, UComponentGuiHostMode::SecondaryDock);
+    EXPECT_EQ(modeB, UComponentGuiHostMode::TabHost);
+    EXPECT_TRUE(tabHost.hasContext(contextB));
+
+    const QList<UComponentGuiSessionSnapshot> sessions = service.snapshotOpenSessions();
+    ASSERT_EQ(sessions.size(), 2);
+    int tabHostCount = 0;
+    int secondaryCount = 0;
+    for(const UComponentGuiSessionSnapshot& s : sessions)
+    {
+        if(s.hostMode == UComponentGuiHostMode::TabHost)
+            ++tabHostCount;
+        if(s.hostMode == UComponentGuiHostMode::SecondaryDock)
+            ++secondaryCount;
+    }
+    EXPECT_EQ(tabHostCount, 1);
+    EXPECT_EQ(secondaryCount, 1);
+
+    service.clearAllInstances();
+}

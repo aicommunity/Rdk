@@ -31,6 +31,7 @@
 #include <algorithm>
 #include <QCursor>
 #include <QSet>
+#include <QToolButton>
 #include <QDialog>
 #include <QDrag>
 #include <QMimeData>
@@ -38,6 +39,7 @@
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDropEvent>
+#include <QDragLeaveEvent>
 
 /*int heheheCounter = 0;
 void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
@@ -55,7 +57,12 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     if(application == NULL)
       QApplication::exit(-1);
 
+    qApp->installEventFilter(this);
+
     m_componentGuiService.setHostMainWindow(this);
+    setDockOptions(QMainWindow::AllowNestedDocks |
+                   QMainWindow::AllowTabbedDocks |
+                   QMainWindow::GroupedDragging);
 
     QString caption_line=(application->GetProgramName()+" ").c_str();
     caption_line += QCoreApplication::applicationVersion();
@@ -155,6 +162,16 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     connect(ui->mdiArea, &QMdiArea::subWindowActivated, this, [this](QMdiSubWindow* window) {
         Q_UNUSED(window);
         QTimer::singleShot(0, this, [this]() {
+            const QList<QMdiSubWindow*> subWindows = ui->mdiArea->subWindowList(QMdiArea::CreationOrder);
+            for(QMdiSubWindow* sub : subWindows)
+            {
+                if(!sub)
+                    continue;
+                sub->setProperty("componentGuiDragSource", true);
+                sub->installEventFilter(this);
+                if(QWidget* hosted = sub->widget())
+                    installDragFilterRecursively(hosted);
+            }
             QTabBar* tabBar = ui->mdiArea->findChild<QTabBar*>();
             if(!tabBar)
                 return;
@@ -367,18 +384,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     // Theme switcher menu
     createThemeMenu();
     QAction* componentGuiHostAction = ui->menuWindow->addAction(tr("Component GUI Tab Host..."));
-    connect(componentGuiHostAction, &QAction::triggered, this, [this]() {
-        UComponentGuiTabHostWidget* host = ensureComponentGuiTabHost(QStringLiteral("MainTabHost"));
-        if(host)
-        {
-            host->show();
-            if(QMdiSubWindow* sub = qobject_cast<QMdiSubWindow*>(host->parentWidget()))
-            {
-                ui->mdiArea->setActiveSubWindow(sub);
-                sub->raise();
-            }
-        }
-    });
+    connect(componentGuiHostAction, &QAction::triggered, this, [this]() { promptAndOpenComponentGuiTabHost(); });
     QAction* componentGuiSecondaryHostAction = ui->menuWindow->addAction(tr("Component GUI Secondary Host..."));
     connect(componentGuiSecondaryHostAction, &QAction::triggered, this, &UGEngineControlWidget::showComponentGuiSecondaryHostWindow);
 
@@ -424,122 +430,12 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 
 bool UGEngineControlWidget::eventFilter(QObject* watched, QEvent* event)
 {
-    QTabBar* tabBar = ui && ui->mdiArea ? ui->mdiArea->findChild<QTabBar*>() : nullptr;
-    if(!m_componentGuiSecondaryHostWindow.isNull() && watched == m_componentGuiSecondaryHostWindow.data())
+    if(event && event->type() == QEvent::Resize && watched && watched->property("componentGuiQuickActionsHost").toBool())
     {
-        if(event->type() == QEvent::DragEnter)
-        {
-            QDragEnterEvent* dragEvent = static_cast<QDragEnterEvent*>(event);
-            if(dragEvent->mimeData() && dragEvent->mimeData()->hasFormat(UComponentGuiDndPayload::mimeType()))
-                dragEvent->acceptProposedAction();
-            else
-                dragEvent->ignore();
-            return true;
-        }
-        if(event->type() == QEvent::Drop)
-        {
-            QDropEvent* dropEvent = static_cast<QDropEvent*>(event);
-            UComponentGuiContext context;
-            QString sourceHostId;
-            int sourceIndex = -1;
-            int sourceCol = -1;
-            if(UComponentGuiDndPayload::decode(dropEvent->mimeData(), context, sourceHostId, sourceIndex, sourceCol) &&
-               m_componentGuiService.attachToSecondaryDock(context))
-            {
-                Q_UNUSED(sourceCol);
-                if(!sourceHostId.isEmpty() && sourceIndex >= 0)
-                {
-                    if(auto* srcHost = findComponentGuiTabHost(sourceHostId))
-                        srcHost->removeContext(context);
-                }
-                dropEvent->acceptProposedAction();
-            }
-            else
-            {
-                dropEvent->ignore();
-            }
-            return true;
-        }
+        UVisualControllerWidget* host = qobject_cast<UVisualControllerWidget*>(watched);
+        if(host)
+            positionComponentGuiQuickActions(host);
     }
-
-    if(tabBar && watched == tabBar)
-    {
-        if(event->type() == QEvent::MouseButtonPress)
-        {
-            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-            if(mouseEvent->button() == Qt::LeftButton)
-            {
-                m_componentGuiTabDragStartPos = mouseEvent->pos();
-                m_componentGuiTabDragIndex = tabBar->tabAt(mouseEvent->pos());
-            }
-        }
-        else if(event->type() == QEvent::MouseMove)
-        {
-            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-            if((mouseEvent->buttons() & Qt::LeftButton) && m_componentGuiTabDragIndex >= 0)
-            {
-                if((mouseEvent->pos() - m_componentGuiTabDragStartPos).manhattanLength() >= QApplication::startDragDistance())
-                {
-                    const QList<QMdiSubWindow*> list = ui->mdiArea->subWindowList(QMdiArea::CreationOrder);
-                    if(m_componentGuiTabDragIndex >= 0 && m_componentGuiTabDragIndex < list.size() && list[m_componentGuiTabDragIndex])
-                    {
-                        UVisualControllerWidget* widget = qobject_cast<UVisualControllerWidget*>(list[m_componentGuiTabDragIndex]->widget());
-                        UComponentGuiContext context;
-                        if(resolveComponentGuiWidgetContext(widget, context))
-                        {
-                            // Reliable detach from MDI tab: do not rely on tab-level QDrag result.
-                            // Native/window-manager interactions may consume tab drag and prevent
-                            // deterministic detach. We detach immediately and then use floating drag bar.
-                            m_componentGuiService.detachToFloating(context);
-                        }
-                    }
-                    m_componentGuiTabDragIndex = -1;
-                }
-            }
-        }
-        else if(event->type() == QEvent::DragEnter)
-        {
-            QDragEnterEvent* dragEvent = static_cast<QDragEnterEvent*>(event);
-            if(dragEvent->mimeData() && dragEvent->mimeData()->hasFormat(UComponentGuiDndPayload::mimeType()))
-                dragEvent->acceptProposedAction();
-            else
-                dragEvent->ignore();
-        }
-        else if(event->type() == QEvent::DragMove)
-        {
-            QDragMoveEvent* dragEvent = static_cast<QDragMoveEvent*>(event);
-            if(dragEvent->mimeData() && dragEvent->mimeData()->hasFormat(UComponentGuiDndPayload::mimeType()))
-                dragEvent->acceptProposedAction();
-            else
-                dragEvent->ignore();
-        }
-        else if(event->type() == QEvent::Drop)
-        {
-            QDropEvent* dropEvent = static_cast<QDropEvent*>(event);
-            UComponentGuiContext context;
-            QString sourceGridId;
-            int sourceRow = -1;
-            int sourceCol = -1;
-            if(UComponentGuiDndPayload::decode(dropEvent->mimeData(), context, sourceGridId, sourceRow, sourceCol) &&
-               m_componentGuiService.attachToMdi(context, ui->mdiArea))
-            {
-                if(!sourceGridId.isEmpty() && sourceRow >= 0)
-                {
-                    if(auto* srcHost = findComponentGuiTabHost(sourceGridId))
-                        srcHost->removeContext(context);
-                }
-                dropEvent->acceptProposedAction();
-                m_componentGuiTabDragIndex = -1;
-                return true;
-            }
-            dropEvent->ignore();
-        }
-        else if(event->type() == QEvent::MouseButtonRelease)
-        {
-            m_componentGuiTabDragIndex = -1;
-        }
-    }
-
     return UVisualControllerMainWidget::eventFilter(watched, event);
 }
 
@@ -594,7 +490,7 @@ void UGEngineControlWidget::openComponentGuiFromScheme(const UComponentGuiContex
         QMessageBox::information(this, "Component GUI", "No GUI form is registered for this component class.");
         return;
     }
-    // DnD sources are handled by floating wrapper drag-handle + explicit drop targets.
+    ensureComponentGuiQuickActionsInstalled(widget);
 }
 
 // file menu actions
@@ -1927,9 +1823,7 @@ void UGEngineControlWidget::ALoadParameters(RDK::USerStorageXML &xml)
 UComponentGuiTabHostWidget* UGEngineControlWidget::ensureComponentGuiTabHost(const QString& hostId)
 {
     if(m_componentGuiTabHosts.contains(hostId) && !m_componentGuiTabHosts[hostId].isNull())
-    {
         return m_componentGuiTabHosts[hostId].data();
-    }
 
     UComponentGuiTabHostWidget* host = new UComponentGuiTabHostWidget(hostId, &m_componentGuiService, ui->mdiArea, application);
     QMdiSubWindow* sub = ui->mdiArea->addSubWindow(host, Qt::SubWindow);
@@ -1940,6 +1834,7 @@ UComponentGuiTabHostWidget* UGEngineControlWidget::ensureComponentGuiTabHost(con
         sub->show();
     }
     m_componentGuiTabHosts[hostId] = host;
+    m_componentGuiService.setTabHostMainWindow(nullptr);
     return host;
 }
 
@@ -1997,15 +1892,12 @@ void UGEngineControlWidget::saveComponentGuiLayoutToXml(RDK::USerStorageXML &xml
         xml.SelectUp();
     }
 
-    xml.WriteInteger("TabHostCount", m_componentGuiTabHosts.size());
-    int hostIndex = 0;
-    for(auto it = m_componentGuiTabHosts.begin(); it != m_componentGuiTabHosts.end(); ++it)
+    const QStringList tabHostIds = componentGuiTabHostIds();
+    xml.WriteInteger("TabHostCount", tabHostIds.size());
+    for(int i = 0; i < tabHostIds.size(); ++i)
     {
-        if(it.value().isNull())
-            continue;
-        UComponentGuiTabHostWidget* host = it.value().data();
-        xml.SelectNodeForce("TabHost_" + RDK::sntoa(++hostIndex));
-        xml.WriteString("HostId", host->hostId().toStdString());
+        xml.SelectNodeForce("TabHost_" + RDK::sntoa(i + 1));
+        xml.WriteString("HostId", tabHostIds[i].toStdString());
         xml.SelectUp();
     }
     xml.SelectUp();
@@ -2071,6 +1963,7 @@ void UGEngineControlWidget::loadComponentGuiLayoutFromXml(RDK::USerStorageXML &x
         UVisualControllerWidget* widget = m_componentGuiService.createOrActivate(this, context);
         if(!widget)
             continue;
+        ensureComponentGuiQuickActionsInstalled(widget);
 
         if(s.hostMode == UComponentGuiHostMode::Floating)
         {
@@ -2104,7 +1997,10 @@ void UGEngineControlWidget::loadComponentGuiLayoutFromXml(RDK::USerStorageXML &x
     }
 
     if(hasActive)
-        m_componentGuiService.createOrActivate(this, activeContext);
+    {
+        UVisualControllerWidget* widget = m_componentGuiService.createOrActivate(this, activeContext);
+        ensureComponentGuiQuickActionsInstalled(widget);
+    }
 }
 
 void UGEngineControlWidget::writeComponentGuiSettings(QSettings& projectSettings)
@@ -2138,14 +2034,17 @@ void UGEngineControlWidget::writeComponentGuiSettings(QSettings& projectSettings
             projectSettings.remove(QStringLiteral("ComponentGui/Floating/%1").arg(staleId));
     }
 
-    for(auto it = m_componentGuiTabHosts.begin(); it != m_componentGuiTabHosts.end(); ++it)
+    const QStringList hostIds = componentGuiTabHostIds();
+    for(const QString& hostId : hostIds)
     {
-        if(it.value().isNull())
+        UComponentGuiTabHostWidget* host = findComponentGuiTabHost(hostId);
+        if(!host)
             continue;
-        UComponentGuiTabHostWidget* host = it.value().data();
-        liveTabHostIds.insert(host->hostId());
-        const QString hostPrefix = QStringLiteral("ComponentGui/TabHost/%1").arg(host->hostId());
-        projectSettings.setValue(hostPrefix + "/State", host->saveState());
+        liveTabHostIds.insert(hostId);
+        projectSettings.setValue(QStringLiteral("ComponentGui/TabHost/%1/Geometry").arg(hostId),
+                                 host->saveGeometry());
+        projectSettings.setValue(QStringLiteral("ComponentGui/TabHost/%1/State").arg(hostId),
+                                 host->saveState());
     }
     for(const QString& staleHost : storedHosts)
     {
@@ -2162,13 +2061,23 @@ void UGEngineControlWidget::writeComponentGuiSettings(QSettings& projectSettings
 
 void UGEngineControlWidget::readComponentGuiSettings(QSettings& projectSettings)
 {
-    for(auto it = m_componentGuiTabHosts.begin(); it != m_componentGuiTabHosts.end(); ++it)
+    projectSettings.beginGroup("ComponentGui/TabHost");
+    const QStringList hostIds = projectSettings.childGroups();
+    projectSettings.endGroup();
+    for(const QString& hostId : hostIds)
     {
-        if(it.value().isNull())
+        const QByteArray tabHostGeometry = projectSettings.value(QStringLiteral("ComponentGui/TabHost/%1/Geometry").arg(hostId)).toByteArray();
+        const QByteArray tabHostState = projectSettings.value(QStringLiteral("ComponentGui/TabHost/%1/State").arg(hostId)).toByteArray();
+        if(tabHostGeometry.isEmpty() && tabHostState.isEmpty())
             continue;
-        UComponentGuiTabHostWidget* host = it.value().data();
-        const QString hostPrefix = QStringLiteral("ComponentGui/TabHost/%1").arg(host->hostId());
-        host->restoreState(projectSettings.value(hostPrefix + "/State").toByteArray());
+        UComponentGuiTabHostWidget* host = ensureComponentGuiTabHost(hostId);
+        if(host)
+        {
+            if(!tabHostGeometry.isEmpty())
+                host->restoreGeometry(tabHostGeometry);
+            if(!tabHostState.isEmpty())
+                host->restoreState(tabHostState);
+        }
     }
 
     const QList<UComponentGuiSessionSnapshot> sessions = m_componentGuiService.snapshotOpenSessions();
@@ -2315,31 +2224,112 @@ bool UGEngineControlWidget::resolveComponentGuiWidgetContext(UVisualControllerWi
 void UGEngineControlWidget::promptAndOpenComponentGuiTabHost()
 {
     UComponentGuiTabHostWidget* host = ensureComponentGuiTabHost(QStringLiteral("MainTabHost"));
-    if(host)
-    {
-        host->show();
-        if(QMdiSubWindow* sub = qobject_cast<QMdiSubWindow*>(host->parentWidget()))
-        {
-            ui->mdiArea->setActiveSubWindow(sub);
-            sub->raise();
-        }
-    }
+    if(!host)
+        return;
+    host->show();
+    host->raise();
+    host->activateWindow();
 }
 
 void UGEngineControlWidget::startComponentGuiDrag(const UComponentGuiContext& context, QWidget* dragSource, bool detachOnIgnoredDrop)
 {
-    qInfo() << "[ComponentGuiDnD][MDI] startTabDrag context="
-            << context.componentClassName << context.componentLongName
-            << "channel=" << context.channelIndex
-            << "detachOnIgnoredDrop=" << detachOnIgnoredDrop;
     QDrag* drag = new QDrag(dragSource ? dragSource : this);
     QMimeData* mime = new QMimeData();
     mime->setData(UComponentGuiDndPayload::mimeType(), UComponentGuiDndPayload::encode(context));
     drag->setMimeData(mime);
     const Qt::DropAction result = drag->exec(Qt::MoveAction);
-    qInfo() << "[ComponentGuiDnD][MDI] tabDragFinished result=" << result;
     if(detachOnIgnoredDrop && result != Qt::MoveAction)
         m_componentGuiService.detachToFloating(context);
+}
+
+void UGEngineControlWidget::ensureComponentGuiDragSourcesInstalled(UVisualControllerWidget* widget)
+{
+    Q_UNUSED(widget);
+}
+
+void UGEngineControlWidget::installDragFilterRecursively(QWidget* root)
+{
+    Q_UNUSED(root);
+}
+
+void UGEngineControlWidget::ensureComponentGuiQuickActionsInstalled(UVisualControllerWidget* widget)
+{
+    if(!widget)
+        return;
+
+    QWidget* panel = widget->findChild<QWidget*>(QStringLiteral("ComponentGuiQuickActionsPanel"));
+    if(!panel)
+    {
+        panel = new QWidget(widget);
+        panel->setObjectName(QStringLiteral("ComponentGuiQuickActionsPanel"));
+        panel->setStyleSheet(QStringLiteral(
+            "QWidget#ComponentGuiQuickActionsPanel {"
+            " background: rgba(40,40,40,120);"
+            " border-radius: 4px;"
+            "}"
+            "QToolButton {"
+            " color: white;"
+            " padding: 2px 6px;"
+            "}"
+        ));
+        auto* layout = new QHBoxLayout(panel);
+        layout->setContentsMargins(4, 2, 4, 2);
+        layout->setSpacing(4);
+
+        auto makeButton = [panel, layout](const QString& text, const QString& tip) -> QToolButton*
+        {
+            QToolButton* button = new QToolButton(panel);
+            button->setText(text);
+            button->setToolTip(tip);
+            layout->addWidget(button);
+            return button;
+        };
+
+        QToolButton* toMdi = makeButton(QStringLiteral("To MDI"), tr("Move to MDI area"));
+        QToolButton* toTab = makeButton(QStringLiteral("To Tab"), tr("Move to Tab Host"));
+        QToolButton* toSecondary = makeButton(QStringLiteral("To Secondary"), tr("Move to Secondary Host"));
+
+        connect(toMdi, &QToolButton::clicked, this, [this, widget]() {
+            UComponentGuiContext context;
+            if(!m_componentGuiService.tryGetContextByWidget(widget, context))
+                return;
+            m_componentGuiService.attachToMdi(context, ui->mdiArea);
+        });
+        connect(toTab, &QToolButton::clicked, this, [this, widget]() {
+            UComponentGuiContext context;
+            if(!m_componentGuiService.tryGetContextByWidget(widget, context))
+                return;
+            ensureComponentGuiTabHost(QStringLiteral("MainTabHost"));
+            moveContextToTabHost(context, QStringLiteral("MainTabHost"));
+        });
+        connect(toSecondary, &QToolButton::clicked, this, [this, widget]() {
+            UComponentGuiContext context;
+            if(!m_componentGuiService.tryGetContextByWidget(widget, context))
+                return;
+            showComponentGuiSecondaryHostWindow();
+            m_componentGuiService.attachToSecondaryDock(context);
+        });
+    }
+
+    widget->setProperty("componentGuiQuickActionsHost", true);
+    widget->installEventFilter(this);
+    positionComponentGuiQuickActions(widget);
+    panel->show();
+    panel->raise();
+}
+
+void UGEngineControlWidget::positionComponentGuiQuickActions(UVisualControllerWidget* widget)
+{
+    if(!widget)
+        return;
+    QWidget* panel = widget->findChild<QWidget*>(QStringLiteral("ComponentGuiQuickActionsPanel"));
+    if(!panel)
+        return;
+    panel->adjustSize();
+    const int margin = 8;
+    const int x = std::max(0, widget->width() - panel->width() - margin);
+    const int y = margin;
+    panel->move(x, y);
 }
 
 void UGEngineControlWidget::showComponentGuiSecondaryHostWindow()
@@ -2350,10 +2340,21 @@ void UGEngineControlWidget::showComponentGuiSecondaryHostWindow()
         secondary->setObjectName(QStringLiteral("ComponentGuiSecondaryHostWindow"));
         secondary->setWindowTitle(tr("Component GUI Secondary Host"));
         secondary->setAttribute(Qt::WA_DeleteOnClose, true);
+        secondary->setDockOptions(QMainWindow::AllowNestedDocks |
+                                  QMainWindow::AllowTabbedDocks |
+                                  QMainWindow::GroupedDragging);
         secondary->setAcceptDrops(true);
         secondary->installEventFilter(this);
+        QFrame* dropArea = new QFrame(secondary);
+        dropArea->setObjectName(QStringLiteral("ComponentGuiSecondaryDropArea"));
+        dropArea->setAcceptDrops(true);
+        dropArea->setFrameShape(QFrame::StyledPanel);
+        dropArea->installEventFilter(this);
+        secondary->setCentralWidget(dropArea);
+        m_componentGuiSecondaryDropArea = dropArea;
         connect(secondary, &QObject::destroyed, this, [this]() {
             m_componentGuiSecondaryHostWindow = nullptr;
+            m_componentGuiSecondaryDropArea = nullptr;
             m_componentGuiService.setSecondaryHostMainWindow(nullptr);
         });
         m_componentGuiSecondaryHostWindow = secondary;
@@ -2362,6 +2363,96 @@ void UGEngineControlWidget::showComponentGuiSecondaryHostWindow()
     m_componentGuiSecondaryHostWindow->show();
     m_componentGuiSecondaryHostWindow->raise();
     m_componentGuiSecondaryHostWindow->activateWindow();
+}
+
+bool UGEngineControlWidget::handleDropToSecondaryHost(const QMimeData* mimeData)
+{
+    UComponentGuiContext context;
+    QString sourceHostId;
+    int sourceIndex = -1;
+    int sourceCol = -1;
+    if(!UComponentGuiDndPayload::decode(mimeData, context, sourceHostId, sourceIndex, sourceCol))
+        return false;
+    Q_UNUSED(sourceCol);
+
+    if(!m_componentGuiService.attachToSecondaryDock(context))
+        return false;
+    Q_UNUSED(sourceHostId);
+    Q_UNUSED(sourceIndex);
+    return true;
+}
+
+bool UGEngineControlWidget::handleDropToTabHost(const QMimeData* mimeData, const QString& hostId)
+{
+    UComponentGuiContext context;
+    QString sourceHostId;
+    int sourceIndex = -1;
+    int sourceCol = -1;
+    if(!UComponentGuiDndPayload::decode(mimeData, context, sourceHostId, sourceIndex, sourceCol))
+        return false;
+    Q_UNUSED(sourceCol);
+
+    if(!moveContextToTabHost(context, hostId))
+        return false;
+    Q_UNUSED(sourceHostId);
+    Q_UNUSED(sourceIndex);
+    return true;
+}
+
+QString UGEngineControlWidget::resolveTabHostDropTargetAtCursor() const
+{
+    const QPoint cursorPos = QCursor::pos();
+    QWidget* const underCursor = QApplication::widgetAt(cursorPos);
+    auto belongsTo = [](QWidget* root, QWidget* candidate) -> bool
+    {
+        QWidget* current = candidate;
+        while(current)
+        {
+            if(current == root)
+                return true;
+            current = current->parentWidget();
+        }
+        return false;
+    };
+
+    for(auto it = m_componentGuiTabHosts.constBegin(); it != m_componentGuiTabHosts.constEnd(); ++it)
+    {
+        if(it.value().isNull())
+            continue;
+        QWidget* hostWidget = it.value().data();
+        if(underCursor && belongsTo(hostWidget, underCursor))
+            return it.key();
+        const QRect globalRect(hostWidget->mapToGlobal(QPoint(0, 0)), hostWidget->size());
+        if(globalRect.contains(cursorPos))
+            return it.key();
+    }
+    return QString();
+}
+
+bool UGEngineControlWidget::isCursorOverSecondaryHost() const
+{
+    if(m_componentGuiSecondaryHostWindow.isNull())
+        return false;
+
+    const QPoint cursorPos = QCursor::pos();
+    QWidget* const underCursor = QApplication::widgetAt(cursorPos);
+    auto belongsTo = [](QWidget* root, QWidget* candidate) -> bool
+    {
+        QWidget* current = candidate;
+        while(current)
+        {
+            if(current == root)
+                return true;
+            current = current->parentWidget();
+        }
+        return false;
+    };
+
+    QWidget* secondary = m_componentGuiSecondaryHostWindow.data();
+    if(underCursor && belongsTo(secondary, underCursor))
+        return true;
+    const QRect secondaryRect(secondary->mapToGlobal(QPoint(0, 0)), secondary->size());
+    return secondaryRect.contains(cursorPos);
 }
 
 void UGEngineControlWidget::on_actionAbout_triggered()

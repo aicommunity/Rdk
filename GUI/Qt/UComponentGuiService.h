@@ -52,9 +52,11 @@ public:
     bool detachToFloating(const UComponentGuiContext& context);
     bool attachToMdi(const UComponentGuiContext& context, QMdiArea* mdiArea);
     bool attachToSecondaryDock(const UComponentGuiContext& context);
+    bool attachToTabHostDock(const UComponentGuiContext& context);
     bool moveToTabHost(const UComponentGuiContext& context, const QString& hostId, QWidget* hostWidget);
     void setHostMainWindow(QMainWindow* mainWindow);
     void setSecondaryHostMainWindow(QMainWindow* mainWindow);
+    void setTabHostMainWindow(QMainWindow* mainWindow);
     QList<UComponentGuiSessionSnapshot> snapshotOpenSessions() const;
     void clearClosedInstances();
     void clearAllInstances();
@@ -91,6 +93,7 @@ private:
     RDK::UApplication* m_application;
     QPointer<QMainWindow> m_hostMainWindow;
     QPointer<QMainWindow> m_secondaryHostMainWindow;
+    QPointer<QMainWindow> m_tabHostMainWindow;
     QHash<QString, QPointer<UVisualControllerWidget>> m_instances;
     QHash<QString, QPointer<QDockWidget>> m_dockHosts;
     QHash<QString, UComponentGuiContext> m_instanceContexts;

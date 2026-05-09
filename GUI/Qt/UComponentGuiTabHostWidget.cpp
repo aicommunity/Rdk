@@ -3,12 +3,14 @@
 #include <QApplication>
 #include <QDrag>
 #include <QDragEnterEvent>
+#include <QDragMoveEvent>
 #include <QDropEvent>
 #include <QEvent>
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QMimeData>
 #include <QMouseEvent>
+#include <QStackedWidget>
 #include <QTabBar>
 
 #include "UComponentGuiDndPayload.h"
@@ -35,6 +37,11 @@ UComponentGuiTabHostWidget::UComponentGuiTabHostWidget(const QString& hostId,
     m_tabWidget->setMovable(true);
     m_tabWidget->setAcceptDrops(true);
     m_tabWidget->tabBar()->setAcceptDrops(true);
+    if(QStackedWidget* stack = m_tabWidget->findChild<QStackedWidget*>())
+    {
+        stack->setAcceptDrops(true);
+        stack->installEventFilter(this);
+    }
     m_tabWidget->tabBar()->installEventFilter(this);
     m_tabWidget->installEventFilter(this);
     connect(m_tabWidget, &QTabWidget::tabCloseRequested, this, [this](int index) {
@@ -74,6 +81,8 @@ bool UComponentGuiTabHostWidget::assignContext(const UComponentGuiContext& conte
     {
         auto* frame = new QFrame(m_tabWidget);
         frame->setObjectName(QStringLiteral("ComponentGuiTabHostCell"));
+        frame->setAcceptDrops(true);
+        frame->installEventFilter(this);
         auto* frameLayout = new QHBoxLayout(frame);
         frameLayout->setContentsMargins(0, 0, 0, 0);
         frameLayout->setSpacing(0);
@@ -193,7 +202,11 @@ bool UComponentGuiTabHostWidget::eventFilter(QObject* watched, QEvent* event)
             m_dragStartIndex = -1;
         }
     }
-    if((watched == tabBar || watched == m_tabWidget) && event->type() == QEvent::DragEnter)
+    QWidget* watchedWidget = qobject_cast<QWidget*>(watched);
+    const bool isTabPage = watchedWidget && m_tabWidget && m_tabWidget->indexOf(watchedWidget) >= 0;
+    const bool isKnownDropTarget = (watched == tabBar || watched == m_tabWidget || isTabPage);
+
+    if(isKnownDropTarget && event->type() == QEvent::DragEnter)
     {
         auto* dragEvent = static_cast<QDragEnterEvent*>(event);
         if(dragEvent->mimeData() && dragEvent->mimeData()->hasFormat(UComponentGuiDndPayload::mimeType()))
@@ -202,7 +215,16 @@ bool UComponentGuiTabHostWidget::eventFilter(QObject* watched, QEvent* event)
             dragEvent->ignore();
         return true;
     }
-    if((watched == tabBar || watched == m_tabWidget) && event->type() == QEvent::Drop)
+    if(isKnownDropTarget && event->type() == QEvent::DragMove)
+    {
+        auto* dragEvent = static_cast<QDragMoveEvent*>(event);
+        if(dragEvent->mimeData() && dragEvent->mimeData()->hasFormat(UComponentGuiDndPayload::mimeType()))
+            dragEvent->acceptProposedAction();
+        else
+            dragEvent->ignore();
+        return true;
+    }
+    if(isKnownDropTarget && event->type() == QEvent::Drop)
     {
         auto* dropEvent = static_cast<QDropEvent*>(event);
         if(handleDrop(dropEvent->mimeData()))
@@ -212,6 +234,30 @@ bool UComponentGuiTabHostWidget::eventFilter(QObject* watched, QEvent* event)
         return true;
     }
     return UVisualControllerWidget::eventFilter(watched, event);
+}
+
+void UComponentGuiTabHostWidget::dragEnterEvent(QDragEnterEvent* event)
+{
+    if(event->mimeData() && event->mimeData()->hasFormat(UComponentGuiDndPayload::mimeType()))
+        event->acceptProposedAction();
+    else
+        event->ignore();
+}
+
+void UComponentGuiTabHostWidget::dragMoveEvent(QDragMoveEvent* event)
+{
+    if(event->mimeData() && event->mimeData()->hasFormat(UComponentGuiDndPayload::mimeType()))
+        event->acceptProposedAction();
+    else
+        event->ignore();
+}
+
+void UComponentGuiTabHostWidget::dropEvent(QDropEvent* event)
+{
+    if(handleDrop(event->mimeData()))
+        event->acceptProposedAction();
+    else
+        event->ignore();
 }
 
 bool UComponentGuiTabHostWidget::handleDrop(const QMimeData* mimeData)
@@ -258,7 +304,8 @@ void UComponentGuiTabHostWidget::startDragFromTab(int index)
     mime->setData(UComponentGuiDndPayload::mimeType(),
                   UComponentGuiDndPayload::encode(context, m_hostId, index, -1));
     drag->setMimeData(mime);
-    drag->exec(Qt::MoveAction);
+    const Qt::DropAction result = drag->exec(Qt::MoveAction);
+    Q_UNUSED(result);
 }
 
 int UComponentGuiTabHostWidget::tabIndexForContext(const UComponentGuiContext& context) const

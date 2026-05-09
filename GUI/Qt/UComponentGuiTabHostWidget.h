@@ -10,6 +10,9 @@
 
 class QMimeData;
 class UComponentGuiService;
+class QDragEnterEvent;
+class QDragMoveEvent;
+class QDropEvent;
 
 class UComponentGuiTabHostWidget : public UVisualControllerWidget
 {
@@ -31,6 +34,9 @@ public:
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
 
 private:
     bool handleDrop(const QMimeData* mimeData);

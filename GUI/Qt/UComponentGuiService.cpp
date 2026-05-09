@@ -120,6 +120,11 @@ void UComponentGuiService::setSecondaryHostMainWindow(QMainWindow* mainWindow)
     m_secondaryHostMainWindow = mainWindow;
 }
 
+void UComponentGuiService::setTabHostMainWindow(QMainWindow* mainWindow)
+{
+    m_tabHostMainWindow = mainWindow;
+}
+
 bool UComponentGuiService::canOpen(const UComponentGuiContext& context) const
 {
     return UComponentFormRegistry::instance().canOpen(context);
@@ -173,6 +178,7 @@ UVisualControllerWidget* UComponentGuiService::createOrActivate(QWidget* parentW
         dockHost->setFeatures(QDockWidget::DockWidgetMovable |
                               QDockWidget::DockWidgetFloatable |
                               QDockWidget::DockWidgetClosable);
+        dockHost->setAllowedAreas(Qt::AllDockWidgetAreas);
         dockHost->setWidget(widget);
         dockHost->setAttribute(Qt::WA_DeleteOnClose, true);
         hostMainWindow->addDockWidget(Qt::RightDockWidgetArea, dockHost);
@@ -309,6 +315,7 @@ bool UComponentGuiService::attachToMdi(const UComponentGuiContext& context, QMdi
             dock->setFeatures(QDockWidget::DockWidgetMovable |
                               QDockWidget::DockWidgetFloatable |
                               QDockWidget::DockWidgetClosable);
+            dock->setAllowedAreas(Qt::AllDockWidgetAreas);
             dock->setWidget(widget);
             dock->setAttribute(Qt::WA_DeleteOnClose, true);
             m_dockHosts[key] = dock;
@@ -354,6 +361,7 @@ bool UComponentGuiService::attachToSecondaryDock(const UComponentGuiContext& con
             dock->setFeatures(QDockWidget::DockWidgetMovable |
                               QDockWidget::DockWidgetFloatable |
                               QDockWidget::DockWidgetClosable);
+            dock->setAllowedAreas(Qt::AllDockWidgetAreas);
             dock->setWidget(widget);
             dock->setAttribute(Qt::WA_DeleteOnClose, true);
             m_dockHosts[key] = dock;
@@ -373,10 +381,59 @@ bool UComponentGuiService::attachToSecondaryDock(const UComponentGuiContext& con
     return true;
 }
 
+bool UComponentGuiService::attachToTabHostDock(const UComponentGuiContext& context)
+{
+    QString key;
+    UVisualControllerWidget* widget = resolveInstance(context, &key);
+    if(!widget)
+        return false;
+
+    QMainWindow* hostMainWindow = m_tabHostMainWindow.data();
+    if(!hostMainWindow)
+        return false;
+
+    QDockWidget* dock = m_dockHosts.value(key).data();
+    if(!dock)
+    {
+        dock = resolveDockHost(widget);
+        if(!dock)
+        {
+            dock = new QDockWidget(widget->windowTitle(), hostMainWindow);
+            QString objectName = QStringLiteral("ComponentGuiDockTabHost_%1").arg(key);
+            objectName.replace('|', '_');
+            objectName.replace('.', '_');
+            objectName.replace(':', '_');
+            dock->setObjectName(objectName);
+            dock->setFeatures(QDockWidget::DockWidgetMovable |
+                              QDockWidget::DockWidgetFloatable |
+                              QDockWidget::DockWidgetClosable);
+            dock->setAllowedAreas(Qt::AllDockWidgetAreas);
+            dock->setWidget(widget);
+            dock->setAttribute(Qt::WA_DeleteOnClose, true);
+            m_dockHosts[key] = dock;
+        }
+    }
+
+    if(dock->widget() != widget)
+        dock->setWidget(widget);
+    hostMainWindow->addDockWidget(Qt::RightDockWidgetArea, dock);
+    dock->setFloating(false);
+    dock->show();
+    dock->raise();
+    dock->activateWindow();
+    assignHostMode(key, UComponentGuiHostMode::TabHost, QStringLiteral("MainTabHost"), -1, -1);
+    m_lastActiveSession = key;
+    ++m_activationCounter;
+    return true;
+}
+
 bool UComponentGuiService::moveToTabHost(const UComponentGuiContext& context,
                                          const QString& hostId,
                                          QWidget* hostWidget)
 {
+    if(!m_tabHostMainWindow.isNull())
+        return attachToTabHostDock(context);
+
     if(!hostWidget)
         return false;
 
@@ -420,7 +477,28 @@ QList<UComponentGuiSessionSnapshot> UComponentGuiService::snapshotOpenSessions()
 
         const QString key = it.key();
         const UComponentGuiContext ctx = m_instanceContexts.value(key);
-        const UInstanceHostInfo host = m_instanceHostInfo.value(key);
+        UInstanceHostInfo host = m_instanceHostInfo.value(key);
+        if(m_dockHosts.contains(key) && !m_dockHosts.value(key).isNull())
+        {
+            QDockWidget* dock = m_dockHosts.value(key).data();
+            if(dock->widget() == it.value().data())
+            {
+                if(dock->isFloating())
+                {
+                    host.mode = UComponentGuiHostMode::Floating;
+                }
+                else
+                {
+                    QMainWindow* owner = qobject_cast<QMainWindow*>(dock->parentWidget());
+                    if(owner == m_hostMainWindow.data())
+                        host.mode = UComponentGuiHostMode::Mdi;
+                    else if(owner == m_tabHostMainWindow.data())
+                        host.mode = UComponentGuiHostMode::TabHost;
+                    else if(owner == m_secondaryHostMainWindow.data())
+                        host.mode = UComponentGuiHostMode::SecondaryDock;
+                }
+            }
+        }
 
         UComponentGuiSessionSnapshot snapshot;
         snapshot.sessionId = key;

@@ -12,6 +12,7 @@
 #include <QPointer>
 #include <QSet>
 #include <QPair>
+#include <QPoint>
 
 #include <rdk_application.h>
 
@@ -298,6 +299,7 @@ private:
     bool m_componentSpecialFormsHardwareLibEnabled = true;
     QHash<QString, QPointer<UComponentGuiTabHostWidget>> m_componentGuiTabHosts;
     QPointer<QMainWindow> m_componentGuiSecondaryHostWindow;
+    QPointer<QWidget> m_componentGuiSecondaryDropArea;
 
     // служебный метод для создания/активации пользовательского виджета
     void createOrActivateCustomWidget(const QString &id);
@@ -317,7 +319,15 @@ private:
     QStringList componentGuiTabHostIds() const;
     bool moveContextToTabHost(const UComponentGuiContext& context, const QString& hostId);
     void startComponentGuiDrag(const UComponentGuiContext& context, QWidget* dragSource, bool detachOnIgnoredDrop);
+    void ensureComponentGuiDragSourcesInstalled(UVisualControllerWidget* widget);
+    void installDragFilterRecursively(QWidget* root);
+    void ensureComponentGuiQuickActionsInstalled(UVisualControllerWidget* widget);
+    void positionComponentGuiQuickActions(UVisualControllerWidget* widget);
     void showComponentGuiSecondaryHostWindow();
+    bool handleDropToSecondaryHost(const QMimeData* mimeData);
+    bool handleDropToTabHost(const QMimeData* mimeData, const QString& hostId);
+    QString resolveTabHostDropTargetAtCursor() const;
+    bool isCursorOverSecondaryHost() const;
 
     // methods
 
@@ -384,6 +394,8 @@ protected:
 private:
     QPoint m_componentGuiTabDragStartPos;
     int m_componentGuiTabDragIndex = -1;
+    QPoint m_componentGuiWidgetDragStartPos;
+    QPointer<QObject> m_componentGuiWidgetDragPressedObject;
 
 };
 
