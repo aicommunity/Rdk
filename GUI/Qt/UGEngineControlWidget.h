@@ -299,11 +299,12 @@ private:
     bool m_componentSpecialFormsHardwareLibEnabled = true;
     QHash<QString, QPointer<UComponentGuiTabHostWidget>> m_componentGuiTabHosts;
     QPointer<QMainWindow> m_componentGuiSecondaryHostWindow;
-    QPointer<QWidget> m_componentGuiSecondaryDropArea;
+    QPointer<UComponentGuiTabHostWidget> m_componentGuiSecondaryTabHost;
 
     // служебный метод для создания/активации пользовательского виджета
     void createOrActivateCustomWidget(const QString &id);
     UComponentGuiTabHostWidget* ensureComponentGuiTabHost(const QString& hostId);
+    UComponentGuiTabHostWidget* ensureComponentGuiSecondaryTabHost();
     void saveComponentGuiLayoutToXml(RDK::USerStorageXML &xml);
     void loadComponentGuiLayoutFromXml(RDK::USerStorageXML &xml);
     void writeComponentGuiSettings(QSettings& projectSettings);
@@ -318,6 +319,7 @@ private:
     UComponentGuiTabHostWidget* findComponentGuiTabHost(const QString& hostId) const;
     QStringList componentGuiTabHostIds() const;
     bool moveContextToTabHost(const UComponentGuiContext& context, const QString& hostId);
+    bool moveContextToSecondaryHost(const UComponentGuiContext& context);
     void wireComponentGuiTabHostPruning(UComponentGuiTabHostWidget* host);
     void pruneEmptyTabHostSlotsForContext(const UComponentGuiContext& context);
     void startComponentGuiDrag(const UComponentGuiContext& context, QWidget* dragSource, bool detachOnIgnoredDrop);

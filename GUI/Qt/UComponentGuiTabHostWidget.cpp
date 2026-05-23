@@ -46,14 +46,7 @@ UComponentGuiTabHostWidget::UComponentGuiTabHostWidget(const QString& hostId,
     m_tabWidget->tabBar()->installEventFilter(this);
     m_tabWidget->installEventFilter(this);
     connect(m_tabWidget, &QTabWidget::tabCloseRequested, this, [this](int index) {
-        if(index < 0 || index >= m_tabWidget->count())
-            return;
-        if(QWidget* host = m_tabWidget->widget(index))
-        {
-            host->hide();
-            m_tabWidget->removeTab(index);
-            syncCurrentTabState();
-        }
+        closeTabAtIndex(index);
     });
     connect(m_tabWidget, &QTabWidget::currentChanged, this, [this](int) { syncCurrentTabState(); });
 
@@ -80,6 +73,7 @@ bool UComponentGuiTabHostWidget::assignContext(const UComponentGuiContext& conte
     }
     else
     {
+        discardStaleTabCellForKey(key);
         auto* frame = new QFrame(m_tabWidget);
         frame->setObjectName(QStringLiteral("ComponentGuiTabHostCell"));
         frame->setAcceptDrops(true);
@@ -144,12 +138,61 @@ bool UComponentGuiTabHostWidget::removeContext(const UComponentGuiContext& conte
     const int index = tabIndexForContext(context);
     if(index < 0 || !m_tabWidget)
         return false;
-    if(QWidget* host = m_tabWidget->widget(index))
-        host->hide();
+    return closeTabAtIndex(index);
+}
+
+bool UComponentGuiTabHostWidget::closeTabAtIndex(int index)
+{
+    if(!m_tabWidget || index < 0 || index >= m_tabWidget->count())
+        return false;
+
+    QWidget* host = m_tabWidget->widget(index);
+    UVisualControllerWidget* widget = nullptr;
+    if(host)
+    {
+        widget = host->findChild<UVisualControllerWidget*>(QString(), Qt::FindDirectChildrenOnly);
+    }
+
+    UComponentGuiContext context;
+    const bool hasContext = widget && m_service && m_service->tryGetContextByWidget(widget, context);
+    const QString key = hasContext ? contextKey(context) : QString();
+
     m_tabWidget->removeTab(index);
-    m_tabHosts.remove(contextKey(context));
+    if(!key.isEmpty())
+        m_tabHosts.remove(key);
+
+    if(hasContext && m_service)
+        m_service->closeContext(context);
+    else if(widget)
+        widget->deleteLater();
+
+    if(host)
+        host->deleteLater();
+
     syncCurrentTabState();
     return true;
+}
+
+void UComponentGuiTabHostWidget::discardStaleTabCellForKey(const QString& key)
+{
+    if(key.isEmpty() || !m_tabHosts.contains(key))
+        return;
+
+    QWidget* stale = m_tabHosts.value(key).data();
+    if(!stale)
+    {
+        m_tabHosts.remove(key);
+        return;
+    }
+
+    if(m_tabWidget && m_tabWidget->indexOf(stale) >= 0)
+        return;
+
+    if(UVisualControllerWidget* widget = stale->findChild<UVisualControllerWidget*>(QString(), Qt::FindDirectChildrenOnly))
+        widget->setParent(nullptr);
+
+    stale->deleteLater();
+    m_tabHosts.remove(key);
 }
 
 bool UComponentGuiTabHostWidget::hasContext(const UComponentGuiContext& context) const
@@ -179,6 +222,11 @@ QList<UComponentGuiContext> UComponentGuiTabHostWidget::contexts() const
         }
     }
     return out;
+}
+
+int UComponentGuiTabHostWidget::tabCount() const
+{
+    return m_tabWidget ? m_tabWidget->count() : 0;
 }
 
 QByteArray UComponentGuiTabHostWidget::saveState() const

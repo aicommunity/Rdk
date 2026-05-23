@@ -9,10 +9,26 @@
 #include "../../Core/Serialize/USerStorageXML.h"
 #include "../../GUI/Qt/UComponentFormRegistry.h"
 #include "../../GUI/Qt/UComponentGuiService.h"
+#include "../../GUI/Qt/UComponentGuiTabHostWidget.h"
 #include "../../GUI/Qt/UGenericComponentControllerWidget.h"
 
 namespace
 {
+struct SecondaryTabHostFixture
+{
+    QMainWindow window;
+    UComponentGuiTabHostWidget tabHost;
+
+    SecondaryTabHostFixture(UComponentGuiService& service)
+        : tabHost(QStringLiteral("Secondary"), &service, &window, reinterpret_cast<RDK::UApplication*>(0x1))
+    {
+        window.resize(640, 480);
+        window.setCentralWidget(&tabHost);
+        service.setSecondaryHostMainWindow(&window);
+        service.setSecondaryTabHostWidget(&tabHost);
+    }
+};
+
 UComponentGuiContext MakeContext(const QString& className, const QString& longName, int channel)
 {
     UComponentGuiContext context;
@@ -99,8 +115,7 @@ TEST(ComponentGuiLifecycle, SaveCloseOpenRestoresSessionsAndHostModes)
     QMdiArea mdiArea;
     mainWindow.setCentralWidget(&mdiArea);
     service.setHostMainWindow(&mainWindow);
-    QMainWindow secondaryWindow;
-    service.setSecondaryHostMainWindow(&secondaryWindow);
+    SecondaryTabHostFixture secondary(service);
 
     const UComponentGuiContext contextMdi = MakeContext(classA, QStringLiteral("Model.Component.MDI"), 0);
     const UComponentGuiContext contextSecondary = MakeContext(classB, QStringLiteral("Model.Component.Secondary"), 1);
@@ -126,8 +141,7 @@ TEST(ComponentGuiLifecycle, SaveCloseOpenRestoresSessionsAndHostModes)
     QMdiArea reopenedMdiArea;
     reopenedMainWindow.setCentralWidget(&reopenedMdiArea);
     reopened.setHostMainWindow(&reopenedMainWindow);
-    QMainWindow reopenedSecondaryWindow;
-    reopened.setSecondaryHostMainWindow(&reopenedSecondaryWindow);
+    SecondaryTabHostFixture reopenedSecondary(reopened);
     QList<UComponentGuiSessionSnapshot> restored = LoadSessions(xml);
     ASSERT_EQ(restored.size(), 2);
     QFrame reopenedTabHostCell;

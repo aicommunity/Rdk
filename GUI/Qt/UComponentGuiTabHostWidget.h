@@ -30,6 +30,7 @@ public:
     bool removeContext(const UComponentGuiContext& context);
     bool hasContext(const UComponentGuiContext& context) const;
     QList<UComponentGuiContext> contexts() const;
+    int tabCount() const;
 
     QByteArray saveState() const;
     void restoreState(const QByteArray& state);
@@ -46,6 +47,8 @@ protected:
     void dropEvent(QDropEvent* event) override;
 
 private:
+    bool closeTabAtIndex(int index);
+    void discardStaleTabCellForKey(const QString& key);
     bool handleDrop(const QMimeData* mimeData);
     void startDragFromTab(int index);
     int tabIndexForContext(const UComponentGuiContext& context) const;

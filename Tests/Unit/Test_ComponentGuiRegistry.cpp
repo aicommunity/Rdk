@@ -2,6 +2,7 @@
 
 #include <QApplication>
 #include <QFrame>
+#include <QHBoxLayout>
 #include <QMainWindow>
 #include <QMdiArea>
 
@@ -29,6 +30,21 @@ void EnsureApp()
     if(!qApp)
         new QApplication(argc, argv);
 }
+
+struct SecondaryTabHostFixture
+{
+    QMainWindow window;
+    UComponentGuiTabHostWidget tabHost;
+
+    SecondaryTabHostFixture(UComponentGuiService& service)
+        : tabHost(QStringLiteral("Secondary"), &service, &window, reinterpret_cast<RDK::UApplication*>(0x1))
+    {
+        window.resize(640, 480);
+        window.setCentralWidget(&tabHost);
+        service.setSecondaryHostMainWindow(&window);
+        service.setSecondaryTabHostWidget(&tabHost);
+    }
+};
 }
 
 TEST(ComponentGuiRegistry, RegisterAndLookupByClassName)
@@ -65,8 +81,7 @@ TEST(ComponentGuiService, DockFloatTabHostSecondaryCycle)
     mainWindow.setCentralWidget(&mdiArea);
     service.setHostMainWindow(&mainWindow);
 
-    QMainWindow secondaryWindow;
-    service.setSecondaryHostMainWindow(&secondaryWindow);
+    SecondaryTabHostFixture secondary(service);
 
     const UComponentGuiContext context = MakeContext(className, QStringLiteral("Model.HostCycle"), 1);
     ASSERT_NE(service.createOrActivate(&mainWindow, context), nullptr);
@@ -92,6 +107,42 @@ TEST(ComponentGuiService, DockFloatTabHostSecondaryCycle)
     ASSERT_TRUE(service.attachToSecondaryDock(context));
     ASSERT_TRUE(service.tryGetHostModeByContext(context, mode));
     EXPECT_EQ(mode, UComponentGuiHostMode::SecondaryDock);
+    EXPECT_EQ(secondary.tabHost.tabCount(), 1);
+
+    service.clearAllInstances();
+}
+
+TEST(ComponentGuiTabHost, CloseTabEndsSessionAndAllowsReopen)
+{
+    EnsureApp();
+    const QString className = QStringLiteral("TestClass_TabHost_CloseReopen");
+    UComponentFormDescriptor descriptor;
+    descriptor.formId = "test.form.tabhost.close";
+    descriptor.title = "Tab Host Close";
+    descriptor.singleInstance = true;
+    descriptor.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.tabhost.close.controller", "Tab Host Close Controller", nullptr, app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(className, descriptor);
+
+    UComponentGuiService service(reinterpret_cast<RDK::UApplication*>(0x1));
+    SecondaryTabHostFixture secondary(service);
+    const UComponentGuiContext context = MakeContext(className, QStringLiteral("Model.TabHost.Close"), 4);
+
+    ASSERT_TRUE(secondary.tabHost.assignContext(context));
+    EXPECT_EQ(secondary.tabHost.tabCount(), 1);
+
+    ASSERT_TRUE(secondary.tabHost.removeContext(context));
+    service.clearClosedInstances();
+    EXPECT_EQ(secondary.tabHost.tabCount(), 0);
+
+    UVisualControllerWidget* widget = nullptr;
+    EXPECT_FALSE(service.tryGetWidgetByContext(context, widget));
+
+    ASSERT_TRUE(secondary.tabHost.assignContext(context));
+    EXPECT_EQ(secondary.tabHost.tabCount(), 1);
+    ASSERT_TRUE(service.tryGetWidgetByContext(context, widget));
+    ASSERT_NE(widget, nullptr);
 
     service.clearAllInstances();
 }
@@ -118,6 +169,93 @@ TEST(ComponentGuiTabHost, AssignContextAddsTab)
     service.clearAllInstances();
 }
 
+TEST(ComponentGuiSecondaryTabHost, WidgetFillsTabCellAfterResize)
+{
+    EnsureApp();
+    const QString className = QStringLiteral("TestClass_SecondaryTabHost_Fill");
+    UComponentFormDescriptor descriptor;
+    descriptor.formId = "test.form.secondary.fill";
+    descriptor.title = "Secondary Fill";
+    descriptor.singleInstance = true;
+    descriptor.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.secondary.fill.controller", "Secondary Fill Controller", nullptr, app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(className, descriptor);
+
+    UComponentGuiService service(reinterpret_cast<RDK::UApplication*>(0x1));
+    QMainWindow mainWindow;
+    QMdiArea mdiArea;
+    mainWindow.setCentralWidget(&mdiArea);
+    service.setHostMainWindow(&mainWindow);
+
+    SecondaryTabHostFixture secondary(service);
+    const UComponentGuiContext context = MakeContext(className, QStringLiteral("Model.SecondaryFill"), 3);
+    UVisualControllerWidget* widget = service.createOrActivate(&mainWindow, context);
+    ASSERT_NE(widget, nullptr);
+
+    ASSERT_TRUE(service.attachToSecondaryDock(context));
+    secondary.window.resize(800, 600);
+    QApplication::processEvents();
+
+    UVisualControllerWidget* embedded = nullptr;
+    ASSERT_TRUE(service.tryGetWidgetByContext(context, embedded));
+    ASSERT_NE(embedded, nullptr);
+    QWidget* cell = embedded->parentWidget();
+    ASSERT_NE(cell, nullptr);
+    auto* layout = qobject_cast<QHBoxLayout*>(cell->layout());
+    ASSERT_NE(layout, nullptr);
+    EXPECT_EQ(layout->count(), 1);
+    EXPECT_GE(embedded->width(), cell->width() * 9 / 10);
+
+    service.clearAllInstances();
+}
+
+TEST(ComponentGuiSecondaryTabHost, TwoContextsGetTwoTabs)
+{
+    EnsureApp();
+    const QString classA = QStringLiteral("TestClass_Secondary_TwoTabs_A");
+    const QString classB = QStringLiteral("TestClass_Secondary_TwoTabs_B");
+
+    UComponentFormDescriptor descriptorA;
+    descriptorA.formId = "test.form.secondary.twotabs.a";
+    descriptorA.title = "Two Tabs A";
+    descriptorA.singleInstance = true;
+    descriptorA.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.secondary.twotabs.a", "Two Tabs A", nullptr, app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(classA, descriptorA);
+
+    UComponentFormDescriptor descriptorB;
+    descriptorB.formId = "test.form.secondary.twotabs.b";
+    descriptorB.title = "Two Tabs B";
+    descriptorB.singleInstance = true;
+    descriptorB.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.secondary.twotabs.b", "Two Tabs B", nullptr, app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(classB, descriptorB);
+
+    UComponentGuiService service(reinterpret_cast<RDK::UApplication*>(0x1));
+    QMainWindow mainWindow;
+    QMdiArea mdiArea;
+    mainWindow.setCentralWidget(&mdiArea);
+    service.setHostMainWindow(&mainWindow);
+
+    SecondaryTabHostFixture secondary(service);
+    const UComponentGuiContext contextA = MakeContext(classA, QStringLiteral("Model.TwoTabs.A"), 0);
+    const UComponentGuiContext contextB = MakeContext(classB, QStringLiteral("Model.TwoTabs.B"), 1);
+
+    ASSERT_NE(service.createOrActivate(&mainWindow, contextA), nullptr);
+    ASSERT_NE(service.createOrActivate(&mainWindow, contextB), nullptr);
+    ASSERT_TRUE(service.attachToSecondaryDock(contextA));
+    ASSERT_TRUE(service.attachToSecondaryDock(contextB));
+
+    EXPECT_EQ(secondary.tabHost.tabCount(), 2);
+    EXPECT_TRUE(secondary.tabHost.hasContext(contextA));
+    EXPECT_TRUE(secondary.tabHost.hasContext(contextB));
+
+    service.clearAllInstances();
+}
+
 TEST(ComponentGuiTransfer, TabHostSecondaryRoundTripViaServiceRoute)
 {
     EnsureApp();
@@ -140,8 +278,7 @@ TEST(ComponentGuiTransfer, TabHostSecondaryRoundTripViaServiceRoute)
     mainWindow.setCentralWidget(&mdiArea);
     service.setHostMainWindow(&mainWindow);
 
-    QMainWindow secondaryWindow;
-    service.setSecondaryHostMainWindow(&secondaryWindow);
+    SecondaryTabHostFixture secondary(service);
 
     UComponentGuiTabHostWidget tabHost(QStringLiteral("MainTabHost"),
                                        &service,
@@ -216,8 +353,7 @@ TEST(ComponentGuiTransfer, TwoContextsCrossSwapBetweenTabHostAndSecondary)
     mainWindow.setCentralWidget(&mdiArea);
     service.setHostMainWindow(&mainWindow);
 
-    QMainWindow secondaryWindow;
-    service.setSecondaryHostMainWindow(&secondaryWindow);
+    SecondaryTabHostFixture secondary(service);
 
     UComponentGuiTabHostWidget tabHost(QStringLiteral("MainTabHost"),
                                        &service,
@@ -248,6 +384,7 @@ TEST(ComponentGuiTransfer, TwoContextsCrossSwapBetweenTabHostAndSecondary)
     EXPECT_EQ(modeA, UComponentGuiHostMode::SecondaryDock);
     EXPECT_EQ(modeB, UComponentGuiHostMode::TabHost);
     EXPECT_TRUE(tabHost.hasContext(contextB));
+    EXPECT_EQ(secondary.tabHost.tabCount(), 1);
 
     const QList<UComponentGuiSessionSnapshot> sessions = service.snapshotOpenSessions();
     ASSERT_EQ(sessions.size(), 2);

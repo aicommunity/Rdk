@@ -9,6 +9,7 @@
 
 #include "../../Deploy/Include/rdk_cpp_init.h"
 #include "UVisualControllerWidget.h"
+#include "UComponentGuiTabHostWidget.h"
 
 namespace
 {
@@ -118,6 +119,11 @@ void UComponentGuiService::setHostMainWindow(QMainWindow* mainWindow)
 void UComponentGuiService::setSecondaryHostMainWindow(QMainWindow* mainWindow)
 {
     m_secondaryHostMainWindow = mainWindow;
+}
+
+void UComponentGuiService::setSecondaryTabHostWidget(UComponentGuiTabHostWidget* tabHost)
+{
+    m_secondaryTabHost = tabHost;
 }
 
 void UComponentGuiService::setTabHostMainWindow(QMainWindow* mainWindow)
@@ -337,47 +343,59 @@ bool UComponentGuiService::attachToMdi(const UComponentGuiContext& context, QMdi
 
 bool UComponentGuiService::attachToSecondaryDock(const UComponentGuiContext& context)
 {
+    UComponentGuiTabHostWidget* tabHost = m_secondaryTabHost.data();
+    if(!tabHost)
+        return false;
+
+    if(!tabHost->assignContext(context))
+        return false;
+
     QString key;
-    UVisualControllerWidget* widget = resolveInstance(context, &key);
-    if(!widget)
+    if(!resolveInstance(context, &key))
         return false;
 
-    QMainWindow* hostMainWindow = m_secondaryHostMainWindow.data();
-    if(!hostMainWindow)
-        return false;
-
-    QDockWidget* dock = m_dockHosts.value(key).data();
-    if(!dock)
-    {
-        dock = resolveDockHost(widget);
-        if(!dock)
-        {
-            dock = new QDockWidget(widget->windowTitle(), hostMainWindow);
-            QString objectName = QStringLiteral("ComponentGuiDockSecondary_%1").arg(key);
-            objectName.replace('|', '_');
-            objectName.replace('.', '_');
-            objectName.replace(':', '_');
-            dock->setObjectName(objectName);
-            dock->setFeatures(QDockWidget::DockWidgetMovable |
-                              QDockWidget::DockWidgetFloatable |
-                              QDockWidget::DockWidgetClosable);
-            dock->setAllowedAreas(Qt::AllDockWidgetAreas);
-            dock->setWidget(widget);
-            dock->setAttribute(Qt::WA_DeleteOnClose, true);
-            m_dockHosts[key] = dock;
-        }
-    }
-
-    if(dock->widget() != widget)
-        dock->setWidget(widget);
-    hostMainWindow->addDockWidget(Qt::RightDockWidgetArea, dock);
-    dock->setFloating(false);
-    dock->show();
-    dock->raise();
-    dock->activateWindow();
-    assignHostMode(key, UComponentGuiHostMode::SecondaryDock);
+    assignHostMode(key, UComponentGuiHostMode::SecondaryDock, QStringLiteral("Secondary"));
     m_lastActiveSession = key;
     ++m_activationCounter;
+    return true;
+}
+
+bool UComponentGuiService::assignHostModeForContext(const UComponentGuiContext& context,
+                                                    UComponentGuiHostMode mode,
+                                                    const QString& containerId,
+                                                    int row,
+                                                    int col)
+{
+    QString key;
+    if(!resolveInstance(context, &key))
+        return false;
+    assignHostMode(key, mode, containerId, row, col);
+    return true;
+}
+
+bool UComponentGuiService::closeContext(const UComponentGuiContext& context)
+{
+    QString key;
+    UVisualControllerWidget* widget = resolveInstance(context, &key);
+    if(!widget || key.isEmpty())
+        return false;
+
+    if(QDockWidget* dock = m_dockHosts.value(key).data())
+    {
+        if(dock->widget() == widget)
+            dock->setWidget(nullptr);
+        dock->hide();
+    }
+    if(auto* sub = resolveMdiSubWindow(widget))
+    {
+        sub->setWidget(nullptr);
+        sub->close();
+    }
+
+    m_instances.remove(key);
+    clearSessionState(key);
+    widget->deleteLater();
+    clearClosedInstances();
     return true;
 }
 
@@ -468,6 +486,10 @@ bool UComponentGuiService::moveToTabHost(const UComponentGuiContext& context,
     assignHostMode(key, UComponentGuiHostMode::TabHost, hostId, -1, -1);
     m_lastActiveSession = key;
     ++m_activationCounter;
+
+    if(m_secondaryTabHost)
+        m_secondaryTabHost->pruneStaleTabForContext(context);
+
     return true;
 }
 
@@ -640,12 +662,22 @@ bool UComponentGuiService::tryGetWidgetByContext(const UComponentGuiContext& con
 
 bool UComponentGuiService::tryGetHostModeByContext(const UComponentGuiContext& context, UComponentGuiHostMode& outMode) const
 {
+    QString containerId;
+    return tryGetHostPlacementByContext(context, outMode, containerId);
+}
+
+bool UComponentGuiService::tryGetHostPlacementByContext(const UComponentGuiContext& context,
+                                                      UComponentGuiHostMode& outMode,
+                                                      QString& outContainerId) const
+{
     QString key;
     UVisualControllerWidget* widget = resolveInstance(context, &key);
     Q_UNUSED(widget);
     if(key.isEmpty() || !m_instanceHostInfo.contains(key))
         return false;
-    outMode = m_instanceHostInfo.value(key).mode;
+    const UInstanceHostInfo info = m_instanceHostInfo.value(key);
+    outMode = info.mode;
+    outContainerId = info.containerId;
     return true;
 }
 

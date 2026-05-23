@@ -484,6 +484,10 @@ void UGEngineControlWidget::openComponentGuiFromScheme(const UComponentGuiContex
         return;
     }
 
+    UComponentGuiHostMode savedMode = UComponentGuiHostMode::Mdi;
+    QString savedContainerId;
+    const bool hasSavedPlacement = m_componentGuiService.tryGetHostPlacementByContext(context, savedMode, savedContainerId);
+
     UVisualControllerWidget* widget = m_componentGuiService.createOrActivate(this, context);
     if(!widget)
     {
@@ -491,6 +495,14 @@ void UGEngineControlWidget::openComponentGuiFromScheme(const UComponentGuiContex
         return;
     }
     ensureComponentGuiQuickActionsInstalled(widget);
+
+    if(hasSavedPlacement)
+    {
+        if(savedMode == UComponentGuiHostMode::SecondaryDock)
+            moveContextToSecondaryHost(context);
+        else if(savedMode == UComponentGuiHostMode::TabHost && !savedContainerId.isEmpty())
+            moveContextToTabHost(context, savedContainerId);
+    }
 }
 
 // file menu actions
@@ -1822,6 +1834,9 @@ void UGEngineControlWidget::ALoadParameters(RDK::USerStorageXML &xml)
 
 UComponentGuiTabHostWidget* UGEngineControlWidget::ensureComponentGuiTabHost(const QString& hostId)
 {
+    if(hostId == QStringLiteral("Secondary"))
+        return ensureComponentGuiSecondaryTabHost();
+
     if(m_componentGuiTabHosts.contains(hostId) && !m_componentGuiTabHosts[hostId].isNull())
         return m_componentGuiTabHosts[hostId].data();
 
@@ -1854,6 +1869,8 @@ QStringList UGEngineControlWidget::componentGuiTabHostIds() const
         if(!it.value().isNull())
             ids.push_back(it.key());
     }
+    if(!m_componentGuiSecondaryTabHost.isNull() && !ids.contains(QStringLiteral("Secondary")))
+        ids.push_back(QStringLiteral("Secondary"));
     ids.sort();
     return ids;
 }
@@ -1867,12 +1884,55 @@ bool UGEngineControlWidget::moveContextToTabHost(const UComponentGuiContext& con
     return host->assignContext(context);
 }
 
+UComponentGuiTabHostWidget* UGEngineControlWidget::ensureComponentGuiSecondaryTabHost()
+{
+    if(!m_componentGuiSecondaryTabHost.isNull())
+        return m_componentGuiSecondaryTabHost.data();
+
+    if(m_componentGuiSecondaryHostWindow.isNull())
+        showComponentGuiSecondaryHostWindow();
+
+    QMainWindow* secondary = m_componentGuiSecondaryHostWindow.data();
+    if(!secondary)
+        return nullptr;
+
+    auto* host = new UComponentGuiTabHostWidget(QStringLiteral("Secondary"),
+                                                &m_componentGuiService,
+                                                secondary,
+                                                application);
+    secondary->setCentralWidget(host);
+    m_componentGuiSecondaryTabHost = host;
+    m_componentGuiTabHosts[QStringLiteral("Secondary")] = host;
+    m_componentGuiService.setSecondaryTabHostWidget(host);
+    wireComponentGuiTabHostPruning(host);
+    return host;
+}
+
+bool UGEngineControlWidget::moveContextToSecondaryHost(const UComponentGuiContext& context)
+{
+    showComponentGuiSecondaryHostWindow();
+    UComponentGuiTabHostWidget* host = ensureComponentGuiSecondaryTabHost();
+    if(!host)
+        return false;
+    if(!host->assignContext(context))
+        return false;
+    pruneEmptyTabHostSlotsForContext(context);
+    return true;
+}
+
 void UGEngineControlWidget::wireComponentGuiTabHostPruning(UComponentGuiTabHostWidget* host)
 {
     if(!host)
         return;
-    host->setAfterAssignContextHook([this](const UComponentGuiContext& ctx) {
+    const QString hostId = host->hostId();
+    host->setAfterAssignContextHook([this, hostId](const UComponentGuiContext& ctx) {
         pruneEmptyTabHostSlotsForContext(ctx);
+        if(hostId == QStringLiteral("Secondary"))
+        {
+            m_componentGuiService.assignHostModeForContext(ctx,
+                                                           UComponentGuiHostMode::SecondaryDock,
+                                                           QStringLiteral("Secondary"));
+        }
     });
 }
 
@@ -1999,9 +2059,7 @@ void UGEngineControlWidget::loadComponentGuiLayoutFromXml(RDK::USerStorageXML &x
         }
         else if(s.hostMode == UComponentGuiHostMode::SecondaryDock)
         {
-            showComponentGuiSecondaryHostWindow();
-            m_componentGuiService.attachToSecondaryDock(context);
-            pruneEmptyTabHostSlotsForContext(context);
+            moveContextToSecondaryHost(context);
         }
         if(s.isActive && !hasActive)
         {
@@ -2093,7 +2151,11 @@ void UGEngineControlWidget::readComponentGuiSettings(QSettings& projectSettings)
         const QByteArray tabHostState = projectSettings.value(QStringLiteral("ComponentGui/TabHost/%1/State").arg(hostId)).toByteArray();
         if(tabHostGeometry.isEmpty() && tabHostState.isEmpty())
             continue;
-        UComponentGuiTabHostWidget* host = ensureComponentGuiTabHost(hostId);
+        UComponentGuiTabHostWidget* host = nullptr;
+        if(hostId == QStringLiteral("Secondary"))
+            host = ensureComponentGuiSecondaryTabHost();
+        else
+            host = ensureComponentGuiTabHost(hostId);
         if(host)
         {
             if(!tabHostGeometry.isEmpty())
@@ -2194,15 +2256,10 @@ void UGEngineControlWidget::showComponentGuiHostMenu(UVisualControllerWidget* wi
     }
     if(chosen == moveToSecondaryDockAction)
     {
-        showComponentGuiSecondaryHostWindow();
-        if(!m_componentGuiService.attachToSecondaryDock(context))
+        if(!moveContextToSecondaryHost(context))
         {
             QMessageBox::warning(this, tr("Move to Secondary Host"),
                                  tr("Failed to move GUI to secondary host window."));
-        }
-        else
-        {
-            pruneEmptyTabHostSlotsForContext(context);
         }
         return;
     }
@@ -2339,9 +2396,7 @@ void UGEngineControlWidget::ensureComponentGuiQuickActionsInstalled(UVisualContr
             UComponentGuiContext context;
             if(!m_componentGuiService.tryGetContextByWidget(widget, context))
                 return;
-            showComponentGuiSecondaryHostWindow();
-            m_componentGuiService.attachToSecondaryDock(context);
-            pruneEmptyTabHostSlotsForContext(context);
+            moveContextToSecondaryHost(context);
         });
     }
 
@@ -2374,26 +2429,19 @@ void UGEngineControlWidget::showComponentGuiSecondaryHostWindow()
         secondary->setObjectName(QStringLiteral("ComponentGuiSecondaryHostWindow"));
         secondary->setWindowTitle(tr("Component GUI Secondary Host"));
         secondary->setAttribute(Qt::WA_DeleteOnClose, true);
-        secondary->setDockOptions(QMainWindow::AllowNestedDocks |
-                                  QMainWindow::AllowTabbedDocks |
-                                  QMainWindow::GroupedDragging);
         secondary->setAcceptDrops(true);
         secondary->installEventFilter(this);
-        QFrame* dropArea = new QFrame(secondary);
-        dropArea->setObjectName(QStringLiteral("ComponentGuiSecondaryDropArea"));
-        dropArea->setAcceptDrops(true);
-        dropArea->setFrameShape(QFrame::StyledPanel);
-        dropArea->installEventFilter(this);
-        secondary->setCentralWidget(dropArea);
-        m_componentGuiSecondaryDropArea = dropArea;
         connect(secondary, &QObject::destroyed, this, [this]() {
             m_componentGuiSecondaryHostWindow = nullptr;
-            m_componentGuiSecondaryDropArea = nullptr;
+            m_componentGuiSecondaryTabHost = nullptr;
+            m_componentGuiTabHosts.remove(QStringLiteral("Secondary"));
             m_componentGuiService.setSecondaryHostMainWindow(nullptr);
+            m_componentGuiService.setSecondaryTabHostWidget(nullptr);
         });
         m_componentGuiSecondaryHostWindow = secondary;
         m_componentGuiService.setSecondaryHostMainWindow(secondary);
     }
+    ensureComponentGuiSecondaryTabHost();
     m_componentGuiSecondaryHostWindow->show();
     m_componentGuiSecondaryHostWindow->raise();
     m_componentGuiSecondaryHostWindow->activateWindow();
@@ -2409,9 +2457,8 @@ bool UGEngineControlWidget::handleDropToSecondaryHost(const QMimeData* mimeData)
         return false;
     Q_UNUSED(sourceCol);
 
-    if(!m_componentGuiService.attachToSecondaryDock(context))
+    if(!moveContextToSecondaryHost(context))
         return false;
-    pruneEmptyTabHostSlotsForContext(context);
     Q_UNUSED(sourceHostId);
     Q_UNUSED(sourceIndex);
     return true;

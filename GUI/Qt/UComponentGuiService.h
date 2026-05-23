@@ -15,6 +15,7 @@ class UVisualControllerWidget;
 class QMdiArea;
 class QMainWindow;
 class QDockWidget;
+class UComponentGuiTabHostWidget;
 
 enum class UComponentGuiHostMode
 {
@@ -54,8 +55,16 @@ public:
     bool attachToSecondaryDock(const UComponentGuiContext& context);
     bool attachToTabHostDock(const UComponentGuiContext& context);
     bool moveToTabHost(const UComponentGuiContext& context, const QString& hostId, QWidget* hostWidget);
+    bool assignHostModeForContext(const UComponentGuiContext& context,
+                                  UComponentGuiHostMode mode,
+                                  const QString& containerId = QString(),
+                                  int row = -1,
+                                  int col = -1);
+    /// Close component GUI for this context and drop session state (e.g. tab close button).
+    bool closeContext(const UComponentGuiContext& context);
     void setHostMainWindow(QMainWindow* mainWindow);
     void setSecondaryHostMainWindow(QMainWindow* mainWindow);
+    void setSecondaryTabHostWidget(UComponentGuiTabHostWidget* tabHost);
     void setTabHostMainWindow(QMainWindow* mainWindow);
     QList<UComponentGuiSessionSnapshot> snapshotOpenSessions() const;
     void clearClosedInstances();
@@ -68,6 +77,9 @@ public:
     bool tryGetHostModeByWidget(const UVisualControllerWidget* widget, UComponentGuiHostMode& outMode) const;
     bool tryGetWidgetByContext(const UComponentGuiContext& context, UVisualControllerWidget*& outWidget) const;
     bool tryGetHostModeByContext(const UComponentGuiContext& context, UComponentGuiHostMode& outMode) const;
+    bool tryGetHostPlacementByContext(const UComponentGuiContext& context,
+                                      UComponentGuiHostMode& outMode,
+                                      QString& outContainerId) const;
 
 private:
     QString makeInstanceKey(const UComponentGuiContext& context, const UComponentFormDescriptor& descriptor) const;
@@ -93,6 +105,7 @@ private:
     RDK::UApplication* m_application;
     QPointer<QMainWindow> m_hostMainWindow;
     QPointer<QMainWindow> m_secondaryHostMainWindow;
+    QPointer<UComponentGuiTabHostWidget> m_secondaryTabHost;
     QPointer<QMainWindow> m_tabHostMainWindow;
     QHash<QString, QPointer<UVisualControllerWidget>> m_instances;
     QHash<QString, QPointer<QDockWidget>> m_dockHosts;
