@@ -128,6 +128,14 @@ void ULlmProviderSettingsWidget::onProfileChanged(int index)
     {
         hint = tr("Offline GGUF. Env: NMSDK_LLM_GGUF_PATH, NMSDK_LLM_CTX, NMSDK_LLM_GPU_LAYERS");
     }
+    else if(preset.kind == RDK::LLM::LLMProviderKind::OllamaOpenAICompat
+            || preset.kind == RDK::LLM::LLMProviderKind::OllamaNative)
+    {
+        hint = tr("Ollama: chat template auto (qwen/llama3/mistral). Tools need Ollama 0.3+.");
+        hint += tr("\nDefaults: %1 · %2")
+                    .arg(QString::fromStdString(preset.base_url))
+                    .arg(QString::fromStdString(preset.model));
+    }
     else
     {
         if(!preset.api_key_env.empty())

@@ -38,6 +38,16 @@ nlohmann::json ULLMConversationStore::messageToJson(const LLMMessage& msg)
         j["tool_call_id"] = *msg.tool_call_id;
     if(msg.tool_name)
         j["tool_name"] = *msg.tool_name;
+    if(msg.assistant_tool_calls && !msg.assistant_tool_calls->empty())
+    {
+        j["tool_calls"] = nlohmann::json::array();
+        for(const LLMToolCall& call : *msg.assistant_tool_calls)
+        {
+            j["tool_calls"].push_back({{"id", call.id},
+                                       {"name", call.name},
+                                       {"arguments", call.arguments}});
+        }
+    }
     return j;
 }
 
@@ -58,6 +68,20 @@ LLMMessage ULLMConversationStore::messageFromJson(const nlohmann::json& j)
         msg.tool_call_id = j["tool_call_id"].get<std::string>();
     if(j.contains("tool_name"))
         msg.tool_name = j["tool_name"].get<std::string>();
+    if(j.contains("tool_calls") && j["tool_calls"].is_array())
+    {
+        std::vector<LLMToolCall> calls;
+        for(const auto& tc : j["tool_calls"])
+        {
+            LLMToolCall call;
+            call.id = tc.value("id", "");
+            call.name = tc.value("name", "");
+            call.arguments = tc.value("arguments", nlohmann::json::object());
+            calls.push_back(call);
+        }
+        if(!calls.empty())
+            msg.assistant_tool_calls = std::move(calls);
+    }
     return msg;
 }
 

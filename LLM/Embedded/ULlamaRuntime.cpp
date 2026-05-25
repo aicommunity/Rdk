@@ -1,5 +1,7 @@
 #include "ULlamaRuntime.h"
 
+#include "../Core/Providers/UOllamaChatTemplate.h"
+
 #include <algorithm>
 #include <cstdio>
 #include <filesystem>
@@ -39,27 +41,11 @@ struct ULlamaRuntime::Impl {
 
 std::string formatMessagesForLlama(const std::vector<LLMMessage>& messages)
 {
-    std::ostringstream oss;
-    for(const LLMMessage& m : messages)
-    {
-        switch(m.role)
-        {
-        case LLMMessage::Role::System:
-            oss << "System: " << m.content << "\n";
-            break;
-        case LLMMessage::Role::User:
-            oss << "User: " << m.content << "\n";
-            break;
-        case LLMMessage::Role::Assistant:
-            oss << "Assistant: " << m.content << "\n";
-            break;
-        case LLMMessage::Role::Tool:
-            oss << "Tool: " << m.content << "\n";
-            break;
-        }
-    }
-    oss << "Assistant: ";
-    return oss.str();
+    LLMProviderProfile profile;
+    profile.model = "qwen2.5";
+    const auto prepared = prepareMessagesForOllama(profile, messages);
+    const OllamaChatTemplateFamily family = detectChatTemplateFamily(profile.model, profile.chat_template);
+    return formatPromptWithTemplate(family, prepared);
 }
 
 ULlamaRuntime::ULlamaRuntime() = default;
@@ -158,7 +144,13 @@ LLMCompletionResult ULlamaRuntime::complete(const std::vector<LLMMessage>& messa
         return result;
     }
 
-    const std::string prompt = formatMessagesForLlama(messages);
+    LLMProviderProfile profile;
+    profile.model = m_config.gguf_path;
+    profile.chat_template = OllamaChatTemplateFamily::Auto;
+    const auto prepared = prepareMessagesForOllama(profile, messages);
+    const OllamaChatTemplateFamily family =
+        detectChatTemplateFamily(m_config.gguf_path, profile.chat_template);
+    const std::string prompt = formatPromptWithTemplate(family, prepared);
     const int n_prompt = countPromptTokens(m_impl->vocab, prompt);
     if(n_prompt <= 0)
     {

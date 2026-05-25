@@ -1,5 +1,7 @@
 #include "UOllamaNativeProvider.h"
 
+#include "UOllamaChatTemplate.h"
+
 namespace RDK::LLM {
 
 UOllamaNativeProvider::UOllamaNativeProvider(LLMProviderProfile profile)
@@ -10,7 +12,7 @@ UOllamaNativeProvider::UOllamaNativeProvider(LLMProviderProfile profile)
 LLMProviderCapabilities UOllamaNativeProvider::capabilities() const
 {
     LLMProviderCapabilities c;
-    c.supports_tool_calling = false;
+    c.supports_tool_calling = true;
     c.supports_streaming = false;
     c.requires_network = true;
     return c;
@@ -41,8 +43,27 @@ LLMCompletionResult UOllamaNativeProvider::parseResponse(const std::string& body
             result.error_message = j["error"].dump();
             return result;
         }
-        if(j.contains("message") && j["message"].contains("content"))
-            result.text = j["message"]["content"].get<std::string>();
+        if(j.contains("message"))
+        {
+            const auto& message = j["message"];
+            if(message.contains("content") && !message["content"].is_null())
+                result.text = message["content"].get<std::string>();
+            if(message.contains("tool_calls"))
+            {
+                for(const auto& tc : message["tool_calls"])
+                {
+                    LLMToolCall call;
+                    call.id = tc.value("id", "");
+                    if(tc.contains("function"))
+                    {
+                        call.name = tc["function"].value("name", "");
+                        const std::string args_str = tc["function"].value("arguments", "{}");
+                        call.arguments = nlohmann::json::parse(args_str);
+                    }
+                    result.tool_calls.push_back(call);
+                }
+            }
+        }
         result.ok = true;
     }
     catch(const std::exception& ex)
@@ -57,33 +78,20 @@ LLMCompletionResult UOllamaNativeProvider::parseResponse(const std::string& body
 LLMCompletionResult UOllamaNativeProvider::chat(const std::vector<LLMMessage>& messages,
                                                 const LLMCompletionOptions& opts)
 {
-    (void)opts;
     LLMCompletionResult result;
+    const std::vector<LLMMessage> prepared = prepareMessagesForOllama(m_profile, messages);
+
     nlohmann::json body;
     body["model"] = m_profile.model;
     body["stream"] = false;
-    nlohmann::json msgs = nlohmann::json::array();
-    for(const LLMMessage& m : messages)
+    body["messages"] = buildOpenAiChatMessagesJson(prepared);
+    if(opts.max_tokens > 0)
+        body["options"] = {{"num_predict", opts.max_tokens}};
+    if(!opts.tools_for_api.empty())
     {
-        if(m.role == LLMMessage::Role::Tool)
-            continue;
-        nlohmann::json item;
-        switch(m.role)
-        {
-        case LLMMessage::Role::System:
-            item["role"] = "system";
-            break;
-        case LLMMessage::Role::Assistant:
-            item["role"] = "assistant";
-            break;
-        default:
-            item["role"] = "user";
-            break;
-        }
-        item["content"] = m.content;
-        msgs.push_back(item);
+        body["tools"] = opts.tools_for_api;
+        body["tool_choice"] = "auto";
     }
-    body["messages"] = msgs;
 
     const std::string url = ollamaHost() + "/api/chat";
     auto resp = m_http.postJson(url, body.dump(), m_profile.api_key);

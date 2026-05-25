@@ -56,6 +56,15 @@ struct LLMProviderCapabilities {
     bool requires_network = true;
 };
 
+enum class OllamaChatTemplateFamily {
+    Auto,
+    Qwen2,
+    Llama3,
+    Mistral,
+    Gemma2,
+    ChatML
+};
+
 struct LLMProviderProfile {
     std::string profile_id = "ollama-local";
     LLMProviderKind kind = LLMProviderKind::OllamaOpenAICompat;
@@ -66,6 +75,8 @@ struct LLMProviderProfile {
     std::string api_key_env;
     bool is_cloud = false;
     bool prefer_local = true;
+    /// Empty = detect from model name (qwen2.5 → Qwen2, llama3 → Llama3, …).
+    OllamaChatTemplateFamily chat_template = OllamaChatTemplateFamily::Auto;
 };
 
 struct LLMProfileEndpointOverride {
@@ -93,6 +104,12 @@ struct LLMSessionContext {
     int active_channel_index = 0;
 };
 
+struct LLMToolCall {
+    std::string id;
+    std::string name;
+    nlohmann::json arguments;
+};
+
 struct LLMMessage {
     enum class Role { System, User, Assistant, Tool };
     Role role = Role::User;
@@ -101,12 +118,8 @@ struct LLMMessage {
     std::optional<std::string> tool_name;
     std::optional<nlohmann::json> tool_arguments;
     std::optional<nlohmann::json> tool_result;
-};
-
-struct LLMToolCall {
-    std::string id;
-    std::string name;
-    nlohmann::json arguments;
+    /// Set on assistant turns that invoked tools (required for Ollama/OpenAI tool loops).
+    std::optional<std::vector<LLMToolCall>> assistant_tool_calls;
 };
 
 struct LLMCompletionResult {

@@ -145,6 +145,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
         LLMMessage assistant_tools;
         assistant_tools.role = LLMMessage::Role::Assistant;
         assistant_tools.content = completion.text;
+        assistant_tools.assistant_tool_calls = completion.tool_calls;
         m_store.appendMessage(req.session_id, assistant_tools);
 
         auto invokeOne = [&](const LLMToolCall& call) -> std::pair<LLMToolCall, ToolGatewayResult> {

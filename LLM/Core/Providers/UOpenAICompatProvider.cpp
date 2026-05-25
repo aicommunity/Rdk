@@ -1,5 +1,7 @@
 #include "UOpenAICompatProvider.h"
 
+#include "UOllamaChatTemplate.h"
+
 namespace RDK::LLM {
 
 UOpenAICompatProvider::UOpenAICompatProvider(LLMProviderProfile profile)
@@ -19,37 +21,20 @@ LLMProviderCapabilities UOpenAICompatProvider::capabilities() const
 nlohmann::json UOpenAICompatProvider::buildRequestBody(const std::vector<LLMMessage>& messages,
                                                        const LLMCompletionOptions& opts) const
 {
+    std::vector<LLMMessage> prepared = messages;
+    if(isOllamaProvider(m_profile))
+        prepared = prepareMessagesForOllama(m_profile, std::move(prepared));
+
     nlohmann::json body;
     body["model"] = m_profile.model;
     body["temperature"] = opts.temperature;
     body["max_tokens"] = opts.max_tokens;
-    nlohmann::json msgs = nlohmann::json::array();
-    for(const LLMMessage& m : messages)
-    {
-        nlohmann::json item;
-        switch(m.role)
-        {
-        case LLMMessage::Role::System:
-            item["role"] = "system";
-            break;
-        case LLMMessage::Role::User:
-            item["role"] = "user";
-            break;
-        case LLMMessage::Role::Assistant:
-            item["role"] = "assistant";
-            break;
-        case LLMMessage::Role::Tool:
-            item["role"] = "tool";
-            break;
-        }
-        item["content"] = m.content;
-        if(m.tool_call_id)
-            item["tool_call_id"] = *m.tool_call_id;
-        msgs.push_back(item);
-    }
-    body["messages"] = msgs;
+    body["messages"] = buildOpenAiChatMessagesJson(prepared);
     if(!opts.tools_for_api.empty())
+    {
         body["tools"] = opts.tools_for_api;
+        body["tool_choice"] = "auto";
+    }
     return body;
 }
 

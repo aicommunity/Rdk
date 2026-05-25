@@ -32,6 +32,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Deferred in | Target phase | Priority | Status | Notes / resolution |
 |----|------|-------------|--------------|----------|--------|-------------------|
+| TD-015 | Chat template: Jinja from Ollama modelfile not fetched | design | post-MVP | P3 | open | Heuristic families (qwen/llama3/…); use Ollama /api/show later |
 | TD-002 | Intent parser: rule-based only; no LLM-based intent classification | design | post-MVP | P2 | open | Extended keywords (arduino, explain); LLM classifier still future |
 | TD-003 | Doc search: no embeddings index | design | post-MVP | P3 | open | `UDocSearchHelper` multi-token ranking (2026-05-25) |
 | TD-004 | Scenario C saga/compensation | design | post-MVP | P3 | open | Phase enum + audit transitions only; no saga yet |

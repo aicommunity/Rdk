@@ -11,5 +11,5 @@ TEST(LlmOllamaNative, FactoryCreatesNativeProvider)
     auto provider = RDK::LLM::ULLMProviderFactory::create(profile);
     ASSERT_NE(provider, nullptr);
     EXPECT_EQ(provider->kind(), RDK::LLM::LLMProviderKind::OllamaNative);
-    EXPECT_FALSE(provider->capabilities().supports_tool_calling);
+    EXPECT_TRUE(provider->capabilities().supports_tool_calling);
 }
