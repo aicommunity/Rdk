@@ -67,8 +67,8 @@
 
 | Поле | Значение |
 |------|----------|
-| `DOCS_BUNDLE_ID` | `rdk-llm-docs-1.0.0` |
-| Дата | 2026-05-25 |
+| `DOCS_BUNDLE_ID` | `rdk-llm-docs-1.1.0` |
+| Дата | 2026-05-25 (sync с кодом: MVP + post-MVP C) |
 | Согласовано с | Nmsdk / RDK Core, NeuroModeler |
 
 При изменении контрактов tools — инкремент `TOOL_REGISTRY_VERSION` (см. Tool-Gateway-and-Registry.md) и запись в audit.

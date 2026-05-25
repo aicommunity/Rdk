@@ -10,12 +10,12 @@
 | L4 Tool selection | Intent → filter | Unit | No |
 | L5 Entity resolution | Candidates | Unit | No |
 | L6 Orchestrator | Mock provider | Integration | No |
-| L7 E2E | Mock HTTP LLM | Integration | Optional |
-| L8 Manual | Real Ollama | Manual checklist | Yes |
+| L7 Regression phrases | Intent/rules smoke | Unit + fixtures | No |
+| L8 E2E / Manual | Real Ollama | Manual | Yes |
 
-**CI default (`RDK_USE_LLM=OFF`):** L1–L6 **не собираются**.
+**CI default (`RDK_USE_LLM=OFF`):** LLM tests **не собираются**.
 
-**CI `llm-linux`:** `cmake -DRDK_USE_LLM=ON` + run L1–L7.
+**CI `ci-llm-linux.sh`:** `cmake -DRDK_USE_LLM=ON` + ctest `Rdk/Tests/Unit/LLM` (23 tests).
 
 ---
 
@@ -42,7 +42,7 @@ Fixtures: `Rdk/Tests/Fixtures/LLM/provider/*.json`
 | `q_add_source.txt` | добавь MatrixSource | `find_component` or `add_component` |
 | `q_class_help.txt` | что такое ArduinoBoard | `describe_class` |
 
-Runner (фаза 3): `Rdk/Tests/Integration/LLM/test_regression.cpp`
+Runner: `Test_LLM_RegressionIntent` — фразы из `Rdk/Tests/Fixtures/LLM/regression/*.txt` → `ULLMIntentParser` (без HTTP).
 
 ---
 

@@ -30,8 +30,8 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 |----------|-----------|
 | Read tools (все) | Write tools |
 | `search_project_docs` | Plan/Execute batch |
-| GUI chat + stream | Autonomous loop |
-| Ollama + OpenAI-compat | Embedded llama |
+| GUI chat (non-blocking) | Token streaming (post-MVP) |
+| Ollama + OpenAI-compat | Autonomous loop |
 | Entity resolution read | Mass mutations |
 
 **Критерий готовности:**
@@ -50,9 +50,9 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 
 | Включено | Исключено |
 |----------|-----------|
-| Write tools + HITL | Scenario C workflows |
-| Plan preview | Scenario D autonomous |
-| `add_component`, `set_property`, … | Library-specific tools (optional 2b) |
+| Write tools + HITL | Scenario D autonomous |
+| Plan preview + execute | Parallel write |
+| `add_component`, `set_property`, `connect_components`, … | — |
 | Idempotency keys | Parallel write |
 
 **Критерий готовности:**
@@ -82,6 +82,7 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 - Rate limits cloud
 
 **Критерий готовности:**
+- [x] Cloud session rate limit (`max_cloud_provider_rounds_per_session`)
 - [x] L1–L5 unit tests (validator, policy, intent, gateway, orchestrator)
 - [x] `Scripts/ci-llm-linux.sh` for CI matrix
 - [x] Session persist (TD-008)
@@ -108,7 +109,7 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 
 - [x] State machine + `pending_plan` в [Orchestrator.md](Orchestrator.md)
 - [x] `ULLMPlanExecutor` + GUI Run plan / Reject
-- [x] Saga: auto `remove_component` после failed plan (TD-018)
+- [x] Rollback: `remove_component` / `set_property` / `disconnect_components` via Rollback or compensate path (TD-018/020)
 - [x] Rollback `set_property` when prior value known (TD-020)
 - [x] Checkpoints / resume mid-plan (TD-023)
 
@@ -136,6 +137,18 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 - [x] Hybrid doc search (TF-IDF + offline semantic boost, TD-017)
 - [x] Optional Ollama embeddings re-rank (`NMSDK_LLM_DOC_EMBED_OLLAMA=1`, TD-021)
 - [x] `remove_component` write tool
+- [x] `connect_components`, `load_project`, `save_project` write tools
+
+---
+
+## Post-MVP / backlog (не блокирует MVP)
+
+| Item | Notes |
+|------|-------|
+| GUI token streaming | `chatStream` + Cancel в dock |
+| Confirmation TTL | auto-expire pending HITL |
+| L7 HTTP regression runner | intent/rules smoke in `Tests/Fixtures/LLM/` |
+| Strict json_schema plan from provider | сейчас parse из markdown/json block |
 
 ---
 

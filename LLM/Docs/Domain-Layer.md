@@ -119,7 +119,7 @@ public:
 |----------|----------------------|----------|
 | `add_component` | `URdkDomainAccess` обёртка над `Model_AddComponent` / engine API | `rdk_init.h` |
 | `set_property` | Прямой доступ к `UComponent` property по LongName | — |
-| `load/save project` | `UProject` через application | — |
+| `load/save project` | `UApplication::OpenProject` / `SaveProject(As)` | — |
 
 **Инвариант:** перед write `URdkDomainAccess` проверяет `sessionInfo().project_loaded == true`.
 
@@ -135,9 +135,10 @@ public:
 | `list_registered_classes` | `listRegisteredClassNames` + ClDesc provider |
 | `add_component` | `addComponent` |
 | `set_property` | `setProperty` |
-| `connect_components` | `connectComponents` |
-| `load_project` | `loadProject` |
-| `save_project` | `saveProject` |
+| `connect_components` | `connectComponents` → `MModel_CreateLinkByName` |
+| `disconnect_components` | internal rollback → `Model_BreakLinkByName` |
+| `load_project` | `loadProject` → `OpenProject` |
+| `save_project` | `saveProject` → `SaveProject` / `SaveProjectAs` |
 
 ---
 

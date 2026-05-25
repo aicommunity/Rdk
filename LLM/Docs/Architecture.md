@@ -124,7 +124,7 @@ sequenceDiagram
 |----|-----|------|----------|
 | A | Chat over data | 1 | [MVP-Roadmap.md](MVP-Roadmap.md) |
 | B | Copilot for actions | 2 | MVP-Roadmap |
-| C | Workflow operator | Post-MVP | Orchestrator (design only) |
+| C | Workflow operator | Post-MVP | [Orchestrator.md](Orchestrator.md), `ULLMPlanExecutor` |
 | D | Autonomous agent | **Не в scope** | Anti-Patterns |
 
 ---

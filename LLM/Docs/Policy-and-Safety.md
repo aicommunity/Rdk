@@ -65,7 +65,7 @@ struct PolicyDecision {
 | `save_project` | true |
 | All Read | false |
 
-GUI: `ULlmChangePreviewWidget` обязателен перед `confirmPendingExecution`.
+GUI: preview plan в `ULlmChangePreviewWidget`; одиночный write — **Apply** → `confirmPending()`.
 
 ---
 

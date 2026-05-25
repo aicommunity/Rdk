@@ -100,12 +100,14 @@ void RegisterLlmUi(UGEngineControlWidget* host,
 
 | UI элемент | Поведение |
 |------------|-----------|
-| Chat history | QListView + markdown delegate |
-| Input | QPlainTextEdit, Enter=send, Shift+Enter=newline |
-| Provider combo | Профили из `ULLMSettingsStore` |
-| Status | Local / Cloud / Embedded indicator |
-| Stream | Append tokens; Cancel → `orchestrator->cancel()` |
-| Apply/Reject | Visible когда `ConversationState.pending_confirmation` |
+| Chat history | `QTextEdit` (HTML escaped) |
+| Input | `QPlainTextEdit`, Send |
+| Provider combo | Профили из `ULLMSettingsStore` + Settings |
+| Status | Local / Cloud / key hint |
+| Ответ LLM | Полный ответ после `QtConcurrent::run` (**streaming post-MVP**) |
+| Run plan | `confirmPlanExecution()` |
+| Resume / Rollback plan | После checkpoint (`resumePlanExecution` / `rollbackPlanExecution`) |
+| Apply / Reject | `confirmPending()` / `rejectPending()` |
 
 **Потоки:** orchestrator в `QThread` worker или `QtConcurrent::run` + signals `finished` — **запрещено** блокировать GUI на curl/LLM.
 
@@ -113,14 +115,11 @@ void RegisterLlmUi(UGEngineControlWidget* host,
 
 ## 6. `ULlmChangePreviewWidget` (HITL)
 
-Показывает:
-- JSON plan (`ULLMExecutionPlan`)
-- Diff операций: add/remove/set_property/connect (human-readable)
-- Опционально: фрагмент XML before/after (read-only)
+Показывает текст превью плана (`formatExecutionPlanPreview` — шаги и статусы).
 
-Кнопки:
-- **Применить** → `orchestrator->confirmPendingExecution()`
-- **Отклонить** → `rejectPendingExecution()` + audit event `user_rejected`
+Открывается через `LlmGui::showPlanPreview()` при `pending_plan` / paused plan.
+
+Write HITL для одиночных tools — кнопки **Apply/Reject** в assistant dock (`confirmPending` / `rejectPending`).
 
 ---
 

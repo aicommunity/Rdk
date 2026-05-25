@@ -44,7 +44,7 @@ DomainSessionInfo URdkDomainAccess::sessionInfo() const
     DomainSessionInfo info;
     RDK::UELockPtr<RDK::UEngine> lock = RDK::GetEngineLockTimeout(0, 100);
     info.engine_ready = static_cast<bool>(lock);
-    info.project_loaded = info.engine_ready;
+    info.project_loaded = m_app && m_app->GetProjectOpenFlag();
     if(lock)
         info.channel_count = RdkCoreManager.NumChannels.Get();
     return info;
@@ -208,6 +208,57 @@ DomainStatus URdkDomainAccess::setProperty(const std::string& long_name,
     if(rc != 0)
         return {DomainStatusCode::InvalidPropertyValue,
                 "set_property failed for " + property_name + " on " + long_name};
+    return {};
+}
+
+DomainStatus URdkDomainAccess::connectComponents(const std::string& from_long_name,
+                                                 const std::string& from_property,
+                                                 const std::string& to_long_name,
+                                                 const std::string& to_property,
+                                                 int channel_index)
+{
+    const int rc = MModel_CreateLinkByName(channel_index, from_long_name.c_str(),
+                                           from_property.c_str(), to_long_name.c_str(),
+                                           to_property.c_str());
+    if(rc != 0)
+        return {DomainStatusCode::LinkFailed,
+                "connect_components failed (code " + std::to_string(rc) + ")"};
+    return {};
+}
+
+DomainStatus URdkDomainAccess::breakComponentLink(const std::string& from_long_name,
+                                                  const std::string& from_property,
+                                                  const std::string& to_long_name,
+                                                  const std::string& to_property,
+                                                  int channel_index)
+{
+    (void)channel_index;
+    const int rc = Model_BreakLinkByName(from_long_name.c_str(), from_property.c_str(),
+                                         to_long_name.c_str(), to_property.c_str());
+    if(rc != 0)
+        return {DomainStatusCode::LinkFailed,
+                "break link failed (code " + std::to_string(rc) + ")"};
+    return {};
+}
+
+DomainStatus URdkDomainAccess::loadProject(const std::string& path)
+{
+    if(!m_app)
+        return {DomainStatusCode::ProjectNotLoaded, "Application not available"};
+    if(path.empty())
+        return {DomainStatusCode::InvalidPropertyValue, "project_path is required"};
+    if(!m_app->OpenProject(path))
+        return {DomainStatusCode::ProjectNotLoaded, "OpenProject failed for " + path};
+    return {};
+}
+
+DomainStatus URdkDomainAccess::saveProject(const std::string& path_optional)
+{
+    if(!m_app)
+        return {DomainStatusCode::ProjectNotLoaded, "Application not available"};
+    const bool ok = path_optional.empty() ? m_app->SaveProject() : m_app->SaveProjectAs(path_optional);
+    if(!ok)
+        return {DomainStatusCode::ProjectNotLoaded, "SaveProject failed"};
     return {};
 }
 

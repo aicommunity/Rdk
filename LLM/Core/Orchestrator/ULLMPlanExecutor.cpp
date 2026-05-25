@@ -72,6 +72,15 @@ int ULLMPlanExecutor::compensateCompletedWrites(const ULLMExecutionPlan& plan,
             if(undo.arguments["long_name"].get<std::string>().empty())
                 continue;
         }
+        else if(it->tool_name == "connect_components")
+        {
+            undo.tool_name = "disconnect_components";
+            undo.arguments = {{"from_long_name", it->result.value("from_long_name", "")},
+                              {"from_property", it->result.value("from_property", "")},
+                              {"to_long_name", it->result.value("to_long_name", "")},
+                              {"to_property", it->result.value("to_property", "")},
+                              {"channel_index", session.active_channel_index}};
+        }
         else
         {
             continue;

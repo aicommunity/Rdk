@@ -48,6 +48,18 @@ public:
                               int channel_index,
                               std::string& out_long_name);
     DomainStatus removeComponent(const std::string& long_name, int channel_index);
+    DomainStatus connectComponents(const std::string& from_long_name,
+                                   const std::string& from_property,
+                                   const std::string& to_long_name,
+                                   const std::string& to_property,
+                                   int channel_index);
+    DomainStatus breakComponentLink(const std::string& from_long_name,
+                                    const std::string& from_property,
+                                    const std::string& to_long_name,
+                                    const std::string& to_property,
+                                    int channel_index);
+    DomainStatus loadProject(const std::string& path);
+    DomainStatus saveProject(const std::string& path_optional);
     DomainStatus getPropertyValue(const std::string& long_name,
                                   const std::string& property_name,
                                   int channel_index,

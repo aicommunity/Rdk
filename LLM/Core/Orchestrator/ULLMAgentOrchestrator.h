@@ -3,6 +3,8 @@
 
 #include <atomic>
 #include <functional>
+#include <map>
+#include <mutex>
 
 #include "../LlmTypes.h"
 #include "../Providers/ILLMProvider.h"
@@ -59,6 +61,8 @@ private:
     ULLMConversationStore& m_store;
     ULLMIntentParser m_intent;
     std::atomic<bool> m_cancelled{false};
+    mutable std::mutex m_session_busy_mu;
+    std::map<std::string, bool> m_session_busy;
     void setWorkflowPhase(ConversationState& state, LLMWorkflowPhase phase,
                           const std::string& trace_id);
 

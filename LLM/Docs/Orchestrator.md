@@ -129,16 +129,15 @@ function handleUserMessage(envelope):
 
 ## 7. Provider errors & retry
 
-| Error | Retry |
-|-------|-------|
-| HTTP 429 | exponential backoff max 3 |
-| HTTP 5xx | 2 retries |
-| Timeout | 1 retry |
-| Invalid tool JSON from model | return validation error to model as tool_result |
+| Error | Retry (реализация `UOpenAICompatProvider`) |
+|-------|------------------------------------------|
+| HTTP 408 / 429 / 5xx | 1 retry после 400–500 ms |
+| Transport error | 1 retry |
+| Invalid tool JSON from model | validation error в `tool_result` (gateway) |
 
 ---
 
-## 8. Сценарий C (post-MVP design)
+## 8. Сценарий C (реализовано)
 
 Workflow state machine:
 
@@ -146,14 +145,14 @@ Workflow state machine:
 Idle -> Planning -> AwaitingConfirmation -> Executing -> Completed
                               |                |
                               v                v
-                           Failed          Compensating (saga)
+                    Paused (checkpoint)    Rollback (compensate)
 ```
 
-Документировать шаги; **не реализовывать** в MVP. См. [MVP-Roadmap.md](MVP-Roadmap.md).
+API: `confirmPlanExecution`, `resumePlanExecution`, `rollbackPlanExecution`. См. [MVP-Roadmap.md](MVP-Roadmap.md).
 
 ---
 
 ## 9. Threading
 
-- Один `handleUserMessage` — один worker future per `session_id`
-- Mutex per session — второй message queued or rejected «дождитесь ответа»
+- Один `handleUserMessage` — worker (`QtConcurrent`) per GUI send
+- `m_session_busy` — второй запрос с тем же `session_id` отклоняется с ошибкой «Session busy»

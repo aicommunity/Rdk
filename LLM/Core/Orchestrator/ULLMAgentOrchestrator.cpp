@@ -1,6 +1,7 @@
 #include "ULLMAgentOrchestrator.h"
 
 #include <algorithm>
+#include <functional>
 #include <future>
 #include <sstream>
 
@@ -64,6 +65,25 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
 {
     m_cancelled = false;
     LLMFinalResponse final;
+    {
+        std::lock_guard<std::mutex> lock(m_session_busy_mu);
+        if(m_session_busy[req.session_id])
+        {
+            final.ok = false;
+            final.error = "Session busy: wait for the current request to finish.";
+            return final;
+        }
+        m_session_busy[req.session_id] = true;
+    }
+    auto clear_busy = [this, sid = req.session_id]() {
+        std::lock_guard<std::mutex> lock(m_session_busy_mu);
+        m_session_busy[sid] = false;
+    };
+    struct BusyGuard {
+        std::function<void()> fn;
+        ~BusyGuard() { fn(); }
+    } busy_guard{clear_busy};
+
     ConversationState& state = m_store.getOrCreate(req.session_id);
     state.session_id = req.session_id;
 

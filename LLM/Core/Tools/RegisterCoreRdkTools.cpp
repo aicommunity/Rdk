@@ -260,6 +260,117 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
             }
             return r;
         });
+
+    registry.registerTool(
+        makeDef("connect_components", LLMToolKind::Write,
+                "Create a data/control link between two component properties",
+                {{"type", "object"},
+                 {"required",
+                  {"from_long_name", "from_property", "to_long_name", "to_property"}},
+                 {"properties",
+                  {{"from_long_name", {{"type", "string"}}},
+                   {"from_property", {{"type", "string"}}},
+                   {"to_long_name", {{"type", "string"}}},
+                   {"to_property", {{"type", "string"}}},
+                   {"channel_index", {{"type", "integer"}}}}},
+                 {"additionalProperties", false}},
+                {{"type", "object"}},
+                true),
+        [&](const nlohmann::json& args) -> ToolGatewayResult {
+            ToolGatewayResult r;
+            DomainStatus st = domain.connectComponents(
+                args.at("from_long_name").get<std::string>(),
+                args.at("from_property").get<std::string>(),
+                args.at("to_long_name").get<std::string>(),
+                args.at("to_property").get<std::string>(), args.value("channel_index", 0));
+            r.ok = st.ok();
+            r.result["from_long_name"] = args.at("from_long_name");
+            r.result["from_property"] = args.at("from_property");
+            r.result["to_long_name"] = args.at("to_long_name");
+            r.result["to_property"] = args.at("to_property");
+            if(!r.ok)
+            {
+                r.error_code = "DomainError";
+                r.message = st.message;
+            }
+            return r;
+        });
+
+    registry.registerTool(
+        makeDef("disconnect_components", LLMToolKind::Write,
+                "Break a link between two component properties (undo connect)",
+                {{"type", "object"},
+                 {"required",
+                  {"from_long_name", "from_property", "to_long_name", "to_property"}},
+                 {"properties",
+                  {{"from_long_name", {{"type", "string"}}},
+                   {"from_property", {{"type", "string"}}},
+                   {"to_long_name", {{"type", "string"}}},
+                   {"to_property", {{"type", "string"}}},
+                   {"channel_index", {{"type", "integer"}}}}},
+                 {"additionalProperties", false}},
+                {{"type", "object"}},
+                true),
+        [&](const nlohmann::json& args) -> ToolGatewayResult {
+            ToolGatewayResult r;
+            DomainStatus st = domain.breakComponentLink(
+                args.at("from_long_name").get<std::string>(),
+                args.at("from_property").get<std::string>(),
+                args.at("to_long_name").get<std::string>(),
+                args.at("to_property").get<std::string>(), args.value("channel_index", 0));
+            r.ok = st.ok();
+            if(!r.ok)
+            {
+                r.error_code = "DomainError";
+                r.message = st.message;
+            }
+            return r;
+        });
+
+    registry.registerTool(
+        makeDef("load_project", LLMToolKind::Write, "Open a project file (replaces current project)",
+                {{"type", "object"},
+                 {"required", {"project_path"}},
+                 {"properties", {{"project_path", {{"type", "string"}}}}},
+                 {"additionalProperties", false}},
+                {{"type", "object"}},
+                true),
+        [&](const nlohmann::json& args) -> ToolGatewayResult {
+            ToolGatewayResult r;
+            DomainStatus st = domain.loadProject(args.at("project_path").get<std::string>());
+            r.ok = st.ok();
+            r.result["project_path"] = args.at("project_path");
+            if(!r.ok)
+            {
+                r.error_code = "DomainError";
+                r.message = st.message;
+            }
+            return r;
+        });
+
+    registry.registerTool(
+        makeDef("save_project", LLMToolKind::Write,
+                "Save the current project (optional path for Save As)",
+                {{"type", "object"},
+                 {"properties", {{"project_path", {{"type", "string"}}}}},
+                 {"additionalProperties", false}},
+                {{"type", "object"}},
+                true),
+        [&](const nlohmann::json& args) -> ToolGatewayResult {
+            ToolGatewayResult r;
+            const std::string path = args.value("project_path", "");
+            DomainStatus st = domain.saveProject(path);
+            r.ok = st.ok();
+            if(!path.empty())
+                r.result["project_path"] = path;
+            r.result["saved"] = r.ok;
+            if(!r.ok)
+            {
+                r.error_code = "DomainError";
+                r.message = st.message;
+            }
+            return r;
+        });
 }
 
 } // namespace RDK::LLM

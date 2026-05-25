@@ -1,37 +1,10 @@
-# Pending CMake / vcpkg changes (применить в Agent mode)
+# Pending CMake / vcpkg changes
 
-Документация ссылается на опции ниже. При старте фазы 0 кода применить патчи.
+**Status: applied** (фаза 0, 2026-05-25). Этот файл сохранён как чеклист; новые изменения CMake — в [Build.md](Build.md).
 
-## 1. `cmake/RdkDefines.cmake`
+Реализовано в репозитории:
 
-После `option(RDK_USE_MATLAB ...)` добавить:
-
-```cmake
-option(RDK_USE_LLM "Build RDK LLM assistant module (Rdk/LLM, GUI/Llm)" OFF)
-option(RDK_LLM_BUILD_EMBEDDED "Build embedded llama.cpp provider (requires RDK_USE_LLM)" OFF)
-```
-
-## 2. `vcpkg.json` — feature `llm`
-
-В `"features"` добавить (curl уже в base `dependencies`):
-
-```json
-"llm": {
-  "description": "RDK LLM module (Windows): nlohmann-json when RDK_USE_LLM=ON",
-  "dependencies": [ "nlohmann-json" ]
-}
-```
-
-## 3. `Rdk/CMakeLists.txt`
-
-Перед `if(BUILD_TESTING)`:
-
-```cmake
-if(RDK_USE_LLM)
-  add_subdirectory(LLM)
-endif()
-```
-
-## 4. `Rdk/LLM/CMakeLists.txt`
-
-См. полный файл в [Build.md](Build.md) §2.
+- `cmake/RdkDefines.cmake` — `RDK_USE_LLM`, `RDK_LLM_BUILD_EMBEDDED`
+- `vcpkg.json` — feature `llm`
+- `Rdk/CMakeLists.txt` — `add_subdirectory(LLM)`
+- `Rdk/LLM/CMakeLists.txt` — target `rdk.llm.core`, `llm_audit_verify`

@@ -21,6 +21,8 @@ std::vector<LLMToolDefinition> ULLMToolRegistry::listForLlmApi(const ToolFilter&
     for(const auto& kv : m_tools)
     {
         const LLMToolDefinition& d = kv.second.def;
+        if(d.name == "disconnect_components")
+            continue;
         if(!filter.include_write && d.kind == LLMToolKind::Write)
             continue;
         if((filter.intent == LLMIntentKind::Query || filter.intent == LLMIntentKind::Plan

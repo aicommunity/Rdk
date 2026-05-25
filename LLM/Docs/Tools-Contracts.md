@@ -239,33 +239,39 @@
 
 ### `connect_components`
 
-**confirmation:** true
+**confirmation:** true | **Domain:** `MModel_CreateLinkByName`
 
 **input:**
 ```json
 {
   "type": "object",
-  "required": ["from_long_name", "to_long_name", "link_type"],
+  "required": ["from_long_name", "from_property", "to_long_name", "to_property"],
   "properties": {
     "from_long_name": { "type": "string" },
+    "from_property": { "type": "string", "description": "Output property on source" },
     "to_long_name": { "type": "string" },
-    "link_type": { "type": "string", "enum": ["data", "control", "alias"] },
+    "to_property": { "type": "string", "description": "Input property on target" },
     "channel_index": { "type": "integer", "minimum": 0, "default": 0 }
   },
   "additionalProperties": false
 }
 ```
 
+**output:** `{ "from_long_name", "from_property", "to_long_name", "to_property" }`
+
+**Internal (not exposed to LLM API):** `disconnect_components` — undo link (`Model_BreakLinkByName`).
+
 ---
 
 ### `load_project` / `save_project`
 
-**confirmation:** true | **policy tags:** `dangerous_filesystem`
+**confirmation:** true | **policy:** dangerous filesystem
 
-**load input:** `{ "path": "relative to configs root or absolute if allowed" }`  
-**save input:** `{ "path", "create_backup": true }`
+**load_project** — `required: ["project_path"]` → `UApplication::OpenProject`.
 
-Policy: только пути под `GetConfigsMainPath()` / user config path — **запрет** `../` escape.
+**save_project** — optional `project_path` (empty = `SaveProject()`, else `SaveProjectAs`).
+
+Policy (post-MVP hardening): path whitelist under project/config roots, deny `../` traversal.
 
 ---
 
