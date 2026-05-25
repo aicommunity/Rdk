@@ -26,6 +26,12 @@ public:
     void setAllowCloudProviders(bool allow);
     void setLlmWriteEnabled(bool allow);
 
+    void setPreferredResponseLanguage(const std::string& code);
+    const std::string& preferredResponseLanguage() const;
+
+    void setSendShortcut(LLMSendShortcutMode mode);
+    LLMSendShortcutMode sendShortcut() const;
+
     std::vector<LLMProviderProfile> listProfiles() const;
 
 private:

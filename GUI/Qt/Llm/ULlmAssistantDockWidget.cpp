@@ -3,10 +3,12 @@
 #include "LlmGuiBootstrap.h"
 
 #include <QFutureWatcher>
+#include <QKeyEvent>
 #include <QTimer>
 #include <QtConcurrent/QtConcurrent>
 #include <QHBoxLayout>
 #include <QMetaObject>
+#include <QProgressBar>
 #include <QTextCursor>
 #include <QVBoxLayout>
 
@@ -39,8 +41,18 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     m_history->setReadOnly(true);
     layout->addWidget(m_history, 1);
 
+    m_request_status = new QLabel(this);
+    m_request_status->setVisible(false);
+    layout->addWidget(m_request_status);
+
+    m_request_progress = new QProgressBar(this);
+    m_request_progress->setVisible(false);
+    m_request_progress->setRange(0, 0);
+    m_request_progress->setTextVisible(false);
+    m_request_progress->setMaximumHeight(4);
+    layout->addWidget(m_request_progress);
+
     m_input = new QPlainTextEdit(this);
-    m_input->setPlaceholderText(tr("Ask about the model or configuration..."));
     layout->addWidget(m_input);
 
     auto* row = new QHBoxLayout();
@@ -79,7 +91,17 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     if(m_bridge)
         connect(m_bridge, &ULlmGuiContextBridge::contextChanged, this,
                 &ULlmAssistantDockWidget::onContextChanged);
+
+    m_shortcut_ctrl_return =
+        new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Return), m_input);
+    m_shortcut_ctrl_enter = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Enter), m_input);
+    connect(m_shortcut_ctrl_return, &QShortcut::activated, this,
+            &ULlmAssistantDockWidget::trySendFromShortcut);
+    connect(m_shortcut_ctrl_enter, &QShortcut::activated, this,
+            &ULlmAssistantDockWidget::trySendFromShortcut);
+
     refreshProviderBar();
+    applyGuiPreferences();
 }
 
 void ULlmAssistantDockWidget::refreshProviderBar()
@@ -121,6 +143,7 @@ void ULlmAssistantDockWidget::onOpenSettings()
 {
     LlmGui::OpenProviderSettingsDialog(this, application);
     refreshProviderBar();
+    applyGuiPreferences();
 }
 
 void ULlmAssistantDockWidget::onProviderChanged(int index)
@@ -272,6 +295,79 @@ void ULlmAssistantDockWidget::setRequestInProgress(bool busy)
     m_send->setEnabled(!busy);
     m_input->setEnabled(!busy);
     m_cancel->setVisible(busy);
+    m_request_status->setVisible(busy);
+    m_request_progress->setVisible(busy);
+    if(busy)
+        m_request_status->setText(tr("Waiting for model response…"));
+    else
+        m_request_status->clear();
+}
+
+void ULlmAssistantDockWidget::updateSendButtonLabel()
+{
+    const auto mode = RDK::LLM::LLMServices::instance().settings().runtime().send_shortcut;
+    if(mode == RDK::LLM::LLMSendShortcutMode::Enter)
+        m_send->setText(tr("Send (Enter)"));
+    else
+        m_send->setText(tr("Send (Ctrl+Enter)"));
+}
+
+void ULlmAssistantDockWidget::trySendFromShortcut()
+{
+    if(!m_send || !m_send->isEnabled())
+        return;
+    onSendClicked();
+}
+
+void ULlmAssistantDockWidget::applyGuiPreferences()
+{
+    RDK::LLM::LLMServices::instance().settings().reload();
+    const auto mode = RDK::LLM::LLMServices::instance().settings().runtime().send_shortcut;
+    updateSendButtonLabel();
+
+    if(mode == RDK::LLM::LLMSendShortcutMode::Enter)
+    {
+        m_input->setPlaceholderText(
+            tr("Ask about the model or configuration… (Enter to send, Shift+Enter for new line)"));
+        if(m_shortcut_ctrl_return)
+            m_shortcut_ctrl_return->setEnabled(false);
+        if(m_shortcut_ctrl_enter)
+            m_shortcut_ctrl_enter->setEnabled(false);
+        if(!m_enter_send_filter_active)
+        {
+            m_input->installEventFilter(this);
+            m_enter_send_filter_active = true;
+        }
+    }
+    else
+    {
+        m_input->setPlaceholderText(
+            tr("Ask about the model or configuration… (Ctrl+Enter to send)"));
+        if(m_shortcut_ctrl_return)
+            m_shortcut_ctrl_return->setEnabled(true);
+        if(m_shortcut_ctrl_enter)
+            m_shortcut_ctrl_enter->setEnabled(true);
+        if(m_enter_send_filter_active)
+        {
+            m_input->removeEventFilter(this);
+            m_enter_send_filter_active = false;
+        }
+    }
+}
+
+bool ULlmAssistantDockWidget::eventFilter(QObject* watched, QEvent* event)
+{
+    if(watched != m_input || event->type() != QEvent::KeyPress)
+        return UVisualControllerWidget::eventFilter(watched, event);
+
+    auto* key_event = static_cast<QKeyEvent*>(event);
+    if(key_event->key() != Qt::Key_Return && key_event->key() != Qt::Key_Enter)
+        return UVisualControllerWidget::eventFilter(watched, event);
+    if(key_event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier))
+        return UVisualControllerWidget::eventFilter(watched, event);
+
+    trySendFromShortcut();
+    return true;
 }
 
 void ULlmAssistantDockWidget::onStreamToken(const QString& token)
@@ -318,6 +414,11 @@ void ULlmAssistantDockWidget::onStreamFinished(const RDK::LLM::LLMFinalResponse&
     if(resp.needs_entity_clarification)
     {
         appendAssistantText(tr("<b>Clarification needed</b>"));
+        appendAssistantText(QString::fromStdString(resp.text));
+        return;
+    }
+    if(resp.needs_argument_clarification)
+    {
         appendAssistantText(QString::fromStdString(resp.text));
         return;
     }

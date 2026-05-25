@@ -34,6 +34,8 @@ private:
     QLineEdit* m_model = nullptr;
     QCheckBox* m_allow_cloud = nullptr;
     QCheckBox* m_allow_write = nullptr;
+    QComboBox* m_response_language = nullptr;
+    QComboBox* m_send_shortcut = nullptr;
     QLabel* m_status = nullptr;
 };
 

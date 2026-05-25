@@ -45,6 +45,17 @@ RDK::LLM::LLMRuntimeProviderSettings ULlmQtProviderSettingsSource::load() const
         settings.value(QStringLiteral("LLM/allow_cloud_providers"), false).toBool();
     runtime.llm_write_enabled = settings.value(QStringLiteral("LLM/llm_write_enabled"), true).toBool();
 
+    runtime.preferred_response_language =
+        settings.value(QStringLiteral("LLM/preferred_response_language"), QString())
+            .toString()
+            .toStdString();
+
+    const QString send_shortcut =
+        settings.value(QStringLiteral("LLM/send_shortcut"), QStringLiteral("ctrl_enter")).toString();
+    runtime.send_shortcut = send_shortcut == QStringLiteral("enter")
+                                ? RDK::LLM::LLMSendShortcutMode::Enter
+                                : RDK::LLM::LLMSendShortcutMode::CtrlEnter;
+
     for(const RDK::LLM::LLMProviderProfile& profile : RDK::LLM::ULLMProviderCatalog::builtInProfiles())
         loadProfileKeys(settings, runtime, profile);
     return runtime;
@@ -57,6 +68,12 @@ void ULlmQtProviderSettingsSource::save(const RDK::LLM::LLMRuntimeProviderSettin
                        QString::fromStdString(settings.active_profile_id));
     qsettings.setValue(QStringLiteral("LLM/allow_cloud_providers"), settings.allow_cloud_providers);
     qsettings.setValue(QStringLiteral("LLM/llm_write_enabled"), settings.llm_write_enabled);
+    qsettings.setValue(QStringLiteral("LLM/preferred_response_language"),
+                       QString::fromStdString(settings.preferred_response_language));
+    qsettings.setValue(QStringLiteral("LLM/send_shortcut"),
+                       settings.send_shortcut == RDK::LLM::LLMSendShortcutMode::Enter
+                           ? QStringLiteral("enter")
+                           : QStringLiteral("ctrl_enter"));
 
     for(const auto& entry : settings.api_keys_by_profile_id)
     {

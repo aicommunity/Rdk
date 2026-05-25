@@ -86,6 +86,26 @@ void ULLMSettingsStore::setLlmWriteEnabled(bool allow)
     m_runtime.llm_write_enabled = allow;
 }
 
+void ULLMSettingsStore::setPreferredResponseLanguage(const std::string& code)
+{
+    m_runtime.preferred_response_language = code;
+}
+
+const std::string& ULLMSettingsStore::preferredResponseLanguage() const
+{
+    return m_runtime.preferred_response_language;
+}
+
+void ULLMSettingsStore::setSendShortcut(LLMSendShortcutMode mode)
+{
+    m_runtime.send_shortcut = mode;
+}
+
+LLMSendShortcutMode ULLMSettingsStore::sendShortcut() const
+{
+    return m_runtime.send_shortcut;
+}
+
 std::vector<LLMProviderProfile> ULLMSettingsStore::listProfiles() const
 {
     return ULLMProviderCatalog::builtInProfiles();

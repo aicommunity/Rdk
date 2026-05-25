@@ -4,7 +4,9 @@
 #include <QComboBox>
 #include <QLabel>
 #include <QPlainTextEdit>
+#include <QProgressBar>
 #include <QPushButton>
+#include <QShortcut>
 #include <QTextEdit>
 
 #include "../../../LLM/Core/LlmTypes.h"
@@ -44,16 +46,24 @@ public slots:
     void onStreamToken(const QString& token);
     void onStreamFinished(const RDK::LLM::LLMFinalResponse& resp);
     void beginAssistantStream();
+    void applyGuiPreferences();
+    void trySendFromShortcut();
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
     RDK::LLM::LLMSessionContext buildSession(const LLMGuiContext& ctx) const;
     void runUserMessage(const QString& text);
     void endAssistantStream();
     void setRequestInProgress(bool busy);
+    void updateSendButtonLabel();
 
     ULlmGuiContextBridge* m_bridge = nullptr;
     QComboBox* m_provider_combo = nullptr;
     QLabel* m_provider_status = nullptr;
+    QLabel* m_request_status = nullptr;
+    QProgressBar* m_request_progress = nullptr;
     QPlainTextEdit* m_input = nullptr;
     QTextEdit* m_history = nullptr;
     QPushButton* m_send = nullptr;
@@ -69,6 +79,9 @@ private:
     bool m_streaming_reply = false;
     bool m_stream_tokens_received = false;
     QTimer* m_confirmation_timer = nullptr;
+    QShortcut* m_shortcut_ctrl_return = nullptr;
+    QShortcut* m_shortcut_ctrl_enter = nullptr;
+    bool m_enter_send_filter_active = false;
     LLMGuiContext m_last_ctx;
 };
 

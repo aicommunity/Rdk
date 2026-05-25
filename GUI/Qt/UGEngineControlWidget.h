@@ -138,6 +138,7 @@ public:
     // который затем создаётся по требованию из меню/toolbar.
     void registerCustomWidget(const UCustomWidgetDescriptor &descriptor);
     void appendMenuAction(const QString& menuPath, QAction* action);
+    void appendMenuSeparator(const QString& menuPath);
     void showCustomWidgetById(const QString& id);
 
 #ifndef RDK_DISABLE_EXT_GUI
@@ -159,6 +160,10 @@ public slots:
     void switchLinksForTwoComponents(QString firstComponentName, QString secondComponentName);
     void openComponentGuiFromScheme(const UComponentGuiContext& context);
 
+    /// LLM presentation sink helpers (main-thread UI refresh after configuration tools).
+    void refreshLlmPresentationShell();
+    void refreshLlmPresentationDiagram();
+    void registerRecentConfigurationPath(const QString& path);
 
     // actions:
 

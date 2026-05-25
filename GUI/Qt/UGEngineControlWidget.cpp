@@ -607,6 +607,27 @@ void UGEngineControlWidget::loadProjectExternal(const QString &config_path)
  }
 }
 
+void UGEngineControlWidget::refreshLlmPresentationShell()
+{
+    UpdateInterface();
+    RDK::UIVisualControllerStorage::UpdateInterface(true);
+    AUpdateInterface();
+}
+
+void UGEngineControlWidget::refreshLlmPresentationDiagram()
+{
+    if(modernDiagram)
+    {
+        modernDiagram->updateScheme(true);
+        modernDiagram->updateClassesList();
+    }
+}
+
+void UGEngineControlWidget::registerRecentConfigurationPath(const QString& path)
+{
+    addToRecentConfigs(path);
+}
+
 void UGEngineControlWidget::actionCreateConfig()
 {
  if(application->GetProjectOpenFlag())
@@ -660,67 +681,51 @@ void UGEngineControlWidget::actionCreateSimple()
         application->CloseProject();
     }
 
-    // Директория проектов: Configs, затем Configs/Users/UserName
-    QString configs_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../Configs/").c_str());
-    QDir path1(configs_path);
-    if(!path1.exists(configs_path))
-    {
-        configs_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../../Configs/").c_str());
-        QDir path2(configs_path);
-        if(!path2.exists(configs_path))
-        {
-            configs_path=QString::fromLocal8Bit(application->GetWorkDirectory().c_str());
-        }
-    }
-
-    QString default_path = configs_path;
-    if(!application->GetUserName().empty())
-    {
-        std::string userPathRel = application->GetUserConfigPath();
-        if(!userPathRel.empty())
-        {
-            QString users_dir = configs_path + "Users";
-            QDir pathUsers(users_dir);
-            if(!pathUsers.exists())
-                RDK::CreateNewDirectory(users_dir.toLocal8Bit());
-            QString default_user_path = configs_path + QString::fromLocal8Bit(userPathRel.c_str());
-            QDir pathUser(default_user_path);
-            if(!pathUser.exists())
-                RDK::CreateNewDirectory(default_user_path.toLocal8Bit());
-            default_path = default_user_path;
-        }
-    }
-
-    std::string path_dialog=default_path.toUtf8().data();
+    const std::string default_path = application->GetDefaultConfigsDirectory();
+    const QString default_path_q = QString::fromLocal8Bit(default_path.c_str());
 
     // Создание папки проекта автоматическое либо выбор существующей
-    // Убеждаемся, что виджет видим и активен перед показом диалога (важно для Windows)
     if (!isVisible() || !isActiveWindow()) {
         raise();
         activateWindow();
     }
 
     QMessageBox::StandardButton reply2 = QMessageBox::question(this, "Info", "Autocreate configuration folder?", QMessageBox::Yes|QMessageBox::No);
+    std::string err;
+    std::string file_name;
     if (reply2 == QMessageBox::Yes)
     {
-        time_t curr_time;
-        time(&curr_time);
-
-        // Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
-        std::string folder=RDK::get_text_time(curr_time, '.', '_');
-        path_dialog+=std::string("/Autocreate")+folder.c_str();
-
-        if(RDK::CreateNewDirectory(std::string(path_dialog).c_str()) != 0)
+        file_name = application->PrepareNewProjectIniPath(true, default_path, &err);
+        if(file_name.empty())
+        {
+            QMessageBox::critical(this, "Error at creatng simple project",
+                                  QString::fromStdString(
+                                      err.empty() ? "Failed to prepare project path" : err),
+                                  QMessageBox::Ok);
             return;
+        }
     }
     else
     {
-        path_dialog = QFileDialog::getExistingDirectory(this, tr("Select project directory"), default_path, QFileDialog::ShowDirsOnly).toUtf8().data();
+        const std::string path_dialog =
+            QFileDialog::getExistingDirectory(this, tr("Select project directory"), default_path_q,
+                                              QFileDialog::ShowDirsOnly)
+                .toUtf8()
+                .data();
+        if(path_dialog.empty())
+            return;
+        file_name = application->PrepareNewProjectIniPath(false, path_dialog, &err);
+        if(file_name.empty())
+        {
+            QMessageBox::critical(this, "Error at creatng simple project",
+                                  QString::fromStdString(
+                                      err.empty() ? "Failed to prepare project path" : err),
+                                  QMessageBox::Ok);
+            return;
+        }
     }
 
-    std::string file_name = path_dialog +"/project.ini";
-    std::string classname="Model";
-
+    const std::string classname = "Model";
     application->CreateProject(file_name, classname);
 
     RDK::UIVisualControllerStorage::UpdateInterface();
@@ -1491,7 +1496,42 @@ void UGEngineControlWidget::showCustomWidgetById(const QString& id)
     createOrActivateCustomWidget(id);
 }
 
-static QMenu* menuForPath(QMenuBar* menuBar, const QString& menuPath)
+static QMenu* ensureTopLevelMenu(QMenuBar* menuBar, const QString& title,
+                                 const QString& insertBeforeTitle)
+{
+    for(QAction* action : menuBar->actions())
+    {
+        QMenu* menu = action->menu();
+        if(menu && menu->title() == title)
+            return menu;
+    }
+
+    QMenu* menu = new QMenu(title);
+    if(insertBeforeTitle.isEmpty())
+    {
+        menuBar->addMenu(menu);
+        return menu;
+    }
+
+    QAction* before = nullptr;
+    for(QAction* action : menuBar->actions())
+    {
+        QMenu* existing = action->menu();
+        if(existing && existing->title() == insertBeforeTitle)
+        {
+            before = action;
+            break;
+        }
+    }
+    if(before)
+        menuBar->insertMenu(before, menu);
+    else
+        menuBar->addMenu(menu);
+    return menu;
+}
+
+static QMenu* menuForPath(QMenuBar* menuBar, const QString& menuPath,
+                          const QString& insertBeforeTitle = QString())
 {
     if(!menuBar || menuPath.isEmpty())
         return nullptr;
@@ -1501,6 +1541,10 @@ static QMenu* menuForPath(QMenuBar* menuBar, const QString& menuPath)
 
     QMenu* currentMenu = nullptr;
     const QString first = parts.first();
+    const QString before =
+        insertBeforeTitle.isEmpty() && first == QStringLiteral("AI Assistant")
+            ? QStringLiteral("Window")
+            : insertBeforeTitle;
     for(QAction* action : menuBar->actions())
     {
         QMenu* menu = action->menu();
@@ -1511,7 +1555,7 @@ static QMenu* menuForPath(QMenuBar* menuBar, const QString& menuPath)
         }
     }
     if(!currentMenu)
-        currentMenu = menuBar->addMenu(first);
+        currentMenu = ensureTopLevelMenu(menuBar, first, before);
 
     for(int i = 1; i < parts.size(); ++i)
     {
@@ -1540,6 +1584,15 @@ void UGEngineControlWidget::appendMenuAction(const QString& menuPath, QAction* a
     QMenu* menu = menuForPath(ui->menuBar, menuPath);
     if(menu)
         menu->addAction(action);
+}
+
+void UGEngineControlWidget::appendMenuSeparator(const QString& menuPath)
+{
+    if(!ui || !ui->menuBar)
+        return;
+    QMenu* menu = menuForPath(ui->menuBar, menuPath);
+    if(menu)
+        menu->addSeparator();
 }
 
 void UGEngineControlWidget::registerCustomWidget(const UCustomWidgetDescriptor &descriptor)

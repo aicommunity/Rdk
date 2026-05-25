@@ -8,6 +8,8 @@
 #include "../../../LLM/Core/Providers/ULLMProviderFactory.h"
 #include "../../../LLM/Core/Settings/ULLMProviderAuth.h"
 #include "../../../LLM/Core/Settings/ULLMProviderCatalog.h"
+#include "../../../LLM/Core/Settings/ULLMResponseLanguage.h"
+#include "ULlmGuiLocale.h"
 
 ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UApplication* app)
     : QDialog(parent)
@@ -42,8 +44,25 @@ ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UAp
     m_allow_cloud = new QCheckBox(tr("Allow cloud providers (DeepSeek, OpenAI)"), this);
     layout->addWidget(m_allow_cloud);
 
-    m_allow_write = new QCheckBox(tr("Allow LLM write tools (add/set property)"), this);
+    m_allow_write = new QCheckBox(
+        tr("Allow LLM write tools (create/load/save configuration, add/set components)"), this);
     layout->addWidget(m_allow_write);
+
+    auto* lang_form = new QFormLayout();
+    m_response_language = new QComboBox(this);
+    m_response_language->addItem(tr("Auto (system)"), QString());
+    m_response_language->addItem(tr("English"), QStringLiteral("en"));
+    m_response_language->addItem(tr("Russian"), QStringLiteral("ru"));
+    m_response_language->addItem(tr("German"), QStringLiteral("de"));
+    m_response_language->addItem(tr("French"), QStringLiteral("fr"));
+    m_response_language->addItem(tr("Chinese (Simplified)"), QStringLiteral("zh"));
+    lang_form->addRow(tr("Response language:"), m_response_language);
+
+    m_send_shortcut = new QComboBox(this);
+    m_send_shortcut->addItem(tr("Ctrl+Enter"), QStringLiteral("ctrl_enter"));
+    m_send_shortcut->addItem(tr("Enter"), QStringLiteral("enter"));
+    lang_form->addRow(tr("Send message:"), m_send_shortcut);
+    layout->addLayout(lang_form);
 
     m_status = new QLabel(this);
     m_status->setWordWrap(true);
@@ -85,6 +104,19 @@ void ULlmProviderSettingsWidget::loadFromStore()
     m_profiles->setCurrentIndex(select_index);
     m_allow_cloud->setChecked(store.runtime().allow_cloud_providers);
     m_allow_write->setChecked(store.runtime().llm_write_enabled);
+
+    const QString lang =
+        QString::fromStdString(store.runtime().preferred_response_language);
+    const int lang_index = m_response_language->findData(lang);
+    m_response_language->setCurrentIndex(lang_index >= 0 ? lang_index : 0);
+
+    const QString send_mode =
+        store.runtime().send_shortcut == RDK::LLM::LLMSendShortcutMode::Enter
+            ? QStringLiteral("enter")
+            : QStringLiteral("ctrl_enter");
+    const int send_index = m_send_shortcut->findData(send_mode);
+    m_send_shortcut->setCurrentIndex(send_index >= 0 ? send_index : 0);
+
     onProfileChanged(select_index);
 }
 
@@ -145,6 +177,16 @@ void ULlmProviderSettingsWidget::onProfileChanged(int index)
                     .arg(QString::fromStdString(preset.base_url))
                     .arg(QString::fromStdString(preset.model));
     }
+    const std::string configured =
+        m_response_language->currentData().toString().toStdString();
+    const std::string effective = RDK::LLM::resolveResponseLanguage(
+        configured, LlmGui::systemResponseLanguageCode().toStdString());
+    hint += tr("\nResponse language: %1")
+                .arg(QString::fromStdString(
+                    RDK::LLM::responseLanguageDisplayName(effective)));
+    if(configured.empty())
+        hint += tr(" (from system)");
+
     m_status->setText(hint.trimmed());
 }
 
@@ -175,6 +217,10 @@ void ULlmProviderSettingsWidget::saveToStore()
 
     store.setAllowCloudProviders(m_allow_cloud->isChecked());
     store.setLlmWriteEnabled(m_allow_write->isChecked());
+    store.setPreferredResponseLanguage(m_response_language->currentData().toString().toStdString());
+    store.setSendShortcut(m_send_shortcut->currentData().toString() == QStringLiteral("enter")
+                              ? RDK::LLM::LLMSendShortcutMode::Enter
+                              : RDK::LLM::LLMSendShortcutMode::CtrlEnter);
     store.save();
     RDK::LLM::LLMServices::instance().applyActiveProvider();
 }
