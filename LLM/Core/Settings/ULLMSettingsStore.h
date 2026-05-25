@@ -1,0 +1,33 @@
+#ifndef RDK_ULLM_SETTINGS_STORE_H
+#define RDK_ULLM_SETTINGS_STORE_H
+
+#include "ILLMProviderSettingsSource.h"
+#include "ULLMProviderCatalog.h"
+
+namespace RDK::LLM {
+
+class ULLMSettingsStore {
+public:
+    explicit ULLMSettingsStore(ILLMProviderSettingsSource* source = nullptr);
+
+    void setSource(ILLMProviderSettingsSource* source);
+    void reload();
+    void save();
+
+    const LLMRuntimeProviderSettings& runtime() const { return m_runtime; }
+    LLMProviderProfile activeProfile() const;
+    void setActiveProfileId(const std::string& profile_id);
+    void setApiKeyForProfile(const std::string& profile_id, const std::string& api_key);
+    void setAllowCloudProviders(bool allow);
+    void setLlmWriteEnabled(bool allow);
+
+    std::vector<LLMProviderProfile> listProfiles() const;
+
+private:
+    ILLMProviderSettingsSource* m_source = nullptr;
+    LLMRuntimeProviderSettings m_runtime;
+};
+
+} // namespace RDK::LLM
+
+#endif

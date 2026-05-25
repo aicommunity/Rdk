@@ -32,7 +32,6 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Deferred in | Target phase | Priority | Status | Notes / resolution |
 |----|------|-------------|--------------|----------|--------|-------------------|
-| TD-011 | `set_property` tool: wire full UProperty API in `URdkDomainAccess` | phase 2 | 2 | P1 | open | Stub returns InvalidPropertyValue |
 | TD-002 | Intent parser: rule-based only; no LLM-based intent classification | design | 3 | P2 | open | See Orchestrator.md |
 | TD-003 | Doc search: keyword match only; no embeddings index | design | post-MVP | P3 | open | Project-Context-NMSDK.md |
 | TD-004 | Scenario C workflow state machine — design only | design | post-MVP | P3 | open | Orchestrator.md |
@@ -50,6 +49,8 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | ID | Item | Resolved in | Resolution |
 |----|------|-------------|------------|
 | TD-001 | Apply `RDK_USE_LLM` + vcpkg `llm` + `add_subdirectory(LLM)` | 2026-05-25 | `cmake/RdkDefines.cmake`, `Rdk/CMakeLists.txt`, `vcpkg.json` |
+| TD-011 | `set_property` via `MModel_SetComponentPropertyValue` | 2026-05-25 | `URdkDomainAccess::setProperty` |
+| TD-012 | Provider settings UI + QSettings/env API key resolution | 2026-05-25 | `ULLMProviderAuth`, `ULlmProviderSettingsWidget` |
 
 ---
 

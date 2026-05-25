@@ -167,12 +167,13 @@ DomainStatus URdkDomainAccess::setProperty(const std::string& long_name,
                                            const std::string& value,
                                            int channel_index)
 {
-    (void)long_name;
-    (void)property_name;
-    (void)value;
-    (void)channel_index;
-    return {DomainStatusCode::InvalidPropertyValue,
-            "set_property: full property API wiring deferred (TD-011)"};
+    const int rc =
+        MModel_SetComponentPropertyValue(channel_index, long_name.c_str(), property_name.c_str(),
+                                         value.c_str());
+    if(rc != 0)
+        return {DomainStatusCode::InvalidPropertyValue,
+                "set_property failed for " + property_name + " on " + long_name};
+    return {};
 }
 
 DomainStatus URdkDomainAccess::validateProjectDryRun(std::vector<std::string>& warnings) const

@@ -2,11 +2,14 @@
 
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
+#include <QDialog>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 
 #include "../../../LLM/Core/LlmPublicApi.h"
 #include "../../../LLM/Core/Orchestrator/ULLMAgentOrchestrator.h"
+#include "../../../LLM/Core/Settings/ULLMProviderAuth.h"
+#include "ULlmProviderSettingsWidget.h"
 
 ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplication* app,
                                                ULlmGuiContextBridge* bridge)
@@ -17,6 +20,16 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     ClassName = "ULlmAssistantDockWidget";
 
     auto* layout = new QVBoxLayout(this);
+
+    auto* top_row = new QHBoxLayout();
+    m_provider_combo = new QComboBox(this);
+    auto* settings_btn = new QPushButton(tr("Settings..."), this);
+    m_provider_status = new QLabel(this);
+    top_row->addWidget(m_provider_combo, 1);
+    top_row->addWidget(settings_btn);
+    layout->addLayout(top_row);
+    layout->addWidget(m_provider_status);
+
     m_history = new QTextEdit(this);
     m_history->setReadOnly(true);
     layout->addWidget(m_history, 1);
@@ -36,12 +49,60 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     row->addWidget(m_reject);
     layout->addLayout(row);
 
+    connect(m_provider_combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+            &ULlmAssistantDockWidget::onProviderChanged);
+    connect(settings_btn, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onOpenSettings);
     connect(m_send, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onSendClicked);
     connect(m_confirm, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onConfirmClicked);
     connect(m_reject, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onRejectClicked);
     if(m_bridge)
         connect(m_bridge, &ULlmGuiContextBridge::contextChanged, this,
                 &ULlmAssistantDockWidget::onContextChanged);
+    refreshProviderBar();
+}
+
+void ULlmAssistantDockWidget::refreshProviderBar()
+{
+    m_provider_combo->blockSignals(true);
+    m_provider_combo->clear();
+    auto& store = RDK::LLM::LLMServices::instance().settings();
+    int select = 0;
+    int i = 0;
+    for(const auto& profile : store.listProfiles())
+    {
+        m_provider_combo->addItem(QString::fromStdString(profile.profile_id),
+                                  QString::fromStdString(profile.profile_id));
+        if(profile.profile_id == store.runtime().active_profile_id)
+            select = i;
+        ++i;
+    }
+    m_provider_combo->setCurrentIndex(select);
+    m_provider_combo->blockSignals(false);
+
+    const auto active = store.activeProfile();
+    const bool has_key = RDK::LLM::ULLMProviderAuth::hasApiKey(active, store.runtime());
+    if(active.is_cloud)
+        m_provider_status->setText(has_key ? tr("Cloud · key set") : tr("Cloud · key missing"));
+    else
+        m_provider_status->setText(tr("Local"));
+}
+
+void ULlmAssistantDockWidget::onOpenSettings()
+{
+    ULlmProviderSettingsWidget dlg(this, application);
+    if(dlg.exec() == QDialog::Accepted)
+        refreshProviderBar();
+}
+
+void ULlmAssistantDockWidget::onProviderChanged(int index)
+{
+    if(index < 0)
+        return;
+    auto& store = RDK::LLM::LLMServices::instance().settings();
+    store.setActiveProfileId(m_provider_combo->currentData().toString().toStdString());
+    store.save();
+    RDK::LLM::LLMServices::instance().applyActiveProvider();
+    refreshProviderBar();
 }
 
 void ULlmAssistantDockWidget::appendAssistantText(const QString& text)
@@ -73,7 +134,9 @@ RDK::LLM::LLMSessionContext ULlmAssistantDockWidget::buildSession(const LLMGuiCo
     s.user_id = application ? application->GetUserId() : 0;
     s.project_loaded = application && application->GetProjectOpenFlag();
     s.active_channel_index = ctx.channel_index;
-    s.llm_write_enabled = true;
+    const auto& runtime = RDK::LLM::LLMServices::instance().settings().runtime();
+    s.llm_write_enabled = runtime.llm_write_enabled;
+    s.allow_cloud_llm = runtime.allow_cloud_providers;
     return s;
 }
 

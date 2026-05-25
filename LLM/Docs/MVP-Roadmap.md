@@ -59,6 +59,7 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 - [x] Add component на схему после Confirm
 - [x] Deny write без open project
 - [ ] Ambiguous name → clarification UI
+- [x] Provider auth: QSettings + env + cloud policy (P09)
 
 **Commit:** `feat(rdk-llm): write tools with policy, HITL, and NMSDK context`
 

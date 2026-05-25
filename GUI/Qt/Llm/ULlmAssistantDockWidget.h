@@ -1,6 +1,8 @@
 #ifndef RDK_ULLM_ASSISTANT_DOCK_WIDGET_H
 #define RDK_ULLM_ASSISTANT_DOCK_WIDGET_H
 
+#include <QComboBox>
+#include <QLabel>
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QTextEdit>
@@ -23,12 +25,17 @@ public slots:
     void onConfirmClicked();
     void onRejectClicked();
     void onContextChanged(const LLMGuiContext& ctx);
+    void onOpenSettings();
+    void onProviderChanged(int index);
+    void refreshProviderBar();
 
 private:
     RDK::LLM::LLMSessionContext buildSession(const LLMGuiContext& ctx) const;
     void runUserMessage(const QString& text);
 
     ULlmGuiContextBridge* m_bridge = nullptr;
+    QComboBox* m_provider_combo = nullptr;
+    QLabel* m_provider_status = nullptr;
     QPlainTextEdit* m_input = nullptr;
     QTextEdit* m_history = nullptr;
     QPushButton* m_send = nullptr;

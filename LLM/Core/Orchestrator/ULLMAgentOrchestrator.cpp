@@ -1,6 +1,8 @@
 #include "ULLMAgentOrchestrator.h"
 
 #include "../LlmModuleInit.h"
+#include "../LlmPublicApi.h"
+#include "../Settings/ULLMProviderAuth.h"
 
 namespace RDK::LLM {
 
@@ -28,10 +30,36 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
     GetAuditLog().append("user_message", {{"length", req.user_text.size()}}, req.trace_id,
                          req.session_id);
 
+    LLMSessionContext session = req.session;
+    session.llm_write_enabled = LLMServices::instance().settings().runtime().llm_write_enabled;
+    session.allow_cloud_llm = LLMServices::instance().settings().runtime().allow_cloud_providers;
+
+    ProviderAccessCheck access = LLMServices::instance().checkActiveProviderAccess(session);
+    if(!access.allowed)
+    {
+        final.ok = false;
+        final.error = access.deny_message;
+        GetAuditLog().append(
+            "provider_access_denied",
+            {{"code", access.deny_code},
+             {"profile", LLMServices::instance().activeProviderProfile().profile_id}},
+            req.trace_id, req.session_id);
+        return final;
+    }
+
+    GetAuditLog().append(
+        "provider_invoke",
+        {{"profile_id", LLMServices::instance().activeProviderProfile().profile_id},
+         {"api_key_present",
+          ULLMProviderAuth::hasApiKey(LLMServices::instance().activeProviderProfile(),
+                                      LLMServices::instance().settings().runtime())}},
+        req.trace_id, req.session_id);
+
     const LLMIntentKind intent = m_intent.parse(req.user_text);
     ToolFilter filter;
     filter.intent = intent;
-    filter.include_write = (intent == LLMIntentKind::Mutate);
+    filter.include_write =
+        (intent == LLMIntentKind::Mutate) && session.llm_write_enabled;
 
     LLMCompletionOptions opts;
     opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
@@ -67,7 +95,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             invoke.trace_id = req.trace_id;
             invoke.tool_name = call.name;
             invoke.arguments = call.arguments;
-            invoke.session = req.session;
+            invoke.session = session;
 
             ToolGatewayResult tr = m_gateway.invoke(invoke);
             if(tr.pending_confirmation)

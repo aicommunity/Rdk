@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <functional>
+#include <map>
 #include <optional>
 #include <string>
 #include <vector>
@@ -61,7 +62,17 @@ struct LLMProviderProfile {
     std::string base_url = "http://127.0.0.1:11434/v1";
     std::string model = "qwen2.5:7b";
     std::string api_key;
+    /// Environment variable name for Bearer token (e.g. DEEPSEEK_API_KEY).
+    std::string api_key_env;
+    bool is_cloud = false;
     bool prefer_local = true;
+};
+
+struct LLMRuntimeProviderSettings {
+    std::string active_profile_id = "ollama-local";
+    bool allow_cloud_providers = false;
+    bool llm_write_enabled = true;
+    std::map<std::string, std::string> api_keys_by_profile_id;
 };
 
 struct LLMSessionContext {
