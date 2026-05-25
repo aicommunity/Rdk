@@ -1486,6 +1486,11 @@ void UGEngineControlWidget::openHelpWindow()
     on_actionUserGuide_triggered();
 }
 
+void UGEngineControlWidget::showCustomWidgetById(const QString& id)
+{
+    createOrActivateCustomWidget(id);
+}
+
 void UGEngineControlWidget::registerCustomWidget(const UCustomWidgetDescriptor &descriptor)
 {
     if (descriptor.id.isEmpty() || !descriptor.factory)

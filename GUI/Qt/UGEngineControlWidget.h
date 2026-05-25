@@ -136,6 +136,7 @@ public:
     // Регистрация пользовательского виджета (дополнительного окна/панели),
     // который затем создаётся по требованию из меню/toolbar.
     void registerCustomWidget(const UCustomWidgetDescriptor &descriptor);
+    void showCustomWidgetById(const QString& id);
 
 #ifndef RDK_DISABLE_EXT_GUI
     void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
