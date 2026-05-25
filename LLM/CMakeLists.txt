@@ -44,6 +44,7 @@ if(RDK_LLM_BUILD_EMBEDDED)
   add_subdirectory(Embedded)
   target_link_libraries(${TARGET_NAME} PUBLIC rdk.llm.embedded)
   target_compile_definitions(${TARGET_NAME} PUBLIC RDK_LLM_EMBEDDED=1)
+  target_include_directories(${TARGET_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/Rdk/LLM/Embedded)
 endif()
 
 add_executable(llm_audit_verify ${CMAKE_SOURCE_DIR}/Rdk/LLM/Tools/llm_audit_verify_main.cpp)

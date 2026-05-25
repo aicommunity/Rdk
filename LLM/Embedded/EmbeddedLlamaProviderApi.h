@@ -10,6 +10,9 @@ namespace RDK::LLM {
 
 std::unique_ptr<ILLMProvider> CreateEmbeddedLlamaProvider(const LLMProviderProfile& profile);
 
+/// Idempotent; call before factory create when using EmbeddedLlama (pulls in rdk.llm.embedded).
+void EnsureEmbeddedLlamaProviderRegistered();
+
 } // namespace RDK::LLM
 
 #endif
