@@ -5,6 +5,10 @@
 #include "UEmbeddedLlamaProviderStub.h"
 #include "UOllamaNativeProvider.h"
 
+#ifdef RDK_LLM_EMBEDDED
+#include "../../Embedded/EmbeddedLlamaProviderApi.h"
+#endif
+
 namespace RDK::LLM {
 
 std::unique_ptr<ILLMProvider> ULLMProviderFactory::create(const LLMProviderProfile& profile)
@@ -14,7 +18,11 @@ std::unique_ptr<ILLMProvider> ULLMProviderFactory::create(const LLMProviderProfi
     case LLMProviderKind::Mock:
         return std::make_unique<ULLMMockProvider>();
     case LLMProviderKind::EmbeddedLlama:
+#ifdef RDK_LLM_EMBEDDED
+        return CreateEmbeddedLlamaProvider(profile);
+#else
         return std::make_unique<UEmbeddedLlamaProviderStub>();
+#endif
     case LLMProviderKind::OllamaNative:
         return std::make_unique<UOllamaNativeProvider>(profile);
     case LLMProviderKind::OllamaOpenAICompat:

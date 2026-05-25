@@ -28,7 +28,7 @@ std::vector<LLMProviderProfile> ULLMProviderCatalog::builtInProfiles()
     embedded.profile_id = "embedded-offline";
     embedded.kind = LLMProviderKind::EmbeddedLlama;
     embedded.base_url = "local://embedded";
-    embedded.model = "gguf";
+    embedded.model = "";
     embedded.is_cloud = false;
     embedded.prefer_local = true;
     profiles.push_back(embedded);

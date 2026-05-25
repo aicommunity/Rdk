@@ -136,6 +136,17 @@ endif()
 | `llm-win` | `RDK_USE_LLM=ON`, vcpkg feature llm |
 | `llm-embedded` | `RDK_LLM_BUILD_EMBEDDED=ON`, optional GPU skip |
 
+Embedded build (uses cached llama.cpp clone):
+
+```bash
+./Scripts/ci-llm-embedded-linux.sh
+# or:
+cmake -B build -DRDK_USE_LLM=ON -DRDK_LLM_BUILD_EMBEDDED=ON -DRDK_LLM_LLAMA_CPP_DIR=/path/to/llama.cpp
+export NMSDK_LLM_GGUF_PATH=/path/to/model.gguf
+```
+
+---
+
 ---
 
 ## 7. Preprocessor

@@ -104,17 +104,38 @@ void ULlmProviderSettingsWidget::onProfileChanged(int index)
         m_api_key->clear();
 
     const RDK::LLM::LLMProfileEndpointOverride override = store.endpointOverride(profile_id);
+    if(preset.kind == RDK::LLM::LLMProviderKind::EmbeddedLlama)
+    {
+        m_base_url->setEnabled(false);
+        m_base_url->setPlaceholderText(tr("In-process (no URL)"));
+        m_model->setEnabled(true);
+        m_model->setPlaceholderText(tr("Path to .gguf model file"));
+    }
+    else
+    {
+        m_base_url->setEnabled(true);
+        m_base_url->setPlaceholderText(tr("e.g. http://127.0.0.1:11434/v1"));
+        m_model->setPlaceholderText(tr("e.g. qwen2.5:7b"));
+    }
+
     m_base_url->setText(override.base_url.empty() ? QString::fromStdString(preset.base_url)
                                                   : QString::fromStdString(override.base_url));
     m_model->setText(override.model.empty() ? QString::fromStdString(preset.model)
                                             : QString::fromStdString(override.model));
 
     QString hint;
-    if(!preset.api_key_env.empty())
-        hint = tr("Env fallback: %1").arg(QString::fromStdString(preset.api_key_env));
-    hint += tr("\nDefaults: %1 · %2")
-                .arg(QString::fromStdString(preset.base_url))
-                .arg(QString::fromStdString(preset.model));
+    if(preset.kind == RDK::LLM::LLMProviderKind::EmbeddedLlama)
+    {
+        hint = tr("Offline GGUF. Env: NMSDK_LLM_GGUF_PATH, NMSDK_LLM_CTX, NMSDK_LLM_GPU_LAYERS");
+    }
+    else
+    {
+        if(!preset.api_key_env.empty())
+            hint = tr("Env fallback: %1").arg(QString::fromStdString(preset.api_key_env));
+        hint += tr("\nDefaults: %1 · %2")
+                    .arg(QString::fromStdString(preset.base_url))
+                    .arg(QString::fromStdString(preset.model));
+    }
     m_status->setText(hint.trimmed());
 }
 

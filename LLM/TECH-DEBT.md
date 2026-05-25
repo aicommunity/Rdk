@@ -35,7 +35,6 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-002 | Intent parser: rule-based only; no LLM-based intent classification | design | post-MVP | P2 | open | Extended keywords (arduino, explain); LLM classifier still future |
 | TD-003 | Doc search: no embeddings index | design | post-MVP | P3 | open | `UDocSearchHelper` multi-token ranking (2026-05-25) |
 | TD-004 | Scenario C saga/compensation | design | post-MVP | P3 | open | Phase enum + audit transitions only; no saga yet |
-| TD-014 | Phase 4: real llama.cpp in `UEmbeddedLlamaProvider` | design | 4 | P2 | open | Stub + `embedded-offline` profile in catalog |
 
 ---
 
@@ -43,6 +42,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Resolved in | Resolution |
 |----|------|-------------|------------|
+| TD-014 | Phase 4: `UEmbeddedLlamaProvider` + llama.cpp | 2026-05-25 | `ULlamaRuntime`, `rdk.llm.embedded`, `Scripts/ci-llm-embedded-linux.sh` |
 | TD-007 | `UOllamaNativeProvider` fallback | 2026-05-25 | `UOllamaNativeProvider`, profile `ollama-native` |
 | TD-009 | Library Llm `HardwareLib/Llm` | 2026-05-25 | `RegisterHardwareLibLlmTools`, NeuroModeler wiring |
 | TD-001 | Apply `RDK_USE_LLM` + vcpkg `llm` + `add_subdirectory(LLM)` | 2026-05-25 | `cmake/RdkDefines.cmake`, `Rdk/CMakeLists.txt`, `vcpkg.json` |

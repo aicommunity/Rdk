@@ -92,10 +92,10 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 
 ### Этап 4 — Embedded llama (обязательно по продукту)
 
-- `RDK_LLM_BUILD_EMBEDDED=ON`
-- `UEmbeddedLlamaProvider`
-- GUI profile In-process GGUF
-- CI job `llm-embedded`
+- [x] `RDK_LLM_BUILD_EMBEDDED=ON` + `RDK_LLM_LLAMA_CPP_DIR` / FetchContent b4533
+- [x] `UEmbeddedLlamaProvider` + `ULlamaRuntime` (`rdk.llm.embedded`)
+- [x] GUI profile `embedded-offline` (Model = path to `.gguf`)
+- [x] CI `Scripts/ci-llm-embedded-linux.sh`
 
 **Commit:** `feat(rdk-llm): add embedded llama.cpp provider target`
 
