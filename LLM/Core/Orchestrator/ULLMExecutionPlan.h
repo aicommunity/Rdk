@@ -28,6 +28,8 @@ std::optional<ULLMExecutionPlan> parseExecutionPlanFromAssistantText(const std::
 nlohmann::json executionPlanToJson(const ULLMExecutionPlan& plan);
 std::optional<ULLMExecutionPlan> executionPlanFromJson(const nlohmann::json& j);
 
+std::string formatExecutionPlanPreview(const ULLMExecutionPlan& plan);
+
 } // namespace RDK::LLM
 
 #endif

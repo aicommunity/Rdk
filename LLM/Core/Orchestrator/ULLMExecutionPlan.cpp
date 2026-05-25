@@ -103,4 +103,23 @@ std::optional<ULLMExecutionPlan> executionPlanFromJson(const nlohmann::json& j)
     return plan;
 }
 
+std::string formatExecutionPlanPreview(const ULLMExecutionPlan& plan)
+{
+    std::ostringstream oss;
+    oss << "Plan " << plan.plan_id << " (" << plan.steps.size() << " steps):\n";
+    for(const ExecutionPlanStep& step : plan.steps)
+    {
+        oss << "  " << step.step_id << ". " << step.tool_name;
+        if(!step.depends_on.empty())
+        {
+            oss << " [after:";
+            for(int dep : step.depends_on)
+                oss << " " << dep;
+            oss << "]";
+        }
+        oss << "\n";
+    }
+    return oss.str();
+}
+
 } // namespace RDK::LLM

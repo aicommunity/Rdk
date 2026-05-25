@@ -14,6 +14,7 @@ struct PlanExecutionResult {
     std::vector<int> completed_step_ids;
     std::vector<int> failed_step_ids;
     std::string compensation_note;
+    int compensation_steps_applied = 0;
 };
 
 class ULLMPlanExecutor {

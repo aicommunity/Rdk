@@ -230,6 +230,30 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
             }
             return r;
         });
+
+    registry.registerTool(
+        makeDef("remove_component", LLMToolKind::Write, "Remove a component from the model",
+                {{"type", "object"},
+                 {"required", {"long_name"}},
+                 {"properties",
+                  {{"long_name", {{"type", "string"}}},
+                   {"channel_index", {{"type", "integer"}}}}},
+                 {"additionalProperties", false}},
+                {{"type", "object"}},
+                true),
+        [&](const nlohmann::json& args) -> ToolGatewayResult {
+            ToolGatewayResult r;
+            DomainStatus st = domain.removeComponent(args.at("long_name").get<std::string>(),
+                                                     args.value("channel_index", 0));
+            r.ok = st.ok();
+            r.result["removed"] = args.at("long_name").get<std::string>();
+            if(!r.ok)
+            {
+                r.error_code = "DomainError";
+                r.message = st.message;
+            }
+            return r;
+        });
 }
 
 } // namespace RDK::LLM

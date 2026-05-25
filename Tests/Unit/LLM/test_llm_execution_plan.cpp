@@ -21,3 +21,16 @@ Here is the plan:
     EXPECT_EQ(plan->steps.size(), 2u);
     EXPECT_EQ(plan->steps[1].depends_on.front(), 1);
 }
+
+TEST(LLMExecutionPlan, FormatsPreviewText)
+{
+    RDK::LLM::ULLMExecutionPlan plan;
+    plan.plan_id = "preview-1";
+    RDK::LLM::ExecutionPlanStep step;
+    step.step_id = 1;
+    step.tool_name = "get_net_snapshot";
+    plan.steps.push_back(step);
+    const std::string preview = RDK::LLM::formatExecutionPlanPreview(plan);
+    EXPECT_NE(preview.find("preview-1"), std::string::npos);
+    EXPECT_NE(preview.find("get_net_snapshot"), std::string::npos);
+}

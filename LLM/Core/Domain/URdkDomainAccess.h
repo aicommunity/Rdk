@@ -47,6 +47,7 @@ public:
                               const std::string& short_name,
                               int channel_index,
                               std::string& out_long_name);
+    DomainStatus removeComponent(const std::string& long_name, int channel_index);
     DomainStatus setProperty(const std::string& long_name,
                              const std::string& property_name,
                              const std::string& value,

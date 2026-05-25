@@ -162,6 +162,15 @@ DomainStatus URdkDomainAccess::addComponent(const std::string& class_name,
     return {};
 }
 
+DomainStatus URdkDomainAccess::removeComponent(const std::string& long_name, int channel_index)
+{
+    const int rc = MModel_DelComponent(channel_index, "", long_name.c_str());
+    if(rc != 0)
+        return {DomainStatusCode::LinkFailed,
+                "remove_component failed for " + long_name + " (code " + std::to_string(rc) + ")"};
+    return {};
+}
+
 DomainStatus URdkDomainAccess::setProperty(const std::string& long_name,
                                            const std::string& property_name,
                                            const std::string& value,

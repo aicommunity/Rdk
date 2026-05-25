@@ -21,6 +21,7 @@ struct ConversationState {
     std::optional<PendingConfirmation> pending;
     std::optional<ULLMExecutionPlan> pending_plan;
     LLMWorkflowPhase workflow_phase = LLMWorkflowPhase::Idle;
+    int cloud_provider_rounds = 0;
 };
 
 class ULLMConversationStore {

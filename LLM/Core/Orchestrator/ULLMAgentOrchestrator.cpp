@@ -154,8 +154,25 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
     int tool_invocations = 0;
     const int max_tool_invocations = defaultPolicyLimits().max_tool_invocations_per_message;
 
+    const bool is_cloud_profile = req.provider_profile.is_cloud;
+
     for(int round = 0; round < kMaxRounds && !m_cancelled; ++round)
     {
+        if(is_cloud_profile)
+        {
+            ++state.cloud_provider_rounds;
+            if(state.cloud_provider_rounds > defaultPolicyLimits().max_cloud_provider_rounds_per_session)
+            {
+                final.ok = false;
+                final.error = "Cloud provider rate limit reached for this session (max "
+                              + std::to_string(defaultPolicyLimits().max_cloud_provider_rounds_per_session)
+                              + " rounds). Start a new session or use ollama-local.";
+                setWorkflowPhase(state, LLMWorkflowPhase::Failed, req.trace_id);
+                m_store.persistToDisk(req.session_id);
+                return final;
+            }
+        }
+
         LLMCompletionResult completion = m_provider.chat(provider_messages, opts);
         if(!completion.ok)
         {
@@ -165,6 +182,11 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             {
                 final.error +=
                     " (tip: enable allow-cloud or switch to ollama-local / embedded-offline)";
+            }
+            else if(intent == LLMIntentKind::Mutate)
+            {
+                final.error +=
+                    " (tip: use the component wizard or property editor for manual changes)";
             }
             else if(isOllamaProvider(req.provider_profile))
             {
@@ -192,7 +214,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                         state.pending_plan = *plan;
                         final.pending_plan_execution = true;
                         final.pending_plan_id = plan->plan_id;
-                        final.text += "\n\n[Plan ready — confirm execution in the assistant panel.]";
+                        final.text = formatExecutionPlanPreview(*plan) +
+                                     "\n\n[Plan ready — confirm execution in the assistant panel.]";
                         setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation, req.trace_id);
                         m_store.persistToDisk(req.session_id);
                         return final;

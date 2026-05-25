@@ -2,7 +2,19 @@
 
 #include "UOllamaChatTemplate.h"
 
+#include <chrono>
+#include <thread>
+
 namespace RDK::LLM {
+
+namespace {
+
+bool shouldRetryHttpStatus(int status)
+{
+    return status == 408 || status == 429 || status >= 500;
+}
+
+} // namespace
 
 UOpenAICompatProvider::UOpenAICompatProvider(LLMProviderProfile profile)
     : m_profile(std::move(profile))
@@ -88,21 +100,37 @@ LLMCompletionResult UOpenAICompatProvider::chat(const std::vector<LLMMessage>& m
     url += "/chat/completions";
 
     const nlohmann::json body = buildRequestBody(messages, opts);
-    auto resp = m_http.postJson(url, body.dump(), m_profile.api_key);
-    if(!resp.error.empty())
+    for(int attempt = 0; attempt < 2; ++attempt)
     {
-        result.ok = false;
-        result.error_message = resp.error;
-        return result;
+        auto resp = m_http.postJson(url, body.dump(), m_profile.api_key);
+        if(!resp.error.empty())
+        {
+            result.ok = false;
+            result.error_message = resp.error;
+            if(attempt == 0)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(400));
+                continue;
+            }
+            return result;
+        }
+        if(resp.status_code < 200 || resp.status_code >= 300)
+        {
+            if(attempt == 0 && shouldRetryHttpStatus(resp.status_code))
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                continue;
+            }
+            result.ok = false;
+            result.error_message = "HTTP " + std::to_string(resp.status_code) + ": " + resp.body;
+            return result;
+        }
+        std::string parse_err;
+        return parseResponse(resp.body, parse_err);
     }
-    if(resp.status_code < 200 || resp.status_code >= 300)
-    {
-        result.ok = false;
-        result.error_message = "HTTP " + std::to_string(resp.status_code) + ": " + resp.body;
-        return result;
-    }
-    std::string parse_err;
-    return parseResponse(resp.body, parse_err);
+    result.ok = false;
+    result.error_message = "Provider request failed after retry";
+    return result;
 }
 
 void UOpenAICompatProvider::chatStream(const std::vector<LLMMessage>& messages,

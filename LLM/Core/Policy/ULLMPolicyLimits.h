@@ -6,6 +6,7 @@ namespace RDK::LLM {
 struct LLMPolicyLimits {
     int max_tool_rounds = 8;
     int max_tool_invocations_per_message = 24;
+    int max_cloud_provider_rounds_per_session = 40;
 };
 
 inline constexpr int kDefaultMaxToolRounds = 8;

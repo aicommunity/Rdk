@@ -10,7 +10,7 @@
 
 namespace RDK::LLM {
 
-/// Lightweight TF-IDF index for markdown docs (TD-003 MVP without embeddings).
+/// TF-IDF + offline random-projection semantic boost (TD-017 hybrid search).
 class UDocSearchIndex {
 public:
     void build(const std::vector<std::filesystem::path>& roots, int max_files = 800);
@@ -23,6 +23,7 @@ private:
         std::string excerpt;
         std::map<std::string, int> term_freq;
         int length = 0;
+        std::vector<float> embedding;
     };
 
     std::vector<DocRecord> m_docs;

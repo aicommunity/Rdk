@@ -3,6 +3,7 @@
 #include "UDocSearchHelper.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cctype>
 #include <fstream>
@@ -13,6 +14,9 @@ namespace fs = std::filesystem;
 namespace RDK::LLM {
 
 namespace {
+
+constexpr int kEmbedDim = 64;
+constexpr double kSemanticWeight = 0.35;
 
 std::vector<std::string> tokenize(const std::string& text)
 {
@@ -32,6 +36,40 @@ std::vector<std::string> tokenize(const std::string& text)
             tokens.push_back(lower);
     }
     return tokens;
+}
+
+void projectEmbedding(const std::vector<std::string>& tokens, std::vector<float>& out)
+{
+    out.assign(static_cast<size_t>(kEmbedDim), 0.f);
+    for(const std::string& tok : tokens)
+    {
+        size_t h = std::hash<std::string>{}(tok);
+        for(int i = 0; i < kEmbedDim; ++i)
+        {
+            h ^= h >> 13;
+            h *= 0x9e3779b97f4a7c15ULL;
+            out[static_cast<size_t>(i)] += ((h & 1) ? 1.f : -1.f);
+        }
+    }
+    double norm = 0.0;
+    for(float v : out)
+        norm += static_cast<double>(v) * static_cast<double>(v);
+    norm = std::sqrt(norm);
+    if(norm > 1e-9)
+    {
+        for(float& v : out)
+            v = static_cast<float>(static_cast<double>(v) / norm);
+    }
+}
+
+double cosineSimilarity(const std::vector<float>& a, const std::vector<float>& b)
+{
+    if(a.size() != b.size() || a.empty())
+        return 0.0;
+    double dot = 0.0;
+    for(size_t i = 0; i < a.size(); ++i)
+        dot += static_cast<double>(a[i]) * static_cast<double>(b[i]);
+    return dot;
 }
 
 } // namespace
@@ -68,14 +106,16 @@ void UDocSearchIndex::build(const std::vector<fs::path>& roots, int max_files)
             rec.path = file.string();
             rec.title = file.filename().string();
             rec.excerpt = excerpt.substr(0, 400);
+            const std::vector<std::string> tokens = tokenize(excerpt + " " + rec.title);
             rec.term_freq.clear();
-            for(const std::string& tok : tokenize(excerpt))
+            for(const std::string& tok : tokens)
             {
                 rec.term_freq[tok]++;
                 if(rec.term_freq[tok] == 1)
                     m_doc_freq[tok]++;
             }
-            rec.length = static_cast<int>(tokenize(excerpt).size());
+            rec.length = static_cast<int>(tokens.size());
+            projectEmbedding(tokens, rec.embedding);
             m_docs.push_back(std::move(rec));
             ++m_doc_count;
         }
@@ -88,10 +128,14 @@ std::vector<DocSnippet> UDocSearchIndex::search(const std::string& query, int to
     if(qtokens.empty() || m_docs.empty())
         return {};
 
+    std::vector<float> query_embed;
+    projectEmbedding(qtokens, query_embed);
+
     std::vector<DocSnippet> ranked;
+    double max_tfidf = 0.0;
     for(const DocRecord& doc : m_docs)
     {
-        double score = 0.0;
+        double tfidf = 0.0;
         for(const std::string& term : qtokens)
         {
             const auto tf_it = doc.term_freq.find(term);
@@ -99,17 +143,27 @@ std::vector<DocSnippet> UDocSearchIndex::search(const std::string& query, int to
             if(tf_it == doc.term_freq.end() || df_it == m_doc_freq.end())
                 continue;
             const double tf = static_cast<double>(tf_it->second);
-            const double idf = std::log(1.0 + static_cast<double>(m_doc_count) / (1.0 + df_it->second));
-            score += tf * idf;
+            const double idf =
+                std::log(1.0 + static_cast<double>(m_doc_count) / (1.0 + df_it->second));
+            tfidf += tf * idf;
         }
-        if(score <= 0.0)
+        const double semantic = cosineSimilarity(query_embed, doc.embedding);
+        const double hybrid = (1.0 - kSemanticWeight) * tfidf + kSemanticWeight * semantic;
+        if(hybrid <= 0.0)
             continue;
+        max_tfidf = std::max(max_tfidf, hybrid);
         DocSnippet sn;
         sn.path = doc.path;
         sn.title = doc.title;
         sn.excerpt = doc.excerpt;
-        sn.score = score;
+        sn.score = hybrid;
         ranked.push_back(std::move(sn));
+    }
+
+    if(max_tfidf > 0.0)
+    {
+        for(DocSnippet& sn : ranked)
+            sn.score /= max_tfidf;
     }
 
     std::sort(ranked.begin(), ranked.end(),
