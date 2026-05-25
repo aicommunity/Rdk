@@ -99,7 +99,9 @@ TEST(LLMPlanExecutor, CompensatesAddComponentOnLaterFailure)
     LLMSessionContext session;
     session.project_loaded = true;
     session.llm_write_enabled = true;
-    const PlanExecutionResult result = executor.execute(plan, session, "trace");
+    PlanExecuteOptions opts;
+    opts.compensate_on_failure = true;
+    const PlanExecutionResult result = executor.execute(plan, session, "trace", opts);
     EXPECT_FALSE(result.ok);
     EXPECT_EQ(add_calls, 1);
     EXPECT_EQ(remove_calls, 1);
@@ -175,7 +177,9 @@ TEST(LLMPlanExecutor, CompensatesSetPropertyWhenPreviousValueKnown)
     LLMSessionContext session;
     session.project_loaded = true;
     session.llm_write_enabled = true;
-    const PlanExecutionResult result = executor.execute(plan, session, "trace");
+    PlanExecuteOptions opts;
+    opts.compensate_on_failure = true;
+    const PlanExecutionResult result = executor.execute(plan, session, "trace", opts);
     EXPECT_FALSE(result.ok);
     EXPECT_EQ(set_calls, 2);
     EXPECT_EQ(result.compensation_steps_applied, 1);

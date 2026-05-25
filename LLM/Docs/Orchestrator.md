@@ -108,7 +108,13 @@ function handleUserMessage(envelope):
 **Execute phase** (after confirm):
 1. For each step in order (respect `depends_on`):
 2. `gateway.invoke`
-3. Stop on first hard error unless plan says continue
+3. Audit `plan_checkpoint` after each successful step
+4. On hard error: save `pending_plan` with step statuses + `last_result` (no auto-rollback)
+5. User may **Resume plan** (retry pending/failed) or **Rollback plan** (compensate done writes)
+
+**Resume** (`resumePlanExecution`): skips `done` steps; resets `failed`/`skipped` to `pending`.
+
+**Rollback** (`rollbackPlanExecution`): `compensateCompletedWrites` from stored `last_result`, clears plan.
 
 ---
 

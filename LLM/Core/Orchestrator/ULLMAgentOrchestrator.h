@@ -30,6 +30,8 @@ struct LLMFinalResponse {
     bool pending_confirmation = false;
     bool pending_plan_execution = false;
     std::string pending_plan_id;
+    bool plan_paused = false;
+    bool can_resume_plan = false;
     bool needs_entity_clarification = false;
     nlohmann::json clarification_candidates = nlohmann::json::array();
 };
@@ -43,6 +45,10 @@ public:
     LLMFinalResponse confirmPending(const std::string& session_id, const std::string& confirmation_id);
     LLMFinalResponse confirmPlanExecution(const std::string& session_id, const std::string& trace_id,
                                           const LLMSessionContext& session);
+    LLMFinalResponse resumePlanExecution(const std::string& session_id, const std::string& trace_id,
+                                         const LLMSessionContext& session);
+    LLMFinalResponse rollbackPlanExecution(const std::string& session_id, const std::string& trace_id,
+                                           const LLMSessionContext& session);
     void rejectPending(const std::string& session_id);
     void cancel() { m_cancelled = true; }
 

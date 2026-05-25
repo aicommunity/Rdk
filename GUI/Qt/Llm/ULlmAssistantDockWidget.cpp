@@ -45,11 +45,17 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     m_confirm = new QPushButton(tr("Apply"), this);
     m_reject = new QPushButton(tr("Reject"), this);
     m_execute_plan = new QPushButton(tr("Run plan"), this);
+    m_resume_plan = new QPushButton(tr("Resume plan"), this);
+    m_rollback_plan = new QPushButton(tr("Rollback plan"), this);
     m_confirm->setVisible(false);
     m_reject->setVisible(false);
     m_execute_plan->setVisible(false);
+    m_resume_plan->setVisible(false);
+    m_rollback_plan->setVisible(false);
     row->addWidget(m_send);
     row->addWidget(m_execute_plan);
+    row->addWidget(m_resume_plan);
+    row->addWidget(m_rollback_plan);
     row->addWidget(m_confirm);
     row->addWidget(m_reject);
     layout->addLayout(row);
@@ -61,6 +67,8 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     connect(m_confirm, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onConfirmClicked);
     connect(m_reject, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onRejectClicked);
     connect(m_execute_plan, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onExecutePlanClicked);
+    connect(m_resume_plan, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onResumePlanClicked);
+    connect(m_rollback_plan, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onRollbackPlanClicked);
     if(m_bridge)
         connect(m_bridge, &ULlmGuiContextBridge::contextChanged, this,
                 &ULlmAssistantDockWidget::onContextChanged);
@@ -142,8 +150,33 @@ void ULlmAssistantDockWidget::clearPendingConfirmation()
 
 void ULlmAssistantDockWidget::setPendingPlan(const QString& plan_id, const QString& summary)
 {
+    m_plan_paused = false;
     m_pending_plan_id = plan_id;
     m_execute_plan->setVisible(true);
+    m_resume_plan->setVisible(false);
+    m_rollback_plan->setVisible(false);
+    m_reject->setVisible(true);
+    appendAssistantText(summary);
+
+    UGEngineControlWidget* host = nullptr;
+    for(QWidget* w = parentWidget(); w; w = w->parentWidget())
+    {
+        if(auto* eng = qobject_cast<UGEngineControlWidget*>(w))
+        {
+            host = eng;
+            break;
+        }
+    }
+    LlmGui::showPlanPreview(host, summary);
+}
+
+void ULlmAssistantDockWidget::setPausedPlan(const QString& plan_id, const QString& summary)
+{
+    m_plan_paused = true;
+    m_pending_plan_id = plan_id;
+    m_execute_plan->setVisible(false);
+    m_resume_plan->setVisible(true);
+    m_rollback_plan->setVisible(true);
     m_reject->setVisible(true);
     appendAssistantText(summary);
 
@@ -162,7 +195,10 @@ void ULlmAssistantDockWidget::setPendingPlan(const QString& plan_id, const QStri
 void ULlmAssistantDockWidget::clearPendingPlan()
 {
     m_pending_plan_id.clear();
+    m_plan_paused = false;
     m_execute_plan->setVisible(false);
+    m_resume_plan->setVisible(false);
+    m_rollback_plan->setVisible(false);
 }
 
 RDK::LLM::LLMSessionContext ULlmAssistantDockWidget::buildSession(const LLMGuiContext& ctx) const
@@ -276,10 +312,67 @@ void ULlmAssistantDockWidget::onExecutePlanClicked()
             [this, watcher]() {
                 const RDK::LLM::LLMFinalResponse resp = watcher->result();
                 watcher->deleteLater();
-                clearPendingPlan();
-                m_reject->setVisible(false);
+                if(resp.can_resume_plan)
+                    setPausedPlan(QString::fromStdString(resp.pending_plan_id),
+                                  QString::fromStdString(resp.text));
+                else
+                {
+                    clearPendingPlan();
+                    m_reject->setVisible(false);
+                }
                 appendAssistantText(resp.ok ? QString::fromStdString(resp.text)
                                             : QString::fromStdString("Error: " + resp.error));
+            });
+    watcher->setFuture(future);
+}
+
+void ULlmAssistantDockWidget::onResumePlanClicked()
+{
+    if(m_pending_plan_id.isEmpty() || !m_plan_paused)
+        return;
+    const LLMGuiContext ctx = m_bridge ? m_bridge->currentContext() : m_last_ctx;
+    const RDK::LLM::LLMSessionContext session = buildSession(ctx);
+    auto future = QtConcurrent::run([session]() {
+        return RDK::LLM::LLMServices::instance().orchestrator().resumePlanExecution(
+            "gui-session", "gui-plan-resume", session);
+    });
+    auto* watcher = new QFutureWatcher<RDK::LLM::LLMFinalResponse>(this);
+    connect(watcher, &QFutureWatcher<RDK::LLM::LLMFinalResponse>::finished, this,
+            [this, watcher]() {
+                const RDK::LLM::LLMFinalResponse resp = watcher->result();
+                watcher->deleteLater();
+                if(resp.can_resume_plan)
+                    setPausedPlan(QString::fromStdString(resp.pending_plan_id),
+                                  QString::fromStdString(resp.text));
+                else
+                {
+                    clearPendingPlan();
+                    m_reject->setVisible(false);
+                }
+                appendAssistantText(resp.ok ? QString::fromStdString(resp.text)
+                                            : QString::fromStdString("Error: " + resp.error));
+            });
+    watcher->setFuture(future);
+}
+
+void ULlmAssistantDockWidget::onRollbackPlanClicked()
+{
+    if(m_pending_plan_id.isEmpty())
+        return;
+    const LLMGuiContext ctx = m_bridge ? m_bridge->currentContext() : m_last_ctx;
+    const RDK::LLM::LLMSessionContext session = buildSession(ctx);
+    auto future = QtConcurrent::run([session]() {
+        return RDK::LLM::LLMServices::instance().orchestrator().rollbackPlanExecution(
+            "gui-session", "gui-plan-rollback", session);
+    });
+    auto* watcher = new QFutureWatcher<RDK::LLM::LLMFinalResponse>(this);
+    connect(watcher, &QFutureWatcher<RDK::LLM::LLMFinalResponse>::finished, this,
+            [this, watcher]() {
+                const RDK::LLM::LLMFinalResponse resp = watcher->result();
+                watcher->deleteLater();
+                clearPendingPlan();
+                m_reject->setVisible(false);
+                appendAssistantText(QString::fromStdString(resp.text));
             });
     watcher->setFuture(future);
 }

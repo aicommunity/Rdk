@@ -110,7 +110,7 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 - [x] `ULLMPlanExecutor` + GUI Run plan / Reject
 - [x] Saga: auto `remove_component` после failed plan (TD-018)
 - [x] Rollback `set_property` when prior value known (TD-020)
-- [ ] Checkpoints / resume mid-plan (TD-023)
+- [x] Checkpoints / resume mid-plan (TD-023)
 
 ### Сценарий D — Autonomous agent
 

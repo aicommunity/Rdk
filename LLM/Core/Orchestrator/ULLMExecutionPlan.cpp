@@ -61,14 +61,19 @@ nlohmann::json executionPlanToJson(const ULLMExecutionPlan& plan)
     nlohmann::json j;
     j["plan_id"] = plan.plan_id;
     j["requires_user_confirmation"] = plan.requires_user_confirmation;
+    j["paused"] = plan.paused;
+    j["checkpoint_after_step_id"] = plan.checkpoint_after_step_id;
     j["steps"] = nlohmann::json::array();
     for(const ExecutionPlanStep& step : plan.steps)
     {
-        j["steps"].push_back({{"step_id", step.step_id},
-                              {"tool_name", step.tool_name},
-                              {"arguments", step.arguments},
-                              {"depends_on", step.depends_on},
-                              {"status", step.status}});
+        nlohmann::json step_j = {{"step_id", step.step_id},
+                                 {"tool_name", step.tool_name},
+                                 {"arguments", step.arguments},
+                                 {"depends_on", step.depends_on},
+                                 {"status", step.status}};
+        if(!step.last_result.empty())
+            step_j["last_result"] = step.last_result;
+        j["steps"].push_back(std::move(step_j));
     }
     return j;
 }
@@ -81,6 +86,8 @@ std::optional<ULLMExecutionPlan> executionPlanFromJson(const nlohmann::json& j)
     ULLMExecutionPlan plan;
     plan.plan_id = j.value("plan_id", makePlanId());
     plan.requires_user_confirmation = j.value("requires_user_confirmation", true);
+    plan.paused = j.value("paused", false);
+    plan.checkpoint_after_step_id = j.value("checkpoint_after_step_id", 0);
 
     for(const auto& item : j["steps"])
     {
@@ -94,6 +101,7 @@ std::optional<ULLMExecutionPlan> executionPlanFromJson(const nlohmann::json& j)
                 step.depends_on.push_back(dep.get<int>());
         }
         step.status = item.value("status", "pending");
+        step.last_result = item.value("last_result", nlohmann::json::object());
         if(step.tool_name.empty())
             return std::nullopt;
         plan.steps.push_back(step);
@@ -103,13 +111,39 @@ std::optional<ULLMExecutionPlan> executionPlanFromJson(const nlohmann::json& j)
     return plan;
 }
 
+void prepareExecutionPlanForResume(ULLMExecutionPlan& plan)
+{
+    for(ExecutionPlanStep& step : plan.steps)
+    {
+        if(step.status == "done")
+            continue;
+        step.status = "pending";
+    }
+    plan.paused = false;
+}
+
+bool executionPlanHasCheckpoint(const ULLMExecutionPlan& plan)
+{
+    if(plan.paused)
+        return true;
+    for(const ExecutionPlanStep& step : plan.steps)
+    {
+        if(step.status == "done" || step.status == "failed")
+            return true;
+    }
+    return false;
+}
+
 std::string formatExecutionPlanPreview(const ULLMExecutionPlan& plan)
 {
     std::ostringstream oss;
-    oss << "Plan " << plan.plan_id << " (" << plan.steps.size() << " steps):\n";
+    oss << "Plan " << plan.plan_id << " (" << plan.steps.size() << " steps)";
+    if(plan.paused)
+        oss << " [paused at step " << plan.checkpoint_after_step_id << "]";
+    oss << ":\n";
     for(const ExecutionPlanStep& step : plan.steps)
     {
-        oss << "  " << step.step_id << ". " << step.tool_name;
+        oss << "  " << step.step_id << ". " << step.tool_name << " [" << step.status << "]";
         if(!step.depends_on.empty())
         {
             oss << " [after:";

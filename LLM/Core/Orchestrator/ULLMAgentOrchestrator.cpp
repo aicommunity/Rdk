@@ -389,17 +389,128 @@ LLMFinalResponse ULLMAgentOrchestrator::confirmPlanExecution(const std::string& 
     setWorkflowPhase(state, LLMWorkflowPhase::Executing, trace_id);
     ULLMPlanExecutor executor(m_registry, m_gateway);
     ULLMExecutionPlan plan = *state.pending_plan;
-    const PlanExecutionResult exec = executor.execute(plan, session, trace_id);
-    state.pending_plan.reset();
+    const PlanExecutionResult exec =
+        executor.execute(plan, session, trace_id, planExecuteWithCheckpointOnFailure());
 
-    final.ok = exec.ok;
-    final.text = exec.summary;
-    if(!exec.ok)
-        final.error = exec.compensation_note;
+    if(exec.ok)
+    {
+        state.pending_plan.reset();
+        final.ok = true;
+        final.text = exec.summary;
+        setWorkflowPhase(state, LLMWorkflowPhase::Completed, trace_id);
+    }
+    else if(exec.paused_for_resume)
+    {
+        plan.paused = true;
+        state.pending_plan = plan;
+        final.ok = false;
+        final.text = exec.summary;
+        final.error = exec.summary;
+        final.plan_paused = true;
+        final.can_resume_plan = true;
+        final.pending_plan_id = plan.plan_id;
+        setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation, trace_id);
+    }
+    else
+    {
+        state.pending_plan.reset();
+        final.ok = false;
+        final.text = exec.summary;
+        final.error = exec.compensation_note.empty() ? exec.summary : exec.compensation_note;
+        setWorkflowPhase(state, LLMWorkflowPhase::Failed, trace_id);
+    }
 
-    setWorkflowPhase(state, exec.ok ? LLMWorkflowPhase::Completed : LLMWorkflowPhase::Failed, trace_id);
     setWorkflowPhase(state, LLMWorkflowPhase::Idle, trace_id);
     m_store.persistToDisk(session_id);
+    return final;
+}
+
+LLMFinalResponse ULLMAgentOrchestrator::resumePlanExecution(const std::string& session_id,
+                                                              const std::string& trace_id,
+                                                              const LLMSessionContext& session)
+{
+    LLMFinalResponse final;
+    ConversationState& state = m_store.getOrCreate(session_id);
+    if(!state.pending_plan || !state.pending_plan->paused)
+    {
+        final.ok = false;
+        final.error = "No paused plan to resume";
+        return final;
+    }
+
+    ULLMPolicyEngine policy;
+    const PolicyDecision plan_pol = policy.checkPlan(*state.pending_plan, session, m_registry);
+    if(!plan_pol.allowed)
+    {
+        final.ok = false;
+        final.error = plan_pol.deny_message;
+        return final;
+    }
+
+    setWorkflowPhase(state, LLMWorkflowPhase::Executing, trace_id);
+    ULLMPlanExecutor executor(m_registry, m_gateway);
+    ULLMExecutionPlan plan = *state.pending_plan;
+    const PlanExecutionResult exec = executor.execute(plan, session, trace_id, planExecuteResume());
+
+    if(exec.ok)
+    {
+        state.pending_plan.reset();
+        final.ok = true;
+        final.text = exec.summary;
+    }
+    else if(exec.paused_for_resume)
+    {
+        plan.paused = true;
+        state.pending_plan = plan;
+        final.ok = false;
+        final.text = exec.summary;
+        final.plan_paused = true;
+        final.can_resume_plan = true;
+        final.pending_plan_id = plan.plan_id;
+    }
+    else
+    {
+        state.pending_plan = plan;
+        final.ok = false;
+        final.text = exec.summary;
+        final.error = exec.summary;
+        final.plan_paused = true;
+        final.can_resume_plan = true;
+        final.pending_plan_id = plan.plan_id;
+    }
+
+    m_store.persistToDisk(session_id);
+    setWorkflowPhase(state, LLMWorkflowPhase::Idle, trace_id);
+    return final;
+}
+
+LLMFinalResponse ULLMAgentOrchestrator::rollbackPlanExecution(const std::string& session_id,
+                                                                const std::string& trace_id,
+                                                                const LLMSessionContext& session)
+{
+    LLMFinalResponse final;
+    ConversationState& state = m_store.getOrCreate(session_id);
+    if(!state.pending_plan)
+    {
+        final.ok = false;
+        final.error = "No plan to rollback";
+        return final;
+    }
+
+    ULLMPlanExecutor executor(m_registry, m_gateway);
+    std::string note;
+    const int applied =
+        executor.compensateCompletedWrites(*state.pending_plan, session, trace_id, note);
+    GetAuditLog().append("plan_rollback",
+                         {{"plan_id", state.pending_plan->plan_id}, {"applied", applied}, {"note", note}},
+                         trace_id, session_id);
+
+    state.pending_plan.reset();
+    final.ok = applied > 0 || note.empty();
+    final.text = note.empty() ? "Plan discarded (no completed write steps to rollback)."
+                              : "Plan rolled back. " + note;
+    m_store.persistToDisk(session_id);
+    setWorkflowPhase(state, LLMWorkflowPhase::Idle, trace_id);
     return final;
 }
 
