@@ -190,6 +190,12 @@ void ULlmAssistantDockWidget::runUserMessage(const QString& text)
                     setPendingConfirmation("pending", QString::fromStdString(resp.text));
                     return;
                 }
+                if(resp.needs_entity_clarification)
+                {
+                    appendAssistantText(tr("<b>Clarification needed</b>"));
+                    appendAssistantText(QString::fromStdString(resp.text));
+                    return;
+                }
                 appendAssistantText(QString::fromStdString(resp.text));
             });
     watcher->setFuture(future);

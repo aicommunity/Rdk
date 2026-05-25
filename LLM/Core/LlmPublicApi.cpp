@@ -37,9 +37,10 @@ void LLMServices::initialize(RDK::UApplication* app, ILLMProjectContextProvider*
 
     rebuildProvider();
 
-    GetAuditLog().setLogDirectory((project_context ? project_context->paths().repository_root.string()
-                                                   : ".") +
-                                 "/LLM/audit");
+    const std::string llm_root =
+        (project_context ? project_context->paths().repository_root.string() : ".") + "/LLM";
+    GetAuditLog().setLogDirectory(llm_root + "/audit");
+    m_store->setStorageDirectory(llm_root + "/sessions");
 }
 
 void LLMServices::rebuildProvider()

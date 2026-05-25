@@ -21,12 +21,20 @@ struct ConversationState {
 
 class ULLMConversationStore {
 public:
+    void setStorageDirectory(const std::string& path);
     ConversationState& getOrCreate(const std::string& session_id);
     void appendMessage(const std::string& session_id, const LLMMessage& msg);
     void setPending(const std::string& session_id, PendingConfirmation p);
     void clearPending(const std::string& session_id);
+    bool persistToDisk(const std::string& session_id);
+    bool loadFromDisk(const std::string& session_id);
+    void removeFromDisk(const std::string& session_id);
 
 private:
+    static nlohmann::json messageToJson(const LLMMessage& msg);
+    static LLMMessage messageFromJson(const nlohmann::json& j);
+
+    std::string m_storage_dir;
     std::map<std::string, ConversationState> m_sessions;
 };
 

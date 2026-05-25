@@ -17,6 +17,11 @@ PolicyDecision ULLMPolicyEngine::checkToolInvoke(const ToolInvokeRequest& req,
     {
         return {false, "WRITE_DISABLED", "LLM write operations disabled in settings"};
     }
+    if(tool.kind == LLMToolKind::Write && req.session.user_id < 0)
+    {
+        return {false, "RBAC_GUEST_DENIED",
+                "Write tools require a signed-in user (GetUserId() >= 0)"};
+    }
     if(tool.requires_confirmation && !req.confirmed)
     {
         return {true, "", ""};

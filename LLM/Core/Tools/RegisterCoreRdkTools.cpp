@@ -2,6 +2,7 @@
 
 #include "../Context/ILLMProjectContextProvider.h"
 #include "../Domain/URdkDomainAccess.h"
+#include "../Domain/URdkEntityResolver.h"
 #include "ULLMToolRegistry.h"
 
 #include <fstream>
@@ -101,24 +102,10 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
         [&](const nlohmann::json& args) -> ToolGatewayResult {
             ToolGatewayResult r;
             const std::string query = args.at("query").get<std::string>();
-            int ch = args.value("channel_index", 0);
-            nlohmann::json snap;
-            domain.listNetSnapshot(snap, ch, 500);
-            nlohmann::json candidates = nlohmann::json::array();
-            for(const auto& c : snap["components"])
-            {
-                const std::string sn = c.value("short_name", "");
-                const std::string ln = c.value("long_name", "");
-                if(sn.find(query) != std::string::npos || ln.find(query) != std::string::npos)
-                    candidates.push_back(
-                        {{"long_name", ln},
-                         {"class_name", c.value("class_name", "")},
-                         {"score", 0.8}});
-            }
-            r.result["candidates"] = candidates;
-            r.result["resolved"] = (candidates.size() == 1);
-            if(candidates.size() == 1)
-                r.result["canonical_long_name"] = candidates[0]["long_name"];
+            const int ch = args.value("channel_index", 0);
+            URdkEntityResolver resolver(domain);
+            const EntityResolutionResult resolved = resolver.resolveComponent(query, ch);
+            r.result = resolver.toToolJson(resolved);
             r.ok = true;
             return r;
         });

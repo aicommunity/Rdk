@@ -35,12 +35,8 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-002 | Intent parser: rule-based only; no LLM-based intent classification | design | 3 | P2 | open | See Orchestrator.md |
 | TD-003 | Doc search: keyword match only; no embeddings index | design | post-MVP | P3 | open | Project-Context-NMSDK.md |
 | TD-004 | Scenario C workflow state machine — design only | design | post-MVP | P3 | open | Orchestrator.md |
-| TD-005 | RBAC per `UApplication::GetUserId()` | design | 3 | P2 | open | Policy-and-Safety.md |
-| TD-006 | Parallel read tool invocations in gateway | design | 3 | P2 | open | Tool-Gateway-and-Registry.md |
 | TD-007 | `UOllamaNativeProvider` optional fallback | design | 2 | P3 | open | Providers.md |
-| TD-008 | Session persist to disk (`UserConfig/LLM/sessions`) | design | 3 | P2 | open | Conversation-State.md |
 | TD-009 | Library Llm folders (`HardwareLib/Llm`, …) | design | 2b | P2 | open | Project-Context-NMSDK.md |
-| TD-010 | Hash-chain audit verify CLI | design | 3 | P2 | open | Observability-and-Audit.md |
 
 ---
 
@@ -51,6 +47,11 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-001 | Apply `RDK_USE_LLM` + vcpkg `llm` + `add_subdirectory(LLM)` | 2026-05-25 | `cmake/RdkDefines.cmake`, `Rdk/CMakeLists.txt`, `vcpkg.json` |
 | TD-011 | `set_property` via `MModel_SetComponentPropertyValue` | 2026-05-25 | `URdkDomainAccess::setProperty` |
 | TD-012 | Provider settings UI + QSettings/env API key resolution | 2026-05-25 | `ULLMProviderAuth`, `ULlmProviderSettingsWidget` |
+| TD-005 | RBAC guest deny write (`user_id < 0`) | 2026-05-25 | `ULLMPolicyEngine` P10 |
+| TD-008 | Session persist JSON under `<repo>/LLM/sessions/` | 2026-05-25 | `ULLMConversationStore` |
+| TD-010 | `llm_audit_verify` CLI + `verifyJsonlFile` | 2026-05-25 | `Rdk/LLM/Tools/llm_audit_verify_main.cpp` |
+| TD-013 | Entity resolver + ambiguous clarification UI | 2026-05-25 | `URdkEntityResolver`, orchestrator |
+| TD-006 | Parallel read tools in orchestrator round | 2026-05-25 | `std::async` when all Read |
 
 ---
 

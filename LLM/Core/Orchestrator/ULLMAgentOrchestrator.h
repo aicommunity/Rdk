@@ -26,6 +26,8 @@ struct LLMFinalResponse {
     std::string text;
     std::string error;
     bool pending_confirmation = false;
+    bool needs_entity_clarification = false;
+    nlohmann::json clarification_candidates = nlohmann::json::array();
 };
 
 class ULLMAgentOrchestrator {

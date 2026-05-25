@@ -58,7 +58,7 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 **Критерий готовности:**
 - [x] Add component на схему после Confirm
 - [x] Deny write без open project
-- [ ] Ambiguous name → clarification UI
+- [x] Ambiguous name → clarification UI
 - [x] Provider auth: QSettings + env + cloud policy (P09)
 
 **Commit:** `feat(rdk-llm): write tools with policy, HITL, and NMSDK context`
@@ -83,8 +83,8 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 **Критерий готовности:**
 - [x] L1–L5 unit tests (validator, policy, intent, gateway, orchestrator)
 - [x] `Scripts/ci-llm-linux.sh` for CI matrix
-- [ ] Session persist (TD-008)
-- [ ] Hash chain verify CLI (TD-010)
+- [x] Session persist (TD-008)
+- [x] Hash chain verify CLI (TD-010)
 
 **Commit:** `test(rdk-llm): add LLM unit tests, audit log, and CI matrix`
 
