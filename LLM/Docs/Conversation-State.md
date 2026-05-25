@@ -69,7 +69,7 @@ struct PendingConfirmation {
 }
 ```
 
-- План парсится из ответа LLM (`parseExecutionPlanFromAssistantText`), не strict json_schema API.
+- План: `parseExecutionPlanFromAssistantText` (markdown ```json или raw JSON). Cloud OpenAI-compat: optional strict `json_schema` (TD-028).
 - При ошибке execute: `paused=true`, Resume/Rollback в GUI.
 - `prepareExecutionPlanForResume()` сбрасывает `failed`/`skipped` → `pending`.
 

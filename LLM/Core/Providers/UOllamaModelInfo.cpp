@@ -3,8 +3,10 @@
 #include "../Http/ULLMHttpClient.h"
 #include "UOllamaChatTemplate.h"
 
+#include <cstdlib>
 #include <map>
 #include <mutex>
+#include <sstream>
 
 namespace RDK::LLM {
 
@@ -94,6 +96,81 @@ OllamaChatTemplateFamily fetchOllamaTemplateFamily(const LLMProviderProfile& pro
     std::lock_guard<std::mutex> lock(g_cache_mutex);
     g_template_cache[key] = resolved;
     return resolved;
+}
+
+std::vector<std::string> listOllamaTagModels(const LLMProviderProfile& profile)
+{
+    std::vector<std::string> names;
+    if(profile.kind != LLMProviderKind::OllamaOpenAICompat
+       && profile.kind != LLMProviderKind::OllamaNative)
+        return names;
+
+    ULLMHttpClient http;
+    const auto resp = http.get(ollamaHostKey(profile) + "/api/tags", profile.api_key, 8000);
+    if(resp.status_code < 200 || resp.status_code >= 300 || resp.body.empty())
+        return names;
+    try
+    {
+        const nlohmann::json j = nlohmann::json::parse(resp.body);
+        if(!j.contains("models") || !j["models"].is_array())
+            return names;
+        for(const auto& item : j["models"])
+        {
+            const std::string name = item.value("name", item.value("model", ""));
+            if(!name.empty())
+                names.push_back(name);
+        }
+    }
+    catch(...)
+    {
+    }
+    return names;
+}
+
+std::string formatOllamaModelMismatchHint(const LLMProviderProfile& profile)
+{
+    const auto models = listOllamaTagModels(profile);
+    std::ostringstream oss;
+    oss << " (tip: AI Assistant → Settings → set Model to a name from `ollama list`; ";
+    oss << "Base URL e.g. " << profile.base_url << "; configured model: " << profile.model;
+    if(!models.empty())
+    {
+        oss << "; available on server:";
+        for(size_t i = 0; i < models.size() && i < 6; ++i)
+            oss << " " << models[i];
+        if(models.size() > 6)
+            oss << " …";
+    }
+    else
+    {
+        oss << "; could not list models at " << ollamaHostKey(profile) << "/api/tags";
+    }
+    oss << ")";
+    return oss.str();
+}
+
+void applyOllamaEnvironmentDefaults(LLMProviderProfile& profile,
+                                    const LLMRuntimeProviderSettings& runtime)
+{
+    if(profile.kind != LLMProviderKind::OllamaOpenAICompat
+       && profile.kind != LLMProviderKind::OllamaNative)
+        return;
+
+    const auto it = runtime.endpoint_overrides_by_profile_id.find(profile.profile_id);
+    const bool has_url =
+        it != runtime.endpoint_overrides_by_profile_id.end() && !it->second.base_url.empty();
+    const bool has_model =
+        it != runtime.endpoint_overrides_by_profile_id.end() && !it->second.model.empty();
+
+    if(const char* url = std::getenv("NMSDK_LLM_OLLAMA_BASE_URL"); url && *url && !has_url)
+    {
+        profile.base_url = url;
+        if(profile.kind == LLMProviderKind::OllamaOpenAICompat
+           && profile.base_url.find("/v1") == std::string::npos)
+            profile.base_url += "/v1";
+    }
+    if(const char* model = std::getenv("NMSDK_LLM_OLLAMA_MODEL"); model && *model && !has_model)
+        profile.model = model;
 }
 
 } // namespace RDK::LLM

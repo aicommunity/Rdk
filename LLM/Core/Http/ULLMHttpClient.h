@@ -18,6 +18,7 @@ public:
     /// Invoked for each SSE `data:` payload (without prefix). Return false to abort.
     using SseDataCallback = std::function<bool(const std::string& data_payload)>;
 
+    Response get(const std::string& url, const std::string& bearer_token, int timeout_ms = 30000);
     Response postJson(const std::string& url, const std::string& json_body,
                       const std::string& bearer_token, int timeout_ms = 120000);
     Response postJsonStream(const std::string& url, const std::string& json_body,

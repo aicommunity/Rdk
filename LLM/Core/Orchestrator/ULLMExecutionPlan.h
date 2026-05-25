@@ -9,6 +9,8 @@
 
 namespace RDK::LLM {
 
+struct LLMProviderProfile;
+
 struct ExecutionPlanStep {
     int step_id = 0;
     std::string tool_name;
@@ -39,6 +41,11 @@ nlohmann::json executionPlanToJson(const ULLMExecutionPlan& plan);
 std::optional<ULLMExecutionPlan> executionPlanFromJson(const nlohmann::json& j);
 
 std::string formatExecutionPlanPreview(const ULLMExecutionPlan& plan);
+
+/// OpenAI `response_format` for strict execution-plan JSON (cloud OpenAI-compat only).
+nlohmann::json executionPlanOpenAiResponseFormat();
+
+bool providerSupportsStrictPlanSchema(const LLMProviderProfile& profile);
 
 } // namespace RDK::LLM
 

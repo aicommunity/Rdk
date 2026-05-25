@@ -16,6 +16,8 @@ function(_add_llm_unit_test name source)
   add_test(NAME ${name} COMMAND ${name})
 endfunction()
 
+set(RDK_LLM_REGRESSION_FIXTURES_DIR "${CMAKE_SOURCE_DIR}/Rdk/Tests/Fixtures/LLM/regression")
+
 _add_llm_unit_test(Test_LLM_ArgumentValidator test_llm_argument_validator.cpp)
 _add_llm_unit_test(Test_LLM_Policy test_llm_policy.cpp)
 _add_llm_unit_test(Test_LLM_IntentParser test_llm_intent_parser.cpp)
@@ -37,6 +39,9 @@ _add_llm_unit_test(Test_LLM_PlanExecutor test_llm_plan_executor.cpp)
 _add_llm_unit_test(Test_LLM_PlanCompensation test_llm_plan_compensation.cpp)
 _add_llm_unit_test(Test_LLM_PlanCheckpoint test_llm_plan_checkpoint.cpp)
 _add_llm_unit_test(Test_LLM_RegressionIntent test_llm_regression_intent.cpp)
+_add_llm_unit_test(Test_LLM_RegressionFixtures test_llm_regression_fixtures.cpp)
+target_compile_definitions(Test_LLM_RegressionFixtures PRIVATE
+  RDK_LLM_REGRESSION_FIXTURES_DIR="${RDK_LLM_REGRESSION_FIXTURES_DIR}")
 _add_llm_unit_test(Test_LLM_HttpSse test_llm_http_sse.cpp)
 _add_llm_unit_test(Test_LLM_ConfirmationTtl test_llm_confirmation_ttl.cpp)
 _add_llm_unit_test(Test_LLM_DocOllamaEmbeddings test_llm_doc_ollama_embeddings.cpp)

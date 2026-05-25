@@ -135,6 +135,7 @@ void ULlmProviderSettingsWidget::onProfileChanged(int index)
         hint += tr("\nDefaults: %1 · %2")
                     .arg(QString::fromStdString(preset.base_url))
                     .arg(QString::fromStdString(preset.model));
+        hint += tr("\nEnv: NMSDK_LLM_OLLAMA_BASE_URL, NMSDK_LLM_OLLAMA_MODEL");
     }
     else
     {

@@ -136,6 +136,8 @@ struct LLMCompletionOptions {
     int max_tokens = 4096;
     float temperature = 0.2f;
     bool stream = false;
+    /// OpenAI-compatible `response_format` (e.g. json_schema for Plan intent).
+    std::optional<nlohmann::json> response_format;
 };
 
 using LLMStreamCallback = std::function<void(const std::string& chunk)>;

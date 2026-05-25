@@ -142,6 +142,10 @@ Mapping tool results → `LLMMessage::Role::Tool` per OpenAI spec.
 `UOpenAICompatProvider::chatStream` — `stream: true`, SSE `data:` lines, deltas `content` (+ `tool_calls` без live token stream в GUI).  
 `ULLMHttpClient::postJsonStream` — curl write callback; abort when `ILLMProvider::cancel()` / `ULLMAgentOrchestrator::cancel()`.
 
+**Ollama remote (TD-029):** env `NMSDK_LLM_OLLAMA_BASE_URL`, `NMSDK_LLM_OLLAMA_MODEL`; Settings override; `/api/tags` list on 404.
+
+**Strict plan JSON (TD-028):** cloud `OpenAICompat` profiles — `response_format.json_schema` on Plan intent; Ollama uses markdown/json block fallback.
+
 ---
 
 ## 8. Priority switch UI

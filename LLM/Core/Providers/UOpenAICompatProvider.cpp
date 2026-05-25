@@ -1,7 +1,9 @@
 #include "UOpenAICompatProvider.h"
 
 #include "UOllamaChatTemplate.h"
+#include "UOllamaModelInfo.h"
 
+#include <algorithm>
 #include <chrono>
 #include <cstdlib>
 #include <map>
@@ -92,6 +94,7 @@ LLMProviderCapabilities UOpenAICompatProvider::capabilities() const
     LLMProviderCapabilities c;
     c.supports_tool_calling = true;
     c.supports_streaming = true;
+    c.supports_strict_json_schema = !isOllamaProvider(m_profile);
     c.requires_network = true;
     return c;
 }
@@ -113,6 +116,8 @@ nlohmann::json UOpenAICompatProvider::buildRequestBody(const std::vector<LLMMess
         body["tools"] = opts.tools_for_api;
         body["tool_choice"] = "auto";
     }
+    if(opts.response_format)
+        body["response_format"] = *opts.response_format;
     return body;
 }
 
@@ -290,6 +295,22 @@ void UOpenAICompatProvider::chatStream(const std::vector<LLMMessage>& messages,
 
 bool UOpenAICompatProvider::healthCheck(std::string& error_out)
 {
+    if(m_profile.kind == LLMProviderKind::OllamaOpenAICompat
+       || m_profile.kind == LLMProviderKind::OllamaNative)
+    {
+        const auto models = listOllamaTagModels(m_profile);
+        if(!models.empty())
+        {
+            const bool found = std::find(models.begin(), models.end(), m_profile.model) != models.end();
+            if(!found)
+            {
+                error_out = "Model not found on Ollama server: " + m_profile.model;
+                error_out += formatOllamaModelMismatchHint(m_profile);
+                return false;
+            }
+        }
+    }
+
     LLMCompletionOptions opts;
     opts.max_tokens = 1;
     std::vector<LLMMessage> msgs;

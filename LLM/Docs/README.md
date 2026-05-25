@@ -31,6 +31,7 @@
 |---------------|----------|
 | Общая картина, слои | [Architecture.md](Architecture.md) |
 | С чего начать MVP | [MVP-Roadmap.md](MVP-Roadmap.md) |
+| Следующая фаза: write-tools | [Write-Tools-Backlog.md](Write-Tools-Backlog.md) |
 | CMake, vcpkg, CI | [Build.md](Build.md) |
 | UApplication, UNet, фасад | [Domain-Layer.md](Domain-Layer.md) |
 | Bin, ClDesc, Libraries | [Project-Context-NMSDK.md](Project-Context-NMSDK.md) |
@@ -67,8 +68,8 @@
 
 | Поле | Значение |
 |------|----------|
-| `DOCS_BUNDLE_ID` | `rdk-llm-docs-1.1.1` |
-| Дата | 2026-05-25 (sync: TD-024 streaming, TD-025 confirmation TTL) |
+| `DOCS_BUNDLE_ID` | `rdk-llm-docs-1.2.0` |
+| Дата | 2026-05-25 (MVP tails: L7 regression, strict plan schema, write-tools backlog) |
 | Согласовано с | Nmsdk / RDK Core, NeuroModeler |
 
 При изменении контрактов tools — инкремент `TOOL_REGISTRY_VERSION` (см. Tool-Gateway-and-Registry.md) и запись в audit.

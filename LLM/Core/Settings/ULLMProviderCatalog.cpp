@@ -1,5 +1,7 @@
 #include "ULLMProviderCatalog.h"
 
+#include "../Providers/UOllamaModelInfo.h"
+
 namespace RDK::LLM {
 
 std::vector<LLMProviderProfile> ULLMProviderCatalog::builtInProfiles()
@@ -78,6 +80,7 @@ LLMProviderProfile ULLMProviderCatalog::applyRuntimeOverrides(
         if(!it->second.model.empty())
             profile.model = it->second.model;
     }
+    applyOllamaEnvironmentDefaults(profile, runtime);
     return profile;
 }
 

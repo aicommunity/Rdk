@@ -10,6 +10,7 @@
 #include "../LlmPublicApi.h"
 #include "../Policy/ULLMPolicyEngine.h"
 #include "../Providers/UOllamaChatTemplate.h"
+#include "../Providers/UOllamaModelInfo.h"
 #include "../Settings/ULLMProviderAuth.h"
 #include "ULLMExecutionPlan.h"
 #include "ULLMPlanExecutor.h"
@@ -170,13 +171,19 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
     filter.include_write = (intent == LLMIntentKind::Mutate) && session.llm_write_enabled;
 
     std::vector<LLMMessage> provider_messages = state.messages;
+    const bool strict_plan_schema =
+        intent == LLMIntentKind::Plan && providerSupportsStrictPlanSchema(req.provider_profile)
+        && m_provider.capabilities().supports_strict_json_schema;
     if(intent == LLMIntentKind::Plan)
     {
         LLMMessage plan_hint;
         plan_hint.role = LLMMessage::Role::System;
-        plan_hint.content =
-            "Plan-only mode: use read tools to inspect state, then reply with a numbered execution "
-            "plan. Do not mutate the project until the user confirms.";
+        plan_hint.content = strict_plan_schema
+                                ? "Plan-only mode: use read tools to inspect state, then respond "
+                                  "with JSON matching the execution_plan schema (no markdown)."
+                                : "Plan-only mode: use read tools to inspect state, then reply with "
+                                  "a JSON execution plan in a ```json code block. Do not mutate until "
+                                  "the user confirms.";
         provider_messages.insert(provider_messages.begin(), plan_hint);
         setWorkflowPhase(state, LLMWorkflowPhase::Executing, req.trace_id);
     }
@@ -187,6 +194,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
         opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
     else
         opts.tools_for_api.clear();
+    if(strict_plan_schema)
+        opts.response_format = executionPlanOpenAiResponseFormat();
 
     int tool_invocations = 0;
     const int max_tool_invocations = defaultPolicyLimits().max_tool_invocations_per_message;
@@ -243,7 +252,11 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             }
             else if(isOllamaProvider(req.provider_profile))
             {
-                final.error += " (check: ollama serve, model pulled, Ollama 0.3+ for tools)";
+                const std::string& err = completion.error_message;
+                if(err.find("not found") != std::string::npos || err.find("HTTP 404") != std::string::npos)
+                    final.error += formatOllamaModelMismatchHint(req.provider_profile);
+                else
+                    final.error += " (check: ollama serve, model pulled, Ollama 0.3+ for tools)";
             }
             setWorkflowPhase(state, LLMWorkflowPhase::Failed, req.trace_id);
             return final;

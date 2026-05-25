@@ -140,6 +140,9 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 - [x] `connect_components`, `load_project`, `save_project` write tools
 - [x] GUI token streaming + Cancel (TD-024)
 - [x] HITL confirmation TTL + persist pending (TD-025)
+- [x] L7 regression fixtures runner (`Test_LLM_RegressionFixtures`, TD-027)
+- [x] Strict `json_schema` plan (cloud OpenAI-compat, TD-028)
+- [x] Ollama remote URL/model env + mismatch hints (TD-029)
 
 ---
 
@@ -147,8 +150,9 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 
 | Item | Notes |
 |------|-------|
-| L7 HTTP regression runner | intent/rules smoke in `Tests/Fixtures/LLM/` |
-| Strict json_schema plan from provider | сейчас parse из markdown/json block |
+| — | MVP/post-MVP хвосты закрыты (L7, strict plan schema, Ollama env) |
+
+**Следующая фаза продукта:** [Write-Tools-Backlog.md](Write-Tools-Backlog.md) — доводка write-tools в NeuroModeler.
 
 ---
 

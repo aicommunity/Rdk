@@ -4,7 +4,7 @@
 
 ```cmake
 # cmake/RdkDefines.cmake
-option(RDK_USE_LLM "Build RDK LLM assistant module" OFF)
+option(RDK_USE_LLM "Build RDK LLM assistant module" OFF)  # ON on Nmsdk branch `llm`
 option(RDK_LLM_BUILD_EMBEDDED "Build llama.cpp embedded provider" OFF)
 ```
 

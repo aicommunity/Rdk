@@ -1,5 +1,7 @@
 #include "ULLMExecutionPlan.h"
 
+#include "../LlmTypes.h"
+
 #include <random>
 #include <sstream>
 
@@ -132,6 +134,39 @@ bool executionPlanHasCheckpoint(const ULLMExecutionPlan& plan)
             return true;
     }
     return false;
+}
+
+nlohmann::json executionPlanOpenAiResponseFormat()
+{
+    const nlohmann::json step_schema = {
+        {"type", "object"},
+        {"properties",
+         {{"step_id", {{"type", "integer"}}},
+          {"tool_name", {{"type", "string"}}},
+          {"arguments", {{"type", "object"}}},
+          {"depends_on", {{"type", "array"}, {"items", {{"type", "integer"}}}}}}},
+        {"required", nlohmann::json::array({"step_id", "tool_name", "arguments"})},
+        {"additionalProperties", false}};
+    const nlohmann::json root_schema = {
+        {"type", "object"},
+        {"properties",
+         {{"plan_id", {{"type", "string"}}},
+          {"requires_user_confirmation", {{"type", "boolean"}}},
+          {"steps", {{"type", "array"}, {"items", step_schema}}}}},
+        {"required", nlohmann::json::array({"steps"})},
+        {"additionalProperties", false}};
+    return {{"type", "json_schema"},
+            {"json_schema",
+             {{"name", "execution_plan"}, {"strict", true}, {"schema", root_schema}}}};
+}
+
+bool providerSupportsStrictPlanSchema(const LLMProviderProfile& profile)
+{
+    if(profile.kind == LLMProviderKind::OllamaOpenAICompat
+       || profile.kind == LLMProviderKind::OllamaNative || profile.kind == LLMProviderKind::EmbeddedLlama
+       || profile.kind == LLMProviderKind::Mock)
+        return false;
+    return profile.kind == LLMProviderKind::OpenAICompat;
 }
 
 std::string formatExecutionPlanPreview(const ULLMExecutionPlan& plan)

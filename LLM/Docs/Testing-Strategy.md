@@ -15,7 +15,7 @@
 
 **CI default (`RDK_USE_LLM=OFF`):** LLM tests **не собираются**.
 
-**CI `ci-llm-linux.sh`:** `cmake -DRDK_USE_LLM=ON` + ctest `Rdk/Tests/Unit/LLM` (26 targets, incl. `Test_LLM_ConfirmationTtl`).
+**CI `ci-llm-linux.sh`:** `cmake -DRDK_USE_LLM=ON` + ctest `Rdk/Tests/Unit/LLM` (27+ targets, incl. `Test_LLM_RegressionFixtures`).
 
 ---
 
@@ -42,7 +42,8 @@ Fixtures: `Rdk/Tests/Fixtures/LLM/provider/*.json`
 | `q_add_source.txt` | добавь MatrixSource | `find_component` or `add_component` |
 | `q_class_help.txt` | что такое ArduinoBoard | `describe_class` |
 
-Runner: `Test_LLM_RegressionIntent` — фразы из `Rdk/Tests/Fixtures/LLM/regression/*.txt` → `ULLMIntentParser` (без HTTP).
+Runner: `Test_LLM_RegressionFixtures` — все `regression/*.json` → `ULLMIntentParser` (без HTTP).  
+Legacy: `q_list_components.txt` + `Test_LLM_RegressionIntent` (registry smoke).
 
 ---
 
