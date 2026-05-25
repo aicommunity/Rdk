@@ -49,7 +49,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Resolved in | Resolution |
 |----|------|-------------|------------|
-| TD-001 | Apply `RDK_USE_LLM` + vcpkg `llm` + `add_subdirectory(LLM)` | phase 0 | 0 | P0 | done | `cmake/RdkDefines.cmake`, `Rdk/CMakeLists.txt`, `vcpkg.json` |
+| TD-001 | Apply `RDK_USE_LLM` + vcpkg `llm` + `add_subdirectory(LLM)` | 2026-05-25 | `cmake/RdkDefines.cmake`, `Rdk/CMakeLists.txt`, `vcpkg.json` |
 
 ---
 
