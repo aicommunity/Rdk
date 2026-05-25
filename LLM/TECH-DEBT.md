@@ -32,7 +32,6 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Deferred in | Target phase | Priority | Status | Notes / resolution |
 |----|------|-------------|--------------|----------|--------|-------------------|
-| TD-022 | GUI plan preview widget wired to `formatExecutionPlanPreview` | UX | future | P3 | open | Dock shows text summary only |
 | TD-023 | Plan checkpoints / resume mid-plan | Scenario C | future | P3 | open | Full execute-or-fail today |
 
 ---
@@ -44,6 +43,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-019 | MotionControlLib `Llm/` read tools | 2026-05-25 | `RegisterMotionControlLibLlmTools` |
 | TD-020 | Plan rollback for `set_property` | 2026-05-25 | `previous_value` + compensation in `ULLMPlanExecutor` |
 | TD-021 | Ollama `/api/embeddings` doc re-rank | 2026-05-25 | `UDocOllamaEmbeddings`, `NMSDK_LLM_DOC_EMBED_OLLAMA=1` |
+| TD-022 | GUI plan preview dock wired | 2026-05-25 | `LlmGui::showPlanPreview` from assistant dock |
 | TD-017 | Doc search vector / semantic ranking | 2026-05-25 | Random-projection hybrid in `UDocSearchIndex` |
 | TD-018 | Plan saga auto-undo add_component | 2026-05-25 | `remove_component` on failed plan |
 | TD-002 | Intent classification (rules + optional LLM) | 2026-05-25 | `parseDetailed`, `NMSDK_LLM_INTENT_LLM=1` |

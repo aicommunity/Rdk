@@ -1,5 +1,7 @@
 #include "ULlmAssistantDockWidget.h"
 
+#include "LlmGuiBootstrap.h"
+
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
 #include <QDialog>
@@ -144,6 +146,17 @@ void ULlmAssistantDockWidget::setPendingPlan(const QString& plan_id, const QStri
     m_execute_plan->setVisible(true);
     m_reject->setVisible(true);
     appendAssistantText(summary);
+
+    UGEngineControlWidget* host = nullptr;
+    for(QWidget* w = parentWidget(); w; w = w->parentWidget())
+    {
+        if(auto* eng = qobject_cast<UGEngineControlWidget*>(w))
+        {
+            host = eng;
+            break;
+        }
+    }
+    LlmGui::showPlanPreview(host, summary);
 }
 
 void ULlmAssistantDockWidget::clearPendingPlan()

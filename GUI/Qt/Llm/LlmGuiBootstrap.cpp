@@ -1,5 +1,6 @@
 #include "LlmGuiBootstrap.h"
 
+#include <QPointer>
 #include <QShortcut>
 
 #include "../UGEngineControlWidget.h"
@@ -8,6 +9,20 @@
 #include "ULlmProviderSettingsWidget.h"
 
 namespace LlmGui {
+
+namespace {
+
+QPointer<ULlmChangePreviewWidget> g_plan_preview;
+
+} // namespace
+
+void showPlanPreview(UGEngineControlWidget* host, const QString& summary)
+{
+    if(host)
+        host->showCustomWidgetById(QStringLiteral("llm.preview"));
+    if(g_plan_preview)
+        g_plan_preview->showPlan(summary);
+}
 
 void OpenProviderSettingsDialog(QWidget* parent, RDK::UApplication* app)
 {
@@ -41,7 +56,9 @@ void RegisterLlmUi(UGEngineControlWidget* host, RDK::UApplication* app, ULlmGuiC
     preview.placement = UCustomWidgetPlacement::Dock;
     preview.defaultDockArea = Qt::BottomDockWidgetArea;
     preview.factory = [](RDK::UApplication* application) -> UVisualControllerWidget* {
-        return new ULlmChangePreviewWidget(nullptr, application);
+        auto* widget = new ULlmChangePreviewWidget(nullptr, application);
+        g_plan_preview = widget;
+        return widget;
     };
     host->registerCustomWidget(preview);
 
