@@ -106,6 +106,7 @@ void RegisterLlmUi(UGEngineControlWidget* host,
 | Status | Local / Cloud / key hint |
 | Ответ LLM | SSE token stream (`LLMStreamHandlers`) для OpenAI-compat / Ollama; embedded — batch |
 | Cancel | `orchestrator.cancel()` во время запроса |
+| HITL TTL | `QTimer` 10 min → `rejectPending`; реальный `pending_confirmation_id` из ответа |
 | Run plan | `confirmPlanExecution()` |
 | Resume / Rollback plan | После checkpoint (`resumePlanExecution` / `rollbackPlanExecution`) |
 | Apply / Reject | `confirmPending()` / `rejectPending()` |

@@ -33,10 +33,11 @@ struct ConversationState {
 struct PendingConfirmation {
     std::string confirmation_id;
     ToolInvokeRequest request;  // один write-tool
+    int64_t created_at_unix_sec;  // TD-025 TTL (default 600 s)
 };
 ```
 
-**Хранение:** `persistToDisk` → `<storage_dir>/<session_id>.json` (в т.ч. `pending_plan` со статусами шагов и `last_result`).
+**Хранение:** `persistToDisk` → `<storage_dir>/<session_id>.json` (в т.ч. `pending`, `pending_plan` со статусами шагов и `last_result`).
 
 `resolved_entities` / `last_gui_context` — **не** в MVP store (entity resolution stateless per call).
 
@@ -78,7 +79,9 @@ struct PendingConfirmation {
 
 Один `ToolInvokeRequest` на подтверждение. GUI: **Apply** → `confirmPending()`.
 
-TTL auto-expire — **post-MVP** (не реализован).
+**TTL (TD-025):** `confirmation_ttl_seconds` = 600 (10 min) в `LLMPolicyLimits`.  
+Истечение: при новом `handleUserMessage`, при `confirmPending`, в GUI — `QTimer` → `rejectPending`.
+Audit: `confirmation_expired`.
 
 ---
 

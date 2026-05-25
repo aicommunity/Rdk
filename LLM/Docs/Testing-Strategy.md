@@ -15,7 +15,7 @@
 
 **CI default (`RDK_USE_LLM=OFF`):** LLM tests **не собираются**.
 
-**CI `ci-llm-linux.sh`:** `cmake -DRDK_USE_LLM=ON` + ctest `Rdk/Tests/Unit/LLM` (25 targets, incl. `Test_LLM_HttpSse`).
+**CI `ci-llm-linux.sh`:** `cmake -DRDK_USE_LLM=ON` + ctest `Rdk/Tests/Unit/LLM` (26 targets, incl. `Test_LLM_ConfirmationTtl`).
 
 ---
 

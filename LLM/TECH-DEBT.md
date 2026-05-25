@@ -30,9 +30,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 ## Open items
 
-| ID | Item | Deferred in | Target phase | Priority | Status | Notes |
-|----|------|-------------|--------------|----------|--------|-------|
-| TD-025 | HITL confirmation TTL auto-expire | Conversation-State | backlog | P3 | open | Documented post-MVP |
+*(none)*
 
 ---
 
@@ -46,6 +44,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-022 | GUI plan preview dock wired | 2026-05-25 | `LlmGui::showPlanPreview` from assistant dock |
 | TD-023 | Plan checkpoints / resume mid-plan | 2026-05-25 | `plan_checkpoint`, `resumePlanExecution`, GUI Resume/Rollback |
 | TD-026 | `connect_components` + project load/save tools | 2026-05-25 | `RegisterCoreRdkTools`, `URdkDomainAccess` |
+| TD-025 | HITL confirmation TTL auto-expire | 2026-05-25 | `created_at_unix_sec`, persist `pending`, GUI timer |
 | TD-024 | GUI token streaming (`chatStream`) | 2026-05-25 | SSE in `ULLMHttpClient`, `LLMStreamHandlers`, Cancel button |
 | TD-017 | Doc search vector / semantic ranking | 2026-05-25 | Random-projection hybrid in `UDocSearchIndex` |
 | TD-018 | Plan saga auto-undo add_component | 2026-05-25 | `remove_component` on failed plan |

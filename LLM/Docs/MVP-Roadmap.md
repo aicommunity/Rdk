@@ -139,6 +139,7 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 - [x] `remove_component` write tool
 - [x] `connect_components`, `load_project`, `save_project` write tools
 - [x] GUI token streaming + Cancel (TD-024)
+- [x] HITL confirmation TTL + persist pending (TD-025)
 
 ---
 
@@ -146,7 +147,6 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 
 | Item | Notes |
 |------|-------|
-| Confirmation TTL | auto-expire pending HITL |
 | L7 HTTP regression runner | intent/rules smoke in `Tests/Fixtures/LLM/` |
 | Strict json_schema plan from provider | сейчас parse из markdown/json block |
 

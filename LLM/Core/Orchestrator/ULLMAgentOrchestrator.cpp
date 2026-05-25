@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include "../LlmModuleInit.h"
+#include "../Session/ULLMConfirmationExpiry.h"
 #include "../LlmPublicApi.h"
 #include "../Policy/ULLMPolicyEngine.h"
 #include "../Providers/UOllamaChatTemplate.h"
@@ -93,6 +94,15 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
 
     ConversationState& state = m_store.getOrCreate(req.session_id);
     state.session_id = req.session_id;
+
+    const int confirmation_ttl = defaultPolicyLimits().confirmation_ttl_seconds;
+    if(m_store.expirePendingIfStale(req.session_id, confirmation_ttl))
+    {
+        GetAuditLog().append("confirmation_expired",
+                             {{"reason", "ttl"},
+                              {"ttl_seconds", confirmation_ttl}},
+                             req.trace_id, req.session_id);
+    }
 
     LLMMessage user_msg;
     user_msg.role = LLMMessage::Role::User;
@@ -341,6 +351,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                     setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation, req.trace_id);
                     PendingConfirmation pending;
                     pending.confirmation_id = tr.confirmation_id;
+                    pending.created_at_unix_sec = confirmationNowUnixSec();
                     pending.request = ToolInvokeRequest{};
                     pending.request.trace_id = req.trace_id;
                     pending.request.tool_name = call_copy.name;
@@ -349,6 +360,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                     pending.request.confirmed = true;
                     m_store.setPending(req.session_id, pending);
                     final.pending_confirmation = true;
+                    final.pending_confirmation_id = tr.confirmation_id;
                     final.text = "Confirmation required for: " + call_copy.name;
                     m_store.persistToDisk(req.session_id);
                     return final;
@@ -388,6 +400,18 @@ LLMFinalResponse ULLMAgentOrchestrator::confirmPending(const std::string& sessio
 {
     LLMFinalResponse final;
     ConversationState& state = m_store.getOrCreate(session_id);
+    const int confirmation_ttl = defaultPolicyLimits().confirmation_ttl_seconds;
+    if(m_store.expirePendingIfStale(session_id, confirmation_ttl))
+    {
+        GetAuditLog().append("confirmation_expired",
+                             {{"reason", "ttl_on_confirm"},
+                              {"ttl_seconds", confirmation_ttl}},
+                             "", session_id);
+        final.ok = false;
+        final.error = "Confirmation expired (limit " + std::to_string(confirmation_ttl / 60)
+                      + " min). Please ask again.";
+        return final;
+    }
     if(!state.pending || state.pending->confirmation_id != confirmation_id)
     {
         final.ok = false;

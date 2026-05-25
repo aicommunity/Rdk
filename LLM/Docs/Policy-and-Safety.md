@@ -67,6 +67,8 @@ struct PolicyDecision {
 
 GUI: preview plan в `ULlmChangePreviewWidget`; одиночный write — **Apply** → `confirmPending()`.
 
+**Confirmation TTL (TD-025):** `confirmation_ttl_seconds` = 600 (10 min). Просроченный pending сбрасывается; audit `confirmation_expired`.
+
 ---
 
 ## 5. Лимиты (конфиг `llm.policy.json` или QSettings)

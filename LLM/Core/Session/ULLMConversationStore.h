@@ -13,6 +13,8 @@ namespace RDK::LLM {
 struct PendingConfirmation {
     std::string confirmation_id;
     ToolInvokeRequest request;
+    /// UTC unix seconds when confirmation was requested (TD-025).
+    int64_t created_at_unix_sec = 0;
 };
 
 struct ConversationState {
@@ -31,6 +33,8 @@ public:
     void appendMessage(const std::string& session_id, const LLMMessage& msg);
     void setPending(const std::string& session_id, PendingConfirmation p);
     void clearPending(const std::string& session_id);
+    /// Clears pending confirmation if older than ttl_seconds. Returns true if expired.
+    bool expirePendingIfStale(const std::string& session_id, int ttl_seconds);
     bool persistToDisk(const std::string& session_id);
     bool loadFromDisk(const std::string& session_id);
     void removeFromDisk(const std::string& session_id);

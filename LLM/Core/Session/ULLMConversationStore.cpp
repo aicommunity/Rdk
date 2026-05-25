@@ -1,6 +1,7 @@
 #include "ULLMConversationStore.h"
 
 #include "../Orchestrator/ULLMExecutionPlan.h"
+#include "ULLMConfirmationExpiry.h"
 
 #include <fstream>
 
@@ -9,6 +10,63 @@
 namespace fs = std::filesystem;
 
 namespace RDK::LLM {
+
+namespace {
+
+nlohmann::json sessionContextToJson(const LLMSessionContext& session)
+{
+    return {{"session_id", session.session_id},
+            {"user_name", session.user_name},
+            {"user_id", session.user_id},
+            {"project_loaded", session.project_loaded},
+            {"llm_write_enabled", session.llm_write_enabled},
+            {"allow_cloud_llm", session.allow_cloud_llm},
+            {"allow_save", session.allow_save},
+            {"active_channel_index", session.active_channel_index}};
+}
+
+LLMSessionContext sessionContextFromJson(const nlohmann::json& j)
+{
+    LLMSessionContext session;
+    session.session_id = j.value("session_id", "");
+    session.user_name = j.value("user_name", "");
+    session.user_id = j.value("user_id", 0);
+    session.project_loaded = j.value("project_loaded", false);
+    session.llm_write_enabled = j.value("llm_write_enabled", true);
+    session.allow_cloud_llm = j.value("allow_cloud_llm", false);
+    session.allow_save = j.value("allow_save", true);
+    session.active_channel_index = j.value("active_channel_index", 0);
+    return session;
+}
+
+nlohmann::json pendingConfirmationToJson(const PendingConfirmation& pending)
+{
+    nlohmann::json j;
+    j["confirmation_id"] = pending.confirmation_id;
+    j["created_at_unix_sec"] = pending.created_at_unix_sec;
+    j["trace_id"] = pending.request.trace_id;
+    j["tool_name"] = pending.request.tool_name;
+    j["arguments"] = pending.request.arguments;
+    j["session"] = sessionContextToJson(pending.request.session);
+    return j;
+}
+
+std::optional<PendingConfirmation> pendingConfirmationFromJson(const nlohmann::json& j)
+{
+    if(!j.is_object() || !j.contains("confirmation_id"))
+        return std::nullopt;
+    PendingConfirmation pending;
+    pending.confirmation_id = j.value("confirmation_id", "");
+    pending.created_at_unix_sec = j.value("created_at_unix_sec", int64_t{0});
+    pending.request.trace_id = j.value("trace_id", "");
+    pending.request.tool_name = j.value("tool_name", "");
+    pending.request.arguments = j.value("arguments", nlohmann::json::object());
+    if(j.contains("session"))
+        pending.request.session = sessionContextFromJson(j["session"]);
+    return pending;
+}
+
+} // namespace
 
 void ULLMConversationStore::setStorageDirectory(const std::string& path)
 {
@@ -122,6 +180,11 @@ bool ULLMConversationStore::loadFromDisk(const std::string& session_id)
         if(auto plan = executionPlanFromJson(j["pending_plan"]))
             state.pending_plan = std::move(*plan);
     }
+    if(j.contains("pending"))
+    {
+        if(auto pending = pendingConfirmationFromJson(j["pending"]))
+            state.pending = std::move(*pending);
+    }
     m_sessions[session_id] = std::move(state);
     return true;
 }
@@ -142,6 +205,8 @@ bool ULLMConversationStore::persistToDisk(const std::string& session_id)
         j["messages"].push_back(messageToJson(msg));
     if(it->second.pending_plan)
         j["pending_plan"] = executionPlanToJson(*it->second.pending_plan);
+    if(it->second.pending)
+        j["pending"] = pendingConfirmationToJson(*it->second.pending);
     const fs::path file = fs::path(m_storage_dir) / (session_id + ".json");
     std::ofstream out(file);
     if(!out)
@@ -182,6 +247,23 @@ void ULLMConversationStore::clearPending(const std::string& session_id)
 {
     m_sessions[session_id].pending.reset();
     persistToDisk(session_id);
+}
+
+bool ULLMConversationStore::expirePendingIfStale(const std::string& session_id, int ttl_seconds)
+{
+    auto it = m_sessions.find(session_id);
+    if(it == m_sessions.end())
+        loadFromDisk(session_id);
+    ConversationState& state = m_sessions[session_id];
+    if(!state.pending)
+        return false;
+    if(!isPendingConfirmationExpired(*state.pending, ttl_seconds))
+        return false;
+    state.pending.reset();
+    if(state.workflow_phase == LLMWorkflowPhase::AwaitingConfirmation)
+        state.workflow_phase = LLMWorkflowPhase::Idle;
+    persistToDisk(session_id);
+    return true;
 }
 
 } // namespace RDK::LLM

@@ -40,6 +40,7 @@ struct ULLMTraceContext {
 | `confirmation_requested` | pending_confirmation |
 | `confirmation_accepted` | user confirm |
 | `confirmation_rejected` | user reject |
+| `confirmation_expired` | TTL elapsed (TD-025) |
 | `orchestrator_round` | each agent loop round |
 | `error` | uncaught / provider fail |
 

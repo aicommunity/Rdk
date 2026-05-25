@@ -15,6 +15,8 @@ namespace RDK::LLM {
 struct LLMFinalResponse;
 }
 
+class QTimer;
+
 class ULlmAssistantDockWidget : public UVisualControllerWidget {
     Q_OBJECT
 public:
@@ -66,6 +68,7 @@ private:
     bool m_plan_paused = false;
     bool m_streaming_reply = false;
     bool m_stream_tokens_received = false;
+    QTimer* m_confirmation_timer = nullptr;
     LLMGuiContext m_last_ctx;
 };
 

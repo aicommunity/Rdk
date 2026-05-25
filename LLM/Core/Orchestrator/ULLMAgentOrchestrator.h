@@ -35,6 +35,7 @@ struct LLMFinalResponse {
     std::string text;
     std::string error;
     bool pending_confirmation = false;
+    std::string pending_confirmation_id;
     bool pending_plan_execution = false;
     std::string pending_plan_id;
     bool plan_paused = false;

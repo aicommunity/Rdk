@@ -3,6 +3,7 @@
 #include "LlmGuiBootstrap.h"
 
 #include <QFutureWatcher>
+#include <QTimer>
 #include <QtConcurrent/QtConcurrent>
 #include <QHBoxLayout>
 #include <QMetaObject>
@@ -11,6 +12,7 @@
 
 #include "../../../LLM/Core/LlmPublicApi.h"
 #include "../../../LLM/Core/Orchestrator/ULLMAgentOrchestrator.h"
+#include "../../../LLM/Core/Policy/ULLMPolicyLimits.h"
 #include "../../../LLM/Core/Settings/ULLMProviderAuth.h"
 #include "../UGEngineControlWidget.h"
 
@@ -144,10 +146,27 @@ void ULlmAssistantDockWidget::setPendingConfirmation(const QString& confirmation
     m_confirm->setVisible(true);
     m_reject->setVisible(true);
     appendAssistantText(summary);
+
+    if(!m_confirmation_timer)
+        m_confirmation_timer = new QTimer(this);
+    m_confirmation_timer->stop();
+    m_confirmation_timer->setSingleShot(true);
+    disconnect(m_confirmation_timer, nullptr, this, nullptr);
+    const int ttl_ms = RDK::LLM::defaultPolicyLimits().confirmation_ttl_seconds * 1000;
+    connect(m_confirmation_timer, &QTimer::timeout, this, [this]() {
+        if(m_pending_confirmation_id.isEmpty())
+            return;
+        RDK::LLM::LLMServices::instance().orchestrator().rejectPending("gui-session");
+        clearPendingConfirmation();
+        appendAssistantText(tr("Confirmation expired."));
+    });
+    m_confirmation_timer->start(ttl_ms);
 }
 
 void ULlmAssistantDockWidget::clearPendingConfirmation()
 {
+    if(m_confirmation_timer)
+        m_confirmation_timer->stop();
     m_pending_confirmation_id.clear();
     m_confirm->setVisible(false);
     m_reject->setVisible(false);
@@ -285,7 +304,10 @@ void ULlmAssistantDockWidget::onStreamFinished(const RDK::LLM::LLMFinalResponse&
     }
     if(resp.pending_confirmation)
     {
-        setPendingConfirmation("pending", QString::fromStdString(resp.text));
+        const QString cid = resp.pending_confirmation_id.empty()
+                                ? QStringLiteral("pending")
+                                : QString::fromStdString(resp.pending_confirmation_id);
+        setPendingConfirmation(cid, QString::fromStdString(resp.text));
         return;
     }
     if(resp.can_resume_plan)
