@@ -1,12 +1,14 @@
 #include "ULLMPolicyEngine.h"
 
+#include "ULLMUserRole.h"
+
 namespace RDK::LLM {
 
 PolicyDecision ULLMPolicyEngine::checkToolInvoke(const ToolInvokeRequest& req,
                                                   const LLMToolDefinition& tool,
                                                   const URdkDomainAccess& domain) const
 {
-    (void)req;
+    const LLMUserRole role = resolveUserRole(req.session.user_id);
     DomainSessionInfo info = domain.sessionInfo();
     const bool project_loaded = info.project_loaded || req.session.project_loaded;
     if(tool.kind == LLMToolKind::Write && !project_loaded)
@@ -17,10 +19,10 @@ PolicyDecision ULLMPolicyEngine::checkToolInvoke(const ToolInvokeRequest& req,
     {
         return {false, "WRITE_DISABLED", "LLM write operations disabled in settings"};
     }
-    if(tool.kind == LLMToolKind::Write && req.session.user_id < 0)
+    if(tool.kind == LLMToolKind::Write && role == LLMUserRole::Guest)
     {
         return {false, "RBAC_GUEST_DENIED",
-                "Write tools require a signed-in user (GetUserId() >= 0)"};
+                "Write tools require operator or admin (GetUserId() >= 0)"};
     }
     if(tool.requires_confirmation && !req.confirmed)
     {

@@ -73,6 +73,19 @@ bool ULLMConversationStore::loadFromDisk(const std::string& session_id)
     in >> j;
     ConversationState state;
     state.session_id = j.value("session_id", session_id);
+    const std::string phase = j.value("workflow_phase", "Idle");
+    if(phase == "Running")
+        state.workflow_phase = LLMWorkflowPhase::Running;
+    else if(phase == "AwaitingConfirmation")
+        state.workflow_phase = LLMWorkflowPhase::AwaitingConfirmation;
+    else if(phase == "Executing")
+        state.workflow_phase = LLMWorkflowPhase::Executing;
+    else if(phase == "Completed")
+        state.workflow_phase = LLMWorkflowPhase::Completed;
+    else if(phase == "Failed")
+        state.workflow_phase = LLMWorkflowPhase::Failed;
+    else
+        state.workflow_phase = LLMWorkflowPhase::Idle;
     if(j.contains("messages") && j["messages"].is_array())
     {
         for(const auto& item : j["messages"])
@@ -92,6 +105,7 @@ bool ULLMConversationStore::persistToDisk(const std::string& session_id)
     fs::create_directories(m_storage_dir);
     nlohmann::json j;
     j["session_id"] = it->second.session_id;
+    j["workflow_phase"] = workflowPhaseName(it->second.workflow_phase);
     j["messages"] = nlohmann::json::array();
     for(const LLMMessage& msg : it->second.messages)
         j["messages"].push_back(messageToJson(msg));

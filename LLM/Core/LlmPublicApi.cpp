@@ -31,6 +31,8 @@ void LLMServices::initialize(RDK::UApplication* app, ILLMProjectContextProvider*
     m_policy = std::make_unique<ULLMPolicyEngine>();
 
     RegisterCoreRdkTools(GetToolRegistry(), *m_domain, project_context);
+    if(project_context)
+        project_context->registerExtraTools(GetToolRegistry());
 
     m_gateway = std::make_unique<ULLMToolGateway>(GetToolRegistry(), *m_policy, *m_domain,
                                                   GetAuditLog(), *m_idempotency, *m_validator);
@@ -88,7 +90,8 @@ URdkDomainAccess& LLMServices::domain()
 
 ULLMSettingsStore& LLMServices::settings()
 {
-    return *m_settings;
+    static ULLMSettingsStore s_fallback;
+    return m_settings ? *m_settings : s_fallback;
 }
 
 const LLMProviderProfile& LLMServices::activeProviderProfile() const

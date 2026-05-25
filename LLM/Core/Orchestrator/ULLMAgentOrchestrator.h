@@ -9,6 +9,8 @@
 #include "../Tools/ULLMToolGateway.h"
 #include "../Tools/ULLMToolRegistry.h"
 #include "ULLMIntentParser.h"
+#include "ULLMWorkflowState.h"
+#include "../Policy/ULLMPolicyLimits.h"
 #include "../Session/ULLMConversationStore.h"
 
 namespace RDK::LLM {
@@ -47,7 +49,10 @@ private:
     ULLMConversationStore& m_store;
     ULLMIntentParser m_intent;
     std::atomic<bool> m_cancelled{false};
-    static constexpr int kMaxRounds = 8;
+    void setWorkflowPhase(ConversationState& state, LLMWorkflowPhase phase,
+                          const std::string& trace_id);
+
+    static constexpr int kMaxRounds = kDefaultMaxToolRounds;
 };
 
 } // namespace RDK::LLM

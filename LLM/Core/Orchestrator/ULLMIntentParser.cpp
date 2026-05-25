@@ -23,9 +23,12 @@ LLMIntentKind ULLMIntentParser::parse(const std::string& user_text) const
     if(containsAny(lower, {"добав", "создай", "удали", "измени", "сохран", "загруз", "add ", "create ",
                            "remove ", "delete ", "save ", "load "}))
         return LLMIntentKind::Mutate;
-    if(containsAny(lower, {"почему", "объясни", "explain", "why "}))
+    if(containsAny(lower, {"почему", "объясни", "explain", "why ", "как работает", "how does"}))
         return LLMIntentKind::Explain;
-    if(containsAny(lower, {"что", "какие", "покажи", "список", "опиши", "what", "list", "show", "describe"}))
+    if(containsAny(lower, {"arduino", "firmata", "firmware", "hardware", "датчик", "плата"}))
+        return LLMIntentKind::Query;
+    if(containsAny(lower, {"что", "какие", "покажи", "список", "опиши", "найди", "what", "list",
+                           "show", "describe", "search", "find "}))
         return LLMIntentKind::Query;
     return LLMIntentKind::Query;
 }

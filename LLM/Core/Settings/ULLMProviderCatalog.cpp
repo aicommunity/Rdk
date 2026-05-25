@@ -15,6 +15,24 @@ std::vector<LLMProviderProfile> ULLMProviderCatalog::builtInProfiles()
     ollama.prefer_local = true;
     profiles.push_back(ollama);
 
+    LLMProviderProfile ollama_native;
+    ollama_native.profile_id = "ollama-native";
+    ollama_native.kind = LLMProviderKind::OllamaNative;
+    ollama_native.base_url = "http://127.0.0.1:11434";
+    ollama_native.model = "qwen2.5:7b";
+    ollama_native.is_cloud = false;
+    ollama_native.prefer_local = true;
+    profiles.push_back(ollama_native);
+
+    LLMProviderProfile embedded;
+    embedded.profile_id = "embedded-offline";
+    embedded.kind = LLMProviderKind::EmbeddedLlama;
+    embedded.base_url = "local://embedded";
+    embedded.model = "gguf";
+    embedded.is_cloud = false;
+    embedded.prefer_local = true;
+    profiles.push_back(embedded);
+
     LLMProviderProfile deepseek;
     deepseek.profile_id = "deepseek";
     deepseek.kind = LLMProviderKind::OpenAICompat;

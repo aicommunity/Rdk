@@ -44,6 +44,18 @@ ULLMAgentOrchestrator::ULLMAgentOrchestrator(ILLMProvider& provider, ULLMToolReg
 {
 }
 
+void ULLMAgentOrchestrator::setWorkflowPhase(ConversationState& state, LLMWorkflowPhase phase,
+                                             const std::string& trace_id)
+{
+    if(!workflowTransitionAllowed(state.workflow_phase, phase))
+        return;
+    const std::string from = workflowPhaseName(state.workflow_phase);
+    state.workflow_phase = phase;
+    GetAuditLog().append("workflow_transition",
+                         {{"from", from}, {"to", workflowPhaseName(phase)}}, trace_id,
+                         state.session_id);
+}
+
 LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelope& req)
 {
     m_cancelled = false;
@@ -60,29 +72,34 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                          req.session_id);
 
     LLMSessionContext session = req.session;
-    session.llm_write_enabled = LLMServices::instance().settings().runtime().llm_write_enabled;
-    session.allow_cloud_llm = LLMServices::instance().settings().runtime().allow_cloud_providers;
-
-    ProviderAccessCheck access = LLMServices::instance().checkActiveProviderAccess(session);
-    if(!access.allowed)
+    if(LLMServices::instance().isInitialized())
     {
-        final.ok = false;
-        final.error = access.deny_message;
+        session.llm_write_enabled = LLMServices::instance().settings().runtime().llm_write_enabled;
+        session.allow_cloud_llm = LLMServices::instance().settings().runtime().allow_cloud_providers;
+
+        ProviderAccessCheck access = LLMServices::instance().checkActiveProviderAccess(session);
+        if(!access.allowed)
+        {
+            final.ok = false;
+            final.error = access.deny_message;
+            GetAuditLog().append(
+                "provider_access_denied",
+                {{"code", access.deny_code},
+                 {"profile", LLMServices::instance().activeProviderProfile().profile_id}},
+                req.trace_id, req.session_id);
+            return final;
+        }
+
         GetAuditLog().append(
-            "provider_access_denied",
-            {{"code", access.deny_code},
-             {"profile", LLMServices::instance().activeProviderProfile().profile_id}},
+            "provider_invoke",
+            {{"profile_id", LLMServices::instance().activeProviderProfile().profile_id},
+             {"api_key_present",
+              ULLMProviderAuth::hasApiKey(LLMServices::instance().activeProviderProfile(),
+                                          LLMServices::instance().settings().runtime())}},
             req.trace_id, req.session_id);
-        return final;
     }
 
-    GetAuditLog().append(
-        "provider_invoke",
-        {{"profile_id", LLMServices::instance().activeProviderProfile().profile_id},
-         {"api_key_present",
-          ULLMProviderAuth::hasApiKey(LLMServices::instance().activeProviderProfile(),
-                                      LLMServices::instance().settings().runtime())}},
-        req.trace_id, req.session_id);
+    setWorkflowPhase(state, LLMWorkflowPhase::Running, req.trace_id);
 
     const LLMIntentKind intent = m_intent.parse(req.user_text);
     ToolFilter filter;
@@ -90,7 +107,14 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
     filter.include_write = (intent == LLMIntentKind::Mutate) && session.llm_write_enabled;
 
     LLMCompletionOptions opts;
-    opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
+    const bool provider_tools = m_provider.capabilities().supports_tool_calling;
+    if(provider_tools)
+        opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
+    else
+        opts.tools_for_api.clear();
+
+    int tool_invocations = 0;
+    const int max_tool_invocations = defaultPolicyLimits().max_tool_invocations_per_message;
 
     for(int round = 0; round < kMaxRounds && !m_cancelled; ++round)
     {
@@ -99,6 +123,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
         {
             final.ok = false;
             final.error = completion.error_message;
+            setWorkflowPhase(state, LLMWorkflowPhase::Failed, req.trace_id);
             return final;
         }
 
@@ -109,9 +134,13 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             assistant.content = completion.text;
             m_store.appendMessage(req.session_id, assistant);
             final.text = completion.text;
+            setWorkflowPhase(state, LLMWorkflowPhase::Completed, req.trace_id);
+            setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
             m_store.persistToDisk(req.session_id);
             return final;
         }
+
+        setWorkflowPhase(state, LLMWorkflowPhase::Executing, req.trace_id);
 
         LLMMessage assistant_tools;
         assistant_tools.role = LLMMessage::Role::Assistant;
@@ -119,6 +148,15 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
         m_store.appendMessage(req.session_id, assistant_tools);
 
         auto invokeOne = [&](const LLMToolCall& call) -> std::pair<LLMToolCall, ToolGatewayResult> {
+            if(tool_invocations >= max_tool_invocations)
+            {
+                ToolGatewayResult limited;
+                limited.ok = false;
+                limited.error_code = "TOOL_LIMIT";
+                limited.message = "Maximum tool invocations per message reached";
+                return {call, limited};
+            }
+            ++tool_invocations;
             ToolInvokeRequest invoke;
             invoke.trace_id = req.trace_id;
             invoke.tool_name = call.name;
@@ -167,6 +205,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 const auto [call_copy, tr] = invokeOne(call);
                 if(tr.pending_confirmation)
                 {
+                    setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation, req.trace_id);
                     PendingConfirmation pending;
                     pending.confirmation_id = tr.confirmation_id;
                     pending.request = ToolInvokeRequest{};
@@ -201,9 +240,11 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             }
         }
 
-        opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
+        if(provider_tools)
+            opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
     }
 
+    setWorkflowPhase(state, LLMWorkflowPhase::Failed, req.trace_id);
     final.text = "Stopped: maximum tool rounds reached.";
     m_store.persistToDisk(req.session_id);
     return final;

@@ -26,6 +26,7 @@ public:
     void initialize(RDK::UApplication* app, ILLMProjectContextProvider* project_context,
                     ILLMProviderSettingsSource* settings_source = nullptr);
     void applyActiveProvider();
+    bool isInitialized() const { return m_settings != nullptr; }
     ProviderAccessCheck checkActiveProviderAccess(const LLMSessionContext& session) const;
 
     ULLMAgentOrchestrator& orchestrator();

@@ -5,6 +5,7 @@
 #include <optional>
 
 #include "../LlmTypes.h"
+#include "../Orchestrator/ULLMWorkflowState.h"
 
 namespace RDK::LLM {
 
@@ -17,6 +18,7 @@ struct ConversationState {
     std::string session_id;
     std::vector<LLMMessage> messages;
     std::optional<PendingConfirmation> pending;
+    LLMWorkflowPhase workflow_phase = LLMWorkflowPhase::Idle;
 };
 
 class ULLMConversationStore {

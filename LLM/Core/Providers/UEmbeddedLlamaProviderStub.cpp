@@ -23,9 +23,11 @@ LLMCompletionResult UEmbeddedLlamaProviderStub::chat(const std::vector<LLMMessag
     LLMCompletionResult r;
     r.ok = false;
 #ifndef RDK_LLM_EMBEDDED
-    r.error_message = "Embedded llama provider not built (enable RDK_LLM_BUILD_EMBEDDED)";
+    r.error_message =
+        "Embedded offline model unavailable. Enable RDK_LLM_BUILD_EMBEDDED or use ollama-local.";
 #else
-    r.error_message = "Embedded llama runtime not implemented yet";
+    r.error_message =
+        "Embedded GGUF runtime not linked yet. Set model path in profile when implemented.";
 #endif
     return r;
 }

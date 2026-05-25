@@ -3,6 +3,7 @@
 #include "UOpenAICompatProvider.h"
 #include "ULLMMockProvider.h"
 #include "UEmbeddedLlamaProviderStub.h"
+#include "UOllamaNativeProvider.h"
 
 namespace RDK::LLM {
 
@@ -14,9 +15,10 @@ std::unique_ptr<ILLMProvider> ULLMProviderFactory::create(const LLMProviderProfi
         return std::make_unique<ULLMMockProvider>();
     case LLMProviderKind::EmbeddedLlama:
         return std::make_unique<UEmbeddedLlamaProviderStub>();
+    case LLMProviderKind::OllamaNative:
+        return std::make_unique<UOllamaNativeProvider>(profile);
     case LLMProviderKind::OllamaOpenAICompat:
     case LLMProviderKind::OpenAICompat:
-    case LLMProviderKind::OllamaNative:
     case LLMProviderKind::Custom:
     default:
         return std::make_unique<UOpenAICompatProvider>(profile);
