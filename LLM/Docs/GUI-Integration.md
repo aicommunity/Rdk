@@ -90,8 +90,8 @@ void RegisterLlmUi(UGEngineControlWidget* host,
 
 Действия:
 1. `host->registerCustomWidget` — dock «AI Assistant»
-2. Menu: View → AI Assistant
-3. Shortcut: `Ctrl+Shift+A` (настраиваемо через QSettings)
+2. Menu: верхний уровень **AI Assistant** (перед **Window**): AI Assistant, AI Change Preview, separator, AI Assistant Settings
+3. Shortcut: `Ctrl+Shift+A` (dock), `Ctrl+Shift+L` (settings)
 4. Создать `ULlmAssistantDockWidget`, передать `bridge`, `ULLMAgentOrchestrator` facade
 
 ---
@@ -101,7 +101,8 @@ void RegisterLlmUi(UGEngineControlWidget* host,
 | UI элемент | Поведение |
 |------------|-----------|
 | Chat history | `QTextEdit` (HTML escaped) |
-| Input | `QPlainTextEdit`, Send |
+| Input | `QPlainTextEdit`, Send; отправка по **Ctrl+Enter** (default) или **Enter** (настройка); подпись Send: `Send (Ctrl+Enter)` / `Send (Enter)` |
+| Request status | `QLabel` + indeterminate `QProgressBar` при ожидании ответа («Waiting for model response…») |
 | Provider combo | Профили из `ULLMSettingsStore` + Settings |
 | Status | Local / Cloud / key hint |
 | Ответ LLM | SSE token stream (`LLMStreamHandlers`) для OpenAI-compat / Ollama; embedded — batch |
@@ -112,6 +113,10 @@ void RegisterLlmUi(UGEngineControlWidget* host,
 | Apply / Reject | `confirmPending()` / `rejectPending()` |
 
 **Потоки:** orchestrator в `QThread` worker или `QtConcurrent::run` + signals `finished` — **запрещено** блокировать GUI на curl/LLM.
+
+**Presentation sink:** после успешных configuration tools `ULlmQtPresentationSink` (main thread) вызывает `UGEngineControlWidget::refreshLlmPresentationShell()`, `ULlmGuiContextBridge::onProjectLoaded` / `onProjectClosed`, и recent configs. Headless: sink не регистрируется.
+
+**Таймаут:** `NMSDK_LLM_PRESENTATION_TIMEOUT_MS` (default 30000) — worker ждёт `BlockingQueuedConnection` не дольше этого значения; при таймауте UI refresh пропускается (без падения tool).
 
 ---
 
@@ -131,6 +136,8 @@ Write HITL для одиночных tools — кнопки **Apply/Reject** в 
 |--------------|-----|---------|
 | `LLM/Enabled` | `NMSDK_ENABLE_LLM` | `false` если не собрано; если собрано `true` |
 | `LLM/ShowDockOnStartup` | — | `false` |
+| `LLM/preferred_response_language` | — | `""` = Auto (system → en/ru/de/fr/zh → en) |
+| `LLM/send_shortcut` | — | `ctrl_enter` (default) или `enter` |
 
 Если бинарник **без** `RDK_USE_LLM` — пункты меню отсутствуют на этапе компиляции.
 

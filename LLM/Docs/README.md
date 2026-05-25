@@ -34,6 +34,7 @@
 | Следующая фаза: write-tools | [Write-Tools-Backlog.md](Write-Tools-Backlog.md) |
 | CMake, vcpkg, CI | [Build.md](Build.md) |
 | UApplication, UNet, фасад | [Domain-Layer.md](Domain-Layer.md) |
+| Lifecycle конфигурации (create/load/save) | [Application-Commands.md](Application-Commands.md) |
 | Bin, ClDesc, Libraries | [Project-Context-NMSDK.md](Project-Context-NMSDK.md) |
 | Qt, UGEngineControlWidget | [GUI-Integration.md](GUI-Integration.md) |
 | JSON Schema tools | [Tools-Contracts.md](Tools-Contracts.md) |

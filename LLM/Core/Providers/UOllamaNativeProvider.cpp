@@ -79,7 +79,9 @@ LLMCompletionResult UOllamaNativeProvider::chat(const std::vector<LLMMessage>& m
                                                 const LLMCompletionOptions& opts)
 {
     LLMCompletionResult result;
-    const std::vector<LLMMessage> prepared = prepareMessagesForOllama(m_profile, messages);
+    const std::string lang = opts.response_language.empty() ? "en" : opts.response_language;
+    const std::vector<LLMMessage> prepared =
+        prepareMessagesForOllama(m_profile, messages, lang);
 
     nlohmann::json body;
     body["model"] = m_profile.model;
@@ -90,7 +92,10 @@ LLMCompletionResult UOllamaNativeProvider::chat(const std::vector<LLMMessage>& m
     if(!opts.tools_for_api.empty())
     {
         body["tools"] = opts.tools_for_api;
-        body["tool_choice"] = "auto";
+        if(opts.tool_choice)
+            body["tool_choice"] = *opts.tool_choice;
+        else
+            body["tool_choice"] = "auto";
     }
 
     const std::string url = ollamaHost() + "/api/chat";

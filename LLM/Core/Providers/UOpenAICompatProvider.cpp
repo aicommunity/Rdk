@@ -102,9 +102,10 @@ LLMProviderCapabilities UOpenAICompatProvider::capabilities() const
 nlohmann::json UOpenAICompatProvider::buildRequestBody(const std::vector<LLMMessage>& messages,
                                                        const LLMCompletionOptions& opts) const
 {
-    std::vector<LLMMessage> prepared = messages;
+    const std::string lang = opts.response_language.empty() ? "en" : opts.response_language;
+    std::vector<LLMMessage> prepared = ensureRdkSystemPrompt(messages, lang);
     if(isOllamaProvider(m_profile))
-        prepared = prepareMessagesForOllama(m_profile, std::move(prepared));
+        prepared = prepareMessagesForOllama(m_profile, std::move(prepared), lang);
 
     nlohmann::json body;
     body["model"] = m_profile.model;
@@ -114,7 +115,10 @@ nlohmann::json UOpenAICompatProvider::buildRequestBody(const std::vector<LLMMess
     if(!opts.tools_for_api.empty())
     {
         body["tools"] = opts.tools_for_api;
-        body["tool_choice"] = "auto";
+        if(opts.tool_choice)
+            body["tool_choice"] = *opts.tool_choice;
+        else
+            body["tool_choice"] = "auto";
     }
     if(opts.response_format)
         body["response_format"] = *opts.response_format;

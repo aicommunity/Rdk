@@ -39,10 +39,10 @@ struct PolicyDecision {
 
 | ID | Условие | Действие |
 |----|---------|----------|
-| P01 | `!session.project_loaded` | Deny все Write |
+| P01 | Write && `tool.requires_project_loaded` && `!project_loaded` | Deny `PROJECT_NOT_LOADED` |
 | P02 | `tool.kind == Write` && `!session.llm_write_enabled` (QSettings) | Deny |
-| P03 | `tool.name == save_project` && `!session.allow_save` | Deny |
-| P04 | `load_project` path outside allowed roots | Deny |
+| P03 | save tools && `!session.allow_save` | Deny `SAVE_DISABLED` |
+| P04 | path tools outside `ULLMPathPolicy` roots | Deny `PATH_NOT_ALLOWED` |
 | P05 | `tool_calls_in_turn > max_tool_calls_per_turn` (default 10) | Deny further |
 | P06 | `wall_clock_elapsed > max_wall_clock_ms` (default 120000) | Abort turn |
 | P07 | `add_component` class_name not in storage | Deny |

@@ -7,7 +7,9 @@ LLM — **планировщик и интерпретатор намерени�
 ```
 Пользователь → UI → Orchestrator → ILLMProvider (модель)
                       ↓
-              Tool Gateway → Policy → URdkDomainAccess (UApplication…UNet)
+              Tool Gateway → Policy → URdkApplicationCommands → UApplication
+                      ↓                    ↘ URdkDomainAccess (UNet write/read)
+              ILLMPresentationSink (optional GUI refresh)
                       ↓
               ILLMProjectContextProvider (NMSDK: Bin, ClDesc, Docs)
 ```
@@ -35,7 +37,9 @@ flowchart TB
     subgraph core [Rdk_LLM_Core]
         Orch[ULLMAgentOrchestrator]
         GW[ULLMToolGateway]
+        Cmd[URdkApplicationCommands]
         Dom[URdkDomainAccess]
+        Sink[ILLMPresentationSink]
     end
     subgraph rdk [Rdk_UApplication_Layer]
         App[UApplication]
@@ -47,7 +51,11 @@ flowchart TB
     Provider --> Orch
     LibLlm --> GW
     Host --> Bridge --> Dock --> Orch
-    Orch --> GW --> Dom
+    Orch --> GW --> Cmd
+    GW --> Dom
+    Cmd --> App
+    Cmd --> Sink
+    Sink --> Host
     Dom --> App --> Eng
     Eng --> Env
     Eng --> Stor
@@ -71,8 +79,10 @@ flowchart TB
 | 3 | Orchestrator | `ULLMAgentOrchestrator` | `Rdk/LLM/Core/Orchestrator/` |
 | 4 | Tool Gateway | `ULLMToolGateway` | `Rdk/LLM/Core/Tools/` |
 | 5 | Policy | `ULLMPolicyEngine` | `Rdk/LLM/Core/Policy/` |
-| 6 | Domain | `URdkDomainAccess` | `Rdk/LLM/Core/Domain/` |
-| 6b | Project context | `ILLMProjectContextProvider` | `Rdk/LLM/Core/Context/` + NMSDK impl |
+| 6 | Application commands | `URdkApplicationCommands` | `Rdk/LLM/Core/Domain/` |
+| 6a | Domain (net/model) | `URdkDomainAccess` | `Rdk/LLM/Core/Domain/` |
+| 6b | Presentation (optional) | `ILLMPresentationSink` | `Rdk/LLM/Core/Gui/` + `Rdk/GUI/Qt/Llm/` |
+| 6c | Project context | `ILLMProjectContextProvider` | `Rdk/LLM/Core/Context/` + NMSDK impl |
 | 7 | Observability | `ULLMAuditLog` | `Rdk/LLM/Core/Observability/` |
 | — | Providers | `ILLMProvider` | `Rdk/LLM/Core/Providers/` |
 

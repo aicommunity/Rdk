@@ -32,7 +32,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Target | Priority | Status | Notes |
 |----|------|--------|----------|--------|-------|
-| TD-030 | Write-tools E2E hardening | Write-Tools-Backlog | P1 | open | Next product phase |
+| TD-030 | Write-tools E2E hardening (manual NeuroModeler + real Configs on disk) | Write-Tools-Backlog, Application-Commands.md | P1 | open | Unit/integration tests + application layer done; manual GUI E2E still open |
 
 ---
 

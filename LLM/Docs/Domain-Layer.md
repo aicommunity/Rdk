@@ -137,8 +137,9 @@ public:
 | `set_property` | `setProperty` |
 | `connect_components` | `connectComponents` → `MModel_CreateLinkByName` |
 | `disconnect_components` | internal rollback → `Model_BreakLinkByName` |
-| `load_project` | `loadProject` → `OpenProject` |
-| `save_project` | `saveProject` → `SaveProject` / `SaveProjectAs` |
+| `load_project` / `load_configuration` | `URdkApplicationCommands::loadConfiguration` → `OpenProject` |
+| `save_project` / `save_configuration` | `URdkApplicationCommands::save*` → `SaveProject` / `SaveProjectAs` |
+| `create_configuration` / `close_configuration` | `URdkApplicationCommands` lifecycle |
 
 ---
 

@@ -10,8 +10,12 @@ MVP/post-MVP план закрыт. Дальше: **довести write-tools �
 | `set_property` | есть | Whitelist «безопасных» свойств без HITL (policy) |
 | `remove_component` | есть | Rollback в планах, orphan links |
 | `connect_components` | есть | Валидация портов, undo в GUI |
-| `load_project` | есть | Path policy, sandbox под `Bin/` |
-| `save_project` | есть | `allow_save`, перезапись с confirm |
+| `load_project` / `load_configuration` | есть | Path policy P04, GUI refresh via presentation sink |
+| `save_project` / `save_configuration` | есть | `allow_save` P03, presentation sink |
+| `create_configuration` / `close_configuration` | есть | Application command layer; E2E hardening (TD-030) |
+| `copy_configuration` / `rename_configuration` | есть | HITL + path policy |
+| `validate_configuration` | есть | On-disk `ValidateProject` (≠ `validate_project` dry-run) |
+| Channel calc tools | есть | start/pause/reset/step |
 | `disconnect_components` | internal | Экспонировать в API LLM или оставить только в plan rollback |
 
 ## Приоритет P2 (интеграция)

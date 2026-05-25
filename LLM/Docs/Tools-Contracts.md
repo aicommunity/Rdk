@@ -263,15 +263,24 @@
 
 ---
 
-### `load_project` / `save_project`
+### Configuration lifecycle (`URdkApplicationCommands`)
 
-**confirmation:** true | **policy:** dangerous filesystem
+See [Application-Commands.md](Application-Commands.md) for full schemas.
 
-**load_project** — `required: ["project_path"]` → `UApplication::OpenProject`.
+| Tool | Aliases | Notes |
+|------|---------|--------|
+| `create_configuration` | — | `requires_project_loaded: false` |
+| `load_configuration` | `load_project` | P04 path whitelist |
+| `save_configuration` | — | P03 `allow_save` |
+| `save_configuration_as` | `save_project` (if path set) | |
+| `close_configuration` | — | |
+| `validate_configuration` | — | Read; on-disk validate |
+| `update_configuration` | — | |
+| `copy_configuration` / `rename_configuration` | — | |
+| `reload_configuration_parameters` | — | |
+| `*_channel_calculation` | — | `channel_index` default -1 |
 
-**save_project** — optional `project_path` (empty = `SaveProject()`, else `SaveProjectAs`).
-
-Policy (post-MVP hardening): path whitelist under project/config roots, deny `../` traversal.
+After success, optional `ILLMPresentationSink` refreshes GUI (NeuroModeler).
 
 ---
 
