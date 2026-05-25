@@ -1491,6 +1491,57 @@ void UGEngineControlWidget::showCustomWidgetById(const QString& id)
     createOrActivateCustomWidget(id);
 }
 
+static QMenu* menuForPath(QMenuBar* menuBar, const QString& menuPath)
+{
+    if(!menuBar || menuPath.isEmpty())
+        return nullptr;
+    QStringList parts = menuPath.split(QLatin1Char('/'), Qt::SkipEmptyParts);
+    if(parts.isEmpty())
+        return nullptr;
+
+    QMenu* currentMenu = nullptr;
+    const QString first = parts.first();
+    for(QAction* action : menuBar->actions())
+    {
+        QMenu* menu = action->menu();
+        if(menu && menu->title() == first)
+        {
+            currentMenu = menu;
+            break;
+        }
+    }
+    if(!currentMenu)
+        currentMenu = menuBar->addMenu(first);
+
+    for(int i = 1; i < parts.size(); ++i)
+    {
+        const QString& segment = parts[i];
+        QMenu* nextMenu = nullptr;
+        for(QAction* action : currentMenu->actions())
+        {
+            QMenu* submenu = action->menu();
+            if(submenu && submenu->title() == segment)
+            {
+                nextMenu = submenu;
+                break;
+            }
+        }
+        if(!nextMenu)
+            nextMenu = currentMenu->addMenu(segment);
+        currentMenu = nextMenu;
+    }
+    return currentMenu;
+}
+
+void UGEngineControlWidget::appendMenuAction(const QString& menuPath, QAction* action)
+{
+    if(!action || !ui || !ui->menuBar)
+        return;
+    QMenu* menu = menuForPath(ui->menuBar, menuPath);
+    if(menu)
+        menu->addAction(action);
+}
+
 void UGEngineControlWidget::registerCustomWidget(const UCustomWidgetDescriptor &descriptor)
 {
     if (descriptor.id.isEmpty() || !descriptor.factory)
@@ -1502,49 +1553,9 @@ void UGEngineControlWidget::registerCustomWidget(const UCustomWidgetDescriptor &
     // Создаём QAction в меню по menuPath
     if (ui && ui->menuBar && !descriptor.menuPath.isEmpty())
     {
-        QStringList parts = descriptor.menuPath.split(QLatin1Char('/'), Qt::SkipEmptyParts);
-        if (!parts.isEmpty())
+        QMenu* currentMenu = menuForPath(ui->menuBar, descriptor.menuPath);
+        if(currentMenu)
         {
-            QMenuBar *menuBar = ui->menuBar;
-            QMenu *currentMenu = nullptr;
-
-            // Находим/создаём первую ступень меню
-            const QString first = parts.first();
-            for (QAction *action : menuBar->actions())
-            {
-                QMenu *menu = action->menu();
-                if (menu && menu->title() == first)
-                {
-                    currentMenu = menu;
-                    break;
-                }
-            }
-            if (!currentMenu)
-            {
-                currentMenu = menuBar->addMenu(first);
-            }
-
-            // Вложенные подменю (если есть)
-            for (int i = 1; i < parts.size(); ++i)
-            {
-                const QString &segment = parts[i];
-                QMenu *nextMenu = nullptr;
-                for (QAction *action : currentMenu->actions())
-                {
-                    QMenu *submenu = action->menu();
-                    if (submenu && submenu->title() == segment)
-                    {
-                        nextMenu = submenu;
-                        break;
-                    }
-                }
-                if (!nextMenu)
-                {
-                    nextMenu = currentMenu->addMenu(segment);
-                }
-                currentMenu = nextMenu;
-            }
-
             QAction *action = currentMenu->addAction(descriptor.title);
             if (!descriptor.shortcut.isEmpty())
             {

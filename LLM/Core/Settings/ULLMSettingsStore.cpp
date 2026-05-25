@@ -48,6 +48,34 @@ void ULLMSettingsStore::setApiKeyForProfile(const std::string& profile_id,
     m_runtime.api_keys_by_profile_id[profile_id] = api_key;
 }
 
+void ULLMSettingsStore::setEndpointOverride(const std::string& profile_id,
+                                            const std::string& base_url,
+                                            const std::string& model)
+{
+    m_runtime.endpoint_overrides_by_profile_id[profile_id] = {base_url, model};
+}
+
+void ULLMSettingsStore::clearEndpointOverride(const std::string& profile_id)
+{
+    m_runtime.endpoint_overrides_by_profile_id.erase(profile_id);
+}
+
+LLMProfileEndpointOverride ULLMSettingsStore::endpointOverride(
+    const std::string& profile_id) const
+{
+    if(auto it = m_runtime.endpoint_overrides_by_profile_id.find(profile_id);
+       it != m_runtime.endpoint_overrides_by_profile_id.end())
+        return it->second;
+    return {};
+}
+
+LLMProviderProfile ULLMSettingsStore::presetProfile(const std::string& profile_id) const
+{
+    if(const LLMProviderProfile* preset = ULLMProviderCatalog::findById(profile_id))
+        return *preset;
+    return ULLMProviderCatalog::builtInProfiles().front();
+}
+
 void ULLMSettingsStore::setAllowCloudProviders(bool allow)
 {
     m_runtime.allow_cloud_providers = allow;

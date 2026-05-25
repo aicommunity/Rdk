@@ -21,6 +21,7 @@ private slots:
     void onProfileChanged(int index);
     void onSaveClicked();
     void onTestConnectionClicked();
+    void onResetEndpointsClicked();
 
 private:
     void loadFromStore();
@@ -29,6 +30,8 @@ private:
     RDK::UApplication* m_app = nullptr;
     QComboBox* m_profiles = nullptr;
     QLineEdit* m_api_key = nullptr;
+    QLineEdit* m_base_url = nullptr;
+    QLineEdit* m_model = nullptr;
     QCheckBox* m_allow_cloud = nullptr;
     QCheckBox* m_allow_write = nullptr;
     QLabel* m_status = nullptr;

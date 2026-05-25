@@ -9,7 +9,7 @@
 #include "../../../LLM/Core/LlmPublicApi.h"
 #include "../../../LLM/Core/Orchestrator/ULLMAgentOrchestrator.h"
 #include "../../../LLM/Core/Settings/ULLMProviderAuth.h"
-#include "ULlmProviderSettingsWidget.h"
+#include "LlmGuiBootstrap.h"
 
 ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplication* app,
                                                ULlmGuiContextBridge* bridge)
@@ -81,17 +81,25 @@ void ULlmAssistantDockWidget::refreshProviderBar()
 
     const auto active = store.activeProfile();
     const bool has_key = RDK::LLM::ULLMProviderAuth::hasApiKey(active, store.runtime());
+    const auto preset = store.presetProfile(active.profile_id);
+    const bool custom_endpoint =
+        active.base_url != preset.base_url || active.model != preset.model;
+    QString status;
     if(active.is_cloud)
-        m_provider_status->setText(has_key ? tr("Cloud · key set") : tr("Cloud · key missing"));
+        status = has_key ? tr("Cloud · key set") : tr("Cloud · key missing");
     else
-        m_provider_status->setText(tr("Local"));
+        status = tr("Local");
+    if(custom_endpoint)
+        status += tr(" · custom endpoint");
+    status += tr("\n%1 · %2").arg(QString::fromStdString(active.base_url))
+                   .arg(QString::fromStdString(active.model));
+    m_provider_status->setText(status);
 }
 
 void ULlmAssistantDockWidget::onOpenSettings()
 {
-    ULlmProviderSettingsWidget dlg(this, application);
-    if(dlg.exec() == QDialog::Accepted)
-        refreshProviderBar();
+    LlmGui::OpenProviderSettingsDialog(this, application);
+    refreshProviderBar();
 }
 
 void ULlmAssistantDockWidget::onProviderChanged(int index)

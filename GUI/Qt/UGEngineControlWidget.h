@@ -1,6 +1,7 @@
 #ifndef UGENGINECONTROLWIDGET_H
 #define UGENGINECONTROLWIDGET_H
 
+#include <QAction>
 #include <QMainWindow>
 #include <QSettings>
 #include <QMdiSubWindow>
@@ -136,6 +137,7 @@ public:
     // Регистрация пользовательского виджета (дополнительного окна/панели),
     // который затем создаётся по требованию из меню/toolbar.
     void registerCustomWidget(const UCustomWidgetDescriptor &descriptor);
+    void appendMenuAction(const QString& menuPath, QAction* action);
     void showCustomWidgetById(const QString& id);
 
 #ifndef RDK_DISABLE_EXT_GUI

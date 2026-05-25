@@ -18,6 +18,11 @@ public:
     LLMProviderProfile activeProfile() const;
     void setActiveProfileId(const std::string& profile_id);
     void setApiKeyForProfile(const std::string& profile_id, const std::string& api_key);
+    void setEndpointOverride(const std::string& profile_id, const std::string& base_url,
+                             const std::string& model);
+    void clearEndpointOverride(const std::string& profile_id);
+    LLMProfileEndpointOverride endpointOverride(const std::string& profile_id) const;
+    LLMProviderProfile presetProfile(const std::string& profile_id) const;
     void setAllowCloudProviders(bool allow);
     void setLlmWriteEnabled(bool allow);
 

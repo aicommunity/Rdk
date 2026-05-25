@@ -47,11 +47,28 @@ const LLMProviderProfile* ULLMProviderCatalog::findById(const std::string& profi
     return nullptr;
 }
 
+LLMProviderProfile ULLMProviderCatalog::applyRuntimeOverrides(
+    LLMProviderProfile profile, const LLMRuntimeProviderSettings& runtime)
+{
+    if(auto it = runtime.endpoint_overrides_by_profile_id.find(profile.profile_id);
+       it != runtime.endpoint_overrides_by_profile_id.end())
+    {
+        if(!it->second.base_url.empty())
+            profile.base_url = it->second.base_url;
+        if(!it->second.model.empty())
+            profile.model = it->second.model;
+    }
+    return profile;
+}
+
 LLMProviderProfile ULLMProviderCatalog::resolveActive(const LLMRuntimeProviderSettings& runtime)
 {
+    LLMProviderProfile profile;
     if(const LLMProviderProfile* preset = findById(runtime.active_profile_id))
-        return *preset;
-    return builtInProfiles().front();
+        profile = *preset;
+    else
+        profile = builtInProfiles().front();
+    return applyRuntimeOverrides(profile, runtime);
 }
 
 } // namespace RDK::LLM

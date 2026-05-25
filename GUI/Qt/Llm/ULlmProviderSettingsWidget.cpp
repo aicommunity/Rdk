@@ -1,5 +1,6 @@
 #include "ULlmProviderSettingsWidget.h"
 
+#include <QFormLayout>
 #include <QLabel>
 #include <QVBoxLayout>
 
@@ -13,13 +14,25 @@ ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UAp
     , m_app(app)
 {
     setWindowTitle(tr("AI Assistant Settings"));
-    setMinimumWidth(420);
+    setMinimumWidth(480);
 
     auto* layout = new QVBoxLayout(this);
 
     layout->addWidget(new QLabel(tr("Provider profile:"), this));
     m_profiles = new QComboBox(this);
     layout->addWidget(m_profiles);
+
+    auto* endpoint_form = new QFormLayout();
+    m_base_url = new QLineEdit(this);
+    m_base_url->setPlaceholderText(tr("e.g. http://127.0.0.1:11434/v1"));
+    m_model = new QLineEdit(this);
+    m_model->setPlaceholderText(tr("e.g. qwen2.5:7b"));
+    endpoint_form->addRow(tr("Base URL:"), m_base_url);
+    endpoint_form->addRow(tr("Model:"), m_model);
+    layout->addLayout(endpoint_form);
+
+    auto* reset_btn = new QPushButton(tr("Reset URL and model to defaults"), this);
+    layout->addWidget(reset_btn);
 
     layout->addWidget(new QLabel(tr("API key (stored locally, not in project files):"), this));
     m_api_key = new QLineEdit(this);
@@ -43,6 +56,7 @@ ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UAp
 
     connect(m_profiles, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
             &ULlmProviderSettingsWidget::onProfileChanged);
+    connect(reset_btn, &QPushButton::clicked, this, &ULlmProviderSettingsWidget::onResetEndpointsClicked);
     connect(save_btn, &QPushButton::clicked, this, &ULlmProviderSettingsWidget::onSaveClicked);
     connect(test_btn, &QPushButton::clicked, this,
             &ULlmProviderSettingsWidget::onTestConnectionClicked);
@@ -80,32 +94,55 @@ void ULlmProviderSettingsWidget::onProfileChanged(int index)
         return;
     const std::string profile_id = m_profiles->currentData().toString().toStdString();
     auto& store = RDK::LLM::LLMServices::instance().settings();
+    const auto preset = store.presetProfile(profile_id);
     const auto& runtime = store.runtime();
-    auto it = runtime.api_keys_by_profile_id.find(profile_id);
-    if(it != runtime.api_keys_by_profile_id.end())
-        m_api_key->setText(QString::fromStdString(it->second));
+
+    auto api_it = runtime.api_keys_by_profile_id.find(profile_id);
+    if(api_it != runtime.api_keys_by_profile_id.end())
+        m_api_key->setText(QString::fromStdString(api_it->second));
     else
         m_api_key->clear();
 
-    if(const RDK::LLM::LLMProviderProfile* preset =
-           RDK::LLM::ULLMProviderCatalog::findById(profile_id))
-    {
-        if(!preset->api_key_env.empty())
-        {
-            m_status->setText(tr("Env fallback: %1")
-                                  .arg(QString::fromStdString(preset->api_key_env)));
-        }
-        else
-            m_status->clear();
-    }
+    const RDK::LLM::LLMProfileEndpointOverride override = store.endpointOverride(profile_id);
+    m_base_url->setText(override.base_url.empty() ? QString::fromStdString(preset.base_url)
+                                                  : QString::fromStdString(override.base_url));
+    m_model->setText(override.model.empty() ? QString::fromStdString(preset.model)
+                                            : QString::fromStdString(override.model));
+
+    QString hint;
+    if(!preset.api_key_env.empty())
+        hint = tr("Env fallback: %1").arg(QString::fromStdString(preset.api_key_env));
+    hint += tr("\nDefaults: %1 · %2")
+                .arg(QString::fromStdString(preset.base_url))
+                .arg(QString::fromStdString(preset.model));
+    m_status->setText(hint.trimmed());
+}
+
+void ULlmProviderSettingsWidget::onResetEndpointsClicked()
+{
+    const std::string profile_id = m_profiles->currentData().toString().toStdString();
+    const auto preset =
+        RDK::LLM::LLMServices::instance().settings().presetProfile(profile_id);
+    m_base_url->setText(QString::fromStdString(preset.base_url));
+    m_model->setText(QString::fromStdString(preset.model));
 }
 
 void ULlmProviderSettingsWidget::saveToStore()
 {
     auto& store = RDK::LLM::LLMServices::instance().settings();
     const std::string profile_id = m_profiles->currentData().toString().toStdString();
+    const auto preset = store.presetProfile(profile_id);
+
     store.setActiveProfileId(profile_id);
     store.setApiKeyForProfile(profile_id, m_api_key->text().toStdString());
+
+    const std::string base_url = m_base_url->text().trimmed().toStdString();
+    const std::string model = m_model->text().trimmed().toStdString();
+    if(base_url == preset.base_url && model == preset.model)
+        store.clearEndpointOverride(profile_id);
+    else
+        store.setEndpointOverride(profile_id, base_url, model);
+
     store.setAllowCloudProviders(m_allow_cloud->isChecked());
     store.setLlmWriteEnabled(m_allow_write->isChecked());
     store.save();
@@ -142,7 +179,9 @@ void ULlmProviderSettingsWidget::onTestConnectionClicked()
 
     auto provider = RDK::LLM::ULLMProviderFactory::create(profile);
     if(provider && provider->healthCheck(err))
-        m_status->setText(tr("Connection OK"));
+        m_status->setText(tr("Connection OK — %1 / %2")
+                              .arg(QString::fromStdString(profile.base_url))
+                              .arg(QString::fromStdString(profile.model)));
     else
         m_status->setText(tr("Failed: %1").arg(QString::fromStdString(err)));
 }

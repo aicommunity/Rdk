@@ -5,8 +5,17 @@
 #include "../UGEngineControlWidget.h"
 #include "ULlmAssistantDockWidget.h"
 #include "ULlmChangePreviewWidget.h"
+#include "ULlmProviderSettingsWidget.h"
 
 namespace LlmGui {
+
+void OpenProviderSettingsDialog(QWidget* parent, RDK::UApplication* app)
+{
+    if(!app)
+        return;
+    ULlmProviderSettingsWidget dlg(parent, app);
+    dlg.exec();
+}
 
 void RegisterLlmUi(UGEngineControlWidget* host, RDK::UApplication* app, ULlmGuiContextBridge* bridge)
 {
@@ -35,6 +44,12 @@ void RegisterLlmUi(UGEngineControlWidget* host, RDK::UApplication* app, ULlmGuiC
         return new ULlmChangePreviewWidget(nullptr, application);
     };
     host->registerCustomWidget(preview);
+
+    auto* settings_action = new QAction(QObject::tr("AI Assistant Settings"), host);
+    settings_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+L")));
+    QObject::connect(settings_action, &QAction::triggered, host,
+                     [host, app]() { OpenProviderSettingsDialog(host, app); });
+    host->appendMenuAction(QStringLiteral("View"), settings_action);
 
     auto* shortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+A")), host);
     QObject::connect(shortcut, &QShortcut::activated, host, [host]() {

@@ -33,6 +33,16 @@ TEST(LLMProviderAuth, DenyCloudWithoutAllowFlag)
     EXPECT_EQ(check.deny_code, "CLOUD_PROVIDER_DISABLED");
 }
 
+TEST(LLMProviderAuth, ApplyEndpointOverrides)
+{
+    LLMRuntimeProviderSettings runtime;
+    runtime.endpoint_overrides_by_profile_id["ollama-local"] = {"http://10.0.0.5:11434/v1",
+                                                                "llama3"};
+    LLMProviderProfile profile = ULLMProviderCatalog::resolveActive(runtime);
+    EXPECT_EQ(profile.base_url, "http://10.0.0.5:11434/v1");
+    EXPECT_EQ(profile.model, "llama3");
+}
+
 TEST(LLMProviderAuth, DenyCloudWithoutApiKey)
 {
     const LLMProviderProfile* openai = ULLMProviderCatalog::findById("openai");

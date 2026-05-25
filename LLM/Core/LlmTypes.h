@@ -68,11 +68,18 @@ struct LLMProviderProfile {
     bool prefer_local = true;
 };
 
+struct LLMProfileEndpointOverride {
+    std::string base_url;
+    std::string model;
+};
+
 struct LLMRuntimeProviderSettings {
     std::string active_profile_id = "ollama-local";
     bool allow_cloud_providers = false;
     bool llm_write_enabled = true;
     std::map<std::string, std::string> api_keys_by_profile_id;
+    /// Per-profile endpoint overrides (empty fields → use built-in preset).
+    std::map<std::string, LLMProfileEndpointOverride> endpoint_overrides_by_profile_id;
 };
 
 struct LLMSessionContext {

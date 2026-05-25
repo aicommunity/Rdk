@@ -11,6 +11,8 @@ public:
     static std::vector<LLMProviderProfile> builtInProfiles();
     static const LLMProviderProfile* findById(const std::string& profile_id);
     static LLMProviderProfile resolveActive(const LLMRuntimeProviderSettings& runtime);
+    static LLMProviderProfile applyRuntimeOverrides(LLMProviderProfile profile,
+                                                    const LLMRuntimeProviderSettings& runtime);
 };
 
 } // namespace RDK::LLM
