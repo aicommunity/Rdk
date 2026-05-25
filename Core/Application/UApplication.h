@@ -444,6 +444,17 @@ void ProcessCommandLineArgs(int argc, char **argv);
 virtual bool CreateProject(const std::string &file_name, RDK::TProjectConfig &project_config);
 virtual bool CreateProject(const std::string &file_name, const std::string &model_classname);
 
+/// Default configs root (Configs/ or per-user subfolder), same rules as File → New simple project.
+std::string GetDefaultConfigsDirectory() const;
+/// Resolves project.ini for a new configuration; optionally creates Autocreate+timestamp under parent.
+std::string PrepareNewProjectIniPath(bool autocreate_subdirectory = true,
+                                    const std::string& parent_directory = "",
+                                    std::string* err_out = nullptr) const;
+/// File-menu style new project: default configs + optional Autocreate subfolder + CreateProject.
+bool CreateAutocreatedProject(const std::string& model_classname = "Model",
+                              bool autocreate_subdirectory = true,
+                              const std::string& parent_directory = "");
+
 /// Обновляет проект по новой конфигурации
 virtual bool UpdateProject(RDK::TProjectConfig &project_config);
 

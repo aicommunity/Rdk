@@ -1484,6 +1484,105 @@ void UApplication::ProcessCommandLineArgs(int argc, char **argv)
 // --------------------------
 // Методы управления проектом
 // --------------------------
+
+namespace {
+
+std::string joinProjectPath(const std::string& dir, const std::string& file)
+{
+ if(dir.empty())
+  return file;
+ std::string d = dir;
+ if(d.back() != '/' && d.back() != '\\')
+  d.push_back('/');
+ return d + file;
+}
+
+std::string canonicalFilesystemPath(const std::string& path)
+{
+ if(path.empty())
+  return path;
+ std::error_code ec;
+ const std::filesystem::path canon = std::filesystem::weakly_canonical(std::filesystem::path(path), ec);
+ if(ec)
+  return path;
+ return canon.generic_string();
+}
+
+} // namespace
+
+std::string UApplication::GetDefaultConfigsDirectory() const
+{
+ std::string configs_path = GetWorkDirectory() + "/../../Configs/";
+ std::error_code ec;
+ if(!std::filesystem::exists(configs_path, ec))
+ {
+  configs_path = GetWorkDirectory() + "/../../../Configs/";
+  if(!std::filesystem::exists(configs_path, ec))
+   configs_path = GetWorkDirectory();
+ }
+ if(!GetUserName().empty())
+ {
+  const std::string user_rel = GetUserConfigPath();
+  if(!user_rel.empty())
+  {
+   const std::string users_dir = configs_path + "Users";
+   CreateNewDirectory(users_dir.c_str());
+   const std::string user_path = configs_path + user_rel;
+   CreateNewDirectory(user_path.c_str());
+   configs_path = user_path;
+  }
+ }
+ return configs_path;
+}
+
+std::string UApplication::PrepareNewProjectIniPath(bool autocreate_subdirectory,
+                                                   const std::string& parent_directory,
+                                                   std::string* err_out) const
+{
+ auto set_err = [&](const std::string& msg) {
+  if(err_out)
+   *err_out = msg;
+ };
+ set_err({});
+
+ std::string parent = parent_directory;
+ if(parent.empty())
+  parent = GetDefaultConfigsDirectory();
+ if(parent.empty())
+ {
+  set_err("configs directory is not available");
+  return {};
+ }
+
+ if(autocreate_subdirectory)
+ {
+  const std::time_t now = std::time(nullptr);
+  const std::string folder = RDK::get_text_time(now, '.', '_');
+  parent = joinProjectPath(parent, "Autocreate" + folder);
+  if(CreateNewDirectory(parent.c_str()) != 0)
+  {
+   set_err("failed to create configuration directory");
+   return {};
+  }
+  parent = canonicalFilesystemPath(parent);
+ }
+
+ const std::string ini_path = joinProjectPath(parent, "project.ini");
+ return canonicalFilesystemPath(ini_path);
+}
+
+bool UApplication::CreateAutocreatedProject(const std::string& model_classname,
+                                          bool autocreate_subdirectory,
+                                          const std::string& parent_directory)
+{
+ std::string err;
+ const std::string ini_path =
+  PrepareNewProjectIniPath(autocreate_subdirectory, parent_directory, &err);
+ if(ini_path.empty())
+  return false;
+ return CreateProject(ini_path, model_classname);
+}
+
 /// Создает проект (через сохранение и открытие)
 bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConfig &project_config)
 {
