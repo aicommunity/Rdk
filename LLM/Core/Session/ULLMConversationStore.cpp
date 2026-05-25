@@ -1,5 +1,7 @@
 #include "ULLMConversationStore.h"
 
+#include "../Orchestrator/ULLMExecutionPlan.h"
+
 #include <fstream>
 
 #include <filesystem>
@@ -115,6 +117,11 @@ bool ULLMConversationStore::loadFromDisk(const std::string& session_id)
         for(const auto& item : j["messages"])
             state.messages.push_back(messageFromJson(item));
     }
+    if(j.contains("pending_plan"))
+    {
+        if(auto plan = executionPlanFromJson(j["pending_plan"]))
+            state.pending_plan = std::move(*plan);
+    }
     m_sessions[session_id] = std::move(state);
     return true;
 }
@@ -133,6 +140,8 @@ bool ULLMConversationStore::persistToDisk(const std::string& session_id)
     j["messages"] = nlohmann::json::array();
     for(const LLMMessage& msg : it->second.messages)
         j["messages"].push_back(messageToJson(msg));
+    if(it->second.pending_plan)
+        j["pending_plan"] = executionPlanToJson(*it->second.pending_plan);
     const fs::path file = fs::path(m_storage_dir) / (session_id + ".json");
     std::ofstream out(file);
     if(!out)

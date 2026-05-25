@@ -5,6 +5,7 @@
 #include <optional>
 
 #include "../LlmTypes.h"
+#include "../Orchestrator/ULLMExecutionPlan.h"
 #include "../Orchestrator/ULLMWorkflowState.h"
 
 namespace RDK::LLM {
@@ -14,16 +15,11 @@ struct PendingConfirmation {
     ToolInvokeRequest request;
 };
 
-struct PendingExecutionPlan {
-    std::string plan_id;
-    nlohmann::json steps = nlohmann::json::array();
-};
-
 struct ConversationState {
     std::string session_id;
     std::vector<LLMMessage> messages;
     std::optional<PendingConfirmation> pending;
-    std::optional<PendingExecutionPlan> pending_plan;
+    std::optional<ULLMExecutionPlan> pending_plan;
     LLMWorkflowPhase workflow_phase = LLMWorkflowPhase::Idle;
 };
 

@@ -6,8 +6,11 @@
 
 #include "../LlmModuleInit.h"
 #include "../LlmPublicApi.h"
+#include "../Policy/ULLMPolicyEngine.h"
 #include "../Providers/UOllamaChatTemplate.h"
 #include "../Settings/ULLMProviderAuth.h"
+#include "ULLMExecutionPlan.h"
+#include "ULLMPlanExecutor.h"
 
 namespace RDK::LLM {
 
@@ -102,7 +105,29 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
 
     setWorkflowPhase(state, LLMWorkflowPhase::Running, req.trace_id);
 
-    const LLMIntentKind intent = m_intent.parse(req.user_text);
+    const IntentParseResult intent_result =
+        m_intent.parseWithOptionalLlm(&m_provider, req.user_text);
+    const LLMIntentKind intent = intent_result.kind;
+    const char* intent_name = "query";
+    switch(intent)
+    {
+    case LLMIntentKind::Mutate:
+        intent_name = "mutate";
+        break;
+    case LLMIntentKind::Explain:
+        intent_name = "explain";
+        break;
+    case LLMIntentKind::Plan:
+        intent_name = "plan";
+        break;
+    default:
+        break;
+    }
+    GetAuditLog().append("intent_classified",
+                         {{"kind", intent_name},
+                          {"confidence", intent_result.confidence},
+                          {"method", intent_result.method}},
+                         req.trace_id, req.session_id);
     ToolFilter filter;
     filter.intent = intent;
     filter.include_write = (intent == LLMIntentKind::Mutate) && session.llm_write_enabled;
@@ -156,6 +181,25 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             assistant.content = completion.text;
             m_store.appendMessage(req.session_id, assistant);
             final.text = completion.text;
+            if(intent == LLMIntentKind::Plan)
+            {
+                if(auto plan = parseExecutionPlanFromAssistantText(completion.text))
+                {
+                    ULLMPolicyEngine policy;
+                    const PolicyDecision plan_pol = policy.checkPlan(*plan, session, m_registry);
+                    if(plan_pol.allowed)
+                    {
+                        state.pending_plan = *plan;
+                        final.pending_plan_execution = true;
+                        final.pending_plan_id = plan->plan_id;
+                        final.text += "\n\n[Plan ready — confirm execution in the assistant panel.]";
+                        setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation, req.trace_id);
+                        m_store.persistToDisk(req.session_id);
+                        return final;
+                    }
+                    final.text += "\n\n(Plan rejected by policy: " + plan_pol.deny_message + ")";
+                }
+            }
             setWorkflowPhase(state, LLMWorkflowPhase::Completed, req.trace_id);
             setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
             m_store.persistToDisk(req.session_id);
@@ -273,16 +317,67 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
     return final;
 }
 
-void ULLMAgentOrchestrator::confirmPending(const std::string& session_id,
-                                           const std::string& confirmation_id)
+LLMFinalResponse ULLMAgentOrchestrator::confirmPending(const std::string& session_id,
+                                                      const std::string& confirmation_id)
 {
+    LLMFinalResponse final;
     ConversationState& state = m_store.getOrCreate(session_id);
     if(!state.pending || state.pending->confirmation_id != confirmation_id)
-        return;
+    {
+        final.ok = false;
+        final.error = "No matching pending confirmation";
+        return final;
+    }
     ToolInvokeRequest req = state.pending->request;
     req.confirmed = true;
-    m_gateway.invoke(req);
+    const ToolGatewayResult tr = m_gateway.invoke(req);
     m_store.clearPending(session_id);
+    final.ok = tr.ok;
+    final.text = tr.ok ? "Change applied." : tr.message;
+    if(!tr.ok)
+        final.error = tr.message;
+    m_store.persistToDisk(session_id);
+    return final;
+}
+
+LLMFinalResponse ULLMAgentOrchestrator::confirmPlanExecution(const std::string& session_id,
+                                                             const std::string& trace_id,
+                                                             const LLMSessionContext& session)
+{
+    LLMFinalResponse final;
+    ConversationState& state = m_store.getOrCreate(session_id);
+    if(!state.pending_plan)
+    {
+        final.ok = false;
+        final.error = "No pending execution plan";
+        return final;
+    }
+
+    ULLMPolicyEngine policy;
+    const PolicyDecision plan_pol = policy.checkPlan(*state.pending_plan, session, m_registry);
+
+    if(!plan_pol.allowed)
+    {
+        final.ok = false;
+        final.error = plan_pol.deny_message;
+        return final;
+    }
+
+    setWorkflowPhase(state, LLMWorkflowPhase::Executing, trace_id);
+    ULLMPlanExecutor executor(m_registry, m_gateway);
+    ULLMExecutionPlan plan = *state.pending_plan;
+    const PlanExecutionResult exec = executor.execute(plan, session, trace_id);
+    state.pending_plan.reset();
+
+    final.ok = exec.ok;
+    final.text = exec.summary;
+    if(!exec.ok)
+        final.error = exec.compensation_note;
+
+    setWorkflowPhase(state, exec.ok ? LLMWorkflowPhase::Completed : LLMWorkflowPhase::Failed, trace_id);
+    setWorkflowPhase(state, LLMWorkflowPhase::Idle, trace_id);
+    m_store.persistToDisk(session_id);
+    return final;
 }
 
 void ULLMAgentOrchestrator::rejectPending(const std::string& session_id)

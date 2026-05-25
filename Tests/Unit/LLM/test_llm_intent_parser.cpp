@@ -11,6 +11,14 @@ TEST(LLMIntentParser, QueryIntent)
     EXPECT_EQ(parser.parse("what components are on the diagram"), LLMIntentKind::Query);
 }
 
+TEST(LLMIntentParser, ConfidencePrefersMutateOverWeakQuery)
+{
+    ULLMIntentParser parser;
+    const auto result = parser.parseDetailed("add component MatrixSource to diagram");
+    EXPECT_EQ(result.kind, LLMIntentKind::Mutate);
+    EXPECT_GE(result.confidence, 0.4f);
+}
+
 TEST(LLMIntentParser, PlanIntent)
 {
     ULLMIntentParser parser;

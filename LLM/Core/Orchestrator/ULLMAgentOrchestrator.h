@@ -28,6 +28,8 @@ struct LLMFinalResponse {
     std::string text;
     std::string error;
     bool pending_confirmation = false;
+    bool pending_plan_execution = false;
+    std::string pending_plan_id;
     bool needs_entity_clarification = false;
     nlohmann::json clarification_candidates = nlohmann::json::array();
 };
@@ -38,7 +40,9 @@ public:
                           ULLMToolGateway& gateway, ULLMConversationStore& store);
 
     LLMFinalResponse handleUserMessage(const LLMRequestEnvelope& req);
-    void confirmPending(const std::string& session_id, const std::string& confirmation_id);
+    LLMFinalResponse confirmPending(const std::string& session_id, const std::string& confirmation_id);
+    LLMFinalResponse confirmPlanExecution(const std::string& session_id, const std::string& trace_id,
+                                          const LLMSessionContext& session);
     void rejectPending(const std::string& session_id);
     void cancel() { m_cancelled = true; }
 

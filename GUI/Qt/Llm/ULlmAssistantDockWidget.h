@@ -19,11 +19,14 @@ public:
     void appendAssistantText(const QString& text);
     void setPendingConfirmation(const QString& confirmation_id, const QString& summary);
     void clearPendingConfirmation();
+    void setPendingPlan(const QString& plan_id, const QString& summary);
+    void clearPendingPlan();
 
 public slots:
     void onSendClicked();
     void onConfirmClicked();
     void onRejectClicked();
+    void onExecutePlanClicked();
     void onContextChanged(const LLMGuiContext& ctx);
     void onOpenSettings();
     void onProviderChanged(int index);
@@ -41,7 +44,9 @@ private:
     QPushButton* m_send = nullptr;
     QPushButton* m_confirm = nullptr;
     QPushButton* m_reject = nullptr;
+    QPushButton* m_execute_plan = nullptr;
     QString m_pending_confirmation_id;
+    QString m_pending_plan_id;
     LLMGuiContext m_last_ctx;
 };
 

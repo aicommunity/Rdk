@@ -42,9 +42,12 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     m_send = new QPushButton(tr("Send"), this);
     m_confirm = new QPushButton(tr("Apply"), this);
     m_reject = new QPushButton(tr("Reject"), this);
+    m_execute_plan = new QPushButton(tr("Run plan"), this);
     m_confirm->setVisible(false);
     m_reject->setVisible(false);
+    m_execute_plan->setVisible(false);
     row->addWidget(m_send);
+    row->addWidget(m_execute_plan);
     row->addWidget(m_confirm);
     row->addWidget(m_reject);
     layout->addLayout(row);
@@ -55,6 +58,7 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     connect(m_send, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onSendClicked);
     connect(m_confirm, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onConfirmClicked);
     connect(m_reject, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onRejectClicked);
+    connect(m_execute_plan, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onExecutePlanClicked);
     if(m_bridge)
         connect(m_bridge, &ULlmGuiContextBridge::contextChanged, this,
                 &ULlmAssistantDockWidget::onContextChanged);
@@ -134,6 +138,20 @@ void ULlmAssistantDockWidget::clearPendingConfirmation()
     m_reject->setVisible(false);
 }
 
+void ULlmAssistantDockWidget::setPendingPlan(const QString& plan_id, const QString& summary)
+{
+    m_pending_plan_id = plan_id;
+    m_execute_plan->setVisible(true);
+    m_reject->setVisible(true);
+    appendAssistantText(summary);
+}
+
+void ULlmAssistantDockWidget::clearPendingPlan()
+{
+    m_pending_plan_id.clear();
+    m_execute_plan->setVisible(false);
+}
+
 RDK::LLM::LLMSessionContext ULlmAssistantDockWidget::buildSession(const LLMGuiContext& ctx) const
 {
     RDK::LLM::LLMSessionContext s;
@@ -186,6 +204,12 @@ void ULlmAssistantDockWidget::runUserMessage(const QString& text)
                     appendAssistantText(QString::fromStdString("Error: " + resp.error));
                     return;
                 }
+                if(resp.pending_plan_execution)
+                {
+                    setPendingPlan(QString::fromStdString(resp.pending_plan_id),
+                                   QString::fromStdString(resp.text));
+                    return;
+                }
                 if(resp.pending_confirmation)
                 {
                     setPendingConfirmation("pending", QString::fromStdString(resp.text));
@@ -206,15 +230,43 @@ void ULlmAssistantDockWidget::onConfirmClicked()
 {
     if(m_pending_confirmation_id.isEmpty())
         return;
-    RDK::LLM::LLMServices::instance().orchestrator().confirmPending("gui-session",
-                                                                     m_pending_confirmation_id.toStdString());
+    const LLMGuiContext ctx = m_bridge ? m_bridge->currentContext() : m_last_ctx;
+    const RDK::LLM::LLMFinalResponse resp = RDK::LLM::LLMServices::instance().orchestrator().confirmPending(
+        "gui-session", m_pending_confirmation_id.toStdString());
     clearPendingConfirmation();
-    appendAssistantText(tr("Change applied."));
+    appendAssistantText(resp.ok ? QString::fromStdString(resp.text)
+                                : QString::fromStdString("Error: " + resp.error));
+    (void)ctx;
 }
 
 void ULlmAssistantDockWidget::onRejectClicked()
 {
     RDK::LLM::LLMServices::instance().orchestrator().rejectPending("gui-session");
     clearPendingConfirmation();
+    clearPendingPlan();
+    m_reject->setVisible(false);
     appendAssistantText(tr("Change rejected."));
+}
+
+void ULlmAssistantDockWidget::onExecutePlanClicked()
+{
+    if(m_pending_plan_id.isEmpty())
+        return;
+    const LLMGuiContext ctx = m_bridge ? m_bridge->currentContext() : m_last_ctx;
+    const RDK::LLM::LLMSessionContext session = buildSession(ctx);
+    auto future = QtConcurrent::run([session]() {
+        return RDK::LLM::LLMServices::instance().orchestrator().confirmPlanExecution(
+            "gui-session", "gui-plan-trace", session);
+    });
+    auto* watcher = new QFutureWatcher<RDK::LLM::LLMFinalResponse>(this);
+    connect(watcher, &QFutureWatcher<RDK::LLM::LLMFinalResponse>::finished, this,
+            [this, watcher]() {
+                const RDK::LLM::LLMFinalResponse resp = watcher->result();
+                watcher->deleteLater();
+                clearPendingPlan();
+                m_reject->setVisible(false);
+                appendAssistantText(resp.ok ? QString::fromStdString(resp.text)
+                                            : QString::fromStdString("Error: " + resp.error));
+            });
+    watcher->setFuture(future);
 }
