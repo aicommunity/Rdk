@@ -18,9 +18,30 @@ TEST(OllamaChatTemplate, InjectsSystemPrompt)
     user.content = "hello";
     msgs.push_back(user);
 
-    const auto prepared = ensureRdkSystemPrompt(std::move(msgs));
+    const auto prepared = ensureRdkSystemPrompt(std::move(msgs), "en");
     ASSERT_EQ(prepared.size(), 2u);
     EXPECT_EQ(prepared.front().role, LLMMessage::Role::System);
+}
+
+TEST(OllamaChatTemplate, SystemPromptContainsLanguage)
+{
+    const std::string prompt = buildRdkSystemPrompt("ru");
+    EXPECT_NE(prompt.find("ru"), std::string::npos);
+    EXPECT_NE(prompt.find("Russian"), std::string::npos);
+}
+
+TEST(OllamaChatTemplate, EnsurePromptUsesLanguage)
+{
+    std::vector<LLMMessage> msgs;
+    LLMMessage user;
+    user.role = LLMMessage::Role::User;
+    user.content = "hello";
+    msgs.push_back(user);
+
+    const auto prepared = ensureRdkSystemPrompt(std::move(msgs), "de");
+    ASSERT_EQ(prepared.size(), 2u);
+    EXPECT_NE(prepared.front().content.find("German"), std::string::npos);
+    EXPECT_NE(prepared.front().content.find("de"), std::string::npos);
 }
 
 TEST(OllamaChatTemplate, SerializesAssistantToolCalls)

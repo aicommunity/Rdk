@@ -31,4 +31,6 @@ TEST(LLMIntentParser, MutateIntent)
     ULLMIntentParser parser;
     EXPECT_EQ(parser.parse("добавь MatrixSource"), LLMIntentKind::Mutate);
     EXPECT_EQ(parser.parse("add component Foo"), LLMIntentKind::Mutate);
+    EXPECT_EQ(parser.parse("create new config"), LLMIntentKind::Mutate);
+    EXPECT_EQ(parser.parse("create config"), LLMIntentKind::Mutate);
 }
