@@ -1,9 +1,11 @@
 #include "UOllamaChatTemplate.h"
 
+#include "../Settings/ULLMResponseLanguage.h"
 #include "UOllamaModelInfo.h"
 
 #include <algorithm>
 #include <cctype>
+#include <sstream>
 
 namespace RDK::LLM {
 
@@ -63,20 +65,32 @@ OllamaChatTemplateFamily detectChatTemplateFamily(const std::string& model_name,
     return OllamaChatTemplateFamily::ChatML;
 }
 
-const char* defaultRdkSystemPrompt()
+std::string buildRdkSystemPrompt(const std::string& response_language)
 {
-    return "You are the NeuroModeler AI assistant (RDK). Use tools to inspect the project; "
-           "answer in the user's language. For diagram changes, call tools — do not invent "
-           "component names or property values.";
+    const std::string code =
+        response_language.empty() ? "en" : response_language;
+    const std::string display = responseLanguageDisplayName(code);
+    std::ostringstream oss;
+    oss << "You are the NeuroModeler AI assistant (RDK). Always use native function tool_calls "
+           "when tools are available — never paste JSON tool examples in markdown. "
+           "Configuration on disk (project.ini): use create_configuration, load_configuration, "
+           "save_configuration, validate_configuration — not add_component. "
+           "Diagram edits inside an open configuration: add_component, set_property, connect. "
+           "Always respond in "
+        << display << " (language code: " << code
+        << "). Use this language for all user-facing text unless the user explicitly requests "
+           "another language. Do not invent class names.";
+    return oss.str();
 }
 
-std::vector<LLMMessage> ensureRdkSystemPrompt(std::vector<LLMMessage> messages)
+std::vector<LLMMessage> ensureRdkSystemPrompt(std::vector<LLMMessage> messages,
+                                              const std::string& response_language)
 {
     if(hasSystemMessage(messages))
         return messages;
     LLMMessage system;
     system.role = LLMMessage::Role::System;
-    system.content = defaultRdkSystemPrompt();
+    system.content = buildRdkSystemPrompt(response_language);
     messages.insert(messages.begin(), system);
     return messages;
 }
@@ -91,9 +105,10 @@ OllamaChatTemplateFamily resolveChatTemplateFamily(const LLMProviderProfile& pro
 }
 
 std::vector<LLMMessage> prepareMessagesForOllama(const LLMProviderProfile& profile,
-                                                std::vector<LLMMessage> messages)
+                                                std::vector<LLMMessage> messages,
+                                                const std::string& response_language)
 {
-    messages = ensureRdkSystemPrompt(std::move(messages));
+    messages = ensureRdkSystemPrompt(std::move(messages), response_language);
     const OllamaChatTemplateFamily family = resolveChatTemplateFamily(profile);
 
     std::vector<LLMMessage> out;

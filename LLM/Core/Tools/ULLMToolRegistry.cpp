@@ -1,5 +1,7 @@
 #include "ULLMToolRegistry.h"
 
+#include "../Orchestrator/ULLMConfigurationLifecycle.h"
+
 namespace RDK::LLM {
 
 void ULLMToolRegistry::registerTool(const LLMToolDefinition& def, ToolHandler handler)
@@ -28,6 +30,8 @@ std::vector<LLMToolDefinition> ULLMToolRegistry::listForLlmApi(const ToolFilter&
         if((filter.intent == LLMIntentKind::Query || filter.intent == LLMIntentKind::Plan
             || filter.intent == LLMIntentKind::Explain)
            && d.kind == LLMToolKind::Write)
+            continue;
+        if(filter.configuration_lifecycle_only && !isConfigurationLifecycleToolName(d.name))
             continue;
         out.push_back(d);
     }

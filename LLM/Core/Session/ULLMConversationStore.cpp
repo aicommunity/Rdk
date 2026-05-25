@@ -249,6 +249,17 @@ void ULLMConversationStore::clearPending(const std::string& session_id)
     persistToDisk(session_id);
 }
 
+void ULLMConversationStore::setPendingToolArguments(const std::string& session_id,
+                                                      PendingToolArguments p)
+{
+    m_sessions[session_id].pending_tool_arguments = std::move(p);
+}
+
+void ULLMConversationStore::clearPendingToolArguments(const std::string& session_id)
+{
+    m_sessions[session_id].pending_tool_arguments.reset();
+}
+
 bool ULLMConversationStore::expirePendingIfStale(const std::string& session_id, int ttl_seconds)
 {
     auto it = m_sessions.find(session_id);

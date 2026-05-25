@@ -12,6 +12,10 @@
 #include "../Providers/UOllamaChatTemplate.h"
 #include "../Providers/UOllamaModelInfo.h"
 #include "../Settings/ULLMProviderAuth.h"
+#include "../Settings/ULLMResponseLanguage.h"
+#include "ULLMConfigurationLifecycle.h"
+#include "ULLMLifecycleArgumentGate.h"
+#include "ULLMEmbeddedToolCalls.h"
 #include "ULLMExecutionPlan.h"
 #include "ULLMPlanExecutor.h"
 
@@ -166,9 +170,85 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                           {"confidence", intent_result.confidence},
                           {"method", intent_result.method}},
                          req.trace_id, req.session_id);
+    if(intent == LLMIntentKind::Mutate && !session.llm_write_enabled)
+    {
+        final.ok = false;
+        final.error =
+            "LLM write tools are disabled. Enable \"Allow LLM write tools\" in AI Assistant Settings.";
+        setWorkflowPhase(state, LLMWorkflowPhase::Failed, req.trace_id);
+        m_store.persistToDisk(req.session_id);
+        return final;
+    }
+
+    const ConfigurationLifecycleAction lifecycle_action =
+        detectConfigurationLifecycleAction(req.user_text);
+
+    RDK::UApplication* app = nullptr;
+    if(LLMServices::instance().isInitialized())
+        app = LLMServices::instance().domain().application();
+
+    if(state.pending_tool_arguments)
+    {
+        PendingToolArguments pending = *state.pending_tool_arguments;
+        if(lifecycle_action != ConfigurationLifecycleAction::None
+           && lifecycle_action != pending.action)
+            m_store.clearPendingToolArguments(req.session_id);
+        else
+        {
+            nlohmann::json merged =
+                mergeArgumentsFromUserText(pending, req.user_text, app);
+            const std::vector<ToolArgumentFieldSpec> still_missing =
+                findMissingLifecycleFields(pending.tool_name, merged, app);
+            if(!still_missing.empty())
+            {
+                pending.partial_arguments = std::move(merged);
+                pending.missing_fields = still_missing;
+                return returnArgumentRequest(state, req.trace_id, pending, app);
+            }
+            m_store.clearPendingToolArguments(req.session_id);
+            GetAuditLog().append("lifecycle_args_resolved",
+                                 {{"tool_name", pending.tool_name}}, req.trace_id,
+                                 req.session_id);
+            return invokeLifecycleToolDirect(req.session_id, req.trace_id, pending.tool_name,
+                                             merged, session);
+        }
+    }
+
+    if(lifecycle_action != ConfigurationLifecycleAction::None && intent == LLMIntentKind::Mutate
+       && session.llm_write_enabled)
+    {
+        const LifecycleArgumentPreflight pre =
+            preflightLifecycleArguments(lifecycle_action, req.user_text, app);
+        if(!pre.tool_name.empty())
+        {
+            if(!pre.ready)
+            {
+                PendingToolArguments pending;
+                pending.tool_name = pre.tool_name;
+                pending.action = lifecycle_action;
+                pending.partial_arguments = pre.arguments;
+                pending.missing_fields =
+                    pre.missing_fields.empty()
+                        ? argumentFieldsForLifecycle(lifecycle_action)
+                        : pre.missing_fields;
+                pending.created_at_unix_sec = confirmationNowUnixSec();
+                GetAuditLog().append("lifecycle_args_requested",
+                                     {{"tool_name", pre.tool_name}}, req.trace_id,
+                                     req.session_id);
+                return returnArgumentRequest(state, req.trace_id, pending, app);
+            }
+            GetAuditLog().append("lifecycle_preflight_ok",
+                                 {{"tool_name", pre.tool_name}}, req.trace_id, req.session_id);
+            return invokeLifecycleToolDirect(req.session_id, req.trace_id, pre.tool_name,
+                                             pre.arguments, session);
+        }
+    }
+
     ToolFilter filter;
     filter.intent = intent;
     filter.include_write = (intent == LLMIntentKind::Mutate) && session.llm_write_enabled;
+    if(lifecycle_action != ConfigurationLifecycleAction::None)
+        filter.configuration_lifecycle_only = true;
 
     std::vector<LLMMessage> provider_messages = state.messages;
     const bool strict_plan_schema =
@@ -188,8 +268,25 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
         setWorkflowPhase(state, LLMWorkflowPhase::Executing, req.trace_id);
     }
 
-    LLMCompletionOptions opts;
     const bool provider_tools = m_provider.capabilities().supports_tool_calling;
+
+    if(lifecycle_action != ConfigurationLifecycleAction::None && provider_tools)
+    {
+        LLMMessage lifecycle_hint;
+        lifecycle_hint.role = LLMMessage::Role::System;
+        lifecycle_hint.content =
+            configurationLifecycleSystemHint(lifecycle_action, session.project_loaded);
+        provider_messages.insert(provider_messages.begin(), lifecycle_hint);
+    }
+
+    LLMCompletionOptions opts;
+    if(LLMServices::instance().isInitialized())
+    {
+        opts.response_language = resolveResponseLanguage(
+            LLMServices::instance().settings().runtime().preferred_response_language, "en");
+    }
+    else
+        opts.response_language = "en";
     if(provider_tools)
         opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
     else
@@ -201,9 +298,24 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
     const int max_tool_invocations = defaultPolicyLimits().max_tool_invocations_per_message;
 
     const bool is_cloud_profile = req.provider_profile.is_cloud;
+    const int max_rounds =
+        lifecycle_action != ConfigurationLifecycleAction::None ? 4 : kMaxRounds;
 
-    for(int round = 0; round < kMaxRounds && !m_cancelled; ++round)
+    for(int round = 0; round < max_rounds && !m_cancelled; ++round)
     {
+        provider_messages = state.messages;
+
+        if(lifecycle_action != ConfigurationLifecycleAction::None && round >= 1)
+            opts.tool_choice.reset();
+        if(lifecycle_action != ConfigurationLifecycleAction::None && round >= 2)
+        {
+            opts.tools_for_api.clear();
+            LLMMessage stop_tools;
+            stop_tools.role = LLMMessage::Role::System;
+            stop_tools.content =
+                "Stop calling tools. Summarize the outcome for the user in plain language.";
+            provider_messages.insert(provider_messages.begin(), stop_tools);
+        }
         if(is_cloud_profile)
         {
             ++state.cloud_provider_rounds;
@@ -260,6 +372,15 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             }
             setWorkflowPhase(state, LLMWorkflowPhase::Failed, req.trace_id);
             return final;
+        }
+
+        if(completion.tool_calls.empty() && intent == LLMIntentKind::Mutate && filter.include_write
+           && provider_tools)
+        {
+            std::vector<LLMToolCall> embedded =
+                tryExtractEmbeddedToolCalls(completion.text, m_registry);
+            if(!embedded.empty())
+                completion.tool_calls = std::move(embedded);
         }
 
         if(completion.tool_calls.empty())
@@ -356,6 +477,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
         }
         else
         {
+            std::optional<std::pair<std::string, ToolGatewayResult>> lifecycle_write_done;
             for(const LLMToolCall& call : completion.tool_calls)
             {
                 const auto [call_copy, tr] = invokeOne(call);
@@ -395,15 +517,46 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 tool_msg.tool_name = call_copy.name;
                 tool_msg.content = tr.result.dump();
                 m_store.appendMessage(req.session_id, tool_msg);
+
+                if(lifecycle_action != ConfigurationLifecycleAction::None
+                   && isLifecycleWriteToolName(call_copy.name))
+                    lifecycle_write_done = std::make_pair(call_copy.name, tr);
+            }
+
+            if(lifecycle_write_done)
+            {
+                final.ok = lifecycle_write_done->second.ok;
+                final.text = formatLifecycleToolUserMessage(lifecycle_write_done->first,
+                                                            lifecycle_write_done->second);
+                if(!final.ok && !lifecycle_write_done->second.message.empty())
+                    final.error = lifecycle_write_done->second.message;
+                setWorkflowPhase(state, LLMWorkflowPhase::Completed, req.trace_id);
+                setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
+                m_store.persistToDisk(req.session_id);
+                return final;
             }
         }
 
-        if(provider_tools)
+        if(provider_tools
+           && (lifecycle_action == ConfigurationLifecycleAction::None || round < 2))
             opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
     }
 
     setWorkflowPhase(state, LLMWorkflowPhase::Failed, req.trace_id);
-    final.text = "Stopped: maximum tool rounds reached.";
+    if(lifecycle_action == ConfigurationLifecycleAction::Create)
+    {
+        final.text =
+            "Could not create a configuration automatically. Specify a folder, e.g. "
+            "\"create config in /tmp/MyProject\", or use File → New in the menu.";
+    }
+    else if(lifecycle_action != ConfigurationLifecycleAction::None)
+    {
+        final.text =
+            "The request needed too many tool steps. Try a shorter command with an explicit path, "
+            "or use the File menu.";
+    }
+    else
+        final.text = "Stopped: maximum tool rounds reached.";
     m_store.persistToDisk(req.session_id);
     return final;
 }
@@ -594,6 +747,101 @@ LLMFinalResponse ULLMAgentOrchestrator::rollbackPlanExecution(const std::string&
     return final;
 }
 
+LLMFinalResponse ULLMAgentOrchestrator::returnArgumentRequest(ConversationState& state,
+                                                              const std::string& trace_id,
+                                                              const PendingToolArguments& pending_in,
+                                                              RDK::UApplication* app)
+{
+    LLMFinalResponse final;
+    PendingToolArguments pending = pending_in;
+    if(pending.created_at_unix_sec == 0)
+        pending.created_at_unix_sec = confirmationNowUnixSec();
+    m_store.setPendingToolArguments(state.session_id, pending);
+
+    const std::string prompt =
+        formatArgumentRequestPrompt(pending.tool_name, pending.action, pending.missing_fields, app);
+
+    LLMMessage assistant_msg;
+    assistant_msg.role = LLMMessage::Role::Assistant;
+    assistant_msg.content = prompt;
+    m_store.appendMessage(state.session_id, assistant_msg);
+
+    final.ok = true;
+    final.needs_argument_clarification = true;
+    final.text = prompt;
+    setWorkflowPhase(state, LLMWorkflowPhase::Idle, trace_id);
+    m_store.persistToDisk(state.session_id);
+    return final;
+}
+
+LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::string& session_id,
+                                                                const std::string& trace_id,
+                                                                const std::string& tool_name,
+                                                                const nlohmann::json& arguments,
+                                                                const LLMSessionContext& session)
+{
+    LLMFinalResponse final;
+    ConversationState& state = m_store.getOrCreate(session_id);
+
+    RDK::UApplication* app = nullptr;
+    if(LLMServices::instance().isInitialized())
+        app = LLMServices::instance().domain().application();
+
+    ToolInvokeRequest invoke;
+    invoke.trace_id = trace_id;
+    invoke.tool_name = tool_name;
+    invoke.arguments = arguments;
+    invoke.session = session;
+    invoke.session.session_id = session_id;
+
+    const ToolGatewayResult tr = m_gateway.invoke(invoke);
+
+    if(!tr.ok
+       && (tr.error_code == "SchemaValidationFailed" || tr.error_code == "ARGS_REQUIRED"
+           || (tr.error_code == "PATH_NOT_ALLOWED"
+               && (tool_name == "load_configuration" || tool_name == "load_project"
+                   || tool_name == "validate_configuration"))))
+    {
+        PendingToolArguments pending;
+        pending.tool_name = tool_name;
+        pending.action = lifecycleActionFromToolName(tool_name);
+        pending.partial_arguments = arguments;
+        pending.missing_fields = findMissingLifecycleFields(tool_name, arguments, app);
+        if(pending.missing_fields.empty() && pending.action != ConfigurationLifecycleAction::None)
+            pending.missing_fields = argumentFieldsForLifecycle(pending.action);
+        GetAuditLog().append("lifecycle_args_requested",
+                             {{"tool_name", tool_name}, {"error_code", tr.error_code}}, trace_id,
+                             session_id);
+        return returnArgumentRequest(state, trace_id, pending, app);
+    }
+
+    if(tr.pending_confirmation)
+    {
+        setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation, trace_id);
+        PendingConfirmation pending;
+        pending.confirmation_id = tr.confirmation_id;
+        pending.created_at_unix_sec = confirmationNowUnixSec();
+        pending.request = invoke;
+        pending.request.confirmed = true;
+        m_store.setPending(session_id, pending);
+        final.ok = true;
+        final.pending_confirmation = true;
+        final.pending_confirmation_id = tr.confirmation_id;
+        final.text = "Confirmation required for: " + tool_name;
+        m_store.persistToDisk(session_id);
+        return final;
+    }
+
+    final.ok = tr.ok;
+    final.text = formatLifecycleToolUserMessage(tool_name, tr);
+    if(!tr.ok && !tr.message.empty())
+        final.error = tr.message;
+    setWorkflowPhase(state, LLMWorkflowPhase::Completed, trace_id);
+    setWorkflowPhase(state, LLMWorkflowPhase::Idle, trace_id);
+    m_store.persistToDisk(session_id);
+    return final;
+}
+
 void ULLMAgentOrchestrator::rejectPending(const std::string& session_id)
 {
     ConversationState& state = m_store.getOrCreate(session_id);
@@ -606,6 +854,7 @@ void ULLMAgentOrchestrator::rejectPending(const std::string& session_id)
         state.pending_plan.reset();
     }
     m_store.clearPending(session_id);
+    m_store.clearPendingToolArguments(session_id);
     setWorkflowPhase(state, LLMWorkflowPhase::Idle, "");
     GetAuditLog().append("confirmation_rejected", {}, "", session_id);
 }

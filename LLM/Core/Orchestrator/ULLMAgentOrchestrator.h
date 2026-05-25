@@ -42,6 +42,8 @@ struct LLMFinalResponse {
     bool can_resume_plan = false;
     bool needs_entity_clarification = false;
     nlohmann::json clarification_candidates = nlohmann::json::array();
+    /// Lifecycle tool needs more parameters from the user (see ConversationState::pending_tool_arguments).
+    bool needs_argument_clarification = false;
 };
 
 class ULLMAgentOrchestrator {
@@ -72,6 +74,16 @@ private:
     std::map<std::string, bool> m_session_busy;
     void setWorkflowPhase(ConversationState& state, LLMWorkflowPhase phase,
                           const std::string& trace_id);
+
+    LLMFinalResponse invokeLifecycleToolDirect(const std::string& session_id,
+                                               const std::string& trace_id,
+                                               const std::string& tool_name,
+                                               const nlohmann::json& arguments,
+                                               const LLMSessionContext& session);
+
+    LLMFinalResponse returnArgumentRequest(ConversationState& state, const std::string& trace_id,
+                                           const PendingToolArguments& pending,
+                                           RDK::UApplication* app);
 
     static constexpr int kMaxRounds = kDefaultMaxToolRounds;
 };

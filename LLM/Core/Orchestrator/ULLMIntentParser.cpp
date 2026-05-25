@@ -29,13 +29,21 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
 
     const float plan_s = scoreKeywords(lower, {"план", "спланируй", "шаги", "plan ", "steps", "roadmap", "сначала"}, 1.2f);
     const float mutate_s =
-        scoreKeywords(lower, {"добав", "создай", "удали", "измени", "сохран", "загруз", "add ", "create ", "remove ",
-                            "delete ", "save ", "load ", "set ", "connect "}, 1.0f);
+        scoreKeywords(lower,
+                      {"добав", "создай", "удали", "измени", "сохран", "загруз", "открой", "закрой", "конфиг",
+                       "configuration", "project.ini", "скопируй", "переимен", "запусти расч", "останови расч",
+                       "add ", "create ", "create config", "new config", "new configuration", "remove ", "delete ",
+                       "save ", "load ", "set ", "connect ", "open config", "close config", "copy config",
+                       "rename config", "создай конфиг", "новый конфиг", "новая конфигурация"},
+                      1.0f);
     const float explain_s =
         scoreKeywords(lower, {"почему", "объясни", "explain", "why ", "как работает", "how does"}, 1.0f);
-    const float query_s = scoreKeywords(lower, {"arduino", "firmata", "firmware", "hardware", "датчик", "плата", "что",
-                                                "какие", "покажи", "список", "опиши", "найди", "what", "list", "show",
-                                                "describe", "search", "find "}, 0.8f);
+    const float query_s =
+        scoreKeywords(lower,
+                      {"arduino", "firmata", "firmware", "hardware", "датчик", "плата", "что", "какие", "покажи",
+                       "список", "опиши", "найди", "валидируй", "проверь конфиг", "validate configuration", "what",
+                       "list", "show", "describe", "search", "find "},
+                      0.8f);
 
     IntentParseResult result;
     result.method = "rules";

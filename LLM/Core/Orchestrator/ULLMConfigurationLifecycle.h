@@ -1,0 +1,37 @@
+#ifndef RDK_ULLM_CONFIGURATION_LIFECYCLE_H
+#define RDK_ULLM_CONFIGURATION_LIFECYCLE_H
+
+#include "../LlmTypes.h"
+
+#include <optional>
+#include <string>
+
+namespace RDK::LLM {
+
+enum class ConfigurationLifecycleAction {
+    None,
+    Create,
+    Load,
+    Save,
+    Close,
+    Validate,
+};
+
+ConfigurationLifecycleAction detectConfigurationLifecycleAction(const std::string& user_text);
+
+bool isConfigurationLifecycleToolName(const std::string& tool_name);
+
+std::string configurationLifecycleSystemHint(ConfigurationLifecycleAction action,
+                                             bool project_loaded);
+
+std::optional<std::string> forcedToolForLifecycle(ConfigurationLifecycleAction action,
+                                                  bool project_loaded);
+
+bool isLifecycleWriteToolName(const std::string& tool_name);
+
+std::string formatLifecycleToolUserMessage(const std::string& tool_name,
+                                             const ToolGatewayResult& result);
+
+} // namespace RDK::LLM
+
+#endif

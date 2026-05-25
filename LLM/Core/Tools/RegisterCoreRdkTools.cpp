@@ -3,6 +3,7 @@
 #include "../Context/ILLMProjectContextProvider.h"
 #include "../Domain/URdkDomainAccess.h"
 #include "../Domain/URdkEntityResolver.h"
+#include "RegisterApplicationTools.h"
 #include "ULLMToolRegistry.h"
 
 #include <fstream>
@@ -27,6 +28,9 @@ static LLMToolDefinition makeDef(const std::string& name, LLMToolKind kind,
 void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                           ILLMProjectContextProvider* project_context)
 {
+    URdkDomainAccess* const domain_access = &domain;
+    ILLMProjectContextProvider* const project_ctx = project_context;
+
     registry.registerTool(
         makeDef("get_net_snapshot", LLMToolKind::Read, "Returns component graph for active channel",
                 {{"type", "object"},
@@ -35,11 +39,11 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                    {"max_components", {{"type", "integer"}, {"minimum", 1}, {"maximum", 500}}}}},
                  {"additionalProperties", false}},
                 {{"type", "object"}}),
-        [&](const nlohmann::json& args) -> ToolGatewayResult {
+        [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
             ToolGatewayResult r;
             int ch = args.value("channel_index", 0);
             int max_c = args.value("max_components", 200);
-            DomainStatus st = domain.listNetSnapshot(r.result, ch, max_c);
+            DomainStatus st = domain_access->listNetSnapshot(r.result, ch, max_c);
             r.ok = st.ok();
             if(!r.ok)
             {
@@ -54,11 +58,11 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                 "Lists registered component class names",
                 {{"type", "object"}, {"additionalProperties", false}},
                 {{"type", "object"}}),
-        [&](const nlohmann::json& args) -> ToolGatewayResult {
+        [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
             (void)args;
             ToolGatewayResult r;
             std::vector<std::string> names;
-            DomainStatus st = domain.listRegisteredClassNames(names);
+            DomainStatus st = domain_access->listRegisteredClassNames(names);
             r.ok = st.ok();
             r.result["classes"] = nlohmann::json::array();
             for(const auto& n : names)
@@ -78,11 +82,11 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                  {"properties", {{"class_name", {{"type", "string"}}}}},
                  {"additionalProperties", false}},
                 {{"type", "object"}}),
-        [&](const nlohmann::json& args) -> ToolGatewayResult {
+        [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
             ToolGatewayResult r;
             const std::string cn = args.at("class_name").get<std::string>();
-            if(project_context)
-                r.result["cl_desc_xml_fragment"] = project_context->clDescFragment(cn);
+            if(project_ctx)
+                r.result["cl_desc_xml_fragment"] = project_ctx->clDescFragment(cn);
             else
                 r.result["cl_desc_xml_fragment"] = "";
             r.result["class_name"] = cn;
@@ -99,11 +103,11 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                    {"channel_index", {{"type", "integer"}, {"minimum", 0}}}}},
                  {"additionalProperties", false}},
                 {{"type", "object"}}),
-        [&](const nlohmann::json& args) -> ToolGatewayResult {
+        [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
             ToolGatewayResult r;
             const std::string query = args.at("query").get<std::string>();
             const int ch = args.value("channel_index", 0);
-            URdkEntityResolver resolver(domain);
+            URdkEntityResolver resolver(*domain_access);
             const EntityResolutionResult resolved = resolver.resolveComponent(query, ch);
             r.result = resolver.toToolJson(resolved);
             r.ok = true;
@@ -119,11 +123,11 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                    {"channel_index", {{"type", "integer"}, {"minimum", 0}}}}},
                  {"additionalProperties", false}},
                 {{"type", "object"}}),
-        [&](const nlohmann::json& args) -> ToolGatewayResult {
+        [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
             ToolGatewayResult r;
             int ch = args.value("channel_index", 0);
             DomainStatus st =
-                domain.getComponentProperties(args.at("long_name").get<std::string>(), r.result, ch);
+                domain_access->getComponentProperties(args.at("long_name").get<std::string>(), r.result, ch);
             r.ok = st.ok();
             if(!r.ok)
             {
@@ -140,13 +144,13 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                  {"properties", {{"query", {{"type", "string"}}}, {"top_k", {{"type", "integer"}}}}},
                  {"additionalProperties", false}},
                 {{"type", "object"}}),
-        [&](const nlohmann::json& args) -> ToolGatewayResult {
+        [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
             ToolGatewayResult r;
             const std::string query = args.at("query").get<std::string>();
             int top_k = args.value("top_k", 5);
-            if(project_context)
+            if(project_ctx)
             {
-                auto snippets = project_context->searchDocs(query, top_k);
+                auto snippets = project_ctx->searchDocs(query, top_k);
                 r.result["snippets"] = nlohmann::json::array();
                 for(const auto& s : snippets)
                 {
@@ -164,11 +168,11 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
         makeDef("validate_project", LLMToolKind::Read, "Dry-run project validation",
                 {{"type", "object"}, {"additionalProperties", false}},
                 {{"type", "object"}}),
-        [&](const nlohmann::json& args) -> ToolGatewayResult {
+        [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
             (void)args;
             ToolGatewayResult r;
             std::vector<std::string> warnings;
-            DomainStatus st = domain.validateProjectDryRun(warnings);
+            DomainStatus st = domain_access->validateProjectDryRun(warnings);
             r.ok = st.ok();
             r.result["warnings"] = warnings;
             r.result["ok"] = warnings.empty();
@@ -188,10 +192,10 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                  {"additionalProperties", false}},
                 {{"type", "object"}},
                 true),
-        [&](const nlohmann::json& args) -> ToolGatewayResult {
+        [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
             ToolGatewayResult r;
             std::string out_name;
-            DomainStatus st = domain.addComponent(
+            DomainStatus st = domain_access->addComponent(
                 args.at("class_name").get<std::string>(),
                 args.at("parent_long_name").get<std::string>(),
                 args.at("short_name").get<std::string>(), args.value("channel_index", 0), out_name);
@@ -216,10 +220,10 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                  {"additionalProperties", false}},
                 {{"type", "object"}},
                 true),
-        [&](const nlohmann::json& args) -> ToolGatewayResult {
+        [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
             ToolGatewayResult r;
             std::string previous;
-            DomainStatus st = domain.setProperty(args.at("long_name").get<std::string>(),
+            DomainStatus st = domain_access->setProperty(args.at("long_name").get<std::string>(),
                                                  args.at("property_name").get<std::string>(),
                                                  args.at("value").get<std::string>(),
                                                  args.value("channel_index", 0), &previous);
@@ -247,9 +251,9 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                  {"additionalProperties", false}},
                 {{"type", "object"}},
                 true),
-        [&](const nlohmann::json& args) -> ToolGatewayResult {
+        [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
             ToolGatewayResult r;
-            DomainStatus st = domain.removeComponent(args.at("long_name").get<std::string>(),
+            DomainStatus st = domain_access->removeComponent(args.at("long_name").get<std::string>(),
                                                      args.value("channel_index", 0));
             r.ok = st.ok();
             r.result["removed"] = args.at("long_name").get<std::string>();
@@ -276,9 +280,9 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                  {"additionalProperties", false}},
                 {{"type", "object"}},
                 true),
-        [&](const nlohmann::json& args) -> ToolGatewayResult {
+        [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
             ToolGatewayResult r;
-            DomainStatus st = domain.connectComponents(
+            DomainStatus st = domain_access->connectComponents(
                 args.at("from_long_name").get<std::string>(),
                 args.at("from_property").get<std::string>(),
                 args.at("to_long_name").get<std::string>(),
@@ -311,9 +315,9 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                  {"additionalProperties", false}},
                 {{"type", "object"}},
                 true),
-        [&](const nlohmann::json& args) -> ToolGatewayResult {
+        [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
             ToolGatewayResult r;
-            DomainStatus st = domain.breakComponentLink(
+            DomainStatus st = domain_access->breakComponentLink(
                 args.at("from_long_name").get<std::string>(),
                 args.at("from_property").get<std::string>(),
                 args.at("to_long_name").get<std::string>(),
@@ -327,50 +331,7 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
             return r;
         });
 
-    registry.registerTool(
-        makeDef("load_project", LLMToolKind::Write, "Open a project file (replaces current project)",
-                {{"type", "object"},
-                 {"required", {"project_path"}},
-                 {"properties", {{"project_path", {{"type", "string"}}}}},
-                 {"additionalProperties", false}},
-                {{"type", "object"}},
-                true),
-        [&](const nlohmann::json& args) -> ToolGatewayResult {
-            ToolGatewayResult r;
-            DomainStatus st = domain.loadProject(args.at("project_path").get<std::string>());
-            r.ok = st.ok();
-            r.result["project_path"] = args.at("project_path");
-            if(!r.ok)
-            {
-                r.error_code = "DomainError";
-                r.message = st.message;
-            }
-            return r;
-        });
-
-    registry.registerTool(
-        makeDef("save_project", LLMToolKind::Write,
-                "Save the current project (optional path for Save As)",
-                {{"type", "object"},
-                 {"properties", {{"project_path", {{"type", "string"}}}}},
-                 {"additionalProperties", false}},
-                {{"type", "object"}},
-                true),
-        [&](const nlohmann::json& args) -> ToolGatewayResult {
-            ToolGatewayResult r;
-            const std::string path = args.value("project_path", "");
-            DomainStatus st = domain.saveProject(path);
-            r.ok = st.ok();
-            if(!path.empty())
-                r.result["project_path"] = path;
-            r.result["saved"] = r.ok;
-            if(!r.ok)
-            {
-                r.error_code = "DomainError";
-                r.message = st.message;
-            }
-            return r;
-        });
+    RegisterApplicationTools(registry);
 }
 
 } // namespace RDK::LLM

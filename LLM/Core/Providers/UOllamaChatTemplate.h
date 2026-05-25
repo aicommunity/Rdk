@@ -16,12 +16,14 @@ OllamaChatTemplateFamily detectChatTemplateFamily(const std::string& model_name,
 
 OllamaChatTemplateFamily resolveChatTemplateFamily(const LLMProviderProfile& profile);
 
-const char* defaultRdkSystemPrompt();
+std::string buildRdkSystemPrompt(const std::string& response_language);
 
-std::vector<LLMMessage> ensureRdkSystemPrompt(std::vector<LLMMessage> messages);
+std::vector<LLMMessage> ensureRdkSystemPrompt(std::vector<LLMMessage> messages,
+                                              const std::string& response_language = "en");
 
 std::vector<LLMMessage> prepareMessagesForOllama(const LLMProviderProfile& profile,
-                                                 std::vector<LLMMessage> messages);
+                                                 std::vector<LLMMessage> messages,
+                                                 const std::string& response_language = "en");
 
 /// Single-string prompt for native /generate-style fallback (embedded).
 std::string formatPromptWithTemplate(OllamaChatTemplateFamily family,

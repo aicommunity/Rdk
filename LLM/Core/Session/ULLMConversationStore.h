@@ -6,6 +6,7 @@
 
 #include "../LlmTypes.h"
 #include "../Orchestrator/ULLMExecutionPlan.h"
+#include "../Orchestrator/ULLMLifecycleArgumentGate.h"
 #include "../Orchestrator/ULLMWorkflowState.h"
 
 namespace RDK::LLM {
@@ -21,6 +22,7 @@ struct ConversationState {
     std::string session_id;
     std::vector<LLMMessage> messages;
     std::optional<PendingConfirmation> pending;
+    std::optional<PendingToolArguments> pending_tool_arguments;
     std::optional<ULLMExecutionPlan> pending_plan;
     LLMWorkflowPhase workflow_phase = LLMWorkflowPhase::Idle;
     int cloud_provider_rounds = 0;
@@ -33,6 +35,8 @@ public:
     void appendMessage(const std::string& session_id, const LLMMessage& msg);
     void setPending(const std::string& session_id, PendingConfirmation p);
     void clearPending(const std::string& session_id);
+    void setPendingToolArguments(const std::string& session_id, PendingToolArguments p);
+    void clearPendingToolArguments(const std::string& session_id);
     /// Clears pending confirmation if older than ttl_seconds. Returns true if expired.
     bool expirePendingIfStale(const std::string& session_id, int ttl_seconds);
     bool persistToDisk(const std::string& session_id);
