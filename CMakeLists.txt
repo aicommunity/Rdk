@@ -186,6 +186,10 @@ endif()
 
 # Output directories are already configured globally in the root CMakeLists
 
+if(RDK_USE_LLM)
+  add_subdirectory(LLM)
+endif()
+
 # Add tests subdirectory if BUILD_TESTING is enabled.
 # Keep local testing enabled in this subproject so CTest traverses build/Debug/Rdk.
 if(BUILD_TESTING)
