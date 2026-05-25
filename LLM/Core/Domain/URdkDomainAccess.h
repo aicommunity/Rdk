@@ -15,15 +15,22 @@ class UNet;
 
 namespace RDK::LLM {
 
+class ILLMPresentationSink;
+
 struct DomainSessionInfo {
     bool engine_ready = false;
     bool project_loaded = false;
     int channel_count = 0;
 };
 
+class URdkApplicationCommands;
+
 class URdkDomainAccess {
 public:
     explicit URdkDomainAccess(RDK::UApplication* app);
+
+    void setApplicationCommands(URdkApplicationCommands* commands) { m_commands = commands; }
+    void setPresentationSink(ILLMPresentationSink* sink) { m_sink = sink; }
 
     RDK::UApplication* application() const { return m_app; }
     RDK::UEngine* engine() const;
@@ -73,7 +80,9 @@ public:
     DomainStatus validateProjectDryRun(std::vector<std::string>& warnings) const;
 
 private:
-    RDK::UApplication* m_app;
+    RDK::UApplication* m_app = nullptr;
+    URdkApplicationCommands* m_commands = nullptr;
+    ILLMPresentationSink* m_sink = nullptr;
 };
 
 } // namespace RDK::LLM

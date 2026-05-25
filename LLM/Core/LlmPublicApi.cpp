@@ -21,7 +21,9 @@ void LLMServices::initialize(RDK::UApplication* app, ILLMProjectContextProvider*
                              ILLMProviderSettingsSource* settings_source)
 {
     m_project_context = project_context;
+    m_commands = std::make_unique<URdkApplicationCommands>(app);
     m_domain = std::make_unique<URdkDomainAccess>(app);
+    m_domain->setApplicationCommands(m_commands.get());
     GetContextRegistry().setPrimary(project_context);
 
     m_settings = std::make_unique<ULLMSettingsStore>(settings_source);
@@ -86,6 +88,23 @@ ULLMAgentOrchestrator& LLMServices::orchestrator()
 URdkDomainAccess& LLMServices::domain()
 {
     return *m_domain;
+}
+
+URdkApplicationCommands& LLMServices::applicationCommands()
+{
+    return *m_commands;
+}
+
+void LLMServices::setPresentationSink(std::unique_ptr<ILLMPresentationSink> sink)
+{
+    m_presentation_sink = std::move(sink);
+    if(m_domain)
+        m_domain->setPresentationSink(m_presentation_sink.get());
+}
+
+ILLMPresentationSink* LLMServices::presentationSink() const
+{
+    return m_presentation_sink.get();
 }
 
 ULLMSettingsStore& LLMServices::settings()

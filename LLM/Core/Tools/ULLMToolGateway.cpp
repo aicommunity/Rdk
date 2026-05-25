@@ -1,5 +1,6 @@
 #include "ULLMToolGateway.h"
 
+#include "ApplicationToolAudit.h"
 #include "../Policy/ULLMUserRole.h"
 
 #include <random>
@@ -90,9 +91,15 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
 
     result = m_registry.invokeHandler(req.tool_name, req.arguments);
 
-    m_audit.append("tool_invoke_finish",
-                   {{"tool_name", req.tool_name}, {"ok", result.ok}, {"error", result.message}},
-                   req.trace_id, req.session.session_id);
+    nlohmann::json finish = {{"tool_name", req.tool_name},
+                             {"ok", result.ok},
+                             {"error", result.message}};
+    if(result.result.contains(kAuditConfigurationPathKey))
+        finish["configuration_path"] = result.result[kAuditConfigurationPathKey];
+    if(result.result.contains(kAuditPresentationEffectKey))
+        finish["presentation_effect"] = result.result[kAuditPresentationEffectKey];
+
+    m_audit.append("tool_invoke_finish", finish, req.trace_id, req.session.session_id);
 
     if(def->idempotent && !req.idempotency_key.empty() && result.ok)
         m_idempotency.put(req.idempotency_key, result);

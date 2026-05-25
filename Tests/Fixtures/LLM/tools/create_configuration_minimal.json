@@ -1,0 +1,6 @@
+{
+  "parent_directory": "/tmp/nmsdk_llm_test_configs",
+  "autocreate_subdirectory": true,
+  "project_name": "MinimalTest",
+  "channels": [{ "class_name": "Model" }]
+}

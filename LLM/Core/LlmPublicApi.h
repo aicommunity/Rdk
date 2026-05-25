@@ -5,7 +5,9 @@
 #include <string>
 
 #include "LlmTypes.h"
+#include "Domain/URdkApplicationCommands.h"
 #include "Domain/URdkDomainAccess.h"
+#include "Gui/ILLMPresentationSink.h"
 #include "Orchestrator/ULLMAgentOrchestrator.h"
 #include "Settings/ILLMProviderSettingsSource.h"
 #include "Settings/ULLMProviderAuth.h"
@@ -31,13 +33,19 @@ public:
 
     ULLMAgentOrchestrator& orchestrator();
     URdkDomainAccess& domain();
+    URdkApplicationCommands& applicationCommands();
     ULLMSettingsStore& settings();
     const LLMProviderProfile& activeProviderProfile() const;
+
+    void setPresentationSink(std::unique_ptr<ILLMPresentationSink> sink);
+    ILLMPresentationSink* presentationSink() const;
 
 private:
     void rebuildProvider();
 
+    std::unique_ptr<URdkApplicationCommands> m_commands;
     std::unique_ptr<URdkDomainAccess> m_domain;
+    std::unique_ptr<ILLMPresentationSink> m_presentation_sink;
     std::unique_ptr<ILLMProvider> m_provider;
     std::unique_ptr<ULLMConversationStore> m_store;
     std::unique_ptr<ULLMToolArgumentValidator> m_validator;

@@ -28,6 +28,13 @@ enum class LLMToolKind { Read, Write };
 
 enum class LLMIntentKind { Auto, Query, Mutate, Explain, Plan };
 
+enum class LLMPresentationEffect {
+    None,
+    ContextOnly,
+    DiagramRefresh,
+    FullShellRefresh
+};
+
 enum class DomainStatusCode {
     Ok,
     NotInitialized,
@@ -46,6 +53,25 @@ struct DomainStatus {
     DomainStatusCode code = DomainStatusCode::Ok;
     std::string message;
     bool ok() const { return code == DomainStatusCode::Ok; }
+};
+
+struct LLMPresentationEvent {
+    LLMPresentationEffect effect = LLMPresentationEffect::None;
+    std::string configuration_ini_path;
+    bool project_loaded = false;
+    bool update_context = false;
+    bool project_closed = false;
+    bool add_to_recent = false;
+};
+
+struct ApplicationCommandResult {
+    DomainStatus status;
+    nlohmann::json payload = nlohmann::json::object();
+    LLMPresentationEffect presentation = LLMPresentationEffect::None;
+    bool update_context = false;
+    bool project_closed = false;
+    bool add_to_recent = false;
+    std::string resolved_configuration_path;
 };
 
 struct LLMProviderCapabilities {
@@ -84,6 +110,11 @@ struct LLMProfileEndpointOverride {
     std::string model;
 };
 
+enum class LLMSendShortcutMode {
+    CtrlEnter,
+    Enter
+};
+
 struct LLMRuntimeProviderSettings {
     std::string active_profile_id = "ollama-local";
     bool allow_cloud_providers = false;
@@ -91,6 +122,9 @@ struct LLMRuntimeProviderSettings {
     std::map<std::string, std::string> api_keys_by_profile_id;
     /// Per-profile endpoint overrides (empty fields → use built-in preset).
     std::map<std::string, LLMProfileEndpointOverride> endpoint_overrides_by_profile_id;
+    /// Empty = Auto (system locale → supported code → en).
+    std::string preferred_response_language;
+    LLMSendShortcutMode send_shortcut = LLMSendShortcutMode::CtrlEnter;
 };
 
 struct LLMSessionContext {
@@ -133,11 +167,15 @@ struct LLMCompletionResult {
 
 struct LLMCompletionOptions {
     std::vector<nlohmann::json> tools_for_api;
+    /// OpenAI-compatible `tool_choice` (e.g. force `create_configuration`).
+    std::optional<nlohmann::json> tool_choice;
     int max_tokens = 4096;
     float temperature = 0.2f;
     bool stream = false;
     /// OpenAI-compatible `response_format` (e.g. json_schema for Plan intent).
     std::optional<nlohmann::json> response_format;
+    /// Resolved BCP47-like code (en, ru, …). Empty → providers use "en".
+    std::string response_language;
 };
 
 using LLMStreamCallback = std::function<void(const std::string& chunk)>;
@@ -152,6 +190,7 @@ struct LLMToolDefinition {
     bool strict = true;
     bool requires_confirmation = false;
     bool idempotent = false;
+    bool requires_project_loaded = true;
 };
 
 struct ToolInvokeRequest {
@@ -182,6 +221,8 @@ struct PolicyDecision {
 struct ToolFilter {
     LLMIntentKind intent = LLMIntentKind::Auto;
     bool include_write = false;
+    /// When true, expose configuration lifecycle + safe read tools only (no add_component).
+    bool configuration_lifecycle_only = false;
     std::string focus_class_name;
 };
 

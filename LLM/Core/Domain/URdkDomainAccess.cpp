@@ -1,4 +1,7 @@
 #include "URdkDomainAccess.h"
+#include "URdkApplicationCommands.h"
+#include "../Gui/ILLMPresentationSink.h"
+#include "../Tools/ApplicationToolHelpers.h"
 
 #include <sstream>
 
@@ -243,6 +246,13 @@ DomainStatus URdkDomainAccess::breakComponentLink(const std::string& from_long_n
 
 DomainStatus URdkDomainAccess::loadProject(const std::string& path)
 {
+    if(m_commands)
+    {
+        const ApplicationCommandResult r = m_commands->loadConfiguration(path, "close");
+        if(r.status.ok())
+            applyPresentationFromCommand(m_sink, r);
+        return r.status;
+    }
     if(!m_app)
         return {DomainStatusCode::ProjectNotLoaded, "Application not available"};
     if(path.empty())
@@ -254,6 +264,15 @@ DomainStatus URdkDomainAccess::loadProject(const std::string& path)
 
 DomainStatus URdkDomainAccess::saveProject(const std::string& path_optional)
 {
+    if(m_commands)
+    {
+        const ApplicationCommandResult r =
+            path_optional.empty() ? m_commands->saveConfiguration()
+                                  : m_commands->saveConfigurationAs(path_optional);
+        if(r.status.ok())
+            applyPresentationFromCommand(m_sink, r);
+        return r.status;
+    }
     if(!m_app)
         return {DomainStatusCode::ProjectNotLoaded, "Application not available"};
     const bool ok = path_optional.empty() ? m_app->SaveProject() : m_app->SaveProjectAs(path_optional);
