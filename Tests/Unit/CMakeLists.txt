@@ -5,6 +5,10 @@ include(${CMAKE_SOURCE_DIR}/cmake/SelectQt.cmake)
 # Unit tests for Rdk Engine components
 add_subdirectory(Engine)
 
+if(RDK_USE_LLM)
+  add_subdirectory(LLM)
+endif()
+
 add_executable(Test_ComponentGuiRegistry
     Test_ComponentGuiRegistry.cpp
     ../../GUI/Qt/UComponentFormRegistry.cpp

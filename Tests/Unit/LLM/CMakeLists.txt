@@ -1,0 +1,23 @@
+cmake_minimum_required(VERSION 3.16)
+
+set(_LLM_TEST_COMMON
+  ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/RdkDummyLibraries.cpp
+)
+
+function(_add_llm_unit_test name source)
+  add_executable(${name} ${source} ${_LLM_TEST_COMMON})
+  target_link_libraries(${name} PRIVATE GTest::gtest GTest::gtest_main rdk.llm.core rdk.static.qt)
+  target_include_directories(${name} PRIVATE
+    ${CMAKE_SOURCE_DIR}/Rdk/LLM/Core
+    ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include
+    ${CMAKE_SOURCE_DIR}/Rdk/Core
+  )
+  target_compile_definitions(${name} PRIVATE RDK_LIB_TYPE= RDK_CALL=)
+  add_test(NAME ${name} COMMAND ${name})
+endfunction()
+
+_add_llm_unit_test(Test_LLM_ArgumentValidator test_llm_argument_validator.cpp)
+_add_llm_unit_test(Test_LLM_Policy test_llm_policy.cpp)
+_add_llm_unit_test(Test_LLM_IntentParser test_llm_intent_parser.cpp)
+_add_llm_unit_test(Test_LLM_ToolGateway test_llm_tool_gateway.cpp)
+_add_llm_unit_test(Test_LLM_Orchestrator test_llm_orchestrator.cpp)
