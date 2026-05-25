@@ -104,7 +104,8 @@ void RegisterLlmUi(UGEngineControlWidget* host,
 | Input | `QPlainTextEdit`, Send |
 | Provider combo | Профили из `ULLMSettingsStore` + Settings |
 | Status | Local / Cloud / key hint |
-| Ответ LLM | Полный ответ после `QtConcurrent::run` (**streaming post-MVP**) |
+| Ответ LLM | SSE token stream (`LLMStreamHandlers`) для OpenAI-compat / Ollama; embedded — batch |
+| Cancel | `orchestrator.cancel()` во время запроса |
 | Run plan | `confirmPlanExecution()` |
 | Resume / Rollback plan | После checkpoint (`resumePlanExecution` / `rollbackPlanExecution`) |
 | Apply / Reject | `confirmPending()` / `rejectPending()` |

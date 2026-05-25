@@ -30,7 +30,7 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 |----------|-----------|
 | Read tools (все) | Write tools |
 | `search_project_docs` | Plan/Execute batch |
-| GUI chat (non-blocking) | Token streaming (post-MVP) |
+| GUI chat + token streaming (OpenAI-compat) | Embedded live stream |
 | Ollama + OpenAI-compat | Autonomous loop |
 | Entity resolution read | Mass mutations |
 
@@ -138,6 +138,7 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 - [x] Optional Ollama embeddings re-rank (`NMSDK_LLM_DOC_EMBED_OLLAMA=1`, TD-021)
 - [x] `remove_component` write tool
 - [x] `connect_components`, `load_project`, `save_project` write tools
+- [x] GUI token streaming + Cancel (TD-024)
 
 ---
 
@@ -145,7 +146,6 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 
 | Item | Notes |
 |------|-------|
-| GUI token streaming | `chatStream` + Cancel в dock |
 | Confirmation TTL | auto-expire pending HITL |
 | L7 HTTP regression runner | intent/rules smoke in `Tests/Fixtures/LLM/` |
 | Strict json_schema plan from provider | сейчас parse из markdown/json block |

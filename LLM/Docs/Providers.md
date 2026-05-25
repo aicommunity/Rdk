@@ -135,7 +135,12 @@ Mapping tool results → `LLMMessage::Role::Tool` per OpenAI spec.
 
 ## 7. Mock provider (tests)
 
-`ULLMMockProvider` in `Rdk/LLM/Core/Providers/LLMMockProvider.cpp` — only in test targets.
+`ULLMMockProvider` in `Rdk/LLM/Core/Providers/ULLMMockProvider.cpp` — only in test targets.
+
+### Streaming (TD-024)
+
+`UOpenAICompatProvider::chatStream` — `stream: true`, SSE `data:` lines, deltas `content` (+ `tool_calls` без live token stream в GUI).  
+`ULLMHttpClient::postJsonStream` — curl write callback; abort when `ILLMProvider::cancel()` / `ULLMAgentOrchestrator::cancel()`.
 
 ---
 

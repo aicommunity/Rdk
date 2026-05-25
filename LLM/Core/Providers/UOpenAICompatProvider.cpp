@@ -3,6 +3,8 @@
 #include "UOllamaChatTemplate.h"
 
 #include <chrono>
+#include <cstdlib>
+#include <map>
 #include <thread>
 
 namespace RDK::LLM {
@@ -12,6 +14,70 @@ namespace {
 bool shouldRetryHttpStatus(int status)
 {
     return status == 408 || status == 429 || status >= 500;
+}
+
+struct StreamToolPart {
+    std::string id;
+    std::string name;
+    std::string arguments;
+};
+
+void applyStreamDelta(const nlohmann::json& delta, std::string& text_out,
+                      std::map<int, StreamToolPart>& tools_out, LLMStreamCallback& on_chunk)
+{
+    if(delta.contains("content") && delta["content"].is_string())
+    {
+        const std::string piece = delta["content"].get<std::string>();
+        if(!piece.empty())
+        {
+            text_out += piece;
+            if(on_chunk)
+                on_chunk(piece);
+        }
+    }
+    if(!delta.contains("tool_calls") || !delta["tool_calls"].is_array())
+        return;
+    for(const auto& tc : delta["tool_calls"])
+    {
+        const int index = tc.value("index", 0);
+        StreamToolPart& part = tools_out[index];
+        if(tc.contains("id"))
+            part.id = tc["id"].get<std::string>();
+        if(tc.contains("function"))
+        {
+            const auto& fn = tc["function"];
+            if(fn.contains("name") && fn["name"].is_string())
+                part.name = fn["name"].get<std::string>();
+            if(fn.contains("arguments") && fn["arguments"].is_string())
+                part.arguments += fn["arguments"].get<std::string>();
+        }
+    }
+}
+
+LLMCompletionResult buildStreamResult(const std::string& text,
+                                      const std::map<int, StreamToolPart>& tools)
+{
+    LLMCompletionResult result;
+    result.ok = true;
+    result.text = text;
+    for(const auto& kv : tools)
+    {
+        if(kv.second.name.empty())
+            continue;
+        LLMToolCall call;
+        call.id = kv.second.id;
+        call.name = kv.second.name;
+        try
+        {
+            call.arguments = nlohmann::json::parse(kv.second.arguments.empty() ? "{}" : kv.second.arguments);
+        }
+        catch(...)
+        {
+            call.arguments = nlohmann::json::object();
+        }
+        result.tool_calls.push_back(std::move(call));
+    }
+    return result;
 }
 
 } // namespace
@@ -93,6 +159,7 @@ LLMCompletionResult UOpenAICompatProvider::parseResponse(const std::string& body
 LLMCompletionResult UOpenAICompatProvider::chat(const std::vector<LLMMessage>& messages,
                                                 const LLMCompletionOptions& opts)
 {
+    m_cancelled = false;
     LLMCompletionResult result;
     std::string url = m_profile.base_url;
     if(url.back() == '/')
@@ -137,11 +204,88 @@ void UOpenAICompatProvider::chatStream(const std::vector<LLMMessage>& messages,
                                        const LLMCompletionOptions& opts, LLMStreamCallback on_chunk,
                                        std::function<void(LLMCompletionResult)> on_done)
 {
-    LLMCompletionResult r = chat(messages, opts);
-    if(!r.text.empty() && on_chunk)
-        on_chunk(r.text);
+    m_cancelled = false;
+    std::string url = m_profile.base_url;
+    if(url.back() == '/')
+        url.pop_back();
+    url += "/chat/completions";
+
+    nlohmann::json body = buildRequestBody(messages, opts);
+    body["stream"] = true;
+
+    std::string accumulated_text;
+    std::map<int, StreamToolPart> tool_parts;
+    LLMStreamCallback chunk_cb = on_chunk;
+    if(!opts.tools_for_api.empty())
+        chunk_cb = nullptr;
+
+    auto run_once = [&]() -> LLMCompletionResult {
+        accumulated_text.clear();
+        tool_parts.clear();
+        const auto resp = m_http.postJsonStream(
+            url, body.dump(), m_profile.api_key,
+            [&](const std::string& payload) -> bool {
+                if(m_cancelled.load())
+                    return false;
+                try
+                {
+                    const nlohmann::json j = nlohmann::json::parse(payload);
+                    if(!j.contains("choices") || j["choices"].empty())
+                        return true;
+                    const auto& delta = j["choices"][0].value("delta", nlohmann::json::object());
+                    applyStreamDelta(delta, accumulated_text, tool_parts, chunk_cb);
+                }
+                catch(...)
+                {
+                }
+                return true;
+            });
+        if(m_cancelled.load())
+        {
+            LLMCompletionResult cancelled;
+            cancelled.ok = false;
+            cancelled.error_message = "Cancelled";
+            return cancelled;
+        }
+        if(!resp.error.empty())
+        {
+            LLMCompletionResult err;
+            err.ok = false;
+            err.error_message = resp.error;
+            return err;
+        }
+        if(resp.status_code < 200 || resp.status_code >= 300)
+        {
+            LLMCompletionResult err;
+            err.ok = false;
+            err.error_message = "HTTP " + std::to_string(resp.status_code);
+            if(!resp.body.empty())
+                err.error_message += ": " + resp.body;
+            return err;
+        }
+        return buildStreamResult(accumulated_text, tool_parts);
+    };
+
+    LLMCompletionResult result;
+    for(int attempt = 0; attempt < 2; ++attempt)
+    {
+        result = run_once();
+        if(result.ok || m_cancelled.load())
+            break;
+        if(attempt == 0 && result.error_message.rfind("HTTP ", 0) == 0)
+        {
+            const int code = std::atoi(result.error_message.c_str() + 5);
+            if(shouldRetryHttpStatus(code))
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                continue;
+            }
+        }
+        break;
+    }
+
     if(on_done)
-        on_done(r);
+        on_done(result);
 }
 
 bool UOpenAICompatProvider::healthCheck(std::string& error_out)

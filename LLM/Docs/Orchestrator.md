@@ -154,5 +154,6 @@ API: `confirmPlanExecution`, `resumePlanExecution`, `rollbackPlanExecution`. С�
 
 ## 9. Threading
 
-- Один `handleUserMessage` — worker (`QtConcurrent`) per GUI send
+- Один `handleUserMessage` — worker (`QtConcurrent`) per GUI send; опционально `LLMStreamHandlers::on_token` → `chatStream`
+- `cancel()` — `m_cancelled` + `ILLMProvider::cancel()` (прерывает SSE HTTP)
 - `m_session_busy` — второй запрос с тем же `session_id` отклоняется с ошибкой «Session busy»

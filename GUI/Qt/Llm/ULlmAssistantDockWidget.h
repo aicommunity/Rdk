@@ -11,6 +11,10 @@
 #include "../UVisualControllerWidget.h"
 #include "ULlmGuiContextBridge.h"
 
+namespace RDK::LLM {
+struct LLMFinalResponse;
+}
+
 class ULlmAssistantDockWidget : public UVisualControllerWidget {
     Q_OBJECT
 public:
@@ -30,14 +34,20 @@ public slots:
     void onExecutePlanClicked();
     void onResumePlanClicked();
     void onRollbackPlanClicked();
+    void onCancelClicked();
     void onContextChanged(const LLMGuiContext& ctx);
     void onOpenSettings();
     void onProviderChanged(int index);
     void refreshProviderBar();
+    void onStreamToken(const QString& token);
+    void onStreamFinished(const RDK::LLM::LLMFinalResponse& resp);
+    void beginAssistantStream();
 
 private:
     RDK::LLM::LLMSessionContext buildSession(const LLMGuiContext& ctx) const;
     void runUserMessage(const QString& text);
+    void endAssistantStream();
+    void setRequestInProgress(bool busy);
 
     ULlmGuiContextBridge* m_bridge = nullptr;
     QComboBox* m_provider_combo = nullptr;
@@ -45,6 +55,7 @@ private:
     QPlainTextEdit* m_input = nullptr;
     QTextEdit* m_history = nullptr;
     QPushButton* m_send = nullptr;
+    QPushButton* m_cancel = nullptr;
     QPushButton* m_confirm = nullptr;
     QPushButton* m_reject = nullptr;
     QPushButton* m_execute_plan = nullptr;
@@ -53,6 +64,8 @@ private:
     QString m_pending_confirmation_id;
     QString m_pending_plan_id;
     bool m_plan_paused = false;
+    bool m_streaming_reply = false;
+    bool m_stream_tokens_received = false;
     LLMGuiContext m_last_ctx;
 };
 

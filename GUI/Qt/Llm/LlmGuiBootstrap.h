@@ -1,6 +1,7 @@
 #ifndef RDK_LLM_GUI_BOOTSTRAP_H
 #define RDK_LLM_GUI_BOOTSTRAP_H
 
+class QString;
 class QWidget;
 class UGEngineControlWidget;
 class ULlmGuiContextBridge;

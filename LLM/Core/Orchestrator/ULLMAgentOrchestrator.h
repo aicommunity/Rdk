@@ -25,6 +25,11 @@ struct LLMRequestEnvelope {
     LLMProviderProfile provider_profile;
 };
 
+/// Optional GUI streaming (TD-024). Called from worker thread; marshal to UI thread in callbacks.
+struct LLMStreamHandlers {
+    std::function<void(const std::string& token)> on_token;
+};
+
 struct LLMFinalResponse {
     bool ok = true;
     std::string text;
@@ -43,7 +48,8 @@ public:
     ULLMAgentOrchestrator(ILLMProvider& provider, ULLMToolRegistry& registry,
                           ULLMToolGateway& gateway, ULLMConversationStore& store);
 
-    LLMFinalResponse handleUserMessage(const LLMRequestEnvelope& req);
+    LLMFinalResponse handleUserMessage(const LLMRequestEnvelope& req,
+                                       const LLMStreamHandlers* stream = nullptr);
     LLMFinalResponse confirmPending(const std::string& session_id, const std::string& confirmation_id);
     LLMFinalResponse confirmPlanExecution(const std::string& session_id, const std::string& trace_id,
                                           const LLMSessionContext& session);
@@ -52,7 +58,7 @@ public:
     LLMFinalResponse rollbackPlanExecution(const std::string& session_id, const std::string& trace_id,
                                            const LLMSessionContext& session);
     void rejectPending(const std::string& session_id);
-    void cancel() { m_cancelled = true; }
+    void cancel();
 
 private:
     ILLMProvider& m_provider;

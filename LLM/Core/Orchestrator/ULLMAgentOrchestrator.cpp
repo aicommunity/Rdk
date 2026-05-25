@@ -49,6 +49,12 @@ ULLMAgentOrchestrator::ULLMAgentOrchestrator(ILLMProvider& provider, ULLMToolReg
 {
 }
 
+void ULLMAgentOrchestrator::cancel()
+{
+    m_cancelled = true;
+    m_provider.cancel();
+}
+
 void ULLMAgentOrchestrator::setWorkflowPhase(ConversationState& state, LLMWorkflowPhase phase,
                                              const std::string& trace_id)
 {
@@ -61,7 +67,8 @@ void ULLMAgentOrchestrator::setWorkflowPhase(ConversationState& state, LLMWorkfl
                          state.session_id);
 }
 
-LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelope& req)
+LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelope& req,
+                                                          const LLMStreamHandlers* stream)
 {
     m_cancelled = false;
     LLMFinalResponse final;
@@ -193,7 +200,23 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             }
         }
 
-        LLMCompletionResult completion = m_provider.chat(provider_messages, opts);
+        LLMCompletionResult completion;
+        const bool use_stream =
+            stream && stream->on_token && m_provider.capabilities().supports_streaming;
+        if(use_stream)
+        {
+            m_provider.chatStream(
+                provider_messages, opts,
+                [&](const std::string& token) {
+                    if(!m_cancelled && stream->on_token)
+                        stream->on_token(token);
+                },
+                [&](LLMCompletionResult r) { completion = std::move(r); });
+        }
+        else
+        {
+            completion = m_provider.chat(provider_messages, opts);
+        }
         if(!completion.ok)
         {
             final.ok = false;

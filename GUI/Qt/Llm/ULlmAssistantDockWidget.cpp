@@ -4,14 +4,15 @@
 
 #include <QFutureWatcher>
 #include <QtConcurrent/QtConcurrent>
-#include <QDialog>
 #include <QHBoxLayout>
+#include <QMetaObject>
+#include <QTextCursor>
 #include <QVBoxLayout>
 
 #include "../../../LLM/Core/LlmPublicApi.h"
 #include "../../../LLM/Core/Orchestrator/ULLMAgentOrchestrator.h"
 #include "../../../LLM/Core/Settings/ULLMProviderAuth.h"
-#include "LlmGuiBootstrap.h"
+#include "../UGEngineControlWidget.h"
 
 ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplication* app,
                                                ULlmGuiContextBridge* bridge)
@@ -42,6 +43,8 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
 
     auto* row = new QHBoxLayout();
     m_send = new QPushButton(tr("Send"), this);
+    m_cancel = new QPushButton(tr("Cancel"), this);
+    m_cancel->setVisible(false);
     m_confirm = new QPushButton(tr("Apply"), this);
     m_reject = new QPushButton(tr("Reject"), this);
     m_execute_plan = new QPushButton(tr("Run plan"), this);
@@ -53,6 +56,7 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     m_resume_plan->setVisible(false);
     m_rollback_plan->setVisible(false);
     row->addWidget(m_send);
+    row->addWidget(m_cancel);
     row->addWidget(m_execute_plan);
     row->addWidget(m_resume_plan);
     row->addWidget(m_rollback_plan);
@@ -64,6 +68,7 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
             &ULlmAssistantDockWidget::onProviderChanged);
     connect(settings_btn, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onOpenSettings);
     connect(m_send, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onSendClicked);
+    connect(m_cancel, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onCancelClicked);
     connect(m_confirm, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onConfirmClicked);
     connect(m_reject, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onRejectClicked);
     connect(m_execute_plan, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onExecutePlanClicked);
@@ -230,6 +235,82 @@ void ULlmAssistantDockWidget::onSendClicked()
     runUserMessage(text);
 }
 
+void ULlmAssistantDockWidget::beginAssistantStream()
+{
+    m_streaming_reply = true;
+    m_stream_tokens_received = false;
+    m_history->append(QString("<b>%1:</b> ").arg(tr("Assistant")));
+}
+
+void ULlmAssistantDockWidget::endAssistantStream()
+{
+    m_streaming_reply = false;
+    m_history->append(QString());
+}
+
+void ULlmAssistantDockWidget::setRequestInProgress(bool busy)
+{
+    m_send->setEnabled(!busy);
+    m_input->setEnabled(!busy);
+    m_cancel->setVisible(busy);
+}
+
+void ULlmAssistantDockWidget::onStreamToken(const QString& token)
+{
+    if(token.isEmpty())
+        return;
+    m_stream_tokens_received = true;
+    QTextCursor cursor = m_history->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    cursor.insertText(token);
+    m_history->setTextCursor(cursor);
+    m_history->ensureCursorVisible();
+}
+
+void ULlmAssistantDockWidget::onStreamFinished(const RDK::LLM::LLMFinalResponse& resp)
+{
+    setRequestInProgress(false);
+    if(m_streaming_reply)
+        endAssistantStream();
+
+    if(!resp.ok)
+    {
+        appendAssistantText(QString::fromStdString("Error: " + resp.error));
+        return;
+    }
+    if(resp.pending_plan_execution)
+    {
+        setPendingPlan(QString::fromStdString(resp.pending_plan_id), QString::fromStdString(resp.text));
+        return;
+    }
+    if(resp.pending_confirmation)
+    {
+        setPendingConfirmation("pending", QString::fromStdString(resp.text));
+        return;
+    }
+    if(resp.can_resume_plan)
+    {
+        setPausedPlan(QString::fromStdString(resp.pending_plan_id), QString::fromStdString(resp.text));
+        return;
+    }
+    if(resp.needs_entity_clarification)
+    {
+        appendAssistantText(tr("<b>Clarification needed</b>"));
+        appendAssistantText(QString::fromStdString(resp.text));
+        return;
+    }
+    if(!resp.text.empty() && !m_stream_tokens_received)
+        appendAssistantText(QString::fromStdString(resp.text));
+}
+
+void ULlmAssistantDockWidget::onCancelClicked()
+{
+    RDK::LLM::LLMServices::instance().orchestrator().cancel();
+    appendAssistantText(tr("[Cancelled]"));
+    setRequestInProgress(false);
+    endAssistantStream();
+}
+
 void ULlmAssistantDockWidget::runUserMessage(const QString& text)
 {
     const LLMGuiContext ctx = m_bridge ? m_bridge->currentContext() : m_last_ctx;
@@ -240,37 +321,37 @@ void ULlmAssistantDockWidget::runUserMessage(const QString& text)
     req.session = buildSession(ctx);
     req.provider_profile = RDK::LLM::LLMServices::instance().activeProviderProfile();
 
-    auto future = QtConcurrent::run([req]() {
-        return RDK::LLM::LLMServices::instance().orchestrator().handleUserMessage(req);
+    const auto profile = RDK::LLM::LLMServices::instance().activeProviderProfile();
+    const bool can_stream = profile.kind != RDK::LLM::LLMProviderKind::EmbeddedLlama
+                            && profile.kind != RDK::LLM::LLMProviderKind::Mock;
+
+    setRequestInProgress(true);
+    if(can_stream)
+        QMetaObject::invokeMethod(this, "beginAssistantStream", Qt::QueuedConnection);
+
+    QPointer<ULlmAssistantDockWidget> self(this);
+    auto future = QtConcurrent::run([req, can_stream, self]() {
+        RDK::LLM::LLMStreamHandlers stream;
+        if(can_stream && self)
+        {
+            stream.on_token = [self](const std::string& token) {
+                if(!self)
+                    return;
+                const QString qtok = QString::fromStdString(token);
+                QMetaObject::invokeMethod(self, "onStreamToken", Qt::QueuedConnection,
+                                        Q_ARG(QString, qtok));
+            };
+        }
+        return RDK::LLM::LLMServices::instance().orchestrator().handleUserMessage(
+            req, can_stream ? &stream : nullptr);
     });
+
     auto* watcher = new QFutureWatcher<RDK::LLM::LLMFinalResponse>(this);
     connect(watcher, &QFutureWatcher<RDK::LLM::LLMFinalResponse>::finished, this,
             [this, watcher]() {
                 const RDK::LLM::LLMFinalResponse resp = watcher->result();
                 watcher->deleteLater();
-                if(!resp.ok)
-                {
-                    appendAssistantText(QString::fromStdString("Error: " + resp.error));
-                    return;
-                }
-                if(resp.pending_plan_execution)
-                {
-                    setPendingPlan(QString::fromStdString(resp.pending_plan_id),
-                                   QString::fromStdString(resp.text));
-                    return;
-                }
-                if(resp.pending_confirmation)
-                {
-                    setPendingConfirmation("pending", QString::fromStdString(resp.text));
-                    return;
-                }
-                if(resp.needs_entity_clarification)
-                {
-                    appendAssistantText(tr("<b>Clarification needed</b>"));
-                    appendAssistantText(QString::fromStdString(resp.text));
-                    return;
-                }
-                appendAssistantText(QString::fromStdString(resp.text));
+                onStreamFinished(resp);
             });
     watcher->setFuture(future);
 }
