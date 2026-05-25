@@ -171,11 +171,37 @@ DomainStatus URdkDomainAccess::removeComponent(const std::string& long_name, int
     return {};
 }
 
+DomainStatus URdkDomainAccess::getPropertyValue(const std::string& long_name,
+                                              const std::string& property_name,
+                                              int channel_index,
+                                              std::string& out_value,
+                                              bool& found) const
+{
+    found = false;
+    out_value.clear();
+    const char* raw =
+        MModel_GetComponentPropertyValue(channel_index, long_name.c_str(), property_name.c_str());
+    if(raw && raw[0])
+    {
+        out_value = raw;
+        found = true;
+    }
+    return {};
+}
+
 DomainStatus URdkDomainAccess::setProperty(const std::string& long_name,
                                            const std::string& property_name,
                                            const std::string& value,
-                                           int channel_index)
+                                           int channel_index,
+                                           std::string* previous_value_out)
 {
+    if(previous_value_out)
+    {
+        bool had = false;
+        getPropertyValue(long_name, property_name, channel_index, *previous_value_out, had);
+        if(!had)
+            previous_value_out->clear();
+    }
     const int rc =
         MModel_SetComponentPropertyValue(channel_index, long_name.c_str(), property_name.c_str(),
                                          value.c_str());

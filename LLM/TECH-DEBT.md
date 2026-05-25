@@ -32,9 +32,8 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Deferred in | Target phase | Priority | Status | Notes / resolution |
 |----|------|-------------|--------------|----------|--------|-------------------|
-| TD-019 | MotionControlLib `Llm/` read tools | 2b | future | P3 | open | PulseLib done; motion control docs/tools pending |
-| TD-020 | Plan rollback for `set_property` (store prior values) | TD-018 | future | P3 | open | Only `add_component` auto-compensates today |
-| TD-021 | Ollama `/api/embeddings` merge for doc search | TD-017 | future | P3 | open | Offline projection shipped; cloud/local embeddings optional |
+| TD-022 | GUI plan preview widget wired to `formatExecutionPlanPreview` | UX | future | P3 | open | Dock shows text summary only |
+| TD-023 | Plan checkpoints / resume mid-plan | Scenario C | future | P3 | open | Full execute-or-fail today |
 
 ---
 
@@ -42,8 +41,11 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Resolved in | Resolution |
 |----|------|-------------|------------|
+| TD-019 | MotionControlLib `Llm/` read tools | 2026-05-25 | `RegisterMotionControlLibLlmTools` |
+| TD-020 | Plan rollback for `set_property` | 2026-05-25 | `previous_value` + compensation in `ULLMPlanExecutor` |
+| TD-021 | Ollama `/api/embeddings` doc re-rank | 2026-05-25 | `UDocOllamaEmbeddings`, `NMSDK_LLM_DOC_EMBED_OLLAMA=1` |
 | TD-017 | Doc search vector / semantic ranking | 2026-05-25 | Random-projection hybrid in `UDocSearchIndex` |
-| TD-018 | Plan saga auto-undo add_component | 2026-05-25 | `ULLMPlanExecutor` invokes `remove_component` on failure |
+| TD-018 | Plan saga auto-undo add_component | 2026-05-25 | `remove_component` on failed plan |
 | TD-002 | Intent classification (rules + optional LLM) | 2026-05-25 | `parseDetailed`, `NMSDK_LLM_INTENT_LLM=1` |
 | TD-003 | Doc search TF-IDF index | 2026-05-25 | `UDocSearchIndex`, `searchDocsWithIndex` |
 | TD-004 | Scenario C plan execute workflow | 2026-05-25 | `ULLMPlanExecutor`, GUI Run plan, policy `checkPlan` |
@@ -70,4 +72,5 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | 2026-05-25 | Single `TECH-DEBT.md` at `Rdk/LLM/` root | Visible next to code; linked from AGENTS.md | — |
 | 2026-05-25 | One English commit per implementation phase | Reviewable history, bisect-friendly | — |
 | 2026-05-25 | `Rdk/LLM` must not hardcode NMSDK `Bin/` paths | Core vs product separation | — |
-| 2026-05-25 | Offline projection vs full embedding model | No GGUF embed model in MVP; hybrid TF-IDF sufficient | TD-021 |
+| 2026-05-25 | Offline projection vs full embedding model | No GGUF embed model in MVP; hybrid TF-IDF sufficient | TD-021 Ollama optional |
+| 2026-05-25 | Ollama embed re-rank off by default | Avoid CI/network dependency | `NMSDK_LLM_DOC_EMBED_OLLAMA=1` |

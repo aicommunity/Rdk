@@ -128,18 +128,35 @@ PlanExecutionResult ULLMPlanExecutor::execute(ULLMExecutionPlan& plan,
     {
         for(auto it = completed_writes.rbegin(); it != completed_writes.rend(); ++it)
         {
-            if(it->tool_name != "add_component")
-                continue;
-            const std::string long_name = it->result.value("long_name", "");
-            if(long_name.empty())
-                continue;
-
             ToolInvokeRequest undo;
             undo.trace_id = trace_id;
-            undo.tool_name = "remove_component";
-            undo.arguments = {{"long_name", long_name}};
             undo.session = session;
             undo.confirmed = true;
+
+            if(it->tool_name == "add_component")
+            {
+                const std::string long_name = it->result.value("long_name", "");
+                if(long_name.empty())
+                    continue;
+                undo.tool_name = "remove_component";
+                undo.arguments = {{"long_name", long_name}};
+            }
+            else if(it->tool_name == "set_property")
+            {
+                if(!it->result.value("had_previous", false))
+                    continue;
+                undo.tool_name = "set_property";
+                undo.arguments = {{"long_name", it->result.value("long_name", "")},
+                                  {"property_name", it->result.value("property_name", "")},
+                                  {"value", it->result.value("previous_value", "")}};
+                if(undo.arguments["long_name"].get<std::string>().empty())
+                    continue;
+            }
+            else
+            {
+                continue;
+            }
+
             const ToolGatewayResult undo_tr = m_gateway.invoke(undo);
             if(undo_tr.ok)
             {
@@ -147,7 +164,7 @@ PlanExecutionResult ULLMPlanExecutor::execute(ULLMExecutionPlan& plan,
                 GetAuditLog().append("plan_compensation_applied",
                                      {{"plan_id", plan.plan_id},
                                       {"step_id", it->step_id},
-                                      {"long_name", long_name}},
+                                      {"tool", undo.tool_name}},
                                      trace_id, session.session_id);
             }
             else
@@ -155,7 +172,7 @@ PlanExecutionResult ULLMPlanExecutor::execute(ULLMExecutionPlan& plan,
                 GetAuditLog().append("plan_compensation_failed",
                                      {{"plan_id", plan.plan_id},
                                       {"step_id", it->step_id},
-                                      {"long_name", long_name},
+                                      {"tool", undo.tool_name},
                                       {"error", undo_tr.message}},
                                      trace_id, session.session_id);
             }
@@ -166,8 +183,8 @@ PlanExecutionResult ULLMPlanExecutor::execute(ULLMExecutionPlan& plan,
     {
         std::ostringstream oss;
         if(result.compensation_steps_applied > 0)
-            oss << "Auto-rollback removed " << result.compensation_steps_applied
-                << " component(s) from failed plan. ";
+            oss << "Auto-rollback applied " << result.compensation_steps_applied
+                << " compensation step(s) from failed plan. ";
         oss << "Completed steps: ";
         for(int id : result.completed_step_ids)
             oss << id << " ";

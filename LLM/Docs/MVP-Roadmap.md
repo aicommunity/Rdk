@@ -69,7 +69,7 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 
 - [x] `Libraries/Rdk-HardwareLib/Llm/` — read tools + doc paths
 - [x] `Libraries/Nmsdk-PulseLib/Llm/` — `search_pulse_docs`, `list_pulse_component_classes`
-- [ ] `Nmsdk-MotionControlLib/Llm/` — по приоритету продукта (TD-019)
+- [x] `Nmsdk-MotionControlLib/Llm/` — `search_motion_control_docs`, `list_motion_control_component_classes`
 
 ---
 
@@ -109,7 +109,8 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 - [x] State machine + `pending_plan` в [Orchestrator.md](Orchestrator.md)
 - [x] `ULLMPlanExecutor` + GUI Run plan / Reject
 - [x] Saga: auto `remove_component` после failed plan (TD-018)
-- [ ] Checkpoints / rollback `set_property` (TD-020)
+- [x] Rollback `set_property` when prior value known (TD-020)
+- [ ] Checkpoints / resume mid-plan (TD-023)
 
 ### Сценарий D — Autonomous agent
 
@@ -133,6 +134,7 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 - [x] Provider HTTP retry (408/429/5xx, one retry)
 - [x] Cloud session rate limit (40 provider rounds)
 - [x] Hybrid doc search (TF-IDF + offline semantic boost, TD-017)
+- [x] Optional Ollama embeddings re-rank (`NMSDK_LLM_DOC_EMBED_OLLAMA=1`, TD-021)
 - [x] `remove_component` write tool
 
 ---

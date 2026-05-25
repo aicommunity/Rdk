@@ -1,5 +1,6 @@
 #include "UDocSearchIndex.h"
 
+#include "UDocOllamaEmbeddings.h"
 #include "UDocSearchHelper.h"
 
 #include <algorithm>
@@ -178,9 +179,17 @@ std::vector<DocSnippet> searchDocsWithIndex(const std::vector<fs::path>& roots, 
 {
     UDocSearchIndex index;
     index.build(roots, 600);
-    std::vector<DocSnippet> hits = index.search(query, top_k);
+    const int candidate_k = std::max(top_k * 4, 12);
+    std::vector<DocSnippet> hits = index.search(query, candidate_k);
     if(hits.empty())
-        hits = UDocSearchHelper::searchRoots(roots, query, top_k);
+        hits = UDocSearchHelper::searchRoots(roots, query, candidate_k);
+    if(!hits.empty())
+    {
+        if(UDocOllamaEmbeddings::enabled())
+            UDocOllamaEmbeddings::rerank(query, hits, top_k);
+        else if(static_cast<int>(hits.size()) > top_k)
+            hits.resize(static_cast<size_t>(top_k));
+    }
     return hits;
 }
 

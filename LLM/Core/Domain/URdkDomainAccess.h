@@ -48,10 +48,16 @@ public:
                               int channel_index,
                               std::string& out_long_name);
     DomainStatus removeComponent(const std::string& long_name, int channel_index);
+    DomainStatus getPropertyValue(const std::string& long_name,
+                                  const std::string& property_name,
+                                  int channel_index,
+                                  std::string& out_value,
+                                  bool& found) const;
     DomainStatus setProperty(const std::string& long_name,
                              const std::string& property_name,
                              const std::string& value,
-                             int channel_index);
+                             int channel_index,
+                             std::string* previous_value_out = nullptr);
     DomainStatus validateProjectDryRun(std::vector<std::string>& warnings) const;
 
 private:

@@ -218,11 +218,17 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                 true),
         [&](const nlohmann::json& args) -> ToolGatewayResult {
             ToolGatewayResult r;
+            std::string previous;
             DomainStatus st = domain.setProperty(args.at("long_name").get<std::string>(),
                                                  args.at("property_name").get<std::string>(),
                                                  args.at("value").get<std::string>(),
-                                                 args.value("channel_index", 0));
+                                                 args.value("channel_index", 0), &previous);
             r.ok = st.ok();
+            r.result["long_name"] = args.at("long_name");
+            r.result["property_name"] = args.at("property_name");
+            r.result["had_previous"] = !previous.empty();
+            if(!previous.empty())
+                r.result["previous_value"] = previous;
             if(!r.ok)
             {
                 r.error_code = "DomainError";
