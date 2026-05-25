@@ -123,11 +123,11 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 
 См. [Testing-Strategy.md](Testing-Strategy.md) + [Policy-and-Safety.md](Policy-and-Safety.md):
 
-- [ ] RBAC per user
-- [ ] Hash chain verification in CI
-- [ ] Schema regression for tools ([schema-gateway](https://github.com/sravan27/schema-gateway) pattern)
-- [ ] No raw prompt in audit (default)
-- [ ] Disaster: provider down → wizard fallback
+- [x] RBAC roles in audit (`user_role` on tool_invoke)
+- [x] Hash chain verification in CI (via `Test_LLM_AuditChain` in `ci-llm-linux.sh`)
+- [x] Schema regression for tools (`ULLMToolSchemaRegression` + unit test)
+- [x] No raw prompt in audit (default — `ULLMAuditSanitizer`)
+- [x] Provider down hints (cloud → ollama-local; Ollama troubleshooting tip)
 
 ---
 

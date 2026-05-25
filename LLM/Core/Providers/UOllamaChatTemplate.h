@@ -14,6 +14,8 @@ OllamaChatTemplateFamily detectChatTemplateFamily(const std::string& model_name,
                                                 OllamaChatTemplateFamily hint =
                                                     OllamaChatTemplateFamily::Auto);
 
+OllamaChatTemplateFamily resolveChatTemplateFamily(const LLMProviderProfile& profile);
+
 const char* defaultRdkSystemPrompt();
 
 std::vector<LLMMessage> ensureRdkSystemPrompt(std::vector<LLMMessage> messages);

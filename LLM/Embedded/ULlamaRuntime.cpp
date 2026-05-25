@@ -148,8 +148,7 @@ LLMCompletionResult ULlamaRuntime::complete(const std::vector<LLMMessage>& messa
     profile.model = m_config.gguf_path;
     profile.chat_template = OllamaChatTemplateFamily::Auto;
     const auto prepared = prepareMessagesForOllama(profile, messages);
-    const OllamaChatTemplateFamily family =
-        detectChatTemplateFamily(m_config.gguf_path, profile.chat_template);
+    const OllamaChatTemplateFamily family = resolveChatTemplateFamily(profile);
     const std::string prompt = formatPromptWithTemplate(family, prepared);
     const int n_prompt = countPromptTokens(m_impl->vocab, prompt);
     if(n_prompt <= 0)

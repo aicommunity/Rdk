@@ -171,6 +171,7 @@ void ULlmAssistantDockWidget::runUserMessage(const QString& text)
     req.trace_id = "gui-trace";
     req.user_text = text.toStdString();
     req.session = buildSession(ctx);
+    req.provider_profile = RDK::LLM::LLMServices::instance().activeProviderProfile();
 
     auto future = QtConcurrent::run([req]() {
         return RDK::LLM::LLMServices::instance().orchestrator().handleUserMessage(req);

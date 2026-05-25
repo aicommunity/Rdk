@@ -38,12 +38,19 @@ double scoreText(const std::string& haystack_lower, const std::string& filename_
     if(tokens.empty())
         return 0.0;
     double score = 0.0;
-    for(const std::string& t : tokens)
+    for(size_t i = 0; i < tokens.size(); ++i)
     {
+        const std::string& t = tokens[i];
         if(haystack_lower.find(t) != std::string::npos)
             score += 1.0;
         if(filename_lower.find(t) != std::string::npos)
             score += 0.5;
+        if(i + 1 < tokens.size())
+        {
+            const std::string bigram = t + " " + tokens[i + 1];
+            if(haystack_lower.find(bigram) != std::string::npos)
+                score += 0.75;
+        }
     }
     return score / static_cast<double>(tokens.size());
 }

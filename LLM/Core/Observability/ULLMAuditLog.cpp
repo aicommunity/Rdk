@@ -1,4 +1,6 @@
 #include "ULLMAuditLog.h"
+
+#include "ULLMAuditSanitizer.h"
 #include "../LlmTypes.h"
 
 #include <chrono>
@@ -42,7 +44,7 @@ void ULLMAuditLog::append(const std::string& event_type, const nlohmann::json& d
     event["session_id"] = session_id;
     event["tool_registry_version"] = TOOL_REGISTRY_VERSION;
     event["prompt_bundle_id"] = PROMPT_BUNDLE_ID;
-    event["details"] = details;
+    event["details"] = sanitizeAuditDetails(details);
     event["prev_hash"] = m_prev_hash;
     event["curr_hash"] = computeEventHash(m_prev_hash, event);
     m_prev_hash = event["curr_hash"].get<std::string>();

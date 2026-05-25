@@ -26,7 +26,7 @@ enum class LLMProviderKind {
 
 enum class LLMToolKind { Read, Write };
 
-enum class LLMIntentKind { Auto, Query, Mutate, Explain };
+enum class LLMIntentKind { Auto, Query, Mutate, Explain, Plan };
 
 enum class DomainStatusCode {
     Ok,

@@ -11,6 +11,13 @@ TEST(LLMIntentParser, QueryIntent)
     EXPECT_EQ(parser.parse("what components are on the diagram"), LLMIntentKind::Query);
 }
 
+TEST(LLMIntentParser, PlanIntent)
+{
+    ULLMIntentParser parser;
+    EXPECT_EQ(parser.parse("составь план изменений"), LLMIntentKind::Plan);
+    EXPECT_EQ(parser.parse("plan steps to add component"), LLMIntentKind::Plan);
+}
+
 TEST(LLMIntentParser, MutateIntent)
 {
     ULLMIntentParser parser;

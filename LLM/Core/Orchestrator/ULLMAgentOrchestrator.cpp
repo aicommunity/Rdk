@@ -6,6 +6,7 @@
 
 #include "../LlmModuleInit.h"
 #include "../LlmPublicApi.h"
+#include "../Providers/UOllamaChatTemplate.h"
 #include "../Settings/ULLMProviderAuth.h"
 
 namespace RDK::LLM {
@@ -106,6 +107,18 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
     filter.intent = intent;
     filter.include_write = (intent == LLMIntentKind::Mutate) && session.llm_write_enabled;
 
+    std::vector<LLMMessage> provider_messages = state.messages;
+    if(intent == LLMIntentKind::Plan)
+    {
+        LLMMessage plan_hint;
+        plan_hint.role = LLMMessage::Role::System;
+        plan_hint.content =
+            "Plan-only mode: use read tools to inspect state, then reply with a numbered execution "
+            "plan. Do not mutate the project until the user confirms.";
+        provider_messages.insert(provider_messages.begin(), plan_hint);
+        setWorkflowPhase(state, LLMWorkflowPhase::Executing, req.trace_id);
+    }
+
     LLMCompletionOptions opts;
     const bool provider_tools = m_provider.capabilities().supports_tool_calling;
     if(provider_tools)
@@ -118,11 +131,20 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
 
     for(int round = 0; round < kMaxRounds && !m_cancelled; ++round)
     {
-        LLMCompletionResult completion = m_provider.chat(state.messages, opts);
+        LLMCompletionResult completion = m_provider.chat(provider_messages, opts);
         if(!completion.ok)
         {
             final.ok = false;
             final.error = completion.error_message;
+            if(req.provider_profile.is_cloud)
+            {
+                final.error +=
+                    " (tip: enable allow-cloud or switch to ollama-local / embedded-offline)";
+            }
+            else if(isOllamaProvider(req.provider_profile))
+            {
+                final.error += " (check: ollama serve, model pulled, Ollama 0.3+ for tools)";
+            }
             setWorkflowPhase(state, LLMWorkflowPhase::Failed, req.trace_id);
             return final;
         }
@@ -265,7 +287,17 @@ void ULLMAgentOrchestrator::confirmPending(const std::string& session_id,
 
 void ULLMAgentOrchestrator::rejectPending(const std::string& session_id)
 {
+    ConversationState& state = m_store.getOrCreate(session_id);
+    if(state.pending_plan)
+    {
+        GetAuditLog().append("workflow_compensation_skipped",
+                             {{"plan_id", state.pending_plan->plan_id},
+                              {"reason", "user_rejected_confirmation"}},
+                             "", session_id);
+        state.pending_plan.reset();
+    }
     m_store.clearPending(session_id);
+    setWorkflowPhase(state, LLMWorkflowPhase::Idle, "");
     GetAuditLog().append("confirmation_rejected", {}, "", session_id);
 }
 

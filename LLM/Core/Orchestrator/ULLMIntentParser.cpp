@@ -20,6 +20,8 @@ LLMIntentKind ULLMIntentParser::parse(const std::string& user_text) const
     for(char& c : lower)
         c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
 
+    if(containsAny(lower, {"план", "спланируй", "шаги", "plan ", "steps", "roadmap", "сначала"}))
+        return LLMIntentKind::Plan;
     if(containsAny(lower, {"добав", "создай", "удали", "измени", "сохран", "загруз", "add ", "create ",
                            "remove ", "delete ", "save ", "load "}))
         return LLMIntentKind::Mutate;

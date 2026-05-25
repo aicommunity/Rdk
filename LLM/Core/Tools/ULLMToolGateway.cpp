@@ -1,5 +1,7 @@
 #include "ULLMToolGateway.h"
 
+#include "../Policy/ULLMUserRole.h"
+
 #include <random>
 
 namespace RDK::LLM {
@@ -81,8 +83,10 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
             return *cached;
     }
 
-    m_audit.append("tool_invoke_start", {{"tool_name", req.tool_name}}, req.trace_id,
-                   req.session.session_id);
+    m_audit.append("tool_invoke_start",
+                   {{"tool_name", req.tool_name},
+                    {"user_role", userRoleName(resolveUserRole(req.session.user_id))}},
+                   req.trace_id, req.session.session_id);
 
     result = m_registry.invokeHandler(req.tool_name, req.arguments);
 

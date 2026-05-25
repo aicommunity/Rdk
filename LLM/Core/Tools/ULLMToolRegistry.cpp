@@ -23,7 +23,9 @@ std::vector<LLMToolDefinition> ULLMToolRegistry::listForLlmApi(const ToolFilter&
         const LLMToolDefinition& d = kv.second.def;
         if(!filter.include_write && d.kind == LLMToolKind::Write)
             continue;
-        if(filter.intent == LLMIntentKind::Query && d.kind == LLMToolKind::Write)
+        if((filter.intent == LLMIntentKind::Query || filter.intent == LLMIntentKind::Plan
+            || filter.intent == LLMIntentKind::Explain)
+           && d.kind == LLMToolKind::Write)
             continue;
         out.push_back(d);
     }

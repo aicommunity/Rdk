@@ -1,5 +1,7 @@
 #include "UOllamaChatTemplate.h"
 
+#include "UOllamaModelInfo.h"
+
 #include <algorithm>
 #include <cctype>
 
@@ -79,12 +81,20 @@ std::vector<LLMMessage> ensureRdkSystemPrompt(std::vector<LLMMessage> messages)
     return messages;
 }
 
+OllamaChatTemplateFamily resolveChatTemplateFamily(const LLMProviderProfile& profile)
+{
+    if(profile.chat_template != OllamaChatTemplateFamily::Auto)
+        return profile.chat_template;
+    if(isOllamaProvider(profile))
+        return fetchOllamaTemplateFamily(profile);
+    return detectChatTemplateFamily(profile.model, profile.chat_template);
+}
+
 std::vector<LLMMessage> prepareMessagesForOllama(const LLMProviderProfile& profile,
                                                 std::vector<LLMMessage> messages)
 {
     messages = ensureRdkSystemPrompt(std::move(messages));
-    const OllamaChatTemplateFamily family =
-        detectChatTemplateFamily(profile.model, profile.chat_template);
+    const OllamaChatTemplateFamily family = resolveChatTemplateFamily(profile);
 
     std::vector<LLMMessage> out;
     out.reserve(messages.size());

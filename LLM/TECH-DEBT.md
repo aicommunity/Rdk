@@ -32,10 +32,9 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Deferred in | Target phase | Priority | Status | Notes / resolution |
 |----|------|-------------|--------------|----------|--------|-------------------|
-| TD-015 | Chat template: Jinja from Ollama modelfile not fetched | design | post-MVP | P3 | open | Heuristic families (qwen/llama3/…); use Ollama /api/show later |
-| TD-002 | Intent parser: rule-based only; no LLM-based intent classification | design | post-MVP | P2 | open | Extended keywords (arduino, explain); LLM classifier still future |
-| TD-003 | Doc search: no embeddings index | design | post-MVP | P3 | open | `UDocSearchHelper` multi-token ranking (2026-05-25) |
-| TD-004 | Scenario C saga/compensation | design | post-MVP | P3 | open | Phase enum + audit transitions only; no saga yet |
+| TD-002 | Intent parser: no LLM-based intent classification | design | post-MVP | P2 | open | Plan/Query/Mutate rules; optional classifier later |
+| TD-003 | Doc search: no embeddings index | design | post-MVP | P3 | open | Bigram ranking in `UDocSearchHelper`; embeddings later |
+| TD-004 | Scenario C full saga execute/compensate | design | post-MVP | P3 | open | `pending_plan` + compensation audit; no auto-rollback |
 
 ---
 
@@ -43,6 +42,8 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Resolved in | Resolution |
 |----|------|-------------|------------|
+| TD-015 | Ollama `/api/show` modelfile → chat template family | 2026-05-25 | `UOllamaModelInfo`, `resolveChatTemplateFamily` |
+| TD-016 | Audit sanitization + schema regression tests | 2026-05-25 | `ULLMAuditSanitizer`, `ULLMToolSchemaRegression`, CI via ctest |
 | TD-014 | Phase 4: `UEmbeddedLlamaProvider` + llama.cpp | 2026-05-25 | `ULlamaRuntime`, `rdk.llm.embedded`, `Scripts/ci-llm-embedded-linux.sh` |
 | TD-007 | `UOllamaNativeProvider` fallback | 2026-05-25 | `UOllamaNativeProvider`, profile `ollama-native` |
 | TD-009 | Library Llm `HardwareLib/Llm` | 2026-05-25 | `RegisterHardwareLibLlmTools`, NeuroModeler wiring |
