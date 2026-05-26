@@ -25,6 +25,8 @@ public slots:
 
 signals:
     void contextChanged(const LLMGuiContext& ctx);
+    void projectOpened(const QString& configuration_ini_path);
+    void projectClosed();
 
 private:
     void emitIfChanged();

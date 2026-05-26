@@ -224,6 +224,12 @@ void ULLMConversationStore::removeFromDisk(const std::string& session_id)
         fs::remove(file);
 }
 
+void ULLMConversationStore::removeSession(const std::string& session_id)
+{
+    m_sessions.erase(session_id);
+    removeFromDisk(session_id);
+}
+
 ConversationState& ULLMConversationStore::getOrCreate(const std::string& session_id)
 {
     if(m_sessions.find(session_id) == m_sessions.end())

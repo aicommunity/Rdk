@@ -8,6 +8,8 @@
 #include <QLineEdit>
 #include <QPushButton>
 
+#include "../../../LLM/Core/LlmTypes.h"
+
 namespace RDK {
 class UApplication;
 }
@@ -22,16 +24,20 @@ private slots:
     void onSaveClicked();
     void onTestConnectionClicked();
     void onResetEndpointsClicked();
+    void onRefreshOllamaModelsClicked();
 
 private:
     void loadFromStore();
     void saveToStore();
+    void updateOllamaModelRefreshVisibility();
+    RDK::LLM::LLMProviderProfile profileFromFields() const;
 
     RDK::UApplication* m_app = nullptr;
     QComboBox* m_profiles = nullptr;
     QLineEdit* m_api_key = nullptr;
     QLineEdit* m_base_url = nullptr;
-    QLineEdit* m_model = nullptr;
+    QComboBox* m_model = nullptr;
+    QPushButton* m_refresh_ollama_models = nullptr;
     QCheckBox* m_allow_cloud = nullptr;
     QCheckBox* m_allow_write = nullptr;
     QComboBox* m_response_language = nullptr;

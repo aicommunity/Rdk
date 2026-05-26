@@ -62,6 +62,8 @@ public:
     LLMFinalResponse rollbackPlanExecution(const std::string& session_id, const std::string& trace_id,
                                            const LLMSessionContext& session);
     void rejectPending(const std::string& session_id);
+    /// Clears persisted conversation for session_id (GUI new chat / project load).
+    void discardSession(const std::string& session_id);
     void cancel();
 
 private:

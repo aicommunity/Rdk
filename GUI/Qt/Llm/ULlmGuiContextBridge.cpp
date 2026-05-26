@@ -27,12 +27,14 @@ void ULlmGuiContextBridge::onProjectLoaded(const QString& path)
 {
     m_ctx.project_xml_path = path;
     emitIfChanged();
+    emit projectOpened(path);
 }
 
 void ULlmGuiContextBridge::onProjectClosed()
 {
     m_ctx.project_xml_path.clear();
     emitIfChanged();
+    emit projectClosed();
 }
 
 void ULlmGuiContextBridge::onChannelChanged(int index)

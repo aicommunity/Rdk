@@ -3,8 +3,10 @@
 #include <QFormLayout>
 #include <QLabel>
 #include <QVBoxLayout>
+#include <QtConcurrent/QtConcurrent>
 
 #include "../../../LLM/Core/LlmPublicApi.h"
+#include "../../../LLM/Core/Providers/UOllamaModelInfo.h"
 #include "../../../LLM/Core/Providers/ULLMProviderFactory.h"
 #include "../../../LLM/Core/Settings/ULLMProviderAuth.h"
 #include "../../../LLM/Core/Settings/ULLMProviderCatalog.h"
@@ -27,11 +29,15 @@ ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UAp
     auto* endpoint_form = new QFormLayout();
     m_base_url = new QLineEdit(this);
     m_base_url->setPlaceholderText(tr("e.g. http://127.0.0.1:11434/v1"));
-    m_model = new QLineEdit(this);
-    m_model->setPlaceholderText(tr("e.g. qwen2.5:7b"));
+    m_model = new QComboBox(this);
+    m_model->setEditable(true);
+    m_model->lineEdit()->setPlaceholderText(tr("e.g. qwen2.5:7b"));
     endpoint_form->addRow(tr("Base URL:"), m_base_url);
     endpoint_form->addRow(tr("Model:"), m_model);
     layout->addLayout(endpoint_form);
+
+    m_refresh_ollama_models = new QPushButton(tr("Refresh Ollama model list"), this);
+    layout->addWidget(m_refresh_ollama_models);
 
     auto* reset_btn = new QPushButton(tr("Reset URL and model to defaults"), this);
     layout->addWidget(reset_btn);
@@ -79,6 +85,8 @@ ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UAp
     connect(save_btn, &QPushButton::clicked, this, &ULlmProviderSettingsWidget::onSaveClicked);
     connect(test_btn, &QPushButton::clicked, this,
             &ULlmProviderSettingsWidget::onTestConnectionClicked);
+    connect(m_refresh_ollama_models, &QPushButton::clicked, this,
+            &ULlmProviderSettingsWidget::onRefreshOllamaModelsClicked);
 
     loadFromStore();
 }
@@ -141,19 +149,22 @@ void ULlmProviderSettingsWidget::onProfileChanged(int index)
         m_base_url->setEnabled(false);
         m_base_url->setPlaceholderText(tr("In-process (no URL)"));
         m_model->setEnabled(true);
-        m_model->setPlaceholderText(tr("Path to .gguf model file"));
+        m_model->lineEdit()->setPlaceholderText(tr("Path to .gguf model file"));
     }
     else
     {
         m_base_url->setEnabled(true);
         m_base_url->setPlaceholderText(tr("e.g. http://127.0.0.1:11434/v1"));
-        m_model->setPlaceholderText(tr("e.g. qwen2.5:7b"));
+        m_model->lineEdit()->setPlaceholderText(tr("e.g. qwen2.5:7b"));
     }
 
     m_base_url->setText(override.base_url.empty() ? QString::fromStdString(preset.base_url)
                                                   : QString::fromStdString(override.base_url));
-    m_model->setText(override.model.empty() ? QString::fromStdString(preset.model)
-                                            : QString::fromStdString(override.model));
+    const QString model_text = override.model.empty() ? QString::fromStdString(preset.model)
+                                                      : QString::fromStdString(override.model);
+    m_model->setEditText(model_text);
+
+    updateOllamaModelRefreshVisibility();
 
     QString hint;
     if(preset.kind == RDK::LLM::LLMProviderKind::EmbeddedLlama)
@@ -188,6 +199,66 @@ void ULlmProviderSettingsWidget::onProfileChanged(int index)
         hint += tr(" (from system)");
 
     m_status->setText(hint.trimmed());
+
+    if(m_refresh_ollama_models->isVisible())
+        onRefreshOllamaModelsClicked();
+}
+
+void ULlmProviderSettingsWidget::updateOllamaModelRefreshVisibility()
+{
+    const std::string profile_id = m_profiles->currentData().toString().toStdString();
+    const auto preset =
+        RDK::LLM::LLMServices::instance().settings().presetProfile(profile_id);
+    const bool ollama = preset.kind == RDK::LLM::LLMProviderKind::OllamaOpenAICompat
+                        || preset.kind == RDK::LLM::LLMProviderKind::OllamaNative;
+    m_refresh_ollama_models->setVisible(ollama);
+}
+
+RDK::LLM::LLMProviderProfile ULlmProviderSettingsWidget::profileFromFields() const
+{
+    RDK::LLM::LLMProviderProfile profile =
+        RDK::LLM::LLMServices::instance().settings().presetProfile(
+            m_profiles->currentData().toString().toStdString());
+    profile.base_url = m_base_url->text().trimmed().toStdString();
+    profile.model = m_model->currentText().trimmed().toStdString();
+    profile.api_key = m_api_key->text().toStdString();
+    return profile;
+}
+
+void ULlmProviderSettingsWidget::onRefreshOllamaModelsClicked()
+{
+    const RDK::LLM::LLMProviderProfile profile = profileFromFields();
+    if(profile.kind != RDK::LLM::LLMProviderKind::OllamaOpenAICompat
+       && profile.kind != RDK::LLM::LLMProviderKind::OllamaNative)
+        return;
+
+    m_refresh_ollama_models->setEnabled(false);
+    const QString previous = m_model->currentText();
+    auto* watcher = new QFutureWatcher<std::vector<std::string>>(this);
+    connect(watcher, &QFutureWatcher<std::vector<std::string>>::finished, this,
+            [this, watcher, previous]() {
+                const std::vector<std::string> models = watcher->result();
+                watcher->deleteLater();
+                m_refresh_ollama_models->setEnabled(true);
+                m_model->clear();
+                for(const std::string& name : models)
+                    m_model->addItem(QString::fromStdString(name));
+                if(!previous.isEmpty())
+                {
+                    const int idx = m_model->findText(previous);
+                    if(idx >= 0)
+                        m_model->setCurrentIndex(idx);
+                    else
+                        m_model->setEditText(previous);
+                }
+                if(models.empty())
+                    m_status->setText(tr("No models returned from Ollama /api/tags"));
+                else
+                    m_status->setText(tr("Ollama models: %1 listed").arg(static_cast<int>(models.size())));
+            });
+    watcher->setFuture(QtConcurrent::run([profile]() {
+        return RDK::LLM::listOllamaTagModels(profile);
+    }));
 }
 
 void ULlmProviderSettingsWidget::onResetEndpointsClicked()
@@ -196,7 +267,7 @@ void ULlmProviderSettingsWidget::onResetEndpointsClicked()
     const auto preset =
         RDK::LLM::LLMServices::instance().settings().presetProfile(profile_id);
     m_base_url->setText(QString::fromStdString(preset.base_url));
-    m_model->setText(QString::fromStdString(preset.model));
+    m_model->setEditText(QString::fromStdString(preset.model));
 }
 
 void ULlmProviderSettingsWidget::saveToStore()
@@ -209,7 +280,7 @@ void ULlmProviderSettingsWidget::saveToStore()
     store.setApiKeyForProfile(profile_id, m_api_key->text().toStdString());
 
     const std::string base_url = m_base_url->text().trimmed().toStdString();
-    const std::string model = m_model->text().trimmed().toStdString();
+    const std::string model = m_model->currentText().trimmed().toStdString();
     if(base_url == preset.base_url && model == preset.model)
         store.clearEndpointOverride(profile_id);
     else

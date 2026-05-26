@@ -30,6 +30,7 @@ public:
     void setPendingPlan(const QString& plan_id, const QString& summary);
     void setPausedPlan(const QString& plan_id, const QString& summary);
     void clearPendingPlan();
+    void startNewChat(const QString& system_note = QString());
 
 public slots:
     void onSendClicked();
@@ -40,6 +41,8 @@ public slots:
     void onRollbackPlanClicked();
     void onCancelClicked();
     void onContextChanged(const LLMGuiContext& ctx);
+    void onProjectOpened(const QString& configuration_ini_path);
+    void onProjectClosed();
     void onOpenSettings();
     void onProviderChanged(int index);
     void refreshProviderBar();
@@ -54,6 +57,7 @@ protected:
 
 private:
     RDK::LLM::LLMSessionContext buildSession(const LLMGuiContext& ctx) const;
+    std::string currentSessionId() const;
     void runUserMessage(const QString& text);
     void endAssistantStream();
     void setRequestInProgress(bool busy);
@@ -83,6 +87,7 @@ private:
     QShortcut* m_shortcut_ctrl_enter = nullptr;
     bool m_enter_send_filter_active = false;
     LLMGuiContext m_last_ctx;
+    QString m_session_id;
 };
 
 #endif

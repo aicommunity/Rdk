@@ -5,6 +5,7 @@
 #include <QFutureWatcher>
 #include <QKeyEvent>
 #include <QTimer>
+#include <QUuid>
 #include <QtConcurrent/QtConcurrent>
 #include <QHBoxLayout>
 #include <QMetaObject>
@@ -31,8 +32,10 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     auto* top_row = new QHBoxLayout();
     m_provider_combo = new QComboBox(this);
     auto* settings_btn = new QPushButton(tr("Settings..."), this);
+    auto* new_chat_btn = new QPushButton(tr("New chat"), this);
     m_provider_status = new QLabel(this);
     top_row->addWidget(m_provider_combo, 1);
+    top_row->addWidget(new_chat_btn);
     top_row->addWidget(settings_btn);
     layout->addLayout(top_row);
     layout->addWidget(m_provider_status);
@@ -81,6 +84,8 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     connect(m_provider_combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
             &ULlmAssistantDockWidget::onProviderChanged);
     connect(settings_btn, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onOpenSettings);
+    connect(new_chat_btn, &QPushButton::clicked, this,
+            [this]() { startNewChat(tr("<i>New chat started.</i>")); });
     connect(m_send, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onSendClicked);
     connect(m_cancel, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onCancelClicked);
     connect(m_confirm, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onConfirmClicked);
@@ -89,8 +94,17 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     connect(m_resume_plan, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onResumePlanClicked);
     connect(m_rollback_plan, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onRollbackPlanClicked);
     if(m_bridge)
+    {
         connect(m_bridge, &ULlmGuiContextBridge::contextChanged, this,
                 &ULlmAssistantDockWidget::onContextChanged);
+        connect(m_bridge, &ULlmGuiContextBridge::projectOpened, this,
+                &ULlmAssistantDockWidget::onProjectOpened);
+        connect(m_bridge, &ULlmGuiContextBridge::projectClosed, this,
+                &ULlmAssistantDockWidget::onProjectClosed);
+    }
+
+    m_session_id = QStringLiteral("gui-%1")
+                       .arg(QUuid::createUuid().toString(QUuid::WithoutBraces));
 
     m_shortcut_ctrl_return =
         new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Return), m_input);
@@ -179,7 +193,7 @@ void ULlmAssistantDockWidget::setPendingConfirmation(const QString& confirmation
     connect(m_confirmation_timer, &QTimer::timeout, this, [this]() {
         if(m_pending_confirmation_id.isEmpty())
             return;
-        RDK::LLM::LLMServices::instance().orchestrator().rejectPending("gui-session");
+        RDK::LLM::LLMServices::instance().orchestrator().rejectPending(currentSessionId());
         clearPendingConfirmation();
         appendAssistantText(tr("Confirmation expired."));
     });
@@ -248,10 +262,44 @@ void ULlmAssistantDockWidget::clearPendingPlan()
     m_rollback_plan->setVisible(false);
 }
 
+std::string ULlmAssistantDockWidget::currentSessionId() const
+{
+    return m_session_id.toStdString();
+}
+
+void ULlmAssistantDockWidget::startNewChat(const QString& system_note)
+{
+    if(!m_session_id.isEmpty() && RDK::LLM::LLMServices::instance().isInitialized())
+        RDK::LLM::LLMServices::instance().orchestrator().discardSession(currentSessionId());
+
+    m_session_id = QStringLiteral("gui-%1")
+                         .arg(QUuid::createUuid().toString(QUuid::WithoutBraces));
+    m_history->clear();
+    clearPendingConfirmation();
+    clearPendingPlan();
+    m_reject->setVisible(false);
+    setRequestInProgress(false);
+    endAssistantStream();
+
+    if(!system_note.isEmpty())
+        appendAssistantText(system_note);
+}
+
+void ULlmAssistantDockWidget::onProjectOpened(const QString& configuration_ini_path)
+{
+    (void)configuration_ini_path;
+    startNewChat(tr("<i>New chat — project was loaded.</i>"));
+}
+
+void ULlmAssistantDockWidget::onProjectClosed()
+{
+    startNewChat(tr("<i>New chat — project was closed.</i>"));
+}
+
 RDK::LLM::LLMSessionContext ULlmAssistantDockWidget::buildSession(const LLMGuiContext& ctx) const
 {
     RDK::LLM::LLMSessionContext s;
-    s.session_id = "gui-session";
+    s.session_id = currentSessionId();
     s.user_name = application ? application->GetUserName() : "";
     s.user_id = application ? application->GetUserId() : 0;
     s.project_loaded = application && application->GetProjectOpenFlag();
@@ -438,7 +486,7 @@ void ULlmAssistantDockWidget::runUserMessage(const QString& text)
 {
     const LLMGuiContext ctx = m_bridge ? m_bridge->currentContext() : m_last_ctx;
     RDK::LLM::LLMRequestEnvelope req;
-    req.session_id = "gui-session";
+    req.session_id = currentSessionId();
     req.trace_id = "gui-trace";
     req.user_text = text.toStdString();
     req.session = buildSession(ctx);
@@ -485,7 +533,7 @@ void ULlmAssistantDockWidget::onConfirmClicked()
         return;
     const LLMGuiContext ctx = m_bridge ? m_bridge->currentContext() : m_last_ctx;
     const RDK::LLM::LLMFinalResponse resp = RDK::LLM::LLMServices::instance().orchestrator().confirmPending(
-        "gui-session", m_pending_confirmation_id.toStdString());
+        currentSessionId(), m_pending_confirmation_id.toStdString());
     clearPendingConfirmation();
     appendAssistantText(resp.ok ? QString::fromStdString(resp.text)
                                 : QString::fromStdString("Error: " + resp.error));
@@ -494,7 +542,7 @@ void ULlmAssistantDockWidget::onConfirmClicked()
 
 void ULlmAssistantDockWidget::onRejectClicked()
 {
-    RDK::LLM::LLMServices::instance().orchestrator().rejectPending("gui-session");
+    RDK::LLM::LLMServices::instance().orchestrator().rejectPending(currentSessionId());
     clearPendingConfirmation();
     clearPendingPlan();
     m_reject->setVisible(false);
@@ -507,9 +555,10 @@ void ULlmAssistantDockWidget::onExecutePlanClicked()
         return;
     const LLMGuiContext ctx = m_bridge ? m_bridge->currentContext() : m_last_ctx;
     const RDK::LLM::LLMSessionContext session = buildSession(ctx);
-    auto future = QtConcurrent::run([session]() {
+    const std::string session_id = currentSessionId();
+    auto future = QtConcurrent::run([session, session_id]() {
         return RDK::LLM::LLMServices::instance().orchestrator().confirmPlanExecution(
-            "gui-session", "gui-plan-trace", session);
+            session_id, "gui-plan-trace", session);
     });
     auto* watcher = new QFutureWatcher<RDK::LLM::LLMFinalResponse>(this);
     connect(watcher, &QFutureWatcher<RDK::LLM::LLMFinalResponse>::finished, this,
@@ -536,9 +585,10 @@ void ULlmAssistantDockWidget::onResumePlanClicked()
         return;
     const LLMGuiContext ctx = m_bridge ? m_bridge->currentContext() : m_last_ctx;
     const RDK::LLM::LLMSessionContext session = buildSession(ctx);
-    auto future = QtConcurrent::run([session]() {
+    const std::string session_id = currentSessionId();
+    auto future = QtConcurrent::run([session, session_id]() {
         return RDK::LLM::LLMServices::instance().orchestrator().resumePlanExecution(
-            "gui-session", "gui-plan-resume", session);
+            session_id, "gui-plan-resume", session);
     });
     auto* watcher = new QFutureWatcher<RDK::LLM::LLMFinalResponse>(this);
     connect(watcher, &QFutureWatcher<RDK::LLM::LLMFinalResponse>::finished, this,
@@ -565,9 +615,10 @@ void ULlmAssistantDockWidget::onRollbackPlanClicked()
         return;
     const LLMGuiContext ctx = m_bridge ? m_bridge->currentContext() : m_last_ctx;
     const RDK::LLM::LLMSessionContext session = buildSession(ctx);
-    auto future = QtConcurrent::run([session]() {
+    const std::string session_id = currentSessionId();
+    auto future = QtConcurrent::run([session, session_id]() {
         return RDK::LLM::LLMServices::instance().orchestrator().rollbackPlanExecution(
-            "gui-session", "gui-plan-rollback", session);
+            session_id, "gui-plan-rollback", session);
     });
     auto* watcher = new QFutureWatcher<RDK::LLM::LLMFinalResponse>(this);
     connect(watcher, &QFutureWatcher<RDK::LLM::LLMFinalResponse>::finished, this,

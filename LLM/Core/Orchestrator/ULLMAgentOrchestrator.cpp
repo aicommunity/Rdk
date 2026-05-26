@@ -878,4 +878,13 @@ void ULLMAgentOrchestrator::rejectPending(const std::string& session_id)
     GetAuditLog().append("confirmation_rejected", {}, "", session_id);
 }
 
+void ULLMAgentOrchestrator::discardSession(const std::string& session_id)
+{
+    cancel();
+    rejectPending(session_id);
+    m_store.removeSession(session_id);
+    std::lock_guard<std::mutex> lock(m_session_busy_mu);
+    m_session_busy.erase(session_id);
+}
+
 } // namespace RDK::LLM

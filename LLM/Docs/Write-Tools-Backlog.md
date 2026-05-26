@@ -31,11 +31,13 @@ MVP/post-MVP план закрыт. Дальше: **довести write-tools �
 
 **Unit gates:** `ctest -R 'Test_LLM_WriteToolsP2'`
 
-## Приоритет P3 (UX / ops)
+## Приоритет P3 (UX / ops) — частично ✅
 
-- «Новый чат» + смена `session_id` при load project
-- Embedded live token stream (TD отдельно)
-- Ollama: подсказка модели в Settings (список из `/api/tags`) — частично есть
+| Item | Статус | Реализация |
+|------|--------|------------|
+| Новый чат + session при load | done | `ULlmAssistantDockWidget::startNewChat`, `discardSession`, `projectOpened` |
+| Ollama model list в Settings | done | editable combo + `Refresh Ollama model list` (`/api/tags`) |
+| Embedded live token stream | open | отдельный TD (batch-only embedded) |
 
 ## Как тестировать каждый write-tool
 
