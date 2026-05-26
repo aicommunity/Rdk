@@ -9,6 +9,8 @@ std::string lookup(const std::string& key, const std::string& lang)
     const bool ru = lang.rfind("ru", 0) == 0;
     if(key == "confirmation.apply_hint")
         return ru ? "Нажмите Apply для подтверждения." : "Press Apply to confirm.";
+    if(key == "confirmation.required")
+        return ru ? "Требуется подтверждение для: {tool_name}." : "Confirmation required for: {tool_name}.";
     if(key == "args.missing.configuration_path")
         return ru ? "Укажите путь к конфигурации." : "Specify configuration path.";
     if(key == "error.max_rounds")

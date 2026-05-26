@@ -31,10 +31,12 @@ std::vector<std::string> tokenize(const std::string& text)
     {
         std::string lower;
         lower.reserve(word.size());
-        for(char c : word)
+        for(unsigned char c : word)
         {
-            if(std::isalnum(static_cast<unsigned char>(c)))
-                lower += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+            if(std::isalnum(c))
+                lower += static_cast<char>(std::tolower(c));
+            else if(c >= 0x80)
+                lower += static_cast<char>(c);
         }
         if(lower.size() >= 2)
             tokens.push_back(lower);

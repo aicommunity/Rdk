@@ -10,6 +10,10 @@ TEST(LLMUserMessages, ReturnsEnglishAndRussianMessages)
               "Press Apply to confirm.");
     EXPECT_EQ(formatUserMessage("confirmation.apply_hint", "ru"),
               "Нажмите Apply для подтверждения.");
+    EXPECT_EQ(formatUserMessage("confirmation.required", "en", {{"tool_name", "create_configuration"}}),
+              "Confirmation required for: create_configuration.");
+    EXPECT_EQ(formatUserMessage("confirmation.required", "ru", {{"tool_name", "load_configuration"}}),
+              "Требуется подтверждение для: load_configuration.");
 
     EXPECT_EQ(formatUserMessage("args.missing.configuration_path", "en"),
               "Specify configuration path.");

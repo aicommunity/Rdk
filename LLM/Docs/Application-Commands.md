@@ -58,8 +58,19 @@ Call `LLMServices::initialize(app, ctx)` without `setPresentationSink` — comma
 | `Test_LLM_PresentationSink` | FullShell vs None, audit field attachment |
 | `Test_LLM_OllamaLabIntegration` | HTTP/chat to `http://10.245.1.12:11434` — **skipped** if host down (`GTEST_SKIP`) |
 | `Test_LLM_E2eLabCommands` | Orchestrator E2E: user → lab Ollama → tool calls (`validate_configuration`, `load_configuration`, …) — **skipped** if Ollama down |
-| `Test_LLM_E2eScenarios` | Parameterized NL E2E: fuzzy RU/EN prompts + goal evaluation (tools invoked, validate/create/load lifecycle) — **skipped** if Ollama down |
+| `Test_LLM_E2eScenarios` | Parameterized NL E2E: fuzzy RU/EN prompts incl. `создай новый проект` — **skipped** if Ollama down |
 | `Test_LLM_LifecycleArgumentGate` | Path extraction, preflight, merge, prompt formatting |
-| `Test_LLM_OrchestratorLifecycleArgs` | `load config` without path skips provider and requests arguments |
+| `Test_LLM_OrchestratorLifecycleArgs` | LLM-first lifecycle: `load config` args, `create new config` / `создай новый проект` mock tool_call |
+| `Test_LLM_DocRetrieval` | 16 fixture queries vs builtin index (`llm_retrieval_expectations.json`) |
+| `Test_LLM_KnowledgeIndex` | Catalog build; `UApplication` in `scope=all` |
+
+### Manual E2E checklist (TD-030)
+
+Run in NeuroModeler with Ollama lab (`NMSDK_LLM_OLLAMA_*`) and real `Configs/`:
+
+1. RU: «создай новый проект» → first tool_call `create_configuration` (not `add_component`).
+2. Confirm HITL → configuration folder created and shell refreshes.
+3. RU: «загрузи конфигурацию» with path → `load_configuration` or argument clarification.
+4. Query: «что такое HardwareLib» → `search_project_docs` with `scope=docs`, cites path.
 
 Lab Ollama model: env `NMSDK_LLM_OLLAMA_MODEL` (default `qwen2.5:14b`). Presentation timeout: `NMSDK_LLM_PRESENTATION_TIMEOUT_MS` (default 30000).

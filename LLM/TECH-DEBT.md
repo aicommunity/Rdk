@@ -32,16 +32,13 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Target | Priority | Status | Notes |
 |----|------|--------|----------|--------|-------|
-| TD-030 | Write-tools E2E hardening (manual NeuroModeler + real Configs on disk) | PR5 | P1 | open | Unit/integration tests + application layer done; manual GUI E2E still open |
+| TD-030 | Write-tools E2E hardening (manual NeuroModeler + real Configs on disk) | post-PR5 | P1 | open | Mock/unit: `Test_LLM_OrchestratorLifecycleArgs`, `Test_LLM_E2eScenarios` RU create; manual GUI checklist in Application-Commands.md |
 | TD-031 | YAML `llm-knowledge.manifest.yaml` + federation | post-PR0b | P2 | open | MVP uses `NmsdkBuiltinKnowledgeCatalog.cpp` |
 | TD-032 | Auto-generate `Docs/llms.txt` from catalog | post-PR5 | P3 | open | |
-| TD-033 | Incremental index / mtime watcher | post-PR0b | P2 | open | MVP full rebuild at startup |
+| TD-033 | Incremental index / mtime watcher | post-PR0b | P2 | open | MVP full rebuild at startup; root mtime in fingerprint only (TD-040) |
 | TD-034 | Function-level source chunking (ctags/tree-sitter) | post-PR0a | P2 | open | MVP file excerpt ≤120 lines |
-| TD-035 | Dedicated `tool_disambiguation` UI flag | PR2 | P2 | open | MVP uses `needs_entity_clarification` |
 | TD-036 | Embedding-based dynamic tool routing | post-PR2 | P3 | open | MVP static `ULLMToolFilterBuilder` |
-| TD-037 | Multilingual retrieval boost (RU query) | PR4 | P2 | open | |
-| TD-039 | `loadedLibraries()` generated from catalog | PR0a | P2 | open | Static list kept in `NmsdkLlmProjectContext` |
-| TD-040 | Catalog fingerprint includes source mtimes | PR0b | P2 | open | PR0a path-only fingerprint |
+| TD-039 | `loadedLibraries()` generated from catalog | post-PR0a | P2 | open | Static list kept in `NmsdkLlmProjectContext` |
 
 ---
 
@@ -63,7 +60,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-017 | Doc search vector / semantic ranking | 2026-05-25 | Random-projection hybrid in `UDocSearchIndex` |
 | TD-018 | Plan saga auto-undo add_component | 2026-05-25 | `remove_component` on failed plan |
 | TD-002 | Intent classification (rules + optional LLM) | 2026-05-25 | `parseDetailed`, `NMSDK_LLM_INTENT_LLM=1` |
-| TD-003 | Doc search TF-IDF index | 2026-05-25 | `UDocSearchIndex`, `searchDocsWithIndex` |
+| TD-003 | Doc search TF-IDF index | 2026-05-26 | `UDocSearchIndex`, `searchDocsWithIndex`, `buildFromCatalog`, scope |
 | TD-004 | Scenario C plan execute workflow | 2026-05-25 | `ULLMPlanExecutor`, GUI Run plan, policy `checkPlan` |
 | TD-015 | Ollama `/api/show` modelfile → chat template family | 2026-05-25 | `UOllamaModelInfo`, `resolveChatTemplateFamily` |
 | TD-016 | Audit sanitization + schema regression tests | 2026-05-25 | `ULLMAuditSanitizer`, `ULLMToolSchemaRegression`, CI via ctest |
@@ -78,6 +75,9 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-010 | `llm_audit_verify` CLI + `verifyJsonlFile` | 2026-05-25 | `Rdk/LLM/Tools/llm_audit_verify_main.cpp` |
 | TD-013 | Entity resolver + ambiguous clarification UI | 2026-05-25 | `URdkEntityResolver`, orchestrator |
 | TD-006 | Parallel read tools in orchestrator round | 2026-05-25 | `std::async` when all Read |
+| TD-035 | Dedicated `tool_disambiguation` UI flag | 2026-05-26 | Deferred: reuse `needs_entity_clarification` per LLM-first MVP |
+| TD-037 | Multilingual retrieval boost (RU query) | 2026-05-26 | UTF-8 token bytes preserved in `UDocSearchIndex::tokenize` |
+| TD-040 | Catalog fingerprint includes source mtimes | 2026-05-26 | `last_write_time` per catalog root in `catalogFingerprint()` |
 
 ---
 

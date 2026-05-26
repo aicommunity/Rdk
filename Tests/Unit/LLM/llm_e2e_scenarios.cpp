@@ -139,6 +139,16 @@ std::vector<E2eScenarioDef> allNaturalLanguageScenarios()
 
     {
         E2eScenarioExpectation exp;
+        exp.expected_tools_any = {"create_configuration"};
+        exp.forbidden_tools = {"add_component"};
+        exp.goal = E2eGoalKind::CreateRequested;
+        scenarios.push_back(make("nl_create_project_ru",
+                                 std::string("создай новый проект в ") + temp_parent,
+                                 exp));
+    }
+
+    {
+        E2eScenarioExpectation exp;
         exp.expected_tools_any = {"save_configuration", "save_project"};
         exp.forbidden_tools = {"add_component", "create_configuration"};
         exp.goal = E2eGoalKind::InformativeAnswer;

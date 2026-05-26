@@ -58,6 +58,47 @@ TEST(LLMOrchestratorLifecycleArgs, CreateNewConfigUsesLlmToolCall)
     EXPECT_EQ(resp.text.find("Mock provider response"), std::string::npos);
 }
 
+TEST(LLMOrchestratorLifecycleArgs, CreateRuProjectUsesLlmToolCall)
+{
+    ::unsetenv("NMSDK_LLM_INTENT_LLM");
+    ULLMMockProvider provider;
+    LLMCompletionResult mock;
+    mock.ok = true;
+    mock.text = "";
+    LLMToolCall call;
+    call.id = "call_create_ru";
+    call.name = "create_configuration";
+    const std::string parent =
+        (std::filesystem::temp_directory_path() / "nmsdk_llm_orchestrator_create_ru").string();
+    std::filesystem::create_directories(parent);
+    call.arguments = nlohmann::json{{"project_ini_path", parent + "/project.ini"}};
+    mock.tool_calls.push_back(call);
+    provider.enqueue(mock);
+
+    ULLMToolRegistry registry;
+    RegisterApplicationTools(registry);
+    ULLMPolicyEngine policy;
+    URdkDomainAccess domain(nullptr);
+    ULLMAuditLog audit;
+    ULLMIdempotencyStore idem;
+    ULLMToolArgumentValidator validator;
+    ULLMToolGateway gateway(registry, policy, domain, audit, idem, validator);
+    ULLMConversationStore store;
+    ULLMAgentOrchestrator orch(provider, registry, gateway, store);
+
+    LLMRequestEnvelope req;
+    req.session_id = "lifecycle-create-ru";
+    req.trace_id = "t-create-ru";
+    req.user_text = "создай новый проект";
+    req.session.project_loaded = false;
+    req.session.llm_write_enabled = true;
+
+    const LLMFinalResponse resp = orch.handleUserMessage(req);
+    EXPECT_FALSE(resp.needs_argument_clarification);
+    EXPECT_FALSE(resp.text.empty());
+    EXPECT_EQ(resp.text.find("Mock provider response"), std::string::npos);
+}
+
 TEST(LLMOrchestratorLifecycleArgs, LoadConfigWithoutPathUsesLlmToolCall)
 {
     ::unsetenv("NMSDK_LLM_INTENT_LLM");

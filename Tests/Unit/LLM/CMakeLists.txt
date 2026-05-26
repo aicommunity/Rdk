@@ -79,6 +79,13 @@ _add_llm_unit_test(Test_LLM_KnowledgeIndex
   ${CMAKE_SOURCE_DIR}/App/NeuroModeler/NmsdkBuiltinKnowledgeCatalog.cpp)
 target_compile_definitions(Test_LLM_KnowledgeIndex PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 target_include_directories(Test_LLM_KnowledgeIndex PRIVATE ${CMAKE_SOURCE_DIR}/App/NeuroModeler)
+_add_llm_unit_test(Test_LLM_DocRetrieval
+  test_llm_doc_retrieval.cpp
+  ${CMAKE_SOURCE_DIR}/App/NeuroModeler/NmsdkBuiltinKnowledgeCatalog.cpp)
+target_compile_definitions(Test_LLM_DocRetrieval PRIVATE
+  CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+  RDK_LLM_RETRIEVAL_FIXTURES="${CMAKE_SOURCE_DIR}/Rdk/Tests/Fixtures/llm_retrieval_expectations.json")
+target_include_directories(Test_LLM_DocRetrieval PRIVATE ${CMAKE_SOURCE_DIR}/App/NeuroModeler)
 _add_llm_unit_test(Test_LLM_EmbeddedProvider test_llm_embedded_provider.cpp)
 if(RDK_LLM_BUILD_EMBEDDED)
   target_compile_definitions(Test_LLM_EmbeddedProvider PRIVATE RDK_LLM_EMBEDDED=1)

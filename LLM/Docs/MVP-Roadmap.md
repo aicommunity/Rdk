@@ -146,6 +146,22 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 
 ---
 
+## LLM-first agent (PR0a–PR5) ✅
+
+| PR | Критерий | Статус |
+|----|----------|--------|
+| PR1 | RU lifecycle, no pre-LLM bypass, tool filter | [x] |
+| PR0a | Builtin catalog + `Test_LLM_KnowledgeIndex` | [x] |
+| PR0b | `llm-index-pack` → `Bin/LLM/index` | [x] |
+| PR2 | Manifest + `no_suitable_tool` recovery | [x] |
+| PR3 | `ULLMUserMessages` ru/en | [x] |
+| PR4 | Query path hint + `kMinRetrievalScore` | [x] |
+| PR5 | `Test_LLM_DocRetrieval`, Agent/Knowledge docs | [x] |
+
+См. [Agent-Interaction.md](Agent-Interaction.md), [Knowledge-Sources.md](Knowledge-Sources.md), [Development-Workflow.md](Development-Workflow.md) § LLM-first.
+
+---
+
 ## Post-MVP / backlog (не блокирует MVP)
 
 | Item | Notes |

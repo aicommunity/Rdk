@@ -514,7 +514,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                     m_store.setPending(req.session_id, pending);
                     final.pending_confirmation = true;
                     final.pending_confirmation_id = tr.confirmation_id;
-                    final.text = "Confirmation required for: " + call_copy.name;
+                    final.text = formatUserMessage("confirmation.required", user_lang,
+                                                   {{"tool_name", call_copy.name}});
                     m_store.persistToDisk(req.session_id);
                     return final;
                 }
@@ -801,8 +802,13 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
     ConversationState& state = m_store.getOrCreate(session_id);
 
     RDK::UApplication* app = nullptr;
+    std::string user_lang = "en";
     if(LLMServices::instance().isInitialized())
+    {
         app = LLMServices::instance().domain().application();
+        user_lang = resolveResponseLanguage(
+            LLMServices::instance().settings().runtime().preferred_response_language, "en");
+    }
 
     ToolInvokeRequest invoke;
     invoke.trace_id = trace_id;
@@ -840,7 +846,7 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
         final.ok = true;
         final.pending_confirmation = true;
         final.pending_confirmation_id = tr.confirmation_id;
-        final.text = "Confirmation required for: " + tool_name;
+        final.text = formatUserMessage("confirmation.required", user_lang, {{"tool_name", tool_name}});
         m_store.persistToDisk(session_id);
         return final;
     }
