@@ -118,7 +118,7 @@ std::string resolveAcrossLibraryAllowlists(const std::string& query)
 std::string resolveKnownClassAlias(const std::string& query)
 {
     const std::string lower = toLower(query);
-    if(lower == "nplneuron")
+    if(lower == "nplneuron" || lower == "spneuron")
         return "NPulseNeuron";
     if(lower == "нейрон" || lower == "neuron")
         return "NPulseNeuron";

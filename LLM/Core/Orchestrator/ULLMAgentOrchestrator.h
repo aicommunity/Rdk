@@ -84,7 +84,8 @@ private:
                                                const std::string& trace_id,
                                                const std::string& tool_name,
                                                const nlohmann::json& arguments,
-                                               const LLMSessionContext& session);
+                                               const LLMSessionContext& session,
+                                               const std::string& user_text_hint = "");
 
     LLMFinalResponse returnArgumentRequest(ConversationState& state, const std::string& trace_id,
                                            const PendingToolArguments& pending,

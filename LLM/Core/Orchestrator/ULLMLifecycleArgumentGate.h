@@ -30,6 +30,8 @@ struct PendingToolArguments {
     ConfigurationLifecycleAction action = ConfigurationLifecycleAction::None;
     nlohmann::json partial_arguments = nlohmann::json::object();
     std::vector<ToolArgumentFieldSpec> missing_fields;
+    /// Populated after class disambiguation; used to resolve replies like `1` or `NSPNeuron`.
+    nlohmann::json class_disambiguation_candidates = nlohmann::json::array();
     int64_t created_at_unix_sec = 0;
 };
 
@@ -50,6 +52,11 @@ std::vector<ToolArgumentFieldSpec> argumentFieldsForLifecycle(ConfigurationLifec
 nlohmann::json mergeArgumentsFromUserText(const PendingToolArguments& pending,
                                           const std::string& user_text,
                                           RDK::UApplication* app);
+
+/// Resolve user pick from a numbered class list (`1`, `#2`) or case-insensitive class name.
+std::optional<std::string>
+resolveClassNameFromDisambiguationList(const std::string& user_text,
+                                       const nlohmann::json& candidates);
 
 /// Validate merged args for a lifecycle tool; returns missing field specs.
 std::vector<ToolArgumentFieldSpec> findMissingLifecycleFields(const std::string& tool_name,

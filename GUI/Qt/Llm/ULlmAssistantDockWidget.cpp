@@ -473,8 +473,13 @@ void ULlmAssistantDockWidget::onStreamFinished(const RDK::LLM::LLMFinalResponse&
         appendAssistantText(QString::fromStdString(resp.text));
         return;
     }
-    if(!resp.text.empty() && !m_stream_tokens_received)
-        appendAssistantText(QString::fromStdString(resp.text));
+    if(!m_stream_tokens_received)
+    {
+        if(!resp.text.empty())
+            appendAssistantText(QString::fromStdString(resp.text));
+        else if(resp.ok)
+            appendAssistantText(tr("Done."));
+    }
 }
 
 void ULlmAssistantDockWidget::onCancelClicked()

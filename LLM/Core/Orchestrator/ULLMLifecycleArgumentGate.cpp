@@ -39,6 +39,73 @@ bool jsonStringFieldEmpty(const nlohmann::json& args, const char* key)
     return trim(args[key].get<std::string>()).empty();
 }
 
+std::string toLowerAsciiLocal(std::string s)
+{
+    for(char& c : s)
+        c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return s;
+}
+
+bool isUnsignedListIndex(const std::string& s)
+{
+    if(s.empty())
+        return false;
+    for(char c : s)
+    {
+        if(!std::isdigit(static_cast<unsigned char>(c)))
+            return false;
+    }
+    return true;
+}
+
+bool looksLikeClassIdentifier(const std::string& token)
+{
+    if(token.empty())
+        return false;
+    const unsigned char first = static_cast<unsigned char>(token[0]);
+    if(!std::isalpha(first))
+        return false;
+    for(char c : token)
+    {
+        if(std::isalnum(static_cast<unsigned char>(c)) || c == '_')
+            continue;
+        return false;
+    }
+    return true;
+}
+
+std::optional<std::string>
+resolveClassNameFromDisambiguationListImpl(const std::string& user_text,
+                                           const nlohmann::json& candidates)
+{
+    const std::string trimmed = trim(user_text);
+    if(trimmed.empty() || !candidates.is_array() || candidates.empty())
+        return std::nullopt;
+
+    if(isUnsignedListIndex(trimmed))
+    {
+        const unsigned long idx = std::stoul(trimmed);
+        if(idx >= 1 && idx <= candidates.size())
+        {
+            const nlohmann::json& entry = candidates[idx - 1];
+            if(entry.is_object() && entry.contains("class_name") && entry["class_name"].is_string())
+                return entry["class_name"].get<std::string>();
+        }
+        return std::nullopt;
+    }
+
+    const std::string lower = toLowerAsciiLocal(trimmed);
+    for(const nlohmann::json& entry : candidates)
+    {
+        if(!entry.is_object() || !entry.contains("class_name") || !entry["class_name"].is_string())
+            continue;
+        const std::string cn = entry["class_name"].get<std::string>();
+        if(cn == trimmed || toLowerAsciiLocal(cn) == lower)
+            return cn;
+    }
+    return std::nullopt;
+}
+
 std::string defaultShortNameFromClass(const std::string& class_name)
 {
     if(class_name.empty())
@@ -51,23 +118,51 @@ std::string defaultShortNameFromClass(const std::string& class_name)
     return sn;
 }
 
-void mergeAddComponentArguments(nlohmann::json& args, const std::string& user_text)
+void mergeAddComponentArguments(nlohmann::json& args, const std::string& user_text,
+                                const nlohmann::json& class_candidates)
 {
     const std::string trimmed = trim(user_text);
     if(trimmed.empty())
         return;
 
+    bool class_set_from_list = false;
+    if(class_candidates.is_array() && !class_candidates.empty())
+    {
+        if(const std::optional<std::string> picked =
+               resolveClassNameFromDisambiguationListImpl(trimmed, class_candidates))
+        {
+            args["class_name"] = *picked;
+            args["short_name"] = defaultShortNameFromClass(*picked);
+            class_set_from_list = true;
+        }
+        else if(isUnsignedListIndex(trimmed))
+            return;
+    }
+
     const LibraryScopeHint scope = detectLibraryScopeFromUserText(user_text);
 
-    if(trimmed.find_first_of(" \t\n\r") == std::string::npos)
+    if(!class_set_from_list && trimmed.find_first_of(" \t\n\r") == std::string::npos)
     {
-        // User picked or typed a single class name (follow-up after disambiguation).
-        const std::string picked = resolveKnownClassAlias(trimmed);
-        args["class_name"] = picked;
-        args["short_name"] = defaultShortNameFromClass(picked);
+        if(looksLikeClassIdentifier(trimmed))
+            args["class_name"] = trimmed;
+        else
+        {
+            const std::string picked = resolveKnownClassAlias(trimmed);
+            args["class_name"] = picked;
+            args["short_name"] = defaultShortNameFromClass(picked);
+        }
     }
     else if(jsonStringFieldEmpty(args, "class_name"))
-        args["class_name"] = resolveComponentClassName(trimmed, scope);
+    {
+        std::string class_query = trimmed;
+        const size_t last_space = trimmed.find_last_of(" \t\n\r");
+        if(last_space != std::string::npos && last_space + 1 < trimmed.size())
+            class_query = trim(trimmed.substr(last_space + 1));
+        if(looksLikeClassIdentifier(class_query))
+            args["class_name"] = class_query;
+        else
+            args["class_name"] = resolveComponentClassName(class_query, scope);
+    }
 
     if(jsonStringFieldEmpty(args, "parent_long_name"))
         args["parent_long_name"] = "";
@@ -83,6 +178,13 @@ void mergeAddComponentArguments(nlohmann::json& args, const std::string& user_te
 }
 
 } // namespace
+
+std::optional<std::string>
+resolveClassNameFromDisambiguationList(const std::string& user_text,
+                                       const nlohmann::json& candidates)
+{
+    return resolveClassNameFromDisambiguationListImpl(user_text, candidates);
+}
 
 std::string extractPathFromUserText(const std::string& user_text)
 {
@@ -250,7 +352,7 @@ nlohmann::json mergeArgumentsFromUserText(const PendingToolArguments& pending,
 
     if(pending.tool_name == "add_component")
     {
-        mergeAddComponentArguments(args, user_text);
+        mergeAddComponentArguments(args, user_text, pending.class_disambiguation_candidates);
         return args;
     }
 
@@ -297,8 +399,8 @@ std::string formatArgumentRequestPrompt(const std::string& tool_name,
 
     if(tool_name == "add_component")
     {
-        prompt += "\nExample: reply `NPulseNeuron` (short name and model root parent are filled "
-                  "automatically).";
+        prompt += "\nExample: reply `NPulseNeuron` or a list number like `1` (short name and model "
+                  "root parent are filled automatically).";
         prompt += "\nOr: `class_name NPulseNeuron short_name Neuron1 parent_long_name \"\"`.";
         prompt += "\nUse list_registered_classes or list_*_component_classes for valid class names.";
     }

@@ -82,6 +82,39 @@ TEST(LLMLifecycleArgumentGate, FormatPromptMentionsTool)
     EXPECT_NE(prompt.find("configuration_path"), std::string::npos);
 }
 
+TEST(LLMLifecycleArgumentGate, ResolveClassPickByListNumber)
+{
+    const nlohmann::json candidates = {
+        {{"class_name", "NSPNeuron"}, {"score", 0.9}},
+        {{"class_name", "NPNeuron"}, {"score", 0.8}},
+    };
+    ASSERT_TRUE(resolveClassNameFromDisambiguationList("1", candidates).has_value());
+    EXPECT_EQ(*resolveClassNameFromDisambiguationList("1", candidates), "NSPNeuron");
+    EXPECT_EQ(*resolveClassNameFromDisambiguationList("2", candidates), "NPNeuron");
+    EXPECT_FALSE(resolveClassNameFromDisambiguationList("9", candidates).has_value());
+}
+
+TEST(LLMLifecycleArgumentGate, ResolveClassPickByNameCaseInsensitive)
+{
+    const nlohmann::json candidates = {{{"class_name", "NSPNeuron"}, {"score", 0.9}}};
+    EXPECT_EQ(*resolveClassNameFromDisambiguationList("nspneuron", candidates), "NSPNeuron");
+}
+
+TEST(LLMLifecycleArgumentGate, MergeAddComponentListNumber)
+{
+    PendingToolArguments pending;
+    pending.tool_name = "add_component";
+    pending.partial_arguments = nlohmann::json::object();
+    pending.class_disambiguation_candidates = {
+        {{"class_name", "NSPNeuron"}, {"score", 0.9}},
+        {{"class_name", "NPNeuron"}, {"score", 0.8}},
+    };
+
+    const nlohmann::json merged = mergeArgumentsFromUserText(pending, "1", nullptr);
+    EXPECT_EQ(merged["class_name"], "NSPNeuron");
+    EXPECT_EQ(merged["short_name"], "SPNeuron");
+}
+
 TEST(LLMLifecycleArgumentGate, MergeAddComponentUserPicksExactClass)
 {
     PendingToolArguments pending;
@@ -93,16 +126,26 @@ TEST(LLMLifecycleArgumentGate, MergeAddComponentUserPicksExactClass)
     EXPECT_EQ(merged["short_name"], "LPNeuron");
 }
 
-TEST(LLMLifecycleArgumentGate, MergeAddComponentFromTypoClassName)
+TEST(LLMLifecycleArgumentGate, MergeAddComponentMultiWordUsesRawLatinToken)
+{
+    PendingToolArguments pending;
+    pending.tool_name = "add_component";
+    pending.partial_arguments = nlohmann::json::object();
+
+    const nlohmann::json merged =
+        mergeArgumentsFromUserText(pending, "добавь nspneuron", nullptr);
+    EXPECT_EQ(merged["class_name"], "nspneuron");
+}
+
+TEST(LLMLifecycleArgumentGate, MergeAddComponentFromTypoClassNameKeepsRawToken)
 {
     PendingToolArguments pending;
     pending.tool_name = "add_component";
     pending.partial_arguments = nlohmann::json::object();
 
     const nlohmann::json merged = mergeArgumentsFromUserText(pending, "NPLNeuron", nullptr);
-    EXPECT_EQ(merged["class_name"], "NPulseNeuron");
+    EXPECT_EQ(merged["class_name"], "NPLNeuron");
     EXPECT_EQ(merged["parent_long_name"], "");
-    EXPECT_EQ(merged["short_name"], "PulseNeuron");
 }
 
 TEST(LLMLifecycleArgumentGate, AddComponentArgumentsCompleteAfterUserReply)

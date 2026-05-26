@@ -27,11 +27,6 @@ const std::unordered_map<std::string, std::vector<std::string>>& entityFieldsByT
     return kMap;
 }
 
-bool isRegisteredClass(const std::vector<std::string>& registered, const std::string& name)
-{
-    return std::find(registered.begin(), registered.end(), name) != registered.end();
-}
-
 std::string trimCopy(const std::string& s)
 {
     size_t b = 0;
@@ -48,6 +43,54 @@ std::string toLowerAscii(std::string s)
     for(char& c : s)
         c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
     return s;
+}
+
+bool isRegisteredClass(const std::vector<std::string>& registered, const std::string& name)
+{
+    if(name.empty())
+        return false;
+    const std::string lower = toLowerAscii(name);
+    for(const std::string& c : registered)
+    {
+        if(toLowerAscii(c) == lower)
+            return true;
+    }
+    return false;
+}
+
+std::string canonicalRegisteredClassName(const std::vector<std::string>& registered,
+                                       const std::string& name)
+{
+    const std::string lower = toLowerAscii(name);
+    for(const std::string& c : registered)
+    {
+        if(toLowerAscii(c) == lower)
+            return c;
+    }
+    return name;
+}
+
+void fillAddComponentDefaults(nlohmann::json& args)
+{
+    if(!args.contains("parent_long_name"))
+        args["parent_long_name"] = "";
+    if(!args.contains("channel_index"))
+        args["channel_index"] = 0;
+    if(!args.contains("class_name") || !args["class_name"].is_string())
+        return;
+    const std::string cn = trimCopy(args["class_name"].get<std::string>());
+    if(cn.empty())
+        return;
+    if(!args.contains("short_name") || !args["short_name"].is_string()
+       || trimCopy(args["short_name"].get<std::string>()).empty())
+    {
+        std::string sn = cn;
+        if(!sn.empty() && sn[0] == 'N')
+            sn.erase(sn.begin());
+        if(sn.empty())
+            sn = "Component1";
+        args["short_name"] = sn;
+    }
 }
 
 int levenshteinDistance(const std::string& a, const std::string& b)
@@ -117,127 +160,93 @@ std::vector<ClassCandidate> findSimilarRegisteredClasses(const std::string& quer
     return out;
 }
 
-std::optional<std::string> findExactRegisteredClass(const std::string& query,
-                                                    const std::vector<std::string>& registered)
+bool fillClassDisambiguationOut(WriteArgumentNormalizeResult& out, const std::string& query,
+                                const std::vector<ClassCandidate>& candidates)
 {
-    if(query.empty())
-        return std::nullopt;
-    const std::string q = toLowerAscii(query);
-    for(const std::string& c : registered)
+    out.ok = false;
+    out.needs_clarification = true;
+    out.error_code = "CLASS_AMBIGUOUS";
+    out.message = "Which component class do you mean?";
+    out.clarification = nlohmann::json::object();
+    out.clarification["ambiguous"] = true;
+    out.clarification["kind"] = "class";
+    out.clarification["query"] = query;
+    out.clarification["candidates"] = nlohmann::json::array();
+    for(const ClassCandidate& c : candidates)
+        out.clarification["candidates"].push_back(
+            {{"class_name", c.class_name}, {"score", c.score}});
+    if(candidates.empty())
     {
-        if(toLowerAscii(c) == q)
-            return c;
+        out.error_code = "CLASS_NOT_REGISTERED";
+        out.message = "Class \"" + query
+                        + "\" is not registered. Use list_registered_classes and reply with "
+                          "the exact class name.";
+        out.clarification["kind"] = "class";
     }
-    const std::string aliased = resolveKnownClassAlias(query);
-    if(aliased != query)
-    {
-        const std::string al = toLowerAscii(aliased);
-        for(const std::string& c : registered)
-        {
-            if(toLowerAscii(c) == al)
-                return c;
-        }
-    }
-    return std::nullopt;
+    return false;
 }
 
-std::string extractClassNameQuery(const std::string& class_name_field, const std::string& user_text)
-{
-    const std::string from_field = trimCopy(class_name_field);
-    if(!from_field.empty())
-        return from_field;
+std::string extractClassNameTokenFromUserText(const std::string& user_text);
 
-    const std::string trimmed = trimCopy(user_text);
-    if(trimmed.empty())
-        return trimmed;
-    if(trimmed.find_first_of(" \t\n\r") == std::string::npos)
-        return trimmed;
+std::string extractClassNameQueryImpl(const std::string& class_name_field, const std::string& user_text);
 
-    const std::string lower = toLowerAscii(trimmed);
-    static const char* kKeywords[] = {"нейрон",
-                                      "neuron",
-                                      "синапс",
-                                      "synapse",
-                                      "membrane",
-                                      "мембран",
-                                      "manipulator",
-                                      "манипулятор",
-                                      nullptr};
-    for(const char** kw = kKeywords; *kw; ++kw)
-    {
-        if(lower.find(*kw) != std::string::npos)
-            return *kw;
-    }
-
-    const size_t last_space = trimmed.find_last_of(" \t\n\r");
-    if(last_space != std::string::npos && last_space + 1 < trimmed.size())
-        return trimCopy(trimmed.substr(last_space + 1));
-    return trimmed;
-}
+RegisteredClassResolution resolveRegisteredClassNameImpl(const std::string& query,
+                                                         const std::vector<std::string>& registered);
 
 bool normalizeAddComponentArguments(nlohmann::json& args, URdkDomainAccess& domain,
                                     const std::string& user_text,
                                     WriteArgumentNormalizeResult& out)
 {
-    if(!user_text.empty())
-    {
-        PendingToolArguments pending;
-        pending.tool_name = "add_component";
-        pending.partial_arguments = args;
-        args = mergeArgumentsFromUserText(pending, user_text, domain.application());
-    }
-
     std::vector<std::string> registered;
     const DomainStatus list_st = domain.listRegisteredClassNames(registered);
     const bool have_registry = list_st.ok() && !registered.empty();
 
+    if(!user_text.empty())
+    {
+        const std::string existing_class = args.value("class_name", "");
+        const bool class_already_set =
+            have_registry && isRegisteredClass(registered, existing_class);
+        if(!class_already_set)
+        {
+            PendingToolArguments pending;
+            pending.tool_name = "add_component";
+            pending.partial_arguments = args;
+            args = mergeArgumentsFromUserText(pending, user_text, domain.application());
+        }
+    }
+
     if(have_registry)
     {
-        std::string class_name = args.value("class_name", "");
-        if(!isRegisteredClass(registered, class_name))
+        const std::string class_name = args.value("class_name", "");
+        const std::string query = extractClassNameQueryImpl(class_name, user_text);
+        if(!query.empty())
         {
-            const std::string query = extractClassNameQuery(class_name, user_text);
-            if(const std::optional<std::string> exact = findExactRegisteredClass(query, registered))
+            const RegisteredClassResolution resolved =
+                resolveRegisteredClassNameImpl(query, registered);
+            if(resolved.status == RegisteredClassResolution::Status::Resolved)
             {
-                args["class_name"] = *exact;
+                args["class_name"] = resolved.class_name;
             }
-            else
+            else if(resolved.status == RegisteredClassResolution::Status::Ambiguous)
             {
-            const std::vector<ClassCandidate> candidates =
-                findSimilarRegisteredClasses(query, registered, 8);
-
-            if(candidates.size() == 1
-               && levenshteinDistance(toLowerAscii(query), toLowerAscii(candidates[0].class_name)) == 0)
-            {
-                args["class_name"] = candidates[0].class_name;
+                std::vector<ClassCandidate> candidates;
+                candidates.reserve(resolved.candidates.size());
+                for(const auto& [name, score] : resolved.candidates)
+                    candidates.push_back({name, score});
+                return fillClassDisambiguationOut(out, query, candidates);
             }
-            else
+            else if(!isRegisteredClass(registered, class_name))
             {
-                out.ok = false;
-                out.needs_clarification = true;
-                out.error_code = "CLASS_AMBIGUOUS";
-                out.message = "Which component class do you mean?";
-                out.clarification = nlohmann::json::object();
-                out.clarification["ambiguous"] = true;
-                out.clarification["kind"] = "class";
-                out.clarification["query"] = query;
-                out.clarification["candidates"] = nlohmann::json::array();
-                for(const ClassCandidate& c : candidates)
-                    out.clarification["candidates"].push_back(
-                        {{"class_name", c.class_name}, {"score", c.score}});
-
-                if(candidates.empty())
-                {
-                    out.error_code = "CLASS_NOT_REGISTERED";
-                    out.message = "Class \"" + query
-                                  + "\" is not registered. Use list_registered_classes and reply with "
-                                    "the exact class name.";
-                    out.clarification["kind"] = "class";
-                }
-                return false;
-            }
+                return fillClassDisambiguationOut(out, query, {});
             }
         }
+        else if(!isRegisteredClass(registered, class_name))
+        {
+            return fillClassDisambiguationOut(out, class_name, {});
+        }
+        if(isRegisteredClass(registered, args.value("class_name", "")))
+            args["class_name"] =
+                canonicalRegisteredClassName(registered, args["class_name"].get<std::string>());
     }
     else if(!user_text.empty())
     {
@@ -248,11 +257,7 @@ bool normalizeAddComponentArguments(nlohmann::json& args, URdkDomainAccess& doma
             args["class_name"] = resolveComponentClassName(user_text, scope);
     }
 
-    if(!args.contains("parent_long_name"))
-        args["parent_long_name"] = "";
-    if(!args.contains("channel_index"))
-        args["channel_index"] = 0;
-
+    fillAddComponentDefaults(args);
     return true;
 }
 
@@ -302,7 +307,139 @@ bool resolveField(const std::string& tool_name, const std::string& field,
     return false;
 }
 
+bool looksLikeClassToken(const std::string& token)
+{
+    if(token.empty())
+        return false;
+    const unsigned char first = static_cast<unsigned char>(token[0]);
+    if(!std::isalpha(first))
+        return false;
+    for(char c : token)
+    {
+        if(std::isalnum(static_cast<unsigned char>(c)) || c == '_')
+            continue;
+        return false;
+    }
+    return true;
+}
+
+std::string extractClassNameTokenFromUserText(const std::string& user_text)
+{
+    const std::string trimmed = trimCopy(user_text);
+    if(trimmed.empty())
+        return trimmed;
+    if(trimmed.find_first_of(" \t\n\r") == std::string::npos)
+        return trimmed;
+
+    const size_t last_space = trimmed.find_last_of(" \t\n\r");
+    if(last_space != std::string::npos && last_space + 1 < trimmed.size())
+    {
+        const std::string last = trimCopy(trimmed.substr(last_space + 1));
+        if(looksLikeClassToken(last))
+            return last;
+    }
+
+    const std::string lower = toLowerAscii(trimmed);
+    static const char* kKeywords[] = {"нейрон",
+                                      "neuron",
+                                      "синапс",
+                                      "synapse",
+                                      "membrane",
+                                      "мембран",
+                                      "manipulator",
+                                      "манипулятор",
+                                      nullptr};
+    for(const char** kw = kKeywords; *kw; ++kw)
+    {
+        if(lower == *kw)
+            return *kw;
+    }
+
+    if(last_space != std::string::npos && last_space + 1 < trimmed.size())
+        return trimCopy(trimmed.substr(last_space + 1));
+    return trimmed;
+}
+
+std::string extractClassNameQueryImpl(const std::string& class_name_field, const std::string& user_text)
+{
+    const std::string from_user = extractClassNameTokenFromUserText(user_text);
+    if(!from_user.empty())
+        return from_user;
+    return trimCopy(class_name_field);
+}
+
+RegisteredClassResolution resolveRegisteredClassNameImpl(const std::string& query,
+                                                         const std::vector<std::string>& registered)
+{
+    RegisteredClassResolution result;
+    if(query.empty() || registered.empty())
+        return result;
+
+    for(const std::string& c : registered)
+    {
+        if(c == query)
+        {
+            result.status = RegisteredClassResolution::Status::Resolved;
+            result.class_name = c;
+            return result;
+        }
+    }
+
+    const std::string q_lower = toLowerAscii(query);
+    std::vector<std::string> case_insensitive;
+    case_insensitive.reserve(registered.size());
+    for(const std::string& c : registered)
+    {
+        if(toLowerAscii(c) == q_lower)
+            case_insensitive.push_back(c);
+    }
+    if(case_insensitive.size() == 1)
+    {
+        result.status = RegisteredClassResolution::Status::Resolved;
+        result.class_name = case_insensitive.front();
+        return result;
+    }
+    if(case_insensitive.size() > 1)
+    {
+        result.status = RegisteredClassResolution::Status::Ambiguous;
+        for(const std::string& c : case_insensitive)
+            result.candidates.push_back({c, 1.0});
+        return result;
+    }
+
+    const std::string aliased = resolveKnownClassAlias(query);
+    if(aliased != query)
+        return resolveRegisteredClassNameImpl(aliased, registered);
+
+    const std::vector<ClassCandidate> fuzzy = findSimilarRegisteredClasses(query, registered, 8);
+    if(fuzzy.empty())
+        return result;
+
+    if(fuzzy.size() == 1)
+    {
+        result.status = RegisteredClassResolution::Status::Resolved;
+        result.class_name = fuzzy.front().class_name;
+        return result;
+    }
+
+    result.status = RegisteredClassResolution::Status::Ambiguous;
+    for(const ClassCandidate& c : fuzzy)
+        result.candidates.push_back({c.class_name, c.score});
+    return result;
+}
+
 } // namespace
+
+std::string extractClassNameQuery(const std::string& class_name_field, const std::string& user_text)
+{
+    return extractClassNameQueryImpl(class_name_field, user_text);
+}
+
+RegisteredClassResolution resolveRegisteredClassName(const std::string& query,
+                                                     const std::vector<std::string>& registered)
+{
+    return resolveRegisteredClassNameImpl(query, registered);
+}
 
 bool writeToolNeedsEntityResolution(const std::string& tool_name)
 {
