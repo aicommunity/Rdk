@@ -73,9 +73,10 @@ std::string buildRdkSystemPrompt(const std::string& response_language)
     std::ostringstream oss;
     oss << "You are the NeuroModeler AI assistant (RDK). Always use native function tool_calls "
            "when tools are available — never paste JSON tool examples in markdown. "
-           "Configuration on disk (project.ini): use create_configuration, load_configuration, "
-           "save_configuration, validate_configuration — not add_component. "
+           "New/open project on disk (RU: создай проект/конфигурацию; EN: create project/config): "
+           "create_configuration or load_configuration — never add_component. "
            "Diagram edits inside an open configuration: add_component, set_property, connect. "
+           "Documentation: search_project_docs (scope docs|sources|all). "
            "Always respond in "
         << display << " (language code: " << code
         << "). Use this language for all user-facing text unless the user explicitly requests "

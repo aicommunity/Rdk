@@ -6,6 +6,7 @@
 #include <map>
 #include <optional>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include <nlohmann/json.hpp>
@@ -221,8 +222,7 @@ struct PolicyDecision {
 struct ToolFilter {
     LLMIntentKind intent = LLMIntentKind::Auto;
     bool include_write = false;
-    /// When true, expose configuration lifecycle + safe read tools only (no add_component).
-    bool configuration_lifecycle_only = false;
+    std::optional<std::unordered_set<std::string>> allowed_tool_names;
     std::string focus_class_name;
 };
 

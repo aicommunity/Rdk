@@ -4,6 +4,8 @@
 #include <memory>
 #include <string>
 
+#include "Context/ILLMKnowledgeCatalog.h"
+#include "Context/UDocSearchIndex.h"
 #include "LlmTypes.h"
 #include "Domain/URdkApplicationCommands.h"
 #include "Domain/URdkDomainAccess.h"
@@ -26,7 +28,8 @@ public:
     static LLMServices& instance();
 
     void initialize(RDK::UApplication* app, ILLMProjectContextProvider* project_context,
-                    ILLMProviderSettingsSource* settings_source = nullptr);
+                    ILLMProviderSettingsSource* settings_source = nullptr,
+                    std::unique_ptr<ILLMKnowledgeCatalog> catalog = nullptr);
     void applyActiveProvider();
     bool isInitialized() const { return m_settings != nullptr; }
     ProviderAccessCheck checkActiveProviderAccess(const LLMSessionContext& session) const;
@@ -36,6 +39,8 @@ public:
     URdkApplicationCommands& applicationCommands();
     ULLMSettingsStore& settings();
     const LLMProviderProfile& activeProviderProfile() const;
+    ILLMKnowledgeCatalog* catalog() const;
+    UDocSearchIndex& searchIndex();
 
     void setPresentationSink(std::unique_ptr<ILLMPresentationSink> sink);
     ILLMPresentationSink* presentationSink() const;
@@ -56,6 +61,8 @@ private:
     std::unique_ptr<ULLMSettingsStore> m_settings;
     LLMProviderProfile m_active_profile;
     ILLMProjectContextProvider* m_project_context = nullptr;
+    std::unique_ptr<ILLMKnowledgeCatalog> m_catalog;
+    std::unique_ptr<UDocSearchIndex> m_search_index;
 };
 
 } // namespace RDK::LLM

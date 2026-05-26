@@ -16,6 +16,8 @@ TEST(LLMConfigurationLifecycle, DetectCreateConfigPhrases)
               ConfigurationLifecycleAction::Create);
     EXPECT_EQ(detectConfigurationLifecycleAction("создай новый конфиг"),
               ConfigurationLifecycleAction::Create);
+    EXPECT_EQ(detectConfigurationLifecycleAction("создай новый проект"),
+              ConfigurationLifecycleAction::Create);
 }
 
 TEST(LLMConfigurationLifecycle, ForcedToolCreateWhenNoProject)

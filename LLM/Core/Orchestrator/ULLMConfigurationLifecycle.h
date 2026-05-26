@@ -32,6 +32,10 @@ bool isLifecycleWriteToolName(const std::string& tool_name);
 std::string formatLifecycleToolUserMessage(const std::string& tool_name,
                                              const ToolGatewayResult& result);
 
+/// After tool gateway invoke: whether to prompt the user for missing lifecycle args.
+bool toolInvokeNeedsArgumentClarification(const std::string& tool_name,
+                                          const ToolGatewayResult& result);
+
 } // namespace RDK::LLM
 
 #endif

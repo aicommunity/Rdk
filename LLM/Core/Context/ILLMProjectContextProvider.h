@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "ILLMKnowledgeCatalog.h"
+
 namespace RDK::LLM {
 
 struct LibraryDescriptor {
@@ -13,10 +15,13 @@ struct LibraryDescriptor {
 };
 
 struct DocSnippet {
+    std::string source_id;
     std::string path;
     std::string title;
     std::string excerpt;
     double score = 0.0;
+    LLMContentKind content_kind = LLMContentKind::Doc;
+    int start_line = 0;
 };
 
 struct ProjectPaths {

@@ -48,6 +48,18 @@ If build fails: **do not commit**; fix or document blocker in TECH-DEBT as P0 `b
 | **3** | Tests, audit hardening, CI llm job | `test(rdk-llm): add LLM unit tests, audit log, and CI matrix` |
 | **4** | Embedded llama provider | `feat(rdk-llm): add embedded llama.cpp provider target` |
 
+### LLM-first architecture (PR0a–PR5)
+
+| PR | Example subject |
+|----|-----------------|
+| **PR1** | `fix(rdk-llm): LLM-first lifecycle path for RU project requests` |
+| **PR0a** | `feat(rdk-llm): builtin knowledge catalog and docs/sources index` |
+| **PR0b** | `feat(rdk-llm): prebuilt knowledge index pack under Bin/LLM/index` |
+| **PR2** | `feat(rdk-llm): agent manifest, tool filter, and ReAct termination` |
+| **PR3** | `feat(rdk-llm): localized user-facing LLM system messages (ru/en)` |
+| **PR4** | `feat(rdk-llm): query intent path and retrieval score threshold` |
+| **PR5** | `test(rdk-llm): retrieval fixtures, agent docs, and E2E RU scenarios` |
+
 **Sub-commits within a phase** are allowed only if logically separate and still **before** phase is marked done — e.g. `build(rdk-llm): wire NeuroModeler to rdk.llm.core` then `feat(rdk-llm): implement get_net_snapshot tool`. Prefer **squashing** to one commit per phase before starting next phase (user may request otherwise).
 
 ### Commit body template

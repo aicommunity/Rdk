@@ -1,5 +1,8 @@
 #include <gtest/gtest.h>
 
+#include <cstdlib>
+#include <filesystem>
+
 #include "Orchestrator/ULLMAgentOrchestrator.h"
 #include "Providers/ULLMMockProvider.h"
 #include "Session/ULLMConversationStore.h"
@@ -14,12 +17,21 @@
 
 using namespace RDK::LLM;
 
-TEST(LLMOrchestratorLifecycleArgs, CreateNewConfigWithoutPathSkipsLlm)
+TEST(LLMOrchestratorLifecycleArgs, CreateNewConfigUsesLlmToolCall)
 {
+    ::unsetenv("NMSDK_LLM_INTENT_LLM");
     ULLMMockProvider provider;
     LLMCompletionResult mock;
     mock.ok = true;
-    mock.text = "LLM should not run for bare create new config";
+    mock.text = "";
+    LLMToolCall call;
+    call.id = "call_create";
+    call.name = "create_configuration";
+    const std::string parent =
+        (std::filesystem::temp_directory_path() / "nmsdk_llm_orchestrator_create").string();
+    std::filesystem::create_directories(parent);
+    call.arguments = nlohmann::json{{"project_ini_path", parent + "/project.ini"}};
+    mock.tool_calls.push_back(call);
     provider.enqueue(mock);
 
     ULLMToolRegistry registry;
@@ -42,16 +54,22 @@ TEST(LLMOrchestratorLifecycleArgs, CreateNewConfigWithoutPathSkipsLlm)
 
     const LLMFinalResponse resp = orch.handleUserMessage(req);
     EXPECT_FALSE(resp.needs_argument_clarification);
-    EXPECT_TRUE(resp.pending_confirmation || resp.ok);
-    EXPECT_NE(resp.text, "LLM should not run for bare create new config");
+    EXPECT_FALSE(resp.text.empty());
+    EXPECT_EQ(resp.text.find("Mock provider response"), std::string::npos);
 }
 
-TEST(LLMOrchestratorLifecycleArgs, LoadConfigWithoutPathSkipsLlm)
+TEST(LLMOrchestratorLifecycleArgs, LoadConfigWithoutPathUsesLlmToolCall)
 {
+    ::unsetenv("NMSDK_LLM_INTENT_LLM");
     ULLMMockProvider provider;
     LLMCompletionResult mock;
     mock.ok = true;
-    mock.text = "LLM should not run for bare load config";
+    mock.text = "";
+    LLMToolCall call;
+    call.id = "call_load";
+    call.name = "load_configuration";
+    call.arguments = nlohmann::json::object();
+    mock.tool_calls.push_back(call);
     provider.enqueue(mock);
 
     ULLMToolRegistry registry;
@@ -76,5 +94,4 @@ TEST(LLMOrchestratorLifecycleArgs, LoadConfigWithoutPathSkipsLlm)
     EXPECT_TRUE(resp.ok);
     EXPECT_TRUE(resp.needs_argument_clarification);
     EXPECT_NE(resp.text.find("load_configuration"), std::string::npos);
-    EXPECT_NE(resp.text, "LLM should not run for bare load config");
 }

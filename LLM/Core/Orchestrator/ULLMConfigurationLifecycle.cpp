@@ -33,23 +33,27 @@ ConfigurationLifecycleAction detectConfigurationLifecycleAction(const std::strin
 
     if((contains(lower, "create") || contains(lower, "созда") || contains(lower, "new "))
        && (contains(lower, "config") || contains(lower, "configuration") || contains(lower, "конфиг")
-           || contains(lower, "project")))
+           || contains(lower, "конфигурац") || contains(lower, "project")
+           || contains(lower, "проект")))
         return ConfigurationLifecycleAction::Create;
 
     if((contains(lower, "load") || contains(lower, "open") || contains(lower, "открой")
         || contains(lower, "загруз"))
        && (contains(lower, "config") || contains(lower, "configuration") || contains(lower, "конфиг")
-           || contains(lower, "project")))
+           || contains(lower, "конфигурац") || contains(lower, "project")
+           || contains(lower, "проект")))
         return ConfigurationLifecycleAction::Load;
 
     if((contains(lower, "save") || contains(lower, "сохран"))
        && (contains(lower, "config") || contains(lower, "configuration") || contains(lower, "конфиг")
-           || contains(lower, "project")))
+           || contains(lower, "конфигурац") || contains(lower, "project")
+           || contains(lower, "проект")))
         return ConfigurationLifecycleAction::Save;
 
     if((contains(lower, "close") || contains(lower, "закрой"))
        && (contains(lower, "config") || contains(lower, "configuration") || contains(lower, "конфиг")
-           || contains(lower, "project")))
+           || contains(lower, "конфигурац") || contains(lower, "project")
+           || contains(lower, "проект")))
         return ConfigurationLifecycleAction::Close;
 
     return ConfigurationLifecycleAction::None;
@@ -76,10 +80,10 @@ std::string configurationLifecycleSystemHint(ConfigurationLifecycleAction action
     switch(action)
     {
     case ConfigurationLifecycleAction::Create:
-        hint += "To create a new configuration on disk, call create_configuration exactly once "
-                "with parent_directory (required), e.g. \"/tmp/MyProject\", plus optional "
-                "project_name and channels. Then stop — do not call more tools. Do NOT use "
-                "add_component for a new project.";
+        hint += "To create a new configuration on disk (EN: create project/config; RU: создай "
+                "проект/конфигурацию), call create_configuration exactly once with "
+                "parent_directory when needed, or omit path for autocreate. Do NOT use "
+                "add_component for a new on-disk project.";
         break;
     case ConfigurationLifecycleAction::Load:
         hint += "Call load_configuration with configuration_path (folder or project.ini).";
@@ -135,6 +139,20 @@ bool isLifecycleWriteToolName(const std::string& tool_name)
         "close_configuration",  "copy_configuration",     "rename_configuration",
         "update_configuration", "reload_configuration_parameters"};
     return kWrite.count(tool_name) > 0;
+}
+
+bool toolInvokeNeedsArgumentClarification(const std::string& tool_name,
+                                          const ToolGatewayResult& result)
+{
+    if(result.ok)
+        return false;
+    if(result.error_code == "SchemaValidationFailed" || result.error_code == "ARGS_REQUIRED")
+        return true;
+    if(result.error_code == "PATH_NOT_ALLOWED"
+       && (tool_name == "load_configuration" || tool_name == "load_project"
+           || tool_name == "validate_configuration"))
+        return true;
+    return false;
 }
 
 std::string formatLifecycleToolUserMessage(const std::string& tool_name,

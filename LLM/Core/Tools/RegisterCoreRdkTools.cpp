@@ -1,11 +1,14 @@
 #include "RegisterCoreRdkTools.h"
 
 #include "../Context/ILLMProjectContextProvider.h"
+#include "../Context/UDocSearchIndex.h"
+#include "../LlmPublicApi.h"
 #include "../Domain/URdkDomainAccess.h"
 #include "../Domain/URdkEntityResolver.h"
 #include "RegisterApplicationTools.h"
 #include "ULLMToolRegistry.h"
 
+#include <algorithm>
 #include <fstream>
 
 namespace RDK::LLM {
@@ -141,25 +144,46 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
         makeDef("search_project_docs", LLMToolKind::Read, "Search NMSDK documentation",
                 {{"type", "object"},
                  {"required", {"query"}},
-                 {"properties", {{"query", {{"type", "string"}}}, {"top_k", {{"type", "integer"}}}}},
+                 {"properties",
+                  {{"query", {{"type", "string"}}},
+                   {"top_k", {{"type", "integer"}}},
+                   {"scope",
+                    {{"type", "string"},
+                     {"enum", nlohmann::json::array({"docs", "sources", "all"})},
+                     {"default", "docs"}}}}},
                  {"additionalProperties", false}},
                 {{"type", "object"}}),
         [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
+            (void)domain_access;
             ToolGatewayResult r;
             const std::string query = args.at("query").get<std::string>();
-            int top_k = args.value("top_k", 5);
-            if(project_ctx)
+            const int top_k = args.value("top_k", 5);
+            const std::string scope = args.value("scope", std::string("docs"));
+            std::vector<DocSnippet> snippets;
+            if(LLMServices::instance().isInitialized())
+                snippets = LLMServices::instance().searchIndex().searchWithScope(query, top_k, scope);
+            else if(project_ctx)
+                snippets = project_ctx->searchDocs(query, top_k);
+            snippets.erase(std::remove_if(snippets.begin(), snippets.end(),
+                                            [](const DocSnippet& sn) {
+                                                return sn.score < kMinRetrievalScore;
+                                            }),
+                           snippets.end());
+            r.result["snippets"] = nlohmann::json::array();
+            for(const DocSnippet& s : snippets)
             {
-                auto snippets = project_ctx->searchDocs(query, top_k);
-                r.result["snippets"] = nlohmann::json::array();
-                for(const auto& s : snippets)
-                {
-                    r.result["snippets"].push_back(
-                        {{"path", s.path}, {"title", s.title}, {"excerpt", s.excerpt}, {"score", s.score}});
-                }
+                r.result["snippets"].push_back({{"source_id", s.source_id},
+                                                {"path", s.path},
+                                                {"title", s.title},
+                                                {"excerpt", s.excerpt},
+                                                {"score", s.score},
+                                                {"content_kind",
+                                                 s.content_kind == LLMContentKind::Source ? "source"
+                                                 : s.content_kind == LLMContentKind::RuntimeXml
+                                                     ? "runtime_xml"
+                                                     : "doc"},
+                                                {"start_line", s.start_line}});
             }
-            else
-                r.result["snippets"] = nlohmann::json::array();
             r.ok = true;
             return r;
         });

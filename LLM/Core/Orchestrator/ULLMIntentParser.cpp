@@ -31,7 +31,8 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
     const float mutate_s =
         scoreKeywords(lower,
                       {"добав", "создай", "удали", "измени", "сохран", "загруз", "открой", "закрой", "конфиг",
-                       "configuration", "project.ini", "скопируй", "переимен", "запусти расч", "останови расч",
+                       "конфигурац", "проект", "configuration", "project", "project.ini", "скопируй",
+                       "переимен", "запусти расч", "останови расч",
                        "add ", "create ", "create config", "new config", "new configuration", "remove ", "delete ",
                        "save ", "load ", "set ", "connect ", "open config", "close config", "copy config",
                        "rename config", "создай конфиг", "новый конфиг", "новая конфигурация"},

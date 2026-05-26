@@ -44,7 +44,7 @@ Aliases: `load_project`, `save_project` (deprecated names, same handlers).
 
 For natural phrases such as `load config` **without a path**, the orchestrator does **not** call the LLM. It returns `needs_argument_clarification` with a structured prompt (`ULLMLifecycleArgumentGate`). The next user message is merged into pending arguments; when complete, the lifecycle tool runs directly (then Apply in GUI if confirmation is required).
 
-**Create without path:** phrases like `create new config` / `создай новый конфиг` preflight with `autocreate_subdirectory: true` and invoke `create_configuration` immediately (same as File → New with “Autocreate configuration folder?” = Yes). Path resolution is centralized in `UApplication::PrepareNewProjectIniPath` / `GetDefaultConfigsDirectory`, shared with GUI and `URdkApplicationCommands::resolveProjectIniPath`.
+**Create without path:** phrases like `create new config` / `создай новый конфиг` / `создай новый проект` are handled LLM-first: the model calls `create_configuration` with `parent_directory` and/or `autocreate_subdirectory` (same semantics as File → New with “Autocreate configuration folder?” = Yes). Path resolution is centralized in `UApplication::PrepareNewProjectIniPath` / `GetDefaultConfigsDirectory`, shared with GUI and `URdkApplicationCommands::resolveProjectIniPath`.
 
 ## Headless
 

@@ -44,6 +44,7 @@ struct LLMFinalResponse {
     nlohmann::json clarification_candidates = nlohmann::json::array();
     /// Lifecycle tool needs more parameters from the user (see ConversationState::pending_tool_arguments).
     bool needs_argument_clarification = false;
+    bool no_suitable_tool = false;
 };
 
 class ULLMAgentOrchestrator {

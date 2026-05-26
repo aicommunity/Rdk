@@ -1,0 +1,64 @@
+#include "ULLMToolFilterBuilder.h"
+
+namespace RDK::LLM {
+
+namespace {
+
+std::unordered_set<std::string> kQueryTools()
+{
+    return {"get_net_snapshot",
+            "list_registered_classes",
+            "describe_class",
+            "find_component",
+            "get_component_properties",
+            "search_project_docs",
+            "validate_project",
+            "validate_configuration"};
+}
+
+std::unordered_set<std::string> kMutateTools()
+{
+    return {"add_component",
+            "set_property",
+            "remove_component",
+            "connect_components",
+            "disconnect_components",
+            "create_configuration",
+            "load_configuration",
+            "load_project",
+            "save_configuration",
+            "save_project",
+            "close_configuration",
+            "update_configuration",
+            "copy_configuration",
+            "rename_configuration",
+            "reload_configuration_parameters",
+            "save_project_metadata"};
+}
+
+} // namespace
+
+ToolFilter buildToolFilter(const LLMIntentKind intent, const bool write_enabled,
+                           const ConfigurationLifecycleAction lifecycle_action)
+{
+    ToolFilter filter;
+    filter.intent = intent;
+    filter.include_write = (intent == LLMIntentKind::Mutate) && write_enabled;
+    if(intent == LLMIntentKind::Query || intent == LLMIntentKind::Explain
+       || intent == LLMIntentKind::Plan)
+    {
+        filter.include_write = false;
+        filter.allowed_tool_names = kQueryTools();
+    }
+    else if(filter.include_write)
+    {
+        std::unordered_set<std::string> allowed = kQueryTools();
+        for(const std::string& tool : kMutateTools())
+            allowed.insert(tool);
+        filter.allowed_tool_names = std::move(allowed);
+    }
+    (void)lifecycle_action;
+    return filter;
+}
+
+} // namespace RDK::LLM

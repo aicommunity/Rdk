@@ -1,6 +1,7 @@
 #include "LlmPublicApi.h"
 
 #include <cstdlib>
+#include <filesystem>
 
 #include "Context/ILLMProjectContextProvider.h"
 #include "LlmModuleInit.h"
@@ -11,6 +12,17 @@
 
 namespace RDK::LLM {
 
+namespace {
+
+class EmptyKnowledgeCatalog : public ILLMKnowledgeCatalog {
+public:
+    std::vector<LLMKnowledgeSource> sources() const override { return {}; }
+    std::filesystem::path prebuiltIndexDirectory() const override { return {}; }
+    std::string catalogFingerprint() const override { return "empty"; }
+};
+
+} // namespace
+
 LLMServices& LLMServices::instance()
 {
     static LLMServices s;
@@ -18,9 +30,12 @@ LLMServices& LLMServices::instance()
 }
 
 void LLMServices::initialize(RDK::UApplication* app, ILLMProjectContextProvider* project_context,
-                             ILLMProviderSettingsSource* settings_source)
+                             ILLMProviderSettingsSource* settings_source,
+                             std::unique_ptr<ILLMKnowledgeCatalog> catalog)
 {
     m_project_context = project_context;
+    m_catalog = catalog ? std::move(catalog) : std::make_unique<EmptyKnowledgeCatalog>();
+    m_search_index = std::make_unique<UDocSearchIndex>();
     m_commands = std::make_unique<URdkApplicationCommands>(app);
     m_domain = std::make_unique<URdkDomainAccess>(app);
     m_domain->setApplicationCommands(m_commands.get());
@@ -38,6 +53,16 @@ void LLMServices::initialize(RDK::UApplication* app, ILLMProjectContextProvider*
 
     m_gateway = std::make_unique<ULLMToolGateway>(GetToolRegistry(), *m_policy, *m_domain,
                                                   GetAuditLog(), *m_idempotency, *m_validator);
+
+    const std::filesystem::path repository_root =
+        project_context ? project_context->paths().repository_root : std::filesystem::path(".");
+    const std::string fingerprint = m_catalog->catalogFingerprint();
+    const std::filesystem::path prebuilt = m_catalog->prebuiltIndexDirectory();
+    bool loaded_prebuilt = false;
+    if(!prebuilt.empty())
+        loaded_prebuilt = m_search_index->loadPrebuilt(prebuilt, fingerprint);
+    if(!loaded_prebuilt)
+        m_search_index->buildFromCatalog(*m_catalog, repository_root);
 
     rebuildProvider();
 
@@ -116,6 +141,17 @@ ULLMSettingsStore& LLMServices::settings()
 const LLMProviderProfile& LLMServices::activeProviderProfile() const
 {
     return m_active_profile;
+}
+
+ILLMKnowledgeCatalog* LLMServices::catalog() const
+{
+    return m_catalog.get();
+}
+
+UDocSearchIndex& LLMServices::searchIndex()
+{
+    static UDocSearchIndex s_fallback;
+    return m_search_index ? *m_search_index : s_fallback;
 }
 
 } // namespace RDK::LLM

@@ -50,3 +50,18 @@ endif()
 add_executable(llm_audit_verify ${CMAKE_SOURCE_DIR}/Rdk/LLM/Tools/llm_audit_verify_main.cpp)
 target_link_libraries(llm_audit_verify PRIVATE ${TARGET_NAME})
 target_include_directories(llm_audit_verify PRIVATE ${CMAKE_SOURCE_DIR}/Rdk/LLM/Core)
+
+add_executable(llm_index_pack
+  ${CMAKE_SOURCE_DIR}/Rdk/LLM/Tools/IndexPack/main.cpp
+  ${CMAKE_SOURCE_DIR}/App/NeuroModeler/NmsdkBuiltinKnowledgeCatalog.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/RdkDummyLibraries.cpp)
+target_link_libraries(llm_index_pack PRIVATE ${TARGET_NAME} rdk.static.qt)
+target_compile_definitions(llm_index_pack PRIVATE RDK_LIB_TYPE= RDK_CALL=)
+target_include_directories(llm_index_pack PRIVATE
+  ${CMAKE_SOURCE_DIR}/Rdk/LLM/Core
+  ${CMAKE_SOURCE_DIR}/App/NeuroModeler
+  ${CMAKE_SOURCE_DIR}/Rdk/Core)
+add_custom_target(llm-index-pack
+  COMMAND $<TARGET_FILE:llm_index_pack> ${CMAKE_SOURCE_DIR}
+  DEPENDS llm_index_pack
+  COMMENT "Build Bin/LLM/index prebuilt knowledge pack")

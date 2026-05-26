@@ -32,7 +32,16 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Target | Priority | Status | Notes |
 |----|------|--------|----------|--------|-------|
-| TD-030 | Write-tools E2E hardening (manual NeuroModeler + real Configs on disk) | Write-Tools-Backlog, Application-Commands.md | P1 | open | Unit/integration tests + application layer done; manual GUI E2E still open |
+| TD-030 | Write-tools E2E hardening (manual NeuroModeler + real Configs on disk) | PR5 | P1 | open | Unit/integration tests + application layer done; manual GUI E2E still open |
+| TD-031 | YAML `llm-knowledge.manifest.yaml` + federation | post-PR0b | P2 | open | MVP uses `NmsdkBuiltinKnowledgeCatalog.cpp` |
+| TD-032 | Auto-generate `Docs/llms.txt` from catalog | post-PR5 | P3 | open | |
+| TD-033 | Incremental index / mtime watcher | post-PR0b | P2 | open | MVP full rebuild at startup |
+| TD-034 | Function-level source chunking (ctags/tree-sitter) | post-PR0a | P2 | open | MVP file excerpt ≤120 lines |
+| TD-035 | Dedicated `tool_disambiguation` UI flag | PR2 | P2 | open | MVP uses `needs_entity_clarification` |
+| TD-036 | Embedding-based dynamic tool routing | post-PR2 | P3 | open | MVP static `ULLMToolFilterBuilder` |
+| TD-037 | Multilingual retrieval boost (RU query) | PR4 | P2 | open | |
+| TD-039 | `loadedLibraries()` generated from catalog | PR0a | P2 | open | Static list kept in `NmsdkLlmProjectContext` |
+| TD-040 | Catalog fingerprint includes source mtimes | PR0b | P2 | open | PR0a path-only fingerprint |
 
 ---
 
@@ -78,6 +87,9 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 |------|----------|-----------|---------|
 | 2026-05-25 | Single `TECH-DEBT.md` at `Rdk/LLM/` root | Visible next to code; linked from AGENTS.md | — |
 | 2026-05-25 | One English commit per implementation phase | Reviewable history, bisect-friendly | — |
+| 2026-05-25 | Builtin C++ catalog vs YAML | Faster MVP, no yaml-cpp dependency | TD-031 |
+| 2026-05-25 | Remove pre-LLM lifecycle bypass | LLM-first agent model | — |
+| 2026-05-25 | Ship index in `Bin/LLM/index` | Prod without full source tree | TD-033 |
 | 2026-05-25 | `Rdk/LLM` must not hardcode NMSDK `Bin/` paths | Core vs product separation | — |
 | 2026-05-25 | Offline projection vs full embedding model | No GGUF embed model in MVP; hybrid TF-IDF sufficient | TD-021 Ollama optional |
 | 2026-05-25 | Ollama embed re-rank off by default | Avoid CI/network dependency | `NMSDK_LLM_DOC_EMBED_OLLAMA=1` |
