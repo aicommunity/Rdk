@@ -4,6 +4,7 @@
 #include <optional>
 #include <string>
 #include <unordered_set>
+#include <vector>
 
 namespace RDK::LLM {
 
@@ -18,6 +19,11 @@ const std::unordered_set<std::string>* componentClassAllowlistForScope(LibrarySc
 
 /// When scope is set, fuzzy-match token to that library's classes; otherwise return trimmed token.
 std::string resolveComponentClassName(const std::string& query, LibraryScopeHint scope);
+
+/// Map RU/EN user message to a registered class when keywords match (e.g. «нейрон» → NPulseNeuron).
+std::optional<std::string>
+inferAddComponentClassFromUserText(const std::string& user_text,
+                                   const std::vector<std::string>& registered_classes);
 
 } // namespace RDK::LLM
 

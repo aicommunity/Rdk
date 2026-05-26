@@ -212,6 +212,8 @@ struct ToolInvokeRequest {
     LLMSessionContext session;
     std::string confirmation_id;
     bool confirmed = false;
+    /// Current user turn text (for add_component class inference when the model picks a wrong class).
+    std::string user_text_hint;
 };
 
 struct ToolGatewayResult {

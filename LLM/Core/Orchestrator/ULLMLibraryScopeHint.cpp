@@ -1,5 +1,6 @@
 #include "ULLMLibraryScopeHint.h"
 
+#include <algorithm>
 #include <cctype>
 #include <vector>
 
@@ -90,6 +91,10 @@ std::string resolveKnownClassAlias(const std::string& query)
     const std::string lower = toLower(query);
     if(lower == "nplneuron")
         return "NPulseNeuron";
+    if(lower == "нейрон" || lower == "neuron")
+        return "NPulseNeuron";
+    if(lower == "синапс" || lower == "synapse")
+        return "NPulseSynapseStdp";
     return query;
 }
 
@@ -189,6 +194,53 @@ std::string resolveComponentClassName(const std::string& query, LibraryScopeHint
     if(const std::unordered_set<std::string>* allow = componentClassAllowlistForScope(scope))
         return resolveInAllowlist(query, *allow);
     return resolveAcrossLibraryAllowlists(query);
+}
+
+namespace {
+
+bool isRegisteredClass(const std::vector<std::string>& registered, const std::string& name)
+{
+    return std::find(registered.begin(), registered.end(), name) != registered.end();
+}
+
+} // namespace
+
+std::optional<std::string>
+inferAddComponentClassFromUserText(const std::string& user_text,
+                                   const std::vector<std::string>& registered)
+{
+    if(user_text.empty())
+        return std::nullopt;
+
+    const std::string lower = toLower(user_text);
+    auto pick = [&](const char* class_name) -> std::optional<std::string> {
+        if(registered.empty() || isRegisteredClass(registered, class_name))
+            return std::string(class_name);
+        return std::nullopt;
+    };
+
+    if((containsToken(lower, "нейрон") || containsToken(lower, "neuron"))
+       && !containsToken(lower, "trainer") && !containsToken(lower, "learner"))
+    {
+        if(auto c = pick("NPulseNeuron"))
+            return c;
+    }
+    if(containsToken(lower, "синапс") || containsToken(lower, "synapse") || containsToken(lower, "stdp"))
+    {
+        if(auto c = pick("NPulseSynapseStdp"))
+            return c;
+    }
+    if(containsToken(lower, "membrane") || containsToken(lower, "мембран"))
+    {
+        if(auto c = pick("NPulseMembrane"))
+            return c;
+    }
+    if(containsToken(lower, "manipulator") || containsToken(lower, "манипулятор"))
+    {
+        if(auto c = pick("NManipulator"))
+            return c;
+    }
+    return std::nullopt;
 }
 
 } // namespace RDK::LLM

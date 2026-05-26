@@ -93,7 +93,8 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
     if(writeToolNeedsEntityResolution(req.tool_name))
     {
         const WriteArgumentNormalizeResult normalized = normalizeWriteToolArguments(
-            req.tool_name, req.arguments, m_domain, req.session.active_channel_index);
+            req.tool_name, req.arguments, m_domain, req.session.active_channel_index,
+            req.user_text_hint);
         if(!normalized.ok)
         {
             result.ok = false;

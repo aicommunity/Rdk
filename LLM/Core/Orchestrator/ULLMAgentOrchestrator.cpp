@@ -505,6 +505,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             invoke.tool_name = call.name;
             invoke.arguments = call.arguments;
             invoke.session = session;
+            invoke.user_text_hint = req.user_text;
             ToolGatewayResult tr = m_gateway.invoke(invoke);
             if(tr.ok && !tr.pending_confirmation && session.autonomous_mode != LLMAutonomousMode::Off)
                 ++session.autonomous_steps_taken;
