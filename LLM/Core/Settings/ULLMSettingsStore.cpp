@@ -91,6 +91,16 @@ void ULLMSettingsStore::setLlmAutoApplyWrites(bool auto_apply)
     m_runtime.llm_auto_apply_writes = auto_apply;
 }
 
+void ULLMSettingsStore::setAutonomousMode(LLMAutonomousMode mode)
+{
+    m_runtime.autonomous_mode = mode;
+}
+
+void ULLMSettingsStore::setMaxAutonomousSteps(int max_steps)
+{
+    m_runtime.max_autonomous_steps = max_steps > 0 ? max_steps : 3;
+}
+
 void ULLMSettingsStore::setPreferredResponseLanguage(const std::string& code)
 {
     m_runtime.preferred_response_language = code;

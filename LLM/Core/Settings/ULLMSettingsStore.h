@@ -26,6 +26,8 @@ public:
     void setAllowCloudProviders(bool allow);
     void setLlmWriteEnabled(bool allow);
     void setLlmAutoApplyWrites(bool auto_apply);
+    void setAutonomousMode(LLMAutonomousMode mode);
+    void setMaxAutonomousSteps(int max_steps);
 
     void setPreferredResponseLanguage(const std::string& code);
     const std::string& preferredResponseLanguage() const;

@@ -41,6 +41,7 @@ private:
     QCheckBox* m_allow_cloud = nullptr;
     QCheckBox* m_allow_write = nullptr;
     QCheckBox* m_auto_apply_writes = nullptr;
+    QComboBox* m_autonomous_mode = nullptr;
     QComboBox* m_response_language = nullptr;
     QComboBox* m_send_shortcut = nullptr;
     QLabel* m_status = nullptr;

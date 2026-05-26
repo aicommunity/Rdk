@@ -29,6 +29,9 @@ enum class LLMToolKind { Read, Write };
 
 enum class LLMIntentKind { Auto, Query, Mutate, Explain, Plan };
 
+/// Scenario D: configurable multi-step autonomy (Post-MVP). Default Off.
+enum class LLMAutonomousMode { Off, Strict, SemiAuto };
+
 enum class LLMPresentationEffect {
     None,
     ContextOnly,
@@ -122,6 +125,8 @@ struct LLMRuntimeProviderSettings {
     bool llm_write_enabled = true;
     /// When true, write tools run immediately without per-step Apply confirmation.
     bool llm_auto_apply_writes = false;
+    LLMAutonomousMode autonomous_mode = LLMAutonomousMode::Off;
+    int max_autonomous_steps = 3;
     std::map<std::string, std::string> api_keys_by_profile_id;
     /// Per-profile endpoint overrides (empty fields → use built-in preset).
     std::map<std::string, LLMProfileEndpointOverride> endpoint_overrides_by_profile_id;
@@ -137,6 +142,8 @@ struct LLMSessionContext {
     bool project_loaded = false;
     bool llm_write_enabled = true;
     bool auto_apply_writes = false;
+    LLMAutonomousMode autonomous_mode = LLMAutonomousMode::Off;
+    int autonomous_steps_taken = 0;
     bool allow_cloud_llm = false;
     bool allow_save = true;
     int active_channel_index = 0;

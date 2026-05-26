@@ -307,6 +307,8 @@ RDK::LLM::LLMSessionContext ULlmAssistantDockWidget::buildSession(const LLMGuiCo
     const auto& runtime = RDK::LLM::LLMServices::instance().settings().runtime();
     s.llm_write_enabled = runtime.llm_write_enabled;
     s.auto_apply_writes = runtime.llm_write_enabled && runtime.llm_auto_apply_writes;
+    s.autonomous_mode = runtime.autonomous_mode;
+    s.autonomous_steps_taken = 0;
     s.allow_cloud_llm = runtime.allow_cloud_providers;
     return s;
 }
@@ -460,7 +462,7 @@ void ULlmAssistantDockWidget::onStreamFinished(const RDK::LLM::LLMFinalResponse&
         setPausedPlan(QString::fromStdString(resp.pending_plan_id), QString::fromStdString(resp.text));
         return;
     }
-    if(resp.needs_entity_clarification)
+    if(resp.needs_entity_clarification || resp.needs_tool_disambiguation)
     {
         appendAssistantText(tr("<b>Clarification needed</b>"));
         appendAssistantText(QString::fromStdString(resp.text));

@@ -9,6 +9,8 @@ struct LLMPolicyLimits {
     int max_cloud_provider_rounds_per_session = 40;
     /// HITL write confirmation validity (TD-025).
     int confirmation_ttl_seconds = 600;
+    /// Scenario D: max tool invocations per user message when autonomous_mode != Off.
+    int max_autonomous_steps_per_message = 3;
 };
 
 inline constexpr int kDefaultMaxToolRounds = 8;

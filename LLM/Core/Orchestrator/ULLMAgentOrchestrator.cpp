@@ -21,6 +21,8 @@
 #include "ULLMExecutionPlan.h"
 #include "ULLMAgentManifestBuilder.h"
 #include "ULLMPlanExecutor.h"
+#include "../Knowledge/ULLMDynamicToolRouter.h"
+#include "../Policy/ULLMAutonomousPolicy.h"
 
 namespace RDK::LLM {
 
@@ -128,6 +130,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
         session.llm_write_enabled = runtime_settings.llm_write_enabled;
         session.auto_apply_writes =
             runtime_settings.llm_write_enabled && runtime_settings.llm_auto_apply_writes;
+        session.autonomous_mode = LLMAutonomousMode::Off;
+        session.autonomous_steps_taken = 0;
         session.allow_cloud_llm = runtime_settings.allow_cloud_providers;
 
         ProviderAccessCheck access = LLMServices::instance().checkActiveProviderAccess(session);
@@ -187,6 +191,23 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
         return final;
     }
 
+    if(LLMServices::instance().isInitialized())
+    {
+        const LLMRuntimeProviderSettings& runtime_settings =
+            LLMServices::instance().settings().runtime();
+        if(intent == LLMIntentKind::Mutate && runtime_settings.autonomous_mode != LLMAutonomousMode::Off)
+        {
+            session.autonomous_mode = runtime_settings.autonomous_mode;
+            if(session.autonomous_mode == LLMAutonomousMode::SemiAuto)
+                session.auto_apply_writes = runtime_settings.llm_write_enabled;
+            GetAuditLog().append("autonomous_run_started",
+                                 {{"mode", session.autonomous_mode == LLMAutonomousMode::Strict
+                                           ? "strict"
+                                           : "semi_auto"}},
+                                 req.trace_id, req.session_id);
+        }
+    }
+
     const ConfigurationLifecycleAction lifecycle_action =
         detectConfigurationLifecycleAction(req.user_text);
 
@@ -223,6 +244,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
 
     ToolFilter filter =
         buildToolFilter(intent, session.llm_write_enabled, lifecycle_action);
+    filter = ULLMDynamicToolRouter::apply(filter, req.user_text);
 
     std::vector<LLMMessage> provider_messages = state.messages;
     const bool strict_plan_schema =
@@ -439,12 +461,39 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 return {call, limited};
             }
             ++tool_invocations;
+            if(session.autonomous_mode != LLMAutonomousMode::Off)
+            {
+                const int max_auto_steps = LLMServices::instance().isInitialized()
+                                               ? LLMServices::instance()
+                                                     .settings()
+                                                     .runtime()
+                                                     .max_autonomous_steps
+                                               : defaultPolicyLimits().max_autonomous_steps_per_message;
+                const AutonomousStepDecision auto_decision = ULLMAutonomousPolicy::checkStep(
+                    call.name, session.autonomous_mode, session.autonomous_steps_taken,
+                    max_auto_steps);
+                if(!auto_decision.allowed)
+                {
+                    ToolGatewayResult denied;
+                    denied.ok = false;
+                    denied.error_code = auto_decision.deny_code;
+                    denied.message = auto_decision.deny_message;
+                    GetAuditLog().append("autonomous_step_denied",
+                                         {{"tool_name", call.name},
+                                          {"code", auto_decision.deny_code}},
+                                         req.trace_id, req.session_id);
+                    return {call, denied};
+                }
+            }
             ToolInvokeRequest invoke;
             invoke.trace_id = req.trace_id;
             invoke.tool_name = call.name;
             invoke.arguments = call.arguments;
             invoke.session = session;
-            return {call, m_gateway.invoke(invoke)};
+            ToolGatewayResult tr = m_gateway.invoke(invoke);
+            if(tr.ok && !tr.pending_confirmation && session.autonomous_mode != LLMAutonomousMode::Off)
+                ++session.autonomous_steps_taken;
+            return {call, tr};
         };
 
         const bool all_read = std::all_of(
@@ -467,6 +516,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 if(extractAmbiguousFindComponent(tr, ambiguous))
                 {
                     final.needs_entity_clarification = true;
+                    final.needs_tool_disambiguation = true;
                     final.clarification_candidates = ambiguous;
                     final.text = formatClarificationMessage(ambiguous);
                     m_store.persistToDisk(req.session_id);
@@ -528,6 +578,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 if(extractAmbiguousFindComponent(tr, ambiguous))
                 {
                     final.needs_entity_clarification = true;
+                    final.needs_tool_disambiguation = true;
                     final.clarification_candidates = ambiguous;
                     final.text = formatClarificationMessage(ambiguous);
                     m_store.persistToDisk(req.session_id);

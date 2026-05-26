@@ -41,6 +41,8 @@ struct LLMFinalResponse {
     bool plan_paused = false;
     bool can_resume_plan = false;
     bool needs_entity_clarification = false;
+    /// TD-035: dedicated flag (also set when entity clarification is used).
+    bool needs_tool_disambiguation = false;
     nlohmann::json clarification_candidates = nlohmann::json::array();
     /// Lifecycle tool needs more parameters from the user (see ConversationState::pending_tool_arguments).
     bool needs_argument_clarification = false;

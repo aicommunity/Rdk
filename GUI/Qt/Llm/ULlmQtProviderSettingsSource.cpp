@@ -47,6 +47,17 @@ RDK::LLM::LLMRuntimeProviderSettings ULlmQtProviderSettingsSource::load() const
     runtime.llm_auto_apply_writes =
         settings.value(QStringLiteral("LLM/llm_auto_apply_writes"), false).toBool();
 
+    const QString autonomous =
+        settings.value(QStringLiteral("LLM/autonomous_mode"), QStringLiteral("off")).toString();
+    if(autonomous == QStringLiteral("strict"))
+        runtime.autonomous_mode = RDK::LLM::LLMAutonomousMode::Strict;
+    else if(autonomous == QStringLiteral("semi_auto"))
+        runtime.autonomous_mode = RDK::LLM::LLMAutonomousMode::SemiAuto;
+    else
+        runtime.autonomous_mode = RDK::LLM::LLMAutonomousMode::Off;
+    runtime.max_autonomous_steps =
+        settings.value(QStringLiteral("LLM/max_autonomous_steps"), 3).toInt();
+
     runtime.preferred_response_language =
         settings.value(QStringLiteral("LLM/preferred_response_language"), QString())
             .toString()
@@ -71,6 +82,21 @@ void ULlmQtProviderSettingsSource::save(const RDK::LLM::LLMRuntimeProviderSettin
     qsettings.setValue(QStringLiteral("LLM/allow_cloud_providers"), settings.allow_cloud_providers);
     qsettings.setValue(QStringLiteral("LLM/llm_write_enabled"), settings.llm_write_enabled);
     qsettings.setValue(QStringLiteral("LLM/llm_auto_apply_writes"), settings.llm_auto_apply_writes);
+    QString autonomous_mode = QStringLiteral("off");
+    switch(settings.autonomous_mode)
+    {
+    case RDK::LLM::LLMAutonomousMode::Strict:
+        autonomous_mode = QStringLiteral("strict");
+        break;
+    case RDK::LLM::LLMAutonomousMode::SemiAuto:
+        autonomous_mode = QStringLiteral("semi_auto");
+        break;
+    case RDK::LLM::LLMAutonomousMode::Off:
+    default:
+        break;
+    }
+    qsettings.setValue(QStringLiteral("LLM/autonomous_mode"), autonomous_mode);
+    qsettings.setValue(QStringLiteral("LLM/max_autonomous_steps"), settings.max_autonomous_steps);
     qsettings.setValue(QStringLiteral("LLM/preferred_response_language"),
                        QString::fromStdString(settings.preferred_response_language));
     qsettings.setValue(QStringLiteral("LLM/send_shortcut"),

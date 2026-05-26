@@ -13,6 +13,29 @@ namespace RDK::LLM {
 
 namespace {
 
+std::string autonomousModeToString(LLMAutonomousMode mode)
+{
+    switch(mode)
+    {
+    case LLMAutonomousMode::Strict:
+        return "strict";
+    case LLMAutonomousMode::SemiAuto:
+        return "semi_auto";
+    case LLMAutonomousMode::Off:
+    default:
+        return "off";
+    }
+}
+
+LLMAutonomousMode autonomousModeFromString(const std::string& s)
+{
+    if(s == "strict")
+        return LLMAutonomousMode::Strict;
+    if(s == "semi_auto")
+        return LLMAutonomousMode::SemiAuto;
+    return LLMAutonomousMode::Off;
+}
+
 nlohmann::json sessionContextToJson(const LLMSessionContext& session)
 {
     return {{"session_id", session.session_id},
@@ -21,6 +44,8 @@ nlohmann::json sessionContextToJson(const LLMSessionContext& session)
             {"project_loaded", session.project_loaded},
             {"llm_write_enabled", session.llm_write_enabled},
             {"auto_apply_writes", session.auto_apply_writes},
+            {"autonomous_mode", autonomousModeToString(session.autonomous_mode)},
+            {"autonomous_steps_taken", session.autonomous_steps_taken},
             {"allow_cloud_llm", session.allow_cloud_llm},
             {"allow_save", session.allow_save},
             {"active_channel_index", session.active_channel_index}};
@@ -35,6 +60,8 @@ LLMSessionContext sessionContextFromJson(const nlohmann::json& j)
     session.project_loaded = j.value("project_loaded", false);
     session.llm_write_enabled = j.value("llm_write_enabled", true);
     session.auto_apply_writes = j.value("auto_apply_writes", false);
+    session.autonomous_mode = autonomousModeFromString(j.value("autonomous_mode", "off"));
+    session.autonomous_steps_taken = j.value("autonomous_steps_taken", 0);
     session.allow_cloud_llm = j.value("allow_cloud_llm", false);
     session.allow_save = j.value("allow_save", true);
     session.active_channel_index = j.value("active_channel_index", 0);

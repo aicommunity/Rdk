@@ -1,5 +1,6 @@
 #include "ULlmProviderSettingsWidget.h"
 
+#include <QComboBox>
 #include <QFormLayout>
 #include <QLabel>
 #include <QVBoxLayout>
@@ -59,6 +60,14 @@ ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UAp
     layout->addWidget(m_auto_apply_writes);
 
     connect(m_allow_write, &QCheckBox::toggled, m_auto_apply_writes, &QWidget::setEnabled);
+
+    auto* autonomous_form = new QFormLayout();
+    m_autonomous_mode = new QComboBox(this);
+    m_autonomous_mode->addItem(tr("Off"), QStringLiteral("off"));
+    m_autonomous_mode->addItem(tr("Strict (confirm each step)"), QStringLiteral("strict"));
+    m_autonomous_mode->addItem(tr("Semi-auto (auto-apply writes)"), QStringLiteral("semi_auto"));
+    autonomous_form->addRow(tr("Autonomous mode:"), m_autonomous_mode);
+    layout->addLayout(autonomous_form);
 
     auto* lang_form = new QFormLayout();
     m_response_language = new QComboBox(this);
@@ -120,6 +129,15 @@ void ULlmProviderSettingsWidget::loadFromStore()
     m_allow_write->setChecked(store.runtime().llm_write_enabled);
     m_auto_apply_writes->setChecked(store.runtime().llm_auto_apply_writes);
     m_auto_apply_writes->setEnabled(store.runtime().llm_write_enabled);
+    {
+        const QString mode = store.runtime().autonomous_mode == RDK::LLM::LLMAutonomousMode::Strict
+                                 ? QStringLiteral("strict")
+                                 : store.runtime().autonomous_mode == RDK::LLM::LLMAutonomousMode::SemiAuto
+                                       ? QStringLiteral("semi_auto")
+                                       : QStringLiteral("off");
+        const int mode_index = m_autonomous_mode->findData(mode);
+        m_autonomous_mode->setCurrentIndex(mode_index >= 0 ? mode_index : 0);
+    }
 
     const QString lang =
         QString::fromStdString(store.runtime().preferred_response_language);
@@ -297,6 +315,14 @@ void ULlmProviderSettingsWidget::saveToStore()
     store.setAllowCloudProviders(m_allow_cloud->isChecked());
     store.setLlmWriteEnabled(m_allow_write->isChecked());
     store.setLlmAutoApplyWrites(m_allow_write->isChecked() && m_auto_apply_writes->isChecked());
+    const QString autonomous_data = m_autonomous_mode->currentData().toString();
+    if(autonomous_data == QStringLiteral("strict"))
+        store.setAutonomousMode(RDK::LLM::LLMAutonomousMode::Strict);
+    else if(autonomous_data == QStringLiteral("semi_auto"))
+        store.setAutonomousMode(RDK::LLM::LLMAutonomousMode::SemiAuto);
+    else
+        store.setAutonomousMode(RDK::LLM::LLMAutonomousMode::Off);
+    store.setMaxAutonomousSteps(3);
     store.setPreferredResponseLanguage(m_response_language->currentData().toString().toStdString());
     store.setSendShortcut(m_send_shortcut->currentData().toString() == QStringLiteral("enter")
                               ? RDK::LLM::LLMSendShortcutMode::Enter
