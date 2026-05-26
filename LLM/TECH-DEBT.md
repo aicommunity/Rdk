@@ -73,7 +73,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-037 | Multilingual retrieval boost (RU query) | 2026-05-26 | UTF-8 token bytes preserved in `UDocSearchIndex::tokenize` |
 | TD-040 | Catalog fingerprint includes source mtimes | 2026-05-26 | `last_write_time` per catalog root in `catalogFingerprint()` |
 | TD-033 | Incremental index / mtime watcher | 2026-05-26 | `syncFromCatalog`, `file_mtimes` in manifest, dev cache `LLM/index` |
-| TD-030 | Write-tools E2E hardening (automated) | 2026-05-26 | `Test_LLM_WriteToolsAudit` (LLM tool_call → HITL `confirmation_requested`), lifecycle mock/lab tests |
+| TD-030 | Write-tools E2E hardening (automated) | 2026-05-26 | `Test_LLM_WriteToolsAudit` (mock → HITL), lifecycle mock/lab; `tool_invoke_*` via lab/GUI |
 | TD-032 | Auto-generate `Docs/llms.txt` from catalog | 2026-05-26 | `NmsdkBuiltinKnowledgeCatalog::writeLlmsTxt` via `llm-index-pack` |
 | TD-039 | `loadedLibraries()` from catalog | 2026-05-26 | `NmsdkBuiltinKnowledgeCatalog::loadedLibraries()`; context delegates |
 | TD-031 | YAML knowledge manifest + federation | 2026-05-26 | Cancelled MVP: C++ catalog; revisit TD-031 if YAML needed |

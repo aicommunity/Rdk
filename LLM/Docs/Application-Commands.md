@@ -64,9 +64,11 @@ Call `LLMServices::initialize(app, ctx)` without `setPresentationSink` — comma
 | `Test_LLM_DocRetrieval` | 16 fixture queries vs builtin index (`llm_retrieval_expectations.json`) |
 | `Test_LLM_KnowledgeIndex` | Catalog build; `UApplication` in `scope=all` |
 
-### Manual E2E checklist (TD-030)
+### Manual E2E checklist (TD-041)
 
-Run in NeuroModeler with Ollama lab (`NMSDK_LLM_OLLAMA_*`) and real `Configs/`:
+Automated gate: `Test_LLM_WriteToolsAudit` (mock LLM → `confirmation_requested`) and
+`Test_LLM_OrchestratorLifecycleArgs`. Manual walkthrough in NeuroModeler with Ollama lab
+(`NMSDK_LLM_OLLAMA_*`) and real `Configs/`:
 
 1. RU: «создай новый проект» → first tool_call `create_configuration` (not `add_component`).
 2. Confirm HITL → configuration folder created and shell refreshes.

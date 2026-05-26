@@ -166,9 +166,10 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 
 | Item | Notes |
 |------|-------|
-| — | MVP/post-MVP хвосты закрыты (L7, strict plan schema, Ollama env) |
+| TD-041 | Manual NeuroModeler GUI write-tools walkthrough — [Application-Commands.md](Application-Commands.md) § TD-041 |
+| Catalog/index | `llms.txt`, `loadedLibraries()`, incremental index (TD-032/033/039) — done |
 
-**Следующая фаза продукта:** [Write-Tools-Backlog.md](Write-Tools-Backlog.md) — доводка write-tools в NeuroModeler.
+**Следующая фаза продукта:** [Write-Tools-Backlog.md](Write-Tools-Backlog.md) — доводка write-tools в NeuroModeler (P1 E2E на реальной схеме, policy/UX).
 
 ---
 
