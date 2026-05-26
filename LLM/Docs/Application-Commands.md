@@ -74,5 +74,7 @@ Automated gate: `Test_LLM_WriteToolsAudit` (mock LLM → `confirmation_requested
 2. Confirm HITL → configuration folder created and shell refreshes.
 3. RU: «загрузи конфигурацию» with path → `load_configuration` or argument clarification.
 4. Query: «что такое HardwareLib» → `search_project_docs` with `scope=docs`, cites path.
+5. Mutate (project open): «добавь MatrixSource» → `add_component` after Confirm; audit has `tool_invoke_start`.
+6. Save: «сохрани конфигурацию» → `save_configuration` or `save_project` after Confirm.
 
 Lab Ollama model: env `NMSDK_LLM_OLLAMA_MODEL` (default `qwen2.5:14b`). Presentation timeout: `NMSDK_LLM_PRESENTATION_TIMEOUT_MS` (default 30000).

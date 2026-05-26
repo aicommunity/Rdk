@@ -69,8 +69,8 @@
 
 | Поле | Значение |
 |------|----------|
-| `DOCS_BUNDLE_ID` | `rdk-llm-docs-1.2.0` |
-| Дата | 2026-05-25 (MVP tails: L7 regression, strict plan schema, write-tools backlog) |
+| `DOCS_BUNDLE_ID` | `rdk-llm-docs-1.3.0` |
+| Дата | 2026-05-26 (LLM-first catalog/index, write-tools audit tests; manual GUI → TD-041) |
 | Согласовано с | Nmsdk / RDK Core, NeuroModeler |
 
 При изменении контрактов tools — инкремент `TOOL_REGISTRY_VERSION` (см. Tool-Gateway-and-Registry.md) и запись в audit.
