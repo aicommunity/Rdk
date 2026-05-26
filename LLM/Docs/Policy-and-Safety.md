@@ -59,7 +59,7 @@ struct PolicyDecision {
 |------|----------------------|
 | `add_component` | true |
 | `remove_component` | true |
-| `set_property` | true (whitelist exceptions: comment-only props — фаза 3) |
+| `set_property` | true (exempt: `Comment`, `Description`, `Label`, `Title`, `Tooltip`, `Hint`, `Note` — see `ULLMWriteToolPolicy`) |
 | `connect_components` | true |
 | `load_project` | true |
 | `save_project` | true |

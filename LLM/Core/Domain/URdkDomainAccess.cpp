@@ -157,11 +157,20 @@ DomainStatus URdkDomainAccess::addComponent(const std::string& class_name,
                                             int channel_index,
                                             std::string& out_long_name)
 {
-    (void)parent_long_name;
-    const char* err = MModel_AddComponent(channel_index, short_name.c_str(), class_name.c_str());
-    if(err && err[0])
-        return {DomainStatusCode::LinkFailed, std::string(err)};
-    out_long_name = short_name;
+    (void)short_name;
+    const char* added =
+        MModel_AddComponent(channel_index, parent_long_name.c_str(), class_name.c_str());
+    if(!added || !added[0])
+    {
+        return {DomainStatusCode::LinkFailed,
+                "add_component failed for class " + class_name + " under parent \"" + parent_long_name
+                    + "\""};
+    }
+    out_long_name = added;
+    nlohmann::json found;
+    if(findComponentByLongName(added, found, channel_index).ok()
+       && found.contains("long_name"))
+        out_long_name = found["long_name"].get<std::string>();
     return {};
 }
 

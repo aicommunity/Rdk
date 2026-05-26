@@ -2,6 +2,7 @@
 
 #include "ApplicationToolAudit.h"
 #include "../Policy/ULLMUserRole.h"
+#include "../Policy/ULLMWriteToolPolicy.h"
 
 #include <random>
 
@@ -67,7 +68,8 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
         return result;
     }
 
-    if(def->requires_confirmation && !req.confirmed)
+    if(def->requires_confirmation && !req.confirmed
+       && !isConfirmationExemptWriteTool(req.tool_name, req.arguments))
     {
         result.ok = true;
         result.pending_confirmation = true;

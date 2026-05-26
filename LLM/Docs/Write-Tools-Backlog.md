@@ -2,21 +2,22 @@
 
 MVP/post-MVP план закрыт. Дальше: **довести write-tools до production** в NeuroModeler.
 
-## Приоритет P1 (функционал)
+## Приоритет P1 (функционал) ✅
 
-| Tool | Статус | Задачи |
-|------|--------|--------|
-| `add_component` | есть | E2E на реальной схеме, parent/long_name edge cases |
-| `set_property` | есть | Whitelist «безопасных» свойств без HITL (policy) |
-| `remove_component` | есть | Rollback в планах, orphan links |
-| `connect_components` | есть | Валидация портов, undo в GUI |
-| `load_project` / `load_configuration` | есть | Path policy P04, GUI refresh via presentation sink |
-| `save_project` / `save_configuration` | есть | `allow_save` P03, presentation sink |
-| `create_configuration` / `close_configuration` | есть | Application command layer; automated E2E (TD-030 done); manual GUI → TD-041 |
-| `copy_configuration` / `rename_configuration` | есть | HITL + path policy |
-| `validate_configuration` | есть | On-disk `ValidateProject` (≠ `validate_project` dry-run) |
-| Channel calc tools | есть | start/pause/reset/step |
-| `disconnect_components` | internal | Экспонировать в API LLM или оставить только в plan rollback |
+| Tool | Статус | Реализация / тесты |
+|------|--------|-------------------|
+| `add_component` | done | `parent_long_name` → `MModel_AddComponent`; `Test_LLM_WriteToolsP1` |
+| `set_property` | done | `ULLMWriteToolPolicy` low-risk props без HITL |
+| `remove_component` | done | Plan compensation TD-018/020; gateway HITL |
+| `connect_components` | done | `MModel_CreateLinkByName`; schema fixture |
+| `disconnect_components` | done | В mutate filter + registry (plan rollback) |
+| `load_*` / `save_*` | done | Path policy, `allow_save`, presentation sink — `Test_LLM_ApplicationFixtures`, policy tests |
+| `create_*` / `close_*` | done | TD-030 automated; manual GUI → TD-041 |
+| `copy_*` / `rename_*` | done | HITL + path policy tests in `Test_LLM_WriteToolsP1` |
+| `validate_configuration` | done | `Test_LLM_E2eLabCommands` |
+| Channel calc tools | done | В `kMutateTools`; `Test_LLM_WriteToolsP1` registry |
+
+**Unit gate:** `ctest -R Test_LLM_WriteToolsP1`
 
 ## Приоритет P2 (интеграция)
 

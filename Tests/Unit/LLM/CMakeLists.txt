@@ -97,6 +97,8 @@ _add_llm_unit_test(Test_LLM_KnowledgeCatalog
 target_compile_definitions(Test_LLM_KnowledgeCatalog PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 target_include_directories(Test_LLM_KnowledgeCatalog PRIVATE ${CMAKE_SOURCE_DIR}/App/NeuroModeler)
 _add_llm_unit_test(Test_LLM_WriteToolsAudit test_llm_write_tools_audit.cpp)
+_add_llm_unit_test(Test_LLM_WriteToolsP1 test_llm_write_tools_p1.cpp)
+target_compile_definitions(Test_LLM_WriteToolsP1 PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
 _add_llm_unit_test(Test_LLM_EmbeddedProvider test_llm_embedded_provider.cpp)
 if(RDK_LLM_BUILD_EMBEDDED)
   target_compile_definitions(Test_LLM_EmbeddedProvider PRIVATE RDK_LLM_EMBEDDED=1)

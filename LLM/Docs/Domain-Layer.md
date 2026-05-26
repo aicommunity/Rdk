@@ -117,7 +117,7 @@ public:
 
 | Операция | Предпочтительный путь | Запасной |
 |----------|----------------------|----------|
-| `add_component` | `URdkDomainAccess` обёртка над `Model_AddComponent` / engine API | `rdk_init.h` |
+| `add_component` | `MModel_AddComponent(channel, parent_long_name, class_name)`; output long name via `findComponentByLongName` | `rdk_init.h` |
 | `set_property` | Прямой доступ к `UComponent` property по LongName | — |
 | `load/save project` | `UApplication::OpenProject` / `SaveProject(As)` | — |
 

@@ -217,7 +217,7 @@
 
 ### `set_property`
 
-**confirmation:** true (false для «безопасных» свойств — whitelist в policy, фаза 3)
+**confirmation:** true (false для low-risk metadata props — `ULLMWriteToolPolicy::isConfirmationExemptWriteTool`)
 
 **input:**
 ```json

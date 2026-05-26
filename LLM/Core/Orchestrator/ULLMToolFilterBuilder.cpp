@@ -33,7 +33,11 @@ std::unordered_set<std::string> kMutateTools()
             "copy_configuration",
             "rename_configuration",
             "reload_configuration_parameters",
-            "save_project_metadata"};
+            "save_project_metadata",
+            "start_channel_calculation",
+            "pause_channel_calculation",
+            "reset_channel_calculation",
+            "step_channel_calculation"};
 }
 
 } // namespace
