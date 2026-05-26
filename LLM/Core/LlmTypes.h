@@ -120,6 +120,8 @@ struct LLMRuntimeProviderSettings {
     std::string active_profile_id = "ollama-local";
     bool allow_cloud_providers = false;
     bool llm_write_enabled = true;
+    /// When true, write tools run immediately without per-step Apply confirmation.
+    bool llm_auto_apply_writes = false;
     std::map<std::string, std::string> api_keys_by_profile_id;
     /// Per-profile endpoint overrides (empty fields → use built-in preset).
     std::map<std::string, LLMProfileEndpointOverride> endpoint_overrides_by_profile_id;
@@ -134,6 +136,7 @@ struct LLMSessionContext {
     int user_id = 0;
     bool project_loaded = false;
     bool llm_write_enabled = true;
+    bool auto_apply_writes = false;
     bool allow_cloud_llm = false;
     bool allow_save = true;
     int active_channel_index = 0;

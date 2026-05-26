@@ -39,7 +39,8 @@ ToolGatewayResult commandResultToGateway(const ApplicationCommandResult& cmd)
 ToolGatewayResult invokeApplicationTool(ILLMPresentationSink* sink,
                                         std::function<ApplicationCommandResult()> run)
 {
-    ApplicationCommandResult cmd = run();
+    ApplicationCommandResult cmd =
+        sink ? sink->invokeHostSynchronized(run) : run();
     ToolGatewayResult r = commandResultToGateway(cmd);
     if(r.ok)
     {

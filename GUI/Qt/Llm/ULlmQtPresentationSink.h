@@ -3,6 +3,9 @@
 
 #include <QObject>
 
+#include <functional>
+#include <mutex>
+
 #include "../../../LLM/Core/Gui/ILLMPresentationSink.h"
 
 class UGEngineControlWidget;
@@ -16,15 +19,22 @@ public:
 
     void apply(const RDK::LLM::LLMPresentationEvent& event) override;
 
+    RDK::LLM::ApplicationCommandResult invokeHostSynchronized(
+        const std::function<RDK::LLM::ApplicationCommandResult()>& run) override;
+
     static int defaultInvokeTimeoutMs();
 
 private slots:
     void applyOnGuiThread();
+    void runHostCommandOnGuiThread();
 
 private:
     UGEngineControlWidget* m_host = nullptr;
     ULlmGuiContextBridge* m_bridge = nullptr;
     RDK::LLM::LLMPresentationEvent m_pending;
+    std::mutex m_host_mu;
+    std::function<RDK::LLM::ApplicationCommandResult()> m_pending_host_run;
+    RDK::LLM::ApplicationCommandResult m_pending_host_result{};
 };
 
 #endif

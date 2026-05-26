@@ -54,6 +54,12 @@ ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UAp
         tr("Allow LLM write tools (create/load/save configuration, add/set components)"), this);
     layout->addWidget(m_allow_write);
 
+    m_auto_apply_writes = new QCheckBox(
+        tr("Apply write tools automatically (no confirmation step for each tool call)"), this);
+    layout->addWidget(m_auto_apply_writes);
+
+    connect(m_allow_write, &QCheckBox::toggled, m_auto_apply_writes, &QWidget::setEnabled);
+
     auto* lang_form = new QFormLayout();
     m_response_language = new QComboBox(this);
     m_response_language->addItem(tr("Auto (system)"), QString());
@@ -112,6 +118,8 @@ void ULlmProviderSettingsWidget::loadFromStore()
     m_profiles->setCurrentIndex(select_index);
     m_allow_cloud->setChecked(store.runtime().allow_cloud_providers);
     m_allow_write->setChecked(store.runtime().llm_write_enabled);
+    m_auto_apply_writes->setChecked(store.runtime().llm_auto_apply_writes);
+    m_auto_apply_writes->setEnabled(store.runtime().llm_write_enabled);
 
     const QString lang =
         QString::fromStdString(store.runtime().preferred_response_language);
@@ -288,6 +296,7 @@ void ULlmProviderSettingsWidget::saveToStore()
 
     store.setAllowCloudProviders(m_allow_cloud->isChecked());
     store.setLlmWriteEnabled(m_allow_write->isChecked());
+    store.setLlmAutoApplyWrites(m_allow_write->isChecked() && m_auto_apply_writes->isChecked());
     store.setPreferredResponseLanguage(m_response_language->currentData().toString().toStdString());
     store.setSendShortcut(m_send_shortcut->currentData().toString() == QStringLiteral("enter")
                               ? RDK::LLM::LLMSendShortcutMode::Enter

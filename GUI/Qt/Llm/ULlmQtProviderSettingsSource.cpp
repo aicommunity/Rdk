@@ -44,6 +44,8 @@ RDK::LLM::LLMRuntimeProviderSettings ULlmQtProviderSettingsSource::load() const
     runtime.allow_cloud_providers =
         settings.value(QStringLiteral("LLM/allow_cloud_providers"), false).toBool();
     runtime.llm_write_enabled = settings.value(QStringLiteral("LLM/llm_write_enabled"), true).toBool();
+    runtime.llm_auto_apply_writes =
+        settings.value(QStringLiteral("LLM/llm_auto_apply_writes"), false).toBool();
 
     runtime.preferred_response_language =
         settings.value(QStringLiteral("LLM/preferred_response_language"), QString())
@@ -68,6 +70,7 @@ void ULlmQtProviderSettingsSource::save(const RDK::LLM::LLMRuntimeProviderSettin
                        QString::fromStdString(settings.active_profile_id));
     qsettings.setValue(QStringLiteral("LLM/allow_cloud_providers"), settings.allow_cloud_providers);
     qsettings.setValue(QStringLiteral("LLM/llm_write_enabled"), settings.llm_write_enabled);
+    qsettings.setValue(QStringLiteral("LLM/llm_auto_apply_writes"), settings.llm_auto_apply_writes);
     qsettings.setValue(QStringLiteral("LLM/preferred_response_language"),
                        QString::fromStdString(settings.preferred_response_language));
     qsettings.setValue(QStringLiteral("LLM/send_shortcut"),

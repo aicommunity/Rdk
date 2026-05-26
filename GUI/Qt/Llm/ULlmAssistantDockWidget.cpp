@@ -306,6 +306,7 @@ RDK::LLM::LLMSessionContext ULlmAssistantDockWidget::buildSession(const LLMGuiCo
     s.active_channel_index = ctx.channel_index;
     const auto& runtime = RDK::LLM::LLMServices::instance().settings().runtime();
     s.llm_write_enabled = runtime.llm_write_enabled;
+    s.auto_apply_writes = runtime.llm_write_enabled && runtime.llm_auto_apply_writes;
     s.allow_cloud_llm = runtime.allow_cloud_providers;
     return s;
 }

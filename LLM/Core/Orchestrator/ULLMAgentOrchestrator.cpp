@@ -123,8 +123,12 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
     LLMSessionContext session = req.session;
     if(LLMServices::instance().isInitialized())
     {
-        session.llm_write_enabled = LLMServices::instance().settings().runtime().llm_write_enabled;
-        session.allow_cloud_llm = LLMServices::instance().settings().runtime().allow_cloud_providers;
+        const LLMRuntimeProviderSettings& runtime_settings =
+            LLMServices::instance().settings().runtime();
+        session.llm_write_enabled = runtime_settings.llm_write_enabled;
+        session.auto_apply_writes =
+            runtime_settings.llm_write_enabled && runtime_settings.llm_auto_apply_writes;
+        session.allow_cloud_llm = runtime_settings.allow_cloud_providers;
 
         ProviderAccessCheck access = LLMServices::instance().checkActiveProviderAccess(session);
         if(!access.allowed)

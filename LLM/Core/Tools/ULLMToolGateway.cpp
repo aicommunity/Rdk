@@ -69,7 +69,9 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
         return result;
     }
 
-    if(def->requires_confirmation && !req.confirmed
+    const bool skip_confirmation =
+        req.confirmed || req.session.auto_apply_writes;
+    if(def->requires_confirmation && !skip_confirmation
        && !isConfirmationExemptWriteTool(req.tool_name, req.arguments))
     {
         result.ok = true;

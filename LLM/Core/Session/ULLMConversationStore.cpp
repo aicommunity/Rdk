@@ -20,6 +20,7 @@ nlohmann::json sessionContextToJson(const LLMSessionContext& session)
             {"user_id", session.user_id},
             {"project_loaded", session.project_loaded},
             {"llm_write_enabled", session.llm_write_enabled},
+            {"auto_apply_writes", session.auto_apply_writes},
             {"allow_cloud_llm", session.allow_cloud_llm},
             {"allow_save", session.allow_save},
             {"active_channel_index", session.active_channel_index}};
@@ -33,6 +34,7 @@ LLMSessionContext sessionContextFromJson(const nlohmann::json& j)
     session.user_id = j.value("user_id", 0);
     session.project_loaded = j.value("project_loaded", false);
     session.llm_write_enabled = j.value("llm_write_enabled", true);
+    session.auto_apply_writes = j.value("auto_apply_writes", false);
     session.allow_cloud_llm = j.value("allow_cloud_llm", false);
     session.allow_save = j.value("allow_save", true);
     session.active_channel_index = j.value("active_channel_index", 0);

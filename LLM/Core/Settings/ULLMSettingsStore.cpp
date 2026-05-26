@@ -86,6 +86,11 @@ void ULLMSettingsStore::setLlmWriteEnabled(bool allow)
     m_runtime.llm_write_enabled = allow;
 }
 
+void ULLMSettingsStore::setLlmAutoApplyWrites(bool auto_apply)
+{
+    m_runtime.llm_auto_apply_writes = auto_apply;
+}
+
 void ULLMSettingsStore::setPreferredResponseLanguage(const std::string& code)
 {
     m_runtime.preferred_response_language = code;

@@ -48,6 +48,52 @@ void ULlmQtPresentationSink::apply(const RDK::LLM::LLMPresentationEvent& event)
     fut.get();
 }
 
+RDK::LLM::ApplicationCommandResult ULlmQtPresentationSink::invokeHostSynchronized(
+    const std::function<RDK::LLM::ApplicationCommandResult()>& run)
+{
+    if(QThread::currentThread() == thread())
+        return run();
+
+    {
+        std::lock_guard<std::mutex> lock(m_host_mu);
+        m_pending_host_run = run;
+    }
+
+    const int timeout_ms = defaultInvokeTimeoutMs();
+    auto fut = std::async(std::launch::async, [this]() {
+        QMetaObject::invokeMethod(this, "runHostCommandOnGuiThread", Qt::BlockingQueuedConnection);
+    });
+    if(fut.wait_for(std::chrono::milliseconds(timeout_ms)) != std::future_status::ready)
+    {
+        std::lock_guard<std::mutex> lock(m_host_mu);
+        m_pending_host_run = nullptr;
+        RDK::LLM::ApplicationCommandResult err;
+        err.status.code = RDK::LLM::DomainStatusCode::IOError;
+        err.status.message = "GUI host command timed out";
+        return err;
+    }
+    fut.get();
+
+    RDK::LLM::ApplicationCommandResult out;
+    {
+        std::lock_guard<std::mutex> lock(m_host_mu);
+        out = m_pending_host_result;
+        m_pending_host_run = nullptr;
+    }
+    return out;
+}
+
+void ULlmQtPresentationSink::runHostCommandOnGuiThread()
+{
+    std::function<RDK::LLM::ApplicationCommandResult()> fn;
+    {
+        std::lock_guard<std::mutex> lock(m_host_mu);
+        fn = std::move(m_pending_host_run);
+    }
+    if(fn)
+        m_pending_host_result = fn();
+}
+
 void ULlmQtPresentationSink::applyOnGuiThread()
 {
     if(!m_host)

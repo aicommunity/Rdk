@@ -25,6 +25,7 @@ public:
     LLMProviderProfile presetProfile(const std::string& profile_id) const;
     void setAllowCloudProviders(bool allow);
     void setLlmWriteEnabled(bool allow);
+    void setLlmAutoApplyWrites(bool auto_apply);
 
     void setPreferredResponseLanguage(const std::string& code);
     const std::string& preferredResponseLanguage() const;
