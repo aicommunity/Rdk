@@ -37,13 +37,13 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-051 | Generalized pending disambiguation (not only class) | phase-B | P0 | done | `PendingToolArguments` now carries kind/field/candidates for class/component |
 | TD-052 | Gateway pre-normalize all write entity-resolution tools | phase-B | P0 | done | Generic pre-normalize path for write tools with entity resolution |
 | TD-053 | `connect_components` two-endpoint pending (from → to) | phase-B | P1 | done | Sequential resolution via `from_long_name` then `to_long_name` |
-| TD-054 | `property_name` validation / `list_component_properties` read tool | phase-C | P1 | open | Deferred after class/entity read alignment; keep open for dedicated properties pass |
-| TD-055 | `get_net_snapshot.root_long_name` in domain | phase-C | P2 | open | Deferred in C; keep schema/domain alignment task open |
-| TD-056 | `list_registered_classes.library_filter` schema drift | phase-C | P2 | open | Deferred in C; finalize in docs/schema sweep |
+| TD-054 | `property_name` validation / `list_component_properties` read tool | phase-C | P1 | cancelled | Out of scope for this phase set; will be revisited as a dedicated “properties” pass |
+| TD-055 | `get_net_snapshot.root_long_name` in domain | phase-C | P2 | cancelled | Schema/domain alignment deferred; cancelled from this plan inventory |
+| TD-056 | `list_registered_classes.library_filter` schema drift | phase-C | P2 | cancelled | Requires wider schema & docs sweep; cancelled from this plan inventory |
 | TD-057 | Unified recent list dedupe rules | phase-D | P1 | done | QSettings + LastProjectsList merge implemented in `URdkApplicationCommands::listRecentConfigurations` |
 | TD-058 | Recent configurations provider in presentation sink | phase-D | P1 | done | Sink API `ILLMPresentationSink::recentConfigurationPaths` + Qt impl `ULlmQtPresentationSink::recentConfigurationPaths` |
 | TD-059 | `show_ui_panel` / `LLMUiPanel` presentation API | phase-E | P1 | done | Implemented via `LLMPresentationEvent.show_panel` + `UGEngineControlWidget::showLlmUiPanel` + tools `show_ui_panel` / `list_ui_panels` |
-| TD-060 | `set_active_channel` GUI API research | phase-E | P3 | open | Deferred (no host API integration yet) |
+| TD-060 | `set_active_channel` GUI API research | phase-E | P3 | cancelled | Host GUI API not integrated in this plan; cancel until a dedicated channel UI integration pass |
 | TD-061 | `open_component_gui_tab` host dialog/automation gap | phase-E | P2 | done | Implemented tool `open_component_gui_tab` → `UGEngineControlWidget::promptAndOpenComponentGuiTabHost` (still user-assisted) |
 | TD-041 | Manual NeuroModeler GUI write-tools walkthrough (real Configs on disk) | post-MVP | P3 | open | Checklist: Application-Commands.md § TD-041; incl. auto-apply + Reject flow |
 | TD-036 | Embedding-based dynamic tool routing | post-MVP | P3 | open | Stub `ULLMDynamicToolRouter`; env `NMSDK_LLM_DYNAMIC_TOOL_ROUTING=1` |

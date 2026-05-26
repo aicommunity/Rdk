@@ -19,6 +19,11 @@ path. Pre-LLM `preflightLifecycleArguments` bypass was removed; the model must e
 
 Follow-up messages merge into pending args via `ULLMLifecycleArgumentGate` (paths, `add_component` class names).
 
+## UI panel actions (phases D/E)
+
+User phrases like «покажи логгер» / «show logger» trigger `show_ui_panel` with `panel: "logger"`.
+UI panel actions are executed via the GUI presentation sink (`LLMPresentationEvent.show_panel`).
+
 ## Human-in-the-loop
 
 Write tools with `requires_confirmation` return `pending_confirmation` until the user clicks **Apply**, unless:

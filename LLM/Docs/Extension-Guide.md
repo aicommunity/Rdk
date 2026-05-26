@@ -104,6 +104,8 @@ With `ULlmQtPresentationSink`, `invokeApplicationTool` → `invokeHostSynchroniz
 
 See [Application-Commands.md](Application-Commands.md), [GUI-Integration.md](GUI-Integration.md).
 
+**UI panel tools:** `show_ui_panel` / `open_component_gui_tab` are GUI actions triggered through `LLMPresentationEvent.show_panel` (no direct Qt calls from the tool handler). The Qt sink applies the event on the GUI thread.
+
 ---
 
 ## 8. Manifest and intent

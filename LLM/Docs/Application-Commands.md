@@ -34,9 +34,17 @@ Aliases: `load_project`, `save_project` (deprecated names, same handlers).
 
 `start_channel_calculation`, `pause_channel_calculation`, `reset_channel_calculation`, `step_channel_calculation` — `channel_index: -1` = all channels.
 
+## Recent configurations and UI panels (phases D/E)
+
+These tools are registered in `RegisterApplicationTools.cpp`:
+
+- `list_recent_configurations` / `open_recent_configuration` use presentation-sink helper data (`ILLMPresentationSink::recentConfigurationPaths`) and `UApplication::GetLastProjectsList()` to provide a unified deduped recent list.
+- `list_ui_panels` returns `{id,title,visible}` based on the GUI host (`UGEngineControlWidget`).
+- `show_ui_panel` / `open_component_gui_tab` do not call Qt directly from tool handlers; instead they request a GUI action via `LLMPresentationEvent.show_panel`, applied by `ULlmQtPresentationSink` on the GUI thread.
+
 ## Policy
 
-- **P01:** write tools need open project except `create_configuration` / `load_configuration` / `validate_configuration`.
+- **P01:** write tools need open project except `create_configuration` / `load_configuration` / `validate_configuration` and GUI/UX helpers (`open_recent_configuration`, `show_ui_panel`, `open_component_gui_tab`).
 - **P03:** save tools need `session.allow_save`.
 - **P04:** paths under Configs / workdir / user config / open project path (`ULLMPathPolicy`).
 

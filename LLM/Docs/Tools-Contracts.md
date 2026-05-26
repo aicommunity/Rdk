@@ -16,9 +16,6 @@
 ```json
 {
   "type": "object",
-  "properties": {
-    "library_filter": { "type": "string", "description": "Optional ClDesc library folder name" }
-  },
   "additionalProperties": false
 }
 ```
@@ -33,11 +30,11 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["class_name", "library"],
+        "required": ["class_name"],
         "properties": {
           "class_name": { "type": "string" },
-          "library": { "type": "string" },
-          "header": { "type": "string" }
+          "library": { "type": "string", "description": "Optional" },
+          "header": { "type": "string", "description": "Optional" }
         }
       }
     }
@@ -74,7 +71,6 @@
   "type": "object",
   "properties": {
     "channel_index": { "type": "integer", "minimum": 0, "default": 0 },
-    "root_long_name": { "type": "string", "description": "Optional subtree root" },
     "max_components": { "type": "integer", "minimum": 1, "maximum": 500, "default": 200 }
   },
   "additionalProperties": false
@@ -281,6 +277,18 @@ See [Application-Commands.md](Application-Commands.md) for full schemas.
 | `*_channel_calculation` | — | `channel_index` default -1 |
 
 After success, optional `ILLMPresentationSink` refreshes GUI (NeuroModeler).
+
+---
+
+### Recent configurations and UI panels (`URdkApplicationCommands` + presentation)
+
+| Tool | Kind | confirmation | requires_project_loaded | Notes |
+|------|------|--------------|--------------------------|-------|
+| `list_recent_configurations` | Read | false | false | Returns `{ "items": [ { "index", "path", "display_name" } ] }` (1-based index). |
+| `open_recent_configuration` | Write | true | false | Input supports `{ "index" }` or `{ "configuration_path" }`; opens via `load_configuration` semantics. |
+| `list_ui_panels` | Read | false | false | Returns `{ "items": [ { "id", "title", "visible" } ] }` based on GUI host state. |
+| `show_ui_panel` | Write | false | false | Triggers `ILLMPresentationSink` with `LLMPresentationEvent.show_panel` to show a dock/window. |
+| `open_component_gui_tab` | Write | true | false | Triggers `show_panel=ComponentGuiTabHost` and may require user interaction in the host. |
 
 ---
 

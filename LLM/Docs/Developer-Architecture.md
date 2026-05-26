@@ -18,7 +18,7 @@ User → UI → Orchestrator → ILLMProvider
         URdkApplicationCommands → UApplication   (configuration lifecycle)
         URdkDomainAccess        → UEngine/UNet   (graph read/write)
               ↓
-        ILLMPresentationSink (optional GUI refresh)
+        ILLMPresentationSink (shell refresh + GUI-thread host commands via `LLMPresentationEvent`)
               ↓
         ILLMProjectContextProvider + UDocSearchIndex (NMSDK knowledge)
 ```
