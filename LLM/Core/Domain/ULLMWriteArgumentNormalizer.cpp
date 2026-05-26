@@ -5,6 +5,8 @@
 #include "URdkEntityResolver.h"
 
 #include <algorithm>
+#include <cctype>
+#include <cmath>
 #include <unordered_map>
 
 namespace RDK::LLM {
@@ -29,37 +31,77 @@ bool isRegisteredClass(const std::vector<std::string>& registered, const std::st
     return std::find(registered.begin(), registered.end(), name) != registered.end();
 }
 
-std::string closestRegisteredClassName(const std::string& query,
-                                     const std::vector<std::string>& registered)
+std::string toLowerAscii(std::string s)
 {
-    if(query.empty() || registered.empty())
-        return query;
+    for(char& c : s)
+        c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return s;
+}
 
-    const LibraryScopeHint scope = detectLibraryScopeFromUserText(query);
-    std::string resolved = resolveComponentClassName(query, scope);
-    if(isRegisteredClass(registered, resolved))
-        return resolved;
-
-    std::string best = query;
-    int best_dist = 999;
-    const std::string qlower = query;
-    for(const std::string& candidate : registered)
+int levenshteinDistance(const std::string& a, const std::string& b)
+{
+    const size_t n = a.size();
+    const size_t m = b.size();
+    if(n == 0)
+        return static_cast<int>(m);
+    if(m == 0)
+        return static_cast<int>(n);
+    std::vector<int> prev(m + 1);
+    std::vector<int> cur(m + 1);
+    for(size_t j = 0; j <= m; ++j)
+        prev[j] = static_cast<int>(j);
+    for(size_t i = 1; i <= n; ++i)
     {
-        int d = 0;
-        const size_t n = std::min(qlower.size(), candidate.size());
-        for(size_t i = 0; i < n; ++i)
-            if(qlower[i] != candidate[i])
-                ++d;
-        d += static_cast<int>(std::max(qlower.size(), candidate.size()) - n);
-        if(d < best_dist)
+        cur[0] = static_cast<int>(i);
+        for(size_t j = 1; j <= m; ++j)
         {
-            best_dist = d;
-            best = candidate;
+            const int cost = (a[i - 1] == b[j - 1]) ? 0 : 1;
+            cur[j] = std::min({cur[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost});
         }
+        prev.swap(cur);
     }
-    if(best_dist <= 4)
-        return best;
-    return query;
+    return prev[m];
+}
+
+struct ClassCandidate {
+    std::string class_name;
+    double score = 0.0; // higher is better
+};
+
+std::vector<ClassCandidate> findSimilarRegisteredClasses(const std::string& query,
+                                                         const std::vector<std::string>& registered,
+                                                         size_t max_candidates = 8)
+{
+    std::vector<ClassCandidate> out;
+    if(query.empty() || registered.empty())
+        return out;
+
+    const std::string q = toLowerAscii(query);
+    out.reserve(std::min(max_candidates, registered.size()));
+    for(const std::string& c : registered)
+    {
+        const std::string cl = toLowerAscii(c);
+        const int dist = levenshteinDistance(q, cl);
+        const int maxlen = static_cast<int>(std::max(q.size(), cl.size()));
+        const double norm = maxlen > 0 ? (static_cast<double>(dist) / static_cast<double>(maxlen)) : 1.0;
+        double score = 1.0 - norm; // 1 is exact
+        if(!q.empty() && cl.find(q) != std::string::npos)
+            score += 0.25;
+        if(!q.empty() && cl.rfind(q, 0) == 0) // prefix
+            score += 0.15;
+        if(score < 0.35)
+            continue;
+        out.push_back({c, score});
+    }
+
+    std::sort(out.begin(), out.end(), [](const ClassCandidate& a, const ClassCandidate& b) {
+        if(std::fabs(a.score - b.score) > 1e-9)
+            return a.score > b.score;
+        return a.class_name < b.class_name;
+    });
+    if(out.size() > max_candidates)
+        out.resize(max_candidates);
+    return out;
 }
 
 bool normalizeAddComponentArguments(nlohmann::json& args, URdkDomainAccess& domain,
@@ -80,24 +122,48 @@ bool normalizeAddComponentArguments(nlohmann::json& args, URdkDomainAccess& doma
 
     if(have_registry)
     {
-        if(const std::optional<std::string> inferred =
-               inferAddComponentClassFromUserText(user_text, registered))
-            args["class_name"] = *inferred;
-
         std::string class_name = args.value("class_name", "");
         if(!isRegisteredClass(registered, class_name))
         {
-            class_name = closestRegisteredClassName(class_name, registered);
-            if(!isRegisteredClass(registered, class_name))
+            const std::string query = !class_name.empty() ? class_name : user_text;
+            const std::vector<ClassCandidate> candidates =
+                findSimilarRegisteredClasses(query, registered, 8);
+
+            if(candidates.size() == 1 && candidates[0].score >= 0.78)
+            {
+                args["class_name"] = candidates[0].class_name;
+            }
+            else if(!candidates.empty()
+                    && candidates[0].score >= 0.75
+                    && (candidates.size() == 1 || (candidates[0].score - candidates[1].score) >= 0.18))
+            {
+                args["class_name"] = candidates[0].class_name;
+            }
+            else
             {
                 out.ok = false;
-                out.error_code = "CLASS_NOT_REGISTERED";
-                out.message = "Class \"" + args.value("class_name", "")
-                              + "\" is not registered. Use list_registered_classes or a valid "
-                                "class name (e.g. NPulseNeuron for a pulse neuron).";
+                out.needs_clarification = true;
+                out.error_code = "CLASS_AMBIGUOUS";
+                out.message = "Which component class do you mean?";
+                out.clarification = nlohmann::json::object();
+                out.clarification["ambiguous"] = true;
+                out.clarification["kind"] = "class";
+                out.clarification["query"] = query;
+                out.clarification["candidates"] = nlohmann::json::array();
+                for(const ClassCandidate& c : candidates)
+                    out.clarification["candidates"].push_back(
+                        {{"class_name", c.class_name}, {"score", c.score}});
+
+                if(candidates.empty())
+                {
+                    out.error_code = "CLASS_NOT_REGISTERED";
+                    out.message = "Class \"" + query
+                                  + "\" is not registered. Use list_registered_classes and reply with "
+                                    "the exact class name.";
+                    out.clarification["kind"] = "class";
+                }
                 return false;
             }
-            args["class_name"] = class_name;
         }
     }
     else if(!user_text.empty())

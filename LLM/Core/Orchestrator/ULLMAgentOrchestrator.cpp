@@ -29,9 +29,27 @@ namespace RDK::LLM {
 
 namespace {
 
-std::string formatClarificationMessage(const nlohmann::json& candidates)
+std::string formatClarificationMessage(const nlohmann::json& payload)
 {
     std::ostringstream oss;
+    const std::string kind = payload.value("kind", "component");
+    const nlohmann::json candidates = payload.value("candidates", nlohmann::json::array());
+
+    if(kind == "class")
+    {
+        oss << "I couldn't determine the exact component class. Please choose one and reply with "
+               "the exact class name:\n";
+        int index = 1;
+        for(const auto& c : candidates)
+        {
+            oss << index++ << ". " << c.value("class_name", "");
+            if(c.contains("score"))
+                oss << " (score " << c.value("score", 0.0) << ")";
+            oss << "\n";
+        }
+        return oss.str();
+    }
+
     oss << "Multiple components match. Please specify which one:\n";
     int index = 1;
     for(const auto& c : candidates)
@@ -48,6 +66,19 @@ bool extractAmbiguousFindComponent(const ToolGatewayResult& tr, nlohmann::json& 
         return false;
     candidates_out = tr.result.value("candidates", nlohmann::json::array());
     return candidates_out.size() > 1;
+}
+
+bool extractToolDisambiguationPayload(const ToolGatewayResult& tr, nlohmann::json& payload_out)
+{
+    if(tr.ok)
+        return false;
+    if(!tr.result.is_object() || !tr.result.value("ambiguous", false))
+        return false;
+    const nlohmann::json candidates = tr.result.value("candidates", nlohmann::json::array());
+    if(!candidates.is_array() || candidates.empty())
+        return false;
+    payload_out = tr.result;
+    return true;
 }
 
 } // namespace
@@ -528,13 +559,13 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             for(auto& fut : futures)
             {
                 auto [call, tr] = fut.get();
-                nlohmann::json ambiguous;
-                if(extractAmbiguousFindComponent(tr, ambiguous))
+                nlohmann::json disambiguation;
+                if(extractToolDisambiguationPayload(tr, disambiguation))
                 {
                     final.needs_entity_clarification = true;
                     final.needs_tool_disambiguation = true;
-                    final.clarification_candidates = ambiguous;
-                    final.text = formatClarificationMessage(ambiguous);
+                    final.clarification_candidates = disambiguation.value("candidates", nlohmann::json::array());
+                    final.text = formatClarificationMessage(disambiguation);
                     m_store.persistToDisk(req.session_id);
                     return final;
                 }
@@ -590,13 +621,13 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                     return final;
                 }
 
-                nlohmann::json ambiguous;
-                if(extractAmbiguousFindComponent(tr, ambiguous))
+                nlohmann::json disambiguation;
+                if(extractToolDisambiguationPayload(tr, disambiguation))
                 {
                     final.needs_entity_clarification = true;
                     final.needs_tool_disambiguation = true;
-                    final.clarification_candidates = ambiguous;
-                    final.text = formatClarificationMessage(ambiguous);
+                    final.clarification_candidates = disambiguation.value("candidates", nlohmann::json::array());
+                    final.text = formatClarificationMessage(disambiguation);
                     m_store.persistToDisk(req.session_id);
                     return final;
                 }
