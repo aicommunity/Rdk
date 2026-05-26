@@ -32,7 +32,12 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Target | Priority | Status | Notes |
 |----|------|--------|----------|--------|-------|
-| TD-041 | Manual NeuroModeler GUI write-tools walkthrough (real Configs on disk) | post-MVP | P3 | open | Optional QA; automated: TD-030, `Test_LLM_WriteToolsEngine`, Application-Commands.md § TD-041 |
+| TD-041 | Manual NeuroModeler GUI write-tools walkthrough (real Configs on disk) | post-MVP | P3 | open | Checklist: Application-Commands.md § TD-041; incl. auto-apply + Reject flow |
+| TD-048 | Scenario D autonomous agent (strict / semi_auto) | post-MVP | P2 | open | [Post-MVP-Implementation-Plan.md](Docs/Post-MVP-Implementation-Plan.md) §3 |
+| TD-035 | Dedicated tool_disambiguation UI flag | post-MVP | P2 | open | Post-MVP plan §4 |
+| TD-036 | Embedding-based dynamic tool routing | post-MVP | P3 | open | Post-MVP plan §5; was cancelled MVP |
+| TD-031 | YAML knowledge manifest + federation | post-MVP | P3 | open | Post-MVP plan §5 |
+| TD-034 | Function-level source chunking (ctags) | post-MVP | P3 | open | Post-MVP plan §5 |
 
 ---
 
@@ -84,6 +89,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-044 | Write-tools P2 integration | 2026-05-26 | Library write tools, `ULLMWriteArgumentNormalizer`, `PLAN_NEEDS_SNAPSHOT`, `Test_LLM_WriteToolsP2` |
 | TD-046 | GUI new chat + session rotation on project load | 2026-05-26 | `discardSession`, unique `gui-*` session_id, Ollama `/api/tags` in Settings |
 | TD-045 | Embedded provider live token stream in GUI | 2026-05-26 | `ULlamaRuntime::completeStream`, `supports_streaming`, GUI streams EmbeddedLlama |
+| TD-047 | Docs bundle 1.4 sync | 2026-05-25 | Developer-Architecture, Extension-Guide, Post-MVP-Implementation-Plan; README 1.4.0 |
 
 ---
 
@@ -100,3 +106,4 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | 2026-05-25 | Offline projection vs full embedding model | No GGUF embed model in MVP; hybrid TF-IDF sufficient | TD-021 Ollama optional |
 | 2026-05-25 | Ollama embed re-rank off by default | Avoid CI/network dependency | `NMSDK_LLM_DOC_EMBED_OLLAMA=1` |
 | 2026-05-26 | Manual GUI write-tools split to TD-041 | Automated tests cover LLM-first path | TD-041 |
+| 2026-05-25 | Post-MVP code in separate plan doc | Implementation tracked in Post-MVP-Implementation-Plan.md | TD-048, TD-035, TD-031/034/036 |

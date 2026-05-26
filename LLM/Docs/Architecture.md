@@ -1,4 +1,7 @@
-# Архитектура RDK LLM
+# Архитектура RDK LLM (краткий индекс)
+
+**Подробная normative-архитектура:** [Developer-Architecture.md](Developer-Architecture.md).  
+**Как расширять:** [Extension-Guide.md](Extension-Guide.md).
 
 ## 1. Роль LLM в системе
 
@@ -92,39 +95,7 @@ flowchart TB
 
 ## 4. Поток одного запроса пользователя
 
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant UI as ULlmAssistantDockWidget
-    participant Br as ULlmGuiContextBridge
-    participant O as ULLMAgentOrchestrator
-    participant P as ILLMProvider
-    participant Pol as ULLMPolicyEngine
-    participant GW as ULLMToolGateway
-    participant D as URdkDomainAccess
-    participant Ctx as ILLMProjectContextProvider
-
-    U->>UI: текст запроса
-    UI->>Br: snapshot GUI context
-    Br->>O: LLMRequestEnvelope
-    O->>O: load ULLMConversationStore
-    O->>Ctx: retrieve static snippets
-    O->>D: get_net_snapshot summary
-    O->>P: chat + tool definitions subset
-    P-->>O: tool_calls or text
-    alt tool_calls
-        O->>Pol: validateToolCalls
-        O->>UI: preview if write
-        U->>UI: Confirm
-        O->>GW: execute
-        GW->>Pol: per-call
-        GW->>D: domain method
-        GW-->>O: tool_results JSON
-        O->>P: continue loop
-    end
-    O->>O: audit append
-    O-->>UI: final message
-```
+См. **[Developer-Architecture.md §4](Developer-Architecture.md#4-request-flow-current)** (worker thread, optional HITL, auto-apply, GUI-thread lifecycle tools, plans).
 
 ---
 
@@ -135,7 +106,7 @@ sequenceDiagram
 | A | Chat over data | 1 | [MVP-Roadmap.md](MVP-Roadmap.md) |
 | B | Copilot for actions | 2 | MVP-Roadmap |
 | C | Workflow operator | Post-MVP | [Orchestrator.md](Orchestrator.md), `ULLMPlanExecutor` |
-| D | Autonomous agent | **Не в scope** | Anti-Patterns |
+| D | Autonomous agent | Post-MVP | [Post-MVP-Implementation-Plan.md](Post-MVP-Implementation-Plan.md) |
 
 ---
 

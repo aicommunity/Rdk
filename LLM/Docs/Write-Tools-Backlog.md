@@ -31,7 +31,7 @@ MVP/post-MVP план закрыт. Дальше: **довести write-tools �
 
 **Unit gates:** `ctest -R 'Test_LLM_WriteToolsP2'`
 
-## Приоритет P3 (UX / ops) — частично ✅
+## Приоритет P3 (UX / ops) — выполнено ✅
 
 | Item | Статус | Реализация |
 |------|--------|------------|
@@ -42,9 +42,9 @@ MVP/post-MVP план закрыт. Дальше: **довести write-tools �
 ## Как тестировать каждый write-tool
 
 1. `RDK_USE_LLM=ON`, Ollama с chat-моделью + tools (0.3+)
-2. Settings: **Allow LLM write tools**, открытый проект
-3. Фраза mutate → **Apply** / plan **Run plan**
-4. Audit: `tool_invoke` + `confirmation_accepted`
+2. Settings: **Allow LLM write tools**; optional **Apply write tools automatically**
+3. Фраза mutate → **Apply** (или сразу execute при auto-apply) / plan **Run plan**
+4. Audit: `tool_invoke` + `confirmation_accepted` (when HITL used)
 
 ## Ссылки
 

@@ -99,10 +99,10 @@ struct ToolInvokeRequest {
 1. find tool in registry → NotFound
 2. ULLMToolArgumentValidator::validate(arguments, input_schema)
 3. ULLMPolicyEngine::checkToolInvoke(request, tool_def)
-4. if Write && requires_confirmation → return PendingConfirmation (не вызывать handler)
+4. if Write && requires_confirmation && !confirmed && !session.auto_apply_writes && !exempt → PendingConfirmation
 5. if idempotent → idempotency store lookup → return cached if hit
 6. audit: tool_invoke_started
-7. handler (→ URdkDomainAccess)
+7. handler (→ URdkDomainAccess or invokeApplicationTool → invokeHostSynchronized on GUI)
 8. audit: tool_invoke_finished
 9. if idempotent → store result
 10. return ToolGatewayResult

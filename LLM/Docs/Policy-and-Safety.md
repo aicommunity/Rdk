@@ -67,6 +67,8 @@ struct PolicyDecision {
 
 GUI: preview plan в `ULlmChangePreviewWidget`; одиночный write — **Apply** → `confirmPending()`.
 
+**Auto-apply (QSettings `LLM/llm_auto_apply_writes`):** при включении в AI Assistant Settings и активных write tools все шаги с `requires_confirmation` выполняются сразу (`session.auto_apply_writes`); кнопка Apply не показывается. Планы по-прежнему требуют **Run plan** (отдельный поток).
+
 **Confirmation TTL (TD-025):** `confirmation_ttl_seconds` = 600 (10 min). Просроченный pending сбрасывается; audit `confirmation_expired`.
 
 ---

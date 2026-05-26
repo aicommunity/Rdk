@@ -1,5 +1,7 @@
 # LLM Orchestrator
 
+Normative flow: [Developer-Architecture.md](Developer-Architecture.md) §4.
+
 ## 1. `ULLMAgentOrchestrator`
 
 Центральный класс. Зависимости (inject):
@@ -80,10 +82,10 @@ function handleUserMessage(envelope):
     if response.has_tool_calls:
       for each call in response.tool_calls:
         result = gateway.invoke(call with trace_id)
-        if result.pending_confirmation:
+        if result.pending_confirmation && !session.auto_apply_writes:
           state.pending = result
           UI.showPreview()
-          return  // wait user
+          return  // wait user (Apply)
         append tool_result to messages
       round++
       continue
@@ -95,6 +97,8 @@ function handleUserMessage(envelope):
 ```
 
 `MAX_ROUNDS` default: **8** (policy).
+
+**Also:** `invokeLifecycleToolDirect` after argument gate; `buildAgentManifest(..., user_text)`; parallel read batch when all tools in a round are Read.
 
 ---
 

@@ -110,11 +110,12 @@ void RegisterLlmUi(UGEngineControlWidget* host,
 | HITL TTL | `QTimer` 10 min → `rejectPending`; реальный `pending_confirmation_id` из ответа |
 | Run plan | `confirmPlanExecution()` |
 | Resume / Rollback plan | После checkpoint (`resumePlanExecution` / `rollbackPlanExecution`) |
-| Apply / Reject | `confirmPending()` / `rejectPending()` |
+| Apply / Reject | `confirmPending()` / `rejectPending()` (skipped when auto-apply enabled) |
+| Settings | **Allow LLM write tools**; **Apply write tools automatically** (`LLM/llm_auto_apply_writes`) |
 
 **Потоки:** orchestrator в `QThread` worker или `QtConcurrent::run` + signals `finished` — **запрещено** блокировать GUI на curl/LLM.
 
-**Presentation sink:** после успешных configuration tools `ULlmQtPresentationSink` (main thread) вызывает `UGEngineControlWidget::refreshLlmPresentationShell()`, `ULlmGuiContextBridge::onProjectLoaded` / `onProjectClosed`, и recent configs. Headless: sink не регистрируется.
+**Presentation sink:** `ULlmQtPresentationSink::invokeHostSynchronized` выполняет configuration tools на **GUI thread** (обязательно при auto-apply и worker orchestrator). После успеха `apply` вызывает `refreshLlmPresentationShell()`, `onProjectLoaded` / `onProjectClosed`, recent configs. Headless: sink не регистрируется.
 
 **Таймаут:** `NMSDK_LLM_PRESENTATION_TIMEOUT_MS` (default 30000) — worker ждёт `BlockingQueuedConnection` не дольше этого значения; при таймауте UI refresh пропускается (без падения tool).
 

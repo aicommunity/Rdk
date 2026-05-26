@@ -128,14 +128,14 @@ void RegisterHardwareLibLlmTools(RDK::LLM::ULLMToolRegistry& reg,
 }
 ```
 
-Вызов из `NmsdkRegisterLlm()` после primary provider.
+Вызов из `NmsdkLlmProjectContext::registerExtraTools` during `LLMServices::initialize` (not a separate manual call after register).
 
 ### 4.3 Разделение: ядро vs библиотека
 
 | Категория | Где |
 |-----------|-----|
 | Универсальные (net, component, project) | `Rdk/LLM` — **всегда** |
-| Домен библиотеки (Arduino, NModel STDP) | `Libraries/*/Llm/` |
+| Домен библиотеки (docs, class lists) | `Libraries/*/Llm/` — **read tools only**; mutations via core `add_component` |
 | ClDesc / Docs пути | `NmsdkLlmProjectContext` + library docs roots |
 
 **Запрещено:** дублировать `add_component` в каждой библиотеке.

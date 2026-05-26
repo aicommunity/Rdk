@@ -16,7 +16,7 @@ Execute **in order** at the end of each phase:
    - Try to resolve every `open` item with `Target phase` ≤ current phase and `can_resolve_now` in Notes (or P0/P1 for this phase)
    - Add **new** rows for shortcuts taken this phase
    - Move resolved rows to **Done** with commit hash
-4. **Docs** — update MVP checkboxes in [MVP-Roadmap.md](MVP-Roadmap.md) if criteria met
+4. **Docs** — update MVP checkboxes in [MVP-Roadmap.md](MVP-Roadmap.md) if criteria met; sync [Developer-Architecture.md](Developer-Architecture.md) / [Extension-Guide.md](Extension-Guide.md) when architecture or extension patterns change
 5. **Git commit** — **one commit per phase** (English message, see §2). Agent creates commit **without waiting for user prompt** when phase checklist is complete.
 
 If build fails: **do not commit**; fix or document blocker in TECH-DEBT as P0 `blocked`.

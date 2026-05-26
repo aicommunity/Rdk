@@ -29,9 +29,12 @@
 
 | Задача агента | Документ |
 |---------------|----------|
-| Общая картина, слои | [Architecture.md](Architecture.md) |
+| **Архитектура (normative)** | [Developer-Architecture.md](Developer-Architecture.md) |
+| **Расширение tools / knowledge** | [Extension-Guide.md](Extension-Guide.md) |
+| **Post-MVP код (отложено)** | [Post-MVP-Implementation-Plan.md](Post-MVP-Implementation-Plan.md) |
+| Краткий индекс, CMake | [Architecture.md](Architecture.md) |
 | С чего начать MVP | [MVP-Roadmap.md](MVP-Roadmap.md) |
-| Следующая фаза: write-tools | [Write-Tools-Backlog.md](Write-Tools-Backlog.md) |
+| Write-tools (завершён P1–P3) | [Write-Tools-Backlog.md](Write-Tools-Backlog.md) |
 | CMake, vcpkg, CI | [Build.md](Build.md) |
 | UApplication, UNet, фасад | [Domain-Layer.md](Domain-Layer.md) |
 | Lifecycle конфигурации (create/load/save) | [Application-Commands.md](Application-Commands.md) |
@@ -69,8 +72,8 @@
 
 | Поле | Значение |
 |------|----------|
-| `DOCS_BUNDLE_ID` | `rdk-llm-docs-1.3.0` |
-| Дата | 2026-05-26 (LLM-first catalog/index, write-tools audit tests; manual GUI → TD-041) |
+| `DOCS_BUNDLE_ID` | `rdk-llm-docs-1.4.0` |
+| Дата | 2026-05-25 (Developer-Architecture, Extension-Guide, Post-MVP plan; auto-apply, GUI-thread lifecycle) |
 | Согласовано с | Nmsdk / RDK Core, NeuroModeler |
 
 При изменении контрактов tools — инкремент `TOOL_REGISTRY_VERSION` (см. Tool-Gateway-and-Registry.md) и запись в audit.

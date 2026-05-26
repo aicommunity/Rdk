@@ -41,6 +41,8 @@ struct PendingConfirmation {
 
 `resolved_entities` / `last_gui_context` — **не** в MVP store (entity resolution stateless per call).
 
+Persisted session fields include `llm_write_enabled`, `auto_apply_writes`, `allow_cloud_llm` (see `ULLMConversationStore` JSON).
+
 ---
 
 ## 4. `LLMMessage`

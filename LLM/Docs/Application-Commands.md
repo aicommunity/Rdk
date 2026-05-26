@@ -4,8 +4,8 @@ Headless-safe layer over `UApplication` for configuration lifecycle and related 
 
 ## Architecture
 
-- **`URdkApplicationCommands`** — all `UApplication` calls from LLM tools (worker thread).
-- **`ILLMPresentationSink`** — optional UI refresh after success (`ULlmQtPresentationSink` in NeuroModeler, `ULLMNoopPresentationSink` or `nullptr` headless).
+- **`URdkApplicationCommands`** — `UApplication` lifecycle API (CreateProject, OpenProject, …).
+- **`ILLMPresentationSink`** — NeuroModeler: `invokeHostSynchronized` runs commands on the **GUI thread**; `apply` refreshes shell. Headless: no sink → commands run on the orchestrator worker thread.
 
 ## Phase 1 tools (lifecycle)
 
@@ -76,5 +76,9 @@ Automated gate: `Test_LLM_WriteToolsAudit` (mock LLM → `confirmation_requested
 4. Query: «что такое HardwareLib» → `search_project_docs` with `scope=docs`, cites path.
 5. Mutate (project open): «добавь MatrixSource» → `add_component` after Confirm; audit has `tool_invoke_start`.
 6. Save: «сохрани конфигурацию» → `save_configuration` or `save_project` after Confirm.
+7. **Auto-apply:** enable **Apply write tools automatically**; «добавь нейрон» / create config runs without per-step Apply (no crash in `UImagesWidget`).
+8. **Reject then retry:** open last config → create new (HITL) → Reject → enable auto-apply → create again succeeds.
 
 Lab Ollama model: env `NMSDK_LLM_OLLAMA_MODEL` (default `qwen2.5:14b`). Presentation timeout: `NMSDK_LLM_PRESENTATION_TIMEOUT_MS` (default 30000).
+
+Record result in [TECH-DEBT.md](../TECH-DEBT.md) TD-041 when complete.

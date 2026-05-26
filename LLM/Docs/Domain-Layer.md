@@ -185,9 +185,15 @@ Gateway преобразует в JSON:
 
 ## 6. Threading
 
-- `URdkDomainAccess` вызывается **только** из worker-потока orchestrator (не из GUI thread).
+| API | Thread |
+|-----|--------|
+| `URdkDomainAccess` (UNet read/write) | Orchestrator **worker** thread (NeuroModeler: `QtConcurrent` from dock) |
+| `URdkApplicationCommands` (create/load/save) | **GUI thread** when `ULlmQtPresentationSink` is set (`invokeHostSynchronized`); else worker (headless) |
+
 - Мутации engine должны использовать существующий lock API (`UEngine` lock / `GetEngineLock`) — **тот же**, что RPC и `rdk_init`.
-- Документировать в коде: «см. `RdkCoreManager.GetEngineLock()` паттерн в `rdk_init.cpp`».
+- Application handlers must use `invokeApplicationTool` — never call `CreateProject` / `OpenProject` from a tool handler on the worker thread when a GUI sink exists.
+
+See [Application-Commands.md](Application-Commands.md), [Developer-Architecture.md](Developer-Architecture.md) §4.
 
 ---
 
