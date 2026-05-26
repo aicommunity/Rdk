@@ -82,6 +82,8 @@ public:
 
 `capabilities().supports_streaming = true`. `chatStream` decodes GGUF token-by-token via `ULlamaRuntime::completeStream` (same path as GUI `LLMStreamHandlers`, TD-045).
 
+**Tool calling:** `supports_tool_calling = true`, but there is **no** OpenAI-style `tools` API on the wire. The orchestrator injects the tool manifest into messages; the model must emit JSON `{"name","arguments"}` in text (same recovery path as `tryExtractEmbeddedToolCalls` for HTTP providers). Multi-turn loops serialize prior `assistant_tool_calls` into the string prompt via `assistantMessageTextForPrompt`. Quality depends on the GGUF model (recommend tool-tuned chat models, e.g. Qwen2.5+). Strict Plan `json_schema` remains cloud-only (`supports_strict_json_schema = false`).
+
 **Target:** `rdk.llm.embedded` links llama.cpp.
 
 ```cpp

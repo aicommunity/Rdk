@@ -138,13 +138,29 @@ std::vector<LLMMessage> prepareMessagesForOllama(const LLMProviderProfile& profi
     return out;
 }
 
+std::string assistantMessageTextForPrompt(const LLMMessage& message)
+{
+    std::string text = message.content;
+    if(message.assistant_tool_calls && !message.assistant_tool_calls->empty())
+    {
+        for(const LLMToolCall& call : *message.assistant_tool_calls)
+        {
+            if(!text.empty())
+                text += '\n';
+            text += nlohmann::json{{"name", call.name}, {"arguments", call.arguments}}.dump();
+        }
+    }
+    return text;
+}
+
 std::string formatPromptWithTemplate(OllamaChatTemplateFamily family,
                                      const std::vector<LLMMessage>& messages)
 {
     std::string prompt;
     for(const LLMMessage& m : messages)
     {
-        const std::string& text = m.content;
+        const std::string text =
+            m.role == LLMMessage::Role::Assistant ? assistantMessageTextForPrompt(m) : m.content;
         switch(m.role)
         {
         case LLMMessage::Role::System:

@@ -14,6 +14,7 @@ TEST(LlmEmbeddedProvider, FactoryCreatesInProcessProvider)
     EXPECT_TRUE(provider->capabilities().runs_in_process);
     EXPECT_FALSE(provider->capabilities().requires_network);
     EXPECT_TRUE(provider->capabilities().supports_streaming);
+    EXPECT_TRUE(provider->capabilities().supports_tool_calling);
 
     std::string err;
     EXPECT_FALSE(provider->healthCheck(err));

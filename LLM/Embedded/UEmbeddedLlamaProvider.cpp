@@ -29,7 +29,8 @@ UEmbeddedLlamaProvider::UEmbeddedLlamaProvider(LLMProviderProfile profile)
 LLMProviderCapabilities UEmbeddedLlamaProvider::capabilities() const
 {
     LLMProviderCapabilities c;
-    c.supports_tool_calling = false;
+    // Prompt + manifest + tryExtractEmbeddedToolCalls (no OpenAI /api/chat tools API).
+    c.supports_tool_calling = true;
     c.supports_streaming = true;
     c.runs_in_process = true;
     c.requires_network = false;

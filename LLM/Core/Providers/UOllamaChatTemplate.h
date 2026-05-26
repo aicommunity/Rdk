@@ -25,6 +25,9 @@ std::vector<LLMMessage> prepareMessagesForOllama(const LLMProviderProfile& profi
                                                  std::vector<LLMMessage> messages,
                                                  const std::string& response_language = "en");
 
+/// Text for a single assistant turn in string prompts (embedded / generate API).
+std::string assistantMessageTextForPrompt(const LLMMessage& message);
+
 /// Single-string prompt for native /generate-style fallback (embedded).
 std::string formatPromptWithTemplate(OllamaChatTemplateFamily family,
                                      const std::vector<LLMMessage>& messages);

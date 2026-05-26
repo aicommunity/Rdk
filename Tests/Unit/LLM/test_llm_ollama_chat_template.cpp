@@ -63,6 +63,23 @@ TEST(OllamaChatTemplate, SerializesAssistantToolCalls)
     EXPECT_EQ(api[0]["tool_calls"][0]["function"]["name"], "get_net_snapshot");
 }
 
+TEST(OllamaChatTemplate, EmbeddedPromptIncludesAssistantToolCallJson)
+{
+    std::vector<LLMMessage> msgs;
+    LLMMessage assistant;
+    assistant.role = LLMMessage::Role::Assistant;
+    assistant.content = "";
+    LLMToolCall call;
+    call.name = "get_net_snapshot";
+    call.arguments = {{"channel_index", 0}};
+    assistant.assistant_tool_calls = std::vector<LLMToolCall>{call};
+    msgs.push_back(assistant);
+
+    const std::string prompt = formatPromptWithTemplate(OllamaChatTemplateFamily::Qwen2, msgs);
+    EXPECT_NE(prompt.find("get_net_snapshot"), std::string::npos);
+    EXPECT_NE(prompt.find("channel_index"), std::string::npos);
+}
+
 TEST(OllamaChatTemplate, QwenPromptContainsImStart)
 {
     std::vector<LLMMessage> msgs;
