@@ -41,10 +41,10 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
         scoreKeywords(lower, {"почему", "объясни", "explain", "why ", "как работает", "how does"}, 1.0f);
     const float query_s =
         scoreKeywords(lower,
-                      {"arduino", "firmata", "firmware", "hardware", "датчик", "плата", "что", "какие", "покажи",
+                      {"arduino", "firmware", "hardware", "датчик", "плата", "что", "какие", "покажи",
                        "список", "опиши", "найди", "валидируй", "проверь конфиг", "validate configuration", "what",
-                       "list", "show", "describe", "search", "find "},
-                      0.8f);
+                       "list", "show", "describe", "search", "find ", "tool", "tools", "имена инструментов"},
+                      1.2f);
 
     IntentParseResult result;
     result.method = "rules";
