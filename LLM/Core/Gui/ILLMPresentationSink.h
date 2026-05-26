@@ -16,6 +16,10 @@ public:
     /// Used by LLM tools to implement `list_recent_configurations` and lifecycle "last".
     virtual std::vector<std::string> recentConfigurationPaths() const { return {}; }
 
+    /// Read host UI panels state (id, title, visible).
+    /// Used by LLM tools to implement `list_ui_panels`.
+    virtual nlohmann::json listLlmUiPanelsState() const { return nlohmann::json::object(); }
+
     /// Run UApplication-backed commands on the host UI thread when a GUI sink is present.
     virtual ApplicationCommandResult invokeHostSynchronized(
         const std::function<ApplicationCommandResult()>& run)

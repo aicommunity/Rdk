@@ -5,6 +5,8 @@
 #include "ApplicationToolHelpers.h"
 #include "ULLMToolRegistry.h"
 
+#include <unordered_map>
+
 namespace RDK::LLM {
 
 namespace {
@@ -31,6 +33,73 @@ ILLMPresentationSink* activeSink()
 URdkApplicationCommands& commands()
 {
     return LLMServices::instance().applicationCommands();
+}
+
+RDK::LLM::LLMUiPanel panelFromId(const std::string& id)
+{
+    using R = RDK::LLM::LLMUiPanel;
+    if(id == "components_list")
+        return R::ComponentsList;
+    if(id == "channels")
+        return R::Channels;
+    if(id == "logger")
+        return R::Logger;
+    if(id == "watch")
+        return R::Watch;
+    if(id == "images")
+        return R::Images;
+    if(id == "project_description")
+        return R::ProjectDescription;
+    if(id == "profiling")
+        return R::Profiling;
+    if(id == "diagram")
+        return R::Diagram;
+    if(id == "component_gui_tab_host")
+        return R::ComponentGuiTabHost;
+    return R::None;
+}
+
+nlohmann::json listUiPanelsMerged(ILLMPresentationSink* sink)
+{
+    struct CatalogItem {
+        const char* id;
+        const char* title;
+        RDK::LLM::LLMUiPanel panel;
+    };
+    static const CatalogItem kCatalog[] = {
+        {"components_list", "Components", RDK::LLM::LLMUiPanel::ComponentsList},
+        {"channels", "Channels", RDK::LLM::LLMUiPanel::Channels},
+        {"logger", "Logger", RDK::LLM::LLMUiPanel::Logger},
+        {"watch", "Watch", RDK::LLM::LLMUiPanel::Watch},
+        {"images", "Images", RDK::LLM::LLMUiPanel::Images},
+        {"project_description", "Project Description",
+         RDK::LLM::LLMUiPanel::ProjectDescription},
+        {"profiling", "Profiling", RDK::LLM::LLMUiPanel::Profiling},
+        {"diagram", "Diagram", RDK::LLM::LLMUiPanel::Diagram},
+        {"component_gui_tab_host", "Component GUI Tab Host",
+         RDK::LLM::LLMUiPanel::ComponentGuiTabHost}};
+
+    std::unordered_map<std::string, bool> visible_by_id;
+    if(sink)
+    {
+        const nlohmann::json host = sink->listLlmUiPanelsState();
+        for(const nlohmann::json& item : host.value("items", nlohmann::json::array()))
+        {
+            if(item.contains("id") && item.contains("visible") && item["id"].is_string()
+               && item["visible"].is_boolean())
+                visible_by_id[item["id"].get<std::string>()] = item["visible"].get<bool>();
+        }
+    }
+
+    nlohmann::json out;
+    out["items"] = nlohmann::json::array();
+    for(const CatalogItem& item : kCatalog)
+    {
+        const bool visible =
+            visible_by_id.count(item.id) ? visible_by_id[item.id] : false;
+        out["items"].push_back({{"id", item.id}, {"title", item.title}, {"visible", visible}});
+    }
+    return out;
 }
 
 } // namespace
@@ -268,6 +337,82 @@ void RegisterApplicationTools(ULLMToolRegistry& registry)
             const std::string path = args.at("configuration_path").get<std::string>();
             return invokeApplicationTool(activeSink(),
                                          [&]() { return commands().openRecentConfigurationByPath(path, if_open); });
+        });
+
+    registry.registerTool(
+        makeAppDef("list_ui_panels", LLMToolKind::Read,
+                   "List available LLM UI panels and their current visibility",
+                   {{"type", "object"}, {"additionalProperties", false}}, false, false),
+        [](const nlohmann::json& args) -> ToolGatewayResult {
+            (void)args;
+            return invokeApplicationTool(activeSink(),
+                                         [&]() {
+                                             ApplicationCommandResult r;
+                                             r.status = {};
+                                             r.payload = listUiPanelsMerged(activeSink());
+                                             r.presentation = LLMPresentationEffect::None;
+                                             return r;
+                                         });
+        });
+
+    const nlohmann::json showUiPanelInputSchema = {
+        {"type", "object"},
+        {"properties",
+         {{"panel",
+           {{"type", "string"},
+            {"enum",
+             nlohmann::json::array({"components_list",
+                                    "channels",
+                                    "logger",
+                                    "watch",
+                                    "images",
+                                    "project_description",
+                                    "profiling",
+                                    "diagram",
+                                    "component_gui_tab_host"})}}}}},
+        {"required", nlohmann::json::array({"panel"})},
+        {"additionalProperties", false}};
+
+    registry.registerTool(
+        makeAppDef("show_ui_panel", LLMToolKind::Write,
+                   "Show a specific LLM UI panel (e.g. logger, components list)",
+                   showUiPanelInputSchema, false, false),
+        [](const nlohmann::json& args) -> ToolGatewayResult {
+            const std::string panel_id = args.at("panel").get<std::string>();
+            const RDK::LLM::LLMUiPanel panel = panelFromId(panel_id);
+            if(panel == RDK::LLM::LLMUiPanel::None)
+            {
+                ToolGatewayResult r;
+                r.ok = false;
+                r.error_code = "DomainError";
+                r.message = "Unknown panel id: " + panel_id;
+                return r;
+            }
+
+            return invokeApplicationTool(activeSink(), [&]() {
+                ApplicationCommandResult r;
+                r.status = {};
+                r.presentation = LLMPresentationEffect::None;
+                r.show_panel = panel;
+                r.show_panel_visible = true;
+                return r;
+            });
+        });
+
+    registry.registerTool(
+        makeAppDef("open_component_gui_tab", LLMToolKind::Write,
+                   "Open component GUI tab host (may require user interaction)",
+                   {{"type", "object"}, {"additionalProperties", false}}, true, false),
+        [](const nlohmann::json& args) -> ToolGatewayResult {
+            (void)args;
+            return invokeApplicationTool(activeSink(), [&]() {
+                ApplicationCommandResult r;
+                r.status = {};
+                r.presentation = LLMPresentationEffect::None;
+                r.show_panel = RDK::LLM::LLMUiPanel::ComponentGuiTabHost;
+                r.show_panel_visible = true;
+                return r;
+            });
         });
 
     registry.registerTool(

@@ -42,9 +42,9 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-056 | `list_registered_classes.library_filter` schema drift | phase-C | P2 | open | Deferred in C; finalize in docs/schema sweep |
 | TD-057 | Unified recent list dedupe rules | phase-D | P1 | done | QSettings + LastProjectsList merge implemented in `URdkApplicationCommands::listRecentConfigurations` |
 | TD-058 | Recent configurations provider in presentation sink | phase-D | P1 | done | Sink API `ILLMPresentationSink::recentConfigurationPaths` + Qt impl `ULlmQtPresentationSink::recentConfigurationPaths` |
-| TD-059 | `show_ui_panel` / `LLMUiPanel` presentation API | phase-E | P1 | open | Introduce panel enum + host mapping |
-| TD-060 | `set_active_channel` GUI API research | phase-E | P3 | open | Optional/cancel if host API unavailable |
-| TD-061 | `open_component_gui_tab` host dialog/automation gap | phase-E | P2 | open | May require manual-assisted flow |
+| TD-059 | `show_ui_panel` / `LLMUiPanel` presentation API | phase-E | P1 | done | Implemented via `LLMPresentationEvent.show_panel` + `UGEngineControlWidget::showLlmUiPanel` + tools `show_ui_panel` / `list_ui_panels` |
+| TD-060 | `set_active_channel` GUI API research | phase-E | P3 | open | Deferred (no host API integration yet) |
+| TD-061 | `open_component_gui_tab` host dialog/automation gap | phase-E | P2 | done | Implemented tool `open_component_gui_tab` → `UGEngineControlWidget::promptAndOpenComponentGuiTabHost` (still user-assisted) |
 | TD-041 | Manual NeuroModeler GUI write-tools walkthrough (real Configs on disk) | post-MVP | P3 | open | Checklist: Application-Commands.md § TD-041; incl. auto-apply + Reject flow |
 | TD-036 | Embedding-based dynamic tool routing | post-MVP | P3 | open | Stub `ULLMDynamicToolRouter`; env `NMSDK_LLM_DYNAMIC_TOOL_ROUTING=1` |
 | TD-031 | YAML knowledge manifest + federation | post-MVP | P3 | open | Stub `ILLMYamlKnowledgeCatalog`; Post-MVP plan §5 |

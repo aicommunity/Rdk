@@ -52,6 +52,8 @@
 #include "UVideoAnalyticsSimpleSettingsWidget.h"
 #endif
 
+#include "../../LLM/Core/LlmTypes.h"
+
 namespace Ui {
 class UGEngineControllWidget;
 }
@@ -164,6 +166,9 @@ public slots:
     void refreshLlmPresentationShell();
     void refreshLlmPresentationDiagram();
     void registerRecentConfigurationPath(const QString& path);
+
+    void showLlmUiPanel(RDK::LLM::LLMUiPanel panel);
+    nlohmann::json listLlmUiPanelsState() const;
 
     // actions:
 

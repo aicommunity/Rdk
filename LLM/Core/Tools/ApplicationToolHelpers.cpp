@@ -15,8 +15,11 @@ void applyPresentationFromCommand(ILLMPresentationSink* sink, const ApplicationC
     ev.update_context = cmd.update_context;
     ev.project_closed = cmd.project_closed;
     ev.add_to_recent = cmd.add_to_recent;
+    ev.show_panel = cmd.show_panel;
+    ev.show_panel_visible = cmd.show_panel_visible;
 
-    if(ev.effect != LLMPresentationEffect::None || ev.update_context || ev.add_to_recent)
+    if(ev.effect != LLMPresentationEffect::None || ev.show_panel != LLMUiPanel::None
+       || ev.update_context || ev.add_to_recent)
         sink->apply(ev);
 }
 

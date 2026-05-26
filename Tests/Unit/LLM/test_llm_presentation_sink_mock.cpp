@@ -66,6 +66,29 @@ TEST(LLMPresentationSink, ValidateLikeCommandSkipsSink)
     EXPECT_EQ(sink.count, 0);
 }
 
+TEST(LLMPresentationSink, ShowPanelTriggersSinkEvenWithoutEffect)
+{
+    struct CountingSink : ILLMPresentationSink {
+        int count = 0;
+        LLMPresentationEvent last_event;
+        void apply(const LLMPresentationEvent& ev) override
+        {
+            ++count;
+            last_event = ev;
+        }
+    } sink;
+
+    ApplicationCommandResult cmd;
+    cmd.status = {};
+    cmd.presentation = LLMPresentationEffect::None;
+    cmd.show_panel = LLMUiPanel::Logger;
+    cmd.show_panel_visible = true;
+
+    invokeApplicationTool(&sink, [&]() { return cmd; });
+    EXPECT_EQ(sink.count, 1);
+    EXPECT_EQ(sink.last_event.show_panel, LLMUiPanel::Logger);
+}
+
 TEST(LLMPresentationSink, AuditFieldsAttached)
 {
     ApplicationCommandResult cmd;

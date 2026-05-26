@@ -39,6 +39,19 @@ enum class LLMPresentationEffect {
     FullShellRefresh
 };
 
+enum class LLMUiPanel {
+    None,
+    ComponentsList,
+    Channels,
+    Logger,
+    Watch,
+    Images,
+    ProjectDescription,
+    Profiling,
+    Diagram, // refresh only
+    ComponentGuiTabHost
+};
+
 enum class DomainStatusCode {
     Ok,
     NotInitialized,
@@ -66,6 +79,8 @@ struct LLMPresentationEvent {
     bool update_context = false;
     bool project_closed = false;
     bool add_to_recent = false;
+    LLMUiPanel show_panel = LLMUiPanel::None;
+    bool show_panel_visible = true;
 };
 
 struct ApplicationCommandResult {
@@ -76,6 +91,8 @@ struct ApplicationCommandResult {
     bool project_closed = false;
     bool add_to_recent = false;
     std::string resolved_configuration_path;
+    LLMUiPanel show_panel = LLMUiPanel::None;
+    bool show_panel_visible = true;
 };
 
 struct LLMProviderCapabilities {

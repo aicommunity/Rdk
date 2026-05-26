@@ -62,6 +62,34 @@ std::vector<std::string> ULlmQtPresentationSink::recentConfigurationPaths() cons
     return out;
 }
 
+nlohmann::json ULlmQtPresentationSink::listLlmUiPanelsState() const
+{
+    if(!m_host)
+        return nlohmann::json::object();
+    if(QThread::currentThread() == thread())
+        return m_host->listLlmUiPanelsState();
+
+    {
+        std::lock_guard<std::mutex> lock(m_host_mu);
+        m_pending_host_list_result = nlohmann::json::object();
+        m_pending_host_list_run = [this]() {
+            return m_host ? m_host->listLlmUiPanelsState() : nlohmann::json::object();
+        };
+    }
+
+    const int timeout_ms = defaultInvokeTimeoutMs();
+    auto fut = std::async(std::launch::async, [this]() {
+        QMetaObject::invokeMethod(this, "runHostListUiPanelsOnGuiThread",
+                                  Qt::BlockingQueuedConnection);
+    });
+    if(fut.wait_for(std::chrono::milliseconds(timeout_ms)) != std::future_status::ready)
+        return nlohmann::json::object();
+    fut.get();
+
+    std::lock_guard<std::mutex> lock(m_host_mu);
+    return m_pending_host_list_result;
+}
+
 RDK::LLM::ApplicationCommandResult ULlmQtPresentationSink::invokeHostSynchronized(
     const std::function<RDK::LLM::ApplicationCommandResult()>& run)
 {
@@ -127,9 +155,32 @@ void ULlmQtPresentationSink::applyOnGuiThread()
     else if(m_pending.effect == RDK::LLM::LLMPresentationEffect::DiagramRefresh)
         m_host->refreshLlmPresentationDiagram();
 
+    if(m_pending.show_panel != RDK::LLM::LLMUiPanel::None)
+    {
+        if(m_pending.show_panel_visible)
+            m_host->showLlmUiPanel(m_pending.show_panel);
+        else
+            m_host->showLlmUiPanel(RDK::LLM::LLMUiPanel::None);
+    }
+
     if(m_pending.add_to_recent && !m_pending.configuration_ini_path.empty())
     {
         m_host->registerRecentConfigurationPath(
             QString::fromStdString(m_pending.configuration_ini_path));
+    }
+}
+
+void ULlmQtPresentationSink::runHostListUiPanelsOnGuiThread()
+{
+    std::function<nlohmann::json()> fn;
+    {
+        std::lock_guard<std::mutex> lock(m_host_mu);
+        fn = std::move(m_pending_host_list_run);
+    }
+    if(fn)
+    {
+        const nlohmann::json r = fn();
+        std::lock_guard<std::mutex> lock(m_host_mu);
+        m_pending_host_list_result = r;
     }
 }

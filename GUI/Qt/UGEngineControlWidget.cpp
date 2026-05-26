@@ -628,6 +628,97 @@ void UGEngineControlWidget::registerRecentConfigurationPath(const QString& path)
     addToRecentConfigs(path);
 }
 
+void UGEngineControlWidget::showLlmUiPanel(RDK::LLM::LLMUiPanel panel)
+{
+    // Note: "show_panel_visible=false" is implemented by sink by requesting LLMUiPanel::None.
+    switch(panel)
+    {
+    case RDK::LLM::LLMUiPanel::None:
+        if(ui && ui->dockWidgetComponentsList)
+            ui->dockWidgetComponentsList->hide();
+        if(ui && ui->dockWidgetChannels)
+            ui->dockWidgetChannels->hide();
+        if(ui && ui->dockWidgetLoger)
+            ui->dockWidgetLoger->hide();
+        if(ui && ui->dockWidgetProfiling)
+            ui->dockWidgetProfiling->hide();
+        if(modernDiagram)
+            modernDiagram->hide();
+        if(images)
+            images->hide();
+        if(imagesWindow)
+            imagesWindow->hide();
+        if(watchWindow)
+            watchWindow->hide();
+        if(projectDescriptionWindow)
+            projectDescriptionWindow->hide();
+        break;
+    case RDK::LLM::LLMUiPanel::ComponentsList:
+        actionComponentsControl();
+        break;
+    case RDK::LLM::LLMUiPanel::Channels:
+        actionChannelsControl();
+        break;
+    case RDK::LLM::LLMUiPanel::Logger:
+        actionLogger();
+        break;
+    case RDK::LLM::LLMUiPanel::Watch:
+        actionWatchWindow();
+        break;
+    case RDK::LLM::LLMUiPanel::Images:
+        actionImages();
+        break;
+    case RDK::LLM::LLMUiPanel::ProjectDescription:
+        actionProjectDescription();
+        break;
+    case RDK::LLM::LLMUiPanel::Profiling:
+        actionProfiling();
+        break;
+    case RDK::LLM::LLMUiPanel::Diagram:
+        refreshLlmPresentationDiagram();
+        break;
+    case RDK::LLM::LLMUiPanel::ComponentGuiTabHost:
+        // Host may require user interaction; the sink executes this on GUI thread.
+        promptAndOpenComponentGuiTabHost();
+        break;
+    }
+}
+
+nlohmann::json UGEngineControlWidget::listLlmUiPanelsState() const
+{
+    nlohmann::json out;
+    out["items"] = nlohmann::json::array();
+
+    auto addItem = [&out](const char* id, const char* title, bool visible) {
+        out["items"].push_back(nlohmann::json{{"id", id}, {"title", title}, {"visible", visible}});
+    };
+
+    if(ui)
+    {
+        addItem("components_list", "Components", ui->dockWidgetComponentsList
+                                                   && ui->dockWidgetComponentsList->isVisible());
+        addItem("channels", "Channels", ui->dockWidgetChannels
+                                             && ui->dockWidgetChannels->isVisible());
+        addItem("logger", "Logger", ui->dockWidgetLoger
+                                            && ui->dockWidgetLoger->isVisible());
+        addItem("profiling", "Profiling", ui->dockWidgetProfiling
+                                                && ui->dockWidgetProfiling->isVisible());
+    }
+
+    addItem("watch", "Watch", watchWindow && watchWindow->isVisible());
+    addItem("images", "Images", imagesWindow && imagesWindow->isVisible());
+    addItem("project_description", "Project Description",
+            projectDescriptionWindow && projectDescriptionWindow->isVisible());
+
+    addItem("diagram", "Diagram", modernDiagram && modernDiagram->isVisible());
+
+    const bool tabHostVisible =
+        !m_componentGuiSecondaryTabHost.isNull() && m_componentGuiSecondaryTabHost->isVisible();
+    addItem("component_gui_tab_host", "Component GUI Tab Host", tabHostVisible);
+
+    return out;
+}
+
 void UGEngineControlWidget::actionCreateConfig()
 {
  if(application->GetProjectOpenFlag())

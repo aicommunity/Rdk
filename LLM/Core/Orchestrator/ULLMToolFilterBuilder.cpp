@@ -23,6 +23,7 @@ std::unordered_set<std::string> kQueryTools()
                   "find_component",
                   "get_component_properties",
                   "list_recent_configurations",
+                  "list_ui_panels",
                   "search_project_docs",
                   "validate_project",
                   "validate_configuration"});
@@ -48,6 +49,8 @@ std::unordered_set<std::string> kMutateTools()
             "rename_configuration",
             "reload_configuration_parameters",
             "save_project_metadata",
+            "show_ui_panel",
+            "open_component_gui_tab",
             "start_channel_calculation",
             "pause_channel_calculation",
             "reset_channel_calculation",
