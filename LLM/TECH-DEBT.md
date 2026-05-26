@@ -35,7 +35,6 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-030 | Write-tools E2E hardening (manual NeuroModeler + real Configs on disk) | post-PR5 | P1 | open | Mock/unit: `Test_LLM_OrchestratorLifecycleArgs`, `Test_LLM_E2eScenarios` RU create; manual GUI checklist in Application-Commands.md |
 | TD-031 | YAML `llm-knowledge.manifest.yaml` + federation | post-PR0b | P2 | open | MVP uses `NmsdkBuiltinKnowledgeCatalog.cpp` |
 | TD-032 | Auto-generate `Docs/llms.txt` from catalog | post-PR5 | P3 | open | |
-| TD-033 | Incremental index / mtime watcher | post-PR0b | P2 | open | MVP full rebuild at startup; root mtime in fingerprint only (TD-040) |
 | TD-034 | Function-level source chunking (ctags/tree-sitter) | post-PR0a | P2 | open | MVP file excerpt ≤120 lines |
 | TD-036 | Embedding-based dynamic tool routing | post-PR2 | P3 | open | MVP static `ULLMToolFilterBuilder` |
 | TD-039 | `loadedLibraries()` generated from catalog | post-PR0a | P2 | open | Static list kept in `NmsdkLlmProjectContext` |
@@ -78,6 +77,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-035 | Dedicated `tool_disambiguation` UI flag | 2026-05-26 | Deferred: reuse `needs_entity_clarification` per LLM-first MVP |
 | TD-037 | Multilingual retrieval boost (RU query) | 2026-05-26 | UTF-8 token bytes preserved in `UDocSearchIndex::tokenize` |
 | TD-040 | Catalog fingerprint includes source mtimes | 2026-05-26 | `last_write_time` per catalog root in `catalogFingerprint()` |
+| TD-033 | Incremental index / mtime watcher | 2026-05-26 | `syncFromCatalog`, `file_mtimes` in manifest, dev cache `LLM/index` |
 
 ---
 

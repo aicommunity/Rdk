@@ -8,12 +8,20 @@
 
 #include "ILLMKnowledgeCatalog.h"
 #include "ILLMProjectContextProvider.h"
+#include "UDocSearchCatalog.h"
 
 namespace RDK::LLM {
 
 constexpr int kIndexMaxFiles = 2500;
 constexpr int kSourceExcerptMaxLines = 120;
 constexpr double kMinRetrievalScore = 0.12;
+constexpr double kIncrementalRebuildRatio = 0.25;
+
+enum class IndexSyncResult {
+    UpToDate,
+    IncrementalUpdated,
+    NeedsFullRebuild,
+};
 
 /// TF-IDF + offline random-projection semantic boost (TD-017 hybrid search).
 class UDocSearchIndex {
@@ -29,6 +37,11 @@ public:
     std::vector<DocSnippet> searchWithScope(const std::string& query, int top_k,
                                             const std::string& scope) const;
     bool empty() const { return m_docs.empty(); }
+    /// Compare on-disk mtimes to manifest; patch changed/removed files (TD-033).
+    IndexSyncResult syncFromCatalog(const ILLMKnowledgeCatalog& catalog,
+                                  const std::filesystem::path& repository_root,
+                                  int max_files = kIndexMaxFiles);
+    const std::map<std::string, std::int64_t>& fileMtimes() const { return m_file_mtimes; }
 
 private:
     struct DocRecord {
@@ -44,6 +57,11 @@ private:
     };
 
     void indexDocument(DocRecord rec);
+    void rebuildDocFreq();
+    bool removeByRepoPath(const std::string& repo_relative_path);
+    bool indexCatalogFile(const CatalogIndexedFile& file, const std::filesystem::path& repository_root);
+    void refreshFileMtimeManifest(const ILLMKnowledgeCatalog& catalog,
+                                  const std::filesystem::path& repository_root, int max_files);
     std::vector<DocSnippet> searchInternal(const std::string& query, int top_k,
                                            bool include_doc, bool include_source,
                                            bool include_runtime) const;
@@ -51,6 +69,7 @@ private:
     std::vector<DocRecord> m_docs;
     std::map<std::string, int> m_doc_freq;
     int m_doc_count = 0;
+    std::map<std::string, std::int64_t> m_file_mtimes;
 };
 
 std::vector<DocSnippet> searchDocsWithIndex(const std::vector<std::filesystem::path>& roots,

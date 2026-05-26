@@ -1,6 +1,7 @@
 #include "UDocSearchCatalog.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cctype>
 #include <fstream>
 #include <sstream>
@@ -155,6 +156,63 @@ std::string readSourceExcerpt(const fs::path& file_path, const int max_lines, in
         oss << line << '\n';
     }
     return oss.str();
+}
+
+std::int64_t fileMtimeUnixSec(const fs::path& file_path)
+{
+    std::error_code ec;
+    const auto mtime = fs::last_write_time(file_path, ec);
+    if(ec)
+        return 0;
+    return std::chrono::duration_cast<std::chrono::seconds>(mtime.time_since_epoch()).count();
+}
+
+std::vector<CatalogIndexedFile> enumerateCatalogFiles(const ILLMKnowledgeCatalog& catalog,
+                                                      const fs::path& repository_root,
+                                                      const int max_files)
+{
+    std::vector<CatalogIndexedFile> out;
+    out.reserve(static_cast<size_t>(max_files));
+
+    for(const LLMKnowledgeSource& source : catalog.sources())
+    {
+        if(!fs::exists(source.root) || static_cast<int>(out.size()) >= max_files)
+            continue;
+
+        auto try_add = [&](const fs::path& file) {
+            if(static_cast<int>(out.size()) >= max_files)
+                return;
+            if(!fs::is_regular_file(file) || !extensionMatches(file, source.extensions))
+                return;
+            if(shouldExcludePath(repository_root, file, source.exclude_globs))
+                return;
+            CatalogIndexedFile entry;
+            entry.absolute_path = file;
+            entry.repo_relative_path = makeRepoRelativePath(repository_root, file);
+            entry.source_id = source.source_id;
+            entry.content_kind = contentKindForSource(source);
+            entry.mtime_unix_sec = fileMtimeUnixSec(file);
+            out.push_back(std::move(entry));
+        };
+
+        if(!source.include_files_only.empty())
+        {
+            for(const std::string& rel : source.include_files_only)
+                try_add(source.root / rel);
+            continue;
+        }
+
+        std::error_code ec;
+        for(fs::recursive_directory_iterator it(source.root, ec), end;
+            it != end && static_cast<int>(out.size()) < max_files; it.increment(ec))
+        {
+            if(ec)
+                break;
+            if(it->is_regular_file())
+                try_add(it->path());
+        }
+    }
+    return out;
 }
 
 } // namespace RDK::LLM

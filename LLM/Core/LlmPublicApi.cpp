@@ -58,11 +58,34 @@ void LLMServices::initialize(RDK::UApplication* app, ILLMProjectContextProvider*
         project_context ? project_context->paths().repository_root : std::filesystem::path(".");
     const std::string fingerprint = m_catalog->catalogFingerprint();
     const std::filesystem::path prebuilt = m_catalog->prebuiltIndexDirectory();
-    bool loaded_prebuilt = false;
-    if(!prebuilt.empty())
-        loaded_prebuilt = m_search_index->loadPrebuilt(prebuilt, fingerprint);
-    if(!loaded_prebuilt)
+    const std::filesystem::path dev_cache = repository_root / "LLM/index";
+
+    auto ensure_index = [&]() {
+        bool loaded = false;
+        if(!prebuilt.empty())
+            loaded = m_search_index->loadPrebuilt(prebuilt, fingerprint);
+        if(!loaded && !dev_cache.empty())
+            loaded = m_search_index->loadPrebuilt(dev_cache, fingerprint);
+
+        if(loaded)
+        {
+            const IndexSyncResult sync =
+                m_search_index->syncFromCatalog(*m_catalog, repository_root);
+            if(sync == IndexSyncResult::NeedsFullRebuild)
+            {
+                m_search_index->buildFromCatalog(*m_catalog, repository_root);
+                m_search_index->savePrebuilt(dev_cache, fingerprint);
+            }
+            else if(sync == IndexSyncResult::IncrementalUpdated)
+                m_search_index->savePrebuilt(dev_cache, fingerprint);
+            return;
+        }
+
         m_search_index->buildFromCatalog(*m_catalog, repository_root);
+        if(!dev_cache.empty())
+            m_search_index->savePrebuilt(dev_cache, fingerprint);
+    };
+    ensure_index();
 
     rebuildProvider();
 

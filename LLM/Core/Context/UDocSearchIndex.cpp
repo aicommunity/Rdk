@@ -10,6 +10,7 @@
 #include <fstream>
 #include <iomanip>
 #include <sstream>
+#include <unordered_set>
 
 #include <nlohmann/json.hpp>
 
@@ -115,7 +116,69 @@ void UDocSearchIndex::indexDocument(DocRecord rec)
     rec.length = static_cast<int>(tokens.size());
     projectEmbedding(tokens, rec.embedding);
     m_docs.push_back(std::move(rec));
-    ++m_doc_count;
+    m_doc_count = static_cast<int>(m_docs.size());
+}
+
+void UDocSearchIndex::rebuildDocFreq()
+{
+    m_doc_freq.clear();
+    m_doc_count = static_cast<int>(m_docs.size());
+    for(const DocRecord& doc : m_docs)
+    {
+        for(const auto& kv : doc.term_freq)
+            m_doc_freq[kv.first]++;
+    }
+}
+
+bool UDocSearchIndex::removeByRepoPath(const std::string& repo_relative_path)
+{
+    const auto it = std::remove_if(m_docs.begin(), m_docs.end(),
+                                   [&](const DocRecord& doc) { return doc.path == repo_relative_path; });
+    if(it == m_docs.end())
+        return false;
+    m_docs.erase(it, m_docs.end());
+    rebuildDocFreq();
+    m_file_mtimes.erase(repo_relative_path);
+    return true;
+}
+
+bool UDocSearchIndex::indexCatalogFile(const CatalogIndexedFile& file,
+                                       const fs::path& repository_root)
+{
+    (void)repository_root;
+    std::ifstream in(file.absolute_path);
+    if(!in)
+        return false;
+    std::stringstream buffer;
+    buffer << in.rdbuf();
+    const std::string content = buffer.str();
+
+    DocRecord rec;
+    rec.source_id = file.source_id;
+    rec.path = file.repo_relative_path;
+    rec.content_kind = file.content_kind;
+    rec.title = extractMarkdownTitle(content, file.absolute_path.filename().string());
+    if(rec.content_kind == LLMContentKind::Source)
+    {
+        int start_line = 1;
+        rec.excerpt = readSourceExcerpt(file.absolute_path, kSourceExcerptMaxLines, start_line);
+        rec.start_line = start_line;
+    }
+    else
+        rec.excerpt = content.substr(0, 4000);
+
+    removeByRepoPath(file.repo_relative_path);
+    indexDocument(std::move(rec));
+    m_file_mtimes[file.repo_relative_path] = file.mtime_unix_sec;
+    return true;
+}
+
+void UDocSearchIndex::refreshFileMtimeManifest(const ILLMKnowledgeCatalog& catalog,
+                                             const fs::path& repository_root, const int max_files)
+{
+    m_file_mtimes.clear();
+    for(const CatalogIndexedFile& file : enumerateCatalogFiles(catalog, repository_root, max_files))
+        m_file_mtimes[file.repo_relative_path] = file.mtime_unix_sec;
 }
 
 void UDocSearchIndex::build(const std::vector<fs::path>& roots, int max_files)
@@ -163,79 +226,78 @@ void UDocSearchIndex::buildFromCatalog(const ILLMKnowledgeCatalog& catalog,
     m_docs.clear();
     m_doc_freq.clear();
     m_doc_count = 0;
+    m_file_mtimes.clear();
 
-    for(const LLMKnowledgeSource& source : catalog.sources())
+    for(const CatalogIndexedFile& file : enumerateCatalogFiles(catalog, repository_root, max_files))
+        indexCatalogFile(file, repository_root);
+}
+
+IndexSyncResult UDocSearchIndex::syncFromCatalog(const ILLMKnowledgeCatalog& catalog,
+                                                 const fs::path& repository_root,
+                                                 const int max_files)
+{
+    const std::vector<CatalogIndexedFile> on_disk =
+        enumerateCatalogFiles(catalog, repository_root, max_files);
+    if(on_disk.empty() && m_docs.empty())
+        return IndexSyncResult::UpToDate;
+
+    if(m_file_mtimes.empty())
     {
-        if(!fs::exists(source.root) || m_doc_count >= max_files)
-            continue;
+        std::unordered_set<std::string> indexed_paths;
+        indexed_paths.reserve(m_docs.size());
+        for(const DocRecord& doc : m_docs)
+            indexed_paths.insert(doc.path);
 
-        if(!source.include_files_only.empty())
-        {
-            for(const std::string& rel : source.include_files_only)
-            {
-                if(m_doc_count >= max_files)
-                    break;
-                const fs::path file = source.root / rel;
-                if(!fs::is_regular_file(file) || !extensionMatches(file, source.extensions))
-                    continue;
-                if(shouldExcludePath(repository_root, file, source.exclude_globs))
-                    continue;
+        std::unordered_set<std::string> disk_paths;
+        disk_paths.reserve(on_disk.size());
+        for(const CatalogIndexedFile& file : on_disk)
+            disk_paths.insert(file.repo_relative_path);
 
-                std::ifstream in(file);
-                std::stringstream buffer;
-                buffer << in.rdbuf();
-                const std::string content = buffer.str();
+        if(indexed_paths != disk_paths)
+            return IndexSyncResult::NeedsFullRebuild;
 
-                DocRecord rec;
-                rec.source_id = source.source_id;
-                rec.path = makeRepoRelativePath(repository_root, file);
-                rec.content_kind = contentKindForSource(source);
-                rec.title = extractMarkdownTitle(content, file.filename().string());
-                int start_line = 1;
-                rec.excerpt = readSourceExcerpt(file, kSourceExcerptMaxLines, start_line);
-                if(rec.excerpt.empty())
-                    rec.excerpt = content.substr(0, 4000);
-                rec.start_line = start_line;
-                indexDocument(std::move(rec));
-            }
-            continue;
-        }
-
-        std::error_code ec;
-        for(fs::recursive_directory_iterator it(source.root, ec), end;
-            it != end && m_doc_count < max_files; it.increment(ec))
-        {
-            if(ec)
-                break;
-            if(!it->is_regular_file())
-                continue;
-            const fs::path file = it->path();
-            if(!extensionMatches(file, source.extensions))
-                continue;
-            if(shouldExcludePath(repository_root, file, source.exclude_globs))
-                continue;
-
-            std::ifstream in(file);
-            std::stringstream buffer;
-            buffer << in.rdbuf();
-            const std::string content = buffer.str();
-
-            DocRecord rec;
-            rec.source_id = source.source_id;
-            rec.path = makeRepoRelativePath(repository_root, file);
-            rec.content_kind = contentKindForSource(source);
-            rec.title = extractMarkdownTitle(content, file.filename().string());
-            if(rec.content_kind == LLMContentKind::Source)
-            {
-                int start_line = 1;
-                rec.excerpt = readSourceExcerpt(file, kSourceExcerptMaxLines, start_line);
-                rec.start_line = start_line;
-            }
-            else
-                rec.excerpt = content.substr(0, 4000);
-            indexDocument(std::move(rec));
-        }
+        refreshFileMtimeManifest(catalog, repository_root, max_files);
+        return IndexSyncResult::UpToDate;
     }
+
+    std::unordered_set<std::string> disk_paths;
+    disk_paths.reserve(on_disk.size());
+    std::vector<CatalogIndexedFile> to_index;
+    to_index.reserve(64);
+
+    for(const CatalogIndexedFile& file : on_disk)
+    {
+        disk_paths.insert(file.repo_relative_path);
+        const auto it = m_file_mtimes.find(file.repo_relative_path);
+        if(it == m_file_mtimes.end() || it->second != file.mtime_unix_sec)
+            to_index.push_back(file);
+    }
+
+    std::vector<std::string> to_remove;
+    for(const auto& kv : m_file_mtimes)
+    {
+        if(disk_paths.count(kv.first) == 0)
+            to_remove.push_back(kv.first);
+    }
+
+    const std::size_t change_count = to_index.size() + to_remove.size();
+    const std::size_t rebuild_threshold =
+        std::max<std::size_t>(20, static_cast<std::size_t>(m_docs.size() * kIncrementalRebuildRatio));
+    if(!m_docs.empty() && change_count > rebuild_threshold)
+        return IndexSyncResult::NeedsFullRebuild;
+
+    if(change_count == 0)
+        return IndexSyncResult::UpToDate;
+
+    for(const std::string& path : to_remove)
+        removeByRepoPath(path);
+    for(const CatalogIndexedFile& file : to_index)
+        indexCatalogFile(file, repository_root);
+
+    for(const CatalogIndexedFile& file : on_disk)
+        m_file_mtimes[file.repo_relative_path] = file.mtime_unix_sec;
+
+    return IndexSyncResult::IncrementalUpdated;
 }
 
 bool UDocSearchIndex::loadPrebuilt(const fs::path& dir, const std::string& expected_fingerprint)
@@ -255,6 +317,16 @@ bool UDocSearchIndex::loadPrebuilt(const fs::path& dir, const std::string& expec
     m_docs.clear();
     m_doc_freq.clear();
     m_doc_count = 0;
+    m_file_mtimes.clear();
+
+    if(manifest.contains("file_mtimes") && manifest["file_mtimes"].is_object())
+    {
+        for(const auto& kv : manifest["file_mtimes"].items())
+        {
+            if(kv.value().is_number_integer())
+                m_file_mtimes[kv.key()] = kv.value().get<std::int64_t>();
+        }
+    }
 
     std::ifstream data_in(data_path);
     std::string line;
@@ -295,7 +367,10 @@ void UDocSearchIndex::savePrebuilt(const fs::path& dir, const std::string& finge
     }
 
     nlohmann::json manifest = {{"catalog_fingerprint", fingerprint},
-                               {"chunk_count", m_docs.size()}};
+                               {"chunk_count", m_docs.size()},
+                               {"file_mtimes", nlohmann::json::object()}};
+    for(const auto& kv : m_file_mtimes)
+        manifest["file_mtimes"][kv.first] = kv.second;
     std::ofstream manifest_out(dir / "index-manifest.json");
     manifest_out << manifest.dump(2);
 }
