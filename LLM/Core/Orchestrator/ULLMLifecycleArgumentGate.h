@@ -25,13 +25,22 @@ struct ToolArgumentFieldSpec {
     bool required = true;
 };
 
+enum class PendingDisambiguationKind {
+    None,
+    Class,
+    Component
+};
+
 struct PendingToolArguments {
     std::string tool_name;
     ConfigurationLifecycleAction action = ConfigurationLifecycleAction::None;
     nlohmann::json partial_arguments = nlohmann::json::object();
     std::vector<ToolArgumentFieldSpec> missing_fields;
-    /// Populated after class disambiguation; used to resolve replies like `1` or `NSPNeuron`.
+    /// Legacy alias for class disambiguation candidates.
     nlohmann::json class_disambiguation_candidates = nlohmann::json::array();
+    PendingDisambiguationKind disambiguation_kind = PendingDisambiguationKind::None;
+    std::string disambiguation_field;
+    nlohmann::json disambiguation_candidates = nlohmann::json::array();
     int64_t created_at_unix_sec = 0;
 };
 

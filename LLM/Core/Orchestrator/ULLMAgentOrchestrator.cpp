@@ -267,8 +267,15 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
         else
         {
             const std::string trimmed_reply = trimmed_user;
-            const nlohmann::json& class_candidates = pending.class_disambiguation_candidates;
-            if(class_candidates.is_array() && !class_candidates.empty() && !trimmed_reply.empty())
+            const nlohmann::json candidates =
+                pending.disambiguation_candidates.is_array()
+                        && !pending.disambiguation_candidates.empty()
+                    ? pending.disambiguation_candidates
+                    : pending.class_disambiguation_candidates;
+            const char* candidate_key =
+                pending.disambiguation_kind == PendingDisambiguationKind::Component ? "long_name"
+                                                                                     : "class_name";
+            if(candidates.is_array() && !candidates.empty() && !trimmed_reply.empty())
             {
                 bool all_digits = true;
                 for(char c : trimmed_reply)
@@ -279,20 +286,22 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                         break;
                     }
                 }
-                if(all_digits
-                   && !resolveClassNameFromDisambiguationList(trimmed_reply, class_candidates))
+                if(all_digits && !pickFromNumberedList(trimmed_reply, candidates, candidate_key))
                 {
                     LLMFinalResponse final;
                     final.ok = true;
                     final.needs_argument_clarification = true;
                     final.needs_tool_disambiguation = true;
                     final.needs_entity_clarification = true;
-                    final.clarification_candidates = class_candidates;
+                    final.clarification_candidates = candidates;
                     nlohmann::json payload;
-                    payload["kind"] = "class";
-                    payload["candidates"] = class_candidates;
+                    payload["kind"] =
+                        pending.disambiguation_kind == PendingDisambiguationKind::Component
+                            ? "component"
+                            : "class";
+                    payload["candidates"] = candidates;
                     final.text = "Invalid list number. Please choose 1-"
-                                   + std::to_string(class_candidates.size()) + ".\n\n"
+                                   + std::to_string(candidates.size()) + ".\n\n"
                                    + formatClarificationMessage(payload);
                     m_store.setPendingToolArguments(req.session_id, pending);
                     m_store.persistToDisk(req.session_id);
@@ -614,15 +623,12 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 if(extractToolDisambiguationPayload(tr, disambiguation))
                 {
                     if(disambiguation.value("kind", "") == "class")
-                        return returnClassDisambiguationRequest(state, req.trace_id, call,
-                                                                disambiguation);
-                    final.needs_entity_clarification = true;
-                    final.needs_tool_disambiguation = true;
-                    final.clarification_candidates =
-                        disambiguation.value("candidates", nlohmann::json::array());
-                    final.text = formatClarificationMessage(disambiguation);
-                    m_store.persistToDisk(req.session_id);
-                    return final;
+                        return returnDisambiguationRequest(
+                            state, req.trace_id, call, PendingDisambiguationKind::Class,
+                            "class_name", disambiguation);
+                    return returnDisambiguationRequest(
+                        state, req.trace_id, call, PendingDisambiguationKind::Component,
+                        disambiguation.value("field", "long_name"), disambiguation);
                 }
                 LLMMessage tool_msg;
                 tool_msg.role = LLMMessage::Role::Tool;
@@ -641,8 +647,14 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 nlohmann::json disambiguation_early;
                 if(extractToolDisambiguationPayload(tr, disambiguation_early)
                    && disambiguation_early.value("kind", "") == "class")
-                    return returnClassDisambiguationRequest(state, req.trace_id, call_copy,
-                                                            disambiguation_early);
+                    return returnDisambiguationRequest(
+                        state, req.trace_id, call_copy, PendingDisambiguationKind::Class,
+                        "class_name", disambiguation_early);
+                if(extractToolDisambiguationPayload(tr, disambiguation_early)
+                   && disambiguation_early.value("kind", "") == "component")
+                    return returnDisambiguationRequest(
+                        state, req.trace_id, call_copy, PendingDisambiguationKind::Component,
+                        disambiguation_early.value("field", "long_name"), disambiguation_early);
                 if(toolInvokeNeedsArgumentClarification(call_copy.name, tr))
                 {
                     PendingToolArguments pending;
@@ -685,15 +697,12 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 if(extractToolDisambiguationPayload(tr, disambiguation))
                 {
                     if(disambiguation.value("kind", "") == "class")
-                        return returnClassDisambiguationRequest(state, req.trace_id, call_copy,
-                                                                disambiguation);
-                    final.needs_entity_clarification = true;
-                    final.needs_tool_disambiguation = true;
-                    final.clarification_candidates =
-                        disambiguation.value("candidates", nlohmann::json::array());
-                    final.text = formatClarificationMessage(disambiguation);
-                    m_store.persistToDisk(req.session_id);
-                    return final;
+                        return returnDisambiguationRequest(
+                            state, req.trace_id, call_copy, PendingDisambiguationKind::Class,
+                            "class_name", disambiguation);
+                    return returnDisambiguationRequest(
+                        state, req.trace_id, call_copy, PendingDisambiguationKind::Component,
+                        disambiguation.value("field", "long_name"), disambiguation);
                 }
 
                 LLMMessage tool_msg;
@@ -948,8 +957,9 @@ LLMFinalResponse ULLMAgentOrchestrator::rollbackPlanExecution(const std::string&
     return final;
 }
 
-LLMFinalResponse ULLMAgentOrchestrator::returnClassDisambiguationRequest(
+LLMFinalResponse ULLMAgentOrchestrator::returnDisambiguationRequest(
     ConversationState& state, const std::string& trace_id, const LLMToolCall& call,
+    PendingDisambiguationKind kind, const std::string& field_name,
     const nlohmann::json& disambiguation)
 {
     LLMFinalResponse final;
@@ -959,13 +969,20 @@ LLMFinalResponse ULLMAgentOrchestrator::returnClassDisambiguationRequest(
         call.arguments.is_object() ? call.arguments : nlohmann::json::object();
     pending.action = ConfigurationLifecycleAction::None;
     pending.created_at_unix_sec = confirmationNowUnixSec();
-    ToolArgumentFieldSpec field;
-    field.name = "class_name";
-    field.type = "string";
-    field.description = "Registered component class (reply with an exact name from the list)";
-    pending.missing_fields = {field};
+    ToolArgumentFieldSpec missing_field;
+    missing_field.name = field_name.empty() ? "class_name" : field_name;
+    missing_field.type = "string";
+    missing_field.description =
+        kind == PendingDisambiguationKind::Class
+            ? "Registered component class (reply with an exact name from the list)"
+            : "Resolved component long_name (reply with an exact name from the list)";
+    pending.missing_fields = {missing_field};
+    pending.disambiguation_kind = kind;
+    pending.disambiguation_field = missing_field.name;
+    pending.disambiguation_candidates = disambiguation.value("candidates", nlohmann::json::array());
     pending.class_disambiguation_candidates =
-        disambiguation.value("candidates", nlohmann::json::array());
+        kind == PendingDisambiguationKind::Class ? pending.disambiguation_candidates
+                                                 : nlohmann::json::array();
     m_store.setPendingToolArguments(state.session_id, pending);
 
     const std::string prompt = formatClarificationMessage(disambiguation);
@@ -1048,8 +1065,19 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
         LLMToolCall call;
         call.name = tool_name;
         call.arguments = arguments;
-        LLMFinalResponse final =
-            returnClassDisambiguationRequest(state, trace_id, call, disambiguation);
+        LLMFinalResponse final = returnDisambiguationRequest(
+            state, trace_id, call, PendingDisambiguationKind::Class, "class_name", disambiguation);
+        return final;
+    }
+    if(extractToolDisambiguationPayload(tr, disambiguation)
+       && disambiguation.value("kind", "") == "component")
+    {
+        LLMToolCall call;
+        call.name = tool_name;
+        call.arguments = arguments;
+        LLMFinalResponse final = returnDisambiguationRequest(
+            state, trace_id, call, PendingDisambiguationKind::Component,
+            disambiguation.value("field", "long_name"), disambiguation);
         return final;
     }
 

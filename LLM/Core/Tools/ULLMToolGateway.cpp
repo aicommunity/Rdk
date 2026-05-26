@@ -46,8 +46,8 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
     }
 
     ToolInvokeRequest working_req = req;
-    bool add_component_pre_normalized = false;
-    if(req.tool_name == "add_component")
+    bool write_pre_normalized = false;
+    if(writeToolNeedsEntityResolution(req.tool_name) && !req.user_text_hint.empty())
     {
         const WriteArgumentNormalizeResult pre = normalizeWriteToolArguments(
             req.tool_name, req.arguments, m_domain, req.session.active_channel_index,
@@ -68,7 +68,7 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
             return result;
         }
         working_req.arguments = pre.normalized_arguments;
-        add_component_pre_normalized = true;
+        write_pre_normalized = true;
     }
 
     std::string validation_error;
@@ -116,7 +116,7 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
     }
 
     ToolInvokeRequest invoke_req = working_req;
-    if(writeToolNeedsEntityResolution(req.tool_name) && !add_component_pre_normalized)
+    if(writeToolNeedsEntityResolution(req.tool_name) && !write_pre_normalized)
     {
         const WriteArgumentNormalizeResult normalized = normalizeWriteToolArguments(
             working_req.tool_name, working_req.arguments, m_domain,

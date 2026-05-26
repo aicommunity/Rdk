@@ -91,10 +91,12 @@ private:
                                            const PendingToolArguments& pending,
                                            RDK::UApplication* app);
 
-    LLMFinalResponse returnClassDisambiguationRequest(ConversationState& state,
-                                                      const std::string& trace_id,
-                                                      const LLMToolCall& call,
-                                                      const nlohmann::json& disambiguation);
+    LLMFinalResponse returnDisambiguationRequest(ConversationState& state,
+                                                 const std::string& trace_id,
+                                                 const LLMToolCall& call,
+                                                 PendingDisambiguationKind kind,
+                                                 const std::string& field,
+                                                 const nlohmann::json& disambiguation);
 
     static constexpr int kMaxRounds = kDefaultMaxToolRounds;
 };

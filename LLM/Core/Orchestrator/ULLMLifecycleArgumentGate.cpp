@@ -328,7 +328,20 @@ nlohmann::json mergeArgumentsFromUserText(const PendingToolArguments& pending,
 
     if(pending.tool_name == "add_component")
     {
-        mergeAddComponentArguments(args, user_text, pending.class_disambiguation_candidates);
+        const nlohmann::json class_candidates =
+            pending.disambiguation_candidates.is_array() && !pending.disambiguation_candidates.empty()
+                ? pending.disambiguation_candidates
+                : pending.class_disambiguation_candidates;
+        mergeAddComponentArguments(args, user_text, class_candidates);
+        return args;
+    }
+
+    if(pending.disambiguation_kind == PendingDisambiguationKind::Component
+       && !pending.disambiguation_field.empty())
+    {
+        if(const std::optional<std::string> picked =
+               pickFromNumberedList(trimmed, pending.disambiguation_candidates, "long_name"))
+            args[pending.disambiguation_field] = *picked;
         return args;
     }
 

@@ -34,9 +34,9 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 |----|------|--------|----------|--------|-------|
 | TD-049 | Extract `ULLMNameResolution` from `ULLMWriteArgumentNormalizer` | phase-A | P0 | done | Closed in phase-A commit: dedicated module + migrated callers |
 | TD-050 | Tiered `URdkEntityResolver` (exact → CI → fuzzy) | phase-A | P0 | done | Closed in phase-A commit: centralized tiered resolver |
-| TD-051 | Generalized pending disambiguation (not only class) | phase-B | P0 | open | Planned for orchestrator/gate updates |
-| TD-052 | Gateway pre-normalize all write entity-resolution tools | phase-B | P0 | open | Replace add_component-only pre-normalize |
-| TD-053 | `connect_components` two-endpoint pending (from → to) | phase-B | P1 | open | Sequential endpoint disambiguation |
+| TD-051 | Generalized pending disambiguation (not only class) | phase-B | P0 | done | `PendingToolArguments` now carries kind/field/candidates for class/component |
+| TD-052 | Gateway pre-normalize all write entity-resolution tools | phase-B | P0 | done | Generic pre-normalize path for write tools with entity resolution |
+| TD-053 | `connect_components` two-endpoint pending (from → to) | phase-B | P1 | done | Sequential resolution via `from_long_name` then `to_long_name` |
 | TD-054 | `property_name` validation / `list_component_properties` read tool | phase-C | P1 | open | Minimum validation first, read helper in C |
 | TD-055 | `get_net_snapshot.root_long_name` in domain | phase-C | P2 | open | Implement subtree root traversal or document |
 | TD-056 | `list_registered_classes.library_filter` schema drift | phase-C | P2 | open | Align behavior with schema/docs |
@@ -105,6 +105,9 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-035 | Dedicated `tool_disambiguation` UI flag | 2026-05-25 | `AgentResponse::needs_tool_disambiguation`; dock clarification block |
 | TD-049 | Extract `ULLMNameResolution` from `ULLMWriteArgumentNormalizer` | 2026-05-26 | `ULLMNameResolution.{h,cpp}` + normalizer/lifecycle integration |
 | TD-050 | Tiered `URdkEntityResolver` (exact → CI → fuzzy) | 2026-05-26 | `resolveComponentEntity` + `URdkEntityResolver` delegation |
+| TD-051 | Generalized pending disambiguation (not only class) | 2026-05-26 | `PendingToolArguments` + orchestrator/gate generalized disambiguation flow |
+| TD-052 | Gateway pre-normalize all write entity-resolution tools | 2026-05-26 | `ULLMToolGateway` generic pre-normalize before schema/policy |
+| TD-053 | `connect_components` two-endpoint pending (from → to) | 2026-05-26 | Field-aware pending with `from_long_name`/`to_long_name` picks |
 
 ---
 
@@ -123,3 +126,4 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | 2026-05-26 | Manual GUI write-tools split to TD-041 | Automated tests cover LLM-first path | TD-041 |
 | 2026-05-25 | Post-MVP code in separate plan doc | Implementation tracked in Post-MVP-Implementation-Plan.md | TD-048, TD-035, TD-031/034/036 |
 | 2026-05-26 | Consolidate name/entity resolution in domain helper | Reuse same disambiguation behavior across tools before pending generalization | TD-051/052 |
+| 2026-05-26 | Keep direct gateway calls backward-compatible without user hint pre-normalization | Unit tests and non-orchestrator callers expect confirmation-first behavior | revisit after orchestration-only invoke contract |
