@@ -9,6 +9,8 @@
 
 #include "../Core/LlmTypes.h"
 
+#include <functional>
+
 namespace RDK::LLM {
 
 struct LlamaRuntimeConfig {
@@ -29,6 +31,10 @@ public:
 
     LLMCompletionResult complete(const std::vector<LLMMessage>& messages,
                                  const LLMCompletionOptions& opts);
+    /// Tokenizes prompt once, invokes on_chunk for each decoded piece (GUI live stream, TD-045).
+    LLMCompletionResult completeStream(const std::vector<LLMMessage>& messages,
+                                       const LLMCompletionOptions& opts,
+                                       const std::function<void(const std::string&)>& on_chunk);
     bool healthCheck(std::string& error_out);
     void cancel();
 

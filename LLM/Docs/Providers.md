@@ -80,6 +80,8 @@ public:
 
 ## 4. `UEmbeddedLlamaProvider` (фаза 4, обязательно)
 
+`capabilities().supports_streaming = true`. `chatStream` decodes GGUF token-by-token via `ULlamaRuntime::completeStream` (same path as GUI `LLMStreamHandlers`, TD-045).
+
 **Target:** `rdk.llm.embedded` links llama.cpp.
 
 ```cpp

@@ -37,7 +37,7 @@ MVP/post-MVP план закрыт. Дальше: **довести write-tools �
 |------|--------|------------|
 | Новый чат + session при load | done | `ULlmAssistantDockWidget::startNewChat`, `discardSession`, `projectOpened` |
 | Ollama model list в Settings | done | editable combo + `Refresh Ollama model list` (`/api/tags`) |
-| Embedded live token stream | open | отдельный TD (batch-only embedded) |
+| Embedded live token stream | done | `ULlamaRuntime::completeStream`, TD-045 |
 
 ## Как тестировать каждый write-tool
 

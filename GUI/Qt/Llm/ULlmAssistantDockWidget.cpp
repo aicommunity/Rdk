@@ -493,8 +493,7 @@ void ULlmAssistantDockWidget::runUserMessage(const QString& text)
     req.provider_profile = RDK::LLM::LLMServices::instance().activeProviderProfile();
 
     const auto profile = RDK::LLM::LLMServices::instance().activeProviderProfile();
-    const bool can_stream = profile.kind != RDK::LLM::LLMProviderKind::EmbeddedLlama
-                            && profile.kind != RDK::LLM::LLMProviderKind::Mock;
+    const bool can_stream = profile.kind != RDK::LLM::LLMProviderKind::Mock;
 
     setRequestInProgress(true);
     if(can_stream)

@@ -33,7 +33,6 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | ID | Item | Target | Priority | Status | Notes |
 |----|------|--------|----------|--------|-------|
 | TD-041 | Manual NeuroModeler GUI write-tools walkthrough (real Configs on disk) | post-MVP | P3 | open | Optional QA; automated: TD-030, `Test_LLM_WriteToolsEngine`, Application-Commands.md § TD-041 |
-| TD-045 | Embedded provider live token stream in GUI | post-MVP | P3 | open | OpenAI/Ollama stream works; `EmbeddedLlama` remains batch |
 
 ---
 
@@ -84,6 +83,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-042 | Write-tools P1 on live engine | 2026-05-26 | `Test_LLM_WriteToolsEngine` + `test_valid` via `LlmWriteToolsEngineInit` |
 | TD-044 | Write-tools P2 integration | 2026-05-26 | Library write tools, `ULLMWriteArgumentNormalizer`, `PLAN_NEEDS_SNAPSHOT`, `Test_LLM_WriteToolsP2` |
 | TD-046 | GUI new chat + session rotation on project load | 2026-05-26 | `discardSession`, unique `gui-*` session_id, Ollama `/api/tags` in Settings |
+| TD-045 | Embedded provider live token stream in GUI | 2026-05-26 | `ULlamaRuntime::completeStream`, `supports_streaming`, GUI streams EmbeddedLlama |
 
 ---
 

@@ -105,7 +105,7 @@ void RegisterLlmUi(UGEngineControlWidget* host,
 | Request status | `QLabel` + indeterminate `QProgressBar` при ожидании ответа («Waiting for model response…») |
 | Provider combo | Профили из `ULLMSettingsStore` + Settings |
 | Status | Local / Cloud / key hint |
-| Ответ LLM | SSE token stream (`LLMStreamHandlers`) для OpenAI-compat / Ollama; embedded — batch |
+| Ответ LLM | Token stream (`LLMStreamHandlers`) для OpenAI-compat / Ollama / EmbeddedLlama (TD-045) |
 | Cancel | `orchestrator.cancel()` во время запроса |
 | HITL TTL | `QTimer` 10 min → `rejectPending`; реальный `pending_confirmation_id` из ответа |
 | Run plan | `confirmPlanExecution()` |

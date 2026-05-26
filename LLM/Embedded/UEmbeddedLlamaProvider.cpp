@@ -30,7 +30,7 @@ LLMProviderCapabilities UEmbeddedLlamaProvider::capabilities() const
 {
     LLMProviderCapabilities c;
     c.supports_tool_calling = false;
-    c.supports_streaming = false;
+    c.supports_streaming = true;
     c.runs_in_process = true;
     c.requires_network = false;
     return c;
@@ -61,9 +61,22 @@ void UEmbeddedLlamaProvider::chatStream(const std::vector<LLMMessage>& messages,
                                         const LLMCompletionOptions& opts, LLMStreamCallback on_chunk,
                                         std::function<void(LLMCompletionResult)> on_done)
 {
-    LLMCompletionResult r = chat(messages, opts);
-    if(!r.text.empty() && on_chunk)
-        on_chunk(r.text);
+    std::string err;
+    if(!ensureLoaded(err))
+    {
+        LLMCompletionResult r;
+        r.ok = false;
+        r.error_message = err;
+        if(on_done)
+            on_done(r);
+        return;
+    }
+
+    std::function<void(const std::string&)> chunk_fn;
+    if(on_chunk)
+        chunk_fn = on_chunk;
+
+    LLMCompletionResult r = m_runtime.completeStream(messages, opts, chunk_fn);
     if(on_done)
         on_done(r);
 }

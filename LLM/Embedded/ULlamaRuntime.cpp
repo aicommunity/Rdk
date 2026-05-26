@@ -135,6 +135,13 @@ bool ULlamaRuntime::isLoaded() const
 LLMCompletionResult ULlamaRuntime::complete(const std::vector<LLMMessage>& messages,
                                             const LLMCompletionOptions& opts)
 {
+    return completeStream(messages, opts, nullptr);
+}
+
+LLMCompletionResult ULlamaRuntime::completeStream(
+    const std::vector<LLMMessage>& messages, const LLMCompletionOptions& opts,
+    const std::function<void(const std::string&)>& on_chunk)
+{
     LLMCompletionResult result;
     std::lock_guard<std::mutex> lock(m_mutex);
     if(!isLoaded())
@@ -143,6 +150,8 @@ LLMCompletionResult ULlamaRuntime::complete(const std::vector<LLMMessage>& messa
         result.error_message = "Embedded model not loaded";
         return result;
     }
+
+    m_cancelled = false;
 
     LLMProviderProfile profile;
     profile.model = m_config.gguf_path;
@@ -193,12 +202,19 @@ LLMCompletionResult ULlamaRuntime::complete(const std::vector<LLMMessage>& messa
         const int piece_len =
             llama_token_to_piece(m_impl->vocab, new_token, piece, sizeof(piece), 0, true);
         if(piece_len > 0)
-            generated.append(piece, static_cast<size_t>(piece_len));
+        {
+            const std::string chunk(piece, static_cast<size_t>(piece_len));
+            generated.append(chunk);
+            if(on_chunk)
+                on_chunk(chunk);
+        }
 
         batch = llama_batch_get_one(&new_token, 1);
     }
 
-    result.ok = true;
+    result.ok = !m_cancelled;
+    if(m_cancelled)
+        result.error_message = "Generation cancelled";
     result.text = generated;
     result.completion_tokens = static_cast<int>(generated.size() / 4);
     return result;

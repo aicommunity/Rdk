@@ -13,6 +13,7 @@ TEST(LlmEmbeddedProvider, FactoryCreatesInProcessProvider)
     EXPECT_EQ(provider->kind(), RDK::LLM::LLMProviderKind::EmbeddedLlama);
     EXPECT_TRUE(provider->capabilities().runs_in_process);
     EXPECT_FALSE(provider->capabilities().requires_network);
+    EXPECT_TRUE(provider->capabilities().supports_streaming);
 
     std::string err;
     EXPECT_FALSE(provider->healthCheck(err));
