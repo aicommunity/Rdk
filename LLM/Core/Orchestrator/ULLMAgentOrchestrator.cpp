@@ -17,6 +17,7 @@
 #include "ULLMConfigurationLifecycle.h"
 #include "ULLMLifecycleArgumentGate.h"
 #include "ULLMToolFilterBuilder.h"
+#include "ULLMWriteToolUserMessage.h"
 #include "ULLMEmbeddedToolCalls.h"
 #include "ULLMExecutionPlan.h"
 #include "ULLMAgentManifestBuilder.h"
@@ -311,6 +312,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
     int tool_invocations = 0;
     const int max_tool_invocations = defaultPolicyLimits().max_tool_invocations_per_message;
     bool recovery_used = false;
+    std::optional<std::pair<std::string, ToolGatewayResult>> last_graph_write;
 
     const bool is_cloud_profile = req.provider_profile.is_cloud;
     const int max_rounds = kMaxRounds;
@@ -390,6 +392,19 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
 
         if(completion.tool_calls.empty())
         {
+            if(last_graph_write)
+            {
+                final.ok = last_graph_write->second.ok;
+                final.text = formatWriteToolUserMessage(last_graph_write->first,
+                                                        last_graph_write->second);
+                if(!final.ok && !last_graph_write->second.message.empty())
+                    final.error = last_graph_write->second.message;
+                setWorkflowPhase(state, LLMWorkflowPhase::Completed, req.trace_id);
+                setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
+                m_store.persistToDisk(req.session_id);
+                return final;
+            }
+
             if(intent == LLMIntentKind::Mutate && filter.include_write && provider_tools
                && tool_invocations == 0)
             {
@@ -526,7 +541,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 tool_msg.role = LLMMessage::Role::Tool;
                 tool_msg.tool_call_id = call.id;
                 tool_msg.tool_name = call.name;
-                tool_msg.content = tr.result.dump();
+                tool_msg.content = toolGatewayResultForProvider(tr).dump();
                 m_store.appendMessage(req.session_id, tool_msg);
             }
         }
@@ -589,8 +604,25 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 tool_msg.role = LLMMessage::Role::Tool;
                 tool_msg.tool_call_id = call_copy.id;
                 tool_msg.tool_name = call_copy.name;
-                tool_msg.content = tr.result.dump();
+                tool_msg.content = toolGatewayResultForProvider(tr).dump();
                 m_store.appendMessage(req.session_id, tool_msg);
+
+                const LLMToolDefinition* write_def = m_registry.find(call_copy.name);
+                if(write_def && write_def->kind == LLMToolKind::Write && !tr.pending_confirmation)
+                    last_graph_write = {call_copy.name, tr};
+
+                if(completion.tool_calls.size() == 1 && call_copy.name == "add_component"
+                   && !tr.pending_confirmation)
+                {
+                    final.ok = tr.ok;
+                    final.text = formatWriteToolUserMessage(call_copy.name, tr);
+                    if(!final.ok && !tr.message.empty())
+                        final.error = tr.message;
+                    setWorkflowPhase(state, LLMWorkflowPhase::Completed, req.trace_id);
+                    setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
+                    m_store.persistToDisk(req.session_id);
+                    return final;
+                }
 
                 if(lifecycle_action != ConfigurationLifecycleAction::None
                    && isLifecycleWriteToolName(call_copy.name))

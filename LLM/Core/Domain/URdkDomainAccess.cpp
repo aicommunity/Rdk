@@ -16,6 +16,19 @@
 
 namespace RDK::LLM {
 
+namespace {
+
+void refreshDiagramPresentation(ILLMPresentationSink* sink)
+{
+    if(!sink)
+        return;
+    LLMPresentationEvent ev;
+    ev.effect = LLMPresentationEffect::DiagramRefresh;
+    sink->apply(ev);
+}
+
+} // namespace
+
 URdkDomainAccess::URdkDomainAccess(RDK::UApplication* app)
     : m_app(app)
 {
@@ -176,6 +189,7 @@ DomainStatus URdkDomainAccess::addComponent(const std::string& class_name,
     if(findComponentByLongName(added, found, channel_index).ok()
        && found.contains("long_name"))
         out_long_name = found["long_name"].get<std::string>();
+    refreshDiagramPresentation(m_sink);
     return {};
 }
 
@@ -190,6 +204,7 @@ DomainStatus URdkDomainAccess::removeComponent(const std::string& long_name, int
     if(rc != 0)
         return {DomainStatusCode::LinkFailed,
                 "remove_component failed for " + long_name + " (code " + std::to_string(rc) + ")"};
+    refreshDiagramPresentation(m_sink);
     return {};
 }
 
@@ -235,6 +250,7 @@ DomainStatus URdkDomainAccess::setProperty(const std::string& long_name,
     if(rc != 0)
         return {DomainStatusCode::InvalidPropertyValue,
                 "set_property failed for " + property_name + " on " + long_name};
+    refreshDiagramPresentation(m_sink);
     return {};
 }
 
@@ -255,6 +271,7 @@ DomainStatus URdkDomainAccess::connectComponents(const std::string& from_long_na
     if(rc != 0)
         return {DomainStatusCode::LinkFailed,
                 "connect_components failed (code " + std::to_string(rc) + ")"};
+    refreshDiagramPresentation(m_sink);
     return {};
 }
 

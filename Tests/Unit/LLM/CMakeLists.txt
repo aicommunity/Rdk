@@ -26,6 +26,7 @@ set(RDK_LLM_REGRESSION_FIXTURES_DIR "${CMAKE_SOURCE_DIR}/Rdk/Tests/Fixtures/LLM/
 _add_llm_unit_test(Test_LLM_ArgumentValidator test_llm_argument_validator.cpp)
 _add_llm_unit_test(Test_LLM_Policy test_llm_policy.cpp)
 _add_llm_unit_test(Test_LLM_AutonomousPolicy test_llm_autonomous_policy.cpp)
+_add_llm_unit_test(Test_LLM_WriteToolUserMessage test_llm_write_tool_user_message.cpp)
 _add_llm_unit_test(Test_LLM_IntentParser test_llm_intent_parser.cpp)
 _add_llm_unit_test(Test_LLM_ConfigurationLifecycle test_llm_configuration_lifecycle.cpp)
 _add_llm_unit_test(Test_LLM_LifecycleArgumentGate test_llm_lifecycle_argument_gate.cpp)
