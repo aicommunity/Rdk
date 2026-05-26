@@ -81,6 +81,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-036 | Embedding-based dynamic tool routing | 2026-05-26 | Cancelled MVP: static `ULLMToolFilterBuilder` |
 | TD-043 | Write-tools P1 backlog (policy, add_component, tests) | 2026-05-26 | `ULLMWriteToolPolicy`, `Test_LLM_WriteToolsP1`, `Test_LLM_WriteToolsEngine`, domain writes |
 | TD-042 | Write-tools P1 on live engine | 2026-05-26 | `Test_LLM_WriteToolsEngine` + `test_valid` via `LlmWriteToolsEngineInit` |
+| TD-044 | Write-tools P2 integration | 2026-05-26 | Library write tools, `ULLMWriteArgumentNormalizer`, `PLAN_NEEDS_SNAPSHOT`, `Test_LLM_WriteToolsP2` |
 
 ---
 

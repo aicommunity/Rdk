@@ -1,5 +1,6 @@
 #include "ULLMPolicyEngine.h"
 
+#include "../Domain/ULLMWriteArgumentNormalizer.h"
 #include "../Domain/URdkApplicationCommands.h"
 #include "../Tools/ULLMToolRegistry.h"
 #include "ULLMPathPolicy.h"
@@ -164,6 +165,22 @@ PolicyDecision ULLMPolicyEngine::checkPlan(const ULLMExecutionPlan& plan, const 
             return {false, "PLAN_WRITE_DISABLED", "Plan contains write tools but LLM write is disabled"};
         if(isSavePolicyTool(def->name) && !session.allow_save)
             return {false, "SAVE_DISABLED", "Plan contains save tools but allow_save is false"};
+    }
+
+    bool saw_snapshot = false;
+    for(const ExecutionPlanStep& step : plan.steps)
+    {
+        const LLMToolDefinition* def = registry.find(step.tool_name);
+        if(!def)
+            continue;
+        if(step.tool_name == "get_net_snapshot")
+            saw_snapshot = true;
+        if(isNetGraphWriteTool(step.tool_name) && !saw_snapshot)
+        {
+            return {false,
+                    "PLAN_NEEDS_SNAPSHOT",
+                    "Execution plan must call get_net_snapshot before graph write steps"};
+        }
     }
     return {true, "", ""};
 }

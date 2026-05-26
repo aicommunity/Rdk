@@ -1,6 +1,7 @@
 #include "ULLMToolGateway.h"
 
 #include "ApplicationToolAudit.h"
+#include "../Domain/ULLMWriteArgumentNormalizer.h"
 #include "../Policy/ULLMUserRole.h"
 #include "../Policy/ULLMWriteToolPolicy.h"
 
@@ -86,12 +87,35 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
             return *cached;
     }
 
+    ToolInvokeRequest invoke_req = req;
+    if(writeToolNeedsEntityResolution(req.tool_name))
+    {
+        const WriteArgumentNormalizeResult normalized = normalizeWriteToolArguments(
+            req.tool_name, req.arguments, m_domain, req.session.active_channel_index);
+        if(!normalized.ok)
+        {
+            result.ok = false;
+            result.error_code = normalized.error_code;
+            result.message = normalized.message;
+            if(normalized.needs_clarification)
+                result.result = normalized.clarification;
+            m_audit.append("tool_invoke_finish",
+                           {{"tool_name", req.tool_name},
+                            {"ok", false},
+                            {"error", normalized.error_code},
+                            {"entity_resolution", true}},
+                           req.trace_id, req.session.session_id);
+            return result;
+        }
+        invoke_req.arguments = normalized.normalized_arguments;
+    }
+
     m_audit.append("tool_invoke_start",
                    {{"tool_name", req.tool_name},
                     {"user_role", userRoleName(resolveUserRole(req.session.user_id))}},
                    req.trace_id, req.session.session_id);
 
-    result = m_registry.invokeHandler(req.tool_name, req.arguments);
+    result = m_registry.invokeHandler(invoke_req.tool_name, invoke_req.arguments);
 
     nlohmann::json finish = {{"tool_name", req.tool_name},
                              {"ok", result.ok},

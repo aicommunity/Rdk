@@ -33,6 +33,7 @@ struct ProjectPaths {
 };
 
 class ULLMToolRegistry;
+class URdkDomainAccess;
 
 class ILLMProjectContextProvider {
 public:
@@ -44,7 +45,7 @@ public:
     virtual std::vector<DocSnippet> searchDocs(const std::string& query,
                                                int top_k = 5,
                                                int max_chars = 8000) const = 0;
-    virtual void registerExtraTools(ULLMToolRegistry& registry) {}
+    virtual void registerExtraTools(ULLMToolRegistry& registry, URdkDomainAccess& domain) { (void)registry; (void)domain; }
 };
 
 class ILLMProjectContextProviderRegistry {

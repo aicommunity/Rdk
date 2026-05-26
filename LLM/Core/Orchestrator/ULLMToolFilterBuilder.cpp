@@ -4,22 +4,38 @@ namespace RDK::LLM {
 
 namespace {
 
+std::unordered_set<std::string> kLibraryAssistTools()
+{
+    return {"search_pulse_docs",
+            "list_pulse_component_classes",
+            "search_motion_control_docs",
+            "list_motion_control_component_classes",
+            "search_hardware_docs",
+            "list_hardware_component_classes"};
+}
+
 std::unordered_set<std::string> kQueryTools()
 {
-    return {"get_net_snapshot",
-            "list_registered_classes",
-            "describe_class",
-            "find_component",
-            "get_component_properties",
-            "search_project_docs",
-            "validate_project",
-            "validate_configuration"};
+    auto tools = kLibraryAssistTools();
+    tools.insert({"get_net_snapshot",
+                  "list_registered_classes",
+                  "describe_class",
+                  "find_component",
+                  "get_component_properties",
+                  "search_project_docs",
+                  "validate_project",
+                  "validate_configuration"});
+    return tools;
 }
 
 std::unordered_set<std::string> kMutateTools()
 {
     return {"add_component",
+            "add_pulse_component",
+            "add_motion_component",
             "set_property",
+            "set_pulse_property",
+            "set_motion_property",
             "remove_component",
             "connect_components",
             "disconnect_components",

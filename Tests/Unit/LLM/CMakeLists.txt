@@ -99,6 +99,13 @@ target_include_directories(Test_LLM_KnowledgeCatalog PRIVATE ${CMAKE_SOURCE_DIR}
 _add_llm_unit_test(Test_LLM_WriteToolsAudit test_llm_write_tools_audit.cpp)
 _add_llm_unit_test(Test_LLM_WriteToolsP1 test_llm_write_tools_p1.cpp)
 target_compile_definitions(Test_LLM_WriteToolsP1 PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+_add_llm_unit_test(Test_LLM_WriteToolsP2
+  test_llm_write_tools_p2.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-PulseLib/Llm/RegisterPulseLibLlmTools.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-MotionControlLib/Llm/RegisterMotionControlLibLlmTools.cpp)
+target_include_directories(Test_LLM_WriteToolsP2 PRIVATE
+  ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-PulseLib/Llm
+  ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-MotionControlLib/Llm)
 add_executable(Test_LLM_WriteToolsEngine
   test_llm_write_tools_engine.cpp
   ${CMAKE_SOURCE_DIR}/Tests/Integration/Support/LlmWriteToolsEngineInit.cpp

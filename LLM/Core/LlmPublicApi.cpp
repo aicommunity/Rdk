@@ -49,7 +49,7 @@ void LLMServices::initialize(RDK::UApplication* app, ILLMProjectContextProvider*
 
     RegisterCoreRdkTools(GetToolRegistry(), *m_domain, project_context);
     if(project_context)
-        project_context->registerExtraTools(GetToolRegistry());
+        project_context->registerExtraTools(GetToolRegistry(), *m_domain);
 
     m_gateway = std::make_unique<ULLMToolGateway>(GetToolRegistry(), *m_policy, *m_domain,
                                                   GetAuditLog(), *m_idempotency, *m_validator);

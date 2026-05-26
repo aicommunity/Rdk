@@ -19,12 +19,17 @@ MVP/post-MVP план закрыт. Дальше: **довести write-tools �
 
 **Unit gates:** `ctest -R 'Test_LLM_WriteToolsP1|Test_LLM_WriteToolsEngine'` (engine test needs `Bin/Platform/*` + `NeuroModelerConsole`)
 
-## Приоритет P2 (интеграция)
+## Приоритет P2 (интеграция) ✅
 
-- PulseLib / MotionControlLib **write** tools (сейчас read-only Llm/)
-- HardwareLib: write только если есть domain API
-- Entity resolver для write (canonical long_name в аргументах)
-- Plan steps: write после read snapshot в одном плане
+| Item | Статус | Реализация / тесты |
+|------|--------|-------------------|
+| PulseLib write | done | `add_pulse_component`, `set_pulse_property` |
+| MotionControlLib write | done | `add_motion_component`, `set_motion_property` |
+| HardwareLib write | N/A | Read-only; core `add_component` / `set_property` |
+| Entity resolver для write | done | `ULLMWriteArgumentNormalizer` в gateway |
+| Plan read-before-write | done | `PLAN_NEEDS_SNAPSHOT` в `checkPlan` |
+
+**Unit gates:** `ctest -R 'Test_LLM_WriteToolsP2'`
 
 ## Приоритет P3 (UX / ops)
 

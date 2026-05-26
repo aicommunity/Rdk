@@ -40,7 +40,7 @@ public:
                                                int max_chars = 8000) const = 0;
 
     /// Опционально: регистрация доп. tools библиотеки
-    virtual void registerExtraTools(ULLMToolRegistry& registry) {}
+    virtual void registerExtraTools(ULLMToolRegistry& registry, URdkDomainAccess& domain) {}
 };
 
 class ILLMProjectContextProviderRegistry {
