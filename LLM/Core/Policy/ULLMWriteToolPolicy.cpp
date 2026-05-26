@@ -41,8 +41,7 @@ bool isLowRiskPropertyName(const std::string& property_name)
 
 bool isConfirmationExemptWriteTool(const std::string& tool_name, const nlohmann::json& arguments)
 {
-    if(tool_name != "set_property" && tool_name != "set_pulse_property"
-       && tool_name != "set_motion_property")
+    if(tool_name != "set_property")
         return false;
     if(!arguments.contains("property_name") || !arguments.at("property_name").is_string())
         return false;

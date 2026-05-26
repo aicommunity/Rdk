@@ -8,7 +8,8 @@
 namespace RDK::LLM {
 
 std::string buildAgentManifest(const ULLMToolRegistry& registry, const ToolFilter& filter,
-                               std::size_t max_chars = 6000);
+                               std::size_t max_chars = 6000,
+                               const std::string& user_text = {});
 
 } // namespace RDK::LLM
 

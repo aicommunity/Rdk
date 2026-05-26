@@ -23,8 +23,8 @@ MVP/post-MVP план закрыт. Дальше: **довести write-tools �
 
 | Item | Статус | Реализация / тесты |
 |------|--------|-------------------|
-| PulseLib write | done | `add_pulse_component`, `set_pulse_property` |
-| MotionControlLib write | done | `add_motion_component`, `set_motion_property` |
+| PulseLib / MotionControlLib | done | Read-only `search_*_docs`, `list_*_classes`; mutations via core `add_component` / `set_property` |
+| Library focus from user text | done | `ULLMLibraryScopeHint` in manifest + argument merge (no `add_pulse_*` write tools) |
 | HardwareLib write | N/A | Read-only; core `add_component` / `set_property` |
 | Entity resolver для write | done | `ULLMWriteArgumentNormalizer` в gateway |
 | Plan read-before-write | done | `PLAN_NEEDS_SNAPSHOT` в `checkPlan` |

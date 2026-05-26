@@ -31,11 +31,7 @@ std::unordered_set<std::string> kQueryTools()
 std::unordered_set<std::string> kMutateTools()
 {
     return {"add_component",
-            "add_pulse_component",
-            "add_motion_component",
             "set_property",
-            "set_pulse_property",
-            "set_motion_property",
             "remove_component",
             "connect_components",
             "disconnect_components",

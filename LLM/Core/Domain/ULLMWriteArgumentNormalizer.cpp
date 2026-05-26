@@ -17,10 +17,6 @@ const std::unordered_map<std::string, std::vector<std::string>>& entityFieldsByT
         {"connect_components", {"from_long_name", "to_long_name"}},
         {"disconnect_components", {"from_long_name", "to_long_name"}},
         {"add_component", {"parent_long_name"}},
-        {"add_pulse_component", {"parent_long_name"}},
-        {"add_motion_component", {"parent_long_name"}},
-        {"set_pulse_property", {"long_name"}},
-        {"set_motion_property", {"long_name"}},
     };
     return kMap;
 }
@@ -86,10 +82,6 @@ bool isNetGraphWriteTool(const std::string& tool_name)
         "remove_component",
         "connect_components",
         "disconnect_components",
-        "add_pulse_component",
-        "add_motion_component",
-        "set_pulse_property",
-        "set_motion_property",
     };
     return kTools.count(tool_name) > 0;
 }

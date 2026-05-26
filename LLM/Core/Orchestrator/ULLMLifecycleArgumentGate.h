@@ -16,6 +16,8 @@ class UApplication;
 
 namespace RDK::LLM {
 
+class ULLMToolRegistry;
+
 struct ToolArgumentFieldSpec {
     std::string name;
     std::string type = "string";
@@ -66,6 +68,20 @@ std::string formatArgumentRequestPrompt(const std::string& tool_name,
 std::string toolNameForLifecycleAction(ConfigurationLifecycleAction action);
 
 ConfigurationLifecycleAction lifecycleActionFromToolName(const std::string& tool_name);
+
+bool isGraphAddComponentTool(const std::string& tool_name);
+
+std::vector<ToolArgumentFieldSpec> findMissingFieldsFromToolSchema(const LLMToolDefinition& def,
+                                                                   const nlohmann::json& args);
+
+std::vector<ToolArgumentFieldSpec> findMissingToolArguments(const std::string& tool_name,
+                                                            const nlohmann::json& args,
+                                                            const ULLMToolRegistry& registry);
+
+std::vector<ToolArgumentFieldSpec> findMissingArgumentsForTool(const std::string& tool_name,
+                                                              const nlohmann::json& args,
+                                                              RDK::UApplication* app,
+                                                              const ULLMToolRegistry& registry);
 
 } // namespace RDK::LLM
 

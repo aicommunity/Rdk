@@ -1,10 +1,12 @@
 #include "ULLMLifecycleArgumentGate.h"
 
 #include "../Domain/URdkApplicationCommands.h"
-#include "../Policy/ULLMPathPolicy.h"
+#include "../Tools/ULLMToolRegistry.h"
+#include "ULLMLibraryScopeHint.h"
 
 #include <cctype>
 #include <ctime>
+#include <algorithm>
 #include <regex>
 
 namespace RDK::LLM {
@@ -26,6 +28,56 @@ bool looksLikePathChar(char c)
 {
     return std::isalnum(static_cast<unsigned char>(c)) || c == '/' || c == '\\' || c == '_'
            || c == '-' || c == '.' || c == ':';
+}
+
+bool jsonStringFieldEmpty(const nlohmann::json& args, const char* key)
+{
+    if(!args.contains(key))
+        return true;
+    if(!args[key].is_string())
+        return false;
+    return trim(args[key].get<std::string>()).empty();
+}
+
+std::string defaultShortNameFromClass(const std::string& class_name)
+{
+    if(class_name.empty())
+        return "Component1";
+    std::string sn = class_name;
+    if(!sn.empty() && sn[0] == 'N')
+        sn.erase(sn.begin());
+    if(sn.empty())
+        sn = "Component1";
+    return sn;
+}
+
+void mergeAddComponentArguments(nlohmann::json& args, const std::string& user_text)
+{
+    const std::string trimmed = trim(user_text);
+    if(trimmed.empty())
+        return;
+
+    const LibraryScopeHint scope = detectLibraryScopeFromUserText(user_text);
+
+    if(jsonStringFieldEmpty(args, "class_name"))
+        args["class_name"] = resolveComponentClassName(trimmed, scope);
+    else if(trimmed.find_first_of(" \t\n\r") == std::string::npos && args["class_name"].is_string())
+    {
+        const std::string current = trim(args["class_name"].get<std::string>());
+        args["class_name"] = resolveComponentClassName(current.empty() ? trimmed : current, scope);
+    }
+
+    if(jsonStringFieldEmpty(args, "parent_long_name"))
+        args["parent_long_name"] = "";
+
+    if(jsonStringFieldEmpty(args, "short_name") && args.contains("class_name")
+       && args["class_name"].is_string())
+        args["short_name"] = defaultShortNameFromClass(args["class_name"].get<std::string>());
+    else if(jsonStringFieldEmpty(args, "short_name") && trimmed.find_first_of(" \t\n\r") == std::string::npos)
+        args["short_name"] = defaultShortNameFromClass(trimmed);
+
+    if(!args.contains("channel_index"))
+        args["channel_index"] = 0;
 }
 
 } // namespace
@@ -191,6 +243,13 @@ nlohmann::json mergeArgumentsFromUserText(const PendingToolArguments& pending,
             args["configuration_path"] = trimmed;
         if(!args.contains("if_open_project") && pending.tool_name.find("load") != std::string::npos)
             args["if_open_project"] = "close";
+        return args;
+    }
+
+    if(pending.tool_name == "add_component")
+    {
+        mergeAddComponentArguments(args, user_text);
+        return args;
     }
 
     return args;
@@ -233,8 +292,78 @@ std::string formatArgumentRequestPrompt(const std::string& tool_name,
     default:
         break;
     }
+
+    if(tool_name == "add_component")
+    {
+        prompt += "\nExample: reply `NPulseNeuron` (short name and model root parent are filled "
+                  "automatically).";
+        prompt += "\nOr: `class_name NPulseNeuron short_name Neuron1 parent_long_name \"\"`.";
+        prompt += "\nUse list_registered_classes or list_*_component_classes for valid class names.";
+    }
+
     prompt += "\n\nReply with the missing value(s) in your next message.";
     return prompt;
+}
+
+bool isGraphAddComponentTool(const std::string& tool_name)
+{
+    return tool_name == "add_component";
+}
+
+std::vector<ToolArgumentFieldSpec> findMissingFieldsFromToolSchema(const LLMToolDefinition& def,
+                                                                   const nlohmann::json& args)
+{
+    std::vector<ToolArgumentFieldSpec> missing;
+    if(!def.input_schema.is_object() || !def.input_schema.contains("required"))
+        return missing;
+
+    const nlohmann::json& properties =
+        def.input_schema.value("properties", nlohmann::json::object());
+
+    for(const nlohmann::json& req : def.input_schema["required"])
+    {
+        if(!req.is_string())
+            continue;
+        const std::string key = req.get<std::string>();
+        bool is_missing = !args.contains(key);
+        if(!is_missing && args[key].is_string() && trim(args[key].get<std::string>()).empty()
+           && key != "parent_long_name")
+            is_missing = true;
+        if(is_missing)
+        {
+            ToolArgumentFieldSpec spec;
+            spec.name = key;
+            spec.type = "string";
+            spec.required = true;
+            if(properties.contains(key) && properties[key].is_object())
+                spec.description = properties[key].value("description", key);
+            else
+                spec.description = key;
+            missing.push_back(std::move(spec));
+        }
+    }
+    return missing;
+}
+
+std::vector<ToolArgumentFieldSpec> findMissingToolArguments(const std::string& tool_name,
+                                                            const nlohmann::json& args,
+                                                            const ULLMToolRegistry& registry)
+{
+    const LLMToolDefinition* def = registry.find(tool_name);
+    if(!def)
+        return {};
+    return findMissingFieldsFromToolSchema(*def, args);
+}
+
+std::vector<ToolArgumentFieldSpec> findMissingArgumentsForTool(const std::string& tool_name,
+                                                              const nlohmann::json& args,
+                                                              RDK::UApplication* app,
+                                                              const ULLMToolRegistry& registry)
+{
+    std::vector<ToolArgumentFieldSpec> missing = findMissingLifecycleFields(tool_name, args, app);
+    if(!missing.empty())
+        return missing;
+    return findMissingToolArguments(tool_name, args, registry);
 }
 
 LifecycleArgumentPreflight preflightLifecycleArguments(ConfigurationLifecycleAction action,

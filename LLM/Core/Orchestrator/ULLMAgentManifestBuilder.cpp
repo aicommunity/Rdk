@@ -1,14 +1,18 @@
 #include "ULLMAgentManifestBuilder.h"
 
+#include "ULLMLibraryScopeHint.h"
+
 #include <sstream>
 
 namespace RDK::LLM {
 
 std::string buildAgentManifest(const ULLMToolRegistry& registry, const ToolFilter& filter,
-                               const std::size_t max_chars)
+                               const std::size_t max_chars, const std::string& user_text)
 {
     std::ostringstream oss;
     const std::vector<LLMToolDefinition> tools = registry.listForLlmApi(filter);
+
+    oss << libraryScopeHintManifestSection(detectLibraryScopeFromUserText(user_text));
 
     oss << "## Tools (" << tools.size() << " available)\n";
     for(const LLMToolDefinition& tool : tools)
@@ -23,6 +27,7 @@ std::string buildAgentManifest(const ULLMToolRegistry& registry, const ToolFilte
     oss << "- search_project_docs(scope=docs|sources|all) for product docs and implementation.\n";
     oss << "## Rules\n";
     oss << "- Use write tools only for explicit mutate requests.\n";
+    oss << "- Graph mutations: add_component and set_property only (no library-specific write tools).\n";
     oss << "- Prefer one tool call per step, then inspect tool result.\n";
     oss << "- If no tool can satisfy a mutate request, respond NO_SUITABLE_TOOL.\n";
 

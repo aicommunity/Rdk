@@ -2,6 +2,7 @@
 
 #include "Domain/ULLMWriteArgumentNormalizer.h"
 #include "Domain/URdkDomainAccess.h"
+#include "Orchestrator/ULLMLibraryScopeHint.h"
 #include "Orchestrator/ULLMToolFilterBuilder.h"
 #include "Policy/ULLMPolicyEngine.h"
 #include "Tools/RegisterCoreRdkTools.h"
@@ -26,9 +27,9 @@ bool filterAllows(const ToolFilter& filter, const char* tool)
 TEST(LLMWriteToolsP2, EntityResolutionFlags)
 {
     EXPECT_TRUE(writeToolNeedsEntityResolution("set_property"));
-    EXPECT_TRUE(writeToolNeedsEntityResolution("add_pulse_component"));
+    EXPECT_TRUE(writeToolNeedsEntityResolution("add_component"));
     EXPECT_FALSE(writeToolNeedsEntityResolution("get_net_snapshot"));
-    EXPECT_TRUE(isNetGraphWriteTool("set_motion_property"));
+    EXPECT_TRUE(isNetGraphWriteTool("set_property"));
     EXPECT_FALSE(isNetGraphWriteTool("save_project"));
 }
 
@@ -72,25 +73,38 @@ TEST(LLMWriteToolsP2, PlanRequiresSnapshotBeforeGraphWrite)
     EXPECT_TRUE(allowed.allowed);
 }
 
-TEST(LLMWriteToolsP2, LibraryWriteToolsRegistered)
+TEST(LLMWriteToolsP2, LibraryReadToolsRegisteredNoWriteDuplicates)
 {
     ULLMToolRegistry registry;
     URdkDomainAccess domain(nullptr);
     RegisterPulseLibLlmTools(registry, nullptr, domain);
     RegisterMotionControlLibLlmTools(registry, nullptr, domain);
 
-    EXPECT_NE(registry.find("add_pulse_component"), nullptr);
-    EXPECT_NE(registry.find("set_pulse_property"), nullptr);
-    EXPECT_NE(registry.find("add_motion_component"), nullptr);
-    EXPECT_NE(registry.find("set_motion_property"), nullptr);
-    EXPECT_EQ(registry.find("add_pulse_component")->kind, LLMToolKind::Write);
+    EXPECT_NE(registry.find("search_pulse_docs"), nullptr);
+    EXPECT_NE(registry.find("list_pulse_component_classes"), nullptr);
+    EXPECT_NE(registry.find("search_motion_control_docs"), nullptr);
+    EXPECT_NE(registry.find("list_motion_control_component_classes"), nullptr);
+    EXPECT_EQ(registry.find("add_pulse_component"), nullptr);
+    EXPECT_EQ(registry.find("set_pulse_property"), nullptr);
+    EXPECT_EQ(registry.find("add_motion_component"), nullptr);
+    EXPECT_EQ(registry.find("set_motion_property"), nullptr);
 }
 
-TEST(LLMWriteToolsP2, MutateFilterIncludesLibraryWrites)
+TEST(LLMWriteToolsP2, MutateFilterUsesCoreGraphToolsOnly)
 {
     const ToolFilter filter =
         buildToolFilter(LLMIntentKind::Mutate, true, ConfigurationLifecycleAction::None);
-    EXPECT_TRUE(filterAllows(filter, "add_pulse_component"));
-    EXPECT_TRUE(filterAllows(filter, "set_motion_property"));
+    EXPECT_TRUE(filterAllows(filter, "add_component"));
+    EXPECT_TRUE(filterAllows(filter, "set_property"));
+    EXPECT_FALSE(filterAllows(filter, "add_pulse_component"));
+    EXPECT_FALSE(filterAllows(filter, "set_motion_property"));
     EXPECT_TRUE(filterAllows(filter, "search_pulse_docs"));
+}
+
+TEST(LLMWriteToolsP2, LibraryScopeFromUserText)
+{
+    EXPECT_EQ(detectLibraryScopeFromUserText("добавь pulse нейрон"), LibraryScopeHint::Pulse);
+    EXPECT_EQ(detectLibraryScopeFromUserText("add manipulator"), LibraryScopeHint::Motion);
+    EXPECT_EQ(detectLibraryScopeFromUserText("list components"), LibraryScopeHint::None);
+    EXPECT_EQ(resolveComponentClassName("NPLNeuron", LibraryScopeHint::Pulse), "NPulseNeuron");
 }

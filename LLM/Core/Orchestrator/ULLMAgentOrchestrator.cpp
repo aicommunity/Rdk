@@ -201,7 +201,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             nlohmann::json merged =
                 mergeArgumentsFromUserText(pending, req.user_text, app);
             const std::vector<ToolArgumentFieldSpec> still_missing =
-                findMissingLifecycleFields(pending.tool_name, merged, app);
+                findMissingArgumentsForTool(pending.tool_name, merged, app, m_registry);
             if(!still_missing.empty())
             {
                 pending.partial_arguments = std::move(merged);
@@ -262,7 +262,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
     {
         LLMMessage manifest;
         manifest.role = LLMMessage::Role::System;
-        manifest.content = buildAgentManifest(m_registry, filter);
+        manifest.content = buildAgentManifest(m_registry, filter, 6000, req.user_text);
         provider_messages.insert(provider_messages.begin(), manifest);
     }
 
@@ -488,8 +488,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                     pending.tool_name = call_copy.name;
                     pending.action = lifecycleActionFromToolName(call_copy.name);
                     pending.partial_arguments = call_copy.arguments;
-                    pending.missing_fields =
-                        findMissingLifecycleFields(call_copy.name, call_copy.arguments, app);
+                    pending.missing_fields = findMissingArgumentsForTool(
+                        call_copy.name, call_copy.arguments, app, m_registry);
                     if(pending.missing_fields.empty()
                        && pending.action != ConfigurationLifecycleAction::None)
                         pending.missing_fields = argumentFieldsForLifecycle(pending.action);
@@ -825,7 +825,8 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
         pending.tool_name = tool_name;
         pending.action = lifecycleActionFromToolName(tool_name);
         pending.partial_arguments = arguments;
-        pending.missing_fields = findMissingLifecycleFields(tool_name, arguments, app);
+        pending.missing_fields =
+            findMissingArgumentsForTool(tool_name, arguments, app, m_registry);
         if(pending.missing_fields.empty() && pending.action != ConfigurationLifecycleAction::None)
             pending.missing_fields = argumentFieldsForLifecycle(pending.action);
         GetAuditLog().append("lifecycle_args_requested",
