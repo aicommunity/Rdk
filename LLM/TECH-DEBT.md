@@ -37,9 +37,9 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-051 | Generalized pending disambiguation (not only class) | phase-B | P0 | done | `PendingToolArguments` now carries kind/field/candidates for class/component |
 | TD-052 | Gateway pre-normalize all write entity-resolution tools | phase-B | P0 | done | Generic pre-normalize path for write tools with entity resolution |
 | TD-053 | `connect_components` two-endpoint pending (from → to) | phase-B | P1 | done | Sequential resolution via `from_long_name` then `to_long_name` |
-| TD-054 | `property_name` validation / `list_component_properties` read tool | phase-C | P1 | open | Minimum validation first, read helper in C |
-| TD-055 | `get_net_snapshot.root_long_name` in domain | phase-C | P2 | open | Implement subtree root traversal or document |
-| TD-056 | `list_registered_classes.library_filter` schema drift | phase-C | P2 | open | Align behavior with schema/docs |
+| TD-054 | `property_name` validation / `list_component_properties` read tool | phase-C | P1 | open | Deferred after class/entity read alignment; keep open for dedicated properties pass |
+| TD-055 | `get_net_snapshot.root_long_name` in domain | phase-C | P2 | open | Deferred in C; keep schema/domain alignment task open |
+| TD-056 | `list_registered_classes.library_filter` schema drift | phase-C | P2 | open | Deferred in C; finalize in docs/schema sweep |
 | TD-057 | Unified recent list dedupe rules | phase-D | P1 | open | QSettings + LastProjectsList merge |
 | TD-058 | Recent configurations provider in presentation sink | phase-D | P1 | open | Add sink API + Qt implementation |
 | TD-059 | `show_ui_panel` / `LLMUiPanel` presentation API | phase-E | P1 | open | Introduce panel enum + host mapping |
@@ -127,3 +127,4 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | 2026-05-25 | Post-MVP code in separate plan doc | Implementation tracked in Post-MVP-Implementation-Plan.md | TD-048, TD-035, TD-031/034/036 |
 | 2026-05-26 | Consolidate name/entity resolution in domain helper | Reuse same disambiguation behavior across tools before pending generalization | TD-051/052 |
 | 2026-05-26 | Keep direct gateway calls backward-compatible without user hint pre-normalization | Unit tests and non-orchestrator callers expect confirmation-first behavior | revisit after orchestration-only invoke contract |
+| 2026-05-26 | Deliver read-path class disambiguation first in phase C | `describe_class` now resolves fuzzy/CI names; schema gaps (`root_long_name`, `library_filter`) deferred explicitly | TD-054/055/056 |

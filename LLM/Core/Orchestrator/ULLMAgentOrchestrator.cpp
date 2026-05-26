@@ -74,8 +74,6 @@ bool extractAmbiguousFindComponent(const ToolGatewayResult& tr, nlohmann::json& 
 
 bool extractToolDisambiguationPayload(const ToolGatewayResult& tr, nlohmann::json& payload_out)
 {
-    if(tr.ok)
-        return false;
     if(!tr.result.is_object() || !tr.result.value("ambiguous", false))
         return false;
     const nlohmann::json candidates = tr.result.value("candidates", nlohmann::json::array());

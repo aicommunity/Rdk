@@ -5,6 +5,7 @@
 #include "../LlmPublicApi.h"
 #include "../Domain/URdkDomainAccess.h"
 #include "../Domain/URdkEntityResolver.h"
+#include "../Domain/ULLMNameResolution.h"
 #include "RegisterApplicationTools.h"
 #include "ULLMToolRegistry.h"
 
@@ -87,7 +88,25 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                 {{"type", "object"}}),
         [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
             ToolGatewayResult r;
-            const std::string cn = args.at("class_name").get<std::string>();
+            std::string cn = args.at("class_name").get<std::string>();
+            std::vector<std::string> registered;
+            if(domain_access->listRegisteredClassNames(registered).ok() && !registered.empty())
+            {
+                const RegisteredClassResolution resolved = resolveRegisteredClassName(cn, registered);
+                if(resolved.status == RegisteredClassResolution::Status::Resolved)
+                    cn = resolved.class_name;
+                else if(resolved.status == RegisteredClassResolution::Status::Ambiguous)
+                {
+                    r.ok = true;
+                    r.result["ambiguous"] = true;
+                    r.result["kind"] = "class";
+                    r.result["query"] = cn;
+                    r.result["candidates"] = nlohmann::json::array();
+                    for(const auto& [name, score] : resolved.candidates)
+                        r.result["candidates"].push_back({{"class_name", name}, {"score", score}});
+                    return r;
+                }
+            }
             if(project_ctx)
                 r.result["cl_desc_xml_fragment"] = project_ctx->clDescFragment(cn);
             else

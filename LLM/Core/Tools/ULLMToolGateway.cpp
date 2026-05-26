@@ -47,7 +47,8 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
 
     ToolInvokeRequest working_req = req;
     bool write_pre_normalized = false;
-    if(writeToolNeedsEntityResolution(req.tool_name) && !req.user_text_hint.empty())
+    if(writeToolNeedsEntityResolution(req.tool_name) && !req.confirmed
+       && !req.user_text_hint.empty())
     {
         const WriteArgumentNormalizeResult pre = normalizeWriteToolArguments(
             req.tool_name, req.arguments, m_domain, req.session.active_channel_index,
@@ -116,7 +117,7 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
     }
 
     ToolInvokeRequest invoke_req = working_req;
-    if(writeToolNeedsEntityResolution(req.tool_name) && !write_pre_normalized)
+    if(writeToolNeedsEntityResolution(req.tool_name) && !req.confirmed && !write_pre_normalized)
     {
         const WriteArgumentNormalizeResult normalized = normalizeWriteToolArguments(
             working_req.tool_name, working_req.arguments, m_domain,
