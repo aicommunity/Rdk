@@ -189,6 +189,44 @@ TEST(LLMWriteToolsP1, CopyConfigurationRequiresPathAndConfirmation)
     unsetenv("NMSDK_LLM_PATH_POLICY_STRICT");
 }
 
+TEST(LLMWriteToolsP1, RemoveComponentRequiresConfirmation)
+{
+    GatewayHarness h;
+    ToolInvokeRequest req;
+    req.tool_name = "remove_component";
+    req.arguments = {{"long_name", "PGenerator"}, {"channel_index", 0}};
+    req.session.project_loaded = true;
+    req.session.llm_write_enabled = true;
+    req.session.user_id = 1;
+
+    const ToolGatewayResult r = h.gateway.invoke(req);
+    EXPECT_TRUE(r.pending_confirmation);
+}
+
+TEST(LLMWriteToolsP1, SaveConfigurationDeniedWhenAllowSaveFalse)
+{
+    GatewayHarness h;
+    ToolInvokeRequest req;
+    req.tool_name = "save_configuration";
+    req.arguments = nlohmann::json::object();
+    req.session.project_loaded = true;
+    req.session.llm_write_enabled = true;
+    req.session.allow_save = false;
+    req.session.user_id = 1;
+    req.confirmed = true;
+
+    const ToolGatewayResult r = h.gateway.invoke(req);
+    EXPECT_FALSE(r.ok);
+    EXPECT_FALSE(r.pending_confirmation);
+}
+
+TEST(LLMWriteToolsP1, DisconnectComponentsInMutateFilter)
+{
+    const ToolFilter filter =
+        buildToolFilter(LLMIntentKind::Mutate, true, ConfigurationLifecycleAction::None);
+    EXPECT_TRUE(filterAllows(filter, "disconnect_components"));
+}
+
 TEST(LLMWriteToolsP1, ChannelCalcRegisteredWithSchema)
 {
     GatewayHarness h;

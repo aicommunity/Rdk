@@ -99,6 +99,32 @@ target_include_directories(Test_LLM_KnowledgeCatalog PRIVATE ${CMAKE_SOURCE_DIR}
 _add_llm_unit_test(Test_LLM_WriteToolsAudit test_llm_write_tools_audit.cpp)
 _add_llm_unit_test(Test_LLM_WriteToolsP1 test_llm_write_tools_p1.cpp)
 target_compile_definitions(Test_LLM_WriteToolsP1 PRIVATE CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+add_executable(Test_LLM_WriteToolsEngine
+  test_llm_write_tools_engine.cpp
+  ${CMAKE_SOURCE_DIR}/Tests/Integration/Support/LlmWriteToolsEngineInit.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Libraries.cpp)
+target_link_libraries(Test_LLM_WriteToolsEngine PRIVATE GTest::gtest GTest::gtest_main
+  rdk.llm.core rdk.static.qt
+  Rdk-BasicLib.qt Rdk-CvBasicLib.qt Rdk-HardwareLib.qt
+  Nmsdk-PulseLib.qt Nmsdk-MotionControlLib.qt)
+target_include_directories(Test_LLM_WriteToolsEngine PRIVATE
+  ${CMAKE_SOURCE_DIR}/Rdk/LLM/Core
+  ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include
+  ${CMAKE_SOURCE_DIR}/Rdk/Core
+  ${CMAKE_SOURCE_DIR}/Tests/Integration/Support
+  ${CMAKE_SOURCE_DIR}/Libraries)
+target_compile_definitions(Test_LLM_WriteToolsEngine PRIVATE
+  CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}" RDK_LIB_TYPE= RDK_CALL=)
+add_test(NAME Test_LLM_WriteToolsEngine COMMAND Test_LLM_WriteToolsEngine)
+if(WIN32)
+  set(_LLM_ENGINE_TEST_CWD "${CMAKE_SOURCE_DIR}/Bin/Platform/Win")
+else()
+  set(_LLM_ENGINE_TEST_CWD "${CMAKE_SOURCE_DIR}/Bin/Platform/Linux")
+endif()
+set_tests_properties(Test_LLM_WriteToolsEngine PROPERTIES
+  WORKING_DIRECTORY "${_LLM_ENGINE_TEST_CWD}")
+set_target_properties(Test_LLM_WriteToolsEngine PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY "${_LLM_ENGINE_TEST_CWD}")
 _add_llm_unit_test(Test_LLM_EmbeddedProvider test_llm_embedded_provider.cpp)
 if(RDK_LLM_BUILD_EMBEDDED)
   target_compile_definitions(Test_LLM_EmbeddedProvider PRIVATE RDK_LLM_EMBEDDED=1)

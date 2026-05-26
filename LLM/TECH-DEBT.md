@@ -32,7 +32,6 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Target | Priority | Status | Notes |
 |----|------|--------|----------|--------|-------|
-| TD-042 | Write-tools P1 on live engine (add/connect with open project) | post-MVP | P2 | open | Unit gate `Test_LLM_WriteToolsP1`; needs `UApplication` + model |
 | TD-041 | Manual NeuroModeler GUI write-tools walkthrough (real Configs on disk) | post-MVP | P2 | open | Automated gate in TD-030; see Application-Commands.md checklist |
 
 ---
@@ -80,7 +79,8 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-031 | YAML knowledge manifest + federation | 2026-05-26 | Cancelled MVP: C++ catalog; revisit TD-031 if YAML needed |
 | TD-034 | Function-level source chunking | 2026-05-26 | Cancelled MVP: 120-line file excerpts; ctags post-MVP |
 | TD-036 | Embedding-based dynamic tool routing | 2026-05-26 | Cancelled MVP: static `ULLMToolFilterBuilder` |
-| TD-043 | Write-tools P1 backlog (policy, add_component, tests) | 2026-05-26 | `ULLMWriteToolPolicy`, `Test_LLM_WriteToolsP1`, domain `addComponent` fix |
+| TD-043 | Write-tools P1 backlog (policy, add_component, tests) | 2026-05-26 | `ULLMWriteToolPolicy`, `Test_LLM_WriteToolsP1`, `Test_LLM_WriteToolsEngine`, domain writes |
+| TD-042 | Write-tools P1 on live engine | 2026-05-26 | `Test_LLM_WriteToolsEngine` + `test_valid` via `LlmWriteToolsEngineInit` |
 
 ---
 

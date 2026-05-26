@@ -158,6 +158,11 @@ DomainStatus URdkDomainAccess::addComponent(const std::string& class_name,
                                             std::string& out_long_name)
 {
     (void)short_name;
+    const DomainSessionInfo session = sessionInfo();
+    if(!session.engine_ready)
+        return {DomainStatusCode::NotInitialized, "Engine not ready"};
+    if(m_app && !session.project_loaded)
+        return {DomainStatusCode::ProjectNotLoaded, "No configuration is open"};
     const char* added =
         MModel_AddComponent(channel_index, parent_long_name.c_str(), class_name.c_str());
     if(!added || !added[0])
@@ -176,6 +181,11 @@ DomainStatus URdkDomainAccess::addComponent(const std::string& class_name,
 
 DomainStatus URdkDomainAccess::removeComponent(const std::string& long_name, int channel_index)
 {
+    const DomainSessionInfo session = sessionInfo();
+    if(!session.engine_ready)
+        return {DomainStatusCode::NotInitialized, "Engine not ready"};
+    if(m_app && !session.project_loaded)
+        return {DomainStatusCode::ProjectNotLoaded, "No configuration is open"};
     const int rc = MModel_DelComponent(channel_index, "", long_name.c_str());
     if(rc != 0)
         return {DomainStatusCode::LinkFailed,
@@ -207,6 +217,11 @@ DomainStatus URdkDomainAccess::setProperty(const std::string& long_name,
                                            int channel_index,
                                            std::string* previous_value_out)
 {
+    const DomainSessionInfo session = sessionInfo();
+    if(!session.engine_ready)
+        return {DomainStatusCode::NotInitialized, "Engine not ready"};
+    if(m_app && !session.project_loaded)
+        return {DomainStatusCode::ProjectNotLoaded, "No configuration is open"};
     if(previous_value_out)
     {
         bool had = false;
@@ -229,6 +244,11 @@ DomainStatus URdkDomainAccess::connectComponents(const std::string& from_long_na
                                                  const std::string& to_property,
                                                  int channel_index)
 {
+    const DomainSessionInfo session = sessionInfo();
+    if(!session.engine_ready)
+        return {DomainStatusCode::NotInitialized, "Engine not ready"};
+    if(m_app && !session.project_loaded)
+        return {DomainStatusCode::ProjectNotLoaded, "No configuration is open"};
     const int rc = MModel_CreateLinkByName(channel_index, from_long_name.c_str(),
                                            from_property.c_str(), to_long_name.c_str(),
                                            to_property.c_str());
@@ -245,6 +265,11 @@ DomainStatus URdkDomainAccess::breakComponentLink(const std::string& from_long_n
                                                   int channel_index)
 {
     (void)channel_index;
+    const DomainSessionInfo session = sessionInfo();
+    if(!session.engine_ready)
+        return {DomainStatusCode::NotInitialized, "Engine not ready"};
+    if(m_app && !session.project_loaded)
+        return {DomainStatusCode::ProjectNotLoaded, "No configuration is open"};
     const int rc = Model_BreakLinkByName(from_long_name.c_str(), from_property.c_str(),
                                          to_long_name.c_str(), to_property.c_str());
     if(rc != 0)

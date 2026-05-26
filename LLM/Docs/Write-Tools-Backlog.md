@@ -17,7 +17,7 @@ MVP/post-MVP план закрыт. Дальше: **довести write-tools �
 | `validate_configuration` | done | `Test_LLM_E2eLabCommands` |
 | Channel calc tools | done | В `kMutateTools`; `Test_LLM_WriteToolsP1` registry |
 
-**Unit gate:** `ctest -R Test_LLM_WriteToolsP1`
+**Unit gates:** `ctest -R 'Test_LLM_WriteToolsP1|Test_LLM_WriteToolsEngine'` (engine test needs `Bin/Platform/*` + `NeuroModelerConsole`)
 
 ## Приоритет P2 (интеграция)
 

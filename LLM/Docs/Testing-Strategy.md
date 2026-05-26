@@ -17,7 +17,7 @@
 
 **CI `ci-llm-linux.sh`:** `cmake -DRDK_USE_LLM=ON` + ctest `Rdk/Tests/Unit/LLM` (44+ targets, incl.
 `Test_LLM_RegressionFixtures`, `Test_LLM_KnowledgeCatalog`, `Test_LLM_WriteToolsAudit`, `Test_LLM_WriteToolsP1`,
-`Test_LLM_DocRetrieval`).
+`Test_LLM_WriteToolsEngine` (live engine + `test_valid`), `Test_LLM_DocRetrieval`).
 
 ---
 
