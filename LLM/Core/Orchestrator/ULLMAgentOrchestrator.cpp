@@ -24,6 +24,7 @@
 #include "ULLMPlanExecutor.h"
 #include "../Knowledge/ULLMDynamicToolRouter.h"
 #include "../Policy/ULLMAutonomousPolicy.h"
+#include "../Domain/ULLMWriteArgumentNormalizer.h"
 
 namespace RDK::LLM {
 
@@ -42,11 +43,9 @@ std::string formatClarificationMessage(const nlohmann::json& payload)
         int index = 1;
         for(const auto& c : candidates)
         {
-            oss << index++ << ". " << c.value("class_name", "");
-            if(c.contains("score"))
-                oss << " (score " << c.value("score", 0.0) << ")";
-            oss << "\n";
+            oss << index++ << ". " << c.value("class_name", "") << "\n";
         }
+        oss << "\nReply with the exact class name from the list (e.g. `NLPNeuron`).";
         return oss.str();
     }
 
@@ -250,8 +249,15 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
     if(state.pending_tool_arguments)
     {
         PendingToolArguments pending = *state.pending_tool_arguments;
-        if(lifecycle_action != ConfigurationLifecycleAction::None
-           && lifecycle_action != pending.action)
+        const std::string trimmed_user = req.user_text;
+        const bool user_picked_single_class =
+            trimmed_user.find_first_of(" \t\n\r") == std::string::npos && !trimmed_user.empty();
+        if(pending.tool_name == "add_component"
+           && (!user_picked_single_class
+               || lifecycle_action != ConfigurationLifecycleAction::None))
+            m_store.clearPendingToolArguments(req.session_id);
+        else if(lifecycle_action != ConfigurationLifecycleAction::None
+                && lifecycle_action != pending.action)
             m_store.clearPendingToolArguments(req.session_id);
         else
         {
@@ -562,9 +568,13 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 nlohmann::json disambiguation;
                 if(extractToolDisambiguationPayload(tr, disambiguation))
                 {
+                    if(disambiguation.value("kind", "") == "class")
+                        return returnClassDisambiguationRequest(state, req.trace_id, call,
+                                                                disambiguation);
                     final.needs_entity_clarification = true;
                     final.needs_tool_disambiguation = true;
-                    final.clarification_candidates = disambiguation.value("candidates", nlohmann::json::array());
+                    final.clarification_candidates =
+                        disambiguation.value("candidates", nlohmann::json::array());
                     final.text = formatClarificationMessage(disambiguation);
                     m_store.persistToDisk(req.session_id);
                     return final;
@@ -624,9 +634,13 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 nlohmann::json disambiguation;
                 if(extractToolDisambiguationPayload(tr, disambiguation))
                 {
+                    if(disambiguation.value("kind", "") == "class")
+                        return returnClassDisambiguationRequest(state, req.trace_id, call_copy,
+                                                                disambiguation);
                     final.needs_entity_clarification = true;
                     final.needs_tool_disambiguation = true;
-                    final.clarification_candidates = disambiguation.value("candidates", nlohmann::json::array());
+                    final.clarification_candidates =
+                        disambiguation.value("candidates", nlohmann::json::array());
                     final.text = formatClarificationMessage(disambiguation);
                     m_store.persistToDisk(req.session_id);
                     return final;
@@ -884,6 +898,41 @@ LLMFinalResponse ULLMAgentOrchestrator::rollbackPlanExecution(const std::string&
     return final;
 }
 
+LLMFinalResponse ULLMAgentOrchestrator::returnClassDisambiguationRequest(
+    ConversationState& state, const std::string& trace_id, const LLMToolCall& call,
+    const nlohmann::json& disambiguation)
+{
+    LLMFinalResponse final;
+    PendingToolArguments pending;
+    pending.tool_name = call.name;
+    pending.partial_arguments =
+        call.arguments.is_object() ? call.arguments : nlohmann::json::object();
+    pending.action = ConfigurationLifecycleAction::None;
+    pending.created_at_unix_sec = confirmationNowUnixSec();
+    ToolArgumentFieldSpec field;
+    field.name = "class_name";
+    field.type = "string";
+    field.description = "Registered component class (reply with an exact name from the list)";
+    pending.missing_fields = {field};
+    m_store.setPendingToolArguments(state.session_id, pending);
+
+    const std::string prompt = formatClarificationMessage(disambiguation);
+    LLMMessage assistant_msg;
+    assistant_msg.role = LLMMessage::Role::Assistant;
+    assistant_msg.content = prompt;
+    m_store.appendMessage(state.session_id, assistant_msg);
+
+    final.ok = true;
+    final.needs_argument_clarification = true;
+    final.needs_tool_disambiguation = true;
+    final.needs_entity_clarification = true;
+    final.clarification_candidates = disambiguation.value("candidates", nlohmann::json::array());
+    final.text = prompt;
+    setWorkflowPhase(state, LLMWorkflowPhase::Idle, trace_id);
+    m_store.persistToDisk(state.session_id);
+    return final;
+}
+
 LLMFinalResponse ULLMAgentOrchestrator::returnArgumentRequest(ConversationState& state,
                                                               const std::string& trace_id,
                                                               const PendingToolArguments& pending_in,
@@ -972,7 +1021,10 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
     }
 
     final.ok = tr.ok;
-    final.text = formatLifecycleToolUserMessage(tool_name, tr);
+    if(tool_name == "add_component" || isNetGraphWriteTool(tool_name))
+        final.text = formatWriteToolUserMessage(tool_name, tr);
+    else
+        final.text = formatLifecycleToolUserMessage(tool_name, tr);
     if(!tr.ok && !tr.message.empty())
         final.error = tr.message;
     setWorkflowPhase(state, LLMWorkflowPhase::Completed, trace_id);

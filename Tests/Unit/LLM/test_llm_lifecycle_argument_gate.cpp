@@ -82,6 +82,17 @@ TEST(LLMLifecycleArgumentGate, FormatPromptMentionsTool)
     EXPECT_NE(prompt.find("configuration_path"), std::string::npos);
 }
 
+TEST(LLMLifecycleArgumentGate, MergeAddComponentUserPicksExactClass)
+{
+    PendingToolArguments pending;
+    pending.tool_name = "add_component";
+    pending.partial_arguments = {{"class_name", "SpikeSource"}, {"parent_long_name", ""}};
+
+    const nlohmann::json merged = mergeArgumentsFromUserText(pending, "NLPNeuron", nullptr);
+    EXPECT_EQ(merged["class_name"], "NLPNeuron");
+    EXPECT_EQ(merged["short_name"], "LPNeuron");
+}
+
 TEST(LLMLifecycleArgumentGate, MergeAddComponentFromTypoClassName)
 {
     PendingToolArguments pending;

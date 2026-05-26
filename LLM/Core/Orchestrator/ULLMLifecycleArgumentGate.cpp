@@ -59,13 +59,15 @@ void mergeAddComponentArguments(nlohmann::json& args, const std::string& user_te
 
     const LibraryScopeHint scope = detectLibraryScopeFromUserText(user_text);
 
-    if(jsonStringFieldEmpty(args, "class_name"))
-        args["class_name"] = resolveComponentClassName(trimmed, scope);
-    else if(trimmed.find_first_of(" \t\n\r") == std::string::npos && args["class_name"].is_string())
+    if(trimmed.find_first_of(" \t\n\r") == std::string::npos)
     {
-        const std::string current = trim(args["class_name"].get<std::string>());
-        args["class_name"] = resolveComponentClassName(current.empty() ? trimmed : current, scope);
+        // User picked or typed a single class name (follow-up after disambiguation).
+        const std::string picked = resolveKnownClassAlias(trimmed);
+        args["class_name"] = picked;
+        args["short_name"] = defaultShortNameFromClass(picked);
     }
+    else if(jsonStringFieldEmpty(args, "class_name"))
+        args["class_name"] = resolveComponentClassName(trimmed, scope);
 
     if(jsonStringFieldEmpty(args, "parent_long_name"))
         args["parent_long_name"] = "";

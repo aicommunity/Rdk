@@ -146,7 +146,8 @@ bool toolInvokeNeedsArgumentClarification(const std::string& tool_name,
 {
     if(result.ok)
         return false;
-    if(result.error_code == "SchemaValidationFailed" || result.error_code == "ARGS_REQUIRED")
+    if(result.error_code == "SchemaValidationFailed" || result.error_code == "ARGS_REQUIRED"
+       || result.error_code == "CLASS_AMBIGUOUS" || result.error_code == "CLASS_NOT_REGISTERED")
         return true;
     if(result.error_code == "PATH_NOT_ALLOWED"
        && (tool_name == "load_configuration" || tool_name == "load_project"

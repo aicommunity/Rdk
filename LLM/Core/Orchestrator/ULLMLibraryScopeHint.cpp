@@ -86,18 +86,6 @@ std::string resolveInAllowlist(const std::string& query, const std::unordered_se
     return trimmed;
 }
 
-std::string resolveKnownClassAlias(const std::string& query)
-{
-    const std::string lower = toLower(query);
-    if(lower == "nplneuron")
-        return "NPulseNeuron";
-    if(lower == "нейрон" || lower == "neuron")
-        return "NPulseNeuron";
-    if(lower == "синапс" || lower == "synapse")
-        return "NPulseSynapseStdp";
-    return query;
-}
-
 std::string resolveAcrossLibraryAllowlists(const std::string& query)
 {
     const std::string aliased = resolveKnownClassAlias(query);
@@ -126,6 +114,18 @@ std::string resolveAcrossLibraryAllowlists(const std::string& query)
 }
 
 } // namespace
+
+std::string resolveKnownClassAlias(const std::string& query)
+{
+    const std::string lower = toLower(query);
+    if(lower == "nplneuron")
+        return "NPulseNeuron";
+    if(lower == "нейрон" || lower == "neuron")
+        return "NPulseNeuron";
+    if(lower == "синапс" || lower == "synapse")
+        return "NPulseSynapseStdp";
+    return query;
+}
 
 LibraryScopeHint detectLibraryScopeFromUserText(const std::string& user_text)
 {

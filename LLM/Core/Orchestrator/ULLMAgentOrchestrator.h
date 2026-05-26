@@ -90,6 +90,11 @@ private:
                                            const PendingToolArguments& pending,
                                            RDK::UApplication* app);
 
+    LLMFinalResponse returnClassDisambiguationRequest(ConversationState& state,
+                                                      const std::string& trace_id,
+                                                      const LLMToolCall& call,
+                                                      const nlohmann::json& disambiguation);
+
     static constexpr int kMaxRounds = kDefaultMaxToolRounds;
 };
 

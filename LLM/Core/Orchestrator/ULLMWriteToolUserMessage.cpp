@@ -27,7 +27,12 @@ std::string formatWriteToolUserMessage(const std::string& tool_name, const ToolG
 
     if(tool_name == "add_component")
     {
+        const std::string class_name = tr.result.value("class_name", "");
         const std::string long_name = tr.result.value("long_name", "");
+        if(!class_name.empty() && !long_name.empty())
+            return "Component added: " + class_name + " (" + long_name + ")";
+        if(!class_name.empty())
+            return "Component added: " + class_name;
         if(!long_name.empty())
             return "Component added: " + long_name;
         return "Component added to the model.";

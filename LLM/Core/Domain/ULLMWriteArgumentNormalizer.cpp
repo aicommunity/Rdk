@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <optional>
 #include <unordered_map>
 
 namespace RDK::LLM {
@@ -29,6 +30,17 @@ const std::unordered_map<std::string, std::vector<std::string>>& entityFieldsByT
 bool isRegisteredClass(const std::vector<std::string>& registered, const std::string& name)
 {
     return std::find(registered.begin(), registered.end(), name) != registered.end();
+}
+
+std::string trimCopy(const std::string& s)
+{
+    size_t b = 0;
+    while(b < s.size() && std::isspace(static_cast<unsigned char>(s[b])))
+        ++b;
+    size_t e = s.size();
+    while(e > b && std::isspace(static_cast<unsigned char>(s[e - 1])))
+        --e;
+    return s.substr(b, e - b);
 }
 
 std::string toLowerAscii(std::string s)
@@ -86,9 +98,10 @@ std::vector<ClassCandidate> findSimilarRegisteredClasses(const std::string& quer
         const double norm = maxlen > 0 ? (static_cast<double>(dist) / static_cast<double>(maxlen)) : 1.0;
         double score = 1.0 - norm; // 1 is exact
         if(!q.empty() && cl.find(q) != std::string::npos)
-            score += 0.25;
-        if(!q.empty() && cl.rfind(q, 0) == 0) // prefix
             score += 0.15;
+        if(!q.empty() && cl.rfind(q, 0) == 0) // prefix
+            score += 0.1;
+        score = std::min(1.0, score);
         if(score < 0.35)
             continue;
         out.push_back({c, score});
@@ -102,6 +115,64 @@ std::vector<ClassCandidate> findSimilarRegisteredClasses(const std::string& quer
     if(out.size() > max_candidates)
         out.resize(max_candidates);
     return out;
+}
+
+std::optional<std::string> findExactRegisteredClass(const std::string& query,
+                                                    const std::vector<std::string>& registered)
+{
+    if(query.empty())
+        return std::nullopt;
+    const std::string q = toLowerAscii(query);
+    for(const std::string& c : registered)
+    {
+        if(toLowerAscii(c) == q)
+            return c;
+    }
+    const std::string aliased = resolveKnownClassAlias(query);
+    if(aliased != query)
+    {
+        const std::string al = toLowerAscii(aliased);
+        for(const std::string& c : registered)
+        {
+            if(toLowerAscii(c) == al)
+                return c;
+        }
+    }
+    return std::nullopt;
+}
+
+std::string extractClassNameQuery(const std::string& class_name_field, const std::string& user_text)
+{
+    const std::string from_field = trimCopy(class_name_field);
+    if(!from_field.empty())
+        return from_field;
+
+    const std::string trimmed = trimCopy(user_text);
+    if(trimmed.empty())
+        return trimmed;
+    if(trimmed.find_first_of(" \t\n\r") == std::string::npos)
+        return trimmed;
+
+    const std::string lower = toLowerAscii(trimmed);
+    static const char* kKeywords[] = {"нейрон",
+                                      "neuron",
+                                      "синапс",
+                                      "synapse",
+                                      "membrane",
+                                      "мембран",
+                                      "manipulator",
+                                      "манипулятор",
+                                      nullptr};
+    for(const char** kw = kKeywords; *kw; ++kw)
+    {
+        if(lower.find(*kw) != std::string::npos)
+            return *kw;
+    }
+
+    const size_t last_space = trimmed.find_last_of(" \t\n\r");
+    if(last_space != std::string::npos && last_space + 1 < trimmed.size())
+        return trimCopy(trimmed.substr(last_space + 1));
+    return trimmed;
 }
 
 bool normalizeAddComponentArguments(nlohmann::json& args, URdkDomainAccess& domain,
@@ -125,17 +196,18 @@ bool normalizeAddComponentArguments(nlohmann::json& args, URdkDomainAccess& doma
         std::string class_name = args.value("class_name", "");
         if(!isRegisteredClass(registered, class_name))
         {
-            const std::string query = !class_name.empty() ? class_name : user_text;
+            const std::string query = extractClassNameQuery(class_name, user_text);
+            if(const std::optional<std::string> exact = findExactRegisteredClass(query, registered))
+            {
+                args["class_name"] = *exact;
+            }
+            else
+            {
             const std::vector<ClassCandidate> candidates =
                 findSimilarRegisteredClasses(query, registered, 8);
 
-            if(candidates.size() == 1 && candidates[0].score >= 0.78)
-            {
-                args["class_name"] = candidates[0].class_name;
-            }
-            else if(!candidates.empty()
-                    && candidates[0].score >= 0.75
-                    && (candidates.size() == 1 || (candidates[0].score - candidates[1].score) >= 0.18))
+            if(candidates.size() == 1
+               && levenshteinDistance(toLowerAscii(query), toLowerAscii(candidates[0].class_name)) == 0)
             {
                 args["class_name"] = candidates[0].class_name;
             }
@@ -164,15 +236,13 @@ bool normalizeAddComponentArguments(nlohmann::json& args, URdkDomainAccess& doma
                 }
                 return false;
             }
+            }
         }
     }
     else if(!user_text.empty())
     {
         const LibraryScopeHint scope = detectLibraryScopeFromUserText(user_text);
-        if(const std::optional<std::string> inferred =
-               inferAddComponentClassFromUserText(user_text, {}))
-            args["class_name"] = *inferred;
-        else if(args.contains("class_name") && args["class_name"].is_string())
+        if(args.contains("class_name") && args["class_name"].is_string())
             args["class_name"] = resolveComponentClassName(args["class_name"].get<std::string>(), scope);
         else
             args["class_name"] = resolveComponentClassName(user_text, scope);

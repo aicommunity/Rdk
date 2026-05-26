@@ -20,6 +20,9 @@ const std::unordered_set<std::string>* componentClassAllowlistForScope(LibrarySc
 /// When scope is set, fuzzy-match token to that library's classes; otherwise return trimmed token.
 std::string resolveComponentClassName(const std::string& query, LibraryScopeHint scope);
 
+/// Common typos / RU aliases (e.g. NPLNeuron → NPulseNeuron).
+std::string resolveKnownClassAlias(const std::string& query);
+
 /// Map RU/EN user message to a registered class when keywords match (e.g. «нейрон» → NPulseNeuron).
 std::optional<std::string>
 inferAddComponentClassFromUserText(const std::string& user_text,

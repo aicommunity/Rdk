@@ -225,6 +225,7 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                 args.at("short_name").get<std::string>(), args.value("channel_index", 0), out_name);
             r.ok = st.ok();
             r.result["long_name"] = out_name;
+            r.result["class_name"] = args.at("class_name").get<std::string>();
             if(!r.ok)
             {
                 r.error_code = "DomainError";
