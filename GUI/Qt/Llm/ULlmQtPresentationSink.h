@@ -37,7 +37,7 @@ private:
     UGEngineControlWidget* m_host = nullptr;
     ULlmGuiContextBridge* m_bridge = nullptr;
     RDK::LLM::LLMPresentationEvent m_pending;
-    std::mutex m_host_mu;
+    mutable std::mutex m_host_mu;
     std::function<RDK::LLM::ApplicationCommandResult()> m_pending_host_run;
     RDK::LLM::ApplicationCommandResult m_pending_host_result{};
     mutable std::function<nlohmann::json()> m_pending_host_list_run;

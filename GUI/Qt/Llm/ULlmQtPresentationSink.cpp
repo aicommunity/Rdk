@@ -79,7 +79,8 @@ nlohmann::json ULlmQtPresentationSink::listLlmUiPanelsState() const
 
     const int timeout_ms = defaultInvokeTimeoutMs();
     auto fut = std::async(std::launch::async, [this]() {
-        QMetaObject::invokeMethod(this, "runHostListUiPanelsOnGuiThread",
+        QMetaObject::invokeMethod(const_cast<ULlmQtPresentationSink*>(this),
+                                  "runHostListUiPanelsOnGuiThread",
                                   Qt::BlockingQueuedConnection);
     });
     if(fut.wait_for(std::chrono::milliseconds(timeout_ms)) != std::future_status::ready)
