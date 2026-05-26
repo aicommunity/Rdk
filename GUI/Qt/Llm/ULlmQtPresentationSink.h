@@ -19,6 +19,8 @@ public:
 
     void apply(const RDK::LLM::LLMPresentationEvent& event) override;
 
+    std::vector<std::string> recentConfigurationPaths() const override;
+
     RDK::LLM::ApplicationCommandResult invokeHostSynchronized(
         const std::function<RDK::LLM::ApplicationCommandResult()>& run) override;
 

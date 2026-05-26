@@ -220,6 +220,57 @@ void RegisterApplicationTools(ULLMToolRegistry& registry)
         });
 
     registry.registerTool(
+        makeAppDef("list_recent_configurations", LLMToolKind::Read,
+                   "List recent configurations (deduped). Index is 1-based.",
+                   {{"type", "object"}, {"additionalProperties", false}}, false, false),
+        [](const nlohmann::json& args) -> ToolGatewayResult {
+            (void)args;
+            return invokeApplicationTool(activeSink(), [&]() {
+                ApplicationCommandResult r;
+                r.status = {};
+                r.payload = commands().listRecentConfigurations();
+                r.presentation = LLMPresentationEffect::None;
+                return r;
+            });
+        });
+
+    const nlohmann::json openRecentInputSchema = []() {
+        nlohmann::json schema;
+        schema["type"] = "object";
+        schema["additionalProperties"] = false;
+        schema["properties"] = {
+            {"index", {{"type", "integer"}, {"minimum", 1}}},
+            {"configuration_path", {{"type", "string"}}},
+            {"if_open_project",
+             {{"type", "string"},
+              {"enum", nlohmann::json::array({"deny", "close", "save_and_close"})},
+              {"default", "close"}}}};
+        schema["anyOf"] = nlohmann::json::array({
+            nlohmann::json{{"required", nlohmann::json::array({"index"})}},
+            nlohmann::json{{"required",
+                            nlohmann::json::array({"configuration_path"})}}
+        });
+        return schema;
+    }();
+
+    registry.registerTool(
+        makeAppDef("open_recent_configuration", LLMToolKind::Write,
+                   "Open a recent configuration by 1-based index or by path",
+                   openRecentInputSchema, true, false),
+        [](const nlohmann::json& args) -> ToolGatewayResult {
+            const std::string if_open = args.value("if_open_project", std::string("close"));
+            if(args.contains("index"))
+            {
+                const int idx = args.at("index").get<int>();
+                return invokeApplicationTool(activeSink(),
+                                             [&]() { return commands().openRecentConfiguration(idx, if_open); });
+            }
+            const std::string path = args.at("configuration_path").get<std::string>();
+            return invokeApplicationTool(activeSink(),
+                                         [&]() { return commands().openRecentConfigurationByPath(path, if_open); });
+        });
+
+    registry.registerTool(
         makeAppDef("save_project_metadata", LLMToolKind::Write,
                    "Save only project.ini metadata for the open configuration",
                    {{"type", "object"}, {"additionalProperties", false}}, true, true),

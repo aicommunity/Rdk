@@ -22,6 +22,7 @@ std::unordered_set<std::string> kQueryTools()
                   "describe_class",
                   "find_component",
                   "get_component_properties",
+                  "list_recent_configurations",
                   "search_project_docs",
                   "validate_project",
                   "validate_configuration"});
@@ -38,6 +39,7 @@ std::unordered_set<std::string> kMutateTools()
             "create_configuration",
             "load_configuration",
             "load_project",
+            "open_recent_configuration",
             "save_configuration",
             "save_project",
             "close_configuration",

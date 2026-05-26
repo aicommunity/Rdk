@@ -40,8 +40,8 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-054 | `property_name` validation / `list_component_properties` read tool | phase-C | P1 | open | Deferred after class/entity read alignment; keep open for dedicated properties pass |
 | TD-055 | `get_net_snapshot.root_long_name` in domain | phase-C | P2 | open | Deferred in C; keep schema/domain alignment task open |
 | TD-056 | `list_registered_classes.library_filter` schema drift | phase-C | P2 | open | Deferred in C; finalize in docs/schema sweep |
-| TD-057 | Unified recent list dedupe rules | phase-D | P1 | open | QSettings + LastProjectsList merge |
-| TD-058 | Recent configurations provider in presentation sink | phase-D | P1 | open | Add sink API + Qt implementation |
+| TD-057 | Unified recent list dedupe rules | phase-D | P1 | done | QSettings + LastProjectsList merge implemented in `URdkApplicationCommands::listRecentConfigurations` |
+| TD-058 | Recent configurations provider in presentation sink | phase-D | P1 | done | Sink API `ILLMPresentationSink::recentConfigurationPaths` + Qt impl `ULlmQtPresentationSink::recentConfigurationPaths` |
 | TD-059 | `show_ui_panel` / `LLMUiPanel` presentation API | phase-E | P1 | open | Introduce panel enum + host mapping |
 | TD-060 | `set_active_channel` GUI API research | phase-E | P3 | open | Optional/cancel if host API unavailable |
 | TD-061 | `open_component_gui_tab` host dialog/automation gap | phase-E | P2 | open | May require manual-assisted flow |

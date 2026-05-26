@@ -318,9 +318,40 @@ nlohmann::json mergeArgumentsFromUserText(const PendingToolArguments& pending,
        || pending.tool_name == "validate_configuration")
     {
         if(!path.empty())
+        {
             args["configuration_path"] = path;
+        }
         else if(!trimmed.empty())
-            args["configuration_path"] = trimmed;
+        {
+            // Lifecycle merge: allow shortcuts like "last/recent" or numeric index.
+            const std::string lower = toLowerAsciiLocal(trimmed);
+            const bool wants_recent =
+                lower == "last" || lower == "recent" || lower.find(" last ") != std::string::npos
+                || lower.find(" recent ") != std::string::npos || trimmed.find("послед") != std::string::npos
+                || trimmed.find("Недав") != std::string::npos || trimmed.find("недав") != std::string::npos;
+
+            if(wants_recent && app)
+            {
+                const URdkApplicationCommands cmds(app);
+                const nlohmann::json list = cmds.listRecentConfigurations();
+                const auto items = list.value("items", nlohmann::json::array());
+                if(items.is_array() && !items.empty())
+                    args["configuration_path"] = items.at(0).value("path", "");
+            }
+            else if(isUnsignedListIndex(trimmed) && app)
+            {
+                const unsigned long idx = std::stoul(trimmed);
+                const URdkApplicationCommands cmds(app);
+                const nlohmann::json list = cmds.listRecentConfigurations();
+                const auto items = list.value("items", nlohmann::json::array());
+                if(idx >= 1 && idx <= items.size())
+                    args["configuration_path"] = items.at(idx - 1).value("path", "");
+            }
+            else
+            {
+                args["configuration_path"] = trimmed;
+            }
+        }
         if(!args.contains("if_open_project") && pending.tool_name.find("load") != std::string::npos)
             args["if_open_project"] = "close";
         return args;

@@ -2,9 +2,12 @@
 
 #include "URdkApplicationCommandsJson.h"
 #include "../Policy/ULLMPathPolicy.h"
+#include "../LlmPublicApi.h"
 
 #include <ctime>
 #include <filesystem>
+#include <unordered_set>
+#include <vector>
 
 #include <rdk_application.h>
 
@@ -609,6 +612,81 @@ ApplicationCommandResult URdkApplicationCommands::stepChannelCalculation(int cha
     r.payload = {{"channel_index", channel_index}, {"stepped", true}};
     r.presentation = LLMPresentationEffect::DiagramRefresh;
     return r;
+}
+
+static std::string displayNameFromPath(const std::string& path)
+{
+    // Avoid Qt in the domain layer: keep it simple and stable.
+    // Prefer file name (project.ini), otherwise last directory segment.
+    const std::string normalized = path;
+    const size_t last_slash = normalized.find_last_of("/\\");
+    if(last_slash == std::string::npos)
+        return normalized;
+    return normalized.substr(last_slash + 1);
+}
+
+nlohmann::json URdkApplicationCommands::listRecentConfigurations() const
+{
+    std::vector<std::string> qsettings_paths;
+    if(LLMServices::instance().isInitialized())
+    {
+        if(auto* sink = LLMServices::instance().presentationSink())
+            qsettings_paths = sink->recentConfigurationPaths();
+    }
+
+    static const std::list<std::string> kEmptyHistory;
+    const std::list<std::string>& history = m_app ? m_app->GetLastProjectsList() : kEmptyHistory;
+
+    std::vector<std::string> merged;
+    merged.reserve(qsettings_paths.size() + history.size());
+    std::unordered_set<std::string> seen;
+
+    auto pushNormalized = [&](const std::string& raw) {
+        if(raw.empty())
+            return;
+        const std::string ini = ensureProjectIniPath(raw);
+        if(ini.empty())
+            return;
+        if(seen.insert(ini).second)
+            merged.push_back(ini);
+    };
+
+    for(const std::string& p : qsettings_paths)
+        pushNormalized(p);
+    for(const std::string& p : history)
+        pushNormalized(p);
+
+    nlohmann::json out;
+    out["items"] = nlohmann::json::array();
+    for(std::size_t i = 0; i < merged.size(); ++i)
+    {
+        const std::string& p = merged[i];
+        out["items"].push_back({{"index", static_cast<int>(i + 1)},
+                                {"path", p},
+                                {"display_name", displayNameFromPath(p)}});
+    }
+    return out;
+}
+
+ApplicationCommandResult URdkApplicationCommands::openRecentConfiguration(
+    int index_1based, const std::string& if_open_project)
+{
+    const nlohmann::json j = listRecentConfigurations();
+    const nlohmann::json items = j.value("items", nlohmann::json::array());
+    if(index_1based < 1 || index_1based > static_cast<int>(items.size()))
+        return fail(DomainStatusCode::InvalidPropertyValue,
+                    "recent configuration index is out of range");
+
+    const std::string path = items.at(static_cast<std::size_t>(index_1based - 1)).value("path", "");
+    return loadConfiguration(path, if_open_project);
+}
+
+ApplicationCommandResult URdkApplicationCommands::openRecentConfigurationByPath(
+    const std::string& path, const std::string& if_open_project)
+{
+    if(path.empty())
+        return fail(DomainStatusCode::InvalidPropertyValue, "recent configuration path is empty");
+    return loadConfiguration(path, if_open_project);
 }
 
 } // namespace RDK::LLM

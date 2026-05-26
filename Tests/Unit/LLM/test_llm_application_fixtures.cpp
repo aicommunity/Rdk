@@ -13,6 +13,8 @@
 #include "Tools/ULLMToolRegistry.h"
 #include "Domain/URdkDomainAccess.h"
 #include "Gui/ULLMNoopPresentationSink.h"
+#include "Orchestrator/ULLMLifecycleArgumentGate.h"
+#include "LlmPublicApi.h"
 
 #include <cstdlib>
 
@@ -90,4 +92,73 @@ TEST(LLMApplicationFixtures, CoreRegistryIncludesConfigurationTools)
     EXPECT_NE(registry.find("create_configuration"), nullptr);
     EXPECT_NE(registry.find("load_configuration"), nullptr);
     EXPECT_NE(registry.find("validate_configuration"), nullptr);
+}
+
+TEST(LLMApplicationFixtures, RecentConfigurationsDedupeAndIndex)
+{
+    struct RecentSink : ILLMPresentationSink {
+        std::vector<std::string> paths;
+        explicit RecentSink(std::vector<std::string> p) : paths(std::move(p)) {}
+        void apply(const LLMPresentationEvent& event) override { (void)event; }
+        std::vector<std::string> recentConfigurationPaths() const override { return paths; }
+    };
+
+    RDK::UApplication app;
+    const std::list<std::string> history = {"/tmp/ProjA", "/tmp/ProjC/project.ini"};
+    ASSERT_TRUE(app.SetLastProjectsList(history));
+
+    const std::vector<std::string> gui_recent = {"/tmp/ProjA/project.ini",
+                                                  "/tmp/ProjB"};
+
+    LLMServices& svc = LLMServices::instance();
+    if(!svc.isInitialized())
+        svc.initialize(&app, nullptr);
+    svc.setPresentationSink(std::make_unique<RecentSink>(gui_recent));
+
+    const nlohmann::json list = svc.applicationCommands().listRecentConfigurations();
+    const nlohmann::json items = list.value("items", nlohmann::json::array());
+    ASSERT_EQ(items.size(), 3);
+    EXPECT_EQ(items.at(0).value("path", ""), std::string("/tmp/ProjA/project.ini"));
+    EXPECT_EQ(items.at(1).value("path", ""), std::string("/tmp/ProjB/project.ini"));
+    EXPECT_EQ(items.at(2).value("path", ""), std::string("/tmp/ProjC/project.ini"));
+
+    const ApplicationCommandResult bad = svc.applicationCommands().openRecentConfiguration(
+        99, "close");
+    EXPECT_FALSE(bad.status.ok());
+}
+
+TEST(LLMApplicationFixtures, LifecycleMergeLastAndIndex)
+{
+    struct RecentSink : ILLMPresentationSink {
+        std::vector<std::string> paths;
+        explicit RecentSink(std::vector<std::string> p) : paths(std::move(p)) {}
+        void apply(const LLMPresentationEvent& event) override { (void)event; }
+        std::vector<std::string> recentConfigurationPaths() const override { return paths; }
+    };
+
+    RDK::UApplication app;
+    const std::list<std::string> history = {};
+    ASSERT_TRUE(app.SetLastProjectsList(history));
+
+    const std::vector<std::string> gui_recent = {"/tmp/Proj1/project.ini",
+                                                  "/tmp/Proj2/project.ini"};
+
+    LLMServices& svc = LLMServices::instance();
+    if(!svc.isInitialized())
+        svc.initialize(&app, nullptr);
+    svc.setPresentationSink(std::make_unique<RecentSink>(gui_recent));
+
+    PendingToolArguments pending;
+    pending.tool_name = "load_configuration";
+    pending.partial_arguments = nlohmann::json::object();
+
+    const nlohmann::json merged_last = mergeArgumentsFromUserText(pending, "last", &app);
+    ASSERT_TRUE(merged_last.contains("configuration_path"));
+    EXPECT_EQ(merged_last.value("configuration_path", ""),
+              std::string("/tmp/Proj1/project.ini"));
+
+    const nlohmann::json merged_idx = mergeArgumentsFromUserText(pending, "2", &app);
+    ASSERT_TRUE(merged_idx.contains("configuration_path"));
+    EXPECT_EQ(merged_idx.value("configuration_path", ""),
+              std::string("/tmp/Proj2/project.ini"));
 }

@@ -3,6 +3,7 @@
 #include "../UGEngineControlWidget.h"
 #include "ULlmGuiContextBridge.h"
 
+#include <QSettings>
 #include <QMetaObject>
 #include <QThread>
 
@@ -46,6 +47,19 @@ void ULlmQtPresentationSink::apply(const RDK::LLM::LLMPresentationEvent& event)
     if(fut.wait_for(std::chrono::milliseconds(timeout_ms)) != std::future_status::ready)
         return;
     fut.get();
+}
+
+std::vector<std::string> ULlmQtPresentationSink::recentConfigurationPaths() const
+{
+    // Must be GUI-thread safe: Qt's QSettings isn't guaranteed thread-safe.
+    // Tool execution is routed to host thread via invokeHostSynchronized.
+    QSettings settings("NeuroModeler", "NeuroModeler");
+    const QStringList paths = settings.value("RecentConfigs").toStringList();
+    std::vector<std::string> out;
+    out.reserve(paths.size());
+    for(const QString& p : paths)
+        out.push_back(p.toStdString());
+    return out;
 }
 
 RDK::LLM::ApplicationCommandResult ULlmQtPresentationSink::invokeHostSynchronized(
