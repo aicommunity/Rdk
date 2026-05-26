@@ -1,16 +1,8 @@
 #include "URdkEntityResolver.h"
 
-#include <algorithm>
-#include <cctype>
+#include "ULLMNameResolution.h"
 
 namespace RDK::LLM {
-
-static std::string toLower(std::string s)
-{
-    for(char& c : s)
-        c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-    return s;
-}
 
 URdkEntityResolver::URdkEntityResolver(URdkDomainAccess& domain)
     : m_domain(domain)
@@ -22,63 +14,42 @@ EntityResolutionResult URdkEntityResolver::resolveComponent(
     const std::optional<std::string>& class_filter) const
 {
     EntityResolutionResult result;
-    const std::string qlower = toLower(query);
 
     nlohmann::json snap;
     if(!m_domain.listNetSnapshot(snap, channel_index, 500).ok())
         return result;
 
-    for(const auto& c : snap["components"])
+    const ComponentEntityResolution resolved =
+        resolveComponentEntity(query, snap["components"], class_filter);
+
+    if(resolved.status == ComponentEntityResolution::Status::Resolved)
     {
-        const std::string sn = c.value("short_name", "");
-        const std::string ln = c.value("long_name", "");
-        const std::string cn = c.value("class_name", "");
-        if(class_filter && cn != *class_filter)
-            continue;
+        result.status = EntityResolutionStatus::Resolved;
+        result.canonical_long_name = resolved.canonical_long_name;
+        return result;
+    }
 
-        double score = 0.0;
-        const std::string sn_lower = toLower(sn);
-        const std::string ln_lower = toLower(ln);
-        if(sn == query || ln == query)
-            score = 1.0;
-        else if(sn_lower == qlower || ln_lower == qlower)
-            score = 0.95;
-        else if(ln_lower.size() >= qlower.size() &&
-                ln_lower.compare(ln_lower.size() - qlower.size(), qlower.size(), qlower) == 0)
-            score = 0.9;
-        else if(sn_lower.find(qlower) != std::string::npos || ln_lower.find(qlower) != std::string::npos)
-            score = 0.65;
-
-        if(score > 0.0)
+    if(resolved.status == ComponentEntityResolution::Status::Ambiguous)
+    {
+        result.status = EntityResolutionStatus::Ambiguous;
+        for(const auto& [ln, score] : resolved.candidates)
         {
-            result.candidates.push_back(
-                {ln, cn, sn, score});
+            std::string cn;
+            std::string sn;
+            for(const nlohmann::json& c : snap["components"])
+            {
+                if(c.value("long_name", "") == ln)
+                {
+                    cn = c.value("class_name", "");
+                    sn = c.value("short_name", "");
+                    break;
+                }
+            }
+            result.candidates.push_back({ln, cn, sn, score});
         }
-    }
-
-    std::sort(result.candidates.begin(), result.candidates.end(),
-              [](const EntityCandidate& a, const EntityCandidate& b) { return a.score > b.score; });
-
-    if(result.candidates.empty())
-        return result;
-
-    if(result.candidates.size() == 1)
-    {
-        result.status = EntityResolutionStatus::Resolved;
-        result.canonical_long_name = result.candidates[0].long_name;
         return result;
     }
 
-    const double top = result.candidates[0].score;
-    const double second = result.candidates[1].score;
-    if(top >= 0.9 && (top - second) >= 0.15)
-    {
-        result.status = EntityResolutionStatus::Resolved;
-        result.canonical_long_name = result.candidates[0].long_name;
-        return result;
-    }
-
-    result.status = EntityResolutionStatus::Ambiguous;
     return result;
 }
 

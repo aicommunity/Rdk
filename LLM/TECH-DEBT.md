@@ -32,6 +32,19 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Target | Priority | Status | Notes |
 |----|------|--------|----------|--------|-------|
+| TD-049 | Extract `ULLMNameResolution` from `ULLMWriteArgumentNormalizer` | phase-A | P0 | done | Closed in phase-A commit: dedicated module + migrated callers |
+| TD-050 | Tiered `URdkEntityResolver` (exact → CI → fuzzy) | phase-A | P0 | done | Closed in phase-A commit: centralized tiered resolver |
+| TD-051 | Generalized pending disambiguation (not only class) | phase-B | P0 | open | Planned for orchestrator/gate updates |
+| TD-052 | Gateway pre-normalize all write entity-resolution tools | phase-B | P0 | open | Replace add_component-only pre-normalize |
+| TD-053 | `connect_components` two-endpoint pending (from → to) | phase-B | P1 | open | Sequential endpoint disambiguation |
+| TD-054 | `property_name` validation / `list_component_properties` read tool | phase-C | P1 | open | Minimum validation first, read helper in C |
+| TD-055 | `get_net_snapshot.root_long_name` in domain | phase-C | P2 | open | Implement subtree root traversal or document |
+| TD-056 | `list_registered_classes.library_filter` schema drift | phase-C | P2 | open | Align behavior with schema/docs |
+| TD-057 | Unified recent list dedupe rules | phase-D | P1 | open | QSettings + LastProjectsList merge |
+| TD-058 | Recent configurations provider in presentation sink | phase-D | P1 | open | Add sink API + Qt implementation |
+| TD-059 | `show_ui_panel` / `LLMUiPanel` presentation API | phase-E | P1 | open | Introduce panel enum + host mapping |
+| TD-060 | `set_active_channel` GUI API research | phase-E | P3 | open | Optional/cancel if host API unavailable |
+| TD-061 | `open_component_gui_tab` host dialog/automation gap | phase-E | P2 | open | May require manual-assisted flow |
 | TD-041 | Manual NeuroModeler GUI write-tools walkthrough (real Configs on disk) | post-MVP | P3 | open | Checklist: Application-Commands.md § TD-041; incl. auto-apply + Reject flow |
 | TD-036 | Embedding-based dynamic tool routing | post-MVP | P3 | open | Stub `ULLMDynamicToolRouter`; env `NMSDK_LLM_DYNAMIC_TOOL_ROUTING=1` |
 | TD-031 | YAML knowledge manifest + federation | post-MVP | P3 | open | Stub `ILLMYamlKnowledgeCatalog`; Post-MVP plan §5 |
@@ -90,6 +103,8 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-047 | Docs bundle 1.4 sync | 2026-05-25 | Developer-Architecture, Extension-Guide, Post-MVP-Implementation-Plan; README 1.4.0 |
 | TD-048 | Scenario D autonomous agent (strict / semi_auto) | 2026-05-25 | `ULLMAutonomousPolicy`, settings/GUI, orchestrator whitelist+step cap, `Test_LLM_AutonomousPolicy` |
 | TD-035 | Dedicated `tool_disambiguation` UI flag | 2026-05-25 | `AgentResponse::needs_tool_disambiguation`; dock clarification block |
+| TD-049 | Extract `ULLMNameResolution` from `ULLMWriteArgumentNormalizer` | 2026-05-26 | `ULLMNameResolution.{h,cpp}` + normalizer/lifecycle integration |
+| TD-050 | Tiered `URdkEntityResolver` (exact → CI → fuzzy) | 2026-05-26 | `resolveComponentEntity` + `URdkEntityResolver` delegation |
 
 ---
 
@@ -107,3 +122,4 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | 2026-05-25 | Ollama embed re-rank off by default | Avoid CI/network dependency | `NMSDK_LLM_DOC_EMBED_OLLAMA=1` |
 | 2026-05-26 | Manual GUI write-tools split to TD-041 | Automated tests cover LLM-first path | TD-041 |
 | 2026-05-25 | Post-MVP code in separate plan doc | Implementation tracked in Post-MVP-Implementation-Plan.md | TD-048, TD-035, TD-031/034/036 |
+| 2026-05-26 | Consolidate name/entity resolution in domain helper | Reuse same disambiguation behavior across tools before pending generalization | TD-051/052 |

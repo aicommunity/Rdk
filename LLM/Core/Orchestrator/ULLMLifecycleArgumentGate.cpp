@@ -1,5 +1,6 @@
 #include "ULLMLifecycleArgumentGate.h"
 
+#include "../Domain/ULLMNameResolution.h"
 #include "../Domain/URdkApplicationCommands.h"
 #include "../Tools/ULLMToolRegistry.h"
 #include "ULLMLibraryScopeHint.h"
@@ -78,32 +79,7 @@ std::optional<std::string>
 resolveClassNameFromDisambiguationListImpl(const std::string& user_text,
                                            const nlohmann::json& candidates)
 {
-    const std::string trimmed = trim(user_text);
-    if(trimmed.empty() || !candidates.is_array() || candidates.empty())
-        return std::nullopt;
-
-    if(isUnsignedListIndex(trimmed))
-    {
-        const unsigned long idx = std::stoul(trimmed);
-        if(idx >= 1 && idx <= candidates.size())
-        {
-            const nlohmann::json& entry = candidates[idx - 1];
-            if(entry.is_object() && entry.contains("class_name") && entry["class_name"].is_string())
-                return entry["class_name"].get<std::string>();
-        }
-        return std::nullopt;
-    }
-
-    const std::string lower = toLowerAsciiLocal(trimmed);
-    for(const nlohmann::json& entry : candidates)
-    {
-        if(!entry.is_object() || !entry.contains("class_name") || !entry["class_name"].is_string())
-            continue;
-        const std::string cn = entry["class_name"].get<std::string>();
-        if(cn == trimmed || toLowerAsciiLocal(cn) == lower)
-            return cn;
-    }
-    return std::nullopt;
+    return pickFromNumberedList(user_text, candidates, "class_name");
 }
 
 std::string defaultShortNameFromClass(const std::string& class_name)

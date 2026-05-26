@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "Domain/ULLMWriteArgumentNormalizer.h"
+#include "Domain/ULLMNameResolution.h"
 
 using namespace RDK::LLM;
 
