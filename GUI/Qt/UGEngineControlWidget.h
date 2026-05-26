@@ -169,6 +169,7 @@ public slots:
 
     void showLlmUiPanel(RDK::LLM::LLMUiPanel panel);
     nlohmann::json listLlmUiPanelsState() const;
+    void setLlmActiveChannel(int channel_index);
 
     // actions:
 

@@ -40,14 +40,18 @@ public:
     DomainSessionInfo sessionInfo() const;
 
     DomainStatus listNetSnapshot(nlohmann::json& out, int channel_index = 0,
-                                int max_components = 200) const;
+                                int max_components = 200,
+                                const std::string& root_long_name = "") const;
     DomainStatus listRegisteredClassNames(std::vector<std::string>& out) const;
+    DomainStatus listRegisteredClasses(nlohmann::json& out,
+                                     const std::string& library_filter = "") const;
     DomainStatus findComponentByLongName(const std::string& long_name,
                                          nlohmann::json& out,
                                          int channel_index = 0) const;
     DomainStatus getComponentProperties(const std::string& long_name,
                                         nlohmann::json& out,
-                                        int channel_index = 0) const;
+                                        int channel_index = 0,
+                                        const std::vector<std::string>& property_names = {}) const;
 
     DomainStatus addComponent(const std::string& class_name,
                               const std::string& parent_long_name,

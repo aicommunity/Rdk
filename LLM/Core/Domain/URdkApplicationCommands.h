@@ -35,6 +35,10 @@ public:
     ApplicationCommandResult resetChannelCalculation(int channel_index);
     ApplicationCommandResult stepChannelCalculation(int channel_index);
 
+    ApplicationCommandResult setActiveChannel(int channel_index);
+
+    nlohmann::json listChannels() const;
+
     /// List recent configurations merged from GUI recent list + in-app history.
     /// Output shape:
     /// { "items": [ { "index": 1, "path": ".../project.ini", "display_name": "..." }, ... ] }

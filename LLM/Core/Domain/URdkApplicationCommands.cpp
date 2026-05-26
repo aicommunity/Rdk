@@ -10,6 +10,7 @@
 #include <vector>
 
 #include <rdk_application.h>
+#include <rdk_init.h>
 
 #include "../../../Core/Application/UProject.h"
 #include "../../../Core/Engine/TProjectLoadDiagnostics.h"
@@ -612,6 +613,39 @@ ApplicationCommandResult URdkApplicationCommands::stepChannelCalculation(int cha
     r.payload = {{"channel_index", channel_index}, {"stepped", true}};
     r.presentation = LLMPresentationEffect::DiagramRefresh;
     return r;
+}
+
+ApplicationCommandResult URdkApplicationCommands::setActiveChannel(int channel_index)
+{
+    if(!m_app)
+        return fail(DomainStatusCode::NotInitialized, "Application not available");
+    if(channel_index < 0 || channel_index >= m_app->GetNumChannels())
+        return fail(DomainStatusCode::InvalidPropertyValue, "invalid channel_index");
+
+    if(Core_SelectChannel(channel_index) != 0)
+        return fail(DomainStatusCode::InvalidPropertyValue,
+                    "failed to select channel " + std::to_string(channel_index));
+
+    ApplicationCommandResult r;
+    r.status = {};
+    r.payload = {{"channel_index", channel_index},
+                 {"selected_channel_index", Core_GetSelectedChannelIndex()}};
+    r.select_active_channel = channel_index;
+    r.presentation = LLMPresentationEffect::DiagramRefresh;
+    return r;
+}
+
+nlohmann::json URdkApplicationCommands::listChannels() const
+{
+    nlohmann::json out;
+    nlohmann::json channels = nlohmann::json::array();
+    const int count = m_app ? m_app->GetNumChannels() : 0;
+    for(int i = 0; i < count; ++i)
+        channels.push_back({{"channel_index", i}});
+    out["channels"] = channels;
+    out["channel_count"] = count;
+    out["selected_channel_index"] = Core_GetSelectedChannelIndex();
+    return out;
 }
 
 static std::string displayNameFromPath(const std::string& path)

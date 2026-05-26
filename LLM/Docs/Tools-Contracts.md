@@ -16,6 +16,9 @@
 ```json
 {
   "type": "object",
+  "properties": {
+    "library_filter": { "type": "string", "description": "Optional exact library name filter" }
+  },
   "additionalProperties": false
 }
 ```
@@ -71,7 +74,8 @@
   "type": "object",
   "properties": {
     "channel_index": { "type": "integer", "minimum": 0, "default": 0 },
-    "max_components": { "type": "integer", "minimum": 1, "maximum": 500, "default": 200 }
+    "max_components": { "type": "integer", "minimum": 1, "maximum": 500, "default": 200 },
+    "root_long_name": { "type": "string", "description": "Optional subtree root (model long_name)" }
   },
   "additionalProperties": false
 }
@@ -284,6 +288,8 @@ After success, optional `ILLMPresentationSink` refreshes GUI (NeuroModeler).
 
 | Tool | Kind | confirmation | requires_project_loaded | Notes |
 |------|------|--------------|--------------------------|-------|
+| `list_channels` | Read | false | false | Returns `{ "channels", "channel_count", "selected_channel_index" }`. |
+| `set_active_channel` | Write | false | false | Input `{ "channel_index" }`; updates engine/GUI selected channel. |
 | `list_recent_configurations` | Read | false | false | Returns `{ "items": [ { "index", "path", "display_name" } ] }` (1-based index). |
 | `open_recent_configuration` | Write | true | false | Input supports `{ "index" }` or `{ "configuration_path" }`; opens via `load_configuration` semantics. |
 | `list_ui_panels` | Read | false | false | Returns `{ "items": [ { "id", "title", "visible" } ] }` based on GUI host state. |

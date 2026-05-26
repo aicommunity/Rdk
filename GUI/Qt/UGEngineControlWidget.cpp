@@ -628,6 +628,12 @@ void UGEngineControlWidget::registerRecentConfigurationPath(const QString& path)
     addToRecentConfigs(path);
 }
 
+void UGEngineControlWidget::setLlmActiveChannel(int channel_index)
+{
+    if(channels)
+        channels->setLlmActiveChannel(channel_index);
+}
+
 void UGEngineControlWidget::showLlmUiPanel(RDK::LLM::LLMUiPanel panel)
 {
     // Note: "show_panel_visible=false" is implemented by sink by requesting LLMUiPanel::None.

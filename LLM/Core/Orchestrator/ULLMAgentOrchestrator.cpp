@@ -596,6 +596,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             invoke.session = session;
             invoke.user_text_hint = req.user_text;
             ToolGatewayResult tr = m_gateway.invoke(invoke);
+            if(tr.ok && call.name == "set_active_channel" && call.arguments.contains("channel_index"))
+                session.active_channel_index = call.arguments["channel_index"].get<int>();
             if(tr.ok && !tr.pending_confirmation && session.autonomous_mode != LLMAutonomousMode::Off)
                 ++session.autonomous_steps_taken;
             return {call, tr};
@@ -1055,6 +1057,8 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
     invoke.user_text_hint = user_text_hint;
 
     const ToolGatewayResult tr = m_gateway.invoke(invoke);
+    if(tr.ok && tool_name == "set_active_channel" && arguments.contains("channel_index"))
+        invoke.session.active_channel_index = arguments["channel_index"].get<int>();
 
     nlohmann::json disambiguation;
     if(extractToolDisambiguationPayload(tr, disambiguation)

@@ -81,6 +81,7 @@ struct LLMPresentationEvent {
     bool add_to_recent = false;
     LLMUiPanel show_panel = LLMUiPanel::None;
     bool show_panel_visible = true;
+    int select_active_channel = -1;
 };
 
 struct ApplicationCommandResult {
@@ -93,6 +94,7 @@ struct ApplicationCommandResult {
     std::string resolved_configuration_path;
     LLMUiPanel show_panel = LLMUiPanel::None;
     bool show_panel_visible = true;
+    int select_active_channel = -1;
 };
 
 struct LLMProviderCapabilities {

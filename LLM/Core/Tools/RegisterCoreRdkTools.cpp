@@ -40,14 +40,19 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                 {{"type", "object"},
                  {"properties",
                   {{"channel_index", {{"type", "integer"}, {"minimum", 0}}},
-                   {"max_components", {{"type", "integer"}, {"minimum", 1}, {"maximum", 500}}}}},
+                   {"max_components", {{"type", "integer"}, {"minimum", 1}, {"maximum", 500}}},
+                   {"root_long_name", {{"type", "string"}}}}},
                  {"additionalProperties", false}},
                 {{"type", "object"}}),
         [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
             ToolGatewayResult r;
             int ch = args.value("channel_index", 0);
             int max_c = args.value("max_components", 200);
-            DomainStatus st = domain_access->listNetSnapshot(r.result, ch, max_c);
+            const std::string root =
+                args.contains("root_long_name") && args["root_long_name"].is_string()
+                    ? args["root_long_name"].get<std::string>()
+                    : std::string();
+            DomainStatus st = domain_access->listNetSnapshot(r.result, ch, max_c, root);
             r.ok = st.ok();
             if(!r.ok)
             {
@@ -60,17 +65,19 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
     registry.registerTool(
         makeDef("list_registered_classes", LLMToolKind::Read,
                 "Lists registered component class names",
-                {{"type", "object"}, {"additionalProperties", false}},
+                {{"type", "object"},
+                 {"properties", {{"library_filter", {{"type", "string"}}}}},
+                 {"additionalProperties", false}},
                 {{"type", "object"}}),
         [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
-            (void)args;
+            (void)project_ctx;
             ToolGatewayResult r;
-            std::vector<std::string> names;
-            DomainStatus st = domain_access->listRegisteredClassNames(names);
+            const std::string library_filter =
+                args.contains("library_filter") && args["library_filter"].is_string()
+                    ? args["library_filter"].get<std::string>()
+                    : std::string();
+            DomainStatus st = domain_access->listRegisteredClasses(r.result, library_filter);
             r.ok = st.ok();
-            r.result["classes"] = nlohmann::json::array();
-            for(const auto& n : names)
-                r.result["classes"].push_back({{"class_name", n}});
             if(!r.ok)
             {
                 r.error_code = "DomainError";
@@ -142,14 +149,25 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                  {"required", {"long_name"}},
                  {"properties",
                   {{"long_name", {{"type", "string"}}},
-                   {"channel_index", {{"type", "integer"}, {"minimum", 0}}}}},
+                   {"channel_index", {{"type", "integer"}, {"minimum", 0}}},
+                   {"property_names",
+                    {{"type", "array"}, {"items", {{"type", "string"}}}}}}},
                  {"additionalProperties", false}},
                 {{"type", "object"}}),
         [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
             ToolGatewayResult r;
             int ch = args.value("channel_index", 0);
-            DomainStatus st =
-                domain_access->getComponentProperties(args.at("long_name").get<std::string>(), r.result, ch);
+            std::vector<std::string> property_names;
+            if(args.contains("property_names") && args["property_names"].is_array())
+            {
+                for(const nlohmann::json& pn : args["property_names"])
+                {
+                    if(pn.is_string())
+                        property_names.push_back(pn.get<std::string>());
+                }
+            }
+            DomainStatus st = domain_access->getComponentProperties(
+                args.at("long_name").get<std::string>(), r.result, ch, property_names);
             r.ok = st.ok();
             if(!r.ok)
             {

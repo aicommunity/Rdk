@@ -1,6 +1,8 @@
 #include "UCalculationChannelsWidget.h"
 #include "ui_UCalculationChannelsWidget.h"
 
+#include <rdk_init.h>
+
 UCalculationChannelsWidget::UCalculationChannelsWidget(QWidget *parent, RDK::UApplication *app) :
     UVisualControllerWidget(parent, app),
     ui(new Ui::UCalculationChannelsWidget)
@@ -56,6 +58,26 @@ void UCalculationChannelsWidget::AUpdateInterface()
     if(i == currentChannel) ui->listWidgetChannels->setCurrentItem(item);
   }
   emit updateVisibility();
+}
+
+void UCalculationChannelsWidget::setLlmActiveChannel(int channel_index)
+{
+    if(!application || channel_index < 0)
+        return;
+    Core_SelectChannel(channel_index);
+    currentChannel = channel_index;
+    for(int i = 0; i < ui->listWidgetChannels->count(); ++i)
+    {
+        QListWidgetItem* item = ui->listWidgetChannels->item(i);
+        if(!item)
+            continue;
+        if(item->data(Qt::UserRole).toInt() == channel_index)
+        {
+            ui->listWidgetChannels->setCurrentItem(item);
+            break;
+        }
+    }
+    RDK::UIVisualControllerStorage::UpdateInterface(true);
 }
 
 void UCalculationChannelsWidget::channelSelectionChanged()

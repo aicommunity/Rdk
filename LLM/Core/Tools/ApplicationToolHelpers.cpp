@@ -17,9 +17,10 @@ void applyPresentationFromCommand(ILLMPresentationSink* sink, const ApplicationC
     ev.add_to_recent = cmd.add_to_recent;
     ev.show_panel = cmd.show_panel;
     ev.show_panel_visible = cmd.show_panel_visible;
+    ev.select_active_channel = cmd.select_active_channel;
 
     if(ev.effect != LLMPresentationEffect::None || ev.show_panel != LLMUiPanel::None
-       || ev.update_context || ev.add_to_recent)
+       || ev.update_context || ev.add_to_recent || ev.select_active_channel >= 0)
         sink->apply(ev);
 }
 

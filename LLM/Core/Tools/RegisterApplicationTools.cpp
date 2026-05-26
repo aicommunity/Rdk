@@ -492,6 +492,32 @@ void RegisterApplicationTools(ULLMToolRegistry& registry)
                     [](int ch) { return commands().resetChannelCalculation(ch); });
     registerChannel("step_channel_calculation", "Single step channel calculation",
                     [](int ch) { return commands().stepChannelCalculation(ch); });
+
+    registry.registerTool(
+        makeAppDef("list_channels", LLMToolKind::Read, "List calculation channels and selected index",
+                   {{"type", "object"}, {"additionalProperties", false}}, false, false),
+        [](const nlohmann::json& args) -> ToolGatewayResult {
+            (void)args;
+            ToolGatewayResult r;
+            r.ok = true;
+            r.result = commands().listChannels();
+            return r;
+        });
+
+    registry.registerTool(
+        makeAppDef("set_active_channel", LLMToolKind::Write,
+                   "Select active calculation channel for GUI and engine context",
+                   {{"type", "object"},
+                    {"required", nlohmann::json::array({"channel_index"})},
+                    {"properties",
+                     {{"channel_index", {{"type", "integer"}, {"minimum", 0}}}}},
+                    {"additionalProperties", false}},
+                   false, false),
+        [](const nlohmann::json& args) -> ToolGatewayResult {
+            const int ch = args.at("channel_index").get<int>();
+            return invokeApplicationTool(activeSink(),
+                                         [&]() { return commands().setActiveChannel(ch); });
+        });
 }
 
 } // namespace RDK::LLM

@@ -4,6 +4,7 @@
 #include "../Tools/ApplicationToolHelpers.h"
 
 #include <sstream>
+#include <unordered_map>
 
 #include <rdk_application.h>
 #include <rdk_engine_support.h>
@@ -12,11 +13,112 @@
 #include "../../Core/Engine/UEngine.h"
 #include "../../Core/Engine/UEnvironment.h"
 #include "../../Core/Engine/UStorage.h"
+#include "../../Core/Engine/ULibrary.h"
 #include "../../Core/Engine/UContainer.h"
+
+#include <regex>
 
 namespace RDK::LLM {
 
 namespace {
+
+constexpr unsigned int kPubParameterMask = ptPubParameter;
+
+struct ParsedPropertyMeta {
+    std::string name;
+    std::string type;
+    std::string value;
+};
+
+std::string truncateValueRepr(const std::string& raw, size_t max_len = 256)
+{
+    if(raw.empty())
+        return "";
+    static const std::regex matrix_re(R"(<Matrix\s+(\d+)\s*x\s*(\d+)\s*>)", std::regex::icase);
+    std::smatch m;
+    if(std::regex_search(raw, m, matrix_re) && m.size() >= 3)
+        return "<Matrix " + m[1].str() + "x" + m[2].str() + ">";
+    if(raw.size() > max_len)
+        return raw.substr(0, max_len) + "...";
+    return raw;
+}
+
+std::vector<ParsedPropertyMeta> parsePropertiesExXml(const std::string& xml)
+{
+    std::vector<ParsedPropertyMeta> out;
+    if(xml.empty())
+        return out;
+    static const std::regex node_re(
+        "<([A-Za-z_][\\w.]*)[^>]*\\bPType=\"(\\d+)\"[^>]*>([^<]*)</\\1>");
+    for(std::sregex_iterator it(xml.begin(), xml.end(), node_re), end; it != end; ++it)
+    {
+        ParsedPropertyMeta meta;
+        meta.name = (*it)[1].str();
+        meta.type = "ptype_" + (*it)[2].str();
+        meta.value = (*it)[3].str();
+        out.push_back(std::move(meta));
+    }
+    return out;
+}
+
+std::vector<ParsedPropertyMeta> catalogFromLookupList(const std::string& lookup_csv)
+{
+    std::vector<ParsedPropertyMeta> out;
+    if(lookup_csv.empty())
+        return out;
+    std::stringstream ss(lookup_csv);
+    std::string token;
+    while(std::getline(ss, token, ','))
+    {
+        const size_t colon = token.find(':');
+        const std::string name =
+            colon == std::string::npos ? token : token.substr(0, colon);
+        if(name.empty())
+            continue;
+        ParsedPropertyMeta meta;
+        meta.name = name;
+        meta.type = "parameter";
+        out.push_back(std::move(meta));
+    }
+    return out;
+}
+
+bool lookupListContainsProperty(const std::string& lookup_csv, const std::string& property_name)
+{
+    if(lookup_csv.empty() || property_name.empty())
+        return false;
+    std::stringstream ss(lookup_csv);
+    std::string token;
+    while(std::getline(ss, token, ','))
+    {
+        const size_t colon = token.find(':');
+        const std::string name =
+            colon == std::string::npos ? token : token.substr(0, colon);
+        if(name == property_name)
+            return true;
+    }
+    return false;
+}
+
+bool componentHasProperty(RDK::UEngine* eng, const std::string& long_name,
+                          const std::string& property_name)
+{
+    if(!eng || property_name.empty())
+        return false;
+    constexpr unsigned int kMasks[] = {kPubParameterMask,
+                                       static_cast<unsigned int>(ptPubState),
+                                       static_cast<unsigned int>(ptPubInput),
+                                       static_cast<unsigned int>(ptPubOutput)};
+    for(unsigned int mask : kMasks)
+    {
+        const char* list = eng->Model_GetComponentPropertiesLookupList(long_name.c_str(), mask);
+        if(!list)
+            continue;
+        if(lookupListContainsProperty(list, property_name))
+            return true;
+    }
+    return false;
+}
 
 void refreshDiagramPresentation(ILLMPresentationSink* sink)
 {
@@ -92,7 +194,8 @@ static void walkContainer(RDK::UContainer* cont, nlohmann::json& components,
 }
 
 DomainStatus URdkDomainAccess::listNetSnapshot(nlohmann::json& out, int channel_index,
-                                               int max_components) const
+                                               int max_components,
+                                               const std::string& root_long_name) const
 {
     out = nlohmann::json::object();
     RDK::UELockPtr<RDK::UEngine> eng = RDK::GetEngineLockTimeout(channel_index, 500);
@@ -104,10 +207,27 @@ DomainStatus URdkDomainAccess::listNetSnapshot(nlohmann::json& out, int channel_
     RDK::UEPtr<RDK::UContainer> model = env->GetModel();
     if(!model)
         return {DomainStatusCode::ProjectNotLoaded, "Model not loaded on channel"};
+    RDK::UContainer* model_root = model.Get();
+    RDK::UContainer* walk_root = model_root;
+    std::string parent_for_walk;
+    std::string applied_root_long_name;
+    if(!root_long_name.empty())
+    {
+        RDK::UEPtr<RDK::UContainer> subtree =
+            model->GetComponent(root_long_name, true);
+        if(!subtree)
+            return {DomainStatusCode::ComponentNotFound,
+                    "Component not found: " + root_long_name};
+        walk_root = subtree.Get();
+        parent_for_walk = subtree->GetLongName(model_root);
+        applied_root_long_name = parent_for_walk;
+    }
     nlohmann::json components = nlohmann::json::array();
     int count = 0;
-    walkContainer(model.Get(), components, count, max_components, "", model.Get());
+    walkContainer(walk_root, components, count, max_components, parent_for_walk, model_root);
     out["channel_index"] = channel_index;
+    if(!applied_root_long_name.empty())
+        out["root_long_name"] = applied_root_long_name;
     out["components"] = components;
     out["links"] = nlohmann::json::array();
     out["truncated"] = (count >= max_components);
@@ -135,6 +255,39 @@ DomainStatus URdkDomainAccess::listRegisteredClassNames(std::vector<std::string>
     return {};
 }
 
+DomainStatus URdkDomainAccess::listRegisteredClasses(nlohmann::json& out,
+                                                     const std::string& library_filter) const
+{
+    out = nlohmann::json::object();
+    std::vector<std::string> names;
+    DomainStatus st = listRegisteredClassNames(names);
+    if(!st.ok())
+        return st;
+
+    RDK::UELockPtr<RDK::UStorage> storage_lock = RDK::GetStorageLock();
+    RDK::UStorage* storage = storage_lock.Get();
+
+    nlohmann::json classes = nlohmann::json::array();
+    for(const std::string& class_name : names)
+    {
+        std::string library;
+        if(storage)
+        {
+            RDK::UEPtr<RDK::ULibrary> lib = storage->FindCollection(class_name);
+            if(lib)
+                library = lib->GetName();
+        }
+        if(!library_filter.empty() && library != library_filter)
+            continue;
+        nlohmann::json item = {{"class_name", class_name}};
+        if(!library.empty())
+            item["library"] = library;
+        classes.push_back(std::move(item));
+    }
+    out["classes"] = classes;
+    return {};
+}
+
 DomainStatus URdkDomainAccess::findComponentByLongName(const std::string& long_name,
                                                        nlohmann::json& out,
                                                        int channel_index) const
@@ -159,9 +312,91 @@ DomainStatus URdkDomainAccess::findComponentByLongName(const std::string& long_n
 
 DomainStatus URdkDomainAccess::getComponentProperties(const std::string& long_name,
                                                       nlohmann::json& out,
-                                                      int channel_index) const
+                                                      int channel_index,
+                                                      const std::vector<std::string>& property_names) const
 {
-    return findComponentByLongName(long_name, out, channel_index);
+    DomainStatus st = findComponentByLongName(long_name, out, channel_index);
+    if(!st.ok())
+        return st;
+
+    RDK::UELockPtr<RDK::UEngine> eng = RDK::GetEngineLockTimeout(channel_index, 500);
+    if(!eng)
+        return {DomainStatusCode::NotInitialized, "Engine lock unavailable"};
+
+    std::unordered_map<std::string, ParsedPropertyMeta> by_name;
+    auto merge_catalog = [&](const std::vector<ParsedPropertyMeta>& entries) {
+        for(const ParsedPropertyMeta& meta : entries)
+            by_name[meta.name] = meta;
+    };
+
+    const char* props_xml =
+        eng->Model_GetComponentPropertiesEx(long_name.c_str(), kPubParameterMask);
+    if(props_xml)
+        merge_catalog(parsePropertiesExXml(props_xml));
+
+    constexpr unsigned int kMasks[] = {kPubParameterMask,
+                                       static_cast<unsigned int>(ptPubState),
+                                       static_cast<unsigned int>(ptPubInput),
+                                       static_cast<unsigned int>(ptPubOutput)};
+    for(unsigned int mask : kMasks)
+    {
+        const char* lookup =
+            eng->Model_GetComponentPropertiesLookupList(long_name.c_str(), mask);
+        if(lookup)
+            merge_catalog(catalogFromLookupList(lookup));
+    }
+
+    const bool include_values = !property_names.empty();
+    if(include_values)
+    {
+        for(const std::string& requested : property_names)
+        {
+            if(by_name.find(requested) == by_name.end())
+            {
+                return {DomainStatusCode::PropertyNotFound,
+                        "Unknown property_name for component: " + requested
+                            + ". Call get_component_properties without property_names to list "
+                              "available properties."};
+            }
+        }
+    }
+
+    nlohmann::json properties = nlohmann::json::array();
+    auto emit_property = [&](const ParsedPropertyMeta& meta, bool with_value) {
+        nlohmann::json item = {{"name", meta.name}, {"type", meta.type}};
+        if(with_value)
+        {
+            std::string value_repr;
+            if(!meta.value.empty())
+                value_repr = truncateValueRepr(meta.value);
+            else
+            {
+                std::string raw;
+                bool found = false;
+                getPropertyValue(long_name, meta.name, channel_index, raw, found);
+                if(found)
+                    value_repr = truncateValueRepr(raw);
+            }
+            item["value_repr"] = value_repr;
+        }
+        else
+            item["value_repr"] = "";
+        properties.push_back(std::move(item));
+    };
+
+    if(include_values)
+    {
+        for(const std::string& requested : property_names)
+            emit_property(by_name.at(requested), true);
+    }
+    else
+    {
+        for(const auto& entry : by_name)
+            emit_property(entry.second, false);
+    }
+
+    out["properties"] = properties;
+    return {};
 }
 
 DomainStatus URdkDomainAccess::addComponent(const std::string& class_name,
@@ -237,6 +472,15 @@ DomainStatus URdkDomainAccess::setProperty(const std::string& long_name,
         return {DomainStatusCode::NotInitialized, "Engine not ready"};
     if(m_app && !session.project_loaded)
         return {DomainStatusCode::ProjectNotLoaded, "No configuration is open"};
+    RDK::UELockPtr<RDK::UEngine> eng = RDK::GetEngineLockTimeout(channel_index, 500);
+    if(!eng)
+        return {DomainStatusCode::NotInitialized, "Engine lock unavailable"};
+    if(!componentHasProperty(eng.Get(), long_name, property_name))
+    {
+        return {DomainStatusCode::PropertyNotFound,
+                "Unknown property_name \"" + property_name + "\" for component " + long_name
+                    + ". Use get_component_properties to list available properties."};
+    }
     if(previous_value_out)
     {
         bool had = false;

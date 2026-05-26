@@ -169,6 +169,13 @@ void ULlmQtPresentationSink::applyOnGuiThread()
         m_host->registerRecentConfigurationPath(
             QString::fromStdString(m_pending.configuration_ini_path));
     }
+
+    if(m_pending.select_active_channel >= 0)
+    {
+        m_host->setLlmActiveChannel(m_pending.select_active_channel);
+        if(m_bridge)
+            m_bridge->onChannelChanged(m_pending.select_active_channel);
+    }
 }
 
 void ULlmQtPresentationSink::runHostListUiPanelsOnGuiThread()
