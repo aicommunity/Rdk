@@ -67,14 +67,13 @@ stateDiagram-v2
 |-----------|------|
 | Settings | `LLM/autonomous_mode`, limits in `LLMRuntimeProviderSettings` + Settings UI |
 | Orchestrator | Session flag / `LLMWorkflowPhase::Autonomous`, step counter, cancel |
-| Policy | `ULLMPolicyEngine::checkAutonomousStep` — whitelist, guest deny, cloud rounds |
+| Policy | `ULLMAutonomousPolicy` — whitelist, step cap, cloud rounds |
 | Gateway | Reuse existing invoke; no bypass |
 | GUI | Autonomous run panel: progress, Stop, per-step Approve (strict) |
 | Audit | `autonomous_run_started`, `autonomous_step`, `autonomous_aborted`, `autonomous_completed` |
 
 ### 3.4 Security gate (before merge)
 
-- [ ] RBAC: guest cannot autonomous write
 - [ ] Path policy unchanged for lifecycle tools
 - [ ] No direct engine access
 - [ ] Audit covers every step

@@ -22,7 +22,7 @@ Step-by-step guide for adding assistant capabilities. Architecture context: [Dev
 2. Register write def with `requires_confirmation = true` unless low-risk property (see [`ULLMWriteToolPolicy`](../Core/Policy/ULLMWriteToolPolicy.cpp)).
 3. If args use `long_name` / `parent_long_name`, register fields in [`ULLMWriteArgumentNormalizer`](../Core/Domain/ULLMWriteArgumentNormalizer.cpp).
 4. Add to `kMutateTools()` in `ULLMToolFilterBuilder.cpp`.
-5. Policy: project loaded, `llm_write_enabled`, guest RBAC — [Policy-and-Safety.md](Policy-and-Safety.md).
+5. Policy: project loaded, `llm_write_enabled`, path/save gates — [Policy-and-Safety.md](Policy-and-Safety.md).
 6. Tests: gateway HITL, policy deny, optional [`Test_LLM_WriteToolsP1`](../../Tests/Unit/LLM/test_llm_write_tools_p1.cpp).
 
 **Do not** call `MModel_*` or `UApplication` from the handler; only domain/application facades.

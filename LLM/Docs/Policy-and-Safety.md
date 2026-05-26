@@ -49,7 +49,7 @@ struct PolicyDecision {
 | P08 | `long_name` not resolved (entity) | Deny write |
 | P09 | API key/cloud provider && `!session.allow_cloud_llm` | Deny provider call |
 
-**Роли пользователя (post-MVP):** map `UApplication::GetUserId()` → RBAC table.
+**Роли в audit:** `UApplication::GetUserId()` → `guest` / `operator` / `admin` в `tool_invoke_start` (только телеметрия). Graph write tools **не** блокируются по `user_id`; доступ задаёт пользователь через **Allow LLM write tools** + HITL/auto-apply.
 
 ---
 

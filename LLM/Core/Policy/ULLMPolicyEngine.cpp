@@ -4,7 +4,6 @@
 #include "../Domain/URdkApplicationCommands.h"
 #include "../Tools/ULLMToolRegistry.h"
 #include "ULLMPathPolicy.h"
-#include "ULLMUserRole.h"
 
 namespace RDK::LLM {
 
@@ -35,34 +34,6 @@ bool isSavePolicyTool(const std::string& name)
            || name == "save_project" || name == "save_project_metadata";
 }
 
-/// URdkApplicationCommands tools (File-menu parity); allowed for local guest (UserId < 0).
-bool isApplicationCommandTool(const std::string& name)
-{
-    static const char* kTools[] = {"create_configuration",
-                                   "load_configuration",
-                                   "load_project",
-                                   "save_configuration",
-                                   "save_configuration_as",
-                                   "save_project",
-                                   "close_configuration",
-                                   "update_configuration",
-                                   "save_project_metadata",
-                                   "reload_configuration_parameters",
-                                   "copy_configuration",
-                                   "rename_configuration",
-                                   "start_channel_calculation",
-                                   "pause_channel_calculation",
-                                   "reset_channel_calculation",
-                                   "step_channel_calculation",
-                                   nullptr};
-    for(const char** p = kTools; *p; ++p)
-    {
-        if(name == *p)
-            return true;
-    }
-    return false;
-}
-
 std::string extractPathArg(const std::string& tool_name, const nlohmann::json& args,
                            RDK::UApplication* app)
 {
@@ -85,7 +56,6 @@ PolicyDecision ULLMPolicyEngine::checkToolInvoke(const ToolInvokeRequest& req,
                                                   const LLMToolDefinition& tool,
                                                   const URdkDomainAccess& domain) const
 {
-    const LLMUserRole role = resolveUserRole(req.session.user_id);
     DomainSessionInfo info = domain.sessionInfo();
     const bool project_loaded = info.project_loaded || req.session.project_loaded;
 
@@ -96,12 +66,6 @@ PolicyDecision ULLMPolicyEngine::checkToolInvoke(const ToolInvokeRequest& req,
     if(tool.kind == LLMToolKind::Write && !req.session.llm_write_enabled)
     {
         return {false, "WRITE_DISABLED", "LLM write operations disabled in settings"};
-    }
-    if(tool.kind == LLMToolKind::Write && role == LLMUserRole::Guest
-       && !isApplicationCommandTool(tool.name))
-    {
-        return {false, "RBAC_GUEST_DENIED",
-                "Write tools require operator or admin (GetUserId() >= 0)"};
     }
     if(isSavePolicyTool(tool.name) && !req.session.allow_save)
     {
@@ -152,15 +116,11 @@ PolicyDecision ULLMPolicyEngine::checkPlan(const ULLMExecutionPlan& plan, const 
     if(static_cast<int>(plan.steps.size()) > 12)
         return {false, "PLAN_TOO_LARGE", "Execution plan exceeds 12 steps"};
 
-    const LLMUserRole role = resolveUserRole(session.user_id);
     for(const ExecutionPlanStep& step : plan.steps)
     {
         const LLMToolDefinition* def = registry.find(step.tool_name);
         if(!def)
             return {false, "PLAN_UNKNOWN_TOOL", "Unknown tool in plan: " + step.tool_name};
-        if(def->kind == LLMToolKind::Write && role == LLMUserRole::Guest
-           && !isApplicationCommandTool(def->name))
-            return {false, "PLAN_RBAC_DENIED", "Plan contains write tools for guest user"};
         if(def->kind == LLMToolKind::Write && !session.llm_write_enabled)
             return {false, "PLAN_WRITE_DISABLED", "Plan contains write tools but LLM write is disabled"};
         if(isSavePolicyTool(def->name) && !session.allow_save)

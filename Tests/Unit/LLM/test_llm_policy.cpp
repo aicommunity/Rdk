@@ -5,7 +5,7 @@
 
 using namespace RDK::LLM;
 
-TEST(LLMPolicy, DenyWriteForGuestUser)
+TEST(LLMPolicy, AllowGraphWriteForGuestWhenWriteEnabled)
 {
     ULLMPolicyEngine policy;
     LLMToolDefinition tool;
@@ -18,8 +18,7 @@ TEST(LLMPolicy, DenyWriteForGuestUser)
     req.session.user_id = -1;
     URdkDomainAccess domain(nullptr);
     PolicyDecision d = policy.checkToolInvoke(req, tool, domain);
-    EXPECT_FALSE(d.allowed);
-    EXPECT_EQ(d.deny_code, "RBAC_GUEST_DENIED");
+    EXPECT_TRUE(d.allowed);
 }
 
 TEST(LLMPolicy, DenyWriteWithoutProject)
