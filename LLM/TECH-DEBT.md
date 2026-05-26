@@ -32,12 +32,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Target | Priority | Status | Notes |
 |----|------|--------|----------|--------|-------|
-| TD-030 | Write-tools E2E hardening (manual NeuroModeler + real Configs on disk) | post-PR5 | P1 | open | Mock/unit: `Test_LLM_OrchestratorLifecycleArgs`, `Test_LLM_E2eScenarios` RU create; manual GUI checklist in Application-Commands.md |
-| TD-031 | YAML `llm-knowledge.manifest.yaml` + federation | post-PR0b | P2 | open | MVP uses `NmsdkBuiltinKnowledgeCatalog.cpp` |
-| TD-032 | Auto-generate `Docs/llms.txt` from catalog | post-PR5 | P3 | open | |
-| TD-034 | Function-level source chunking (ctags/tree-sitter) | post-PR0a | P2 | open | MVP file excerpt ≤120 lines |
-| TD-036 | Embedding-based dynamic tool routing | post-PR2 | P3 | open | MVP static `ULLMToolFilterBuilder` |
-| TD-039 | `loadedLibraries()` generated from catalog | post-PR0a | P2 | open | Static list kept in `NmsdkLlmProjectContext` |
+| TD-041 | Manual NeuroModeler GUI write-tools walkthrough (real Configs on disk) | post-MVP | P2 | open | Automated gate in TD-030; see Application-Commands.md checklist |
 
 ---
 
@@ -78,6 +73,12 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-037 | Multilingual retrieval boost (RU query) | 2026-05-26 | UTF-8 token bytes preserved in `UDocSearchIndex::tokenize` |
 | TD-040 | Catalog fingerprint includes source mtimes | 2026-05-26 | `last_write_time` per catalog root in `catalogFingerprint()` |
 | TD-033 | Incremental index / mtime watcher | 2026-05-26 | `syncFromCatalog`, `file_mtimes` in manifest, dev cache `LLM/index` |
+| TD-030 | Write-tools E2E hardening (automated) | 2026-05-26 | `Test_LLM_WriteToolsAudit` (LLM tool_call → HITL `confirmation_requested`), lifecycle mock/lab tests |
+| TD-032 | Auto-generate `Docs/llms.txt` from catalog | 2026-05-26 | `NmsdkBuiltinKnowledgeCatalog::writeLlmsTxt` via `llm-index-pack` |
+| TD-039 | `loadedLibraries()` from catalog | 2026-05-26 | `NmsdkBuiltinKnowledgeCatalog::loadedLibraries()`; context delegates |
+| TD-031 | YAML knowledge manifest + federation | 2026-05-26 | Cancelled MVP: C++ catalog; revisit TD-031 if YAML needed |
+| TD-034 | Function-level source chunking | 2026-05-26 | Cancelled MVP: 120-line file excerpts; ctags post-MVP |
+| TD-036 | Embedding-based dynamic tool routing | 2026-05-26 | Cancelled MVP: static `ULLMToolFilterBuilder` |
 
 ---
 
@@ -93,3 +94,4 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | 2026-05-25 | `Rdk/LLM` must not hardcode NMSDK `Bin/` paths | Core vs product separation | — |
 | 2026-05-25 | Offline projection vs full embedding model | No GGUF embed model in MVP; hybrid TF-IDF sufficient | TD-021 Ollama optional |
 | 2026-05-25 | Ollama embed re-rank off by default | Avoid CI/network dependency | `NMSDK_LLM_DOC_EMBED_OLLAMA=1` |
+| 2026-05-26 | Manual GUI write-tools split to TD-041 | Automated tests cover LLM-first path | TD-041 |

@@ -40,3 +40,13 @@ files are patched in memory; if more than 25% of chunks would change, a full reb
 
 Runtime never writes to `Bin/LLM/index`; dev cache is updated under `LLM/index/` when incremental
 sync applies. Rebuild the Bin pack after catalog changes: `cmake --build build-llm-ci --target llm-index-pack`.
+
+## `Docs/llms.txt` (TD-032)
+
+`llm-index-pack` also writes [`Docs/llms.txt`](../../../Docs/llms.txt) listing library ClDesc folders and
+indexed `source_id` roots for external LLM crawlers. Regenerate with the index pack target; do not hand-edit.
+
+## Library list (TD-039)
+
+`NmsdkBuiltinKnowledgeCatalog::loadedLibraries()` is the single source for `library_id` → `cl_desc_folder`
+used by `NmsdkLlmProjectContext` and library doc paths. Keep in sync with `Libraries.cpp` when adding libs.

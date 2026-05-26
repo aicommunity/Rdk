@@ -33,5 +33,11 @@ int main(int argc, char** argv)
     const fs::path out_dir = catalog.prebuiltIndexDirectory();
     index.savePrebuilt(out_dir, catalog.catalogFingerprint());
     std::cout << "Wrote prebuilt index to " << out_dir << '\n';
+
+    if(catalog.writeLlmsTxt(repo))
+        std::cout << "Wrote Docs/llms.txt\n";
+    else
+        std::cerr << "Warning: failed to write Docs/llms.txt\n";
+
     return index.empty() ? 2 : 0;
 }
