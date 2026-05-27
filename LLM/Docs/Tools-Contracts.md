@@ -321,3 +321,36 @@ After success, optional `ILLMPresentationSink` refreshes GUI (NeuroModeler).
 - `valid_add_component.json`
 - `invalid_add_component_missing_parent.json`
 - `find_component_ambiguous_response.json`
+
+---
+
+## Task planning and execution (post-MVP)
+
+### Task planner output (`execution_plan`)
+
+`ULLMTaskPlanner` outputs an `execution_plan` JSON compatible with
+`executionPlanOpenAiResponseFormat()` and includes:
+
+- root fields: `goal_en`, `confidence`, optional `goal_success`
+- per-step fields: optional `success`, optional `repeat_count`
+
+`goal_success` and `success` use this shape:
+
+```json
+{
+  "type": "tool_ok | component_count | link_exists | goal_component_count",
+  "params": {}
+}
+```
+
+### `connect_components` port inference
+
+When `from_property` / `to_property` are empty or generic (`Input` / `Output`), runtime
+normalization uses `Bin/LLM/index/link-patterns.json` (`ULinkPatternCatalog`) to infer
+ports by `(from_class, to_class)` with confidence thresholds:
+
+- `kMinAutoFillScore = 0.6`
+- `kMinScoreGap = 0.2`
+
+If confidence is insufficient, tool invocation returns structured clarification payload
+(`kind = "property"`, candidate ports).

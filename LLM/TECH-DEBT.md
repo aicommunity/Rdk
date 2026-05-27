@@ -48,11 +48,11 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-059 | `show_ui_panel` / `LLMUiPanel` presentation API | phase-E | P1 | done | Implemented via `LLMPresentationEvent.show_panel` + `UGEngineControlWidget::showLlmUiPanel` + tools `show_ui_panel` / `list_ui_panels` |
 | TD-060 | `set_active_channel` GUI API research | phase-E | P3 | done | `set_active_channel` + `list_channels` via `Core_SelectChannel` and presentation sink GUI sync |
 | TD-061 | `open_component_gui_tab` host dialog/automation gap | phase-E | P2 | done | Implemented tool `open_component_gui_tab` → `UGEngineControlWidget::promptAndOpenComponentGuiTabHost` (still user-assisted) |
-| TD-062 | Task planner + `success_criteria` / `goal_success` for imperative multi-step mutate | post-MVP-agent | P1 | open | PR4; see Post-MVP plan §7 |
-| TD-063 | EN query normalization (LLM translate) before intent/planning | post-MVP-agent | P1 | open | PR1; see Post-MVP plan §4 |
-| TD-064 | LinkPatternCatalog from Bin/Configs for connect inference | post-MVP-agent | P1 | open | PR2+PR3; see Post-MVP plan §5–6 |
-| TD-065 | Task executor verify-loop; remove harmful add_component early return | post-MVP-agent | P1 | in_progress | PR0 early-return gated; PR5 executor |
-| TD-066 | Confidence-gated plan confirmation (complexity-dependent) | post-MVP-agent | P2 | open | PR4; see Post-MVP plan §7.4 |
+| TD-062 | Task planner + `success_criteria` / `goal_success` for imperative multi-step mutate | post-MVP-agent | P1 | done | Completed in post-MVP autonomous planner implementation (PR4) |
+| TD-063 | EN query normalization (LLM translate) before intent/planning | post-MVP-agent | P1 | done | Completed via `ULLMQueryNormalizer` + orchestrator wiring (PR1) |
+| TD-064 | LinkPatternCatalog from Bin/Configs for connect inference | post-MVP-agent | P1 | done | Completed via link pattern build/index + connect normalizer integration (PR2+PR3) |
+| TD-065 | Task executor verify-loop; remove harmful add_component early return | post-MVP-agent | P1 | done | Completed via task-path gating + verifier/retry/replan task executor (PR0+PR5) |
+| TD-066 | Confidence-gated plan confirmation (complexity-dependent) | post-MVP-agent | P2 | done | Completed in `ULLMPlanConfidence` + task-path confirmation branch (PR4) |
 | TD-041 | Manual NeuroModeler GUI write-tools walkthrough (real Configs on disk) | post-MVP | P3 | open | Checklist: Application-Commands.md § TD-041; incl. auto-apply + Reject flow |
 | TD-036 | Embedding-based dynamic tool routing | post-MVP | P3 | open | Stub `ULLMDynamicToolRouter`; env `NMSDK_LLM_DYNAMIC_TOOL_ROUTING=1` |
 | TD-031 | YAML knowledge manifest + federation | post-MVP | P3 | open | Stub `ILLMYamlKnowledgeCatalog`; Post-MVP plan §5 |

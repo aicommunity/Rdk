@@ -144,4 +144,12 @@ flowchart LR
 | TD-035 | UI flag + tests |
 | TD-031/034/036 | Each `done` or `cancelled` with TECH-DEBT resolution |
 
+## Implementation status update (2026-05-27)
+
+- Phase 1 autonomous baseline delivered in production code:
+  - EN query normalization for planning path
+  - task-path routing + planner + confidence gate
+  - task executor with per-step verification/audit and bounded retries
+  - GUI settings for autonomous mode, max steps, and query translation
+
 Update this file and [TECH-DEBT.md](../TECH-DEBT.md) when phases close.

@@ -12,6 +12,7 @@ enum class LLMWorkflowPhase {
     Running,
     AwaitingConfirmation,
     Executing,
+    TaskExecuting,
     Completed,
     Failed
 };
@@ -28,6 +29,8 @@ inline const char* workflowPhaseName(LLMWorkflowPhase phase)
         return "AwaitingConfirmation";
     case LLMWorkflowPhase::Executing:
         return "Executing";
+    case LLMWorkflowPhase::TaskExecuting:
+        return "TaskExecuting";
     case LLMWorkflowPhase::Completed:
         return "Completed";
     case LLMWorkflowPhase::Failed:
@@ -45,14 +48,16 @@ inline bool workflowTransitionAllowed(LLMWorkflowPhase from, LLMWorkflowPhase to
     case LLMWorkflowPhase::Idle:
         return to == LLMWorkflowPhase::Running;
     case LLMWorkflowPhase::Running:
-        return to == LLMWorkflowPhase::Executing || to == LLMWorkflowPhase::AwaitingConfirmation
-               || to == LLMWorkflowPhase::Completed || to == LLMWorkflowPhase::Failed;
+        return to == LLMWorkflowPhase::Executing || to == LLMWorkflowPhase::TaskExecuting
+               || to == LLMWorkflowPhase::AwaitingConfirmation || to == LLMWorkflowPhase::Completed
+               || to == LLMWorkflowPhase::Failed;
     case LLMWorkflowPhase::Executing:
+    case LLMWorkflowPhase::TaskExecuting:
         return to == LLMWorkflowPhase::AwaitingConfirmation || to == LLMWorkflowPhase::Running
                || to == LLMWorkflowPhase::Completed || to == LLMWorkflowPhase::Failed;
     case LLMWorkflowPhase::AwaitingConfirmation:
-        return to == LLMWorkflowPhase::Executing || to == LLMWorkflowPhase::Idle
-               || to == LLMWorkflowPhase::Failed;
+        return to == LLMWorkflowPhase::Executing || to == LLMWorkflowPhase::TaskExecuting
+               || to == LLMWorkflowPhase::Idle || to == LLMWorkflowPhase::Failed;
     case LLMWorkflowPhase::Completed:
     case LLMWorkflowPhase::Failed:
         return to == LLMWorkflowPhase::Idle || to == LLMWorkflowPhase::Running;

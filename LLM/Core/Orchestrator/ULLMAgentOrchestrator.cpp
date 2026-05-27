@@ -189,7 +189,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
         session.llm_write_enabled = runtime_settings.llm_write_enabled;
         session.auto_apply_writes =
             runtime_settings.llm_write_enabled && runtime_settings.llm_auto_apply_writes;
-        session.autonomous_mode = LLMAutonomousMode::Off;
+        session.autonomous_mode = runtime_settings.autonomous_mode;
         session.autonomous_steps_taken = 0;
         session.allow_cloud_llm = runtime_settings.allow_cloud_providers;
 
@@ -270,16 +270,15 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 return final;
             }
 
-            setWorkflowPhase(state, LLMWorkflowPhase::Executing, req.trace_id);
+            setWorkflowPhase(state, LLMWorkflowPhase::TaskExecuting, req.trace_id);
             ULLMTaskExecutor task_executor(m_registry, m_gateway);
             TaskExecuteResult exec = task_executor.execute(tp.plan, session, req.trace_id);
             final.ok = exec.ok;
             final.text = exec.summary;
             if(!exec.ok)
                 final.error = exec.summary;
-            setWorkflowPhase(state,
-                             exec.ok ? LLMWorkflowPhase::Completed : LLMWorkflowPhase::Failed,
-                             req.trace_id);
+            setWorkflowPhase(
+                state, exec.ok ? LLMWorkflowPhase::Completed : LLMWorkflowPhase::Failed, req.trace_id);
             setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
             m_store.persistToDisk(req.session_id);
             return final;
