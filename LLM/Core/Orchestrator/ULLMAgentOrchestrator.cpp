@@ -4,6 +4,7 @@
 #include <cctype>
 #include <functional>
 #include <future>
+#include <iomanip>
 #include <sstream>
 
 #include "../LlmModuleInit.h"
@@ -36,6 +37,14 @@
 namespace RDK::LLM {
 
 namespace {
+
+std::string pseudoSha256(const std::string& text)
+{
+    const auto h = std::hash<std::string>{}(text);
+    std::ostringstream oss;
+    oss << std::hex << std::setw(16) << std::setfill('0') << h;
+    return oss.str();
+}
 
 std::string formatClarificationMessage(const nlohmann::json& payload)
 {
@@ -229,7 +238,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             "query_translated",
             {{"detected_lang", qnorm.detected_lang},
              {"used_llm_translate", qnorm.used_llm_translate},
-             {"normalized_length", static_cast<int>(planning_text.size())}},
+             {"normalized_length", static_cast<int>(planning_text.size())},
+             {"text_en_sha256", pseudoSha256(planning_text)}},
             req.trace_id, req.session_id);
     }
     else if(!qnorm.ok)
