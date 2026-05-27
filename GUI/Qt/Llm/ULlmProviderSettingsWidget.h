@@ -7,6 +7,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QSpinBox>
 
 #include "../../../LLM/Core/LlmTypes.h"
 
@@ -42,6 +43,8 @@ private:
     QCheckBox* m_allow_write = nullptr;
     QCheckBox* m_auto_apply_writes = nullptr;
     QComboBox* m_autonomous_mode = nullptr;
+    QSpinBox* m_max_autonomous_steps = nullptr;
+    QCheckBox* m_translate_queries_to_en = nullptr;
     QComboBox* m_response_language = nullptr;
     QComboBox* m_send_shortcut = nullptr;
     QLabel* m_status = nullptr;

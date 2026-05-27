@@ -101,6 +101,11 @@ void ULLMSettingsStore::setMaxAutonomousSteps(int max_steps)
     m_runtime.max_autonomous_steps = max_steps > 0 ? max_steps : 3;
 }
 
+void ULLMSettingsStore::setTranslateQueriesToEn(bool enabled)
+{
+    m_runtime.translate_queries_to_en = enabled;
+}
+
 void ULLMSettingsStore::setPreferredResponseLanguage(const std::string& code)
 {
     m_runtime.preferred_response_language = code;

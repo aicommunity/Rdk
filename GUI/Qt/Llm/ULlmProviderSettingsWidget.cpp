@@ -67,7 +67,17 @@ ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UAp
     m_autonomous_mode->addItem(tr("Strict (confirm each step)"), QStringLiteral("strict"));
     m_autonomous_mode->addItem(tr("Semi-auto (auto-apply writes)"), QStringLiteral("semi_auto"));
     autonomous_form->addRow(tr("Autonomous mode:"), m_autonomous_mode);
+
+    m_max_autonomous_steps = new QSpinBox(this);
+    m_max_autonomous_steps->setRange(1, 50);
+    m_max_autonomous_steps->setValue(3);
+    autonomous_form->addRow(tr("Max autonomous steps:"), m_max_autonomous_steps);
+
     layout->addLayout(autonomous_form);
+
+    m_translate_queries_to_en =
+        new QCheckBox(tr("Translate non-English requests to English (planning only)"), this);
+    layout->addWidget(m_translate_queries_to_en);
 
     auto* lang_form = new QFormLayout();
     m_response_language = new QComboBox(this);
@@ -138,6 +148,8 @@ void ULlmProviderSettingsWidget::loadFromStore()
         const int mode_index = m_autonomous_mode->findData(mode);
         m_autonomous_mode->setCurrentIndex(mode_index >= 0 ? mode_index : 0);
     }
+    m_max_autonomous_steps->setValue(store.runtime().max_autonomous_steps);
+    m_translate_queries_to_en->setChecked(store.runtime().translate_queries_to_en);
 
     const QString lang =
         QString::fromStdString(store.runtime().preferred_response_language);
@@ -322,7 +334,8 @@ void ULlmProviderSettingsWidget::saveToStore()
         store.setAutonomousMode(RDK::LLM::LLMAutonomousMode::SemiAuto);
     else
         store.setAutonomousMode(RDK::LLM::LLMAutonomousMode::Off);
-    store.setMaxAutonomousSteps(3);
+    store.setMaxAutonomousSteps(m_max_autonomous_steps->value());
+    store.setTranslateQueriesToEn(m_translate_queries_to_en->isChecked());
     store.setPreferredResponseLanguage(m_response_language->currentData().toString().toStdString());
     store.setSendShortcut(m_send_shortcut->currentData().toString() == QStringLiteral("enter")
                               ? RDK::LLM::LLMSendShortcutMode::Enter

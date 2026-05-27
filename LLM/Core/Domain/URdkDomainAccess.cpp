@@ -567,6 +567,22 @@ DomainStatus URdkDomainAccess::connectComponents(const std::string& from_long_na
     return {};
 }
 
+DomainStatus URdkDomainAccess::getComponentClassName(const std::string& long_name,
+                                                     int channel_index,
+                                                     std::string& out_class_name) const
+{
+    out_class_name.clear();
+    nlohmann::json info;
+    DomainStatus st = findComponentByLongName(long_name, info, channel_index);
+    if(!st.ok())
+        return st;
+    out_class_name = info.value("class_name", "");
+    if(out_class_name.empty())
+        return {DomainStatusCode::ClassNotFound,
+                "Class name is not available for component " + long_name};
+    return {};
+}
+
 DomainStatus URdkDomainAccess::breakComponentLink(const std::string& from_long_name,
                                                   const std::string& from_property,
                                                   const std::string& to_long_name,

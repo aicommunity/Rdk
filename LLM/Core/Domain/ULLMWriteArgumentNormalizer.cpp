@@ -1,11 +1,15 @@
 #include "ULLMWriteArgumentNormalizer.h"
 
+#include "../Context/ULinkPatternCatalog.h"
 #include "../Orchestrator/ULLMLibraryScopeHint.h"
 #include "../Orchestrator/ULLMLifecycleArgumentGate.h"
 #include "URdkEntityResolver.h"
 
 #include <algorithm>
 #include <cctype>
+#include <filesystem>
+#include <cstdlib>
+#include <mutex>
 #include <optional>
 #include <sstream>
 #include <unordered_map>
@@ -55,6 +59,30 @@ struct ClassCandidate {
     std::string class_name;
     double score = 0.0;
 };
+
+const ULinkPatternCatalog& linkPatternCatalog()
+{
+    static std::once_flag once;
+    static ULinkPatternCatalog catalog;
+    std::call_once(once, []() {
+        std::filesystem::path root;
+        if(const char* env = std::getenv("NMSDK_ROOT"))
+            root = std::filesystem::path(env);
+        if(root.empty() || !std::filesystem::exists(root / "CMakeLists.txt"))
+        {
+            root = std::filesystem::current_path();
+            for(int i = 0; i < 8 && root.has_parent_path(); ++i)
+            {
+                if(std::filesystem::exists(root / "CMakeLists.txt"))
+                    break;
+                root = root.parent_path();
+            }
+        }
+        if(!root.empty())
+            catalog.loadFromFile(root / "Bin/LLM/index/link-patterns.json");
+    });
+    return catalog;
+}
 
 bool fillClassDisambiguationOut(WriteArgumentNormalizeResult& out, const std::string& query,
                                 const std::vector<ClassCandidate>& candidates)
@@ -419,10 +447,50 @@ bool normalizeConnectComponentsArguments(nlohmann::json& arguments, URdkDomainAc
         return false;
     }
 
+    auto tryCatalogFill = [&]() -> bool {
+        std::string from_class;
+        std::string to_class;
+        const DomainStatus fs = domain.getComponentClassName(from_ln, channel_index, from_class);
+        const DomainStatus ts = domain.getComponentClassName(to_ln, channel_index, to_class);
+        if(!fs.ok() || !ts.ok())
+            return false;
+
+        auto candidates = linkPatternCatalog().suggest(from_class, to_class, 3);
+        if(candidates.empty() && from_class.find("Neuron") != std::string::npos
+           && to_class.find("Neuron") != std::string::npos)
+            candidates = linkPatternCatalog().suggest(from_class, to_class, 5);
+        if(candidates.empty())
+            return false;
+
+        const double top = candidates[0].score;
+        const double second = candidates.size() > 1 ? candidates[1].score : 0.0;
+        constexpr double kMinAutoFillScore = 0.6;
+        constexpr double kMinScoreGap = 0.2;
+        if(top < kMinAutoFillScore || (top - second) < kMinScoreGap)
+            return false;
+
+        arguments["from_property"] = candidates[0].from_port;
+        arguments["to_property"] = candidates[0].to_port;
+        out.ok = true;
+        out.error_code.clear();
+        out.message.clear();
+        out.needs_clarification = false;
+        out.clarification = nlohmann::json::object();
+        return true;
+    };
+
     if(!resolveConnectPortField("from_property", from_ln, from_outputs, true, arguments, out))
+    {
+        if(tryCatalogFill())
+            return true;
         return false;
+    }
     if(!resolveConnectPortField("to_property", to_ln, to_inputs, false, arguments, out))
+    {
+        if(tryCatalogFill())
+            return true;
         return false;
+    }
     return true;
 }
 

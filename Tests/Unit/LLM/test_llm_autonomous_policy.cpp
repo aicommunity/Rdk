@@ -15,22 +15,39 @@ TEST(LLMAutonomousPolicy, OffAllowsAnyTool)
 TEST(LLMAutonomousPolicy, StrictWhitelistsCoreTools)
 {
     EXPECT_TRUE(ULLMAutonomousPolicy::isToolWhitelisted("add_component", LLMAutonomousMode::Strict));
-    EXPECT_FALSE(
-        ULLMAutonomousPolicy::isToolWhitelisted("set_property", LLMAutonomousMode::Strict));
+    EXPECT_TRUE(ULLMAutonomousPolicy::isToolWhitelisted("set_property", LLMAutonomousMode::Strict));
+    EXPECT_FALSE(ULLMAutonomousPolicy::isToolWhitelisted("create_configuration",
+                                                          LLMAutonomousMode::Strict));
 }
 
 TEST(LLMAutonomousPolicy, StepLimitDenied)
 {
     AutonomousStepDecision d = ULLMAutonomousPolicy::checkStep(
-        "get_net_snapshot", LLMAutonomousMode::Strict, 3, 3);
+        "add_component", LLMAutonomousMode::Strict, 3, 3);
     EXPECT_FALSE(d.allowed);
     EXPECT_EQ(d.deny_code, "AUTONOMOUS_STEP_LIMIT");
+}
+
+TEST(LLMAutonomousPolicy, ReadToolsDoNotConsumeStepBudget)
+{
+    AutonomousStepDecision d = ULLMAutonomousPolicy::checkStep(
+        "get_net_snapshot", LLMAutonomousMode::Strict, 99, 3);
+    EXPECT_TRUE(d.allowed);
+}
+
+TEST(LLMAutonomousPolicy, AutonomousAllowsConnect)
+{
+    EXPECT_TRUE(
+        ULLMAutonomousPolicy::isToolWhitelisted("connect_components", LLMAutonomousMode::SemiAuto));
+    AutonomousStepDecision d = ULLMAutonomousPolicy::checkStep(
+        "connect_components", LLMAutonomousMode::SemiAuto, 0, 5);
+    EXPECT_TRUE(d.allowed);
 }
 
 TEST(LLMAutonomousPolicy, NonWhitelistedDenied)
 {
     AutonomousStepDecision d = ULLMAutonomousPolicy::checkStep(
-        "connect_components", LLMAutonomousMode::SemiAuto, 0, 3);
+        "create_configuration", LLMAutonomousMode::SemiAuto, 0, 3);
     EXPECT_FALSE(d.allowed);
     EXPECT_EQ(d.deny_code, "AUTONOMOUS_TOOL_NOT_WHITELISTED");
 }

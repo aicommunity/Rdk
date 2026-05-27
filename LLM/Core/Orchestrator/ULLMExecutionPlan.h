@@ -11,6 +11,11 @@ namespace RDK::LLM {
 
 struct LLMProviderProfile;
 
+struct SuccessCriteria {
+    std::string type; // tool_ok | component_count | link_exists | goal_component_count
+    nlohmann::json params = nlohmann::json::object();
+};
+
 struct ExecutionPlanStep {
     int step_id = 0;
     std::string tool_name;
@@ -19,12 +24,17 @@ struct ExecutionPlanStep {
     std::string status = "pending";
     /// Last tool result when status is done (checkpoint / rollback, TD-023).
     nlohmann::json last_result = nlohmann::json::object();
+    std::optional<SuccessCriteria> success;
+    int repeat_count = 1;
 };
 
 struct ULLMExecutionPlan {
     std::string plan_id;
     std::vector<ExecutionPlanStep> steps;
     bool requires_user_confirmation = true;
+    std::string goal_en;
+    float confidence = 0.f;
+    std::optional<SuccessCriteria> goal_success;
     /// Set when execution stopped mid-plan and may be resumed (TD-023).
     bool paused = false;
     int checkpoint_after_step_id = 0;

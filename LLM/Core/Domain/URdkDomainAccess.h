@@ -57,6 +57,9 @@ public:
                                        int channel_index,
                                        std::vector<std::string>& outputs,
                                        std::vector<std::string>& inputs) const;
+    DomainStatus getComponentClassName(const std::string& long_name,
+                                       int channel_index,
+                                       std::string& out_class_name) const;
 
     DomainStatus addComponent(const std::string& class_name,
                               const std::string& parent_long_name,

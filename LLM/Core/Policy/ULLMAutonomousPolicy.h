@@ -20,6 +20,9 @@ public:
                                             int steps_taken, int max_steps);
 
     static bool isToolWhitelisted(const std::string& tool_name, LLMAutonomousMode mode);
+
+    static bool isAutonomousReadTool(const std::string& tool_name);
+    static bool isAutonomousWriteTool(const std::string& tool_name);
 };
 
 } // namespace RDK::LLM

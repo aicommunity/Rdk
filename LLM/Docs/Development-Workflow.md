@@ -17,7 +17,8 @@ Execute **in order** at the end of each phase:
    - Add **new** rows for shortcuts taken this phase
    - Move resolved rows to **Done** with commit hash
 4. **Docs** — update MVP checkboxes in [MVP-Roadmap.md](MVP-Roadmap.md) if criteria met; sync [Developer-Architecture.md](Developer-Architecture.md) / [Extension-Guide.md](Extension-Guide.md) when architecture or extension patterns change
-5. **Git commit** — **one commit per phase** (English message, see §2). Agent creates commit **without waiting for user prompt** when phase checklist is complete.
+5. **Rdk commit** — **one commit per phase/PR** in `Rdk/` (English message, see §2). Agent creates commit **without waiting for user prompt** when phase checklist is complete.
+6. **Nmsdk bump commit** — update the root repository (`Nmsdk/`) to point at the new `Rdk` commit (subrepo/submodule pointer), then create **one English commit** in the root repo.
 
 If build fails: **do not commit**; fix or document blocker in TECH-DEBT as P0 `blocked`.
 
@@ -91,6 +92,15 @@ Docs: MVP-Roadmap phase N criteria updated
 - Known limitation documented as acceptable for this phase
 - External dependency (vcpkg, Ollama install, GPU)
 - Design alternative rejected but worth revisiting
+
+### Deferred decisions (ADR-style, required when applicable)
+
+If you defer a decision that changes the architecture or affects future implementation work, record it in the **Deferred decisions log** section of `TECH-DEBT.md` with:
+
+- what was decided (and what was not),
+- why it was deferred,
+- the phase by which to revisit, and
+- a concrete trigger (TD id, env flag, failing scenario, or milestone).
 
 ### Row template
 

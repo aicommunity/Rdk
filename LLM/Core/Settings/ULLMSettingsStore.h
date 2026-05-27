@@ -28,6 +28,7 @@ public:
     void setLlmAutoApplyWrites(bool auto_apply);
     void setAutonomousMode(LLMAutonomousMode mode);
     void setMaxAutonomousSteps(int max_steps);
+    void setTranslateQueriesToEn(bool enabled);
 
     void setPreferredResponseLanguage(const std::string& code);
     const std::string& preferredResponseLanguage() const;

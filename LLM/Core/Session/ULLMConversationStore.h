@@ -24,6 +24,8 @@ struct ConversationState {
     std::optional<PendingConfirmation> pending;
     std::optional<PendingToolArguments> pending_tool_arguments;
     std::optional<ULLMExecutionPlan> pending_plan;
+    std::string last_user_text_original;
+    std::string last_user_text_en;
     LLMWorkflowPhase workflow_phase = LLMWorkflowPhase::Idle;
     int cloud_provider_rounds = 0;
 };

@@ -21,11 +21,17 @@
 #include "ULLMWriteToolUserMessage.h"
 #include "ULLMEmbeddedToolCalls.h"
 #include "ULLMExecutionPlan.h"
+#include "ULLMTaskPlanner.h"
 #include "ULLMAgentManifestBuilder.h"
+#include "ULLMPlanConfidence.h"
 #include "ULLMPlanExecutor.h"
+#include "ULLMQueryNormalizer.h"
+#include "ULLMTaskExecutor.h"
 #include "../Knowledge/ULLMDynamicToolRouter.h"
 #include "../Policy/ULLMAutonomousPolicy.h"
 #include "../Domain/ULLMWriteArgumentNormalizer.h"
+#include "ULLMQuantityParser.h"
+#include "ULLMTaskPathRouting.h"
 
 namespace RDK::LLM {
 
@@ -174,10 +180,12 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                          req.session_id);
 
     LLMSessionContext session = req.session;
+    bool translate_queries_to_en = true;
     if(LLMServices::instance().isInitialized())
     {
         const LLMRuntimeProviderSettings& runtime_settings =
             LLMServices::instance().settings().runtime();
+        translate_queries_to_en = runtime_settings.translate_queries_to_en;
         session.llm_write_enabled = runtime_settings.llm_write_enabled;
         session.auto_apply_writes =
             runtime_settings.llm_write_enabled && runtime_settings.llm_auto_apply_writes;
@@ -209,9 +217,74 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
 
     setWorkflowPhase(state, LLMWorkflowPhase::Running, req.trace_id);
 
+    const QueryNormalizeResult qnorm =
+        normalizeUserQueryForPlanning(m_provider, req.user_text, translate_queries_to_en);
+    const std::string planning_text =
+        (!qnorm.text_en.empty() ? qnorm.text_en : req.user_text);
+    state.last_user_text_original = req.user_text;
+    state.last_user_text_en = planning_text;
+    if(qnorm.used_llm_translate)
+    {
+        GetAuditLog().append(
+            "query_translated",
+            {{"detected_lang", qnorm.detected_lang},
+             {"used_llm_translate", qnorm.used_llm_translate},
+             {"normalized_length", static_cast<int>(planning_text.size())}},
+            req.trace_id, req.session_id);
+    }
+    else if(!qnorm.ok)
+    {
+        GetAuditLog().append("query_translate_failed",
+                             {{"detected_lang", qnorm.detected_lang},
+                              {"used_llm_translate", qnorm.used_llm_translate}},
+                             req.trace_id, req.session_id);
+    }
+
     const IntentParseResult intent_result =
-        m_intent.parseWithOptionalLlm(&m_provider, req.user_text);
+        m_intent.parseWithOptionalLlm(&m_provider, planning_text);
     const LLMIntentKind intent = intent_result.kind;
+    const TaskPathDecision task_path_decision =
+        decideTaskPath(planning_text, intent, session.autonomous_mode);
+
+    if(intent == LLMIntentKind::Mutate && task_path_decision.use_task_path)
+    {
+        TaskPlanRequest tp_req;
+        tp_req.goal_en = planning_text;
+        tp_req.session = session;
+        tp_req.project_loaded = session.project_loaded;
+        TaskPlanResult tp = buildTaskPlan(m_provider, m_registry,
+                                          LLMServices::instance().domain(), tp_req);
+        if(tp.ok)
+        {
+            const PlanConfirmDecision confirm_decision = decidePlanConfirmation(
+                tp.plan, session.autonomous_mode, session.auto_apply_writes, !tp.issues.empty());
+            if(confirm_decision.needs_user_confirmation)
+            {
+                state.pending_plan = tp.plan;
+                final.pending_plan_execution = true;
+                final.pending_plan_id = tp.plan.plan_id;
+                final.text = formatExecutionPlanPreview(tp.plan)
+                             + "\n\n[Task plan ready — confirm execution in the assistant panel.]";
+                setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation, req.trace_id);
+                m_store.persistToDisk(req.session_id);
+                return final;
+            }
+
+            setWorkflowPhase(state, LLMWorkflowPhase::Executing, req.trace_id);
+            ULLMTaskExecutor task_executor(m_registry, m_gateway);
+            TaskExecuteResult exec = task_executor.execute(tp.plan, session, req.trace_id);
+            final.ok = exec.ok;
+            final.text = exec.summary;
+            if(!exec.ok)
+                final.error = exec.summary;
+            setWorkflowPhase(state,
+                             exec.ok ? LLMWorkflowPhase::Completed : LLMWorkflowPhase::Failed,
+                             req.trace_id);
+            setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
+            m_store.persistToDisk(req.session_id);
+            return final;
+        }
+    }
     const char* intent_name = "query";
     switch(intent)
     {
@@ -351,7 +424,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
 
     ToolFilter filter =
         buildToolFilter(intent, session.llm_write_enabled, lifecycle_action);
-    filter = ULLMDynamicToolRouter::apply(filter, req.user_text);
+    filter = ULLMDynamicToolRouter::apply(filter, planning_text);
 
     std::vector<LLMMessage> provider_messages = state.messages;
     const bool strict_plan_schema =
@@ -395,7 +468,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
     {
         LLMMessage manifest;
         manifest.role = LLMMessage::Role::System;
-        manifest.content = buildAgentManifest(m_registry, filter, 6000, req.user_text);
+        manifest.content = buildAgentManifest(m_registry, filter, 6000, planning_text);
         provider_messages.insert(provider_messages.begin(), manifest);
     }
 
@@ -538,20 +611,58 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             assistant.content = completion.text;
             m_store.appendMessage(req.session_id, assistant);
             final.text = completion.text;
-            if(intent == LLMIntentKind::Plan)
+            if(intent == LLMIntentKind::Plan || task_path_decision.use_task_path)
             {
                 if(auto plan = parseExecutionPlanFromAssistantText(completion.text))
                 {
+                    if(task_path_decision.use_task_path && plan->goal_en.empty())
+                        plan->goal_en = planning_text;
+                    if(task_path_decision.use_task_path && plan->confidence <= 0.f)
+                        plan->confidence = 0.75f;
+
                     ULLMPolicyEngine policy;
                     const PolicyDecision plan_pol = policy.checkPlan(*plan, session, m_registry);
                     if(plan_pol.allowed)
                     {
-                        state.pending_plan = *plan;
-                        final.pending_plan_execution = true;
-                        final.pending_plan_id = plan->plan_id;
-                        final.text = formatExecutionPlanPreview(*plan) +
-                                     "\n\n[Plan ready — confirm execution in the assistant panel.]";
-                        setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation, req.trace_id);
+                        const PlanConfirmDecision confirm_decision =
+                            decidePlanConfirmation(*plan, session.autonomous_mode,
+                                                   session.auto_apply_writes, false);
+                        if(confirm_decision.needs_user_confirmation)
+                        {
+                            state.pending_plan = *plan;
+                            final.pending_plan_execution = true;
+                            final.pending_plan_id = plan->plan_id;
+                            final.text =
+                                formatExecutionPlanPreview(*plan)
+                                + "\n\n[Plan ready — confirm execution in the assistant panel.]";
+                            setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation, req.trace_id);
+                            m_store.persistToDisk(req.session_id);
+                            return final;
+                        }
+
+                        setWorkflowPhase(state, LLMWorkflowPhase::Executing, req.trace_id);
+                        ULLMPlanExecutor executor(m_registry, m_gateway);
+                        ULLMExecutionPlan run_plan = *plan;
+                        const PlanExecutionResult exec = executor.execute(
+                            run_plan, session, req.trace_id, planExecuteWithCheckpointOnFailure());
+                        final.ok = exec.ok;
+                        final.text = exec.summary;
+                        final.error = exec.ok ? "" : exec.summary;
+                        if(!exec.ok && exec.paused_for_resume)
+                        {
+                            state.pending_plan = run_plan;
+                            final.plan_paused = true;
+                            final.can_resume_plan = true;
+                            final.pending_plan_id = run_plan.plan_id;
+                            setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation, req.trace_id);
+                        }
+                        else
+                        {
+                            setWorkflowPhase(state, exec.ok ? LLMWorkflowPhase::Completed
+                                                            : LLMWorkflowPhase::Failed,
+                                             req.trace_id);
+                            setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
+                        }
                         m_store.persistToDisk(req.session_id);
                         return final;
                     }
@@ -611,11 +722,12 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             invoke.tool_name = call.name;
             invoke.arguments = call.arguments;
             invoke.session = session;
-            invoke.user_text_hint = req.user_text;
+            invoke.user_text_hint = planning_text;
             ToolGatewayResult tr = m_gateway.invoke(invoke);
             if(tr.ok && call.name == "set_active_channel" && call.arguments.contains("channel_index"))
                 session.active_channel_index = call.arguments["channel_index"].get<int>();
-            if(tr.ok && !tr.pending_confirmation && session.autonomous_mode != LLMAutonomousMode::Off)
+            if(tr.ok && !tr.pending_confirmation && session.autonomous_mode != LLMAutonomousMode::Off
+               && ULLMAutonomousPolicy::isAutonomousWriteTool(call.name))
                 ++session.autonomous_steps_taken;
             return {call, tr};
         };
@@ -733,8 +845,10 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 if(write_def && write_def->kind == LLMToolKind::Write && !tr.pending_confirmation)
                     last_graph_write = {call_copy.name, tr};
 
-                if(completion.tool_calls.size() == 1 && call_copy.name == "add_component"
-                   && !tr.pending_confirmation)
+                const bool block_early_exit = task_path_decision.use_task_path;
+
+                if(!block_early_exit && completion.tool_calls.size() == 1
+                   && call_copy.name == "add_component" && !tr.pending_confirmation)
                 {
                     final.ok = tr.ok;
                     final.text = formatWriteToolUserMessage(call_copy.name, tr);

@@ -6,6 +6,9 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 - Any deferred decision, shortcut, or known gap → add a row **before** phase commit.
 - At phase end: try to close items marked `can_resolve_now`; re-prioritize the rest.
 - Do not delete rows; set `Status` to `done` / `cancelled` with date.
+- Any “we will decide later” must be captured either:
+  - as a TD row (if it implies work), or
+  - as an entry in **Deferred decisions log** (if it is an ADR-style choice to revisit).
 
 ---
 
@@ -45,6 +48,11 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-059 | `show_ui_panel` / `LLMUiPanel` presentation API | phase-E | P1 | done | Implemented via `LLMPresentationEvent.show_panel` + `UGEngineControlWidget::showLlmUiPanel` + tools `show_ui_panel` / `list_ui_panels` |
 | TD-060 | `set_active_channel` GUI API research | phase-E | P3 | done | `set_active_channel` + `list_channels` via `Core_SelectChannel` and presentation sink GUI sync |
 | TD-061 | `open_component_gui_tab` host dialog/automation gap | phase-E | P2 | done | Implemented tool `open_component_gui_tab` → `UGEngineControlWidget::promptAndOpenComponentGuiTabHost` (still user-assisted) |
+| TD-062 | Task planner + `success_criteria` / `goal_success` for imperative multi-step mutate | post-MVP-agent | P1 | open | PR4; see Post-MVP plan §7 |
+| TD-063 | EN query normalization (LLM translate) before intent/planning | post-MVP-agent | P1 | open | PR1; see Post-MVP plan §4 |
+| TD-064 | LinkPatternCatalog from Bin/Configs for connect inference | post-MVP-agent | P1 | open | PR2+PR3; see Post-MVP plan §5–6 |
+| TD-065 | Task executor verify-loop; remove harmful add_component early return | post-MVP-agent | P1 | in_progress | PR0 early-return gated; PR5 executor |
+| TD-066 | Confidence-gated plan confirmation (complexity-dependent) | post-MVP-agent | P2 | open | PR4; see Post-MVP plan §7.4 |
 | TD-041 | Manual NeuroModeler GUI write-tools walkthrough (real Configs on disk) | post-MVP | P3 | open | Checklist: Application-Commands.md § TD-041; incl. auto-apply + Reject flow |
 | TD-036 | Embedding-based dynamic tool routing | post-MVP | P3 | open | Stub `ULLMDynamicToolRouter`; env `NMSDK_LLM_DYNAMIC_TOOL_ROUTING=1` |
 | TD-031 | YAML knowledge manifest + federation | post-MVP | P3 | open | Stub `ILLMYamlKnowledgeCatalog`; Post-MVP plan §5 |
@@ -113,18 +121,18 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 ## Deferred decisions log (ADR-style, brief)
 
-| Date | Decision | Rationale | Revisit |
-|------|----------|-----------|---------|
-| 2026-05-25 | Single `TECH-DEBT.md` at `Rdk/LLM/` root | Visible next to code; linked from AGENTS.md | — |
-| 2026-05-25 | One English commit per implementation phase | Reviewable history, bisect-friendly | — |
-| 2026-05-25 | Builtin C++ catalog vs YAML | Faster MVP, no yaml-cpp dependency | TD-031 |
-| 2026-05-25 | Remove pre-LLM lifecycle bypass | LLM-first agent model | — |
-| 2026-05-25 | Ship index in `Bin/LLM/index` | Prod without full source tree | TD-033 |
-| 2026-05-25 | `Rdk/LLM` must not hardcode NMSDK `Bin/` paths | Core vs product separation | — |
-| 2026-05-25 | Offline projection vs full embedding model | No GGUF embed model in MVP; hybrid TF-IDF sufficient | TD-021 Ollama optional |
-| 2026-05-25 | Ollama embed re-rank off by default | Avoid CI/network dependency | `NMSDK_LLM_DOC_EMBED_OLLAMA=1` |
-| 2026-05-26 | Manual GUI write-tools split to TD-041 | Automated tests cover LLM-first path | TD-041 |
-| 2026-05-25 | Post-MVP code in separate plan doc | Implementation tracked in Post-MVP-Implementation-Plan.md | TD-048, TD-035, TD-031/034/036 |
-| 2026-05-26 | Consolidate name/entity resolution in domain helper | Reuse same disambiguation behavior across tools before pending generalization | TD-051/052 |
-| 2026-05-26 | Keep direct gateway calls backward-compatible without user hint pre-normalization | Unit tests and non-orchestrator callers expect confirmation-first behavior | revisit after orchestration-only invoke contract |
-| 2026-05-26 | Deliver read-path class disambiguation first in phase C | `describe_class` now resolves fuzzy/CI names; schema gaps (`root_long_name`, `library_filter`) deferred explicitly | TD-054/055/056 |
+| Date | Decision | Rationale | Revisit_by_phase | Revisit_trigger |
+|------|----------|-----------|------------------|----------------|
+| 2026-05-25 | Single `TECH-DEBT.md` at `Rdk/LLM/` root | Visible next to code; linked from AGENTS.md | — | — |
+| 2026-05-25 | One English commit per implementation phase | Reviewable history, bisect-friendly | — | — |
+| 2026-05-25 | Builtin C++ catalog vs YAML | Faster MVP, no yaml-cpp dependency | post-MVP | TD-031 |
+| 2026-05-25 | Remove pre-LLM lifecycle bypass | LLM-first agent model | — | — |
+| 2026-05-25 | Ship index in `Bin/LLM/index` | Prod without full source tree | post-MVP | TD-033 |
+| 2026-05-25 | `Rdk/LLM` must not hardcode NMSDK `Bin/` paths | Core vs product separation | — | — |
+| 2026-05-25 | Offline projection vs full embedding model | No GGUF embed model in MVP; hybrid TF-IDF sufficient | — | TD-021 (Ollama optional) |
+| 2026-05-25 | Ollama embed re-rank off by default | Avoid CI/network dependency | — | `NMSDK_LLM_DOC_EMBED_OLLAMA=1` |
+| 2026-05-26 | Manual GUI write-tools split to TD-041 | Automated tests cover LLM-first path | post-MVP | TD-041 |
+| 2026-05-25 | Post-MVP code in separate plan doc | Implementation tracked in Post-MVP-Implementation-Plan.md | post-MVP | TD-048, TD-035, TD-031/034/036 |
+| 2026-05-26 | Consolidate name/entity resolution in domain helper | Reuse same disambiguation behavior across tools before pending generalization | — | TD-051/052 |
+| 2026-05-26 | Keep direct gateway calls backward-compatible without user hint pre-normalization | Unit tests and non-orchestrator callers expect confirmation-first behavior | post-MVP | after orchestration-only invoke contract exists |
+| 2026-05-26 | Deliver read-path class disambiguation first in phase C | `describe_class` now resolves fuzzy/CI names; schema gaps (`root_long_name`, `library_filter`) deferred explicitly | — | TD-054/055/056 |

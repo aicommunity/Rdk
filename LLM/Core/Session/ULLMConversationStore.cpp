@@ -209,6 +209,8 @@ bool ULLMConversationStore::loadFromDisk(const std::string& session_id)
         if(auto plan = executionPlanFromJson(j["pending_plan"]))
             state.pending_plan = std::move(*plan);
     }
+    state.last_user_text_original = j.value("last_user_text_original", "");
+    state.last_user_text_en = j.value("last_user_text_en", "");
     if(j.contains("pending"))
     {
         if(auto pending = pendingConfirmationFromJson(j["pending"]))
@@ -234,6 +236,10 @@ bool ULLMConversationStore::persistToDisk(const std::string& session_id)
         j["messages"].push_back(messageToJson(msg));
     if(it->second.pending_plan)
         j["pending_plan"] = executionPlanToJson(*it->second.pending_plan);
+    if(!it->second.last_user_text_original.empty())
+        j["last_user_text_original"] = it->second.last_user_text_original;
+    if(!it->second.last_user_text_en.empty())
+        j["last_user_text_en"] = it->second.last_user_text_en;
     if(it->second.pending)
         j["pending"] = pendingConfirmationToJson(*it->second.pending);
     const fs::path file = fs::path(m_storage_dir) / (session_id + ".json");

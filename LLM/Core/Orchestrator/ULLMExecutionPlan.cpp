@@ -48,6 +48,23 @@ std::optional<nlohmann::json> extractJsonPayload(const std::string& text)
     }
 }
 
+std::optional<SuccessCriteria> successCriteriaFromJson(const nlohmann::json& j)
+{
+    if(!j.is_object())
+        return std::nullopt;
+    SuccessCriteria c;
+    c.type = j.value("type", "");
+    c.params = j.value("params", nlohmann::json::object());
+    if(c.type.empty())
+        return std::nullopt;
+    return c;
+}
+
+nlohmann::json successCriteriaToJson(const SuccessCriteria& c)
+{
+    return {{"type", c.type}, {"params", c.params}};
+}
+
 } // namespace
 
 std::optional<ULLMExecutionPlan> parseExecutionPlanFromAssistantText(const std::string& text)
@@ -63,6 +80,11 @@ nlohmann::json executionPlanToJson(const ULLMExecutionPlan& plan)
     nlohmann::json j;
     j["plan_id"] = plan.plan_id;
     j["requires_user_confirmation"] = plan.requires_user_confirmation;
+    if(!plan.goal_en.empty())
+        j["goal_en"] = plan.goal_en;
+    j["confidence"] = plan.confidence;
+    if(plan.goal_success)
+        j["goal_success"] = successCriteriaToJson(*plan.goal_success);
     j["paused"] = plan.paused;
     j["checkpoint_after_step_id"] = plan.checkpoint_after_step_id;
     j["steps"] = nlohmann::json::array();
@@ -75,6 +97,10 @@ nlohmann::json executionPlanToJson(const ULLMExecutionPlan& plan)
                                  {"status", step.status}};
         if(!step.last_result.empty())
             step_j["last_result"] = step.last_result;
+        if(step.success)
+            step_j["success"] = successCriteriaToJson(*step.success);
+        if(step.repeat_count > 1)
+            step_j["repeat_count"] = step.repeat_count;
         j["steps"].push_back(std::move(step_j));
     }
     return j;
@@ -88,6 +114,10 @@ std::optional<ULLMExecutionPlan> executionPlanFromJson(const nlohmann::json& j)
     ULLMExecutionPlan plan;
     plan.plan_id = j.value("plan_id", makePlanId());
     plan.requires_user_confirmation = j.value("requires_user_confirmation", true);
+    plan.goal_en = j.value("goal_en", "");
+    plan.confidence = j.value("confidence", 0.f);
+    if(j.contains("goal_success"))
+        plan.goal_success = successCriteriaFromJson(j["goal_success"]);
     plan.paused = j.value("paused", false);
     plan.checkpoint_after_step_id = j.value("checkpoint_after_step_id", 0);
 
@@ -104,6 +134,11 @@ std::optional<ULLMExecutionPlan> executionPlanFromJson(const nlohmann::json& j)
         }
         step.status = item.value("status", "pending");
         step.last_result = item.value("last_result", nlohmann::json::object());
+        if(item.contains("success"))
+            step.success = successCriteriaFromJson(item["success"]);
+        step.repeat_count = item.value("repeat_count", 1);
+        if(step.repeat_count < 1)
+            step.repeat_count = 1;
         if(step.tool_name.empty())
             return std::nullopt;
         plan.steps.push_back(step);
@@ -138,13 +173,23 @@ bool executionPlanHasCheckpoint(const ULLMExecutionPlan& plan)
 
 nlohmann::json executionPlanOpenAiResponseFormat()
 {
+    const nlohmann::json success_schema = {
+        {"type", "object"},
+        {"properties",
+         {{"type", {{"type", "string"}}},
+          {"params", {{"type", "object"}}}}},
+        {"required", nlohmann::json::array({"type"})},
+        {"additionalProperties", false}};
+
     const nlohmann::json step_schema = {
         {"type", "object"},
         {"properties",
          {{"step_id", {{"type", "integer"}}},
           {"tool_name", {{"type", "string"}}},
           {"arguments", {{"type", "object"}}},
-          {"depends_on", {{"type", "array"}, {"items", {{"type", "integer"}}}}}}},
+          {"depends_on", {{"type", "array"}, {"items", {{"type", "integer"}}}}},
+          {"success", success_schema},
+          {"repeat_count", {{"type", "integer"}, {"minimum", 1}}}}},
         {"required", nlohmann::json::array({"step_id", "tool_name", "arguments"})},
         {"additionalProperties", false}};
     const nlohmann::json root_schema = {
@@ -152,6 +197,9 @@ nlohmann::json executionPlanOpenAiResponseFormat()
         {"properties",
          {{"plan_id", {{"type", "string"}}},
           {"requires_user_confirmation", {{"type", "boolean"}}},
+          {"goal_en", {{"type", "string"}}},
+          {"confidence", {{"type", "number"}, {"minimum", 0}, {"maximum", 1}}},
+          {"goal_success", success_schema},
           {"steps", {{"type", "array"}, {"items", step_schema}}}}},
         {"required", nlohmann::json::array({"steps"})},
         {"additionalProperties", false}};
