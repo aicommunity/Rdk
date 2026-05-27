@@ -60,3 +60,30 @@ TEST(LLMDynamicToolRouter, EnabledConnectRouteKeepsGraphMutationTools)
     EXPECT_TRUE(out.allowed_tool_names->count("add_component"));
     EXPECT_FALSE(out.allowed_tool_names->count("create_configuration"));
 }
+
+TEST(LLMDynamicToolRouter, EnabledScoreSubsetLimitsToolCount)
+{
+    ::setenv("NMSDK_LLM_DYNAMIC_TOOL_ROUTING", "1", 1);
+    ::setenv("NMSDK_LLM_DYNAMIC_TOOL_ROUTING_TOP_K", "3", 1);
+
+    ToolFilter f;
+    f.intent = LLMIntentKind::Mutate;
+    f.include_write = true;
+    f.allowed_tool_names = std::unordered_set<std::string>{
+        "create_configuration",
+        "load_configuration",
+        "validate_configuration",
+        "search_project_docs",
+        "describe_class",
+        "add_component",
+        "connect_components",
+    };
+
+    const ToolFilter out = ULLMDynamicToolRouter::apply(f, "validate configuration");
+
+    ::unsetenv("NMSDK_LLM_DYNAMIC_TOOL_ROUTING_TOP_K");
+    ::unsetenv("NMSDK_LLM_DYNAMIC_TOOL_ROUTING");
+
+    ASSERT_TRUE(out.allowed_tool_names.has_value());
+    EXPECT_LE(out.allowed_tool_names->size(), 3u);
+}
