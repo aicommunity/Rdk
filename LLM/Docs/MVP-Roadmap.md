@@ -168,7 +168,7 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 |------|-------|
 | TD-041 | Manual NeuroModeler GUI write-tools walkthrough — [Application-Commands.md](Application-Commands.md) § TD-041 |
 | Catalog/index | `llms.txt`, `loadedLibraries()`, incremental index (TD-032/033/039) — done |
-| Deferred implementation | [Post-MVP-Implementation-Plan.md](Post-MVP-Implementation-Plan.md) — Scenario D, TD-035, TD-031/034/036 |
+| Deferred implementation | [Post-MVP-Implementation-Plan.md](Post-MVP-Implementation-Plan.md) — TD-041, TD-031/034/036 |
 
 **Write-tools P1–P3:** завершены — см. [Write-Tools-Backlog.md](Write-Tools-Backlog.md).
 

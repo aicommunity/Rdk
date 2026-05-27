@@ -11,8 +11,8 @@ Roadmap for **deferred code** after MVP / write-tools P1–P3. Architecture base
 | ID | Topic | Current status | Priority |
 |----|-------|----------------|----------|
 | TD-041 | Manual GUI write-tools walkthrough | open | P0 — QA |
-| **Scenario D** | Configurable autonomous / semi-autonomous agent | Post-MVP design | P1 |
-| TD-035 | Dedicated `tool_disambiguation` UI | deferred | P2 |
+| **Scenario D** | Configurable autonomous / semi-autonomous agent | implemented (strict/semi-auto/task path) | P1 |
+| TD-035 | Dedicated `tool_disambiguation` UI | done (`needs_tool_disambiguation` + dock flow) | P2 |
 | TD-036 | Embedding-based dynamic tool routing | cancelled MVP → revisit | P3 |
 | TD-031 | YAML knowledge manifest | cancelled MVP → revisit | P3 |
 | TD-034 | Function-level source chunking (ctags) | cancelled MVP → revisit | P3 |
@@ -96,7 +96,7 @@ stateDiagram-v2
 
 ---
 
-## 4. Phase 2 — TD-035 UI disambiguation
+## 4. Phase 2 — TD-035 UI disambiguation (completed)
 
 | Task | Details |
 |------|---------|
@@ -141,7 +141,7 @@ flowchart LR
 |------|-----------|
 | Scenario D | `strict` + `semi_auto` implemented, tested, default `off`; security checklist signed |
 | TD-041 | Walkthrough complete or cancelled |
-| TD-035 | UI flag + tests |
+| TD-035 | UI flag + tests (done) |
 | TD-031/034/036 | Each `done` or `cancelled` with TECH-DEBT resolution |
 
 ## Implementation status update (2026-05-27)

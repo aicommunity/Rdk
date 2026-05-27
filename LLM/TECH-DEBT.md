@@ -93,7 +93,6 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-010 | `llm_audit_verify` CLI + `verifyJsonlFile` | 2026-05-25 | `Rdk/LLM/Tools/llm_audit_verify_main.cpp` |
 | TD-013 | Entity resolver + ambiguous clarification UI | 2026-05-25 | `URdkEntityResolver`, orchestrator |
 | TD-006 | Parallel read tools in orchestrator round | 2026-05-25 | `std::async` when all Read |
-| TD-035 | Dedicated `tool_disambiguation` UI flag | 2026-05-26 | Deferred: reuse `needs_entity_clarification` per LLM-first MVP |
 | TD-037 | Multilingual retrieval boost (RU query) | 2026-05-26 | UTF-8 token bytes preserved in `UDocSearchIndex::tokenize` |
 | TD-040 | Catalog fingerprint includes source mtimes | 2026-05-26 | `last_write_time` per catalog root in `catalogFingerprint()` |
 | TD-033 | Incremental index / mtime watcher | 2026-05-26 | `syncFromCatalog`, `file_mtimes` in manifest, dev cache `LLM/index` |

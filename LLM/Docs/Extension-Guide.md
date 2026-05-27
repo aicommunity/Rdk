@@ -84,7 +84,7 @@ See [Knowledge-Sources.md](Knowledge-Sources.md). Post-MVP: YAML catalog (TD-031
 
 - Implement synonyms or scoring in [`URdkEntityResolver`](../Core/Domain/URdkEntityResolver.cpp).
 - Orchestrator returns `needs_entity_clarification` with JSON candidates.
-- GUI: assistant dock shows choices (Post-MVP: dedicated flag TD-035).
+- GUI: assistant dock shows choices via `needs_entity_clarification` / `needs_tool_disambiguation`.
 
 See [Entity-Resolution.md](Entity-Resolution.md).
 
