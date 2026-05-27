@@ -27,7 +27,8 @@ std::string buildAgentManifest(const ULLMToolRegistry& registry, const ToolFilte
     oss << "- search_project_docs(scope=docs|sources|all) for product docs and implementation.\n";
     oss << "## Rules\n";
     oss << "- Use write tools only for explicit mutate requests.\n";
-    oss << "- Graph mutations: add_component and set_property only (no library-specific write tools).\n";
+    oss << "- Graph mutations: add_component, set_property, connect_components (and disconnect_components) as requested.\n";
+    oss << "- connect_components: from_property must be a real output port on the source; to_property a real input on the target (not generic \"output\"/\"input\"). Use get_component_properties when unsure.\n";
     oss << "- Prefer one tool call per step, then inspect tool result.\n";
     oss << "- If no tool can satisfy a mutate request, respond NO_SUITABLE_TOOL.\n";
 

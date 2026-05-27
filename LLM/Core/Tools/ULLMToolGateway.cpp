@@ -140,6 +140,29 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
         invoke_req.arguments = normalized.normalized_arguments;
     }
 
+    if(invoke_req.tool_name == "connect_components")
+    {
+        const WriteArgumentNormalizeResult port_norm = normalizeWriteToolArguments(
+            invoke_req.tool_name, invoke_req.arguments, m_domain,
+            invoke_req.session.active_channel_index, invoke_req.user_text_hint);
+        if(!port_norm.ok)
+        {
+            result.ok = false;
+            result.error_code = port_norm.error_code;
+            result.message = port_norm.message;
+            if(port_norm.needs_clarification)
+                result.result = port_norm.clarification;
+            m_audit.append("tool_invoke_finish",
+                           {{"tool_name", req.tool_name},
+                            {"ok", false},
+                            {"error", port_norm.error_code},
+                            {"connect_port_normalize", true}},
+                           req.trace_id, req.session.session_id);
+            return result;
+        }
+        invoke_req.arguments = port_norm.normalized_arguments;
+    }
+
     m_audit.append("tool_invoke_start",
                    {{"tool_name", req.tool_name},
                     {"user_role", userRoleName(resolveUserRole(req.session.user_id))}},

@@ -3,6 +3,7 @@
 #include "../Gui/ILLMPresentationSink.h"
 #include "../Tools/ApplicationToolHelpers.h"
 
+#include <algorithm>
 #include <sstream>
 #include <unordered_map>
 
@@ -399,6 +400,45 @@ DomainStatus URdkDomainAccess::getComponentProperties(const std::string& long_na
     return {};
 }
 
+DomainStatus URdkDomainAccess::listComponentPubPorts(const std::string& long_name,
+                                                     int channel_index,
+                                                     std::vector<std::string>& outputs,
+                                                     std::vector<std::string>& inputs) const
+{
+    outputs.clear();
+    inputs.clear();
+    nlohmann::json found;
+    DomainStatus st = findComponentByLongName(long_name, found, channel_index);
+    if(!st.ok())
+        return st;
+
+    RDK::UELockPtr<RDK::UEngine> eng = RDK::GetEngineLockTimeout(channel_index, 500);
+    if(!eng)
+        return {DomainStatusCode::NotInitialized, "Engine lock unavailable"};
+
+    auto append_unique = [](std::vector<std::string>& dest, const std::vector<ParsedPropertyMeta>& entries) {
+        for(const ParsedPropertyMeta& meta : entries)
+        {
+            if(meta.name.empty())
+                continue;
+            if(std::find(dest.begin(), dest.end(), meta.name) == dest.end())
+                dest.push_back(meta.name);
+        }
+    };
+
+    const char* out_list =
+        eng->Model_GetComponentPropertiesLookupList(long_name.c_str(), static_cast<unsigned int>(ptPubOutput));
+    if(out_list)
+        append_unique(outputs, catalogFromLookupList(out_list));
+
+    const char* in_list =
+        eng->Model_GetComponentPropertiesLookupList(long_name.c_str(), static_cast<unsigned int>(ptPubInput));
+    if(in_list)
+        append_unique(inputs, catalogFromLookupList(in_list));
+
+    return {};
+}
+
 DomainStatus URdkDomainAccess::addComponent(const std::string& class_name,
                                             const std::string& parent_long_name,
                                             const std::string& short_name,
@@ -513,8 +553,16 @@ DomainStatus URdkDomainAccess::connectComponents(const std::string& from_long_na
                                            from_property.c_str(), to_long_name.c_str(),
                                            to_property.c_str());
     if(rc != 0)
-        return {DomainStatusCode::LinkFailed,
-                "connect_components failed (code " + std::to_string(rc) + ")"};
+    {
+        std::ostringstream msg;
+        msg << "connect_components failed (code " << rc << "). ";
+        msg << "from_property must be a published output on \"" << from_long_name << "\" (got \""
+            << from_property << "\"); to_property must be a published input on \"" << to_long_name
+            << "\" (got \"" << to_property
+            << "\"). Use get_component_properties to list ports, or specify exact port names "
+               "(e.g. Soma1.ExcSynapse1).";
+        return {DomainStatusCode::LinkFailed, msg.str()};
+    }
     refreshDiagramPresentation(m_sink);
     return {};
 }

@@ -52,6 +52,11 @@ public:
                                         nlohmann::json& out,
                                         int channel_index = 0,
                                         const std::vector<std::string>& property_names = {}) const;
+    /// Published link endpoints for connect_components (engine lookup lists).
+    DomainStatus listComponentPubPorts(const std::string& long_name,
+                                       int channel_index,
+                                       std::vector<std::string>& outputs,
+                                       std::vector<std::string>& inputs) const;
 
     DomainStatus addComponent(const std::string& class_name,
                               const std::string& parent_long_name,

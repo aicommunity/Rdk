@@ -4,6 +4,10 @@
 #include "../Orchestrator/ULLMLifecycleArgumentGate.h"
 #include "URdkEntityResolver.h"
 
+#include <algorithm>
+#include <cctype>
+#include <optional>
+#include <sstream>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -216,6 +220,212 @@ bool resolveField(const std::string& tool_name, const std::string& field,
     return false;
 }
 
+std::string toLowerAscii(std::string s)
+{
+    for(char& c : s)
+        c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return s;
+}
+
+bool isGenericLinkPortName(const std::string& name)
+{
+    const std::string lower = toLowerAscii(name);
+    return lower == "output" || lower == "input" || lower == "out" || lower == "in";
+}
+
+std::optional<std::string> findPortCaseInsensitive(const std::vector<std::string>& ports,
+                                                   const std::string& query)
+{
+    if(query.empty())
+        return std::nullopt;
+    for(const std::string& port : ports)
+    {
+        if(port == query)
+            return port;
+    }
+    const std::string q = toLowerAscii(query);
+    for(const std::string& port : ports)
+    {
+        if(toLowerAscii(port) == q)
+            return port;
+    }
+    return std::nullopt;
+}
+
+std::optional<std::string> pickPreferredOutputPort(const std::vector<std::string>& outputs)
+{
+    if(outputs.empty())
+        return std::nullopt;
+    if(outputs.size() == 1)
+        return outputs.front();
+    for(const std::string& port : outputs)
+    {
+        if(port == "Output")
+            return port;
+    }
+    for(const std::string& port : outputs)
+    {
+        if(port.find("ExcSynapse1") != std::string::npos)
+            return port;
+    }
+    for(const std::string& port : outputs)
+    {
+        if(port.find("LTZone") != std::string::npos)
+            return port;
+    }
+    return std::nullopt;
+}
+
+std::optional<std::string> pickPreferredInputPort(const std::vector<std::string>& inputs)
+{
+    if(inputs.empty())
+        return std::nullopt;
+    if(inputs.size() == 1)
+        return inputs.front();
+    for(const std::string& port : inputs)
+    {
+        if(port == "Input")
+            return port;
+    }
+    for(const std::string& port : inputs)
+    {
+        if(port.find("Soma1.ExcSynapse1") != std::string::npos)
+            return port;
+    }
+    for(const std::string& port : inputs)
+    {
+        if(port.find("ExcSynapse1") != std::string::npos)
+            return port;
+    }
+    return std::nullopt;
+}
+
+std::string formatPortListForMessage(const std::vector<std::string>& ports)
+{
+    if(ports.empty())
+        return "(none)";
+    std::ostringstream oss;
+    for(size_t i = 0; i < ports.size(); ++i)
+    {
+        if(i > 0)
+            oss << ", ";
+        oss << ports[i];
+        if(i >= 7)
+        {
+            oss << ", ...";
+            break;
+        }
+    }
+    return oss.str();
+}
+
+nlohmann::json portCandidatesJson(const std::vector<std::string>& ports)
+{
+    nlohmann::json arr = nlohmann::json::array();
+    for(const std::string& port : ports)
+        arr.push_back({{"port_name", port}});
+    return arr;
+}
+
+bool resolveConnectPortField(const std::string& field, const std::string& component_long_name,
+                             const std::vector<std::string>& catalog, bool is_output,
+                             nlohmann::json& arguments, WriteArgumentNormalizeResult& out)
+{
+    if(!arguments.contains(field) || !arguments[field].is_string())
+        return true;
+
+    std::string value = arguments[field].get<std::string>();
+    const bool generic = isGenericLinkPortName(value);
+
+    if(!value.empty() && !generic)
+    {
+        if(const std::optional<std::string> exact = findPortCaseInsensitive(catalog, value))
+        {
+            arguments[field] = *exact;
+            return true;
+        }
+    }
+
+    if(!value.empty() && !generic)
+    {
+        out.ok = false;
+        out.needs_clarification = true;
+        out.error_code = "CONNECT_PORT_NOT_FOUND";
+        out.message = "Unknown " + field + " \"" + value + "\" on component " + component_long_name
+                        + ". Available " + (is_output ? "outputs" : "inputs") + ": "
+                        + formatPortListForMessage(catalog) + ".";
+        out.clarification = nlohmann::json::object();
+        out.clarification["ambiguous"] = true;
+        out.clarification["kind"] = "property";
+        out.clarification["field"] = field;
+        out.clarification["component_long_name"] = component_long_name;
+        out.clarification["candidates"] = portCandidatesJson(catalog);
+        return false;
+    }
+
+    const std::optional<std::string> picked =
+        is_output ? pickPreferredOutputPort(catalog) : pickPreferredInputPort(catalog);
+    if(picked)
+    {
+        arguments[field] = *picked;
+        return true;
+    }
+
+    out.ok = false;
+    out.needs_clarification = true;
+    out.error_code = "CONNECT_PORTS_AMBIGUOUS";
+    out.message =
+        "Cannot infer " + field + " for " + component_long_name + ". Specify one of: "
+        + formatPortListForMessage(catalog)
+        + " (call get_component_properties for details).";
+    out.clarification = nlohmann::json::object();
+    out.clarification["ambiguous"] = true;
+    out.clarification["kind"] = "property";
+    out.clarification["field"] = field;
+    out.clarification["component_long_name"] = component_long_name;
+    out.clarification["candidates"] = portCandidatesJson(catalog);
+    return false;
+}
+
+bool normalizeConnectComponentsArguments(nlohmann::json& arguments, URdkDomainAccess& domain,
+                                         int channel_index, WriteArgumentNormalizeResult& out)
+{
+    const std::string from_ln = arguments.value("from_long_name", "");
+    const std::string to_ln = arguments.value("to_long_name", "");
+    if(from_ln.empty() || to_ln.empty())
+        return true;
+
+    std::vector<std::string> from_outputs;
+    std::vector<std::string> from_inputs_unused;
+    DomainStatus st_from =
+        domain.listComponentPubPorts(from_ln, channel_index, from_outputs, from_inputs_unused);
+    if(!st_from.ok())
+    {
+        out.ok = false;
+        out.error_code = "ENTITY_NOT_FOUND";
+        out.message = st_from.message;
+        return false;
+    }
+
+    std::vector<std::string> to_outputs_unused;
+    std::vector<std::string> to_inputs;
+    DomainStatus st_to =
+        domain.listComponentPubPorts(to_ln, channel_index, to_outputs_unused, to_inputs);
+    if(!st_to.ok())
+    {
+        out.ok = false;
+        out.error_code = "ENTITY_NOT_FOUND";
+        out.message = st_to.message;
+        return false;
+    }
+
+    if(!resolveConnectPortField("from_property", from_ln, from_outputs, true, arguments, out))
+        return false;
+    if(!resolveConnectPortField("to_property", to_ln, to_inputs, false, arguments, out))
+        return false;
+    return true;
+}
+
 } // namespace
 
 bool writeToolNeedsEntityResolution(const std::string& tool_name)
@@ -261,6 +471,12 @@ WriteArgumentNormalizeResult normalizeWriteToolArguments(const std::string& tool
     for(const std::string& field : it->second)
     {
         if(!resolveField(tool_name, field, out.normalized_arguments, domain, ch, out))
+            return out;
+    }
+
+    if(tool_name == "connect_components")
+    {
+        if(!normalizeConnectComponentsArguments(out.normalized_arguments, domain, ch, out))
             return out;
     }
 

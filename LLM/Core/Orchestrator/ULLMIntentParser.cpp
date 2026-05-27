@@ -37,6 +37,11 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
                        "save ", "load ", "set ", "connect ", "open config", "close config", "copy config",
                        "rename config", "создай конфиг", "новый конфиг", "новая конфигурация"},
                       1.0f);
+
+    // Russian graph-mutation verbs: "соедини", "соединить", "связать", etc.
+    // The intent parser relies on keyword substring scoring; add broad stems to avoid missing tool-calls.
+    const float connect_kw_s = scoreKeywords(lower, {"соедин", "связ"}, 1.0f);
+    const float mutate_s_with_connect = std::max(mutate_s, connect_kw_s);
     const float explain_s =
         scoreKeywords(lower, {"почему", "объясни", "explain", "why ", "как работает", "how does"}, 1.0f);
     const float query_s =
@@ -56,9 +61,9 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
         best = plan_s;
         result.kind = LLMIntentKind::Plan;
     }
-    if(mutate_s > best)
+    if(mutate_s_with_connect > best)
     {
-        best = mutate_s;
+        best = mutate_s_with_connect;
         result.kind = LLMIntentKind::Mutate;
     }
     if(explain_s > best)

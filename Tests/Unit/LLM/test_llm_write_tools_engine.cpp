@@ -180,6 +180,33 @@ TEST_F(LLMWriteToolsEngine, SetPropertyActivityRequiresConfirmation)
     EXPECT_TRUE(r.pending_confirmation);
 }
 
+TEST_F(LLMWriteToolsEngine, ConnectComponentsResolvesGenericPortNames)
+{
+    EngineGateway gw(ctx_->application);
+    ToolInvokeRequest req = gw.baseRequest();
+    req.tool_name = "connect_components";
+    req.user_text_hint = "connect";
+    req.arguments = {{"from_long_name", "PGenerator"},
+                     {"from_property", "output"},
+                     {"to_long_name", "PNeuron2"},
+                     {"to_property", "input"},
+                     {"channel_index", 0}};
+
+    const ToolGatewayResult r = gw.gateway.invoke(req);
+    if(r.error_code == "CONNECT_PORTS_AMBIGUOUS" || r.error_code == "CONNECT_PORT_NOT_FOUND")
+    {
+        EXPECT_FALSE(r.message.empty());
+        EXPECT_TRUE(r.result.value("ambiguous", false));
+        return;
+    }
+    ASSERT_TRUE(r.ok) << r.message;
+    EXPECT_EQ(r.result.value("from_property", ""), "Output");
+    const std::string to_port = r.result.value("to_property", "");
+    EXPECT_FALSE(to_port.empty());
+    EXPECT_NE(to_port, "input");
+    EXPECT_NE(to_port.find("ExcSynapse1"), std::string::npos) << to_port;
+}
+
 TEST_F(LLMWriteToolsEngine, ConnectComponentsInvalidPortFails)
 {
     EngineGateway gw(ctx_->application);

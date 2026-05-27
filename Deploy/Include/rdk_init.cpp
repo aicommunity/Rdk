@@ -2038,10 +2038,9 @@ int RDK_CALL Model_CreateLinkByName(const char* stringid1, const char* item_prop
 int RDK_CALL MModel_CreateLinkByName(int channel_index, const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
 {
   if(channel_index<0 || channel_index>=Core_GetNumChannels())
-  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+    return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- RdkCoreManager.GetEngineLock(channel_index)->Model_CreateLink(stringid1, item_property_name, stringid2, connector_property_name);
- return 0;
+  return RdkCoreManager.GetEngineLock(channel_index)->Model_CreateLink(stringid1, item_property_name, stringid2, connector_property_name);
 }
 
 int RDK_CALL Model_CreateLinkByNameEx(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name, int connector_c_index)

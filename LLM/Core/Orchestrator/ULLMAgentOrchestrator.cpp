@@ -37,6 +37,23 @@ std::string formatClarificationMessage(const nlohmann::json& payload)
     const std::string kind = payload.value("kind", "component");
     const nlohmann::json candidates = payload.value("candidates", nlohmann::json::array());
 
+    if(kind == "property")
+    {
+        const std::string field = payload.value("field", "property");
+        const std::string component = payload.value("component_long_name", "");
+        oss << "I need the exact link port for **" << field << "**";
+        if(!component.empty())
+            oss << " on `" << component << "`";
+        oss << ". Choose one:\n";
+        int index = 1;
+        for(const auto& c : candidates)
+        {
+            oss << index++ << ". " << c.value("port_name", c.value("name", "")) << "\n";
+        }
+        oss << "\nReply with the exact port name (e.g. `Soma1.ExcSynapse1`).";
+        return oss.str();
+    }
+
     if(kind == "class")
     {
         oss << "I couldn't determine the exact component class. Please choose one and reply with "
