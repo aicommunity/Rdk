@@ -33,6 +33,7 @@ _add_llm_unit_test(Test_LLM_YamlKnowledgeCatalog
   test_llm_yaml_knowledge_catalog.cpp
   ${CMAKE_SOURCE_DIR}/App/NeuroModeler/NmsdkBuiltinKnowledgeCatalog.cpp)
 target_include_directories(Test_LLM_YamlKnowledgeCatalog PRIVATE ${CMAKE_SOURCE_DIR}/App/NeuroModeler)
+_add_llm_unit_test(Test_LLM_TD041WalkthroughSim test_llm_td041_walkthrough_sim.cpp)
 _add_llm_unit_test(Test_LLM_DynamicToolRouter test_llm_dynamic_tool_router.cpp)
 _add_llm_unit_test(Test_LLM_LinkPatternCatalog test_llm_link_pattern_catalog.cpp)
 _add_llm_unit_test(Test_LLM_WriteToolUserMessage test_llm_write_tool_user_message.cpp)
