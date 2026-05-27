@@ -55,7 +55,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-066 | Confidence-gated plan confirmation (complexity-dependent) | post-MVP-agent | P2 | done | Completed in `ULLMPlanConfidence` + task-path confirmation branch (PR4) |
 | TD-067 | Lifecycle create-config NL parsing misses `parent_directory` in E2E scenarios | post-MVP-agent | P1 | done | Fixed via lifecycle arg merge/retry + create schema/path handling; `Test_LLM_E2eScenarios` now passes |
 | TD-041 | Manual NeuroModeler GUI write-tools walkthrough (real Configs on disk) | post-MVP | P3 | open | Checklist: Application-Commands.md § TD-041; incl. auto-apply + Reject flow |
-| TD-036 | Embedding-based dynamic tool routing | post-MVP | P3 | open | Stub `ULLMDynamicToolRouter`; env `NMSDK_LLM_DYNAMIC_TOOL_ROUTING=1` |
+| TD-036 | Embedding-based dynamic tool routing | post-MVP | P3 | open | Env-gated lexical narrowing added in `ULLMDynamicToolRouter`; embedding scorer/index-based routing still pending |
 | TD-031 | YAML knowledge manifest + federation | post-MVP | P3 | open | Stub `ILLMYamlKnowledgeCatalog`; Post-MVP plan §5 |
 | TD-034 | Function-level source chunking (ctags) | post-MVP | P3 | open | Stub `UDocCtagsChunker`; Post-MVP plan §5 |
 
