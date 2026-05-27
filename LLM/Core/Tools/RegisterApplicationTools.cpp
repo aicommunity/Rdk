@@ -139,7 +139,9 @@ void RegisterApplicationTools(ULLMToolRegistry& registry)
                       {"add_to_recent", {{"type", "boolean"}, {"default", true}}}}},
                     {"anyOf",
                      nlohmann::json::array({{{"required", nlohmann::json::array({"parent_directory"})}},
-                                            {{"required", nlohmann::json::array({"project_ini_path"})}}})},
+                                            {{"required", nlohmann::json::array({"project_ini_path"})}},
+                                            {{"required",
+                                              nlohmann::json::array({"autocreate_subdirectory"})}}})},
                     {"additionalProperties", false}},
                    true, false),
         [](const nlohmann::json& args) -> ToolGatewayResult {

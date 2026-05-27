@@ -493,6 +493,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
         opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
     else
         opts.tools_for_api.clear();
+    if(provider_tools && lifecycle_action != ConfigurationLifecycleAction::None)
+        opts.tool_choice = forcedToolForLifecycle(lifecycle_action, session.project_loaded);
     if(strict_plan_schema)
         opts.response_format = executionPlanOpenAiResponseFormat();
     const std::string user_lang = opts.response_language;
@@ -730,6 +732,30 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             invoke.trace_id = req.trace_id;
             invoke.tool_name = call.name;
             invoke.arguments = call.arguments;
+            const ConfigurationLifecycleAction call_action = lifecycleActionFromToolName(call.name);
+            if(call_action != ConfigurationLifecycleAction::None)
+            {
+                if(const LLMToolDefinition* def = m_registry.find(call.name))
+                {
+                    const nlohmann::json props =
+                        def->input_schema.value("properties", nlohmann::json::object());
+                    if(props.is_object() && !invoke.arguments.empty())
+                    {
+                        nlohmann::json filtered = nlohmann::json::object();
+                        for(auto it = invoke.arguments.begin(); it != invoke.arguments.end(); ++it)
+                        {
+                            if(props.contains(it.key()))
+                                filtered[it.key()] = it.value();
+                        }
+                        invoke.arguments = std::move(filtered);
+                    }
+                }
+                PendingToolArguments bootstrap;
+                bootstrap.tool_name = call.name;
+                bootstrap.action = call_action;
+                bootstrap.partial_arguments = invoke.arguments;
+                invoke.arguments = mergeArgumentsFromUserText(bootstrap, req.user_text, app);
+            }
             invoke.session = session;
             invoke.user_text_hint = planning_text;
             ToolGatewayResult tr = m_gateway.invoke(invoke);
@@ -799,6 +825,61 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                     pending.tool_name = call_copy.name;
                     pending.action = lifecycleActionFromToolName(call_copy.name);
                     pending.partial_arguments = call_copy.arguments;
+
+                    // Try to satisfy missing lifecycle args from the original user utterance
+                    // before asking an extra clarification turn.
+                    if(pending.action != ConfigurationLifecycleAction::None)
+                    {
+                        nlohmann::json merged =
+                            mergeArgumentsFromUserText(pending, req.user_text, app);
+                        std::vector<ToolArgumentFieldSpec> merged_missing =
+                            findMissingArgumentsForTool(call_copy.name, merged, app, m_registry);
+                        if(merged_missing.empty())
+                        {
+                            ToolInvokeRequest retry_req;
+                            retry_req.trace_id = req.trace_id;
+                            retry_req.tool_name = call_copy.name;
+                            retry_req.arguments = merged;
+                            retry_req.session = session;
+                            retry_req.user_text_hint = planning_text;
+                            const ToolGatewayResult retry_tr = m_gateway.invoke(retry_req);
+                            if(retry_tr.ok)
+                            {
+                                if(retry_tr.pending_confirmation)
+                                {
+                                    setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation, req.trace_id);
+                                    PendingConfirmation pending_confirm;
+                                    pending_confirm.confirmation_id = retry_tr.confirmation_id;
+                                    pending_confirm.created_at_unix_sec = confirmationNowUnixSec();
+                                    pending_confirm.request = ToolInvokeRequest{};
+                                    pending_confirm.request.trace_id = req.trace_id;
+                                    pending_confirm.request.tool_name = call_copy.name;
+                                    pending_confirm.request.arguments = retry_req.arguments;
+                                    pending_confirm.request.session = session;
+                                    pending_confirm.request.confirmed = true;
+                                    m_store.setPending(req.session_id, pending_confirm);
+                                    final.pending_confirmation = true;
+                                    final.pending_confirmation_id = retry_tr.confirmation_id;
+                                    final.text = formatUserMessage("confirmation.required", user_lang,
+                                                                   {{"tool_name", call_copy.name}});
+                                    m_store.persistToDisk(req.session_id);
+                                    return final;
+                                }
+
+                                LLMMessage tool_msg;
+                                tool_msg.role = LLMMessage::Role::Tool;
+                                tool_msg.tool_call_id = call_copy.id;
+                                tool_msg.tool_name = call_copy.name;
+                                tool_msg.content = toolGatewayResultForProvider(retry_tr).dump();
+                                m_store.appendMessage(req.session_id, tool_msg);
+
+                                if(isLifecycleWriteToolName(call_copy.name))
+                                    lifecycle_write_done = std::make_pair(call_copy.name, retry_tr);
+                                continue;
+                            }
+                        }
+                    }
+
                     pending.missing_fields = findMissingArgumentsForTool(
                         call_copy.name, call_copy.arguments, app, m_registry);
                     if(pending.missing_fields.empty()

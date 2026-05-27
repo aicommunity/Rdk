@@ -132,11 +132,14 @@ std::string URdkApplicationCommands::resolveProjectIniPath(const nlohmann::json&
         const std::time_t now = std::time(nullptr);
         const std::string folder = RDK::get_text_time(now, '.', '_');
         parent = joinPath(parent, "Autocreate" + folder);
-        if(RDK::CreateNewDirectory(parent.c_str()) != 0)
-        {
-            err = "failed to create configuration directory";
-            return {};
-        }
+    }
+
+    std::error_code mk_err;
+    std::filesystem::create_directories(parent, mk_err);
+    if(mk_err)
+    {
+        err = "failed to create configuration directory";
+        return {};
     }
 
     return joinPath(parent, "project.ini");

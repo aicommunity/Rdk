@@ -30,6 +30,12 @@ TEST(LLMLifecycleArgumentGate, ExtractUnixPath)
               "/home/user/MyCfg/project.ini");
 }
 
+TEST(LLMLifecycleArgumentGate, ExtractUnixPathFromCreateSentence)
+{
+    EXPECT_EQ(extractPathFromUserText("create new config in /tmp/nmsdk_llm_e2e_1234 name DemoCfg"),
+              "/tmp/nmsdk_llm_e2e_1234");
+}
+
 TEST(LLMLifecycleArgumentGate, PreflightCreateWithoutPathUsesAutocreate)
 {
     const LifecycleArgumentPreflight pre = preflightLifecycleArguments(
@@ -69,6 +75,22 @@ TEST(LLMLifecycleArgumentGate, MergeFollowUpPath)
         mergeArgumentsFromUserText(pending, "/opt/nmsdk/Demo/project.ini", nullptr);
     EXPECT_EQ(merged["configuration_path"], "/opt/nmsdk/Demo/project.ini");
     EXPECT_TRUE(findMissingLifecycleFields("load_configuration", merged, nullptr).empty());
+}
+
+TEST(LLMLifecycleArgumentGate, MergeCreateArgumentsFromSentence)
+{
+    PendingToolArguments pending;
+    pending.tool_name = "create_configuration";
+    pending.action = ConfigurationLifecycleAction::Create;
+    pending.partial_arguments = nlohmann::json::object();
+
+    const nlohmann::json merged = mergeArgumentsFromUserText(
+        pending,
+        "I want a brand new configuration. Create it under parent directory /tmp/nmsdk_llm_e2e_1234 "
+        "with project name E2eScenarioTest and one channel class Model.",
+        nullptr);
+    ASSERT_TRUE(merged.contains("parent_directory"));
+    EXPECT_EQ(merged["parent_directory"], "/tmp/nmsdk_llm_e2e_1234");
 }
 
 TEST(LLMLifecycleArgumentGate, FormatPromptMentionsTool)

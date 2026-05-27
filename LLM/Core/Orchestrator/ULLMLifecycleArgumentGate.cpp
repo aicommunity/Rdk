@@ -240,8 +240,6 @@ std::vector<ToolArgumentFieldSpec> argumentFieldsForLifecycle(ConfigurationLifec
                           "string",
                           "Folder where the new configuration directory will be created",
                           true});
-        fields.push_back(
-            {"project_name", "string", "Optional display name for the new configuration", false});
         break;
     case ConfigurationLifecycleAction::Load:
     case ConfigurationLifecycleAction::Validate:
@@ -271,8 +269,14 @@ std::vector<ToolArgumentFieldSpec> findMissingLifecycleFields(const std::string&
     std::vector<ToolArgumentFieldSpec> missing;
     if(tool_name == "create_configuration")
     {
-        std::string err;
-        if(URdkApplicationCommands::resolveProjectIniPath(args, app, err).empty())
+        const bool has_project_ini =
+            args.contains("project_ini_path") && args["project_ini_path"].is_string()
+            && !trim(args["project_ini_path"].get<std::string>()).empty();
+        const bool has_parent =
+            args.contains("parent_directory") && args["parent_directory"].is_string()
+            && !trim(args["parent_directory"].get<std::string>()).empty();
+        const bool autocreate = args.value("autocreate_subdirectory", true);
+        if(!has_project_ini && !has_parent && !autocreate)
             missing.push_back(argumentFieldsForLifecycle(ConfigurationLifecycleAction::Create)[0]);
         return missing;
     }
@@ -303,9 +307,15 @@ nlohmann::json mergeArgumentsFromUserText(const PendingToolArguments& pending,
     if(pending.tool_name == "create_configuration")
     {
         if(!path.empty())
+        {
             args["parent_directory"] = path;
+            args["autocreate_subdirectory"] = false;
+        }
         else if(!trimmed.empty() && !args.contains("parent_directory"))
+        {
             args["parent_directory"] = trimmed;
+            args["autocreate_subdirectory"] = false;
+        }
 
         if(args.contains("project_name") || trimmed.empty())
             return args;
