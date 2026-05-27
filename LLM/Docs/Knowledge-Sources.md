@@ -62,6 +62,6 @@ used by `NmsdkLlmProjectContext` and library doc paths. Keep in sync with `Libra
 |----|----------|------------|------------------|
 | TD-036 | `ULLMDynamicToolRouter` | `NMSDK_LLM_DYNAMIC_TOOL_ROUTING=1` | Stub: static `buildToolFilter` only |
 | TD-031 | `ILLMYamlKnowledgeCatalog` | — | Header stub; runtime catalog remains C++ |
-| TD-034 | `UDocCtagsChunker` | — | `isAvailable()` false; file-line excerpts in index |
+| TD-034 | `UDocCtagsChunker` | — | Function-level source chunks are indexed for `scope=sources` (ctags-like heuristic parser) |
 
 See [Post-MVP-Implementation-Plan.md](Post-MVP-Implementation-Plan.md) §5 for full implementation phases.

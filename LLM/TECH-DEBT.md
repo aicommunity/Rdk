@@ -57,7 +57,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-041 | Manual NeuroModeler GUI write-tools walkthrough (real Configs on disk) | post-MVP | P3 | open | Checklist: Application-Commands.md § TD-041; incl. auto-apply + Reject flow |
 | TD-036 | Embedding-based dynamic tool routing | post-MVP | P3 | open | Env-gated lexical narrowing added in `ULLMDynamicToolRouter`; embedding scorer/index-based routing still pending |
 | TD-031 | YAML knowledge manifest + federation | post-MVP | P3 | open | Stub `ILLMYamlKnowledgeCatalog`; Post-MVP plan §5 |
-| TD-034 | Function-level source chunking (ctags) | post-MVP | P3 | open | Stub `UDocCtagsChunker`; Post-MVP plan §5 |
+| TD-034 | Function-level source chunking (ctags) | post-MVP | P3 | done | Implemented `UDocCtagsChunker` and source function-level indexing in `UDocSearchIndex` (scope=`sources`) |
 
 ---
 

@@ -3,6 +3,7 @@
 #include "UDocOllamaEmbeddings.h"
 #include "UDocSearchCatalog.h"
 #include "UDocSearchHelper.h"
+#include "../Knowledge/UDocCtagsChunker.h"
 
 #include <algorithm>
 #include <cmath>
@@ -153,6 +154,8 @@ bool UDocSearchIndex::indexCatalogFile(const CatalogIndexedFile& file,
     buffer << in.rdbuf();
     const std::string content = buffer.str();
 
+    removeByRepoPath(file.repo_relative_path);
+
     DocRecord rec;
     rec.source_id = file.source_id;
     rec.path = file.repo_relative_path;
@@ -160,6 +163,27 @@ bool UDocSearchIndex::indexCatalogFile(const CatalogIndexedFile& file,
     rec.title = extractMarkdownTitle(content, file.absolute_path.filename().string());
     if(rec.content_kind == LLMContentKind::Source)
     {
+        const std::vector<UDocCtagsChunker::SourceChunk> chunks =
+            UDocCtagsChunker::isAvailable()
+                ? UDocCtagsChunker::chunkFile(file.absolute_path, kSourceExcerptMaxLines)
+                : std::vector<UDocCtagsChunker::SourceChunk>{};
+        if(!chunks.empty())
+        {
+            for(const UDocCtagsChunker::SourceChunk& chunk : chunks)
+            {
+                DocRecord chunk_rec;
+                chunk_rec.source_id = rec.source_id;
+                chunk_rec.path = rec.path;
+                chunk_rec.content_kind = rec.content_kind;
+                chunk_rec.title = chunk.title.empty() ? rec.title : chunk.title;
+                chunk_rec.excerpt = chunk.excerpt;
+                chunk_rec.start_line = chunk.start_line;
+                indexDocument(std::move(chunk_rec));
+            }
+            m_file_mtimes[file.repo_relative_path] = file.mtime_unix_sec;
+            return true;
+        }
+
         int start_line = 1;
         rec.excerpt = readSourceExcerpt(file.absolute_path, kSourceExcerptMaxLines, start_line);
         rec.start_line = start_line;
@@ -167,7 +191,6 @@ bool UDocSearchIndex::indexCatalogFile(const CatalogIndexedFile& file,
     else
         rec.excerpt = content.substr(0, 4000);
 
-    removeByRepoPath(file.repo_relative_path);
     indexDocument(std::move(rec));
     m_file_mtimes[file.repo_relative_path] = file.mtime_unix_sec;
     return true;
