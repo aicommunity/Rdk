@@ -29,6 +29,10 @@ _add_llm_unit_test(Test_LLM_AutonomousPolicy test_llm_autonomous_policy.cpp)
 _add_llm_unit_test(Test_LLM_QuantityParser test_llm_quantity_parser.cpp)
 _add_llm_unit_test(Test_LLM_QueryNormalizer test_llm_query_normalizer.cpp)
 _add_llm_unit_test(Test_LLM_CtagsChunker test_llm_ctags_chunker.cpp)
+_add_llm_unit_test(Test_LLM_YamlKnowledgeCatalog
+  test_llm_yaml_knowledge_catalog.cpp
+  ${CMAKE_SOURCE_DIR}/App/NeuroModeler/NmsdkBuiltinKnowledgeCatalog.cpp)
+target_include_directories(Test_LLM_YamlKnowledgeCatalog PRIVATE ${CMAKE_SOURCE_DIR}/App/NeuroModeler)
 _add_llm_unit_test(Test_LLM_DynamicToolRouter test_llm_dynamic_tool_router.cpp)
 _add_llm_unit_test(Test_LLM_LinkPatternCatalog test_llm_link_pattern_catalog.cpp)
 _add_llm_unit_test(Test_LLM_WriteToolUserMessage test_llm_write_tool_user_message.cpp)
