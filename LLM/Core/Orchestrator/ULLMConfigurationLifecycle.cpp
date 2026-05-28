@@ -135,6 +135,7 @@ bool isLifecycleWriteToolName(const std::string& tool_name)
 {
     static const std::unordered_set<std::string> kWrite = {
         "create_configuration", "load_configuration",     "load_project",
+        "open_recent_configuration",
         "save_configuration",   "save_project",           "save_project_metadata",
         "close_configuration",  "copy_configuration",     "rename_configuration",
         "update_configuration", "reload_configuration_parameters"};
@@ -168,6 +169,13 @@ std::string formatLifecycleToolUserMessage(const std::string& tool_name,
         return "Configuration create prepared. Review and apply the change in the assistant panel.";
     if(tool_name == "load_configuration" || tool_name == "load_project")
         return "Configuration load prepared. Confirm to apply.";
+    if(tool_name == "open_recent_configuration")
+    {
+        const std::string path = result.result.value("configuration_path", std::string());
+        if(!path.empty())
+            return "Configuration opened: " + path;
+        return "Configuration opened.";
+    }
     if(tool_name == "save_configuration" || tool_name == "save_project")
         return "Save prepared. Confirm to apply.";
     if(tool_name == "validate_configuration")

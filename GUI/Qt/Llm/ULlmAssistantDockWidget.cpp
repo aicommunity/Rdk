@@ -507,7 +507,7 @@ void ULlmAssistantDockWidget::onStreamFinished(const RDK::LLM::LLMFinalResponse&
     {
         if(!resp.text.empty())
             appendAssistantText(QString::fromStdString(resp.text));
-        else if(resp.ok)
+        else if(resp.ok && resp.rollback_status.empty())
             appendAssistantText(tr("Done."));
     }
 }

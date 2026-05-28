@@ -99,6 +99,10 @@ std::vector<ToolArgumentFieldSpec> findMissingArgumentsForTool(const std::string
                                                               RDK::UApplication* app,
                                                               const ULLMToolRegistry& registry);
 
+/// After `list_recent_configurations`, keep numbered-list follow-up for `open_recent_configuration`.
+std::optional<PendingToolArguments>
+pendingOpenRecentFromConfigurationList(const nlohmann::json& list_payload);
+
 } // namespace RDK::LLM
 
 #endif

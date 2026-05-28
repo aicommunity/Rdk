@@ -1,6 +1,6 @@
 #include "ULLMLifecycleArgumentGate.h"
 
-#include "../Domain/ULLMNameResolution.h"
+#include "../Domain/ULLMNameResolution.h" // pickFromNumberedList
 #include "../Domain/URdkApplicationCommands.h"
 #include "../Tools/ULLMToolRegistry.h"
 #include "ULLMLibraryScopeHint.h"
@@ -57,6 +57,13 @@ bool isUnsignedListIndex(const std::string& s)
             return false;
     }
     return true;
+}
+
+bool isOpenConfirmVerb(const std::string& trimmed)
+{
+    const std::string lower = toLowerAsciiLocal(trimmed);
+    return lower == "open" || lower == "yes" || lower == "y" || lower == "ok" || lower == "да"
+           || lower == "открой" || lower == "открыть" || lower == "загрузи" || lower == "load";
 }
 
 bool looksLikeClassIdentifier(const std::string& token)
@@ -219,7 +226,8 @@ ConfigurationLifecycleAction lifecycleActionFromToolName(const std::string& tool
 {
     if(tool_name == "create_configuration")
         return ConfigurationLifecycleAction::Create;
-    if(tool_name == "load_configuration" || tool_name == "load_project")
+    if(tool_name == "load_configuration" || tool_name == "load_project"
+       || tool_name == "open_recent_configuration")
         return ConfigurationLifecycleAction::Load;
     if(tool_name == "save_configuration")
         return ConfigurationLifecycleAction::Save;
@@ -292,6 +300,22 @@ std::vector<ToolArgumentFieldSpec> findMissingLifecycleFields(const std::string&
                                                ? ConfigurationLifecycleAction::Validate
                                                : ConfigurationLifecycleAction::Load)[0]);
     }
+    if(tool_name == "open_recent_configuration")
+    {
+        const bool has_index =
+            args.contains("index") && args["index"].is_number_integer() && args["index"].get<int>() >= 1;
+        const bool has_path = args.contains("configuration_path") && args["configuration_path"].is_string()
+                              && !trim(args["configuration_path"].get<std::string>()).empty();
+        if(!has_index && !has_path)
+        {
+            ToolArgumentFieldSpec spec;
+            spec.name = "index";
+            spec.type = "integer";
+            spec.description = "1-based index from list_recent_configurations";
+            spec.required = true;
+            missing.push_back(spec);
+        }
+    }
     return missing;
 }
 
@@ -321,6 +345,42 @@ nlohmann::json mergeArgumentsFromUserText(const PendingToolArguments& pending,
             return args;
         if(!path.empty() && trimmed != path)
             args["project_name"] = trimmed;
+        return args;
+    }
+
+    if(pending.tool_name == "open_recent_configuration")
+    {
+        if(!args.contains("if_open_project"))
+            args["if_open_project"] = "close";
+
+        if(pending.disambiguation_candidates.is_array() && !pending.disambiguation_candidates.empty())
+        {
+            if(isUnsignedListIndex(trimmed))
+            {
+                const int idx = static_cast<int>(std::stoul(trimmed));
+                args["index"] = idx;
+                if(idx >= 1
+                   && idx <= static_cast<int>(pending.disambiguation_candidates.size()))
+                {
+                    args["configuration_path"] =
+                        pending.disambiguation_candidates.at(static_cast<std::size_t>(idx - 1))
+                            .value("path", "");
+                }
+            }
+            else if(const std::optional<std::string> picked =
+                        pickFromNumberedList(trimmed, pending.disambiguation_candidates, "path"))
+            {
+                args["configuration_path"] = *picked;
+            }
+        }
+        else if(!path.empty())
+        {
+            args["configuration_path"] = path;
+        }
+        else if(isOpenConfirmVerb(trimmed))
+        {
+            // Confirm verb with index/path already in partial_arguments.
+        }
         return args;
     }
 
@@ -434,9 +494,32 @@ std::string formatArgumentRequestPrompt(const std::string& tool_name,
         prompt += "\nOr: `class_name NPulseNeuron short_name Neuron1 parent_long_name \"\"`.";
         prompt += "\nUse list_registered_classes or list_*_component_classes for valid class names.";
     }
+    if(tool_name == "open_recent_configuration")
+    {
+        prompt += "\nReply with the list number (e.g. `10`) or say `open` / `открой` after choosing.";
+    }
 
     prompt += "\n\nReply with the missing value(s) in your next message.";
     return prompt;
+}
+
+std::optional<PendingToolArguments>
+pendingOpenRecentFromConfigurationList(const nlohmann::json& list_payload)
+{
+    const nlohmann::json items = list_payload.value("items", nlohmann::json::array());
+    if(!items.is_array() || items.empty())
+        return std::nullopt;
+
+    PendingToolArguments pending;
+    pending.tool_name = "open_recent_configuration";
+    pending.action = ConfigurationLifecycleAction::Load;
+    pending.partial_arguments = nlohmann::json{{"if_open_project", "close"}};
+    pending.disambiguation_candidates = items;
+    pending.disambiguation_field = "path";
+    pending.missing_fields = findMissingLifecycleFields(pending.tool_name, pending.partial_arguments,
+                                                        nullptr);
+    pending.created_at_unix_sec = static_cast<int64_t>(std::time(nullptr));
+    return pending;
 }
 
 bool isGraphAddComponentTool(const std::string& tool_name)

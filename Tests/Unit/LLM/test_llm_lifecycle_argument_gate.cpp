@@ -77,6 +77,42 @@ TEST(LLMLifecycleArgumentGate, MergeFollowUpPath)
     EXPECT_TRUE(findMissingLifecycleFields("load_configuration", merged, nullptr).empty());
 }
 
+TEST(LLMLifecycleArgumentGate, PendingOpenRecentFromConfigurationList)
+{
+    const nlohmann::json list_payload = {
+        {"items",
+         nlohmann::json::array(
+             {{{"index", 1}, {"path", "/tmp/a/project.ini"}}, {{"index", 2}, {"path", "/tmp/b/project.ini"}}})}};
+    const std::optional<PendingToolArguments> pending =
+        pendingOpenRecentFromConfigurationList(list_payload);
+    ASSERT_TRUE(pending.has_value());
+    EXPECT_EQ(pending->tool_name, "open_recent_configuration");
+    EXPECT_EQ(pending->disambiguation_candidates.size(), 2u);
+}
+
+TEST(LLMLifecycleArgumentGate, MergeOpenRecentIndexThenConfirmVerb)
+{
+    nlohmann::json list_payload = {
+        {"items",
+         nlohmann::json::array(
+             {{{"index", 1}, {"path", "/tmp/one/project.ini"}},
+              {{"index", 2}, {"path", "/tmp/two/project.ini"}}})}};
+    const std::optional<PendingToolArguments> pending_opt =
+        pendingOpenRecentFromConfigurationList(list_payload);
+    ASSERT_TRUE(pending_opt.has_value());
+    PendingToolArguments pending = *pending_opt;
+
+    nlohmann::json merged = mergeArgumentsFromUserText(pending, "2", nullptr);
+    EXPECT_EQ(merged["index"], 2);
+    EXPECT_EQ(merged["configuration_path"], "/tmp/two/project.ini");
+    EXPECT_TRUE(findMissingLifecycleFields("open_recent_configuration", merged, nullptr).empty());
+
+    pending.partial_arguments = merged;
+    merged = mergeArgumentsFromUserText(pending, "открой", nullptr);
+    EXPECT_EQ(merged["index"], 2);
+    EXPECT_TRUE(findMissingLifecycleFields("open_recent_configuration", merged, nullptr).empty());
+}
+
 TEST(LLMLifecycleArgumentGate, MergeCreateArgumentsFromSentence)
 {
     PendingToolArguments pending;

@@ -39,6 +39,7 @@ Aliases: `load_project`, `save_project` (deprecated names, same handlers).
 These tools are registered in `RegisterApplicationTools.cpp`:
 
 - `list_recent_configurations` / `open_recent_configuration` use presentation-sink helper data (`ILLMPresentationSink::recentConfigurationPaths`) and `UApplication::GetLastProjectsList()` to provide a unified deduped recent list.
+- After `list_recent_configurations`, the orchestrator stores `pending_tool_arguments` for `open_recent_configuration`. Follow-up messages such as `10` or `открой` invoke the write tool directly (no spurious LLM `Done.`).
 - `list_ui_panels` returns `{id,title,visible}` based on the GUI host (`UGEngineControlWidget`).
 - `show_ui_panel` / `open_component_gui_tab` do not call Qt directly from tool handlers; instead they request a GUI action via `LLMPresentationEvent.show_panel`, applied by `ULlmQtPresentationSink` on the GUI thread.
 

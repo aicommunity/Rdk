@@ -158,6 +158,19 @@ bool extractToolDisambiguationPayload(const ToolGatewayResult& tr, nlohmann::jso
     return true;
 }
 
+void capturePendingOpenRecentAfterList(ULLMConversationStore& store, const std::string& session_id,
+                                       const std::string& tool_name, const ToolGatewayResult& tr)
+{
+    if(tool_name != "list_recent_configurations" || !tr.ok)
+        return;
+    if(const std::optional<PendingToolArguments> pending =
+           pendingOpenRecentFromConfigurationList(tr.result))
+    {
+        store.setPendingToolArguments(session_id, *pending);
+        store.persistToDisk(session_id);
+    }
+}
+
 } // namespace
 
 ULLMAgentOrchestrator::ULLMAgentOrchestrator(ILLMProvider& provider, ULLMToolRegistry& registry,
@@ -440,7 +453,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             const char* candidate_key =
                 pending.disambiguation_kind == PendingDisambiguationKind::Component ? "long_name"
                                                                                      : "class_name";
-            if(candidates.is_array() && !candidates.empty() && !trimmed_reply.empty())
+            if(pending.tool_name != "open_recent_configuration" && candidates.is_array()
+               && !candidates.empty() && !trimmed_reply.empty())
             {
                 bool all_digits = true;
                 for(char c : trimmed_reply)
@@ -912,6 +926,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 tool_msg.tool_name = call.name;
                 tool_msg.content = sanitizeUntrustedToolContent(toolGatewayResultForProvider(tr).dump());
                 m_store.appendMessage(req.session_id, tool_msg);
+                capturePendingOpenRecentAfterList(m_store, req.session_id, call.name, tr);
             }
         }
         else
@@ -1050,6 +1065,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 tool_msg.tool_name = call_copy.name;
                 tool_msg.content = sanitizeUntrustedToolContent(toolGatewayResultForProvider(tr).dump());
                 m_store.appendMessage(req.session_id, tool_msg);
+                capturePendingOpenRecentAfterList(m_store, req.session_id, call_copy.name, tr);
 
                 const LLMToolDefinition* write_def = m_registry.find(call_copy.name);
                 if(write_def && write_def->kind == LLMToolKind::Write && !tr.pending_confirmation)
