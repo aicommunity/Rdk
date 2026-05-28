@@ -155,6 +155,14 @@ struct LLMRuntimeProviderSettings {
     LLMSendShortcutMode send_shortcut = LLMSendShortcutMode::CtrlEnter;
 };
 
+struct LLMGuiContextSnapshot {
+    int channel_index = 0;
+    std::string project_xml_path;
+    std::string focused_component_long_name;
+    std::string focused_class_name;
+    int64_t snapshot_fingerprint = 0;
+};
+
 struct LLMSessionContext {
     std::string session_id;
     std::string user_name;
