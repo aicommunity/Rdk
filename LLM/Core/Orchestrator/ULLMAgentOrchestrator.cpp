@@ -1558,6 +1558,23 @@ void ULLMAgentOrchestrator::rejectPending(const std::string& session_id)
     GetAuditLog().append("confirmation_rejected", {}, "", session_id);
 }
 
+bool ULLMAgentOrchestrator::tryResumeSession(const std::string& session_id)
+{
+    {
+        std::lock_guard<std::mutex> lock(m_session_busy_mu);
+        const auto it = m_session_busy.find(session_id);
+        if(it != m_session_busy.end() && it->second)
+            return false;
+    }
+    if(!m_store.loadFromDisk(session_id))
+        return false;
+    {
+        std::lock_guard<std::mutex> cancel_lock(m_cancel_mu);
+        m_cancelled_sessions.erase(session_id);
+    }
+    return true;
+}
+
 void ULLMAgentOrchestrator::discardSession(const std::string& session_id)
 {
     cancelSession(session_id);

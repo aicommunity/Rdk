@@ -46,6 +46,7 @@ public:
     bool expirePendingIfStale(const std::string& session_id, int ttl_seconds);
     bool persistToDisk(const std::string& session_id);
     bool loadFromDisk(const std::string& session_id);
+    const ConversationState* findSession(const std::string& session_id) const;
     void removeFromDisk(const std::string& session_id);
     /// Drop in-memory state and persisted file for this session (new chat / project switch).
     void removeSession(const std::string& session_id);

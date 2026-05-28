@@ -23,6 +23,8 @@ class UApplication;
 
 namespace RDK::LLM {
 
+struct ConversationState;
+
 class LLMServices {
 public:
     static LLMServices& instance();
@@ -41,6 +43,10 @@ public:
     const LLMProviderProfile& activeProviderProfile() const;
     ILLMKnowledgeCatalog* catalog() const;
     UDocSearchIndex& searchIndex();
+
+    ILLMProjectContextProvider* projectContext() const { return m_project_context; }
+    bool loadConversationSession(const std::string& session_id);
+    const ConversationState* conversationState(const std::string& session_id) const;
 
     void setPresentationSink(std::unique_ptr<ILLMPresentationSink> sink);
     ILLMPresentationSink* presentationSink() const;

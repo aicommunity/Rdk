@@ -155,6 +155,10 @@ Rdk/GUI/Qt/Llm/
   ULlmAssistantDockWidget.h
   ULlmAssistantDockWidget.cpp
   ULlmAssistantDockWidget.ui
+  ULlmChatHistoryArchive.h
+  ULlmChatHistoryArchive.cpp
+  ULlmChatHistoryDialog.h
+  ULlmChatHistoryDialog.cpp
   ULlmChangePreviewWidget.h
   ULlmChangePreviewWidget.cpp
   ULlmProviderSettingsWidget.h
@@ -174,3 +178,46 @@ Rdk/GUI/Qt/Llm/
 ```
 
 Без API keys и без полного system prompt.
+
+---
+
+## 10. Chat history (`Bin/AiChats`)
+
+NeuroModeler persists a **human-readable HTML log** of the assistant dock separately from orchestrator JSON sessions.
+
+| Store | Path | Purpose |
+|-------|------|---------|
+| HTML archive | `{bin_root}/AiChats/YYYY-MM-DD/YYYY-MM-DD_HH-MM-SS-NeuroModelerChat.html` | QTextEdit-compatible transcript (`<b>You:</b>`, `<b>Assistant:</b>`, …) |
+| JSON session | `{repository_root}/LLM/sessions/{session_id}.json` | Tool loop, pending confirmation/plan, resume for **Continue** |
+
+### 10.1 Components
+
+| Class | Role |
+|-------|------|
+| `ULlmChatHistoryArchive` | Filesystem I/O (no Qt): create `AiChats/` tree, append HTML, list/load |
+| `ULlmChatHistoryDialog` | History browser: **Open** (read-only) / **Continue** (if JSON exists) |
+| `ULlmAssistantDockWidget` | Writes archive on send/stream; **History...** entry point |
+
+`bin_root` comes from `ILLMProjectContextProvider::paths()` (NeuroModeler: `repository_root/Bin`). Directories are created automatically (`create_directories`).
+
+### 10.2 User flows
+
+1. **Live chat** — first **Send** creates the `.html` file; each turn appends before `</body>`. **New chat** finalizes the previous file (`nmsdk-archived=true`) and starts a new `gui-<uuid>` session.
+2. **History → Open** — loads `<body>` HTML into the dock (read-only banner; Send disabled). Use **New chat** to return to a live session.
+3. **History → Continue** — `ULLMAgentOrchestrator::tryResumeSession` loads JSON; dock rebuilds history from `ConversationState::messages` and restores pending HITL/plan buttons when present.
+
+### 10.3 Environment
+
+| Variable | Effect |
+|----------|--------|
+| `NMSDK_LLM_DISABLE_CHAT_ARCHIVE=1` | Disables archive writes and hides **History...** |
+
+### 10.4 Core API (resume)
+
+```cpp
+ILLMProjectContextProvider* LLMServices::projectContext() const;
+bool ULLMAgentOrchestrator::tryResumeSession(const std::string& session_id);
+const ConversationState* LLMServices::conversationState(const std::string& session_id) const;
+```
+
+If JSON is missing, **Continue** is disabled; **Open** still works from HTML alone.

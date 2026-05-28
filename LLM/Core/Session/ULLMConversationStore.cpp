@@ -435,6 +435,14 @@ bool ULLMConversationStore::persistToDisk(const std::string& session_id)
     return true;
 }
 
+const ConversationState* ULLMConversationStore::findSession(const std::string& session_id) const
+{
+    const auto it = m_sessions.find(session_id);
+    if(it == m_sessions.end())
+        return nullptr;
+    return &it->second;
+}
+
 void ULLMConversationStore::removeFromDisk(const std::string& session_id)
 {
     if(m_storage_dir.empty())

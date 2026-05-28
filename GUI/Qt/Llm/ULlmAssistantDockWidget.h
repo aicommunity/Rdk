@@ -1,6 +1,9 @@
 #ifndef RDK_ULLM_ASSISTANT_DOCK_WIDGET_H
 #define RDK_ULLM_ASSISTANT_DOCK_WIDGET_H
 
+#include <memory>
+#include <string>
+
 #include <QComboBox>
 #include <QLabel>
 #include <QPlainTextEdit>
@@ -13,6 +16,8 @@
 #include "../UVisualControllerWidget.h"
 #include "ULlmGuiContextBridge.h"
 
+class ULlmChatHistoryArchive;
+
 namespace RDK::LLM {
 struct LLMFinalResponse;
 }
@@ -23,6 +28,7 @@ class ULlmAssistantDockWidget : public UVisualControllerWidget {
     Q_OBJECT
 public:
     ULlmAssistantDockWidget(QWidget* parent, RDK::UApplication* app, ULlmGuiContextBridge* bridge);
+    ~ULlmAssistantDockWidget() override;
 
     void appendAssistantText(const QString& text);
     void setPendingConfirmation(const QString& confirmation_id, const QString& summary);
@@ -51,6 +57,7 @@ public slots:
     void beginAssistantStream();
     void applyGuiPreferences();
     void trySendFromShortcut();
+    void onOpenChatHistory();
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
@@ -63,14 +70,27 @@ private:
     void setRequestInProgress(bool busy);
     void updateSendButtonLabel();
 
+    bool chatArchiveEnabled() const;
+    void ensureChatArchive();
+    void maybeStartArchiveFile();
+    void archiveHtmlFragment(const QString& html);
+    void finalizeActiveArchive();
+    void setArchiveViewMode(bool read_only, const QString& banner_text = QString());
+    void openArchivedChat(const QString& chat_file_path, const QString& session_id);
+    void continueArchivedChat(const QString& chat_file_path, const QString& session_id);
+    void rebuildHistoryFromSession(const std::string& session_id);
+    void restoreHitlFromSession(const std::string& session_id);
+
     ULlmGuiContextBridge* m_bridge = nullptr;
     QComboBox* m_provider_combo = nullptr;
     QLabel* m_provider_status = nullptr;
+    QLabel* m_archive_banner = nullptr;
     QLabel* m_request_status = nullptr;
     QProgressBar* m_request_progress = nullptr;
     QPlainTextEdit* m_input = nullptr;
     QTextEdit* m_history = nullptr;
     QPushButton* m_send = nullptr;
+    QPushButton* m_history_btn = nullptr;
     QPushButton* m_cancel = nullptr;
     QPushButton* m_confirm = nullptr;
     QPushButton* m_reject = nullptr;
@@ -82,12 +102,16 @@ private:
     bool m_plan_paused = false;
     bool m_streaming_reply = false;
     bool m_stream_tokens_received = false;
+    QString m_pending_assistant_archive;
     QTimer* m_confirmation_timer = nullptr;
     QShortcut* m_shortcut_ctrl_return = nullptr;
     QShortcut* m_shortcut_ctrl_enter = nullptr;
     bool m_enter_send_filter_active = false;
     LLMGuiContext m_last_ctx;
     QString m_session_id;
+    std::unique_ptr<ULlmChatHistoryArchive> m_chat_archive;
+    QString m_active_archive_path;
+    bool m_archive_view_mode = false;
 };
 
 #endif

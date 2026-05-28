@@ -69,6 +69,7 @@ public:
     void rejectPending(const std::string& session_id);
     /// Clears persisted conversation for session_id (GUI new chat / project load).
     void discardSession(const std::string& session_id);
+    bool tryResumeSession(const std::string& session_id);
     void cancel();
     void cancelSession(const std::string& session_id);
 

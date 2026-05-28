@@ -4,6 +4,7 @@
 #include <filesystem>
 
 #include "Context/ILLMProjectContextProvider.h"
+#include "Session/ULLMConversationStore.h"
 #include "LlmModuleInit.h"
 #include "Observability/ULLMIdempotencyStore.h"
 #include "Policy/ULLMPolicyEngine.h"
@@ -175,6 +176,16 @@ UDocSearchIndex& LLMServices::searchIndex()
 {
     static UDocSearchIndex s_fallback;
     return m_search_index ? *m_search_index : s_fallback;
+}
+
+bool LLMServices::loadConversationSession(const std::string& session_id)
+{
+    return m_store && m_store->loadFromDisk(session_id);
+}
+
+const ConversationState* LLMServices::conversationState(const std::string& session_id) const
+{
+    return m_store ? m_store->findSession(session_id) : nullptr;
 }
 
 } // namespace RDK::LLM

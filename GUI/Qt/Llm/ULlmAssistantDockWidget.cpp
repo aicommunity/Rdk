@@ -1,8 +1,12 @@
 #include "ULlmAssistantDockWidget.h"
 
 #include "LlmGuiBootstrap.h"
+#include "ULlmChatHistoryArchive.h"
+#include "ULlmChatHistoryDialog.h"
 
+#include <QDateTime>
 #include <QFutureWatcher>
+#include <QMessageBox>
 #include <QKeyEvent>
 #include <QTimer>
 #include <QUuid>
@@ -15,11 +19,23 @@
 
 #include "../../../LLM/Core/LlmPublicApi.h"
 #include "../../../LLM/Core/Orchestrator/ULLMAgentOrchestrator.h"
+#include "../../../LLM/Core/Orchestrator/ULLMWorkflowState.h"
 #include "../../../LLM/Core/Policy/ULLMPolicyLimits.h"
+#include "../../../LLM/Core/Session/ULLMConversationStore.h"
 #include "../../../LLM/Core/Settings/ULLMProviderAuth.h"
 #include "../UGEngineControlWidget.h"
 
+#include <cstdlib>
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
 namespace {
+
+fs::path toArchivePath(const QString& path)
+{
+    return fs::path(path.toStdString());
+}
 
 QString rollbackStatusMessage(ULlmAssistantDockWidget* dock, const std::string& status)
 {
@@ -45,7 +61,37 @@ void appendRollbackStatusIfPresent(ULlmAssistantDockWidget* dock,
     dock->appendAssistantText(dock->tr("<b>[Rollback]</b> %1").arg(msg));
 }
 
+QString formatMessageForHistory(const RDK::LLM::LLMMessage& msg)
+{
+    using RDK::LLM::LLMMessage;
+    switch(msg.role)
+    {
+    case LLMMessage::Role::User:
+        return QString("<p><b>You:</b> %1</p>")
+            .arg(QString::fromStdString(msg.content).toHtmlEscaped());
+    case LLMMessage::Role::Assistant: {
+        const QString body = QString::fromStdString(msg.content);
+        if(body.contains("<b>") || body.contains("<p>") || body.contains("<i>"))
+            return QString("<p><b>Assistant:</b> %1</p>").arg(body);
+        return QString("<p><b>Assistant:</b> %1</p>").arg(body.toHtmlEscaped());
+    }
+    case LLMMessage::Role::Tool: {
+        const QString name =
+            msg.tool_name ? QString::fromStdString(*msg.tool_name) : QStringLiteral("tool");
+        return QString("<p><i>[Tool: %1]</i></p>").arg(name.toHtmlEscaped());
+    }
+    case LLMMessage::Role::System:
+        if(msg.content.empty())
+            return {};
+        return QString("<p><i>%1</i></p>")
+            .arg(QString::fromStdString(msg.content).toHtmlEscaped());
+    }
+    return {};
+}
+
 } // namespace
+
+ULlmAssistantDockWidget::~ULlmAssistantDockWidget() = default;
 
 ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplication* app,
                                                ULlmGuiContextBridge* bridge)
@@ -61,12 +107,19 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     m_provider_combo = new QComboBox(this);
     auto* settings_btn = new QPushButton(tr("Settings..."), this);
     auto* new_chat_btn = new QPushButton(tr("New chat"), this);
+    m_history_btn = new QPushButton(tr("History..."), this);
     m_provider_status = new QLabel(this);
+    m_archive_banner = new QLabel(this);
+    m_archive_banner->setVisible(false);
+    m_archive_banner->setWordWrap(true);
+    m_archive_banner->setStyleSheet(QStringLiteral("background-color: #fff3cd; padding: 4px;"));
     top_row->addWidget(m_provider_combo, 1);
     top_row->addWidget(new_chat_btn);
+    top_row->addWidget(m_history_btn);
     top_row->addWidget(settings_btn);
     layout->addLayout(top_row);
     layout->addWidget(m_provider_status);
+    layout->addWidget(m_archive_banner);
 
     m_history = new QTextEdit(this);
     m_history->setReadOnly(true);
@@ -114,6 +167,9 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     connect(settings_btn, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onOpenSettings);
     connect(new_chat_btn, &QPushButton::clicked, this,
             [this]() { startNewChat(tr("<i>New chat started.</i>")); });
+    connect(m_history_btn, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onOpenChatHistory);
+    if(!chatArchiveEnabled())
+        m_history_btn->setVisible(false);
     connect(m_send, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onSendClicked);
     connect(m_cancel, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onCancelClicked);
     connect(m_confirm, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onConfirmClicked);
@@ -202,6 +258,8 @@ void ULlmAssistantDockWidget::onProviderChanged(int index)
 void ULlmAssistantDockWidget::appendAssistantText(const QString& text)
 {
     m_history->append(text);
+    if(!m_streaming_reply)
+        archiveHtmlFragment(text);
 }
 
 void ULlmAssistantDockWidget::setPendingConfirmation(const QString& confirmation_id,
@@ -297,20 +355,32 @@ std::string ULlmAssistantDockWidget::currentSessionId() const
 
 void ULlmAssistantDockWidget::startNewChat(const QString& system_note)
 {
-    if(!m_session_id.isEmpty() && RDK::LLM::LLMServices::instance().isInitialized())
+    if(!m_archive_view_mode)
+        finalizeActiveArchive();
+
+    // Read-only archive view must not delete the JSON session (Continue relies on it).
+    if(!m_archive_view_mode && !m_session_id.isEmpty()
+       && RDK::LLM::LLMServices::instance().isInitialized())
         RDK::LLM::LLMServices::instance().orchestrator().discardSession(currentSessionId());
 
     m_session_id = QStringLiteral("gui-%1")
                          .arg(QUuid::createUuid().toString(QUuid::WithoutBraces));
+    m_active_archive_path.clear();
+    m_archive_view_mode = false;
+    setArchiveViewMode(false);
     m_history->clear();
     clearPendingConfirmation();
     clearPendingPlan();
     m_reject->setVisible(false);
     setRequestInProgress(false);
     endAssistantStream();
+    m_pending_assistant_archive.clear();
 
     if(!system_note.isEmpty())
-        appendAssistantText(system_note);
+    {
+        m_history->append(system_note);
+        // System banner is not persisted until the first user message opens a file.
+    }
 }
 
 void ULlmAssistantDockWidget::onProjectOpened(const QString& configuration_ini_path)
@@ -348,11 +418,16 @@ void ULlmAssistantDockWidget::onContextChanged(const LLMGuiContext& ctx)
 
 void ULlmAssistantDockWidget::onSendClicked()
 {
+    if(m_archive_view_mode)
+        return;
     const QString text = m_input->toPlainText().trimmed();
     if(text.isEmpty())
         return;
     m_input->clear();
-    m_history->append(QString("<b>You:</b> %1").arg(text.toHtmlEscaped()));
+    const QString user_html = QString("<b>You:</b> %1").arg(text.toHtmlEscaped());
+    m_history->append(user_html);
+    maybeStartArchiveFile();
+    archiveHtmlFragment(user_html);
     runUserMessage(text);
 }
 
@@ -360,7 +435,9 @@ void ULlmAssistantDockWidget::beginAssistantStream()
 {
     m_streaming_reply = true;
     m_stream_tokens_received = false;
-    m_history->append(QString("<b>%1:</b> ").arg(tr("Assistant")));
+    const QString header = QString("<b>%1:</b> ").arg(tr("Assistant"));
+    m_history->append(header);
+    m_pending_assistant_archive = header;
 }
 
 void ULlmAssistantDockWidget::endAssistantStream()
@@ -454,6 +531,7 @@ void ULlmAssistantDockWidget::onStreamToken(const QString& token)
     if(token.isEmpty())
         return;
     m_stream_tokens_received = true;
+    m_pending_assistant_archive += token;
     QTextCursor cursor = m_history->textCursor();
     cursor.movePosition(QTextCursor::End);
     cursor.insertText(token);
@@ -465,7 +543,12 @@ void ULlmAssistantDockWidget::onStreamFinished(const RDK::LLM::LLMFinalResponse&
 {
     setRequestInProgress(false);
     if(m_streaming_reply)
+    {
+        if(!m_pending_assistant_archive.isEmpty())
+            archiveHtmlFragment(m_pending_assistant_archive);
+        m_pending_assistant_archive.clear();
         endAssistantStream();
+    }
 
     appendRollbackStatusIfPresent(this, resp);
 
@@ -515,9 +598,241 @@ void ULlmAssistantDockWidget::onStreamFinished(const RDK::LLM::LLMFinalResponse&
 void ULlmAssistantDockWidget::onCancelClicked()
 {
     RDK::LLM::LLMServices::instance().orchestrator().cancelSession(m_session_id.toStdString());
-    appendAssistantText(tr("[Cancelled]"));
+    m_pending_assistant_archive.clear();
+    appendAssistantText(tr("<i>[Cancelled]</i>"));
     setRequestInProgress(false);
     endAssistantStream();
+}
+
+bool ULlmAssistantDockWidget::chatArchiveEnabled() const
+{
+    if(const char* disable = std::getenv("NMSDK_LLM_DISABLE_CHAT_ARCHIVE"))
+        return !(disable[0] == '1' && disable[1] == '\0');
+    return true;
+}
+
+void ULlmAssistantDockWidget::ensureChatArchive()
+{
+    if(!chatArchiveEnabled() || m_chat_archive)
+        return;
+    auto* ctx = RDK::LLM::LLMServices::instance().projectContext();
+    if(!ctx)
+        return;
+    m_chat_archive = std::make_unique<ULlmChatHistoryArchive>(ctx->paths().bin_root);
+}
+
+void ULlmAssistantDockWidget::maybeStartArchiveFile()
+{
+    if(m_archive_view_mode || !chatArchiveEnabled())
+        return;
+    ensureChatArchive();
+    if(!m_chat_archive || !m_chat_archive->isWritable() || !m_active_archive_path.isEmpty())
+        return;
+
+    ChatArchiveMeta meta;
+    meta.session_id = currentSessionId();
+    meta.provider_id = RDK::LLM::LLMServices::instance().activeProviderProfile().profile_id;
+    if(m_bridge)
+        meta.project_path = m_bridge->currentContext().project_xml_path.toStdString();
+    meta.created_at_iso = QDateTime::currentDateTime().toString(Qt::ISODate).toStdString();
+
+    if(const auto path = m_chat_archive->startNewChatFile(meta))
+        m_active_archive_path = QString::fromStdString(path->string());
+}
+
+void ULlmAssistantDockWidget::archiveHtmlFragment(const QString& html)
+{
+    if(m_archive_view_mode || html.isEmpty() || !chatArchiveEnabled())
+        return;
+    ensureChatArchive();
+    if(!m_chat_archive || m_active_archive_path.isEmpty() || !m_chat_archive->isWritable())
+        return;
+    m_chat_archive->appendHtmlFragment(toArchivePath(m_active_archive_path), html.toStdString());
+}
+
+void ULlmAssistantDockWidget::finalizeActiveArchive()
+{
+    if(!m_chat_archive || m_active_archive_path.isEmpty())
+        return;
+    m_chat_archive->finalizeChat(toArchivePath(m_active_archive_path));
+    m_active_archive_path.clear();
+}
+
+void ULlmAssistantDockWidget::setArchiveViewMode(bool read_only, const QString& banner_text)
+{
+    m_archive_view_mode = read_only;
+    if(m_archive_banner)
+    {
+        if(read_only)
+        {
+            m_archive_banner->setText(
+                banner_text.isEmpty() ? tr("Archived chat (read-only)") : banner_text);
+            m_archive_banner->setVisible(true);
+        }
+        else
+        {
+            m_archive_banner->clear();
+            m_archive_banner->setVisible(false);
+        }
+    }
+    if(m_input)
+        m_input->setEnabled(!read_only);
+    if(m_send)
+        m_send->setEnabled(!read_only && !m_cancel->isVisible());
+    if(read_only)
+    {
+        clearPendingConfirmation();
+        clearPendingPlan();
+        m_cancel->setVisible(false);
+    }
+}
+
+void ULlmAssistantDockWidget::onOpenChatHistory()
+{
+    if(!chatArchiveEnabled())
+        return;
+    ensureChatArchive();
+    if(!m_chat_archive)
+        return;
+
+    auto* ctx = RDK::LLM::LLMServices::instance().projectContext();
+    if(!ctx)
+        return;
+
+    const QString sessions_dir =
+        QString::fromStdString((ctx->paths().repository_root / "LLM" / "sessions").string());
+    const auto result = ULlmChatHistoryDialog::run(this, *m_chat_archive, sessions_dir);
+    if(!result)
+        return;
+    if(result->action == ULlmChatHistoryDialog::Action::Open)
+        openArchivedChat(result->chat_file, result->session_id);
+    else if(result->action == ULlmChatHistoryDialog::Action::Continue)
+        continueArchivedChat(result->chat_file, result->session_id);
+}
+
+void ULlmAssistantDockWidget::openArchivedChat(const QString& chat_file_path,
+                                               const QString& session_id)
+{
+    if(!m_chat_archive)
+        return;
+
+    finalizeActiveArchive();
+
+    const std::string live_session = currentSessionId();
+    const std::string viewed_session = session_id.toStdString();
+    if(RDK::LLM::LLMServices::instance().isInitialized() && !live_session.empty()
+       && live_session != viewed_session)
+        RDK::LLM::LLMServices::instance().orchestrator().discardSession(live_session);
+
+    m_session_id = session_id;
+    m_active_archive_path.clear();
+    m_history->clear();
+    clearPendingConfirmation();
+    clearPendingPlan();
+    m_pending_assistant_archive.clear();
+    endAssistantStream();
+
+    const std::string body = m_chat_archive->loadChatBodyHtml(toArchivePath(chat_file_path));
+    if(!body.empty())
+        m_history->setHtml(QString::fromStdString(body));
+    setArchiveViewMode(true);
+}
+
+void ULlmAssistantDockWidget::continueArchivedChat(const QString& chat_file_path,
+                                                   const QString& session_id)
+{
+    if(!m_chat_archive)
+        return;
+
+    setArchiveViewMode(false);
+    finalizeActiveArchive();
+
+    const std::string previous_live_session = currentSessionId();
+    if(RDK::LLM::LLMServices::instance().isInitialized() && !previous_live_session.empty())
+        RDK::LLM::LLMServices::instance().orchestrator().discardSession(previous_live_session);
+
+    const std::string session_std = session_id.toStdString();
+    if(!RDK::LLM::LLMServices::instance().orchestrator().tryResumeSession(session_std))
+    {
+        QMessageBox::warning(
+            this, tr("Continue chat"),
+            tr("Could not restore the conversation session. The session file may be missing or invalid."));
+        startNewChat();
+        return;
+    }
+
+    m_session_id = session_id;
+    m_active_archive_path = chat_file_path;
+
+    rebuildHistoryFromSession(session_std);
+    restoreHitlFromSession(session_std);
+}
+
+void ULlmAssistantDockWidget::rebuildHistoryFromSession(const std::string& session_id)
+{
+    const RDK::LLM::ConversationState* state =
+        RDK::LLM::LLMServices::instance().conversationState(session_id);
+    if(!state)
+    {
+        m_history->clear();
+        return;
+    }
+
+    QString html;
+    for(const RDK::LLM::LLMMessage& msg : state->messages)
+    {
+        const QString block = formatMessageForHistory(msg);
+        if(!block.isEmpty())
+            html += block;
+    }
+    m_history->clear();
+    if(html.isEmpty())
+        return;
+    m_history->setHtml(html);
+}
+
+void ULlmAssistantDockWidget::restoreHitlFromSession(const std::string& session_id)
+{
+    const RDK::LLM::ConversationState* state =
+        RDK::LLM::LLMServices::instance().conversationState(session_id);
+    if(!state)
+        return;
+
+    if(state->pending)
+    {
+        m_pending_confirmation_id = QString::fromStdString(state->pending->confirmation_id);
+        m_confirm->setVisible(true);
+        m_reject->setVisible(true);
+        return;
+    }
+
+    if(state->pending_plan)
+    {
+        m_pending_plan_id = QString::fromStdString(state->pending_plan->plan_id);
+        m_reject->setVisible(true);
+        if(state->workflow_phase == RDK::LLM::LLMWorkflowPhase::TaskExecuting
+           || state->workflow_phase == RDK::LLM::LLMWorkflowPhase::Executing)
+        {
+            m_plan_paused = true;
+            m_execute_plan->setVisible(false);
+            m_resume_plan->setVisible(true);
+            m_rollback_plan->setVisible(true);
+        }
+        else
+        {
+            m_plan_paused = false;
+            m_execute_plan->setVisible(true);
+            m_resume_plan->setVisible(false);
+            m_rollback_plan->setVisible(false);
+        }
+        return;
+    }
+
+    if(state->pending_tool_arguments)
+    {
+        m_history->append(
+            tr("<p><i>More information is required to continue the pending tool action.</i></p>"));
+    }
 }
 
 void ULlmAssistantDockWidget::runUserMessage(const QString& text)
