@@ -11,6 +11,11 @@ static QString profileKey(const std::string& profile_id, const char* suffix)
         .arg(QString::fromLatin1(suffix));
 }
 
+static QSettings makeAppSettings()
+{
+    return QSettings(QStringLiteral("NeuroModeler"), QStringLiteral("NeuroModeler"));
+}
+
 static void loadProfileKeys(QSettings& settings, RDK::LLM::LLMRuntimeProviderSettings& runtime,
                             const RDK::LLM::LLMProviderProfile& profile)
 {
@@ -35,7 +40,7 @@ static void loadProfileKeys(QSettings& settings, RDK::LLM::LLMRuntimeProviderSet
 
 RDK::LLM::LLMRuntimeProviderSettings ULlmQtProviderSettingsSource::load() const
 {
-    QSettings settings;
+    QSettings settings = makeAppSettings();
     RDK::LLM::LLMRuntimeProviderSettings runtime;
     runtime.active_profile_id =
         settings.value(QStringLiteral("LLM/active_profile_id"), QStringLiteral("ollama-local"))
@@ -78,7 +83,7 @@ RDK::LLM::LLMRuntimeProviderSettings ULlmQtProviderSettingsSource::load() const
 
 void ULlmQtProviderSettingsSource::save(const RDK::LLM::LLMRuntimeProviderSettings& settings)
 {
-    QSettings qsettings;
+    QSettings qsettings = makeAppSettings();
     qsettings.setValue(QStringLiteral("LLM/active_profile_id"),
                        QString::fromStdString(settings.active_profile_id));
     qsettings.setValue(QStringLiteral("LLM/allow_cloud_providers"), settings.allow_cloud_providers);

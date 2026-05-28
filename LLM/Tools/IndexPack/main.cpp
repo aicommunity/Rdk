@@ -42,7 +42,12 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    ::setenv("NMSDK_ROOT", repo.string().c_str(), 1);
+    const std::string repo_str = repo.string();
+#ifdef _WIN32
+    _putenv_s("NMSDK_ROOT", repo_str.c_str());
+#else
+    ::setenv("NMSDK_ROOT", repo_str.c_str(), 1);
+#endif
     NmsdkBuiltinKnowledgeCatalog catalog(nullptr);
     RDK::LLM::UDocSearchIndex index;
     index.buildFromCatalog(catalog, repo);
