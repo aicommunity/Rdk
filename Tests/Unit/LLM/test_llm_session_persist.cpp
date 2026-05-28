@@ -105,3 +105,26 @@ TEST(LLMSessionPersist, RedactsSensitiveMessageContentOnPersist)
     EXPECT_EQ(loaded.messages[0].content.find("qwerty"), std::string::npos);
     EXPECT_NE(loaded.messages[0].content.find("[REDACTED]"), std::string::npos);
 }
+
+TEST(LLMSessionPersist, PersistsIntentContractState)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_intent_contract";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+    ConversationState& state = store.getOrCreate("session-intent");
+    state.session_id = "session-intent";
+    state.intent_contract_kind = LLMIntentKind::Mutate;
+    state.intent_contract_confidence = 0.87f;
+    state.intent_contract_requires_confirmation_for_writes = false;
+    ASSERT_TRUE(store.persistToDisk("session-intent"));
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-intent"));
+    ConversationState& loaded = reloaded.getOrCreate("session-intent");
+    EXPECT_EQ(loaded.intent_contract_kind, LLMIntentKind::Mutate);
+    EXPECT_FLOAT_EQ(loaded.intent_contract_confidence, 0.87f);
+    EXPECT_FALSE(loaded.intent_contract_requires_confirmation_for_writes);
+}

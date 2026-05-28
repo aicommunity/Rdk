@@ -399,6 +399,16 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                           {"confidence", intent_result.confidence},
                           {"method", intent_result.method}},
                          req.trace_id, req.session_id);
+    state.intent_contract_kind = intent;
+    state.intent_contract_confidence = intent_result.confidence;
+    state.intent_contract_requires_confirmation_for_writes =
+        intent != LLMIntentKind::Mutate || session.autonomous_mode == LLMAutonomousMode::Off;
+    GetAuditLog().append("intent_contract_set",
+                         {{"kind", intent_name},
+                          {"confidence", intent_result.confidence},
+                          {"requires_confirmation_for_writes",
+                           state.intent_contract_requires_confirmation_for_writes}},
+                         req.trace_id, req.session_id);
     if(intent == LLMIntentKind::Mutate && !session.llm_write_enabled)
     {
         final.ok = false;
@@ -817,6 +827,20 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                                          req.trace_id, req.session_id);
                     return {call, denied};
                 }
+            }
+            const LLMToolDefinition* call_def = m_registry.find(call.name);
+            if(call_def && call_def->kind == LLMToolKind::Write
+               && state.intent_contract_kind != LLMIntentKind::Mutate)
+            {
+                ToolGatewayResult denied;
+                denied.ok = false;
+                denied.error_code = "INTENT_CONTRACT_MISMATCH";
+                denied.message =
+                    "Write tool call blocked by intent contract (current intent is not mutate)";
+                GetAuditLog().append("intent_contract_denied",
+                                     {{"tool_name", call.name}, {"kind", intent_name}}, req.trace_id,
+                                     req.session_id);
+                return {call, denied};
             }
             ToolInvokeRequest invoke;
             invoke.trace_id = req.trace_id;

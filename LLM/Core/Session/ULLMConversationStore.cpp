@@ -146,6 +146,37 @@ PendingDisambiguationKind pendingDisambiguationKindFromString(const std::string&
     return PendingDisambiguationKind::None;
 }
 
+std::string intentKindToString(LLMIntentKind kind)
+{
+    switch(kind)
+    {
+    case LLMIntentKind::Query:
+        return "query";
+    case LLMIntentKind::Mutate:
+        return "mutate";
+    case LLMIntentKind::Explain:
+        return "explain";
+    case LLMIntentKind::Plan:
+        return "plan";
+    case LLMIntentKind::Auto:
+    default:
+        return "auto";
+    }
+}
+
+LLMIntentKind intentKindFromString(const std::string& value)
+{
+    if(value == "query")
+        return LLMIntentKind::Query;
+    if(value == "mutate")
+        return LLMIntentKind::Mutate;
+    if(value == "explain")
+        return LLMIntentKind::Explain;
+    if(value == "plan")
+        return LLMIntentKind::Plan;
+    return LLMIntentKind::Auto;
+}
+
 nlohmann::json toolArgumentFieldSpecToJson(const ToolArgumentFieldSpec& field)
 {
     return {{"name", field.name},
@@ -346,6 +377,10 @@ bool ULLMConversationStore::loadFromDisk(const std::string& session_id)
     }
     state.last_user_text_original = j.value("last_user_text_original", "");
     state.last_user_text_en = j.value("last_user_text_en", "");
+    state.intent_contract_kind = intentKindFromString(j.value("intent_contract_kind", "auto"));
+    state.intent_contract_confidence = j.value("intent_contract_confidence", 0.0f);
+    state.intent_contract_requires_confirmation_for_writes =
+        j.value("intent_contract_requires_confirmation_for_writes", true);
     if(j.contains("pending"))
     {
         if(auto pending = pendingConfirmationFromJson(j["pending"]))
@@ -384,6 +419,10 @@ bool ULLMConversationStore::persistToDisk(const std::string& session_id)
         j["last_user_text_original"] = it->second.last_user_text_original;
     if(!it->second.last_user_text_en.empty())
         j["last_user_text_en"] = it->second.last_user_text_en;
+    j["intent_contract_kind"] = intentKindToString(it->second.intent_contract_kind);
+    j["intent_contract_confidence"] = it->second.intent_contract_confidence;
+    j["intent_contract_requires_confirmation_for_writes"] =
+        it->second.intent_contract_requires_confirmation_for_writes;
     if(it->second.pending)
         j["pending"] = pendingConfirmationToJson(*it->second.pending);
     if(it->second.pending_tool_arguments)

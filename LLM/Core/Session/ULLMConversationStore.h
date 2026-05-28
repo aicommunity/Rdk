@@ -26,6 +26,9 @@ struct ConversationState {
     std::optional<ULLMExecutionPlan> pending_plan;
     std::string last_user_text_original;
     std::string last_user_text_en;
+    LLMIntentKind intent_contract_kind = LLMIntentKind::Auto;
+    float intent_contract_confidence = 0.0f;
+    bool intent_contract_requires_confirmation_for_writes = true;
     LLMWorkflowPhase workflow_phase = LLMWorkflowPhase::Idle;
     int cloud_provider_rounds = 0;
 };
