@@ -20,6 +20,7 @@
 #include "../Settings/ULLMResponseLanguage.h"
 #include "../Settings/ULLMUserMessages.h"
 #include "../TrustBoundary/ULLMTrustBoundary.h"
+#include "../Intent/ULLMIntentAmbiguityGate.h"
 #include "ULLMConfigurationLifecycle.h"
 #include "ULLMLifecycleArgumentGate.h"
 #include "ULLMToolFilterBuilder.h"
@@ -342,6 +343,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             final.text = exec.summary;
             if(!exec.ok)
                 final.error = exec.summary;
+            GetAuditLog().append(exec.ok ? "task_completed" : "task_failed",
+                                 {{"summary", exec.summary}}, req.trace_id, req.session_id);
             setWorkflowPhase(
                 state, exec.ok ? LLMWorkflowPhase::Completed : LLMWorkflowPhase::Failed, req.trace_id);
             setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
@@ -764,6 +767,29 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
         assistant_tools.assistant_tool_calls = completion.tool_calls;
         m_store.appendMessage(req.session_id, assistant_tools);
 
+        const IntentAmbiguityDecision ambiguity =
+            evaluateIntentAmbiguity(state, intent_result, completion.tool_calls, m_registry);
+        if(ambiguity.block_writes)
+        {
+            GetAuditLog().append("intent_ambiguity_blocked",
+                                 {{"reason_code", ambiguity.reason_code}}, req.trace_id,
+                                 req.session_id);
+            GetAuditLog().append("false_execution_prevented",
+                                 {{"reason_code", ambiguity.reason_code}}, req.trace_id,
+                                 req.session_id);
+            LLMFinalResponse blocked;
+            blocked.ok = true;
+            blocked.needs_argument_clarification = true;
+            blocked.text = ambiguity.user_message;
+            LLMMessage assistant_msg;
+            assistant_msg.role = LLMMessage::Role::Assistant;
+            assistant_msg.content = blocked.text;
+            m_store.appendMessage(req.session_id, assistant_msg);
+            setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
+            m_store.persistToDisk(req.session_id);
+            return blocked;
+        }
+
         auto invokeOne = [&](const LLMToolCall& call) -> std::pair<LLMToolCall, ToolGatewayResult> {
             if(tool_invocations >= max_tool_invocations)
             {
@@ -998,6 +1024,10 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                     final.pending_confirmation_id = tr.confirmation_id;
                     final.text = formatUserMessage("confirmation.required", user_lang,
                                                    {{"tool_name", call_copy.name}});
+                    GetAuditLog().append("escalation_to_hitl",
+                                         {{"tool_name", call_copy.name},
+                                          {"confirmation_id", tr.confirmation_id}},
+                                         req.trace_id, req.session_id);
                     m_store.persistToDisk(req.session_id);
                     return final;
                 }
@@ -1475,6 +1505,9 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
         final.pending_confirmation = true;
         final.pending_confirmation_id = tr.confirmation_id;
         final.text = formatUserMessage("confirmation.required", user_lang, {{"tool_name", tool_name}});
+        GetAuditLog().append("escalation_to_hitl",
+                             {{"tool_name", tool_name}, {"confirmation_id", tr.confirmation_id}},
+                             trace_id, session_id);
         m_store.persistToDisk(session_id);
         return final;
     }
