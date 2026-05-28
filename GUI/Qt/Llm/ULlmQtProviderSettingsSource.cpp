@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 
+#include <QProcess>
 #include <QSettings>
 
 #include "../../../LLM/Core/Settings/ULLMProviderCatalog.h"
@@ -18,9 +19,103 @@ static QSettings makeAppSettings()
     return QSettings(QStringLiteral("NeuroModeler"), QStringLiteral("NeuroModeler"));
 }
 
+static bool secureStoreEnabled()
+{
+    return std::getenv("NMSDK_LLM_DISABLE_SECURE_KEYSTORE") == nullptr;
+}
+
+static bool writeApiKeyToSecureStore(const std::string& profile_id, const std::string& api_key)
+{
+    if(!secureStoreEnabled())
+        return false;
+#if defined(__linux__)
+    QProcess proc;
+    QStringList args;
+    args << QStringLiteral("store")
+         << QStringLiteral("--label=NeuroModeler LLM API key")
+         << QStringLiteral("service")
+         << QStringLiteral("NeuroModelerLLM")
+         << QStringLiteral("profile")
+         << QString::fromStdString(profile_id);
+    proc.start(QStringLiteral("secret-tool"), args);
+    if(!proc.waitForStarted(2000))
+        return false;
+    proc.write(QByteArray::fromStdString(api_key));
+    proc.write("\n");
+    proc.closeWriteChannel();
+    if(!proc.waitForFinished(4000))
+        return false;
+    return proc.exitStatus() == QProcess::NormalExit && proc.exitCode() == 0;
+#elif defined(__APPLE__)
+    QProcess proc;
+    QStringList args;
+    args << QStringLiteral("add-generic-password")
+         << QStringLiteral("-U")
+         << QStringLiteral("-a")
+         << QString::fromStdString(profile_id)
+         << QStringLiteral("-s")
+         << QStringLiteral("NeuroModelerLLM")
+         << QStringLiteral("-w")
+         << QString::fromStdString(api_key);
+    proc.start(QStringLiteral("security"), args);
+    if(!proc.waitForFinished(4000))
+        return false;
+    return proc.exitStatus() == QProcess::NormalExit && proc.exitCode() == 0;
+#else
+    (void)profile_id;
+    (void)api_key;
+    return false;
+#endif
+}
+
+static std::string readApiKeyFromSecureStore(const std::string& profile_id)
+{
+    if(!secureStoreEnabled())
+        return {};
+#if defined(__linux__)
+    QProcess proc;
+    QStringList args;
+    args << QStringLiteral("lookup")
+         << QStringLiteral("service")
+         << QStringLiteral("NeuroModelerLLM")
+         << QStringLiteral("profile")
+         << QString::fromStdString(profile_id);
+    proc.start(QStringLiteral("secret-tool"), args);
+    if(!proc.waitForFinished(3000))
+        return {};
+    if(proc.exitStatus() != QProcess::NormalExit || proc.exitCode() != 0)
+        return {};
+    const QString out = QString::fromUtf8(proc.readAllStandardOutput()).trimmed();
+    return out.toStdString();
+#elif defined(__APPLE__)
+    QProcess proc;
+    QStringList args;
+    args << QStringLiteral("find-generic-password")
+         << QStringLiteral("-a")
+         << QString::fromStdString(profile_id)
+         << QStringLiteral("-s")
+         << QStringLiteral("NeuroModelerLLM")
+         << QStringLiteral("-w");
+    proc.start(QStringLiteral("security"), args);
+    if(!proc.waitForFinished(3000))
+        return {};
+    if(proc.exitStatus() != QProcess::NormalExit || proc.exitCode() != 0)
+        return {};
+    const QString out = QString::fromUtf8(proc.readAllStandardOutput()).trimmed();
+    return out.toStdString();
+#else
+    (void)profile_id;
+    return {};
+#endif
+}
+
 static void loadProfileKeys(QSettings& settings, RDK::LLM::LLMRuntimeProviderSettings& runtime,
                             const RDK::LLM::LLMProviderProfile& profile)
 {
+    const std::string secure_api_key = readApiKeyFromSecureStore(profile.profile_id);
+    if(!secure_api_key.empty())
+        runtime.api_keys_by_profile_id[profile.profile_id] = secure_api_key;
+
     const QString api_key_key = profileKey(profile.profile_id, "api_key");
     const bool allow_plaintext_settings_keys =
         std::getenv("NMSDK_LLM_ALLOW_PLAINTEXT_SETTINGS_KEYS") != nullptr;
@@ -121,7 +216,12 @@ void ULlmQtProviderSettingsSource::save(const RDK::LLM::LLMRuntimeProviderSettin
 
     for(const auto& entry : settings.api_keys_by_profile_id)
     {
-        if(allow_plaintext_settings_keys)
+        const bool stored_securely = writeApiKeyToSecureStore(entry.first, entry.second);
+        if(stored_securely)
+        {
+            qsettings.remove(profileKey(entry.first, "api_key"));
+        }
+        else if(allow_plaintext_settings_keys)
         {
             qsettings.setValue(profileKey(entry.first, "api_key"),
                                QString::fromStdString(entry.second));
