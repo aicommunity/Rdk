@@ -7,6 +7,9 @@
 #include <iomanip>
 #include <sstream>
 
+#include <QByteArray>
+#include <QCryptographicHash>
+
 #include "../LlmModuleInit.h"
 #include "../Session/ULLMConfirmationExpiry.h"
 #include "../LlmPublicApi.h"
@@ -40,10 +43,8 @@ namespace {
 
 std::string pseudoSha256(const std::string& text)
 {
-    const auto h = std::hash<std::string>{}(text);
-    std::ostringstream oss;
-    oss << std::hex << std::setw(16) << std::setfill('0') << h;
-    return oss.str();
+    const QByteArray data(text.data(), static_cast<int>(text.size()));
+    return QCryptographicHash::hash(data, QCryptographicHash::Sha256).toHex().toStdString();
 }
 
 std::string stableArgumentsJson(const nlohmann::json& args)
@@ -54,9 +55,11 @@ std::string stableArgumentsJson(const nlohmann::json& args)
 }
 
 std::string makeIdempotencyKey(const std::string& session_id, const std::string& trace_id,
-                               const std::string& tool_name, const nlohmann::json& args)
+                               const std::string& tool_name, const nlohmann::json& args,
+                               const std::string& action_id = std::string())
 {
-    return pseudoSha256(session_id + "|" + trace_id + "|" + tool_name + "|" + stableArgumentsJson(args));
+    return pseudoSha256(session_id + "|" + trace_id + "|" + action_id + "|" + tool_name + "|"
+                        + stableArgumentsJson(args));
 }
 
 bool isRollbackEligibleWriteRecord(const ExecutionPlanStep& step)
@@ -847,7 +850,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             invoke.tool_name = call.name;
             invoke.arguments = call.arguments;
             invoke.idempotency_key =
-                makeIdempotencyKey(req.session_id, req.trace_id, call.name, call.arguments);
+                makeIdempotencyKey(req.session_id, req.trace_id, call.name, call.arguments, call.id);
             const ConfigurationLifecycleAction call_action = lifecycleActionFromToolName(call.name);
             if(call_action != ConfigurationLifecycleAction::None)
             {
@@ -957,7 +960,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                             retry_req.tool_name = call_copy.name;
                             retry_req.arguments = merged;
                             retry_req.idempotency_key =
-                                makeIdempotencyKey(req.session_id, req.trace_id, call_copy.name, merged);
+                                makeIdempotencyKey(req.session_id, req.trace_id, call_copy.name, merged,
+                                                   call_copy.id.empty() ? "retry" : call_copy.id + ":retry");
                             retry_req.session = session;
                             retry_req.user_text_hint = planning_text;
                             const ToolGatewayResult retry_tr = m_gateway.invoke(retry_req);
@@ -1137,7 +1141,7 @@ LLMFinalResponse ULLMAgentOrchestrator::confirmPending(const std::string& sessio
     ToolInvokeRequest req = state.pending->request;
     req.confirmed = true;
     req.idempotency_key =
-        makeIdempotencyKey(session_id, confirmation_id, req.tool_name, req.arguments);
+        makeIdempotencyKey(session_id, confirmation_id, req.tool_name, req.arguments, confirmation_id);
     const ToolGatewayResult tr = m_gateway.invoke(req);
     m_store.clearPending(session_id);
     final.ok = tr.ok;
@@ -1303,6 +1307,7 @@ LLMFinalResponse ULLMAgentOrchestrator::rollbackPlanExecution(const std::string&
                          trace_id, session_id);
 
     state.pending_plan.reset();
+    final.rollback_status = rollback_status;
     final.ok = rollback_status == "rolled_back" || rollback_status == "rolled_back_nothing_to_compensate";
     if(rollback_status == "rolled_back")
         final.text = note.empty() ? "Plan rolled back." : "Plan rolled back. " + note;

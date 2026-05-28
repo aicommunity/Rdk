@@ -131,6 +131,7 @@ TEST(LLMOrchestrator, RollbackReportsFailureWhenCompensationFails)
     const LLMFinalResponse resp = orch.rollbackPlanExecution("rollback-session", "trace-rb", session);
     EXPECT_FALSE(resp.ok);
     EXPECT_EQ(resp.text, "Plan rollback failed.");
+    EXPECT_EQ(resp.rollback_status, "rollback_failed");
     EXPECT_FALSE(resp.error.empty());
 }
 

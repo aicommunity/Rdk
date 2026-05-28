@@ -48,6 +48,8 @@ struct LLMFinalResponse {
     /// Lifecycle tool needs more parameters from the user (see ConversationState::pending_tool_arguments).
     bool needs_argument_clarification = false;
     bool no_suitable_tool = false;
+    /// Explicit rollback status for UI/API handling.
+    std::string rollback_status;
 };
 
 class ULLMAgentOrchestrator {
