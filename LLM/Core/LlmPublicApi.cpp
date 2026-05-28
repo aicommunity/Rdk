@@ -54,6 +54,8 @@ void LLMServices::initialize(RDK::UApplication* app, ILLMProjectContextProvider*
 
     m_gateway = std::make_unique<ULLMToolGateway>(GetToolRegistry(), *m_policy, *m_domain,
                                                   GetAuditLog(), *m_idempotency, *m_validator);
+    m_context_retriever =
+        std::make_unique<URdkContextRetriever>(*m_domain, project_context);
 
     const std::filesystem::path repository_root =
         project_context ? project_context->paths().repository_root : std::filesystem::path(".");
@@ -176,6 +178,11 @@ UDocSearchIndex& LLMServices::searchIndex()
 {
     static UDocSearchIndex s_fallback;
     return m_search_index ? *m_search_index : s_fallback;
+}
+
+URdkContextRetriever* LLMServices::contextRetriever()
+{
+    return m_context_retriever.get();
 }
 
 bool LLMServices::loadConversationSession(const std::string& session_id)

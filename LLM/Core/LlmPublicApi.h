@@ -5,6 +5,7 @@
 #include <string>
 
 #include "Context/ILLMKnowledgeCatalog.h"
+#include "Context/URdkContextRetriever.h"
 #include "Context/UDocSearchIndex.h"
 #include "LlmTypes.h"
 #include "Domain/URdkApplicationCommands.h"
@@ -43,6 +44,7 @@ public:
     const LLMProviderProfile& activeProviderProfile() const;
     ILLMKnowledgeCatalog* catalog() const;
     UDocSearchIndex& searchIndex();
+    URdkContextRetriever* contextRetriever();
 
     ILLMProjectContextProvider* projectContext() const { return m_project_context; }
     bool loadConversationSession(const std::string& session_id);
@@ -69,6 +71,7 @@ private:
     ILLMProjectContextProvider* m_project_context = nullptr;
     std::unique_ptr<ILLMKnowledgeCatalog> m_catalog;
     std::unique_ptr<UDocSearchIndex> m_search_index;
+    std::unique_ptr<URdkContextRetriever> m_context_retriever;
 };
 
 } // namespace RDK::LLM
