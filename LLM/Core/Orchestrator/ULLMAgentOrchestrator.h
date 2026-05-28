@@ -5,6 +5,7 @@
 #include <functional>
 #include <map>
 #include <mutex>
+#include <set>
 
 #include "../LlmTypes.h"
 #include "../Providers/ILLMProvider.h"
@@ -67,6 +68,7 @@ public:
     /// Clears persisted conversation for session_id (GUI new chat / project load).
     void discardSession(const std::string& session_id);
     void cancel();
+    void cancelSession(const std::string& session_id);
 
 private:
     ILLMProvider& m_provider;
@@ -77,6 +79,8 @@ private:
     std::atomic<bool> m_cancelled{false};
     mutable std::mutex m_session_busy_mu;
     std::map<std::string, bool> m_session_busy;
+    mutable std::mutex m_cancel_mu;
+    std::set<std::string> m_cancelled_sessions;
     void setWorkflowPhase(ConversationState& state, LLMWorkflowPhase phase,
                           const std::string& trace_id);
 

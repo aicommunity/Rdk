@@ -484,7 +484,7 @@ void ULlmAssistantDockWidget::onStreamFinished(const RDK::LLM::LLMFinalResponse&
 
 void ULlmAssistantDockWidget::onCancelClicked()
 {
-    RDK::LLM::LLMServices::instance().orchestrator().cancel();
+    RDK::LLM::LLMServices::instance().orchestrator().cancelSession(m_session_id);
     appendAssistantText(tr("[Cancelled]"));
     setRequestInProgress(false);
     endAssistantStream();

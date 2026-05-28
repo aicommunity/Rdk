@@ -6,6 +6,7 @@
 #include <fstream>
 
 #include <filesystem>
+#include <regex>
 
 namespace fs = std::filesystem;
 
@@ -209,6 +210,19 @@ std::optional<PendingToolArguments> pendingToolArgumentsFromJson(const nlohmann:
     return pending;
 }
 
+std::string redactSensitiveText(const std::string& text)
+{
+    std::string out = text;
+    const std::vector<std::regex> patterns = {
+        std::regex(R"((api[_-]?key\s*[:=]\s*)([^\s"']+))", std::regex::icase),
+        std::regex(R"((token\s*[:=]\s*)([^\s"']+))", std::regex::icase),
+        std::regex(R"((password\s*[:=]\s*)([^\s"']+))", std::regex::icase),
+        std::regex(R"(sk-[A-Za-z0-9]{16,})", std::regex::icase)};
+    for(const std::regex& pattern : patterns)
+        out = std::regex_replace(out, pattern, "$1[REDACTED]");
+    return out;
+}
+
 } // namespace
 
 void ULLMConversationStore::setStorageDirectory(const std::string& path)
@@ -236,7 +250,7 @@ nlohmann::json ULLMConversationStore::messageToJson(const LLMMessage& msg)
         j["role"] = "tool";
         break;
     }
-    j["content"] = msg.content;
+    j["content"] = redactSensitiveText(msg.content);
     if(msg.tool_call_id)
         j["tool_call_id"] = *msg.tool_call_id;
     if(msg.tool_name)

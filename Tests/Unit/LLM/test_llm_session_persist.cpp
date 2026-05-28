@@ -82,3 +82,26 @@ TEST(LLMSessionPersist, RoundTripPendingToolArguments)
     ASSERT_EQ(loaded.pending_tool_arguments->missing_fields.size(), 1u);
     EXPECT_EQ(loaded.pending_tool_arguments->missing_fields.front().name, "class_name");
 }
+
+TEST(LLMSessionPersist, RedactsSensitiveMessageContentOnPersist)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_redaction";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+
+    LLMMessage user;
+    user.role = LLMMessage::Role::User;
+    user.content = "api_key=secret123 token=abcd password=qwerty";
+    store.appendMessage("session-redact", user);
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-redact"));
+    ConversationState& loaded = reloaded.getOrCreate("session-redact");
+    ASSERT_EQ(loaded.messages.size(), 1u);
+    EXPECT_EQ(loaded.messages[0].content.find("secret123"), std::string::npos);
+    EXPECT_EQ(loaded.messages[0].content.find("qwerty"), std::string::npos);
+    EXPECT_NE(loaded.messages[0].content.find("[REDACTED]"), std::string::npos);
+}

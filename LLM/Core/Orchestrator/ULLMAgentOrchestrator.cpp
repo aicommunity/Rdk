@@ -204,6 +204,15 @@ void ULLMAgentOrchestrator::cancel()
     m_provider.cancel();
 }
 
+void ULLMAgentOrchestrator::cancelSession(const std::string& session_id)
+{
+    {
+        std::lock_guard<std::mutex> lock(m_cancel_mu);
+        m_cancelled_sessions.insert(session_id);
+    }
+    m_provider.cancel();
+}
+
 void ULLMAgentOrchestrator::setWorkflowPhase(ConversationState& state, LLMWorkflowPhase phase,
                                              const std::string& trace_id)
 {
@@ -220,6 +229,10 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                                                           const LLMStreamHandlers* stream)
 {
     m_cancelled = false;
+    {
+        std::lock_guard<std::mutex> lock(m_cancel_mu);
+        m_cancelled_sessions.erase(req.session_id);
+    }
     LLMFinalResponse final;
     {
         std::lock_guard<std::mutex> lock(m_session_busy_mu);
@@ -579,7 +592,12 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
     const bool is_cloud_profile = req.provider_profile.is_cloud;
     const int max_rounds = kMaxRounds;
 
-    for(int round = 0; round < max_rounds && !m_cancelled; ++round)
+    auto session_cancelled = [&]() {
+        std::lock_guard<std::mutex> lock(m_cancel_mu);
+        return m_cancelled || m_cancelled_sessions.find(req.session_id) != m_cancelled_sessions.end();
+    };
+
+    for(int round = 0; round < max_rounds && !session_cancelled(); ++round)
     {
         provider_messages = state.messages;
 
@@ -608,7 +626,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             m_provider.chatStream(
                 provider_messages, opts,
                 [&](const std::string& token) {
-                    if(!m_cancelled && stream->on_token)
+                    if(!session_cancelled() && stream->on_token)
                         stream->on_token(token);
                 },
                 [&](LLMCompletionResult r) { completion = std::move(r); });
@@ -1497,11 +1515,13 @@ void ULLMAgentOrchestrator::rejectPending(const std::string& session_id)
 
 void ULLMAgentOrchestrator::discardSession(const std::string& session_id)
 {
-    cancel();
+    cancelSession(session_id);
     rejectPending(session_id);
     m_store.removeSession(session_id);
     std::lock_guard<std::mutex> lock(m_session_busy_mu);
     m_session_busy.erase(session_id);
+    std::lock_guard<std::mutex> cancel_lock(m_cancel_mu);
+    m_cancelled_sessions.erase(session_id);
 }
 
 } // namespace RDK::LLM
