@@ -2,7 +2,26 @@
 
 #include "UOllamaChatTemplate.h"
 
+#include <chrono>
+#include <thread>
+
 namespace RDK::LLM {
+
+namespace {
+
+bool shouldRetryHttpStatus(int status)
+{
+    return status == 408 || status == 429 || status >= 500;
+}
+
+int retryBackoffMs(int attempt)
+{
+    const int base = 300;
+    const int jitter = 50 * (attempt + 1);
+    return base * (1 << attempt) + jitter;
+}
+
+} // namespace
 
 UOllamaNativeProvider::UOllamaNativeProvider(LLMProviderProfile profile)
     : m_profile(std::move(profile))
@@ -99,21 +118,38 @@ LLMCompletionResult UOllamaNativeProvider::chat(const std::vector<LLMMessage>& m
     }
 
     const std::string url = ollamaHost() + "/api/chat";
-    auto resp = m_http.postJson(url, body.dump(), m_profile.api_key);
-    if(!resp.error.empty())
+    constexpr int kMaxAttempts = 3;
+    for(int attempt = 0; attempt < kMaxAttempts; ++attempt)
     {
-        result.ok = false;
-        result.error_message = resp.error;
-        return result;
+        auto resp = m_http.postJson(url, body.dump(), m_profile.api_key);
+        if(!resp.error.empty())
+        {
+            result.ok = false;
+            result.error_message = resp.error;
+            if(attempt < kMaxAttempts - 1)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(retryBackoffMs(attempt)));
+                continue;
+            }
+            return result;
+        }
+        if(resp.status_code < 200 || resp.status_code >= 300)
+        {
+            if(attempt < kMaxAttempts - 1 && shouldRetryHttpStatus(resp.status_code))
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(retryBackoffMs(attempt)));
+                continue;
+            }
+            result.ok = false;
+            result.error_message = "HTTP " + std::to_string(resp.status_code) + ": " + resp.body;
+            return result;
+        }
+        std::string parse_err;
+        return parseResponse(resp.body, parse_err);
     }
-    if(resp.status_code < 200 || resp.status_code >= 300)
-    {
-        result.ok = false;
-        result.error_message = "HTTP " + std::to_string(resp.status_code) + ": " + resp.body;
-        return result;
-    }
-    std::string parse_err;
-    return parseResponse(resp.body, parse_err);
+    result.ok = false;
+    result.error_message = "Provider request failed after retry";
+    return result;
 }
 
 void UOllamaNativeProvider::chatStream(const std::vector<LLMMessage>& messages,

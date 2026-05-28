@@ -18,6 +18,13 @@ bool shouldRetryHttpStatus(int status)
     return status == 408 || status == 429 || status >= 500;
 }
 
+int retryBackoffMs(int attempt)
+{
+    const int base = 300;
+    const int jitter = 75 * (attempt + 1);
+    return base * (1 << attempt) + jitter;
+}
+
 struct StreamToolPart {
     std::string id;
     std::string name;
@@ -176,25 +183,26 @@ LLMCompletionResult UOpenAICompatProvider::chat(const std::vector<LLMMessage>& m
     url += "/chat/completions";
 
     const nlohmann::json body = buildRequestBody(messages, opts);
-    for(int attempt = 0; attempt < 2; ++attempt)
+    constexpr int kMaxAttempts = 3;
+    for(int attempt = 0; attempt < kMaxAttempts; ++attempt)
     {
         auto resp = m_http.postJson(url, body.dump(), m_profile.api_key);
         if(!resp.error.empty())
         {
             result.ok = false;
             result.error_message = resp.error;
-            if(attempt == 0)
+            if(attempt < kMaxAttempts - 1)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(400));
+                std::this_thread::sleep_for(std::chrono::milliseconds(retryBackoffMs(attempt)));
                 continue;
             }
             return result;
         }
         if(resp.status_code < 200 || resp.status_code >= 300)
         {
-            if(attempt == 0 && shouldRetryHttpStatus(resp.status_code))
+            if(attempt < kMaxAttempts - 1 && shouldRetryHttpStatus(resp.status_code))
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                std::this_thread::sleep_for(std::chrono::milliseconds(retryBackoffMs(attempt)));
                 continue;
             }
             result.ok = false;
@@ -276,17 +284,18 @@ void UOpenAICompatProvider::chatStream(const std::vector<LLMMessage>& messages,
     };
 
     LLMCompletionResult result;
-    for(int attempt = 0; attempt < 2; ++attempt)
+    constexpr int kMaxAttempts = 3;
+    for(int attempt = 0; attempt < kMaxAttempts; ++attempt)
     {
         result = run_once();
         if(result.ok || m_cancelled.load())
             break;
-        if(attempt == 0 && result.error_message.rfind("HTTP ", 0) == 0)
+        if(attempt < kMaxAttempts - 1 && result.error_message.rfind("HTTP ", 0) == 0)
         {
             const int code = std::atoi(result.error_message.c_str() + 5);
             if(shouldRetryHttpStatus(code))
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                std::this_thread::sleep_for(std::chrono::milliseconds(retryBackoffMs(attempt)));
                 continue;
             }
         }
