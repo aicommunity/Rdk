@@ -5,6 +5,11 @@
 #include <QProcess>
 #include <QSettings>
 
+#if defined(_WIN32)
+#include <windows.h>
+#include <wincred.h>
+#endif
+
 #include "../../../LLM/Core/Settings/ULLMProviderCatalog.h"
 
 static QString profileKey(const std::string& profile_id, const char* suffix)
@@ -61,6 +66,19 @@ static bool writeApiKeyToSecureStore(const std::string& profile_id, const std::s
     if(!proc.waitForFinished(4000))
         return false;
     return proc.exitStatus() == QProcess::NormalExit && proc.exitCode() == 0;
+#elif defined(_WIN32)
+    const std::wstring target =
+        (QStringLiteral("NeuroModelerLLM/") + QString::fromStdString(profile_id)).toStdWString();
+    const std::wstring secret = QString::fromStdString(api_key).toStdWString();
+    CREDENTIALW cred{};
+    cred.Type = CRED_TYPE_GENERIC;
+    cred.TargetName = const_cast<LPWSTR>(target.c_str());
+    cred.CredentialBlobSize = static_cast<DWORD>(secret.size() * sizeof(wchar_t));
+    cred.CredentialBlob =
+        reinterpret_cast<LPBYTE>(const_cast<wchar_t*>(secret.c_str()));
+    cred.Persist = CRED_PERSIST_LOCAL_MACHINE;
+    cred.UserName = const_cast<LPWSTR>(L"nmsdk");
+    return CredWriteW(&cred, 0) == TRUE;
 #else
     (void)profile_id;
     (void)api_key;
@@ -103,6 +121,17 @@ static std::string readApiKeyFromSecureStore(const std::string& profile_id)
         return {};
     const QString out = QString::fromUtf8(proc.readAllStandardOutput()).trimmed();
     return out.toStdString();
+#elif defined(_WIN32)
+    const std::wstring target =
+        (QStringLiteral("NeuroModelerLLM/") + QString::fromStdString(profile_id)).toStdWString();
+    PCREDENTIALW cred = nullptr;
+    if(CredReadW(target.c_str(), CRED_TYPE_GENERIC, 0, &cred) != TRUE || !cred)
+        return {};
+    const wchar_t* blob = reinterpret_cast<const wchar_t*>(cred->CredentialBlob);
+    const size_t wchar_count = cred->CredentialBlobSize / sizeof(wchar_t);
+    const std::wstring secret(blob, wchar_count);
+    CredFree(cred);
+    return QString::fromStdWString(secret).toStdString();
 #else
     (void)profile_id;
     return {};
