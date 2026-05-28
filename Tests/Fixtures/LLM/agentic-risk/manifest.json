@@ -36,6 +36,12 @@
       "ctest": "Test_LLM_ArgumentValidator",
       "gtest_filter": "LLMArgumentValidator.EnforcesTypeEnumAndNumericRange",
       "priority": "P1"
+    },
+    {
+      "id": "adversarial-injection-fixtures",
+      "ctest": "Test_LLM_AdversarialFixtures",
+      "gtest_filter": "LLMAdversarialFixtures.SanitizerNeutralizesInjectionPayloads",
+      "priority": "P1"
     }
   ]
 }

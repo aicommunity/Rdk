@@ -22,8 +22,12 @@ function(_add_llm_unit_test name)
 endfunction()
 
 set(RDK_LLM_REGRESSION_FIXTURES_DIR "${CMAKE_SOURCE_DIR}/Rdk/Tests/Fixtures/LLM/regression")
+set(RDK_LLM_ADVERSARIAL_FIXTURES_DIR "${CMAKE_SOURCE_DIR}/Rdk/Tests/Fixtures/LLM/adversarial")
 
 _add_llm_unit_test(Test_LLM_ArgumentValidator test_llm_argument_validator.cpp)
+_add_llm_unit_test(Test_LLM_AdversarialFixtures test_llm_adversarial_fixtures.cpp)
+target_compile_definitions(Test_LLM_AdversarialFixtures PRIVATE
+  RDK_LLM_ADVERSARIAL_FIXTURES_DIR="${RDK_LLM_ADVERSARIAL_FIXTURES_DIR}")
 _add_llm_unit_test(Test_LLM_Policy test_llm_policy.cpp)
 _add_llm_unit_test(Test_LLM_AutonomousPolicy test_llm_autonomous_policy.cpp)
 _add_llm_unit_test(Test_LLM_QuantityParser test_llm_quantity_parser.cpp)
