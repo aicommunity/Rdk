@@ -1,5 +1,6 @@
 #include "UOpenAICompatProvider.h"
 
+#include "../Http/ULLMHttpRetry.h"
 #include "UOllamaChatTemplate.h"
 #include "UOllamaModelInfo.h"
 
@@ -16,13 +17,6 @@ namespace {
 bool shouldRetryHttpStatus(int status)
 {
     return status == 408 || status == 429 || status >= 500;
-}
-
-int retryBackoffMs(int attempt)
-{
-    const int base = 300;
-    const int jitter = 75 * (attempt + 1);
-    return base * (1 << attempt) + jitter;
 }
 
 struct StreamToolPart {
@@ -193,7 +187,8 @@ LLMCompletionResult UOpenAICompatProvider::chat(const std::vector<LLMMessage>& m
             result.error_message = resp.error;
             if(attempt < kMaxAttempts - 1)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(retryBackoffMs(attempt)));
+                std::this_thread::sleep_for(std::chrono::milliseconds(
+                    providerRetryDelayMs(attempt, resp.retry_after)));
                 continue;
             }
             return result;
@@ -202,7 +197,8 @@ LLMCompletionResult UOpenAICompatProvider::chat(const std::vector<LLMMessage>& m
         {
             if(attempt < kMaxAttempts - 1 && shouldRetryHttpStatus(resp.status_code))
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(retryBackoffMs(attempt)));
+                std::this_thread::sleep_for(std::chrono::milliseconds(
+                    providerRetryDelayMs(attempt, resp.retry_after)));
                 continue;
             }
             result.ok = false;
@@ -232,6 +228,7 @@ void UOpenAICompatProvider::chatStream(const std::vector<LLMMessage>& messages,
 
     std::string accumulated_text;
     std::map<int, StreamToolPart> tool_parts;
+    std::string last_retry_after;
     LLMStreamCallback chunk_cb = on_chunk;
     if(!opts.tools_for_api.empty())
         chunk_cb = nullptr;
@@ -257,6 +254,7 @@ void UOpenAICompatProvider::chatStream(const std::vector<LLMMessage>& messages,
                 }
                 return true;
             });
+        last_retry_after = resp.retry_after;
         if(m_cancelled.load())
         {
             LLMCompletionResult cancelled;
@@ -295,7 +293,8 @@ void UOpenAICompatProvider::chatStream(const std::vector<LLMMessage>& messages,
             const int code = std::atoi(result.error_message.c_str() + 5);
             if(shouldRetryHttpStatus(code))
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(retryBackoffMs(attempt)));
+                std::this_thread::sleep_for(std::chrono::milliseconds(
+                    providerRetryDelayMs(attempt, last_retry_after)));
                 continue;
             }
         }

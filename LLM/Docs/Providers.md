@@ -69,6 +69,9 @@ public:
 
 **healthCheck:** GET or minimal `chat` with `max_tokens: 1`.
 
+**Retries:** up to 3 attempts on transport errors and HTTP `408` / `429` / `5xx`. Delay is
+`max(exponential_backoff, Retry-After)` capped at 60s (`ULLMHttpRetry`, `ULLMHttpClient::Response::retry_after`).
+
 ---
 
 ## 3. `UOllamaNativeProvider` (optional)

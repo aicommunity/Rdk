@@ -1,5 +1,6 @@
 #include "UOllamaNativeProvider.h"
 
+#include "../Http/ULLMHttpRetry.h"
 #include "UOllamaChatTemplate.h"
 
 #include <chrono>
@@ -12,13 +13,6 @@ namespace {
 bool shouldRetryHttpStatus(int status)
 {
     return status == 408 || status == 429 || status >= 500;
-}
-
-int retryBackoffMs(int attempt)
-{
-    const int base = 300;
-    const int jitter = 50 * (attempt + 1);
-    return base * (1 << attempt) + jitter;
 }
 
 } // namespace
@@ -128,7 +122,8 @@ LLMCompletionResult UOllamaNativeProvider::chat(const std::vector<LLMMessage>& m
             result.error_message = resp.error;
             if(attempt < kMaxAttempts - 1)
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(retryBackoffMs(attempt)));
+                std::this_thread::sleep_for(std::chrono::milliseconds(
+                    providerRetryDelayMs(attempt, resp.retry_after)));
                 continue;
             }
             return result;
@@ -137,7 +132,8 @@ LLMCompletionResult UOllamaNativeProvider::chat(const std::vector<LLMMessage>& m
         {
             if(attempt < kMaxAttempts - 1 && shouldRetryHttpStatus(resp.status_code))
             {
-                std::this_thread::sleep_for(std::chrono::milliseconds(retryBackoffMs(attempt)));
+                std::this_thread::sleep_for(std::chrono::milliseconds(
+                    providerRetryDelayMs(attempt, resp.retry_after)));
                 continue;
             }
             result.ok = false;

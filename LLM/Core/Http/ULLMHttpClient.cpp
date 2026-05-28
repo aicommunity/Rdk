@@ -1,5 +1,6 @@
 #include "ULLMHttpClient.h"
 
+#include <cctype>
 #include <curl/curl.h>
 
 namespace RDK::LLM {
@@ -12,6 +13,43 @@ struct WriteContext {
     ULLMHttpClient::SseDataCallback on_sse;
     std::atomic<bool>* cancelled = nullptr;
 };
+
+struct HeaderContext {
+    std::string* retry_after = nullptr;
+};
+
+size_t headerCallback(char* buffer, size_t size, size_t nmemb, void* userdata)
+{
+    const size_t total = size * nmemb;
+    if(!userdata)
+        return total;
+    auto* ctx = static_cast<HeaderContext*>(userdata);
+    std::string line(buffer, total);
+    while(!line.empty() && (line.back() == '\r' || line.back() == '\n' || line.back() == ' '))
+        line.pop_back();
+    const std::string prefix = "retry-after:";
+    if(line.size() > prefix.size() && ctx->retry_after)
+    {
+        bool matches = true;
+        for(size_t i = 0; i < prefix.size(); ++i)
+        {
+            if(std::tolower(static_cast<unsigned char>(line[i]))
+               != static_cast<unsigned char>(prefix[i]))
+            {
+                matches = false;
+                break;
+            }
+        }
+        if(matches)
+        {
+            std::string value = line.substr(prefix.size());
+            while(!value.empty() && value.front() == ' ')
+                value.erase(value.begin());
+            *ctx->retry_after = std::move(value);
+        }
+    }
+    return total;
+}
 
 size_t writeCallback(char* ptr, size_t size, size_t nmemb, void* userdata)
 {
@@ -60,6 +98,8 @@ ULLMHttpClient::Response ULLMHttpClient::get(const std::string& url, const std::
     WriteContext ctx;
     ctx.body = &response.body;
     ctx.cancelled = &m_cancelled;
+    HeaderContext header_ctx;
+    header_ctx.retry_after = &response.retry_after;
 
     CURL* curl = curl_easy_init();
     if(!curl)
@@ -79,6 +119,8 @@ ULLMHttpClient::Response ULLMHttpClient::get(const std::string& url, const std::
     curl_easy_setopt(curl, CURLOPT_HTTPGET, 1L);
     if(headers)
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+    curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerCallback);
+    curl_easy_setopt(curl, CURLOPT_HEADERDATA, &header_ctx);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ctx);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, static_cast<long>(timeout_ms));
@@ -104,6 +146,8 @@ ULLMHttpClient::Response ULLMHttpClient::postJson(const std::string& url,
     WriteContext ctx;
     ctx.body = &response.body;
     ctx.cancelled = &m_cancelled;
+    HeaderContext header_ctx;
+    header_ctx.retry_after = &response.retry_after;
 
     CURL* curl = curl_easy_init();
     if(!curl)
@@ -122,6 +166,8 @@ ULLMHttpClient::Response ULLMHttpClient::postJson(const std::string& url,
 
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+    curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerCallback);
+    curl_easy_setopt(curl, CURLOPT_HEADERDATA, &header_ctx);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json_body.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ctx);
@@ -150,6 +196,8 @@ ULLMHttpClient::Response ULLMHttpClient::postJsonStream(const std::string& url,
     ctx.body = &response.body;
     ctx.on_sse = std::move(on_data);
     ctx.cancelled = &m_cancelled;
+    HeaderContext header_ctx;
+    header_ctx.retry_after = &response.retry_after;
 
     CURL* curl = curl_easy_init();
     if(!curl)
@@ -169,6 +217,8 @@ ULLMHttpClient::Response ULLMHttpClient::postJsonStream(const std::string& url,
 
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+    curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, headerCallback);
+    curl_easy_setopt(curl, CURLOPT_HEADERDATA, &header_ctx);
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json_body.c_str());
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writeCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &ctx);

@@ -13,6 +13,8 @@ public:
         long status_code = 0;
         std::string body;
         std::string error;
+        /// Raw Retry-After header value when present (HTTP 429/503 etc.).
+        std::string retry_after;
     };
 
     /// Invoked for each SSE `data:` payload (without prefix). Return false to abort.
