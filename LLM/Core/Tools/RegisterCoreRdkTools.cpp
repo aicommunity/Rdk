@@ -7,6 +7,7 @@
 #include "../Domain/URdkEntityResolver.h"
 #include "../Domain/ULLMNameResolution.h"
 #include "RegisterApplicationTools.h"
+#include "RegisterObservabilityTools.h"
 #include "ULLMToolRegistry.h"
 
 #include <algorithm>
@@ -395,6 +396,7 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
         });
 
     RegisterApplicationTools(registry);
+    RegisterObservabilityTools(registry, domain);
 }
 
 } // namespace RDK::LLM
