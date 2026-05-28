@@ -3,6 +3,8 @@
 #include "../Context/ULinkPatternCatalog.h"
 #include "../Orchestrator/ULLMLibraryScopeHint.h"
 #include "../Orchestrator/ULLMLifecycleArgumentGate.h"
+#include "../Session/ULLMConversationStore.h"
+#include "ULLMResolvedEntityStore.h"
 #include "URdkEntityResolver.h"
 
 #include <algorithm>
@@ -200,7 +202,7 @@ bool fillEntityDisambiguationOut(WriteArgumentNormalizeResult& out, const std::s
 
 bool resolveField(const std::string& tool_name, const std::string& field,
                   nlohmann::json& arguments, URdkDomainAccess& domain, int channel_index,
-                  WriteArgumentNormalizeResult& out)
+                  WriteArgumentNormalizeResult& out, const ConversationState* conversation)
 {
     if(!arguments.contains(field) || !arguments[field].is_string())
         return true;
@@ -208,6 +210,16 @@ bool resolveField(const std::string& tool_name, const std::string& field,
     const std::string value = arguments[field].get<std::string>();
     if(value.empty())
         return true;
+
+    if(conversation)
+    {
+        if(const auto cached =
+               lookupResolvedEntity(*conversation, "component", value, channel_index))
+        {
+            arguments[field] = *cached;
+            return true;
+        }
+    }
 
     nlohmann::json found;
     if(domain.findComponentByLongName(value, found, channel_index).ok())
@@ -517,7 +529,8 @@ WriteArgumentNormalizeResult normalizeWriteToolArguments(const std::string& tool
                                                          nlohmann::json arguments,
                                                          URdkDomainAccess& domain,
                                                          int channel_index,
-                                                         const std::string& user_text)
+                                                         const std::string& user_text,
+                                                         const ConversationState* conversation)
 {
     WriteArgumentNormalizeResult out;
     out.normalized_arguments = std::move(arguments);
@@ -538,7 +551,7 @@ WriteArgumentNormalizeResult normalizeWriteToolArguments(const std::string& tool
     const int ch = out.normalized_arguments.value("channel_index", channel_index);
     for(const std::string& field : it->second)
     {
-        if(!resolveField(tool_name, field, out.normalized_arguments, domain, ch, out))
+        if(!resolveField(tool_name, field, out.normalized_arguments, domain, ch, out, conversation))
             return out;
     }
 

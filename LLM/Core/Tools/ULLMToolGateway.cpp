@@ -2,6 +2,7 @@
 
 #include "ApplicationToolAudit.h"
 #include "../Domain/ULLMWriteArgumentNormalizer.h"
+#include "../LlmPublicApi.h"
 #include "../Policy/ULLMUserRole.h"
 #include "../Policy/ULLMWriteToolPolicy.h"
 
@@ -45,6 +46,10 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
         return result;
     }
 
+    const ConversationState* conversation = nullptr;
+    if(LLMServices::instance().isInitialized())
+        conversation = LLMServices::instance().conversationState(req.session.session_id);
+
     ToolInvokeRequest working_req = req;
     bool write_pre_normalized = false;
     if(writeToolNeedsEntityResolution(req.tool_name) && !req.confirmed
@@ -52,7 +57,7 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
     {
         const WriteArgumentNormalizeResult pre = normalizeWriteToolArguments(
             req.tool_name, req.arguments, m_domain, req.session.active_channel_index,
-            req.user_text_hint);
+            req.user_text_hint, conversation);
         if(!pre.ok)
         {
             result.ok = false;
@@ -142,7 +147,7 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
     {
         const WriteArgumentNormalizeResult normalized = normalizeWriteToolArguments(
             working_req.tool_name, working_req.arguments, m_domain,
-            req.session.active_channel_index, req.user_text_hint);
+            req.session.active_channel_index, req.user_text_hint, conversation);
         if(!normalized.ok)
         {
             result.ok = false;
@@ -165,7 +170,7 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
     {
         const WriteArgumentNormalizeResult port_norm = normalizeWriteToolArguments(
             invoke_req.tool_name, invoke_req.arguments, m_domain,
-            invoke_req.session.active_channel_index, invoke_req.user_text_hint);
+            invoke_req.session.active_channel_index, invoke_req.user_text_hint, conversation);
         if(!port_norm.ok)
         {
             result.ok = false;

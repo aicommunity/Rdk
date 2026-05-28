@@ -24,11 +24,14 @@ bool writeToolNeedsEntityResolution(const std::string& tool_name);
 
 bool isNetGraphWriteTool(const std::string& tool_name);
 
+struct ConversationState;
+
 WriteArgumentNormalizeResult normalizeWriteToolArguments(const std::string& tool_name,
                                                          nlohmann::json arguments,
                                                          URdkDomainAccess& domain,
                                                          int channel_index,
-                                                         const std::string& user_text = "");
+                                                         const std::string& user_text = "",
+                                                         const ConversationState* conversation = nullptr);
 
 } // namespace RDK::LLM
 

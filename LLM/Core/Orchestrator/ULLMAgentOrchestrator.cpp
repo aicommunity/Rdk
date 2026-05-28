@@ -33,6 +33,11 @@
 #include "ULLMExecutionPlan.h"
 #include "ULLMTaskPlanner.h"
 #include "ULLMAgentManifestBuilder.h"
+#include "ULLMContextAssembler.h"
+#include "../Context/ULLMLongTermMemoryLoader.h"
+#include "../Context/URdkContextRetriever.h"
+#include "../Domain/ULLMResolvedEntityStore.h"
+#include "../Session/ULLMContextCompactor.h"
 #include "ULLMPlanConfidence.h"
 #include "ULLMPlanExecutor.h"
 #include "ULLMQueryNormalizer.h"
@@ -67,6 +72,16 @@ std::string buildToolMessageContent(const ToolGatewayResult& tr, ULLMSystemLogRe
 {
     const std::string excerpt = collectLogExcerptForTool(reader, active_channel_index);
     return sanitizeUntrustedToolContent(toolJsonWithSystemLogExcerpt(tr, excerpt).dump());
+}
+
+void appendAgentNote(ConversationState& state, const std::string& line)
+{
+    constexpr std::size_t kMaxNotes = 4096;
+    if(!state.agent_notes.empty())
+        state.agent_notes += "\n";
+    state.agent_notes += line;
+    if(state.agent_notes.size() > kMaxNotes)
+        state.agent_notes.resize(kMaxNotes);
 }
 
 bool shouldPromptForMissingToolArguments(const std::string& tool_name,
@@ -307,6 +322,11 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
 
     ConversationState& state = m_store.getOrCreate(req.session_id);
     state.session_id = req.session_id;
+
+    if(!req.gui.focused_component_long_name.empty() || !req.gui.focused_class_name.empty()
+       || !req.gui.project_xml_path.empty() || req.gui.snapshot_fingerprint != 0
+       || req.gui.channel_index != 0)
+        state.last_gui_context = req.gui;
 
     if(m_system_log_reader)
     {
@@ -608,6 +628,18 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 return returnArgumentRequest(state, req.trace_id, pending, app);
             }
             pending.partial_arguments = merged;
+            if(pending.disambiguation_kind == PendingDisambiguationKind::Component
+               && merged.contains("long_name") && merged["long_name"].is_string())
+            {
+                std::string query_text = pending.disambiguation_field;
+                if(pending.partial_arguments.contains(pending.disambiguation_field)
+                   && pending.partial_arguments[pending.disambiguation_field].is_string())
+                    query_text =
+                        pending.partial_arguments[pending.disambiguation_field].get<std::string>();
+                upsertResolvedEntity(state, "component", query_text,
+                                     merged["long_name"].get<std::string>(),
+                                     session.active_channel_index);
+            }
             m_store.setPendingToolArguments(req.session_id, pending);
             GetAuditLog().append("lifecycle_args_resolved",
                                  {{"tool_name", pending.tool_name}}, req.trace_id,
@@ -626,53 +658,80 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
         buildToolFilter(intent, session.llm_write_enabled, lifecycle_action);
     filter = ULLMDynamicToolRouter::apply(filter, planning_text);
 
-    std::vector<LLMMessage> provider_messages = state.messages;
+    bool context_compacted = false;
+    {
+        ULLMContextCompactor compactor;
+        std::string session_storage;
+        if(LLMServices::instance().isInitialized() && LLMServices::instance().projectContext())
+        {
+            session_storage = LLMServices::instance().projectContext()->paths().repository_root.string()
+                              + "/LLM/sessions";
+        }
+        if(compactor.maybeCompact(state, req.session_id, session_storage))
+        {
+            context_compacted = true;
+            m_store.persistToDisk(req.session_id);
+        }
+    }
+
+    std::vector<LLMMessage> provider_messages;
     const bool strict_plan_schema =
         intent == LLMIntentKind::Plan && providerSupportsStrictPlanSchema(req.provider_profile)
         && m_provider.capabilities().supports_strict_json_schema;
     if(intent == LLMIntentKind::Plan)
-    {
-        LLMMessage plan_hint;
-        plan_hint.role = LLMMessage::Role::System;
-        plan_hint.content = strict_plan_schema
-                                ? "Plan-only mode: use read tools to inspect state, then respond "
-                                  "with JSON matching the execution_plan schema (no markdown)."
-                                : "Plan-only mode: use read tools to inspect state, then reply with "
-                                  "a JSON execution plan in a ```json code block. Do not mutate until "
-                                  "the user confirms.";
-        provider_messages.insert(provider_messages.begin(), plan_hint);
         setWorkflowPhase(state, LLMWorkflowPhase::Executing, req.trace_id);
-    }
 
     const bool provider_tools = m_provider.capabilities().supports_tool_calling;
 
-    if(intent == LLMIntentKind::Query && provider_tools)
+    EphemeralContextInput ctx_input{state,
+                                    session,
+                                    req.gui,
+                                    intent,
+                                    lifecycle_action,
+                                    provider_tools,
+                                    strict_plan_schema,
+                                    &m_registry,
+                                    filter,
+                                    planning_text,
+                                    m_system_log_reader
+                                        ? m_system_log_reader->policy(session.active_channel_index)
+                                              .summary_for_model
+                                        : std::string{},
+                                    LLMServices::instance().isInitialized()
+                                        ? LLMServices::instance().contextRetriever()
+                                        : nullptr,
+                                    {},
+                                    {}};
+
+    if(provider_tools && intent == LLMIntentKind::Query)
     {
-        LLMMessage query_hint;
-        query_hint.role = LLMMessage::Role::System;
-        query_hint.content =
-            "Use search_project_docs(scope=docs) and describe_class. Cite source_id and path. "
-            "Do not call write tools.";
-        provider_messages.insert(provider_messages.begin(), query_hint);
+        const char* prefetch_env = std::getenv("NMSDK_LLM_QUERY_PREFETCH_DOCS");
+        if(prefetch_env && prefetch_env[0] == '1')
+        {
+            const auto hits =
+                LLMServices::instance().searchIndex().searchWithScope(planning_text, 3, "docs");
+            if(!hits.empty())
+            {
+                std::ostringstream prefetch;
+                prefetch << "## Prefetched documentation\n";
+                for(const DocSnippet& snip : hits)
+                {
+                    std::string excerpt = snip.excerpt;
+                    if(excerpt.size() > 400)
+                        excerpt.resize(400);
+                    prefetch << "- [" << snip.source_id << "] " << snip.path << ": " << excerpt
+                             << "\n";
+                }
+                ctx_input.prefetched_docs_block = prefetch.str();
+            }
+        }
     }
 
-    if(lifecycle_action != ConfigurationLifecycleAction::None && provider_tools)
+    if(LLMServices::instance().isInitialized() && LLMServices::instance().projectContext())
     {
-        LLMMessage lifecycle_hint;
-        lifecycle_hint.role = LLMMessage::Role::System;
-        lifecycle_hint.content =
-            configurationLifecycleSystemHint(lifecycle_action, session.project_loaded);
-        provider_messages.insert(provider_messages.begin(), lifecycle_hint);
-    }
-    if(provider_tools)
-    {
-        std::string log_summary;
-        if(m_system_log_reader)
-            log_summary = m_system_log_reader->policy(session.active_channel_index).summary_for_model;
-        LLMMessage manifest;
-        manifest.role = LLMMessage::Role::System;
-        manifest.content = buildAgentManifest(m_registry, filter, 6000, planning_text, log_summary);
-        provider_messages.insert(provider_messages.begin(), manifest);
+        ctx_input.long_term_memory_block = loadLongTermMemoryBlock(
+            LLMServices::instance().projectContext()->paths().repository_root, session.user_id,
+            req.gui.project_xml_path);
     }
 
     LLMCompletionOptions opts;
@@ -716,6 +775,23 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
     for(int round = 0; round < max_rounds && !session_cancelled(); ++round)
     {
         provider_messages = state.messages;
+
+        LLMContextBudget budget;
+        budget.compacted = context_compacted;
+        prependEphemeralSystemMessages(provider_messages, ctx_input, &budget);
+        GetAuditLog().append("context_budget",
+                             {{"messages_chars", budget.messages_chars},
+                              {"ephemeral_chars", budget.ephemeral_chars},
+                              {"manifest_chars", budget.manifest_chars},
+                              {"compacted", budget.compacted}},
+                             req.trace_id, req.session_id);
+        if(round == 0)
+        {
+            final.context_messages_chars = budget.messages_chars;
+            final.context_ephemeral_chars = budget.ephemeral_chars;
+            final.context_manifest_chars = budget.manifest_chars;
+            final.context_compacted = budget.compacted;
+        }
 
         if(lifecycle_action != ConfigurationLifecycleAction::None && round >= 1)
             opts.tool_choice.reset();
@@ -1397,6 +1473,7 @@ LLMFinalResponse ULLMAgentOrchestrator::confirmPlanExecution(const std::string& 
         state.pending_plan.reset();
         final.ok = true;
         final.text = exec.summary;
+        appendAgentNote(state, "Plan executed: " + plan.plan_id);
         setWorkflowPhase(state, LLMWorkflowPhase::Completed, trace_id);
     }
     else if(exec.paused_for_resume)
@@ -1763,6 +1840,61 @@ void ULLMAgentOrchestrator::rejectPending(const std::string& session_id)
     m_store.clearPendingToolArguments(session_id);
     setWorkflowPhase(state, LLMWorkflowPhase::Idle, "");
     GetAuditLog().append("confirmation_rejected", {}, "", session_id);
+}
+
+void ULLMAgentOrchestrator::seedSessionContext(const std::string& session_id,
+                                               const LLMSessionContext& session,
+                                               const LLMGuiContextSnapshot& gui)
+{
+    ConversationState& state = m_store.getOrCreate(session_id);
+    if(state.session_context_seeded)
+        return;
+
+    std::ostringstream bootstrap;
+    bootstrap << "## Session bootstrap\n"
+              << "- session_id: " << session_id << "\n"
+              << "- project_loaded: " << (session.project_loaded ? "true" : "false") << "\n"
+              << "- active_channel: " << session.active_channel_index << "\n"
+              << "- write_enabled: " << (session.llm_write_enabled ? "true" : "false") << "\n"
+              << "- auto_apply: " << (session.auto_apply_writes ? "true" : "false") << "\n"
+              << "- autonomous: "
+              << (session.autonomous_mode == LLMAutonomousMode::Strict       ? "strict"
+                  : session.autonomous_mode == LLMAutonomousMode::SemiAuto ? "semi_auto"
+                                                                           : "off")
+              << "\n"
+              << "- user: " << session.user_name << " (id=" << session.user_id << ")\n"
+              << "Use read tools to inspect the graph before mutating.\n";
+
+    LLMMessage boot;
+    boot.role = LLMMessage::Role::System;
+    boot.content = bootstrap.str();
+    m_store.appendMessage(session_id, boot);
+
+    const char* bootstrap_env = std::getenv("NMSDK_LLM_SESSION_BOOTSTRAP");
+    if(bootstrap_env && bootstrap_env[0] == '1' && session.project_loaded)
+    {
+        ToolInvokeRequest snap_req;
+        snap_req.trace_id = "session-bootstrap";
+        snap_req.tool_name = "get_net_snapshot";
+        snap_req.arguments = {{"channel_index", session.active_channel_index},
+                              {"max_components", 20}};
+        snap_req.session = session;
+        const ToolGatewayResult snap_res = m_gateway.invoke(snap_req);
+        if(snap_res.ok)
+        {
+            LLMMessage tool_msg;
+            tool_msg.role = LLMMessage::Role::Tool;
+            tool_msg.tool_call_id = "bootstrap-snapshot";
+            tool_msg.tool_name = "get_net_snapshot";
+            tool_msg.content = snap_res.result.dump();
+            m_store.appendMessage(session_id, tool_msg);
+        }
+    }
+
+    state.session_context_seeded = true;
+    if(!gui.focused_component_long_name.empty() || !gui.focused_class_name.empty())
+        state.last_gui_context = gui;
+    m_store.persistToDisk(session_id);
 }
 
 bool ULLMAgentOrchestrator::tryResumeSession(const std::string& session_id)
