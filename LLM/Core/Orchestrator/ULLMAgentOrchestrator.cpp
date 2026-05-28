@@ -68,6 +68,17 @@ std::string buildToolMessageContent(const ToolGatewayResult& tr, ULLMSystemLogRe
     return sanitizeUntrustedToolContent(toolJsonWithSystemLogExcerpt(tr, excerpt).dump());
 }
 
+bool shouldPromptForMissingToolArguments(const std::string& tool_name,
+                                         const ToolGatewayResult& tr,
+                                         const std::vector<ToolArgumentFieldSpec>& missing)
+{
+    if(!toolInvokeNeedsArgumentClarification(tool_name, tr))
+        return false;
+    if(!missing.empty())
+        return true;
+    return lifecycleActionFromToolName(tool_name) != ConfigurationLifecycleAction::None;
+}
+
 std::string stableArgumentsJson(const nlohmann::json& args)
 {
     if(!args.is_object() && !args.is_array())
@@ -188,6 +199,38 @@ void capturePendingOpenRecentAfterList(ULLMConversationStore& store, const std::
         store.setPendingToolArguments(session_id, *pending);
         store.persistToDisk(session_id);
     }
+}
+
+std::optional<ToolGatewayResult>
+tryAutoOpenRecentAfterList(const std::string& user_text, RDK::UApplication* app,
+                           ULLMConversationStore& store, const std::string& session_id,
+                           ULLMToolGateway& gateway, const ULLMToolRegistry& registry,
+                           const LLMSessionContext& session, const std::string& trace_id,
+                           const std::string& planning_text)
+{
+    if(!wantsRecentConfiguration(user_text) || !app)
+        return std::nullopt;
+    const ConversationState& state = store.getOrCreate(session_id);
+    if(!state.pending_tool_arguments
+       || state.pending_tool_arguments->tool_name != "open_recent_configuration")
+        return std::nullopt;
+
+    PendingToolArguments pending = *state.pending_tool_arguments;
+    nlohmann::json merged = mergeArgumentsFromUserText(pending, user_text, app);
+    if(!merged.contains("index") && !merged.contains("configuration_path"))
+        merged["index"] = 1;
+    if(!findMissingArgumentsForTool("open_recent_configuration", merged, app, registry).empty())
+        return std::nullopt;
+
+    ToolInvokeRequest invoke;
+    invoke.trace_id = trace_id;
+    invoke.tool_name = "open_recent_configuration";
+    invoke.arguments = std::move(merged);
+    invoke.idempotency_key =
+        makeIdempotencyKey(session_id, trace_id, invoke.tool_name, invoke.arguments, "auto_open_recent");
+    invoke.session = session;
+    invoke.user_text_hint = planning_text;
+    return gateway.invoke(invoke);
 }
 
 } // namespace
@@ -459,6 +502,34 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
     if(LLMServices::instance().isInitialized())
         app = LLMServices::instance().domain().application();
 
+    if(lifecycle_action == ConfigurationLifecycleAction::Load && wantsRecentConfiguration(req.user_text)
+       && app)
+    {
+        PendingToolArguments bootstrap;
+        bootstrap.tool_name = "load_configuration";
+        bootstrap.action = ConfigurationLifecycleAction::Load;
+        bootstrap.partial_arguments = nlohmann::json::object();
+        nlohmann::json merged = mergeArgumentsFromUserText(bootstrap, req.user_text, app);
+        std::string open_tool = "load_configuration";
+        if(!merged.contains("configuration_path"))
+        {
+            bootstrap.tool_name = "open_recent_configuration";
+            merged = mergeArgumentsFromUserText(bootstrap, req.user_text, app);
+            open_tool = "open_recent_configuration";
+        }
+        const std::vector<ToolArgumentFieldSpec> missing =
+            findMissingArgumentsForTool(open_tool, merged, app, m_registry);
+        if(missing.empty()
+           && (merged.contains("configuration_path") || merged.contains("index")))
+        {
+            LLMFinalResponse direct = invokeLifecycleToolDirect(
+                req.session_id, req.trace_id, open_tool, merged, session, req.user_text);
+            if(direct.ok && !direct.needs_argument_clarification && !direct.pending_confirmation)
+                m_store.clearPendingToolArguments(req.session_id);
+            return direct;
+        }
+    }
+
     if(state.pending_tool_arguments)
     {
         PendingToolArguments pending = *state.pending_tool_arguments;
@@ -609,7 +680,14 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
     else
         opts.tools_for_api.clear();
     if(provider_tools && lifecycle_action != ConfigurationLifecycleAction::None)
-        opts.tool_choice = forcedToolForLifecycle(lifecycle_action, session.project_loaded);
+    {
+        if(lifecycle_action == ConfigurationLifecycleAction::Load
+           && wantsRecentConfiguration(req.user_text))
+            opts.tool_choice = std::string("open_recent_configuration");
+        else if(const std::optional<std::string> forced =
+                    forcedToolForLifecycle(lifecycle_action, session.project_loaded))
+            opts.tool_choice = *forced;
+    }
     if(strict_plan_schema)
         opts.response_format = executionPlanOpenAiResponseFormat();
     const std::string user_lang = opts.response_language;
@@ -742,6 +820,30 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             assistant.content = completion.text;
             m_store.appendMessage(req.session_id, assistant);
             final.text = completion.text;
+            if(final.text.empty() && lifecycle_action != ConfigurationLifecycleAction::None)
+            {
+                if(const std::optional<ToolGatewayResult> open_tr = tryAutoOpenRecentAfterList(
+                       req.user_text, app, m_store, req.session_id, m_gateway, m_registry, session,
+                       req.trace_id, planning_text))
+                {
+                    final.ok = open_tr->ok;
+                    final.text = formatLifecycleToolUserMessage("open_recent_configuration", *open_tr);
+                    if(!open_tr->ok && !open_tr->message.empty())
+                        final.error = open_tr->message;
+                    if(open_tr->pending_confirmation)
+                    {
+                        final.pending_confirmation = true;
+                        final.pending_confirmation_id = open_tr->confirmation_id;
+                    }
+                    setWorkflowPhase(state, LLMWorkflowPhase::Completed, req.trace_id);
+                    setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
+                    m_store.persistToDisk(req.session_id);
+                    return final;
+                }
+                final.text =
+                    "Could not complete the configuration command. Specify a folder or "
+                    "project.ini path, or use File → Open Recent.";
+            }
             if(intent == LLMIntentKind::Plan || task_path_decision.use_task_path)
             {
                 if(auto plan = parseExecutionPlanFromAssistantText(completion.text))
@@ -983,7 +1085,9 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                     return returnDisambiguationRequest(
                         state, req.trace_id, call_copy, PendingDisambiguationKind::Component,
                         disambiguation_early.value("field", "long_name"), disambiguation_early);
-                if(toolInvokeNeedsArgumentClarification(call_copy.name, tr))
+                const std::vector<ToolArgumentFieldSpec> invoke_missing =
+                    findMissingArgumentsForTool(call_copy.name, call_copy.arguments, app, m_registry);
+                if(shouldPromptForMissingToolArguments(call_copy.name, tr, invoke_missing))
                 {
                     PendingToolArguments pending;
                     pending.tool_name = call_copy.name;
@@ -1048,8 +1152,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                         }
                     }
 
-                    pending.missing_fields = findMissingArgumentsForTool(
-                        call_copy.name, call_copy.arguments, app, m_registry);
+                    pending.missing_fields = invoke_missing;
                     if(pending.missing_fields.empty()
                        && pending.action != ConfigurationLifecycleAction::None)
                         pending.missing_fields = argumentFieldsForLifecycle(pending.action);
@@ -1058,6 +1161,17 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                                           {"error_code", tr.error_code}},
                                          req.trace_id, req.session_id);
                     return returnArgumentRequest(state, req.trace_id, pending, app);
+                }
+                if(toolInvokeNeedsArgumentClarification(call_copy.name, tr))
+                {
+                    LLMMessage tool_msg;
+                    tool_msg.role = LLMMessage::Role::Tool;
+                    tool_msg.tool_call_id = call_copy.id;
+                    tool_msg.tool_name = call_copy.name;
+                    tool_msg.content = buildToolMessageContent(
+                        tr, m_system_log_reader.get(), session.active_channel_index);
+                    m_store.appendMessage(req.session_id, tool_msg);
+                    continue;
                 }
                 if(tr.pending_confirmation)
                 {
@@ -1104,6 +1218,44 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                     buildToolMessageContent(tr, m_system_log_reader.get(), session.active_channel_index);
                 m_store.appendMessage(req.session_id, tool_msg);
                 capturePendingOpenRecentAfterList(m_store, req.session_id, call_copy.name, tr);
+                if(call_copy.name == "list_recent_configurations" && tr.ok)
+                {
+                    if(const std::optional<ToolGatewayResult> open_tr = tryAutoOpenRecentAfterList(
+                           req.user_text, app, m_store, req.session_id, m_gateway, m_registry,
+                           session, req.trace_id, planning_text))
+                    {
+                        LLMMessage open_msg;
+                        open_msg.role = LLMMessage::Role::Tool;
+                        open_msg.tool_call_id = call_copy.id + ":open_recent";
+                        open_msg.tool_name = "open_recent_configuration";
+                        open_msg.content = buildToolMessageContent(
+                            *open_tr, m_system_log_reader.get(), session.active_channel_index);
+                        m_store.appendMessage(req.session_id, open_msg);
+                        if(open_tr->pending_confirmation)
+                        {
+                            setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation,
+                                             req.trace_id);
+                            PendingConfirmation pending;
+                            pending.confirmation_id = open_tr->confirmation_id;
+                            pending.created_at_unix_sec = confirmationNowUnixSec();
+                            pending.request = ToolInvokeRequest{};
+                            pending.request.trace_id = req.trace_id;
+                            pending.request.tool_name = "open_recent_configuration";
+                            pending.request.arguments = nlohmann::json::object();
+                            pending.request.session = session;
+                            pending.request.confirmed = true;
+                            m_store.setPending(req.session_id, pending);
+                            final.pending_confirmation = true;
+                            final.pending_confirmation_id = open_tr->confirmation_id;
+                            final.text = formatUserMessage("confirmation.required", user_lang,
+                                                           {{"tool_name", "open_recent_configuration"}});
+                            m_store.persistToDisk(req.session_id);
+                            return final;
+                        }
+                        if(isLifecycleWriteToolName("open_recent_configuration"))
+                            lifecycle_write_done = std::make_pair("open_recent_configuration", *open_tr);
+                    }
+                }
 
                 const LLMToolDefinition* write_def = m_registry.find(call_copy.name);
                 if(write_def && write_def->kind == LLMToolKind::Write && !tr.pending_confirmation)
@@ -1530,20 +1682,29 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
         return final;
     }
 
-    if(toolInvokeNeedsArgumentClarification(tool_name, tr))
+    const std::vector<ToolArgumentFieldSpec> direct_missing =
+        findMissingArgumentsForTool(tool_name, arguments, app, m_registry);
+    if(shouldPromptForMissingToolArguments(tool_name, tr, direct_missing))
     {
         PendingToolArguments pending;
         pending.tool_name = tool_name;
         pending.action = lifecycleActionFromToolName(tool_name);
         pending.partial_arguments = arguments;
-        pending.missing_fields =
-            findMissingArgumentsForTool(tool_name, arguments, app, m_registry);
+        pending.missing_fields = direct_missing;
         if(pending.missing_fields.empty() && pending.action != ConfigurationLifecycleAction::None)
             pending.missing_fields = argumentFieldsForLifecycle(pending.action);
         GetAuditLog().append("lifecycle_args_requested",
                              {{"tool_name", tool_name}, {"error_code", tr.error_code}}, trace_id,
                              session_id);
         return returnArgumentRequest(state, trace_id, pending, app);
+    }
+    if(toolInvokeNeedsArgumentClarification(tool_name, tr))
+    {
+        final.ok = false;
+        final.error = tr.message;
+        final.text = tr.message.empty() ? "Tool invocation failed: " + tool_name : tr.message;
+        m_store.persistToDisk(session_id);
+        return final;
     }
 
     if(tr.pending_confirmation)

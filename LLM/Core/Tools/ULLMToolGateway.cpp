@@ -72,6 +72,18 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
         write_pre_normalized = true;
     }
 
+    working_req.arguments =
+        m_validator.normalizeForSchema(working_req.arguments, def->input_schema);
+    if(def->kind == LLMToolKind::Read)
+    {
+        if(working_req.tool_name == "get_net_snapshot"
+           && !working_req.arguments.contains("channel_index"))
+            working_req.arguments["channel_index"] = working_req.session.active_channel_index;
+        if(working_req.tool_name == "get_net_snapshot"
+           && !working_req.arguments.contains("max_components"))
+            working_req.arguments["max_components"] = 200;
+    }
+
     std::string validation_error;
     if(!m_validator.validate(working_req.arguments, def->input_schema, validation_error))
     {

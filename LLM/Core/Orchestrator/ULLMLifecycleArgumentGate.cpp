@@ -353,6 +353,18 @@ nlohmann::json mergeArgumentsFromUserText(const PendingToolArguments& pending,
         if(!args.contains("if_open_project"))
             args["if_open_project"] = "close";
 
+        if(!trimmed.empty() && !args.contains("index")
+           && jsonStringFieldEmpty(args, "configuration_path"))
+        {
+            const std::string lower = toLowerAsciiLocal(trimmed);
+            const bool wants_recent =
+                lower == "last" || lower == "recent" || lower.find(" last ") != std::string::npos
+                || lower.find(" recent ") != std::string::npos || trimmed.find("послед") != std::string::npos
+                || trimmed.find("Недав") != std::string::npos || trimmed.find("недав") != std::string::npos;
+            if(wants_recent)
+                args["index"] = 1;
+        }
+
         if(pending.disambiguation_candidates.is_array() && !pending.disambiguation_candidates.empty())
         {
             if(isUnsignedListIndex(trimmed))

@@ -18,6 +18,26 @@ TEST(LLMArgumentValidator, RequiresFields)
     EXPECT_FALSE(v.validate(bad, schema, err));
 }
 
+TEST(LLMArgumentValidator, NormalizeStripsUnknownAndCoercesInteger)
+{
+    ULLMToolArgumentValidator v;
+    const nlohmann::json schema = {
+        {"type", "object"},
+        {"properties",
+         {{"channel_index", {{"type", "integer"}, {"minimum", 0}}},
+          {"max_components", {{"type", "integer"}, {"minimum", 1}, {"maximum", 500}}}}},
+        {"additionalProperties", false}};
+
+    const nlohmann::json normalized = v.normalizeForSchema(
+        {{"channel_index", 0.0}, {"max_components", 200}, {"reason", "inspect graph"}}, schema);
+    EXPECT_FALSE(normalized.contains("reason"));
+    EXPECT_TRUE(normalized["channel_index"].is_number_integer());
+    EXPECT_EQ(normalized["channel_index"].get<int>(), 0);
+
+    std::string err;
+    EXPECT_TRUE(v.validate(normalized, schema, err));
+}
+
 TEST(LLMArgumentValidator, EnforcesTypeEnumAndNumericRange)
 {
     ULLMToolArgumentValidator v;

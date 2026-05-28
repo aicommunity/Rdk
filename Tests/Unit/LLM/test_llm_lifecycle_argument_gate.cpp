@@ -90,6 +90,19 @@ TEST(LLMLifecycleArgumentGate, PendingOpenRecentFromConfigurationList)
     EXPECT_EQ(pending->disambiguation_candidates.size(), 2u);
 }
 
+TEST(LLMLifecycleArgumentGate, MergeOpenRecentFromLastConfigPhrase)
+{
+    PendingToolArguments pending;
+    pending.tool_name = "open_recent_configuration";
+    pending.action = ConfigurationLifecycleAction::Load;
+    pending.partial_arguments = nlohmann::json::object();
+
+    const nlohmann::json merged =
+        mergeArgumentsFromUserText(pending, "открой последний конфиг", nullptr);
+    EXPECT_EQ(merged.value("index", 0), 1);
+    EXPECT_TRUE(findMissingLifecycleFields("open_recent_configuration", merged, nullptr).empty());
+}
+
 TEST(LLMLifecycleArgumentGate, MergeOpenRecentIndexThenConfirmVerb)
 {
     nlohmann::json list_payload = {

@@ -19,6 +19,9 @@ enum class ConfigurationLifecycleAction {
 
 ConfigurationLifecycleAction detectConfigurationLifecycleAction(const std::string& user_text);
 
+/// User asked to open the most recent configuration (EN: last/recent; RU: последний/недавний).
+bool wantsRecentConfiguration(const std::string& user_text);
+
 bool isConfigurationLifecycleToolName(const std::string& tool_name);
 
 std::string configurationLifecycleSystemHint(ConfigurationLifecycleAction action,

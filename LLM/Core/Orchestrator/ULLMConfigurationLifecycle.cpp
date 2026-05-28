@@ -59,6 +59,13 @@ ConfigurationLifecycleAction detectConfigurationLifecycleAction(const std::strin
     return ConfigurationLifecycleAction::None;
 }
 
+bool wantsRecentConfiguration(const std::string& user_text)
+{
+    const std::string lower = toLower(user_text);
+    return contains(lower, "last") || contains(lower, "recent") || contains(lower, "послед")
+           || contains(lower, "недав");
+}
+
 bool isConfigurationLifecycleToolName(const std::string& tool_name)
 {
     static const std::unordered_set<std::string> kNames = {
@@ -86,7 +93,9 @@ std::string configurationLifecycleSystemHint(ConfigurationLifecycleAction action
                 "add_component for a new on-disk project.";
         break;
     case ConfigurationLifecycleAction::Load:
-        hint += "Call load_configuration with configuration_path (folder or project.ini).";
+        hint += "Call load_configuration with configuration_path (folder or project.ini), or "
+                "open_recent_configuration with index (1 = most recent) when the user asks for "
+                "the last/recent configuration.";
         break;
     case ConfigurationLifecycleAction::Save:
         hint += project_loaded ? "Call save_configuration or save_configuration with path."
@@ -148,6 +157,10 @@ bool toolInvokeNeedsArgumentClarification(const std::string& tool_name,
     if(result.ok)
         return false;
     if(result.error_code == "SchemaValidationFailed" || result.error_code == "ARGS_REQUIRED")
+        return true;
+    if(result.error_code == "DomainError"
+       && (tool_name == "load_configuration" || tool_name == "load_project"
+           || tool_name == "open_recent_configuration"))
         return true;
     if(result.error_code == "PATH_NOT_ALLOWED"
        && (tool_name == "load_configuration" || tool_name == "load_project"

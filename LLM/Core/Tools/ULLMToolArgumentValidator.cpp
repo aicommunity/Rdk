@@ -1,5 +1,9 @@
 #include "ULLMToolArgumentValidator.h"
 
+#include <cmath>
+#include <limits>
+#include <optional>
+
 namespace RDK::LLM {
 
 namespace {
@@ -42,7 +46,56 @@ bool validateNumericRange(const nlohmann::json& value, const nlohmann::json& pro
     return true;
 }
 
+std::optional<int> coerceToInteger(const nlohmann::json& value)
+{
+    if(value.is_number_integer())
+        return value.get<int>();
+    if(value.is_number_unsigned())
+        return static_cast<int>(value.get<unsigned>());
+    if(value.is_number_float())
+    {
+        const double d = value.get<double>();
+        if(d >= static_cast<double>(std::numeric_limits<int>::min())
+           && d <= static_cast<double>(std::numeric_limits<int>::max())
+           && d == std::floor(d))
+            return static_cast<int>(d);
+    }
+    return std::nullopt;
+}
+
 } // namespace
+
+nlohmann::json ULLMToolArgumentValidator::normalizeForSchema(const nlohmann::json& args,
+                                                             const nlohmann::json& schema) const
+{
+    if(!schema.is_object())
+        return args.is_object() ? args : nlohmann::json::object();
+
+    nlohmann::json in = args.is_object() ? args : nlohmann::json::object();
+    const nlohmann::json properties = schema.value("properties", nlohmann::json::object());
+    const bool strip_unknown = schema.value("additionalProperties", true) == false;
+
+    nlohmann::json out = nlohmann::json::object();
+    for(auto it = in.begin(); it != in.end(); ++it)
+    {
+        if(!properties.is_object() || !properties.contains(it.key()))
+        {
+            if(!strip_unknown)
+                out[it.key()] = it.value();
+            continue;
+        }
+        const nlohmann::json& prop_schema = properties[it.key()];
+        nlohmann::json value = it.value();
+        if(prop_schema.contains("type") && prop_schema["type"].is_string()
+           && prop_schema["type"].get<std::string>() == "integer")
+        {
+            if(const std::optional<int> coerced = coerceToInteger(value))
+                value = *coerced;
+        }
+        out[it.key()] = std::move(value);
+    }
+    return out;
+}
 
 bool ULLMToolArgumentValidator::validate(const nlohmann::json& args,
                                          const nlohmann::json& schema,

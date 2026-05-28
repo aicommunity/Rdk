@@ -26,6 +26,15 @@ TEST(LLMConfigurationLifecycle, ForcedToolCreateWhenNoProject)
               std::optional<std::string>("create_configuration"));
 }
 
+TEST(LLMConfigurationLifecycle, DetectLoadAndRecentPhrases)
+{
+    EXPECT_EQ(detectConfigurationLifecycleAction("открой последний конфиг"),
+              ConfigurationLifecycleAction::Load);
+    EXPECT_TRUE(wantsRecentConfiguration("открой последний конфиг"));
+    EXPECT_TRUE(wantsRecentConfiguration("open last configuration"));
+    EXPECT_FALSE(wantsRecentConfiguration("open /tmp/demo/project.ini"));
+}
+
 TEST(LLMEmbeddedToolCalls, ParsesMarkdownJsonToolBlock)
 {
     ULLMToolRegistry registry;
