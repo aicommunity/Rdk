@@ -9,6 +9,7 @@ namespace RDK::LLM {
 class ULLMMockProvider : public ILLMProvider {
 public:
     void enqueue(LLMCompletionResult r) { m_queue.push_back(std::move(r)); }
+    void resetQueue() { m_queue.clear(); }
 
     size_t remaining() const { return m_queue.size(); }
     size_t invokeCount() const { return m_invoke_count; }
