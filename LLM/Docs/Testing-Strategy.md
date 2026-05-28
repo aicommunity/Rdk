@@ -19,6 +19,18 @@
 `Test_LLM_RegressionFixtures`, `Test_LLM_KnowledgeCatalog`, `Test_LLM_WriteToolsAudit`, `Test_LLM_WriteToolsP1`,
 `Test_LLM_WriteToolsEngine` (live engine + `test_valid`), `Test_LLM_DocRetrieval`).
 
+**CI agentic-risk gate (`ci-llm-agentic-risk.sh`):** after full ctest, runs P0/P1 suites from
+`Rdk/Tests/Fixtures/LLM/agentic-risk/manifest.json` via `--gtest_filter` (see
+[Agentic-Risk-Test-Matrix.md](Agentic-Risk-Test-Matrix.md)). Invoked automatically at the end of
+`Scripts/ci-llm-linux.sh`. Standalone:
+
+```bash
+cmake -S . -B build-llm-ci -DRDK_USE_LLM=ON -DBUILD_TESTING=ON
+cmake --build build-llm-ci --target Test_LLM_SessionPersist Test_LLM_ToolGateway \
+  Test_LLM_Orchestrator Test_LLM_ArgumentValidator -j"$(nproc)"
+BUILD_DIR=build-llm-ci ./Scripts/ci-llm-agentic-risk.sh
+```
+
 ---
 
 ## 2. Mock `ILLMProvider`
