@@ -57,7 +57,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-068 | Add strict rollback outcome status taxonomy in UI contract | phase-PR1 | P1 | open | Introduced rollback status handling in orchestrator; UI/API contract alignment follow-up required |
 | TD-069 | Harden idempotency key derivation across retries with explicit step identity | phase-PR1 | P1 | open | Current key uses session/trace/tool/args; may need stronger step identity for cross-run dedupe |
 | TD-070 | Replace plaintext provider API key storage with OS-backed secure store | phase-PR2 | P0 | in_progress | Plaintext QSettings persistence disabled by default; final closure requires OS keychain integration |
-| TD-071 | Add deterministic multi-session cancel isolation test fixture | phase-PR3 | P1 | open | Session-scoped cancel path added, but lacks concurrent provider fixture test coverage |
+| TD-071 | Add deterministic multi-session cancel isolation test fixture | phase-PR3 | P1 | done | Added `Test_LLM_Orchestrator.CancelSessionDoesNotAffectOtherSessions` |
 | TD-041 | Manual NeuroModeler GUI write-tools walkthrough (real Configs on disk) | post-MVP | P3 | done | Covered via automated walkthrough simulation test (`Test_LLM_TD041WalkthroughSim`) for HITL reject + auto-apply retry; optional manual GUI spot-check remains |
 | TD-036 | Embedding-based dynamic tool routing | post-MVP | P3 | done | Env-gated routing now supports lexical + score-based top-K subset via `ULLMDynamicToolRouter` (`NMSDK_LLM_DYNAMIC_TOOL_ROUTING_TOP_K`) |
 | TD-031 | YAML knowledge manifest + federation | post-MVP | P3 | done | `UYamlKnowledgeCatalog` implemented and federated into `NmsdkBuiltinKnowledgeCatalog` (env/file-driven) |

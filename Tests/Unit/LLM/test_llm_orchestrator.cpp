@@ -133,3 +133,34 @@ TEST(LLMOrchestrator, RollbackReportsFailureWhenCompensationFails)
     EXPECT_EQ(resp.text, "Plan rollback failed.");
     EXPECT_FALSE(resp.error.empty());
 }
+
+TEST(LLMOrchestrator, CancelSessionDoesNotAffectOtherSessions)
+{
+    ULLMMockProvider provider;
+    LLMCompletionResult mock;
+    mock.ok = true;
+    mock.text = "ok";
+    provider.enqueue(mock);
+
+    ULLMToolRegistry registry;
+    ULLMPolicyEngine policy;
+    URdkDomainAccess domain(nullptr);
+    ULLMAuditLog audit;
+    ULLMIdempotencyStore idem;
+    ULLMToolArgumentValidator validator;
+    ULLMToolGateway gateway(registry, policy, domain, audit, idem, validator);
+    ULLMConversationStore store;
+    ULLMAgentOrchestrator orch(provider, registry, gateway, store);
+
+    orch.cancelSession("session-a");
+
+    LLMRequestEnvelope req;
+    req.session_id = "session-b";
+    req.trace_id = "trace-session-b";
+    req.user_text = "hello";
+    req.session.project_loaded = false;
+
+    const LLMFinalResponse resp = orch.handleUserMessage(req);
+    EXPECT_TRUE(resp.ok);
+    EXPECT_EQ(resp.text, "ok");
+}
