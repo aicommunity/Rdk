@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "id": "write_set_property",
+  "tier": "deterministic",
+  "suite": "write",
+  "registry_profile": "core",
+  "user_text": "установи Comment=hello для Source1",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "set_property",
+          "arguments": {
+            "long_name": "Model.Source1",
+            "property_name": "Comment",
+            "value": "hello"
+          }
+        }
+      ]
+    },
+    {
+      "text": "Краткий ответ по результатам tool."
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": [
+      "set_property"
+    ]
+  }
+}

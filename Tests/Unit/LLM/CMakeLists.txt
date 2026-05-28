@@ -104,6 +104,55 @@ _add_llm_unit_test(Test_LLM_E2eScenarios
   llm_test_ollama_lab.cpp)
 target_compile_definitions(Test_LLM_E2eScenarios PRIVATE
   CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+
+set(RDK_LLM_AGENT_SCENARIOS_DIR "${CMAKE_SOURCE_DIR}/Rdk/Tests/Fixtures/LLM/agent-scenarios")
+set(_LLM_AGENT_SCENARIO_SOURCES
+  test_llm_agent_scenarios.cpp
+  test_llm_agent_scenario_eval_unit.cpp
+  llm_agent_scenario_loader.cpp
+  llm_agent_scenario_runner.cpp
+  llm_agent_scenario_eval.cpp
+  llm_e2e_lab_harness.cpp
+  llm_e2e_analyzer.cpp
+  llm_test_ollama_lab.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-PulseLib/Llm/RegisterPulseLibLlmTools.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-MotionControlLib/Llm/RegisterMotionControlLibLlmTools.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-HardwareLib/Llm/RegisterHardwareLibLlmTools.cpp)
+_add_llm_unit_test(Test_LLM_AgentScenarios ${_LLM_AGENT_SCENARIO_SOURCES})
+target_compile_definitions(Test_LLM_AgentScenarios PRIVATE
+  RDK_LLM_AGENT_SCENARIOS_DIR="${RDK_LLM_AGENT_SCENARIOS_DIR}"
+  CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+target_include_directories(Test_LLM_AgentScenarios PRIVATE
+  ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-PulseLib/Llm
+  ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-MotionControlLib/Llm
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-HardwareLib/Llm)
+
+set(_LLM_AGENT_SCENARIO_RUNNER_SOURCES
+  llm_agent_scenario_loader.cpp
+  llm_agent_scenario_runner.cpp
+  llm_agent_scenario_eval.cpp
+  llm_e2e_lab_harness.cpp
+  llm_e2e_analyzer.cpp
+  llm_test_ollama_lab.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-PulseLib/Llm/RegisterPulseLibLlmTools.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-MotionControlLib/Llm/RegisterMotionControlLibLlmTools.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-HardwareLib/Llm/RegisterHardwareLibLlmTools.cpp)
+add_executable(llm_scenario_runner
+  llm_scenario_runner_main.cpp
+  ${_LLM_AGENT_SCENARIO_RUNNER_SOURCES}
+  ${_LLM_TEST_COMMON})
+target_link_libraries(llm_scenario_runner PRIVATE GTest::gtest rdk.llm.core rdk.static.qt)
+target_include_directories(llm_scenario_runner PRIVATE
+  ${CMAKE_SOURCE_DIR}/Rdk/LLM/Core
+  ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include
+  ${CMAKE_SOURCE_DIR}/Rdk/Core
+  ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-PulseLib/Llm
+  ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-MotionControlLib/Llm
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-HardwareLib/Llm)
+target_compile_definitions(llm_scenario_runner PRIVATE
+  RDK_LLM_AGENT_SCENARIOS_DIR="${RDK_LLM_AGENT_SCENARIOS_DIR}"
+  CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+  RDK_LIB_TYPE= RDK_CALL=)
 _add_llm_unit_test(Test_LLM_DocOllamaEmbeddings test_llm_doc_ollama_embeddings.cpp)
 _add_llm_unit_test(Test_LLM_DocSearchIndex test_llm_doc_search_index.cpp)
 _add_llm_unit_test(Test_LLM_KnowledgeIndex

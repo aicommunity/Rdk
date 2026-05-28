@@ -14,6 +14,7 @@ LLMCompletionResult ULLMMockProvider::chat(const std::vector<LLMMessage>& messag
 {
     (void)messages;
     (void)opts;
+    ++m_invoke_count;
     if(!m_queue.empty())
     {
         LLMCompletionResult r = m_queue.front();

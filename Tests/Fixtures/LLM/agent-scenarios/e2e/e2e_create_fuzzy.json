@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "id": "e2e_create_fuzzy",
+  "tier": "e2e",
+  "suite": "e2e",
+  "user_text": "I want a brand new configuration under /tmp/nmsdk_e2e_agent",
+  "session": {
+    "project_loaded": false,
+    "llm_write_enabled": true
+  },
+  "e2e": {
+    "goal": "CreateRequested",
+    "expected_tools_any": [
+      "create_configuration"
+    ],
+    "forbidden_tools": [
+      "add_component"
+    ],
+    "require_orchestrator_ok": true,
+    "allow_app_unavailable_result": true
+  },
+  "expect": {
+    "provider_rounds_max": 4,
+    "final_text_not_contains": [
+      "too many steps",
+      "maximum tool"
+    ]
+  }
+}

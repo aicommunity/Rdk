@@ -11,6 +11,7 @@
 | L5 Entity resolution | Candidates | Unit | No |
 | L6 Orchestrator | Mock provider | Integration | No |
 | L7 Regression phrases | Intent/rules smoke | Unit + fixtures | No |
+| L7.5 Agent scenarios | JSON matrix + mock runner | `Test_LLM_AgentScenarios` | D: No / E2e: Yes |
 | L8 E2E / Manual | Real Ollama | Manual | Yes |
 
 **CI default (`RDK_USE_LLM=OFF`):** LLM tests **не собираются**.
@@ -29,6 +30,14 @@ cmake -S . -B build-llm-ci -DRDK_USE_LLM=ON -DBUILD_TESTING=ON
 cmake --build build-llm-ci --target Test_LLM_SessionPersist Test_LLM_ToolGateway \
   Test_LLM_Orchestrator Test_LLM_ArgumentValidator -j"$(nproc)"
 BUILD_DIR=build-llm-ci ./Scripts/ci-llm-agentic-risk.sh
+```
+
+**CI agent scenario matrix (`ci-llm-agent-scenarios.sh`):** after agentic-risk, runs
+`Test_LLM_AgentScenarios` deterministic filter (required) and `E2e/*` (lab Ollama; cases
+`GTEST_SKIP` when unreachable). See [Agent-Scenario-Matrix.md](Agent-Scenario-Matrix.md).
+
+```bash
+BUILD_DIR=build-llm-ci ./Scripts/ci-llm-agent-scenarios.sh
 ```
 
 ---

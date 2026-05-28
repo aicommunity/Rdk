@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "id": "e2e_orchestrator_ok_smoke",
+  "tier": "e2e",
+  "suite": "e2e",
+  "user_text": "hello assistant",
+  "session": {
+    "project_loaded": false,
+    "llm_write_enabled": true
+  },
+  "e2e": {
+    "goal": "OrchestratorOk",
+    "expected_tools_any": [],
+    "forbidden_tools": [],
+    "require_orchestrator_ok": true,
+    "allow_app_unavailable_result": true
+  },
+  "expect": {
+    "provider_rounds_max": 4,
+    "final_text_not_contains": [
+      "too many steps",
+      "maximum tool"
+    ]
+  }
+}

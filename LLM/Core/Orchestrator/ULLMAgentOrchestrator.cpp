@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstring>
 #include <functional>
 #include <future>
 #include <iomanip>
@@ -331,7 +332,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                          req.session_id);
 
     LLMSessionContext session = req.session;
-    bool translate_queries_to_en = true;
+    bool translate_queries_to_en = LLMServices::instance().isInitialized();
     if(LLMServices::instance().isInitialized())
     {
         const LLMRuntimeProviderSettings& runtime_settings =
@@ -343,7 +344,14 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
         session.autonomous_mode = runtime_settings.autonomous_mode;
         session.autonomous_steps_taken = 0;
         session.allow_cloud_llm = runtime_settings.allow_cloud_providers;
-
+    }
+    if(const char* tr_env = std::getenv("NMSDK_LLM_TRANSLATE_QUERIES"))
+    {
+        translate_queries_to_en =
+            tr_env[0] != '0' && std::strcmp(tr_env, "false") != 0 && std::strcmp(tr_env, "FALSE") != 0;
+    }
+    if(LLMServices::instance().isInitialized())
+    {
         ProviderAccessCheck access = LLMServices::instance().checkActiveProviderAccess(session);
         if(!access.allowed)
         {

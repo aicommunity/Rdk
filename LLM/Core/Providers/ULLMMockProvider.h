@@ -10,6 +10,9 @@ class ULLMMockProvider : public ILLMProvider {
 public:
     void enqueue(LLMCompletionResult r) { m_queue.push_back(std::move(r)); }
 
+    size_t remaining() const { return m_queue.size(); }
+    size_t invokeCount() const { return m_invoke_count; }
+
     LLMProviderKind kind() const override { return LLMProviderKind::Mock; }
     LLMProviderCapabilities capabilities() const override;
     LLMCompletionResult chat(const std::vector<LLMMessage>& messages,
@@ -22,6 +25,7 @@ public:
 
 private:
     std::deque<LLMCompletionResult> m_queue;
+    size_t m_invoke_count = 0;
 };
 
 } // namespace RDK::LLM

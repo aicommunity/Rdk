@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "id": "neg_empty_done",
+  "tier": "deterministic",
+  "suite": "negative",
+  "registry_profile": "core",
+  "user_text": "привет",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": []
+    }
+  ],
+  "expect": {
+    "orchestrator_ok": true,
+    "final_text_not_contains": [
+      "Done."
+    ]
+  }
+}

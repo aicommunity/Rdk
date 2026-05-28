@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "id": "no_tool_compile_en",
+  "tier": "deterministic",
+  "suite": "no-suitable-tool",
+  "registry_profile": "core",
+  "user_text": "compile this project to .exe",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": []
+    },
+    {
+      "tool_calls": []
+    }
+  ],
+  "expect": {
+    "no_suitable_tool": true,
+    "orchestrator_ok": true,
+    "provider_rounds_max": 2,
+    "tools_invoked_count_max": 0,
+    "final_text_contains_any": [
+      "Не найдено",
+      "Cannot find",
+      "подходящ"
+    ],
+    "final_text_not_contains": [
+      "Done.",
+      "too many steps",
+      "maximum tool"
+    ]
+  },
+  "tags": [
+    "no_tool"
+  ]
+}

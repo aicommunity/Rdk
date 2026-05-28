@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "id": "calc_pause",
+  "tier": "deterministic",
+  "suite": "channels",
+  "registry_profile": "core",
+  "user_text": "останови расчёт",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "pause_channel_calculation",
+          "arguments": {
+            "channel_index": 0
+          }
+        }
+      ]
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": [
+      "pause_channel_calculation"
+    ]
+  }
+}

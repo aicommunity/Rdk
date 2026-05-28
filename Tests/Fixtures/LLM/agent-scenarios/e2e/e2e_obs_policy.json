@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "id": "e2e_obs_policy",
+  "tier": "e2e",
+  "suite": "e2e",
+  "user_text": "what log level is configured for this project",
+  "session": {
+    "project_loaded": false,
+    "llm_write_enabled": true
+  },
+  "e2e": {
+    "goal": "ToolInvoked",
+    "expected_tools_any": [
+      "get_system_log_policy"
+    ],
+    "forbidden_tools": [],
+    "require_orchestrator_ok": true,
+    "allow_app_unavailable_result": true
+  },
+  "expect": {
+    "provider_rounds_max": 4,
+    "final_text_not_contains": [
+      "too many steps",
+      "maximum tool"
+    ]
+  }
+}

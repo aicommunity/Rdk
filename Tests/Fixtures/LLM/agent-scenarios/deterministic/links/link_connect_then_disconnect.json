@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "id": "link_connect_then_disconnect",
+  "tier": "deterministic",
+  "suite": "links",
+  "registry_profile": "core",
+  "user_text": "соедини и разорви Source1 и Net1",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "connect_components",
+          "arguments": {
+            "from_long_name": "Model.Source1",
+            "from_property": "Output",
+            "to_long_name": "Model.Net1",
+            "to_property": "Input",
+            "channel_index": 0
+          }
+        }
+      ]
+    },
+    {
+      "tool_calls": [
+        {
+          "name": "disconnect_components",
+          "arguments": {
+            "from_long_name": "Model.Source1",
+            "from_property": "Output",
+            "to_long_name": "Model.Net1",
+            "to_property": "Input",
+            "channel_index": 0
+          }
+        }
+      ]
+    },
+    {
+      "text": "Краткий ответ по результатам tool."
+    }
+  ],
+  "expect": {
+    "tools_invoked_all": [
+      "connect_components",
+      "disconnect_components"
+    ],
+    "tools_invoked_count_min": 2
+  }
+}

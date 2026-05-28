@@ -297,6 +297,24 @@ E2eScenarioEvaluation evaluateScenario(const E2eConversationDigest& digest,
         ev.diagnosis = "Answer does not cover configuration save topic.";
         return ev;
 
+    case E2eGoalKind::NoSuitableToolOrRefusal:
+        if(textMentionsAny(digest.assistant_text,
+                           {"too many steps", "maximum tool rounds", "max rounds"}))
+        {
+            ev.diagnosis = "Hit max rounds instead of refusing cleanly.";
+            return ev;
+        }
+        if(textMentionsAny(digest.assistant_text,
+                           {"Cannot find a suitable", "Не найдено подходящ", "NO_SUITABLE_TOOL",
+                            "не могу выполнить", "cannot perform", "no tool"}))
+        {
+            ev.passed = true;
+            ev.diagnosis = "Refusal or no_suitable_tool messaging.";
+            return ev;
+        }
+        ev.diagnosis = "Expected refusal text; got: " + digest.assistant_text.substr(0, 120);
+        return ev;
+
     default:
         ev.diagnosis = "Unknown goal kind.";
         return ev;

@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "id": "e2e_link_connect",
+  "tier": "e2e",
+  "suite": "e2e",
+  "user_text": "connect the signal source to the network input",
+  "session": {
+    "project_loaded": false,
+    "llm_write_enabled": true
+  },
+  "e2e": {
+    "goal": "ToolInvoked",
+    "expected_tools_any": [
+      "connect_components"
+    ],
+    "forbidden_tools": [
+      "add_component"
+    ],
+    "require_orchestrator_ok": true,
+    "allow_app_unavailable_result": true
+  },
+  "expect": {
+    "provider_rounds_max": 4,
+    "final_text_not_contains": [
+      "too many steps",
+      "maximum tool"
+    ]
+  }
+}

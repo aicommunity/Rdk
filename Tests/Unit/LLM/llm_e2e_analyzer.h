@@ -32,6 +32,7 @@ enum class E2eGoalKind {
     LoadRequested,
     CreateRequested,
     InformativeAnswer,
+    NoSuitableToolOrRefusal,
 };
 
 struct E2eScenarioExpectation {

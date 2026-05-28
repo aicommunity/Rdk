@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "id": "graph_search_docs",
+  "tier": "deterministic",
+  "suite": "graph",
+  "registry_profile": "core",
+  "user_text": "как устроен orchestrator",
+  "session": {
+    "project_loaded": false,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "search_project_docs",
+          "arguments": {
+            "query": "orchestrator",
+            "scope": "docs"
+          }
+        }
+      ]
+    },
+    {
+      "text": "Краткий ответ по результатам tool."
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": [
+      "search_project_docs"
+    ]
+  }
+}
