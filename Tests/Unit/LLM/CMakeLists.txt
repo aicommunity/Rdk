@@ -56,6 +56,11 @@ _add_llm_unit_test(Test_LLM_ProviderAuth test_llm_provider_auth.cpp)
 _add_llm_unit_test(Test_LLM_EntityResolver test_llm_entity_resolver.cpp)
 _add_llm_unit_test(Test_LLM_AuditChain test_llm_audit_chain.cpp)
 _add_llm_unit_test(Test_LLM_SessionPersist test_llm_session_persist.cpp)
+_add_llm_unit_test(Test_ReadOnlyLogTail test_read_only_log_tail.cpp)
+target_include_directories(Test_ReadOnlyLogTail PRIVATE
+  ${CMAKE_SOURCE_DIR}/Rdk/Core
+  ${CMAKE_SOURCE_DIR}/Rdk/Core/Engine
+  ${CMAKE_SOURCE_DIR}/Rdk/Core/Application)
 _add_llm_unit_test(Test_LLM_ChatHistoryArchive
   test_llm_chat_history_archive.cpp
   ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt/Llm/ULlmChatHistoryArchive.cpp)

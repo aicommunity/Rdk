@@ -570,6 +570,26 @@ std::string UApplication::GetWorkLogDir(void) const
  return base;
 }
 
+ApplicationLogReadPaths UApplication::GetApplicationLogReadPaths(void) const
+{
+ ApplicationLogReadPaths out;
+ out.base_name = GetLogFileBaseName();
+ out.session_start_unix = CurrentLogSessionStart;
+
+ auto add_unique = [&out](const std::string& dir) {
+  if(dir.empty())
+   return;
+  if(std::find(out.directories.begin(), out.directories.end(), dir) == out.directories.end())
+   out.directories.push_back(dir);
+ };
+
+ add_unique(GetWorkLogDir());
+ if(GetProjectOpenFlag())
+  add_unique(CalcCurrentLogDir());
+
+ return out;
+}
+
 const std::string& UApplication::GetLogFileBaseName(void) const
 {
  if(!CachedLogBaseName.empty())

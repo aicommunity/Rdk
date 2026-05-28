@@ -4,7 +4,9 @@
 #include "UAppCore.h"
 #include "UProject.h"
 #include <memory>
+#include <string>
 #include <unordered_map>
+#include <vector>
 #include <ctime>
 
 #ifndef __BORLANDC__
@@ -45,6 +47,13 @@ struct StandartXMLInCatalog
 std::string XMLName;
 /// Имя xml файла
 std::string XMLDescription;
+};
+
+/// Read-only snapshot of glog directories for consumers (e.g. LLM log tail).
+struct ApplicationLogReadPaths {
+    std::vector<std::string> directories;
+    std::string base_name;
+    std::time_t session_start_unix = 0;
 };
 
 class RDK_LIB_TYPE UApplication: public UAppController
@@ -340,6 +349,9 @@ bool SetDebugMode(bool value);
 
 /// Текущий каталог логов (с учетом переопределения в проекте)
 std::string CalcCurrentLogDir(void) const;
+
+/// Directories and session metadata for read-only log tail consumers (does not affect logging).
+ApplicationLogReadPaths GetApplicationLogReadPaths(void) const;
 
 /// Флаг, выставляется если включен режим тестирования
 bool IsTestMode(void) const;
