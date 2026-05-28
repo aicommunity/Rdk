@@ -648,6 +648,12 @@ void GlobalFunction() {
 5. **Производительность** - избегайте частого логирования в критических участках кода
 6. **Дедупликация** - используйте GUI sink для предотвращения дублирования сообщений
 
+### LLM assistant (read-only)
+
+NeuroModeler LLM reads glog files via a **separate** `UGlogFileTail` instance (`UReadOnlyLogTail`). It must **not** call `UGlogGuiSink::ReadMessages`, which consumes the GUI queue used by `ULoggerWidget`.
+
+Public API: `UApplication::GetApplicationLogReadPaths()`. See [Observability-and-Audit.md](../LLM/Docs/Observability-and-Audit.md) (System log read path).
+
 ### См. также
 
 - [Exception Handling](Utilities-Reference.md#uexception---система-исключений) - обработка исключений

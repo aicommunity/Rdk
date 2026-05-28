@@ -109,7 +109,31 @@ Counters (можно glog periodic или файл):
 
 ---
 
-## 6. UI
+## 6. System log read path (assistant)
+
+Read-only consumer for LLM — **does not** register sinks or call `UGlogGuiSink::ReadMessages` (that would steal GUI queue).
+
+| Component | Role |
+|-----------|------|
+| `UApplication::GetApplicationLogReadPaths()` | work + project `EventsLog/` directories, glog base name, session start |
+| `UReadOnlyLogTail` | private `UGlogFileTail` instance, `mark` / `collectDelta` / `readTail` |
+| `ULLMSystemLogReader` | policy snapshot + formatting + sanitize |
+| Tools `get_system_log_policy`, `read_system_log` | on-demand inspection |
+| Orchestrator | appends `system_log_excerpt` to tool result JSON after each invoke |
+
+Env:
+
+| Env | Effect |
+|-----|--------|
+| `NMSDK_LLM_DISABLE_SYSTEM_LOG=1` | disable tools + auto excerpts |
+| `NMSDK_LLM_SYSTEM_LOG_AUTO_MAX_LINES` | post-tool excerpt line cap (default 40) |
+| `NMSDK_LLM_SYSTEM_LOG_TOOL_MAX_LINES` | `read_system_log` cap (default 200) |
+
+Policy text is injected into the agent manifest (`## System logging`) once per user turn.
+
+---
+
+## 7. UI
 
 `ULoggerWidget` — строки level INFO:
 
@@ -119,7 +143,7 @@ Counters (можно glog periodic или файл):
 
 ---
 
-## 7. Отладка
+## 8. Отладка
 
 Env flags:
 

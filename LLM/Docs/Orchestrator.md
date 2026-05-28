@@ -98,7 +98,7 @@ function handleUserMessage(envelope):
 
 `MAX_ROUNDS` default: **8** (policy).
 
-**Also:** `invokeLifecycleToolDirect` after argument gate; `buildAgentManifest(..., user_text)`; parallel read batch when all tools in a round are Read.
+**Also:** `invokeLifecycleToolDirect` after argument gate; `buildAgentManifest(..., user_text)`; parallel read batch when all tools in a round are Read. After each completed tool invoke, tool result JSON may include `system_log_excerpt` (glog delta since the round mark; see Observability-and-Audit.md).
 
 ---
 

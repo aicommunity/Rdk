@@ -185,4 +185,13 @@ void RegisterCoreRdkTools(ULLMToolRegistry& reg, URdkDomainAccess& domain, ...);
 
 Вызывается из `NmsdkRegisterLlm` **после** создания domain access.
 
+`RegisterObservabilityTools` (from the same entry point) registers:
+
+| Tool | Kind | Purpose |
+|------|------|---------|
+| `get_system_log_policy` | Read | Current `DebugMode` / `EventsLogMode` per project and channel |
+| `read_system_log` | Read | Tail of on-disk glog files (`tail` / `since_mark`) |
+
+Disabled when `NMSDK_LLM_DISABLE_SYSTEM_LOG=1`.
+
 Полные схемы: [Tools-Contracts.md](Tools-Contracts.md).

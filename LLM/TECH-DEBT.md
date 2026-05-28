@@ -44,6 +44,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-078 | Windows Credential Manager for provider API keys | post-audit-P2-phase-6 | P2 | done | `CredReadW`/`CredWriteW` in `ULlmQtProviderSettingsSource` (manual Win verify) |
 | TD-079 | Agentic SLO audit events (task success / false-execution / escalation) | post-audit-P2-phase-7 | P3 | done | `task_*`, `false_execution_prevented`, `escalation_to_hitl`; `Scripts/llm-audit-slo-snapshot.sh` |
 | TD-080 | GUI chat history archive under `Bin/AiChats` + resume from JSON | chat-history | P2 | done | `ULlmChatHistoryArchive`, `ULlmChatHistoryDialog`, dock integration, `tryResumeSession`, `Test_LLM_ChatHistoryArchive` |
+| TD-081 | Assistant read-only access to system logs + policy awareness | system-log-access | P2 | done | `UReadOnlyLogTail`, `ULLMSystemLogReader`, observability tools, orchestrator `system_log_excerpt` |
 | TD-049 | Extract `ULLMNameResolution` from `ULLMWriteArgumentNormalizer` | phase-A | P0 | done | Closed in phase-A commit: dedicated module + migrated callers |
 | TD-050 | Tiered `URdkEntityResolver` (exact → CI → fuzzy) | phase-A | P0 | done | Closed in phase-A commit: centralized tiered resolver |
 | TD-051 | Generalized pending disambiguation (not only class) | phase-B | P0 | done | `PendingToolArguments` now carries kind/field/candidates for class/component |
