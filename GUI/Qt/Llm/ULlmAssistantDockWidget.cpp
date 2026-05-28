@@ -19,6 +19,34 @@
 #include "../../../LLM/Core/Settings/ULLMProviderAuth.h"
 #include "../UGEngineControlWidget.h"
 
+namespace {
+
+QString rollbackStatusMessage(ULlmAssistantDockWidget* dock, const std::string& status)
+{
+    if(status == "rolled_back")
+        return dock->tr("Plan rolled back successfully.");
+    if(status == "rolled_back_nothing_to_compensate")
+        return dock->tr("Nothing to roll back (no compensating actions recorded).");
+    if(status == "partial_rollback")
+        return dock->tr("Rollback incomplete — review the schema and audit log.");
+    if(status == "rollback_failed")
+        return dock->tr("Rollback failed — check the audit log.");
+    return {};
+}
+
+void appendRollbackStatusIfPresent(ULlmAssistantDockWidget* dock,
+                                   const RDK::LLM::LLMFinalResponse& resp)
+{
+    if(resp.rollback_status.empty())
+        return;
+    const QString msg = rollbackStatusMessage(dock, resp.rollback_status);
+    if(msg.isEmpty())
+        return;
+    dock->appendAssistantText(dock->tr("<b>[Rollback]</b> %1").arg(msg));
+}
+
+} // namespace
+
 ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplication* app,
                                                ULlmGuiContextBridge* bridge)
     : UVisualControllerWidget(parent, app)
@@ -439,6 +467,8 @@ void ULlmAssistantDockWidget::onStreamFinished(const RDK::LLM::LLMFinalResponse&
     if(m_streaming_reply)
         endAssistantStream();
 
+    appendRollbackStatusIfPresent(this, resp);
+
     if(!resp.ok)
     {
         appendAssistantText(QString::fromStdString("Error: " + resp.error));
@@ -634,7 +664,11 @@ void ULlmAssistantDockWidget::onRollbackPlanClicked()
                 watcher->deleteLater();
                 clearPendingPlan();
                 m_reject->setVisible(false);
-                appendAssistantText(QString::fromStdString(resp.text));
+                appendRollbackStatusIfPresent(this, resp);
+                if(!resp.text.empty())
+                    appendAssistantText(QString::fromStdString(resp.text));
+                else if(!resp.ok)
+                    appendAssistantText(QString::fromStdString("Error: " + resp.error));
             });
     watcher->setFuture(future);
 }

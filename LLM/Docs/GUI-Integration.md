@@ -109,7 +109,7 @@ void RegisterLlmUi(UGEngineControlWidget* host,
 | Cancel | `orchestrator.cancel()` во время запроса |
 | HITL TTL | `QTimer` 10 min → `rejectPending`; реальный `pending_confirmation_id` из ответа |
 | Run plan | `confirmPlanExecution()` |
-| Resume / Rollback plan | После checkpoint (`resumePlanExecution` / `rollbackPlanExecution`) |
+| Resume / Rollback plan | После checkpoint (`resumePlanExecution` / `rollbackPlanExecution`); UI показывает `LLMFinalResponse.rollback_status` (`rolled_back`, `partial_rollback`, `rollback_failed`, …) |
 | Apply / Reject | `confirmPending()` / `rejectPending()` (skipped when auto-apply enabled) |
 | Settings | **Allow LLM write tools**; **Apply write tools automatically** (`LLM/llm_auto_apply_writes`); **Autonomous mode** (`LLM/autonomous_mode`: off / strict / semi_auto) |
 
