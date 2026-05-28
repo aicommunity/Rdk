@@ -25,9 +25,4 @@ This matrix maps high-risk agentic dialog/autonomy failure modes to automated ch
 
 ## Gaps and deferred items
 
-Tracked in [Post-Audit-Phase-2-Implementation-Plan.md](Post-Audit-Phase-2-Implementation-Plan.md) (TD-074 … TD-079):
-
-- GUI consumption of `rollback_status` (TD-075).
-- HTTP `Retry-After` in provider retry policy (TD-076).
-- Formal ambiguity gate before write tools (TD-077).
-- Windows Credential Manager for provider API keys (TD-078).
+Tracked in [Post-Audit-Phase-2-Implementation-Plan.md](Post-Audit-Phase-2-Implementation-Plan.md): remaining stretch items only (if any).

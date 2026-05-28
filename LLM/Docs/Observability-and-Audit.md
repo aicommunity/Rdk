@@ -42,6 +42,10 @@ struct ULLMTraceContext {
 | `confirmation_rejected` | user reject |
 | `confirmation_expired` | TTL elapsed (TD-025) |
 | `orchestrator_round` | each agent loop round |
+| `task_completed` / `task_failed` | Task planner path finished |
+| `false_execution_prevented` | Ambiguity gate blocked unsafe write |
+| `intent_ambiguity_blocked` | Write blocked (low confidence / mixed intent) |
+| `escalation_to_hitl` | Write routed to confirmation UI |
 | `error` | uncaught / provider fail |
 
 ### 3.2 Event record (JSONL line)

@@ -38,11 +38,11 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-072 | Sync Agentic-Risk-Test-Matrix after audit (TD-071 covered) | post-audit-P2-phase-0 | P3 | done | Matrix + gaps updated 2026-05-28; plan doc added |
 | TD-073 | CI release gate for P0/P1 agentic-risk matrix rows | post-audit-P2-phase-1 | P1 | done | `Scripts/ci-llm-agentic-risk.sh`, `agentic-risk/manifest.json`, wired in `ci-llm-linux.sh` |
 | TD-074 | Adversarial fixtures for indirect injection via tool/retrieval output | post-audit-P2-phase-2 | P1 | done | `ULLMTrustBoundary`, `Test_LLM_AdversarialFixtures`, `adversarial/*.json` |
-| TD-075 | GUI consume `LLMFinalResponse.rollback_status` | post-audit-P2-phase-3 | P2 | open | `ULlmAssistantDockWidget` — do not treat `partial_rollback` as silent success |
-| TD-076 | Provider HTTP retry honors `Retry-After` header | post-audit-P2-phase-4 | P2 | open | Cap max delay; unit test with mock headers |
-| TD-077 | Ambiguity gate blocks write until intent unambiguous | post-audit-P2-phase-5 | P2 | open | Env `NMSDK_LLM_INTENT_MIN_WRITE_CONFIDENCE`; audit `intent_ambiguity_blocked` |
-| TD-078 | Windows Credential Manager for provider API keys | post-audit-P2-phase-6 | P2 | open | `ULlmQtProviderSettingsSource`; Linux CI may mark `blocked` without Win runner |
-| TD-079 | Agentic SLO audit events (task success / false-execution / escalation) | post-audit-P2-phase-7 | P3 | open | Stretch; optional `Scripts/llm-audit-slo-snapshot.sh` |
+| TD-075 | GUI consume `LLMFinalResponse.rollback_status` | post-audit-P2-phase-3 | P2 | done | `ULlmAssistantDockWidget` rollback status messages in stream + plan rollback |
+| TD-076 | Provider HTTP retry honors `Retry-After` header | post-audit-P2-phase-4 | P2 | done | `ULLMHttpRetry`, `retry_after` on `ULLMHttpClient::Response`, `Test_LLM_HttpRetry` |
+| TD-077 | Ambiguity gate blocks write until intent unambiguous | post-audit-P2-phase-5 | P2 | done | `ULLMIntentAmbiguityGate`, orchestrator block + `Test_LLM_IntentAmbiguityGate` |
+| TD-078 | Windows Credential Manager for provider API keys | post-audit-P2-phase-6 | P2 | done | `CredReadW`/`CredWriteW` in `ULlmQtProviderSettingsSource` (manual Win verify) |
+| TD-079 | Agentic SLO audit events (task success / false-execution / escalation) | post-audit-P2-phase-7 | P3 | done | `task_*`, `false_execution_prevented`, `escalation_to_hitl`; `Scripts/llm-audit-slo-snapshot.sh` |
 | TD-049 | Extract `ULLMNameResolution` from `ULLMWriteArgumentNormalizer` | phase-A | P0 | done | Closed in phase-A commit: dedicated module + migrated callers |
 | TD-050 | Tiered `URdkEntityResolver` (exact → CI → fuzzy) | phase-A | P0 | done | Closed in phase-A commit: centralized tiered resolver |
 | TD-051 | Generalized pending disambiguation (not only class) | phase-B | P0 | done | `PendingToolArguments` now carries kind/field/candidates for class/component |
