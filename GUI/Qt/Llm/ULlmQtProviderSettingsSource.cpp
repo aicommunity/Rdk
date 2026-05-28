@@ -1,5 +1,7 @@
 #include "ULlmQtProviderSettingsSource.h"
 
+#include <cstdlib>
+
 #include <QSettings>
 
 #include "../../../LLM/Core/Settings/ULLMProviderCatalog.h"
@@ -20,7 +22,9 @@ static void loadProfileKeys(QSettings& settings, RDK::LLM::LLMRuntimeProviderSet
                             const RDK::LLM::LLMProviderProfile& profile)
 {
     const QString api_key_key = profileKey(profile.profile_id, "api_key");
-    if(settings.contains(api_key_key))
+    const bool allow_plaintext_settings_keys =
+        std::getenv("NMSDK_LLM_ALLOW_PLAINTEXT_SETTINGS_KEYS") != nullptr;
+    if(allow_plaintext_settings_keys && settings.contains(api_key_key))
     {
         const QString value = settings.value(api_key_key).toString();
         if(!value.isEmpty())
@@ -84,6 +88,8 @@ RDK::LLM::LLMRuntimeProviderSettings ULlmQtProviderSettingsSource::load() const
 void ULlmQtProviderSettingsSource::save(const RDK::LLM::LLMRuntimeProviderSettings& settings)
 {
     QSettings qsettings = makeAppSettings();
+    const bool allow_plaintext_settings_keys =
+        std::getenv("NMSDK_LLM_ALLOW_PLAINTEXT_SETTINGS_KEYS") != nullptr;
     qsettings.setValue(QStringLiteral("LLM/active_profile_id"),
                        QString::fromStdString(settings.active_profile_id));
     qsettings.setValue(QStringLiteral("LLM/allow_cloud_providers"), settings.allow_cloud_providers);
@@ -115,8 +121,15 @@ void ULlmQtProviderSettingsSource::save(const RDK::LLM::LLMRuntimeProviderSettin
 
     for(const auto& entry : settings.api_keys_by_profile_id)
     {
-        qsettings.setValue(profileKey(entry.first, "api_key"),
-                         QString::fromStdString(entry.second));
+        if(allow_plaintext_settings_keys)
+        {
+            qsettings.setValue(profileKey(entry.first, "api_key"),
+                               QString::fromStdString(entry.second));
+        }
+        else
+        {
+            qsettings.remove(profileKey(entry.first, "api_key"));
+        }
     }
 
     for(const RDK::LLM::LLMProviderProfile& preset :
