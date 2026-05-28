@@ -32,6 +32,8 @@
 | **Архитектура (normative)** | [Developer-Architecture.md](Developer-Architecture.md) |
 | **Расширение tools / knowledge** | [Extension-Guide.md](Extension-Guide.md) |
 | **Post-MVP код (отложено)** | [Post-MVP-Implementation-Plan.md](Post-MVP-Implementation-Plan.md) |
+| **Post-audit Phase 2 (agent sprint)** | [Post-Audit-Phase-2-Implementation-Plan.md](Post-Audit-Phase-2-Implementation-Plan.md) |
+| **Agentic risk → tests** | [Agentic-Risk-Test-Matrix.md](Agentic-Risk-Test-Matrix.md) |
 | Краткий индекс, CMake | [Architecture.md](Architecture.md) |
 | С чего начать MVP | [MVP-Roadmap.md](MVP-Roadmap.md) |
 | Write-tools (завершён P1–P3) | [Write-Tools-Backlog.md](Write-Tools-Backlog.md) |
