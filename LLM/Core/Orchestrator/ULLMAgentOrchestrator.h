@@ -4,6 +4,7 @@
 #include <atomic>
 #include <functional>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <set>
 
@@ -15,6 +16,7 @@
 #include "ULLMWorkflowState.h"
 #include "../Policy/ULLMPolicyLimits.h"
 #include "../Session/ULLMConversationStore.h"
+#include "../Observability/ULLMSystemLogReader.h"
 
 namespace RDK::LLM {
 
@@ -84,6 +86,7 @@ private:
     std::map<std::string, bool> m_session_busy;
     mutable std::mutex m_cancel_mu;
     std::set<std::string> m_cancelled_sessions;
+    std::unique_ptr<ULLMSystemLogReader> m_system_log_reader;
     void setWorkflowPhase(ConversationState& state, LLMWorkflowPhase phase,
                           const std::string& trace_id);
 

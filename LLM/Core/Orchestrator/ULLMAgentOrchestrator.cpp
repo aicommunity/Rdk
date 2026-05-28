@@ -10,6 +10,7 @@
 #include <QByteArray>
 #include <QCryptographicHash>
 
+#include "../../../Core/Application/UApplication.h"
 #include "../LlmModuleInit.h"
 #include "../Session/ULLMConfirmationExpiry.h"
 #include "../LlmPublicApi.h"
@@ -19,6 +20,8 @@
 #include "../Settings/ULLMProviderAuth.h"
 #include "../Settings/ULLMResponseLanguage.h"
 #include "../Settings/ULLMUserMessages.h"
+#include "../Observability/ULLMSystemLogExcerpt.h"
+#include "../Observability/ULLMSystemLogReader.h"
 #include "../TrustBoundary/ULLMTrustBoundary.h"
 #include "../Intent/ULLMIntentAmbiguityGate.h"
 #include "ULLMConfigurationLifecycle.h"
@@ -47,6 +50,22 @@ std::string pseudoSha256(const std::string& text)
 {
     const QByteArray data(text.data(), static_cast<int>(text.size()));
     return QCryptographicHash::hash(data, QCryptographicHash::Sha256).toHex().toStdString();
+}
+
+std::string collectLogExcerptForTool(ULLMSystemLogReader* reader, int active_channel_index)
+{
+    if(!reader)
+        return {};
+    const SystemLogPolicySnapshot pol = reader->policy(active_channel_index);
+    return reader->collectDeltaExcerpt(ULLMSystemLogReader::autoInjectMaxLines(),
+                                       ULLMSystemLogReader::defaultMinSeverityForPolicy(pol));
+}
+
+std::string buildToolMessageContent(const ToolGatewayResult& tr, ULLMSystemLogReader* reader,
+                                  int active_channel_index)
+{
+    const std::string excerpt = collectLogExcerptForTool(reader, active_channel_index);
+    return sanitizeUntrustedToolContent(toolJsonWithSystemLogExcerpt(tr, excerpt).dump());
 }
 
 std::string stableArgumentsJson(const nlohmann::json& args)
@@ -180,6 +199,11 @@ ULLMAgentOrchestrator::ULLMAgentOrchestrator(ILLMProvider& provider, ULLMToolReg
     , m_gateway(gateway)
     , m_store(store)
 {
+    if(ULLMSystemLogReader::isFeatureEnabled() && LLMServices::instance().isInitialized())
+    {
+        if(RDK::UApplication* app = LLMServices::instance().domain().application())
+            m_system_log_reader = std::make_unique<ULLMSystemLogReader>(app);
+    }
 }
 
 void ULLMAgentOrchestrator::cancel()
@@ -239,6 +263,12 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
 
     ConversationState& state = m_store.getOrCreate(req.session_id);
     state.session_id = req.session_id;
+
+    if(m_system_log_reader)
+    {
+        m_system_log_reader->syncPaths();
+        m_system_log_reader->mark();
+    }
 
     const int confirmation_ttl = defaultPolicyLimits().confirmation_ttl_seconds;
     if(m_store.expirePendingIfStale(req.session_id, confirmation_ttl))
@@ -557,9 +587,12 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
     }
     if(provider_tools)
     {
+        std::string log_summary;
+        if(m_system_log_reader)
+            log_summary = m_system_log_reader->policy(session.active_channel_index).summary_for_model;
         LLMMessage manifest;
         manifest.role = LLMMessage::Role::System;
-        manifest.content = buildAgentManifest(m_registry, filter, 6000, planning_text);
+        manifest.content = buildAgentManifest(m_registry, filter, 6000, planning_text, log_summary);
         provider_messages.insert(provider_messages.begin(), manifest);
     }
 
@@ -900,6 +933,9 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 return def && def->kind == LLMToolKind::Read;
             });
 
+        if(m_system_log_reader)
+            m_system_log_reader->mark();
+
         if(all_read && completion.tool_calls.size() > 1)
         {
             std::vector<std::future<std::pair<LLMToolCall, ToolGatewayResult>>> futures;
@@ -924,7 +960,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 tool_msg.role = LLMMessage::Role::Tool;
                 tool_msg.tool_call_id = call.id;
                 tool_msg.tool_name = call.name;
-                tool_msg.content = sanitizeUntrustedToolContent(toolGatewayResultForProvider(tr).dump());
+                tool_msg.content =
+                    buildToolMessageContent(tr, m_system_log_reader.get(), session.active_channel_index);
                 m_store.appendMessage(req.session_id, tool_msg);
                 capturePendingOpenRecentAfterList(m_store, req.session_id, call.name, tr);
             }
@@ -1000,8 +1037,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                                 tool_msg.role = LLMMessage::Role::Tool;
                                 tool_msg.tool_call_id = call_copy.id;
                                 tool_msg.tool_name = call_copy.name;
-                                tool_msg.content = sanitizeUntrustedToolContent(
-                                    toolGatewayResultForProvider(retry_tr).dump());
+                                tool_msg.content = buildToolMessageContent(
+                                    retry_tr, m_system_log_reader.get(), session.active_channel_index);
                                 m_store.appendMessage(req.session_id, tool_msg);
 
                                 if(isLifecycleWriteToolName(call_copy.name))
@@ -1063,7 +1100,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 tool_msg.role = LLMMessage::Role::Tool;
                 tool_msg.tool_call_id = call_copy.id;
                 tool_msg.tool_name = call_copy.name;
-                tool_msg.content = sanitizeUntrustedToolContent(toolGatewayResultForProvider(tr).dump());
+                tool_msg.content =
+                    buildToolMessageContent(tr, m_system_log_reader.get(), session.active_channel_index);
                 m_store.appendMessage(req.session_id, tool_msg);
                 capturePendingOpenRecentAfterList(m_store, req.session_id, call_copy.name, tr);
 

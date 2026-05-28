@@ -7,12 +7,20 @@
 namespace RDK::LLM {
 
 std::string buildAgentManifest(const ULLMToolRegistry& registry, const ToolFilter& filter,
-                               const std::size_t max_chars, const std::string& user_text)
+                               const std::size_t max_chars, const std::string& user_text,
+                               const std::string& system_log_summary)
 {
     std::ostringstream oss;
     const std::vector<LLMToolDefinition> tools = registry.listForLlmApi(filter);
 
     oss << libraryScopeHintManifestSection(detectLibraryScopeFromUserText(user_text));
+
+    if(!system_log_summary.empty())
+    {
+        oss << "## System logging\n";
+        oss << "- " << system_log_summary << "\n";
+        oss << "- Use read_system_log to inspect logs; tool results may include system_log_excerpt.\n";
+    }
 
     oss << "## Tools (" << tools.size() << " available)\n";
     for(const LLMToolDefinition& tool : tools)
