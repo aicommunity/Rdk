@@ -9,14 +9,16 @@
 #include <iomanip>
 #include <sstream>
 
+#include <QByteArray>
+#include <QCryptographicHash>
+
 namespace RDK::LLM {
 
-static std::string sha256_placeholder(const std::string& input)
+static std::string sha256_hex(const std::string& input)
 {
-    std::hash<std::string> h;
-    std::ostringstream oss;
-    oss << std::hex << h(input);
-    return oss.str();
+    const QByteArray data(input.data(), static_cast<int>(input.size()));
+    const QByteArray digest = QCryptographicHash::hash(data, QCryptographicHash::Sha256).toHex();
+    return digest.toStdString();
 }
 
 std::string ULLMAuditLog::computeEventHash(const std::string& prev_hash, const nlohmann::json& event)
@@ -24,7 +26,7 @@ std::string ULLMAuditLog::computeEventHash(const std::string& prev_hash, const n
     nlohmann::json payload = event;
     payload.erase("prev_hash");
     payload.erase("curr_hash");
-    return sha256_placeholder(prev_hash + payload.dump());
+    return sha256_hex(prev_hash + payload.dump());
 }
 
 void ULLMAuditLog::setLogDirectory(const std::string& path)
