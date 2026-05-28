@@ -46,3 +46,39 @@ TEST(LLMSessionPersist, RemoveSessionDropsPersistedFile)
     store2.setStorageDirectory(dir);
     EXPECT_FALSE(store2.loadFromDisk("session-drop"));
 }
+
+TEST(LLMSessionPersist, RoundTripPendingToolArguments)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_pending_args";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+    ConversationState& state = store.getOrCreate("session-pending");
+    state.session_id = "session-pending";
+
+    PendingToolArguments pending;
+    pending.tool_name = "add_component";
+    pending.action = ConfigurationLifecycleAction::Create;
+    pending.partial_arguments = {{"short_name", "N1"}};
+    pending.disambiguation_kind = PendingDisambiguationKind::Class;
+    pending.disambiguation_field = "class_name";
+    pending.disambiguation_candidates = nlohmann::json::array(
+        {{{"class_name", "NLPNeuron"}}, {{"class_name", "NModel"}}});
+    pending.missing_fields = {ToolArgumentFieldSpec{"class_name", "string",
+                                                    "Registered class name", true}};
+    pending.created_at_unix_sec = 12345;
+    store.setPendingToolArguments("session-pending", pending);
+    ASSERT_TRUE(store.persistToDisk("session-pending"));
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-pending"));
+    ConversationState& loaded = reloaded.getOrCreate("session-pending");
+    ASSERT_TRUE(loaded.pending_tool_arguments.has_value());
+    EXPECT_EQ(loaded.pending_tool_arguments->tool_name, "add_component");
+    EXPECT_EQ(loaded.pending_tool_arguments->disambiguation_field, "class_name");
+    EXPECT_EQ(loaded.pending_tool_arguments->created_at_unix_sec, 12345);
+    ASSERT_EQ(loaded.pending_tool_arguments->missing_fields.size(), 1u);
+    EXPECT_EQ(loaded.pending_tool_arguments->missing_fields.front().name, "class_name");
+}

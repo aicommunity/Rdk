@@ -54,6 +54,8 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-065 | Task executor verify-loop; remove harmful add_component early return | post-MVP-agent | P1 | done | Completed via task-path gating + verifier/retry/replan task executor (PR0+PR5) |
 | TD-066 | Confidence-gated plan confirmation (complexity-dependent) | post-MVP-agent | P2 | done | Completed in `ULLMPlanConfidence` + task-path confirmation branch (PR4) |
 | TD-067 | Lifecycle create-config NL parsing misses `parent_directory` in E2E scenarios | post-MVP-agent | P1 | done | Fixed via lifecycle arg merge/retry + create schema/path handling; `Test_LLM_E2eScenarios` now passes |
+| TD-068 | Add strict rollback outcome status taxonomy in UI contract | phase-PR1 | P1 | open | Introduced rollback status handling in orchestrator; UI/API contract alignment follow-up required |
+| TD-069 | Harden idempotency key derivation across retries with explicit step identity | phase-PR1 | P1 | open | Current key uses session/trace/tool/args; may need stronger step identity for cross-run dedupe |
 | TD-041 | Manual NeuroModeler GUI write-tools walkthrough (real Configs on disk) | post-MVP | P3 | done | Covered via automated walkthrough simulation test (`Test_LLM_TD041WalkthroughSim`) for HITL reject + auto-apply retry; optional manual GUI spot-check remains |
 | TD-036 | Embedding-based dynamic tool routing | post-MVP | P3 | done | Env-gated routing now supports lexical + score-based top-K subset via `ULLMDynamicToolRouter` (`NMSDK_LLM_DYNAMIC_TOOL_ROUTING_TOP_K`) |
 | TD-031 | YAML knowledge manifest + federation | post-MVP | P3 | done | `UYamlKnowledgeCatalog` implemented and federated into `NmsdkBuiltinKnowledgeCatalog` (env/file-driven) |

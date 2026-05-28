@@ -46,6 +46,44 @@ std::string pseudoSha256(const std::string& text)
     return oss.str();
 }
 
+std::string stableArgumentsJson(const nlohmann::json& args)
+{
+    if(!args.is_object() && !args.is_array())
+        return args.dump();
+    return args.dump();
+}
+
+std::string makeIdempotencyKey(const std::string& session_id, const std::string& trace_id,
+                               const std::string& tool_name, const nlohmann::json& args)
+{
+    return pseudoSha256(session_id + "|" + trace_id + "|" + tool_name + "|" + stableArgumentsJson(args));
+}
+
+bool isRollbackEligibleWriteRecord(const ExecutionPlanStep& step)
+{
+    if(step.status != "done" || step.last_result.empty())
+        return false;
+    if(step.tool_name == "add_component")
+        return !step.last_result.value("long_name", "").empty();
+    if(step.tool_name == "set_property")
+        return step.last_result.value("had_previous", false)
+               && !step.last_result.value("long_name", "").empty();
+    if(step.tool_name == "connect_components")
+        return true;
+    return false;
+}
+
+int rollbackEligibleWriteCount(const ULLMExecutionPlan& plan)
+{
+    int count = 0;
+    for(const ExecutionPlanStep& step : plan.steps)
+    {
+        if(isRollbackEligibleWriteRecord(step))
+            ++count;
+    }
+    return count;
+}
+
 std::string formatClarificationMessage(const nlohmann::json& payload)
 {
     std::ostringstream oss;
@@ -113,6 +151,40 @@ bool extractToolDisambiguationPayload(const ToolGatewayResult& tr, nlohmann::jso
         return false;
     payload_out = tr.result;
     return true;
+}
+
+std::string sanitizeUntrustedToolContent(const std::string& raw)
+{
+    std::string sanitized = raw;
+    const std::vector<std::string> blocked_markers = {"ignore previous instructions",
+                                                       "system prompt",
+                                                       "developer message",
+                                                       "<system>",
+                                                       "<developer>",
+                                                       "tool override"};
+    for(const std::string& marker : blocked_markers)
+    {
+        std::string lower = sanitized;
+        std::transform(lower.begin(), lower.end(), lower.begin(), [](unsigned char c) {
+            return static_cast<char>(std::tolower(c));
+        });
+        const std::string marker_lower = [&]() {
+            std::string tmp = marker;
+            std::transform(tmp.begin(), tmp.end(), tmp.begin(), [](unsigned char c) {
+                return static_cast<char>(std::tolower(c));
+            });
+            return tmp;
+        }();
+        const size_t pos = lower.find(marker_lower);
+        if(pos != std::string::npos)
+        {
+            sanitized.replace(pos, marker.size(), "[filtered]");
+        }
+    }
+    constexpr size_t kMaxToolPayloadChars = 8000;
+    if(sanitized.size() > kMaxToolPayloadChars)
+        sanitized = sanitized.substr(0, kMaxToolPayloadChars) + "...[truncated]";
+    return sanitized;
 }
 
 } // namespace
@@ -732,6 +804,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             invoke.trace_id = req.trace_id;
             invoke.tool_name = call.name;
             invoke.arguments = call.arguments;
+            invoke.idempotency_key =
+                makeIdempotencyKey(req.session_id, req.trace_id, call.name, call.arguments);
             const ConfigurationLifecycleAction call_action = lifecycleActionFromToolName(call.name);
             if(call_action != ConfigurationLifecycleAction::None)
             {
@@ -798,7 +872,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 tool_msg.role = LLMMessage::Role::Tool;
                 tool_msg.tool_call_id = call.id;
                 tool_msg.tool_name = call.name;
-                tool_msg.content = toolGatewayResultForProvider(tr).dump();
+                tool_msg.content = sanitizeUntrustedToolContent(toolGatewayResultForProvider(tr).dump());
                 m_store.appendMessage(req.session_id, tool_msg);
             }
         }
@@ -840,6 +914,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                             retry_req.trace_id = req.trace_id;
                             retry_req.tool_name = call_copy.name;
                             retry_req.arguments = merged;
+                            retry_req.idempotency_key =
+                                makeIdempotencyKey(req.session_id, req.trace_id, call_copy.name, merged);
                             retry_req.session = session;
                             retry_req.user_text_hint = planning_text;
                             const ToolGatewayResult retry_tr = m_gateway.invoke(retry_req);
@@ -870,7 +946,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                                 tool_msg.role = LLMMessage::Role::Tool;
                                 tool_msg.tool_call_id = call_copy.id;
                                 tool_msg.tool_name = call_copy.name;
-                                tool_msg.content = toolGatewayResultForProvider(retry_tr).dump();
+                                tool_msg.content = sanitizeUntrustedToolContent(
+                                    toolGatewayResultForProvider(retry_tr).dump());
                                 m_store.appendMessage(req.session_id, tool_msg);
 
                                 if(isLifecycleWriteToolName(call_copy.name))
@@ -928,7 +1005,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 tool_msg.role = LLMMessage::Role::Tool;
                 tool_msg.tool_call_id = call_copy.id;
                 tool_msg.tool_name = call_copy.name;
-                tool_msg.content = toolGatewayResultForProvider(tr).dump();
+                tool_msg.content = sanitizeUntrustedToolContent(toolGatewayResultForProvider(tr).dump());
                 m_store.appendMessage(req.session_id, tool_msg);
 
                 const LLMToolDefinition* write_def = m_registry.find(call_copy.name);
@@ -1017,6 +1094,8 @@ LLMFinalResponse ULLMAgentOrchestrator::confirmPending(const std::string& sessio
     }
     ToolInvokeRequest req = state.pending->request;
     req.confirmed = true;
+    req.idempotency_key =
+        makeIdempotencyKey(session_id, confirmation_id, req.tool_name, req.arguments);
     const ToolGatewayResult tr = m_gateway.invoke(req);
     m_store.clearPending(session_id);
     final.ok = tr.ok;
@@ -1163,16 +1242,41 @@ LLMFinalResponse ULLMAgentOrchestrator::rollbackPlanExecution(const std::string&
 
     ULLMPlanExecutor executor(m_registry, m_gateway);
     std::string note;
+    const int expected = rollbackEligibleWriteCount(*state.pending_plan);
     const int applied =
         executor.compensateCompletedWrites(*state.pending_plan, session, trace_id, note);
+    std::string rollback_status = "rollback_failed";
+    if(expected == 0)
+        rollback_status = "rolled_back_nothing_to_compensate";
+    else if(applied >= expected)
+        rollback_status = "rolled_back";
+    else if(applied > 0)
+        rollback_status = "partial_rollback";
     GetAuditLog().append("plan_rollback",
-                         {{"plan_id", state.pending_plan->plan_id}, {"applied", applied}, {"note", note}},
+                         {{"plan_id", state.pending_plan->plan_id},
+                          {"applied", applied},
+                          {"expected", expected},
+                          {"status", rollback_status},
+                          {"note", note}},
                          trace_id, session_id);
 
     state.pending_plan.reset();
-    final.ok = applied > 0 || note.empty();
-    final.text = note.empty() ? "Plan discarded (no completed write steps to rollback)."
-                              : "Plan rolled back. " + note;
+    final.ok = rollback_status == "rolled_back" || rollback_status == "rolled_back_nothing_to_compensate";
+    if(rollback_status == "rolled_back")
+        final.text = note.empty() ? "Plan rolled back." : "Plan rolled back. " + note;
+    else if(rollback_status == "rolled_back_nothing_to_compensate")
+        final.text = "Plan discarded (no completed write steps to rollback).";
+    else if(rollback_status == "partial_rollback")
+    {
+        final.text = "Plan rollback partially applied.";
+        final.error = "Only " + std::to_string(applied) + " of " + std::to_string(expected)
+                      + " rollback action(s) succeeded.";
+    }
+    else
+    {
+        final.text = "Plan rollback failed.";
+        final.error = "No rollback actions were applied.";
+    }
     m_store.persistToDisk(session_id);
     setWorkflowPhase(state, LLMWorkflowPhase::Idle, trace_id);
     return final;
@@ -1273,6 +1377,7 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
     invoke.trace_id = trace_id;
     invoke.tool_name = tool_name;
     invoke.arguments = arguments;
+    invoke.idempotency_key = makeIdempotencyKey(session_id, trace_id, tool_name, arguments);
     invoke.session = session;
     invoke.session.session_id = session_id;
     invoke.user_text_hint = user_text_hint;

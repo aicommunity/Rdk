@@ -95,6 +95,120 @@ std::optional<PendingConfirmation> pendingConfirmationFromJson(const nlohmann::j
     return pending;
 }
 
+std::string lifecycleActionToString(ConfigurationLifecycleAction action)
+{
+    switch(action)
+    {
+    case ConfigurationLifecycleAction::Create:
+        return "create";
+    case ConfigurationLifecycleAction::Load:
+        return "load";
+    case ConfigurationLifecycleAction::Save:
+        return "save";
+    case ConfigurationLifecycleAction::None:
+    default:
+        return "none";
+    }
+}
+
+ConfigurationLifecycleAction lifecycleActionFromString(const std::string& value)
+{
+    if(value == "create")
+        return ConfigurationLifecycleAction::Create;
+    if(value == "load")
+        return ConfigurationLifecycleAction::Load;
+    if(value == "save")
+        return ConfigurationLifecycleAction::Save;
+    return ConfigurationLifecycleAction::None;
+}
+
+std::string pendingDisambiguationKindToString(PendingDisambiguationKind kind)
+{
+    switch(kind)
+    {
+    case PendingDisambiguationKind::Class:
+        return "class";
+    case PendingDisambiguationKind::Component:
+        return "component";
+    case PendingDisambiguationKind::None:
+    default:
+        return "none";
+    }
+}
+
+PendingDisambiguationKind pendingDisambiguationKindFromString(const std::string& value)
+{
+    if(value == "class")
+        return PendingDisambiguationKind::Class;
+    if(value == "component")
+        return PendingDisambiguationKind::Component;
+    return PendingDisambiguationKind::None;
+}
+
+nlohmann::json toolArgumentFieldSpecToJson(const ToolArgumentFieldSpec& field)
+{
+    return {{"name", field.name},
+            {"type", field.type},
+            {"description", field.description},
+            {"required", field.required}};
+}
+
+ToolArgumentFieldSpec toolArgumentFieldSpecFromJson(const nlohmann::json& j)
+{
+    ToolArgumentFieldSpec field;
+    field.name = j.value("name", "");
+    field.type = j.value("type", "string");
+    field.description = j.value("description", "");
+    field.required = j.value("required", true);
+    return field;
+}
+
+nlohmann::json pendingToolArgumentsToJson(const PendingToolArguments& pending)
+{
+    nlohmann::json j;
+    j["tool_name"] = pending.tool_name;
+    j["action"] = lifecycleActionToString(pending.action);
+    j["partial_arguments"] = pending.partial_arguments;
+    j["created_at_unix_sec"] = pending.created_at_unix_sec;
+    j["disambiguation_kind"] = pendingDisambiguationKindToString(pending.disambiguation_kind);
+    j["disambiguation_field"] = pending.disambiguation_field;
+    j["disambiguation_candidates"] = pending.disambiguation_candidates;
+    j["class_disambiguation_candidates"] = pending.class_disambiguation_candidates;
+    j["missing_fields"] = nlohmann::json::array();
+    for(const ToolArgumentFieldSpec& field : pending.missing_fields)
+        j["missing_fields"].push_back(toolArgumentFieldSpecToJson(field));
+    return j;
+}
+
+std::optional<PendingToolArguments> pendingToolArgumentsFromJson(const nlohmann::json& j)
+{
+    if(!j.is_object())
+        return std::nullopt;
+    PendingToolArguments pending;
+    pending.tool_name = j.value("tool_name", "");
+    if(pending.tool_name.empty())
+        return std::nullopt;
+    pending.action = lifecycleActionFromString(j.value("action", "none"));
+    pending.partial_arguments = j.value("partial_arguments", nlohmann::json::object());
+    pending.created_at_unix_sec = j.value("created_at_unix_sec", int64_t{0});
+    pending.disambiguation_kind =
+        pendingDisambiguationKindFromString(j.value("disambiguation_kind", "none"));
+    pending.disambiguation_field = j.value("disambiguation_field", "");
+    pending.disambiguation_candidates =
+        j.value("disambiguation_candidates", nlohmann::json::array());
+    pending.class_disambiguation_candidates =
+        j.value("class_disambiguation_candidates", nlohmann::json::array());
+    if(j.contains("missing_fields") && j["missing_fields"].is_array())
+    {
+        for(const nlohmann::json& item : j["missing_fields"])
+        {
+            if(item.is_object())
+                pending.missing_fields.push_back(toolArgumentFieldSpecFromJson(item));
+        }
+    }
+    return pending;
+}
+
 } // namespace
 
 void ULLMConversationStore::setStorageDirectory(const std::string& path)
@@ -183,7 +297,14 @@ bool ULLMConversationStore::loadFromDisk(const std::string& session_id)
         return false;
     std::ifstream in(file);
     nlohmann::json j;
-    in >> j;
+    try
+    {
+        in >> j;
+    }
+    catch(const std::exception&)
+    {
+        return false;
+    }
     ConversationState state;
     state.session_id = j.value("session_id", session_id);
     const std::string phase = j.value("workflow_phase", "Idle");
@@ -216,6 +337,15 @@ bool ULLMConversationStore::loadFromDisk(const std::string& session_id)
         if(auto pending = pendingConfirmationFromJson(j["pending"]))
             state.pending = std::move(*pending);
     }
+    if(j.contains("pending_tool_arguments"))
+    {
+        if(auto pending_args = pendingToolArgumentsFromJson(j["pending_tool_arguments"]))
+            state.pending_tool_arguments = std::move(*pending_args);
+    }
+    else if(j.value("clarification_lost", false))
+    {
+        state.pending_tool_arguments.reset();
+    }
     m_sessions[session_id] = std::move(state);
     return true;
 }
@@ -242,6 +372,8 @@ bool ULLMConversationStore::persistToDisk(const std::string& session_id)
         j["last_user_text_en"] = it->second.last_user_text_en;
     if(it->second.pending)
         j["pending"] = pendingConfirmationToJson(*it->second.pending);
+    if(it->second.pending_tool_arguments)
+        j["pending_tool_arguments"] = pendingToolArgumentsToJson(*it->second.pending_tool_arguments);
     const fs::path file = fs::path(m_storage_dir) / (session_id + ".json");
     std::ofstream out(file);
     if(!out)
@@ -294,11 +426,13 @@ void ULLMConversationStore::setPendingToolArguments(const std::string& session_i
                                                       PendingToolArguments p)
 {
     m_sessions[session_id].pending_tool_arguments = std::move(p);
+    persistToDisk(session_id);
 }
 
 void ULLMConversationStore::clearPendingToolArguments(const std::string& session_id)
 {
     m_sessions[session_id].pending_tool_arguments.reset();
+    persistToDisk(session_id);
 }
 
 bool ULLMConversationStore::expirePendingIfStale(const std::string& session_id, int ttl_seconds)

@@ -113,7 +113,16 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
     if(def->idempotent && !req.idempotency_key.empty())
     {
         if(auto cached = m_idempotency.find(req.idempotency_key))
+        {
+            m_audit.append("tool_idempotency_cache_hit",
+                           {{"tool_name", req.tool_name},
+                            {"idempotency_key", req.idempotency_key}},
+                           req.trace_id, req.session.session_id);
             return *cached;
+        }
+        m_audit.append("tool_idempotency_cache_miss",
+                       {{"tool_name", req.tool_name}, {"idempotency_key", req.idempotency_key}},
+                       req.trace_id, req.session.session_id);
     }
 
     ToolInvokeRequest invoke_req = working_req;
@@ -181,7 +190,12 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
     m_audit.append("tool_invoke_finish", finish, req.trace_id, req.session.session_id);
 
     if(def->idempotent && !req.idempotency_key.empty() && result.ok)
+    {
         m_idempotency.put(req.idempotency_key, result);
+        m_audit.append("tool_idempotency_cached",
+                       {{"tool_name", req.tool_name}, {"idempotency_key", req.idempotency_key}},
+                       req.trace_id, req.session.session_id);
+    }
 
     return result;
 }
