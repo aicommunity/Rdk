@@ -254,6 +254,58 @@ std::string redactSensitiveText(const std::string& text)
     return out;
 }
 
+nlohmann::json guiSnapshotToJson(const LLMGuiContextSnapshot& gui)
+{
+    return {{"channel_index", gui.channel_index},
+            {"project_xml_path", gui.project_xml_path},
+            {"focused_component_long_name", gui.focused_component_long_name},
+            {"focused_class_name", gui.focused_class_name},
+            {"snapshot_fingerprint", gui.snapshot_fingerprint}};
+}
+
+std::optional<LLMGuiContextSnapshot> guiSnapshotFromJson(const nlohmann::json& j)
+{
+    if(!j.is_object())
+        return std::nullopt;
+    LLMGuiContextSnapshot gui;
+    gui.channel_index = j.value("channel_index", 0);
+    gui.project_xml_path = j.value("project_xml_path", "");
+    gui.focused_component_long_name = j.value("focused_component_long_name", "");
+    gui.focused_class_name = j.value("focused_class_name", "");
+    gui.snapshot_fingerprint = j.value("snapshot_fingerprint", int64_t{0});
+    return gui;
+}
+
+nlohmann::json resolvedEntitiesToJson(const std::vector<ResolvedEntityRecord>& records)
+{
+    nlohmann::json arr = nlohmann::json::array();
+    for(const ResolvedEntityRecord& r : records)
+    {
+        arr.push_back({{"kind", r.kind},
+                       {"query_key", r.query_key},
+                       {"canonical_value", r.canonical_value},
+                       {"channel_index", r.channel_index}});
+    }
+    return arr;
+}
+
+void resolvedEntitiesFromJson(const nlohmann::json& j, std::vector<ResolvedEntityRecord>& out)
+{
+    out.clear();
+    if(!j.is_array())
+        return;
+    for(const auto& item : j)
+    {
+        ResolvedEntityRecord r;
+        r.kind = item.value("kind", "");
+        r.query_key = item.value("query_key", "");
+        r.canonical_value = item.value("canonical_value", "");
+        r.channel_index = item.value("channel_index", 0);
+        if(!r.kind.empty() && !r.query_key.empty() && !r.canonical_value.empty())
+            out.push_back(std::move(r));
+    }
+}
+
 } // namespace
 
 void ULLMConversationStore::setStorageDirectory(const std::string& path)
@@ -395,6 +447,15 @@ bool ULLMConversationStore::loadFromDisk(const std::string& session_id)
     {
         state.pending_tool_arguments.reset();
     }
+    state.store_schema_version = j.value("store_schema_version", 1);
+    if(j.contains("last_gui_context"))
+        state.last_gui_context = guiSnapshotFromJson(j["last_gui_context"]);
+    if(j.contains("resolved_entities"))
+        resolvedEntitiesFromJson(j["resolved_entities"], state.resolved_entities);
+    state.agent_notes = j.value("agent_notes", "");
+    state.session_context_seeded = j.value("session_context_seeded", false);
+    if(j.contains("session_summary") && j["session_summary"].is_string())
+        state.session_summary = j["session_summary"].get<std::string>();
     m_sessions[session_id] = std::move(state);
     return true;
 }
@@ -408,6 +469,7 @@ bool ULLMConversationStore::persistToDisk(const std::string& session_id)
         return false;
     fs::create_directories(m_storage_dir);
     nlohmann::json j;
+    j["store_schema_version"] = it->second.store_schema_version;
     j["session_id"] = it->second.session_id;
     j["workflow_phase"] = workflowPhaseName(it->second.workflow_phase);
     j["messages"] = nlohmann::json::array();
@@ -427,6 +489,16 @@ bool ULLMConversationStore::persistToDisk(const std::string& session_id)
         j["pending"] = pendingConfirmationToJson(*it->second.pending);
     if(it->second.pending_tool_arguments)
         j["pending_tool_arguments"] = pendingToolArgumentsToJson(*it->second.pending_tool_arguments);
+    if(it->second.last_gui_context)
+        j["last_gui_context"] = guiSnapshotToJson(*it->second.last_gui_context);
+    if(!it->second.resolved_entities.empty())
+        j["resolved_entities"] = resolvedEntitiesToJson(it->second.resolved_entities);
+    if(!it->second.agent_notes.empty())
+        j["agent_notes"] = it->second.agent_notes;
+    if(it->second.session_context_seeded)
+        j["session_context_seeded"] = true;
+    if(it->second.session_summary && !it->second.session_summary->empty())
+        j["session_summary"] = *it->second.session_summary;
     const fs::path file = fs::path(m_storage_dir) / (session_id + ".json");
     std::ofstream out(file);
     if(!out)

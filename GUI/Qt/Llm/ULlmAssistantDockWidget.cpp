@@ -37,6 +37,34 @@ fs::path toArchivePath(const QString& path)
     return fs::path(path.toStdString());
 }
 
+RDK::LLM::LLMGuiContextSnapshot guiSnapshotFromContext(const LLMGuiContext& ctx)
+{
+    RDK::LLM::LLMGuiContextSnapshot snap;
+    snap.channel_index = ctx.channel_index;
+    snap.project_xml_path = ctx.project_xml_path.toStdString();
+    snap.focused_component_long_name = ctx.focused_component_long_name.toStdString();
+    snap.focused_class_name = ctx.focused_class_name.toStdString();
+    snap.snapshot_fingerprint = ctx.snapshot_fingerprint;
+    return snap;
+}
+
+QString formatContextBudgetLabel(const RDK::LLM::LLMFinalResponse& resp)
+{
+    if(resp.context_messages_chars == 0 && resp.context_ephemeral_chars == 0)
+        return {};
+    const auto scale = [](const std::size_t chars) -> QString {
+        if(chars < 1024)
+            return QString::number(chars) + QLatin1Char('c');
+        return QString::number(chars / 1024) + QLatin1String("k");
+    };
+    QString label = QObject::tr("Context: %1 history + %2 hints")
+                        .arg(scale(resp.context_messages_chars))
+                        .arg(scale(resp.context_ephemeral_chars));
+    if(resp.context_compacted)
+        label += QObject::tr(" (compacted)");
+    return label;
+}
+
 QString rollbackStatusMessage(ULlmAssistantDockWidget* dock, const std::string& status)
 {
     if(status == "rolled_back")
@@ -109,6 +137,9 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     auto* new_chat_btn = new QPushButton(tr("New chat"), this);
     m_history_btn = new QPushButton(tr("History..."), this);
     m_provider_status = new QLabel(this);
+    m_context_budget = new QLabel(this);
+    m_context_budget->setObjectName(QStringLiteral("llmContextBudget"));
+    m_context_budget->setStyleSheet(QStringLiteral("color: palette(mid); font-size: 11px;"));
     m_archive_banner = new QLabel(this);
     m_archive_banner->setVisible(false);
     m_archive_banner->setWordWrap(true);
@@ -119,6 +150,7 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     top_row->addWidget(settings_btn);
     layout->addLayout(top_row);
     layout->addWidget(m_provider_status);
+    layout->addWidget(m_context_budget);
     layout->addWidget(m_archive_banner);
 
     m_history = new QTextEdit(this);
@@ -375,11 +407,21 @@ void ULlmAssistantDockWidget::startNewChat(const QString& system_note)
     setRequestInProgress(false);
     endAssistantStream();
     m_pending_assistant_archive.clear();
+    if(m_context_budget)
+        m_context_budget->clear();
 
     if(!system_note.isEmpty())
     {
         m_history->append(system_note);
         // System banner is not persisted until the first user message opens a file.
+    }
+
+    if(RDK::LLM::LLMServices::instance().isInitialized() && application
+       && application->GetProjectOpenFlag())
+    {
+        const LLMGuiContext ctx = m_bridge ? m_bridge->currentContext() : m_last_ctx;
+        RDK::LLM::LLMServices::instance().orchestrator().seedSessionContext(
+            currentSessionId(), buildSession(ctx), guiSnapshotFromContext(ctx));
     }
 }
 
@@ -542,6 +584,8 @@ void ULlmAssistantDockWidget::onStreamToken(const QString& token)
 void ULlmAssistantDockWidget::onStreamFinished(const RDK::LLM::LLMFinalResponse& resp)
 {
     setRequestInProgress(false);
+    if(m_context_budget)
+        m_context_budget->setText(formatContextBudgetLabel(resp));
     if(m_streaming_reply)
     {
         if(!m_pending_assistant_archive.isEmpty())
@@ -843,6 +887,7 @@ void ULlmAssistantDockWidget::runUserMessage(const QString& text)
     req.trace_id = "gui-trace";
     req.user_text = text.toStdString();
     req.session = buildSession(ctx);
+    req.gui = guiSnapshotFromContext(ctx);
     req.provider_profile = RDK::LLM::LLMServices::instance().activeProviderProfile();
 
     const auto profile = RDK::LLM::LLMServices::instance().activeProviderProfile();

@@ -26,6 +26,7 @@ struct LLMRequestEnvelope {
     std::string user_text;
     LLMSessionContext session;
     LLMProviderProfile provider_profile;
+    LLMGuiContextSnapshot gui;
 };
 
 /// Optional GUI streaming (TD-024). Called from worker thread; marshal to UI thread in callbacks.
@@ -52,6 +53,11 @@ struct LLMFinalResponse {
     bool no_suitable_tool = false;
     /// Explicit rollback status for UI/API handling.
     std::string rollback_status;
+    /// Last provider-round context size (chars), for GUI budget label.
+    std::size_t context_messages_chars = 0;
+    std::size_t context_ephemeral_chars = 0;
+    std::size_t context_manifest_chars = 0;
+    bool context_compacted = false;
 };
 
 class ULLMAgentOrchestrator {
@@ -74,6 +80,9 @@ public:
     bool tryResumeSession(const std::string& session_id);
     void cancel();
     void cancelSession(const std::string& session_id);
+
+    void seedSessionContext(const std::string& session_id, const LLMSessionContext& session,
+                            const LLMGuiContextSnapshot& gui);
 
 private:
     ILLMProvider& m_provider;

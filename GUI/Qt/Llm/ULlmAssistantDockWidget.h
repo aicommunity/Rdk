@@ -84,6 +84,7 @@ private:
     ULlmGuiContextBridge* m_bridge = nullptr;
     QComboBox* m_provider_combo = nullptr;
     QLabel* m_provider_status = nullptr;
+    QLabel* m_context_budget = nullptr;
     QLabel* m_archive_banner = nullptr;
     QLabel* m_request_status = nullptr;
     QProgressBar* m_request_progress = nullptr;

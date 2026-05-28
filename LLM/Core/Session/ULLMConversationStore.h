@@ -18,6 +18,13 @@ struct PendingConfirmation {
     int64_t created_at_unix_sec = 0;
 };
 
+struct ResolvedEntityRecord {
+    std::string kind;
+    std::string query_key;
+    std::string canonical_value;
+    int channel_index = 0;
+};
+
 struct ConversationState {
     std::string session_id;
     std::vector<LLMMessage> messages;
@@ -31,6 +38,12 @@ struct ConversationState {
     bool intent_contract_requires_confirmation_for_writes = true;
     LLMWorkflowPhase workflow_phase = LLMWorkflowPhase::Idle;
     int cloud_provider_rounds = 0;
+    std::optional<LLMGuiContextSnapshot> last_gui_context;
+    std::vector<ResolvedEntityRecord> resolved_entities;
+    std::string agent_notes;
+    bool session_context_seeded = false;
+    std::optional<std::string> session_summary;
+    int store_schema_version = 2;
 };
 
 class ULLMConversationStore {
