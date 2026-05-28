@@ -50,6 +50,7 @@ Bin/Platform/Linux/llm_scenario_runner --tier deterministic --root Rdk/Tests/Fix
 | observability | `obs_policy`, `obs_disabled` | system log tools / env disable |
 | negative | `neg_write_disabled`, `neg_empty_done` | policy / пустой ответ |
 | library (`full`) | `lib_pulse_search` | library doc tools |
+| context | `ctx_gui_focus_hint`, `ctx_multi_turn_entity`, `ctx_session_bootstrap`, `ctx_resume_gui_persist` | GUI snapshot, entity cache, bootstrap seed, persist v2 |
 
 ## Как добавить сценарий
 

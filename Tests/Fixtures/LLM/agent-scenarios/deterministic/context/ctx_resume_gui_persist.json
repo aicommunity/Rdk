@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "ctx_resume_gui_persist",
+  "tier": "deterministic",
+  "suite": "context",
+  "registry_profile": "core",
+  "user_text": "проверка контекста",
+  "session": {
+    "project_loaded": true
+  },
+  "gui": {
+    "focused_component_long_name": "PersistNeuron",
+    "focused_class_name": "Neuron",
+    "project_xml_path": "/tmp/test/project.ini",
+    "channel_index": 1
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "text": "OK"
+    }
+  ],
+  "expect": {
+    "orchestrator_ok": true
+  }
+}

@@ -128,3 +128,33 @@ TEST(LLMSessionPersist, PersistsIntentContractState)
     EXPECT_FLOAT_EQ(loaded.intent_contract_confidence, 0.87f);
     EXPECT_FALSE(loaded.intent_contract_requires_confirmation_for_writes);
 }
+
+TEST(LLMSessionPersist, RoundTripGuiContextV2)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_gui_v2";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+    ConversationState& state = store.getOrCreate("session-gui");
+    state.store_schema_version = 2;
+    LLMGuiContextSnapshot gui;
+    gui.channel_index = 1;
+    gui.focused_component_long_name = "PersistNeuron";
+    gui.focused_class_name = "Neuron";
+    gui.project_xml_path = "/tmp/test/project.ini";
+    state.last_gui_context = gui;
+    state.agent_notes = "## notes\nok";
+    state.session_context_seeded = true;
+    ASSERT_TRUE(store.persistToDisk("session-gui"));
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-gui"));
+    const ConversationState& loaded = *reloaded.findSession("session-gui");
+    ASSERT_TRUE(loaded.last_gui_context.has_value());
+    EXPECT_EQ(loaded.last_gui_context->focused_component_long_name, "PersistNeuron");
+    EXPECT_EQ(loaded.agent_notes, "## notes\nok");
+    EXPECT_TRUE(loaded.session_context_seeded);
+    EXPECT_EQ(loaded.store_schema_version, 2);
+}

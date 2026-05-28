@@ -25,6 +25,13 @@ struct AgentSessionSpec {
     std::string autonomous_mode = "off";
 };
 
+struct AgentGuiSpec {
+    std::string focused_component_long_name;
+    std::string focused_class_name;
+    std::string project_xml_path;
+    int channel_index = 0;
+};
+
 struct AgentScenarioExpect {
     std::optional<bool> orchestrator_ok;
     std::optional<bool> no_suitable_tool;
@@ -41,10 +48,18 @@ struct AgentScenarioExpect {
     std::vector<std::string> final_text_contains;
     std::vector<std::string> final_text_contains_any;
     std::vector<std::string> final_text_not_contains;
+    std::vector<std::string> system_prompt_contains_any;
     std::optional<int> provider_rounds_max;
     std::optional<int> tool_messages_max;
     std::optional<bool> mock_queue_empty;
     std::optional<LLMIntentKind> expect_intent;
+};
+
+struct AgentScenarioTurn {
+    std::string user_text;
+    std::vector<nlohmann::json> mock_script;
+    bool confirm_pending = false;
+    std::optional<AgentScenarioExpect> expect;
 };
 
 struct AgentE2eSpec {
@@ -63,6 +78,8 @@ struct AgentScenarioCase {
     std::string suite;
     RegistryProfile registry_profile = RegistryProfile::Core;
     std::string user_text;
+    std::vector<AgentScenarioTurn> turns;
+    std::optional<AgentGuiSpec> gui;
     AgentSessionSpec session;
     std::map<std::string, std::string> env;
     std::optional<LLMIntentKind> expect_intent;
@@ -76,6 +93,7 @@ struct AgentScenarioCase {
 struct AgentScenarioRun {
     LLMFinalResponse final_response;
     E2eLab::E2eConversationDigest digest;
+    std::string ephemeral_system_text;
     size_t provider_invoke_count = 0;
     size_t mock_queue_remaining = 0;
     size_t tool_message_count = 0;

@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <memory>
+#include <sstream>
 
 #include "Domain/URdkDomainAccess.h"
 #include "Observability/ULLMAuditLog.h"
@@ -77,6 +78,35 @@ LLMCompletionResult completionFromJson(const nlohmann::json& step)
         }
     }
     return r;
+}
+
+std::string collectEphemeralSystemText(const ULLMConversationStore& store,
+                                       const std::string& session_id)
+{
+    std::ostringstream oss;
+    const ConversationState* state = store.findSession(session_id);
+    if(!state)
+        return {};
+    for(const LLMMessage& m : state->messages)
+    {
+        if(m.role == LLMMessage::Role::System)
+            oss << m.content << '\n';
+    }
+    return oss.str();
+}
+
+LLMGuiContextSnapshot guiFromSpec(const std::optional<AgentGuiSpec>& gui,
+                                  const AgentSessionSpec& session)
+{
+    LLMGuiContextSnapshot snap;
+    snap.channel_index = session.active_channel_index;
+    if(!gui)
+        return snap;
+    snap.channel_index = gui->channel_index;
+    snap.focused_component_long_name = gui->focused_component_long_name;
+    snap.focused_class_name = gui->focused_class_name;
+    snap.project_xml_path = gui->project_xml_path;
+    return snap;
 }
 
 } // namespace
@@ -164,8 +194,6 @@ AgentScenarioRun runDeterministicScenario(AgentScenarioHarness& harness,
     registerToolsForProfile(scenario.registry_profile, registry);
     applySessionRuntimeOverrides(scenario.session);
 
-    enqueueMockScript(*harness.mock_provider, scenario.mock_script);
-
     ULLMPolicyEngine policy;
     URdkDomainAccess domain(nullptr);
     ULLMAuditLog audit;
@@ -177,24 +205,41 @@ AgentScenarioRun runDeterministicScenario(AgentScenarioHarness& harness,
 
     const std::string session_id = "agent-scenario-" + scenario.id;
     LLMSessionContext session = sessionFromSpec(scenario.session, session_id);
+    const LLMGuiContextSnapshot gui_snap = guiFromSpec(scenario.gui, scenario.session);
 
-    LLMRequestEnvelope req;
-    req.session_id = session_id;
-    req.trace_id = "trace-" + scenario.id;
-    req.user_text = scenario.user_text;
-    req.session = session;
+    auto run_one_turn = [&](const std::string& user_text,
+                            const std::vector<nlohmann::json>& mock_script, bool confirm_pending) {
+        harness.mock_provider->resetQueue();
+        enqueueMockScript(*harness.mock_provider, mock_script);
+        LLMRequestEnvelope req;
+        req.session_id = session_id;
+        req.trace_id = "trace-" + scenario.id;
+        req.user_text = user_text;
+        req.session = session;
+        req.gui = gui_snap;
+        out.final_response = orch.handleUserMessage(req);
+        if(confirm_pending && out.final_response.pending_confirmation
+           && !out.final_response.pending_confirmation_id.empty())
+        {
+            out.final_response =
+                orch.confirmPending(session_id, out.final_response.pending_confirmation_id);
+        }
+        out.provider_invoke_count += harness.mock_provider->invokeCount();
+        out.mock_queue_remaining = harness.mock_provider->remaining();
+    };
 
-    out.final_response = orch.handleUserMessage(req);
-
-    if(scenario.confirm_pending && out.final_response.pending_confirmation
-       && !out.final_response.pending_confirmation_id.empty())
+    if(!scenario.turns.empty())
     {
-        out.final_response = orch.confirmPending(session_id, out.final_response.pending_confirmation_id);
+        for(const AgentScenarioTurn& turn : scenario.turns)
+            run_one_turn(turn.user_text, turn.mock_script, turn.confirm_pending);
+    }
+    else
+    {
+        run_one_turn(scenario.user_text, scenario.mock_script, scenario.confirm_pending);
     }
 
     out.digest = E2eLab::digestConversation(store, session_id, out.final_response, &registry);
-    out.provider_invoke_count = harness.mock_provider->invokeCount();
-    out.mock_queue_remaining = harness.mock_provider->remaining();
+    out.ephemeral_system_text = collectEphemeralSystemText(store, session_id);
 
     ConversationState& state = store.getOrCreate(session_id);
     for(const LLMMessage& m : state.messages)
@@ -203,7 +248,6 @@ AgentScenarioRun runDeterministicScenario(AgentScenarioHarness& harness,
             ++out.tool_message_count;
     }
 
-    harness.mock_provider = std::make_unique<ULLMMockProvider>();
     return out;
 }
 

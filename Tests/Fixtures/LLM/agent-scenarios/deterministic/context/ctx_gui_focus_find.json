@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "id": "ctx_gui_focus_find",
+  "tier": "deterministic",
+  "suite": "context",
+  "registry_profile": "core",
+  "user_text": "опиши выделенный компонент",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true
+  },
+  "gui": {
+    "focused_component_long_name": "TestNeuron",
+    "focused_class_name": "Neuron",
+    "channel_index": 0
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "find_component",
+          "arguments": {
+            "query": "TestNeuron",
+            "channel_index": 0
+          }
+        }
+      ]
+    },
+    {
+      "text": "Краткий ответ."
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": ["find_component"]
+  }
+}

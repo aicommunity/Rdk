@@ -127,6 +127,7 @@ AgentScenarioExpect parseExpect(const nlohmann::json& j)
     readStringArray(j, "final_text_contains", e.final_text_contains);
     readStringArray(j, "final_text_contains_any", e.final_text_contains_any);
     readStringArray(j, "final_text_not_contains", e.final_text_not_contains);
+    readStringArray(j, "system_prompt_contains_any", e.system_prompt_contains_any);
     if(j.contains("provider_rounds_max"))
         e.provider_rounds_max = j["provider_rounds_max"].get<int>();
     if(j.contains("tool_messages_max"))
@@ -179,6 +180,35 @@ AgentScenarioCase parseScenarioFile(const nlohmann::json& root, const std::strin
     c.expect = parseExpect(root.value("expect", nlohmann::json::object()));
     if(c.expect_intent && !c.expect.expect_intent)
         c.expect.expect_intent = c.expect_intent;
+
+    if(root.contains("gui") && root["gui"].is_object())
+    {
+        AgentGuiSpec gui;
+        const nlohmann::json& gj = root["gui"];
+        gui.focused_component_long_name = gj.value("focused_component_long_name", "");
+        gui.focused_class_name = gj.value("focused_class_name", "");
+        gui.project_xml_path = gj.value("project_xml_path", "");
+        gui.channel_index = gj.value("channel_index", 0);
+        c.gui = gui;
+    }
+
+    if(root.contains("turns") && root["turns"].is_array())
+    {
+        for(const auto& turn_j : root["turns"])
+        {
+            AgentScenarioTurn turn;
+            turn.user_text = turn_j.value("user_text", "");
+            if(turn_j.contains("mock_script") && turn_j["mock_script"].is_array())
+            {
+                for(const auto& step : turn_j["mock_script"])
+                    turn.mock_script.push_back(step);
+            }
+            turn.confirm_pending = turn_j.value("confirm_pending", false);
+            if(turn_j.contains("expect"))
+                turn.expect = parseExpect(turn_j["expect"]);
+            c.turns.push_back(std::move(turn));
+        }
+    }
 
     if(root.contains("e2e") && root["e2e"].is_object())
     {

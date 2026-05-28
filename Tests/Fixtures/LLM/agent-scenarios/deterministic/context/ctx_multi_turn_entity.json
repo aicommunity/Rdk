@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "id": "ctx_multi_turn_entity",
+  "tier": "deterministic",
+  "suite": "context",
+  "registry_profile": "core",
+  "user_text": "placeholder",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true
+  },
+  "gui": {
+    "focused_component_long_name": "Turn2Focus",
+    "channel_index": 0
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "turns": [
+    {
+      "user_text": "первый вопрос",
+      "mock_script": [
+        {
+          "text": "Ответ на первый вопрос."
+        }
+      ]
+    },
+    {
+      "user_text": "второй вопрос про граф",
+      "mock_script": [
+        {
+          "tool_calls": [
+            {
+              "name": "get_net_snapshot",
+              "arguments": {
+                "channel_index": 0,
+                "max_components": 10
+              }
+            }
+          ]
+        },
+        {
+          "text": "Снимок готов."
+        }
+      ]
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": ["get_net_snapshot"],
+    "orchestrator_ok": true
+  }
+}

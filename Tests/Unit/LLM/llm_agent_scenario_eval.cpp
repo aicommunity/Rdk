@@ -205,6 +205,13 @@ AgentScenarioVerdict evaluateDeterministic(const AgentScenarioCase& scenario,
         return v;
     }
 
+    if(!e.system_prompt_contains_any.empty()
+       && !containsAny(run.ephemeral_system_text, e.system_prompt_contains_any))
+    {
+        v.diagnosis = "ephemeral system prompt missing required substring.";
+        return v;
+    }
+
     v.passed = true;
     v.diagnosis = "OK";
     return v;
