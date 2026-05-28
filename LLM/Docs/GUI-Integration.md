@@ -29,6 +29,10 @@ struct LLMGuiContext {
 
 Обновление: bridge подписан на сигналы, **не** опрашивает engine в timer без необходимости.
 
+При Send dock конвертирует `LLMGuiContext` → `LLMGuiContextSnapshot` и заполняет `LLMRequestEnvelope::gui`. Orchestrator сохраняет snapshot в `ConversationState::last_gui_context` и добавляет ephemeral hint `## GUI focus` через `ULLMContextAssembler`.
+
+`seedSessionContext()` вызывается из `startNewChat` / `onProjectLoaded` когда проект открыт (bootstrap system message; optional `get_net_snapshot` при `NMSDK_LLM_SESSION_BOOTSTRAP=1`).
+
 ---
 
 ## 3. `ULlmGuiContextBridge`

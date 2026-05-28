@@ -39,9 +39,17 @@ struct PendingConfirmation {
 
 **Хранение:** `persistToDisk` → `<storage_dir>/<session_id>.json` (в т.ч. `pending`, `pending_plan` со статусами шагов и `last_result`).
 
-`resolved_entities` / `last_gui_context` — **не** в MVP store (entity resolution stateless per call).
+`store_schema_version` 2 fields (see `ULLMConversationStore` JSON):
 
-Persisted session fields include `llm_write_enabled`, `auto_apply_writes`, `allow_cloud_llm` (see `ULLMConversationStore` JSON).
+| Field | Purpose |
+|-------|---------|
+| `last_gui_context` | Last `LLMGuiContextSnapshot` from GUI envelope |
+| `resolved_entities` | Cached component/class resolutions (`kind`, `query_key`, `canonical_value`, `channel_index`) |
+| `agent_notes` | Orchestrator scratchpad (markdown, max 4 KB) |
+| `session_context_seeded` | Bootstrap system block written once per session |
+| `session_summary` | Rule-based compaction artifact (P2) |
+
+Session flags (`llm_write_enabled`, `auto_apply_writes`, …) are passed per request via `LLMSessionContext` in `LLMRequestEnvelope`, not duplicated in session JSON (TD-088).
 
 ---
 

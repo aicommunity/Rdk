@@ -73,13 +73,13 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-036 | Embedding-based dynamic tool routing | post-MVP | P3 | done | Env-gated routing now supports lexical + score-based top-K subset via `ULLMDynamicToolRouter` (`NMSDK_LLM_DYNAMIC_TOOL_ROUTING_TOP_K`) |
 | TD-031 | YAML knowledge manifest + federation | post-MVP | P3 | done | `UYamlKnowledgeCatalog` implemented and federated into `NmsdkBuiltinKnowledgeCatalog` (env/file-driven) |
 | TD-034 | Function-level source chunking (ctags) | post-MVP | P3 | done | Implemented `UDocCtagsChunker` and source function-level indexing in `UDocSearchIndex` (scope=`sources`) |
-| TD-083 | Context compaction + stale tool masking + `.full.jsonl` sidecar | context-P2 | P1 | open | Main P2 deliverable; `can_resolve_now` only after P1 done |
-| TD-084 | `Conversation-State.md` claims persisted session flags not in JSON | context-P0 | P1 | open | `can_resolve_now` at P0.4 docs sweep |
+| TD-083 | Context compaction + stale tool masking + `.full.jsonl` sidecar | context-P2 | P1 | done | `ULLMContextCompactor`, env `NMSDK_LLM_CONTEXT_COMPACT` |
+| TD-084 | `Conversation-State.md` claims persisted session flags not in JSON | context-P0 | P1 | done | Docs synced with store v2 fields |
 | TD-085 | LLM-based session summarize for compactor (v1.1) | context-P2 | P2 | open | v1 rule-based only; `deferred:DD-CTX-002` |
 | TD-086 | `diagram_viewport_scene_rect` in GUI context hints | context-P3 | P3 | open | post-MVP; non-goal MVP |
 | TD-087 | `turn_id` per message in conversation store | post-context-plan | P3 | open | ADR: post-MVP |
 | TD-088 | Persist `LLMSessionContext` snapshot in session JSON (resume parity) | context-P3 | P2 | open | Today flags only in envelope |
-| TD-089 | `Orchestrator.md` / `LLMRequestEnvelope` doc drift (gui_context, retriever) | context-P0 | P1 | open | `can_resolve_now` at P0.4 |
+| TD-089 | `Orchestrator.md` / `LLMRequestEnvelope` doc drift (gui_context, retriever) | context-P0 | P1 | done | Docs + `LLMGuiContextSnapshot` in envelope |
 | TD-090 | Flaky lab Ollama e2e after context-hint changes | context-verify | P2 | open | Per-scenario RCA; see context plan §0.H |
 
 ---

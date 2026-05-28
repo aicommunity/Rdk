@@ -41,11 +41,13 @@ struct LLMRequestEnvelope {
     std::string session_id;
     std::string trace_id;
     std::string user_text;
-    LLMGuiContext gui_context;
+    LLMSessionContext session;
     LLMProviderProfile provider_profile;
-    LLMIntentKind intent_hint;  // Auto | Query | Mutate | Explain
+    LLMGuiContextSnapshot gui;  // portable snapshot from Qt LLMGuiContext
 };
 ```
+
+Ephemeral system blocks (manifest, GUI focus, retriever summary, agent notes, optional RAG prefetch) are assembled by `ULLMContextAssembler` each provider round — not stored in `ConversationState.messages` (except bootstrap / compaction summary).
 
 ---
 
