@@ -6,6 +6,8 @@
 #include "../Orchestrator/ULLMLibraryScopeHint.h"
 #include "../Orchestrator/ULLMLifecycleArgumentGate.h"
 #include "../Session/ULLMConversationStore.h"
+#include "ULLMConnectPortInference.h"
+#include "ULLMNameResolution.h"
 #include "ULLMResolvedEntityStore.h"
 #include "URdkEntityResolver.h"
 
@@ -138,6 +140,17 @@ bool normalizeAddComponentArguments(nlohmann::json& args, URdkDomainAccess& doma
 
     if(have_registry)
     {
+        if(!user_text.empty())
+        {
+            const std::string explicit_class = extractClassNameTokenFromUserText(user_text);
+            if(!explicit_class.empty() && isRegisteredClassName(registered, explicit_class))
+            {
+                args["class_name"] = canonicalRegisteredClassName(registered, explicit_class);
+                fillAddComponentDefaults(args);
+                return true;
+            }
+        }
+
         const std::string class_name = args.value("class_name", "");
         const std::string query = extractClassNameQuery(class_name, user_text);
         if(!query.empty())
@@ -439,80 +452,15 @@ bool resolveConnectPortField(const std::string& field, const std::string& compon
 bool normalizeConnectComponentsArguments(nlohmann::json& arguments, URdkDomainAccess& domain,
                                          int channel_index, WriteArgumentNormalizeResult& out)
 {
-    const std::string from_ln = arguments.value("from_long_name", "");
-    const std::string to_ln = arguments.value("to_long_name", "");
-    if(from_ln.empty() || to_ln.empty())
-        return true;
-
-    std::vector<std::string> from_outputs;
-    std::vector<std::string> from_inputs_unused;
-    DomainStatus st_from =
-        domain.listComponentPubPorts(from_ln, channel_index, from_outputs, from_inputs_unused);
-    if(!st_from.ok())
-    {
-        out.ok = false;
-        out.error_code = "ENTITY_NOT_FOUND";
-        out.message = st_from.message;
-        return false;
-    }
-
-    std::vector<std::string> to_outputs_unused;
-    std::vector<std::string> to_inputs;
-    DomainStatus st_to =
-        domain.listComponentPubPorts(to_ln, channel_index, to_outputs_unused, to_inputs);
-    if(!st_to.ok())
-    {
-        out.ok = false;
-        out.error_code = "ENTITY_NOT_FOUND";
-        out.message = st_to.message;
-        return false;
-    }
-
-    auto tryCatalogFill = [&]() -> bool {
-        std::string from_class;
-        std::string to_class;
-        const DomainStatus fs = domain.getComponentClassName(from_ln, channel_index, from_class);
-        const DomainStatus ts = domain.getComponentClassName(to_ln, channel_index, to_class);
-        if(!fs.ok() || !ts.ok())
-            return false;
-
-        auto candidates = linkPatternCatalog().suggest(from_class, to_class, 3);
-        if(candidates.empty() && from_class.find("Neuron") != std::string::npos
-           && to_class.find("Neuron") != std::string::npos)
-            candidates = linkPatternCatalog().suggest(from_class, to_class, 5);
-        if(candidates.empty())
-            return false;
-
-        const double top = candidates[0].score;
-        const double second = candidates.size() > 1 ? candidates[1].score : 0.0;
-        constexpr double kMinAutoFillScore = 0.6;
-        constexpr double kMinScoreGap = 0.2;
-        if(top < kMinAutoFillScore || (top - second) < kMinScoreGap)
-            return false;
-
-        arguments["from_property"] = candidates[0].from_port;
-        arguments["to_property"] = candidates[0].to_port;
-        out.ok = true;
-        out.error_code.clear();
-        out.message.clear();
-        out.needs_clarification = false;
-        out.clarification = nlohmann::json::object();
-        return true;
-    };
-
-    if(!resolveConnectPortField("from_property", from_ln, from_outputs, true, arguments, out))
-    {
-        if(tryCatalogFill())
-            return true;
-        return false;
-    }
-    if(!resolveConnectPortField("to_property", to_ln, to_inputs, false, arguments, out))
-    {
-        if(tryCatalogFill())
-            return true;
-        return false;
-    }
-    return true;
+    ULinkPatternCatalog catalog = linkPatternCatalog();
+    ConnectPortInferenceResult inf =
+        inferConnectPorts(arguments, domain, catalog, channel_index);
+    out.ok = inf.ok;
+    out.needs_clarification = inf.needs_clarification;
+    out.error_code = inf.error_code;
+    out.message = inf.message;
+    out.clarification = inf.clarification;
+    return inf.ok;
 }
 
 } // namespace
