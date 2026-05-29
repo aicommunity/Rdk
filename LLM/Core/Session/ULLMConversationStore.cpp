@@ -2,6 +2,7 @@
 
 #include "../Orchestrator/ULLMExecutionPlan.h"
 #include "ULLMConfirmationExpiry.h"
+#include "ULLMSessionGraphMemory.h"
 
 #include <fstream>
 
@@ -185,6 +186,52 @@ nlohmann::json toolArgumentFieldSpecToJson(const ToolArgumentFieldSpec& field)
             {"required", field.required}};
 }
 
+std::string quantitySourceToString(QuantitySource source)
+{
+    switch(source)
+    {
+    case QuantitySource::Heuristic:
+        return "heuristic";
+    case QuantitySource::Llm:
+        return "llm";
+    case QuantitySource::None:
+    default:
+        return "none";
+    }
+}
+
+QuantitySource quantitySourceFromString(const std::string& value)
+{
+    if(value == "heuristic")
+        return QuantitySource::Heuristic;
+    if(value == "llm")
+        return QuantitySource::Llm;
+    return QuantitySource::None;
+}
+
+nlohmann::json resolvedQuantityToJson(const ResolvedUserQuantity& q)
+{
+    nlohmann::json j;
+    j["primary"] = q.primary;
+    j["valid"] = q.valid;
+    j["source"] = quantitySourceToString(q.source);
+    if(!q.bound_turn_hash.empty())
+        j["bound_turn_hash"] = q.bound_turn_hash;
+    return j;
+}
+
+ResolvedUserQuantity resolvedQuantityFromJson(const nlohmann::json& j)
+{
+    ResolvedUserQuantity q;
+    if(!j.is_object())
+        return q;
+    q.primary = std::max(1, j.value("primary", 1));
+    q.valid = j.value("valid", false);
+    q.source = quantitySourceFromString(j.value("source", "none"));
+    q.bound_turn_hash = j.value("bound_turn_hash", "");
+    return q;
+}
+
 ToolArgumentFieldSpec toolArgumentFieldSpecFromJson(const nlohmann::json& j)
 {
     ToolArgumentFieldSpec field;
@@ -206,6 +253,8 @@ nlohmann::json pendingToolArgumentsToJson(const PendingToolArguments& pending)
     j["disambiguation_field"] = pending.disambiguation_field;
     j["disambiguation_candidates"] = pending.disambiguation_candidates;
     j["class_disambiguation_candidates"] = pending.class_disambiguation_candidates;
+    if(pending.requested_repeat_count > 1)
+        j["requested_repeat_count"] = pending.requested_repeat_count;
     j["missing_fields"] = nlohmann::json::array();
     for(const ToolArgumentFieldSpec& field : pending.missing_fields)
         j["missing_fields"].push_back(toolArgumentFieldSpecToJson(field));
@@ -230,6 +279,8 @@ std::optional<PendingToolArguments> pendingToolArgumentsFromJson(const nlohmann:
         j.value("disambiguation_candidates", nlohmann::json::array());
     pending.class_disambiguation_candidates =
         j.value("class_disambiguation_candidates", nlohmann::json::array());
+    pending.requested_repeat_count =
+        std::max(1, j.value("requested_repeat_count", j.value("requested_add_count", 1)));
     if(j.contains("missing_fields") && j["missing_fields"].is_array())
     {
         for(const nlohmann::json& item : j["missing_fields"])
@@ -429,6 +480,8 @@ bool ULLMConversationStore::loadFromDisk(const std::string& session_id)
     }
     state.last_user_text_original = j.value("last_user_text_original", "");
     state.last_user_text_en = j.value("last_user_text_en", "");
+    if(j.contains("last_quantity"))
+        state.last_quantity = resolvedQuantityFromJson(j["last_quantity"]);
     state.intent_contract_kind = intentKindFromString(j.value("intent_contract_kind", "auto"));
     state.intent_contract_confidence = j.value("intent_contract_confidence", 0.0f);
     state.intent_contract_requires_confirmation_for_writes =
@@ -458,6 +511,8 @@ bool ULLMConversationStore::loadFromDisk(const std::string& session_id)
         state.session_summary = j["session_summary"].get<std::string>();
     if(j.contains("last_session_context"))
         state.last_session_context = sessionContextFromJson(j["last_session_context"]);
+    if(j.contains("session_graph"))
+        state.session_graph = sessionGraphMemoryFromJson(j["session_graph"]);
     m_sessions[session_id] = std::move(state);
     return true;
 }
@@ -483,6 +538,8 @@ bool ULLMConversationStore::persistToDisk(const std::string& session_id)
         j["last_user_text_original"] = it->second.last_user_text_original;
     if(!it->second.last_user_text_en.empty())
         j["last_user_text_en"] = it->second.last_user_text_en;
+    if(it->second.last_quantity.valid || it->second.last_quantity.source != QuantitySource::None)
+        j["last_quantity"] = resolvedQuantityToJson(it->second.last_quantity);
     j["intent_contract_kind"] = intentKindToString(it->second.intent_contract_kind);
     j["intent_contract_confidence"] = it->second.intent_contract_confidence;
     j["intent_contract_requires_confirmation_for_writes"] =
@@ -503,6 +560,10 @@ bool ULLMConversationStore::persistToDisk(const std::string& session_id)
         j["session_summary"] = *it->second.session_summary;
     if(it->second.last_session_context)
         j["last_session_context"] = sessionContextToJson(*it->second.last_session_context);
+    if(!it->second.session_graph.added_long_names.empty()
+       || !it->second.session_graph.linked_records.empty()
+       || it->second.session_graph.last_template.has_value())
+        j["session_graph"] = sessionGraphMemoryToJson(it->second.session_graph);
     const fs::path file = fs::path(m_storage_dir) / (session_id + ".json");
     std::ofstream out(file);
     if(!out)

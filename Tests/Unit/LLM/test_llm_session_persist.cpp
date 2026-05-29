@@ -83,6 +83,58 @@ TEST(LLMSessionPersist, RoundTripPendingToolArguments)
     EXPECT_EQ(loaded.pending_tool_arguments->missing_fields.front().name, "class_name");
 }
 
+TEST(LLMSessionPersist, RoundTripPendingToolArgumentsRequestedAddCount)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_pending_add_count";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+    ConversationState& state = store.getOrCreate("session-add-count");
+    state.session_id = "session-add-count";
+
+    PendingToolArguments pending;
+    pending.tool_name = "add_component";
+    pending.partial_arguments = {{"class_name", "NLPNeuron"}, {"short_name", "N1"}};
+    pending.requested_repeat_count = 3;
+    pending.created_at_unix_sec = 99;
+    store.setPendingToolArguments("session-add-count", pending);
+    ASSERT_TRUE(store.persistToDisk("session-add-count"));
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-add-count"));
+    ASSERT_TRUE(reloaded.getOrCreate("session-add-count").pending_tool_arguments.has_value());
+    EXPECT_EQ(
+        reloaded.getOrCreate("session-add-count").pending_tool_arguments->requested_repeat_count,
+        3);
+}
+
+TEST(LLMSessionPersist, RoundTripLastQuantity)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_last_quantity";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+    ConversationState& state = store.getOrCreate("session-qty");
+    state.session_id = "session-qty";
+    state.last_quantity.valid = true;
+    state.last_quantity.primary = 6;
+    state.last_quantity.source = QuantitySource::Heuristic;
+    state.last_quantity.bound_turn_hash = "abc";
+    ASSERT_TRUE(store.persistToDisk("session-qty"));
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-qty"));
+    const ConversationState& loaded = reloaded.getOrCreate("session-qty");
+    EXPECT_TRUE(loaded.last_quantity.valid);
+    EXPECT_EQ(loaded.last_quantity.primary, 6);
+    EXPECT_EQ(loaded.last_quantity.source, QuantitySource::Heuristic);
+    EXPECT_EQ(loaded.last_quantity.bound_turn_hash, "abc");
+}
+
 TEST(LLMSessionPersist, RedactsSensitiveMessageContentOnPersist)
 {
     const std::string dir = "/tmp/rdk_llm_sessions_redaction";

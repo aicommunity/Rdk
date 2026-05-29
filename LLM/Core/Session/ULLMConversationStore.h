@@ -7,7 +7,9 @@
 #include "../LlmTypes.h"
 #include "../Orchestrator/ULLMExecutionPlan.h"
 #include "../Orchestrator/ULLMLifecycleArgumentGate.h"
+#include "../Orchestrator/ULLMQuantityTypes.h"
 #include "../Orchestrator/ULLMWorkflowState.h"
+#include "ULLMSessionGraphMemory.h"
 
 namespace RDK::LLM {
 
@@ -33,6 +35,7 @@ struct ConversationState {
     std::optional<ULLMExecutionPlan> pending_plan;
     std::string last_user_text_original;
     std::string last_user_text_en;
+    ResolvedUserQuantity last_quantity;
     LLMIntentKind intent_contract_kind = LLMIntentKind::Auto;
     float intent_contract_confidence = 0.0f;
     bool intent_contract_requires_confirmation_for_writes = true;
@@ -45,6 +48,7 @@ struct ConversationState {
     std::optional<std::string> session_summary;
     /// Last `LLMSessionContext` from an orchestrator entry (resume parity, TD-088).
     std::optional<LLMSessionContext> last_session_context;
+    SessionGraphMemory session_graph;
     int store_schema_version = 2;
 };
 
