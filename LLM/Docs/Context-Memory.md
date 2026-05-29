@@ -41,7 +41,9 @@ Runtime setting `context_acquisition_mode` (Qt AI settings / `ULLMSettingsStore`
 
 Signals come from `buildContextAcquisitionSignals` (intent, mutate subkind, connect class pair from pending slots / `parseConnectGoal`, retrieval query). Each round logs `context_acquired` with the block list actually injected.
 
-**Retriever (DD-CTX-004):** `URdkContextRetriever` runs when the user has **list focus** (`focused_class_name` / `focused_component_long_name`) or **diagram scope** is set; otherwise the retriever summary is skipped unless `allow_retriever_without_list_focus` is true (diagram scope on a loaded project).
+**Retriever (DD-CTX-004):** `URdkContextRetriever` runs when the user has **list focus** (`focused_class_name` / `focused_component_long_name`) or **diagram scope** is set (`diagram_scope_long_name` on the modern diagram widget). On a loaded project, diagram scope alone is enough for a subtree snapshot without selecting a component in the list.
+
+**Doc prefetch (DD-CTX-003):** enabled for Query when `NMSDK_LLM_QUERY_PREFETCH_DOCS=1`; for Mutate only when `NMSDK_LLM_CONTEXT_PREFETCH_DOCS=1` (both off by default).
 
 Index-backed catalog blocks (`ULLMIndexCatalogs`, `ULLMContextKnowledgeBlocks`) are merged in the assembler for connect/add goals without hardcoded component paths in Core.
 

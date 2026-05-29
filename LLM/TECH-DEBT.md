@@ -110,6 +110,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 |----|------|-------------|------------|
 | TD-119 | Manual GUI walkthrough: selection + connect after agent-quality | 2026-05-29 | `Test_LLM_TD041WalkthroughSim`, deterministic agent matrix (`link_*`), HITL fix `d4f631f7`; optional human GUI spot-check |
 | TD-128 | Dialog slot merge false connect on «add X to the model» | 2026-05-29 | `d4f631f7`: pair_re guard, disconnect routing, pre-gateway audit |
+| TD-129 | Validate EN phrasing + observability tools in Query filter | 2026-05-29 | `f94a7dec`: `isValidateConfigurationGoalText`, `get_system_log_policy` in filter |
 | TD-120 | Remove hardcoded connect paths in Core ephemeral/heuristics | 2026-05-29 | `f3f4cc0b`: KnowledgeBlocks, acquisition policy, no LTZone in Core |
 | TD-121 | Context acquisition policy + catalog blocks in ephemeral | 2026-05-29 | `f3f4cc0b`: `computeContextAcquisitionPlan`, retriever diagram scope |
 | TD-122 | diagram_scope_long_name GUI + add parent parity | 2026-05-29 | `3c5b615f`: diagramScopeChanged, normalizer parent |
@@ -203,8 +204,8 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | 2026-05-26 | Deliver read-path class disambiguation first in phase C | `describe_class` now resolves fuzzy/CI names; schema gaps (`root_long_name`, `library_filter`) deferred explicitly | — | TD-054/055/056 |
 | 2026-05-28 | DD-CTX-001: Ephemeral hints via `ULLMContextAssembler`, not stored in `messages` (except bootstrap/summary) | Avoid persist bloat; match current manifest behavior | — | — |
 | 2026-05-28 | DD-CTX-002: Compactor default = rule-based; optional LLM summarize | Deterministic CI default; cost when `NMSDK_LLM_CONTEXT_COMPACT_LLM=1` | — | TD-085 done |
-| 2026-05-28 | DD-CTX-003: Query RAG prefetch off by default | Avoid duplicate with `search_project_docs` tool | context-P2 | Metrics: redundant doc tool calls |
-| 2026-05-28 | DD-CTX-004: `URdkContextRetriever` only when GUI focus non-empty | Token/latency control | context-P0 | User feedback on cold-start |
+| 2026-05-28 | DD-CTX-003: Query RAG prefetch off by default; Mutate prefetch only via `NMSDK_LLM_CONTEXT_PREFETCH_DOCS=1` | Avoid duplicate with `search_project_docs` tool | context-P2 | Metrics: redundant doc tool calls |
+| 2026-05-28 | DD-CTX-004: Retriever when list focus **or** `diagram_scope_long_name` (not focus-only) | Token/latency; drill-level context without list selection | chat-22-15-PR1 | Implemented 2026-05-29 (`allow_retriever_without_list_focus`) |
 | 2026-05-28 | DD-CTX-005: Single `TECH-DEBT.md` for all context work (no second file) | Repo convention since 2026-05-25 | — | — |
 | 2026-05-29 | DD-UT-001: Task path default HintOnly; FastPath CI-only | Agent-first; avoid hard planner fail | — | `NMSDK_LLM_TASK_PATH_STRICT` |
 | 2026-05-29 | DD-UT-002: `ask_user` vs legacy disambiguation coexist | Gradual GUI migration | phase-C | TD-093 |

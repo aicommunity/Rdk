@@ -672,7 +672,7 @@ DomainStatus URdkDomainAccess::connectComponents(const std::string& from_long_na
             << from_property << "\"); to_property must be a published input on \"" << to_long_name
             << "\" (got \"" << to_property
             << "\"). Use get_component_properties to list ports, or specify exact port names "
-               "(e.g. Soma1.ExcSynapse1).";
+               "(e.g. ComponentName.PortName).";
         return {DomainStatusCode::LinkFailed, msg.str()};
     }
     refreshDiagramPresentation(m_sink);
