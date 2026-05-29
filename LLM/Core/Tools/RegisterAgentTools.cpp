@@ -1,6 +1,6 @@
 #include "RegisterAgentTools.h"
 
-#include "ULLMSearchTools.h"
+#include "ULLMEmbeddingToolRouter.h"
 #include "ULLMToolRegistry.h"
 
 namespace RDK::LLM {
@@ -68,8 +68,7 @@ void RegisterAgentTools(ULLMToolRegistry& registry)
             ToolGatewayResult r;
             const std::string query = args.value("query", "");
             const int top_k = args.value("top_k", 12);
-            const SearchToolsResult found =
-                searchToolsByQuery(*registry_ptr, query, top_k);
+            const SearchToolsResult found = searchToolsHybrid(*registry_ptr, query, top_k);
             r.ok = true;
             r.result = {{"query", found.query},
                         {"index_version", found.index_version},
