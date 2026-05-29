@@ -79,7 +79,13 @@ ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UAp
     m_task_path_mode->addItem(tr("Hint only (agent ReAct fallback)"), QStringLiteral("hint_only"));
     m_task_path_mode->addItem(tr("Fast path (deterministic task executor)"),
                               QStringLiteral("fast_path"));
-    layout->addWidget(new QLabel(tr("Task path mode:"), this));
+    auto* task_path_label = new QLabel(tr("Task path mode:"), this);
+    task_path_label->setToolTip(
+        tr("Hint only: deterministic task planner suggests steps; the agent ReAct loop still runs. "
+           "Fast path: execute task plan immediately when confidence is high (strict: env "
+           "NMSDK_LLM_TASK_PATH_STRICT=1)."));
+    layout->addWidget(task_path_label);
+    m_task_path_mode->setToolTip(task_path_label->toolTip());
     layout->addWidget(m_task_path_mode);
 
     m_translate_queries_to_en =

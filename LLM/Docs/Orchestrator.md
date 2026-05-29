@@ -4,6 +4,12 @@ Normative flow: [Developer-Architecture.md](Developer-Architecture.md) §4.
 
 ## 1. `ULLMAgentOrchestrator`
 
+Agent v2: единый turn pipeline, workflow phases, `TurnTerminal` на `LLMFinalResponse` (`Completed`, `Cancelled`, `AwaitingUser`, …). См. [Unified-Turn-Contract.md](Unified-Turn-Contract.md).
+
+Audit: `tool_loop_entered` при входе в обработку `tool_calls`; `model_route_selected` для tier Router/Cortex (`ULLMModelRouter`).
+
+Lifecycle: soft hints через ephemeral context; pre-LLM direct и forced `tool_choice` — только при env (`NMSDK_LLM_LIFECYCLE_DIRECT`, `NMSDK_LLM_LIFECYCLE_FORCE_TOOL_CHOICE`).
+
 Центральный класс. Зависимости (inject):
 
 - `ILLMProvider&`
