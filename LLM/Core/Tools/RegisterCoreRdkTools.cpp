@@ -346,16 +346,20 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                 true),
         [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
             ToolGatewayResult r;
+            bool already_existed = false;
             DomainStatus st = domain_access->connectComponents(
                 args.at("from_long_name").get<std::string>(),
                 args.at("from_property").get<std::string>(),
                 args.at("to_long_name").get<std::string>(),
-                args.at("to_property").get<std::string>(), args.value("channel_index", 0));
+                args.at("to_property").get<std::string>(), args.value("channel_index", 0),
+                &already_existed);
             r.ok = st.ok();
             r.result["from_long_name"] = args.at("from_long_name");
             r.result["from_property"] = args.at("from_property");
             r.result["to_long_name"] = args.at("to_long_name");
             r.result["to_property"] = args.at("to_property");
+            if(already_existed)
+                r.result["already_existed"] = true;
             if(!r.ok)
             {
                 r.error_code = "DomainError";

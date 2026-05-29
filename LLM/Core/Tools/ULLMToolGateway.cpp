@@ -199,6 +199,8 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
     nlohmann::json finish = {{"tool_name", req.tool_name},
                              {"ok", result.ok},
                              {"error", result.message}};
+    if(req.tool_name == "connect_components" && result.result.value("already_existed", false))
+        finish["connect_components_skipped_existing"] = true;
     if(result.result.contains(kAuditConfigurationPathKey))
         finish["configuration_path"] = result.result[kAuditConfigurationPathKey];
     if(result.result.contains(kAuditPresentationEffectKey))

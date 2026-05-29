@@ -71,7 +71,8 @@ public:
                                    const std::string& from_property,
                                    const std::string& to_long_name,
                                    const std::string& to_property,
-                                   int channel_index);
+                                   int channel_index,
+                                   bool* already_existed_out = nullptr);
     DomainStatus breakComponentLink(const std::string& from_long_name,
                                     const std::string& from_property,
                                     const std::string& to_long_name,
