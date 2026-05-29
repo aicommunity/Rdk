@@ -1,5 +1,6 @@
 #include "RegisterAgentTools.h"
 
+#include "ULLMSearchTools.h"
 #include "ULLMToolRegistry.h"
 
 namespace RDK::LLM {
@@ -22,6 +23,7 @@ LLMToolDefinition agentToolDef(const std::string& name, const std::string& desc,
 
 void RegisterAgentTools(ULLMToolRegistry& registry)
 {
+    ULLMToolRegistry* registry_ptr = &registry;
     registry.registerTool(
         agentToolDef("ask_user",
                      "Ask the user a clarifying question. Orchestrator pauses until the user replies.",
@@ -62,10 +64,16 @@ void RegisterAgentTools(ULLMToolRegistry& registry)
                       {"required", {"query"}},
                       {"properties", {{"query", {{"type", "string"}}}, {"top_k", {{"type", "integer"}}}}},
                       {"additionalProperties", false}}),
-        [](const nlohmann::json& args) -> ToolGatewayResult {
+        [registry_ptr](const nlohmann::json& args) -> ToolGatewayResult {
             ToolGatewayResult r;
+            const std::string query = args.value("query", "");
+            const int top_k = args.value("top_k", 12);
+            const SearchToolsResult found =
+                searchToolsByQuery(*registry_ptr, query, top_k);
             r.ok = true;
-            r.result = {{"query", args.value("query", "")}, {"tools", nlohmann::json::array()}};
+            r.result = {{"query", found.query},
+                        {"index_version", found.index_version},
+                        {"tools", found.tools}};
             return r;
         });
 

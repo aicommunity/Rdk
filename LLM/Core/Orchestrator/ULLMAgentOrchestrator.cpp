@@ -252,6 +252,14 @@ bool extractAmbiguousFindComponent(const ToolGatewayResult& tr, nlohmann::json& 
     return candidates_out.size() > 1;
 }
 
+bool clarifyInLoopEnabled()
+{
+    const char* v = std::getenv("NMSDK_LLM_CLARIFY_IN_LOOP");
+    if(!v)
+        return true;
+    return v[0] != '0' && std::strcmp(v, "false") != 0 && std::strcmp(v, "FALSE") != 0;
+}
+
 bool extractToolDisambiguationPayload(const ToolGatewayResult& tr, nlohmann::json& payload_out)
 {
     if(!tr.result.is_object() || !tr.result.value("ambiguous", false))
@@ -1341,7 +1349,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 SubagentRunRequest sreq;
                 sreq.task = call.arguments.value("task", std::string());
                 const SubagentRunResult sres =
-                    runner.runExplore(sreq, req.trace_id, req.session_id);
+                    runner.runExplore(sreq, req.trace_id, req.session_id, session);
                 ToolGatewayResult tr;
                 tr.ok = sres.ok;
                 tr.result = {{"summary", sres.summary}};
@@ -1411,10 +1419,10 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 if(extractToolDisambiguationPayload(tr, disambiguation))
                 {
                     if(disambiguation.value("kind", "") == "class")
-                        return returnDisambiguationRequest(
+                        return routeClarificationOrDisambiguation(
                             state, req.trace_id, call, PendingDisambiguationKind::Class,
                             "class_name", disambiguation);
-                    return returnDisambiguationRequest(
+                    return routeClarificationOrDisambiguation(
                         state, req.trace_id, call, PendingDisambiguationKind::Component,
                         disambiguation.value("field", "long_name"), disambiguation);
                 }
@@ -1437,12 +1445,12 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 nlohmann::json disambiguation_early;
                 if(extractToolDisambiguationPayload(tr, disambiguation_early)
                    && disambiguation_early.value("kind", "") == "class")
-                    return returnDisambiguationRequest(
+                    return routeClarificationOrDisambiguation(
                         state, req.trace_id, call_copy, PendingDisambiguationKind::Class,
                         "class_name", disambiguation_early);
                 if(extractToolDisambiguationPayload(tr, disambiguation_early)
                    && disambiguation_early.value("kind", "") == "component")
-                    return returnDisambiguationRequest(
+                    return routeClarificationOrDisambiguation(
                         state, req.trace_id, call_copy, PendingDisambiguationKind::Component,
                         disambiguation_early.value("field", "long_name"), disambiguation_early);
                 const std::vector<ToolArgumentFieldSpec> invoke_missing =
@@ -1562,10 +1570,10 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 if(extractToolDisambiguationPayload(tr, disambiguation))
                 {
                     if(disambiguation.value("kind", "") == "class")
-                        return returnDisambiguationRequest(
+                        return routeClarificationOrDisambiguation(
                             state, req.trace_id, call_copy, PendingDisambiguationKind::Class,
                             "class_name", disambiguation);
-                    return returnDisambiguationRequest(
+                    return routeClarificationOrDisambiguation(
                         state, req.trace_id, call_copy, PendingDisambiguationKind::Component,
                         disambiguation.value("field", "long_name"), disambiguation);
                 }
@@ -1976,6 +1984,60 @@ LLMFinalResponse ULLMAgentOrchestrator::returnDisambiguationRequest(
     return final;
 }
 
+LLMFinalResponse ULLMAgentOrchestrator::returnClarificationViaAskUser(
+    ConversationState& state, const std::string& trace_id, const LLMToolCall& call,
+    PendingDisambiguationKind kind, const std::string& field_name,
+    const nlohmann::json& disambiguation)
+{
+    LLMFinalResponse final = returnDisambiguationRequest(state, trace_id, call, kind, field_name,
+                                                         disambiguation);
+    final.needs_argument_clarification = false;
+    final.needs_tool_disambiguation = false;
+    final.needs_entity_clarification = false;
+
+    const std::string prompt = formatClarificationMessage(disambiguation);
+    PendingUserQuestion pq;
+    pq.question_id = call.id.empty() ? trace_id : call.id;
+    pq.prompt = prompt;
+    pq.allow_free_text = true;
+    const nlohmann::json candidates = disambiguation.value("candidates", nlohmann::json::array());
+    if(candidates.is_array())
+    {
+        for(const auto& c : candidates)
+        {
+            if(kind == PendingDisambiguationKind::Class && c.is_object()
+               && c.contains("class_name"))
+                pq.choices.push_back(c["class_name"].get<std::string>());
+            else if(c.is_object() && c.contains("long_name"))
+                pq.choices.push_back(c["long_name"].get<std::string>());
+            else if(c.is_string())
+                pq.choices.push_back(c.get<std::string>());
+        }
+    }
+    state.pending_user_question = std::move(pq);
+    setWorkflowPhase(state, LLMWorkflowPhase::AwaitingUserInput, trace_id);
+    final.awaiting_user_input = true;
+    final.pending_question_id = state.pending_user_question->question_id;
+    final.user_choice_options = state.pending_user_question->choices;
+    final.text = prompt;
+    GetAuditLog().append("clarify_via_ask_user",
+                         {{"tool_name", call.name}, {"question_id", final.pending_question_id}},
+                         trace_id, state.session_id);
+    m_store.persistToDisk(state.session_id);
+    return final;
+}
+
+LLMFinalResponse ULLMAgentOrchestrator::routeClarificationOrDisambiguation(
+    ConversationState& state, const std::string& trace_id, const LLMToolCall& call,
+    PendingDisambiguationKind kind, const std::string& field_name,
+    const nlohmann::json& disambiguation)
+{
+    if(clarifyInLoopEnabled())
+        return returnClarificationViaAskUser(state, trace_id, call, kind, field_name,
+                                             disambiguation);
+    return returnDisambiguationRequest(state, trace_id, call, kind, field_name, disambiguation);
+}
+
 LLMFinalResponse ULLMAgentOrchestrator::returnArgumentRequest(ConversationState& state,
                                                               const std::string& trace_id,
                                                               const PendingToolArguments& pending_in,
@@ -2042,9 +2104,9 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
         LLMToolCall call;
         call.name = tool_name;
         call.arguments = arguments;
-        LLMFinalResponse final = returnDisambiguationRequest(
-            state, trace_id, call, PendingDisambiguationKind::Class, "class_name", disambiguation);
-        return final;
+        return routeClarificationOrDisambiguation(state, trace_id, call,
+                                                PendingDisambiguationKind::Class, "class_name",
+                                                disambiguation);
     }
     if(extractToolDisambiguationPayload(tr, disambiguation)
        && disambiguation.value("kind", "") == "component")
@@ -2052,10 +2114,9 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
         LLMToolCall call;
         call.name = tool_name;
         call.arguments = arguments;
-        LLMFinalResponse final = returnDisambiguationRequest(
+        return routeClarificationOrDisambiguation(
             state, trace_id, call, PendingDisambiguationKind::Component,
             disambiguation.value("field", "long_name"), disambiguation);
-        return final;
     }
 
     if(!tr.ok && tool_name == "add_component"

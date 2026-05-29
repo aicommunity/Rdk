@@ -193,6 +193,12 @@ RDK::LLM::LLMRuntimeProviderSettings ULlmQtProviderSettingsSource::load() const
     runtime.translate_queries_to_en =
         settings.value(QStringLiteral("LLM/translate_queries_to_en"), true).toBool();
 
+    const QString task_path =
+        settings.value(QStringLiteral("LLM/task_path_mode"), QStringLiteral("hint_only")).toString();
+    runtime.task_path_mode = task_path == QStringLiteral("fast_path")
+                                 ? RDK::LLM::LLMTaskPathMode::FastPath
+                                 : RDK::LLM::LLMTaskPathMode::HintOnly;
+
     runtime.preferred_response_language =
         settings.value(QStringLiteral("LLM/preferred_response_language"), QString())
             .toString()
@@ -236,6 +242,10 @@ void ULlmQtProviderSettingsSource::save(const RDK::LLM::LLMRuntimeProviderSettin
     qsettings.setValue(QStringLiteral("LLM/max_autonomous_steps"), settings.max_autonomous_steps);
     qsettings.setValue(QStringLiteral("LLM/translate_queries_to_en"),
                        settings.translate_queries_to_en);
+    qsettings.setValue(QStringLiteral("LLM/task_path_mode"),
+                       settings.task_path_mode == RDK::LLM::LLMTaskPathMode::FastPath
+                           ? QStringLiteral("fast_path")
+                           : QStringLiteral("hint_only"));
     qsettings.setValue(QStringLiteral("LLM/preferred_response_language"),
                        QString::fromStdString(settings.preferred_response_language));
     qsettings.setValue(QStringLiteral("LLM/send_shortcut"),

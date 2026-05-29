@@ -106,6 +106,11 @@ void ULLMSettingsStore::setTranslateQueriesToEn(bool enabled)
     m_runtime.translate_queries_to_en = enabled;
 }
 
+void ULLMSettingsStore::setTaskPathMode(const LLMTaskPathMode mode)
+{
+    m_runtime.task_path_mode = mode;
+}
+
 void ULLMSettingsStore::setPreferredResponseLanguage(const std::string& code)
 {
     m_runtime.preferred_response_language = code;

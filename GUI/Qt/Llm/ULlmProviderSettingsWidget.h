@@ -47,6 +47,7 @@ private:
     QCheckBox* m_translate_queries_to_en = nullptr;
     QComboBox* m_response_language = nullptr;
     QComboBox* m_send_shortcut = nullptr;
+    QComboBox* m_task_path_mode = nullptr;
     QLabel* m_status = nullptr;
 };
 

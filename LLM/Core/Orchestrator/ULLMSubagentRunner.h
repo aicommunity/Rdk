@@ -24,7 +24,8 @@ public:
     ULLMSubagentRunner(ILLMProvider& provider, ULLMToolRegistry& registry, ULLMToolGateway& gateway);
 
     SubagentRunResult runExplore(const SubagentRunRequest& req, const std::string& trace_id,
-                                 const std::string& session_id);
+                                 const std::string& session_id,
+                                 const LLMSessionContext& session);
 
 private:
     ILLMProvider& m_provider;

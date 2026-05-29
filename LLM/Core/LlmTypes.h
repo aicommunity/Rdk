@@ -29,6 +29,8 @@ enum class LLMToolKind { Read, Write };
 
 enum class LLMIntentKind { Auto, Query, Mutate, Explain, Plan };
 
+enum class LLMTaskPathMode { HintOnly, FastPath };
+
 /// Scenario D: configurable multi-step autonomy (Post-MVP). Default Off.
 enum class LLMAutonomousMode { Off, Strict, SemiAuto };
 
@@ -151,6 +153,8 @@ struct LLMRuntimeProviderSettings {
     bool quantity_llm_fallback = false;
     /// Optional fallback for connect-plan construction when deterministic builder fails.
     bool connect_plan_llm_fallback = false;
+    /// Task executor fast-path (default hint-only; fast_path mirrors CI strict mode).
+    LLMTaskPathMode task_path_mode = LLMTaskPathMode::HintOnly;
     std::map<std::string, std::string> api_keys_by_profile_id;
     /// Per-profile endpoint overrides (empty fields → use built-in preset).
     std::map<std::string, LLMProfileEndpointOverride> endpoint_overrides_by_profile_id;

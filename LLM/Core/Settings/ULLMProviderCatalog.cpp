@@ -28,6 +28,16 @@ std::vector<LLMProviderProfile> ULLMProviderCatalog::builtInProfiles()
     ollama_native.prefer_local = true;
     profiles.push_back(ollama_native);
 
+    LLMProviderProfile ollama_lite;
+    ollama_lite.profile_id = "ollama-lite";
+    ollama_lite.kind = LLMProviderKind::OllamaOpenAICompat;
+    ollama_lite.base_url = "http://127.0.0.1:11434/v1";
+    ollama_lite.model = "qwen2.5:7b";
+    ollama_lite.chat_template = OllamaChatTemplateFamily::Qwen2;
+    ollama_lite.is_cloud = false;
+    ollama_lite.prefer_local = true;
+    profiles.push_back(ollama_lite);
+
     LLMProviderProfile embedded;
     embedded.profile_id = "embedded-offline";
     embedded.kind = LLMProviderKind::EmbeddedLlama;

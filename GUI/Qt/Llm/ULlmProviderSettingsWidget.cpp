@@ -75,6 +75,13 @@ ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UAp
 
     layout->addLayout(autonomous_form);
 
+    m_task_path_mode = new QComboBox(this);
+    m_task_path_mode->addItem(tr("Hint only (agent ReAct fallback)"), QStringLiteral("hint_only"));
+    m_task_path_mode->addItem(tr("Fast path (deterministic task executor)"),
+                              QStringLiteral("fast_path"));
+    layout->addWidget(new QLabel(tr("Task path mode:"), this));
+    layout->addWidget(m_task_path_mode);
+
     m_translate_queries_to_en =
         new QCheckBox(tr("Translate non-English requests to English (planning only)"), this);
     layout->addWidget(m_translate_queries_to_en);
@@ -162,6 +169,13 @@ void ULlmProviderSettingsWidget::loadFromStore()
             : QStringLiteral("ctrl_enter");
     const int send_index = m_send_shortcut->findData(send_mode);
     m_send_shortcut->setCurrentIndex(send_index >= 0 ? send_index : 0);
+
+    const QString task_path =
+        store.runtime().task_path_mode == RDK::LLM::LLMTaskPathMode::FastPath
+            ? QStringLiteral("fast_path")
+            : QStringLiteral("hint_only");
+    const int task_path_index = m_task_path_mode->findData(task_path);
+    m_task_path_mode->setCurrentIndex(task_path_index >= 0 ? task_path_index : 0);
 
     onProfileChanged(select_index);
 }
@@ -340,6 +354,9 @@ void ULlmProviderSettingsWidget::saveToStore()
     store.setSendShortcut(m_send_shortcut->currentData().toString() == QStringLiteral("enter")
                               ? RDK::LLM::LLMSendShortcutMode::Enter
                               : RDK::LLM::LLMSendShortcutMode::CtrlEnter);
+    store.setTaskPathMode(m_task_path_mode->currentData().toString() == QStringLiteral("fast_path")
+                              ? RDK::LLM::LLMTaskPathMode::FastPath
+                              : RDK::LLM::LLMTaskPathMode::HintOnly);
     store.save();
     RDK::LLM::LLMServices::instance().applyActiveProvider();
 }

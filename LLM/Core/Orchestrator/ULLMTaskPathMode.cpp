@@ -1,5 +1,7 @@
 #include "ULLMTaskPathMode.h"
 
+#include "../LlmPublicApi.h"
+
 #include <cstdlib>
 #include <cstring>
 
@@ -18,6 +20,9 @@ bool envTruthy(const char* name)
 LLMTaskPathMode resolveTaskPathMode()
 {
     if(envTruthy("NMSDK_LLM_TASK_PATH_STRICT"))
+        return LLMTaskPathMode::FastPath;
+    if(LLMServices::instance().isInitialized()
+       && LLMServices::instance().settings().runtime().task_path_mode == LLMTaskPathMode::FastPath)
         return LLMTaskPathMode::FastPath;
     return LLMTaskPathMode::HintOnly;
 }

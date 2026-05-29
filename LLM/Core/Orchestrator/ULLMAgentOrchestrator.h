@@ -130,6 +130,20 @@ private:
                                                  const std::string& field,
                                                  const nlohmann::json& disambiguation);
 
+    LLMFinalResponse returnClarificationViaAskUser(ConversationState& state,
+                                                 const std::string& trace_id,
+                                                 const LLMToolCall& call,
+                                                 PendingDisambiguationKind kind,
+                                                 const std::string& field,
+                                                 const nlohmann::json& disambiguation);
+
+    LLMFinalResponse routeClarificationOrDisambiguation(ConversationState& state,
+                                                        const std::string& trace_id,
+                                                        const LLMToolCall& call,
+                                                        PendingDisambiguationKind kind,
+                                                        const std::string& field,
+                                                        const nlohmann::json& disambiguation);
+
     static constexpr int kMaxRounds = kDefaultMaxToolRounds;
 };
 

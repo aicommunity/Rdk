@@ -1,16 +1,24 @@
 #include "ULLMModelRouter.h"
 
+#include "../Settings/ULLMProviderCatalog.h"
+
 namespace RDK::LLM {
 
 ModelRoute routeModelForPhase(const ModelTier tier, const LLMProviderProfile& active)
 {
     ModelRoute route;
     route.tier = tier;
-    route.profile_hint = active.profile_id;
     if(tier == ModelTier::Router)
-        route.profile_hint += ":router";
+    {
+        if(const LLMProviderProfile* lite = ULLMProviderCatalog::findById("ollama-lite"))
+            route.profile_hint = lite->profile_id;
+        else
+            route.profile_hint = active.profile_id + ":router";
+    }
     else if(tier == ModelTier::Utility)
-        route.profile_hint += ":utility";
+        route.profile_hint = active.profile_id + ":utility";
+    else
+        route.profile_hint = active.profile_id;
     return route;
 }
 

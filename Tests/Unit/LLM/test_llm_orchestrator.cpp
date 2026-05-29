@@ -28,6 +28,7 @@ TEST(LLMOrchestrator, TextResponseFromMock)
     mock.ok = true;
     mock.text = "Hello from mock";
     provider.enqueue(mock);
+    provider.enqueue(mock);
 
     ULLMToolRegistry registry;
     ULLMPolicyEngine policy;
@@ -147,6 +148,7 @@ TEST(LLMOrchestrator, CancelSessionDoesNotAffectOtherSessions)
     LLMCompletionResult mock;
     mock.ok = true;
     mock.text = "ok";
+    provider.enqueue(mock);
     provider.enqueue(mock);
 
     ULLMToolRegistry registry;

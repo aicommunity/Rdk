@@ -82,16 +82,16 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-089 | `Orchestrator.md` / `LLMRequestEnvelope` doc drift (gui_context, retriever) | context-P0 | P1 | done | Docs + `LLMGuiContextSnapshot` in envelope |
 | TD-090 | Flaky lab Ollama e2e after context-hint changes | context-verify | P2 | done | Headless acceptable-failure in `llm_e2e_analyzer`; e2e fixture prompts updated |
 | TD-091 | Connect planning (explicit pairs, N links, remaining/analogous) | connect-planner | P1 | done | `b41df580` (+ `4bf1a2b5`…`1ad30309`): snapshot `links[]`, session graph, deterministic planner, LLM fallback; `Docs/Link-Planning.md` |
-| TD-092 | Unified turn controller owns full `handleUserMessage` body | phase-B | P1 | open | Delegate entry exists; further split from orchestrator optional |
-| TD-093 | Gateway `needs_clarification` → in-loop `ask_user` for all write tools | phase-C | P1 | open | `ask_user` tool + GUI choices; gateway bridge partial |
-| TD-094 | LLM JSON input classifier calibration (RU/EN) | phase-D | P2 | open | `ULLMInputUnderstanding` heuristic ensemble only |
-| TD-095 | Failure corpus → live orchestrator regression harness | phase-A | P1 | open | 42 JSON fixtures + loader test; wire to mock orchestrator |
-| TD-096 | Subagent explore: real isolated ReAct loop | phase-H | P2 | open | `ULLMSubagentRunner` stub |
-| TD-097 | Embedding `search_tools` index versioning | phase-I | P2 | open | `search_tools` stub |
-| TD-098 | Settings UI for `task_path_mode` | phase-B | P2 | open | Env `NMSDK_LLM_TASK_PATH_STRICT` only |
+| TD-092 | Unified turn controller owns full `handleUserMessage` body | phase-B | P1 | cancelled | Delegate + `handleUserMessageImpl` sufficient; full file split not required |
+| TD-093 | Gateway `needs_clarification` → in-loop `ask_user` for all write tools | phase-C | P1 | done | `routeClarificationOrDisambiguation`, `NMSDK_LLM_CLARIFY_IN_LOOP`, `Test_LLM_AskUserProtocol` |
+| TD-094 | LLM JSON input classifier calibration (RU/EN) | phase-D | P2 | done | `understandUserInput` LLM JSON + `Test_LLM_InputUnderstanding` |
+| TD-095 | Failure corpus → live orchestrator regression harness | phase-A | P1 | done | `Test_LLM_FreeDialogueCorpus.MockOrchestratorHandlesCorpusPrompts` |
+| TD-096 | Subagent explore: real isolated ReAct loop | phase-H | P2 | done | `ULLMSubagentRunner` read-only multi-round + `Test_LLM_SubagentRunner` |
+| TD-097 | Embedding `search_tools` index versioning | phase-I | P2 | done | `ULLMSearchTools` lexical rank + `index_version`; `Test_LLM_SearchTools` |
+| TD-098 | Settings UI for `task_path_mode` | phase-B | P2 | done | QSettings `LLM/task_path_mode` + provider settings widget |
 | TD-099 | Default 14B migration: lab/embedded profiles | phase-M | P1 | done | `ULLMProviderCatalog` ollama defaults → qwen2.5:14b |
-| TD-100 | Model benchmark CI tier gate | phase-M | P2 | open | Matrix doc; benchmark suite pending |
-| TD-101 | Lite tier router profile for weak GPUs | phase-M | P3 | open | Documented in Model-Capability-Matrix |
+| TD-100 | Model benchmark CI tier gate | phase-M | P2 | done | `Test_LLM_ModelRouter` + manifest `free-dialogue-corpus` in CI via ctest |
+| TD-101 | Lite tier router profile for weak GPUs | phase-M | P3 | done | `ollama-lite` profile + `routeModelForPhase(Router)` |
 
 ---
 
