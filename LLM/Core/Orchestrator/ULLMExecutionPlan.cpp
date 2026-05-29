@@ -226,7 +226,24 @@ std::string formatExecutionPlanPreview(const ULLMExecutionPlan& plan)
     oss << ":\n";
     for(const ExecutionPlanStep& step : plan.steps)
     {
-        oss << "  " << step.step_id << ". " << step.tool_name << " [" << step.status << "]";
+        oss << "  " << step.step_id << ". " << step.tool_name;
+        if(step.tool_name == "add_component" && step.arguments.contains("class_name")
+           && step.arguments["class_name"].is_string())
+            oss << " (" << step.arguments["class_name"].get<std::string>() << ")";
+        if(step.tool_name == "connect_components")
+        {
+            const std::string from = step.arguments.value("from_long_name", "");
+            const std::string to = step.arguments.value("to_long_name", "");
+            const std::string from_prop = step.arguments.value("from_property", "");
+            const std::string to_prop = step.arguments.value("to_property", "");
+            if(!from.empty() || !to.empty())
+                oss << " (" << from << "→" << to << ")";
+            if(!from_prop.empty() || !to_prop.empty())
+                oss << " [" << from_prop << "→" << to_prop << "]";
+        }
+        if(step.repeat_count > 1)
+            oss << " x" << step.repeat_count;
+        oss << " [" << step.status << "]";
         if(!step.depends_on.empty())
         {
             oss << " [after:";

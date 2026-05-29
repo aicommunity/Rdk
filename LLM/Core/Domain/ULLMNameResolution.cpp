@@ -124,6 +124,8 @@ std::vector<ClassCandidate> findSimilarRegisteredClasses(const std::string& quer
     return out;
 }
 
+} // namespace
+
 std::string extractClassNameTokenFromUserText(const std::string& user_text)
 {
     const std::string trimmed = trimCopy(user_text);
@@ -136,7 +138,7 @@ std::string extractClassNameTokenFromUserText(const std::string& user_text)
     if(last_space != std::string::npos && last_space + 1 < trimmed.size())
     {
         const std::string last = trimCopy(trimmed.substr(last_space + 1));
-        if(looksLikeClassIdentifierLocal(last))
+        if(looksLikeClassIdentifier(last))
             return last;
     }
 
@@ -160,8 +162,6 @@ std::string extractClassNameTokenFromUserText(const std::string& user_text)
         return trimCopy(trimmed.substr(last_space + 1));
     return trimmed;
 }
-
-} // namespace
 
 bool isRegisteredClassName(const std::vector<std::string>& registered, const std::string& name)
 {

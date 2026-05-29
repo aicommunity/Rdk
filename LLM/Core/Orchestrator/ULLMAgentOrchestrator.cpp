@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cstring>
+#include <filesystem>
 #include <functional>
 #include <future>
 #include <iomanip>
@@ -35,9 +36,11 @@
 #include "ULLMAgentManifestBuilder.h"
 #include "ULLMContextAssembler.h"
 #include "../Context/ULLMLongTermMemoryLoader.h"
+#include "../Context/ULinkPatternCatalog.h"
 #include "../Context/URdkContextRetriever.h"
 #include "../Domain/ULLMResolvedEntityStore.h"
 #include "../Session/ULLMContextCompactor.h"
+#include "../Session/ULLMSessionGraphMemory.h"
 #include "ULLMPlanConfidence.h"
 #include "ULLMPlanExecutor.h"
 #include "ULLMQueryNormalizer.h"
@@ -45,8 +48,11 @@
 #include "../Knowledge/ULLMDynamicToolRouter.h"
 #include "../Policy/ULLMAutonomousPolicy.h"
 #include "../Domain/ULLMWriteArgumentNormalizer.h"
-#include "ULLMQuantityParser.h"
+#include "ULLMQuantityResolver.h"
+#include "ULLMPlanQuantity.h"
 #include "ULLMTaskPathRouting.h"
+#include "ULLMConnectPlanParsing.h"
+#include "ULLMConnectPlanLlmFallback.h"
 
 namespace RDK::LLM {
 
@@ -76,8 +82,20 @@ std::string buildToolMessageContent(const ToolGatewayResult& tr, ULLMSystemLogRe
 
 void snapshotLastSessionContext(ConversationState& state, const LLMSessionContext& session)
 {
+    syncSessionGraphOnSessionChange(state, session);
     state.last_session_context = session;
     state.last_session_context->session_id = state.session_id;
+}
+
+nlohmann::json addComponentArgsForRepeat(const nlohmann::json& base_args, int repeat_index)
+{
+    nlohmann::json args = base_args;
+    if(args.contains("short_name") && args["short_name"].is_string())
+    {
+        const std::string short_base = args["short_name"].get<std::string>();
+        args["short_name"] = uniqueShortNameForAddRepeat(short_base, repeat_index);
+    }
+    return args;
 }
 
 void appendAgentNote(ConversationState& state, const std::string& line)
@@ -441,11 +459,28 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                              req.trace_id, req.session_id);
     }
 
+    if(!isDisambiguationOnlyFollowUp(req.user_text, state))
+    {
+        QuantityResolveRequest qreq;
+        qreq.text_original = req.user_text;
+        qreq.text_en = planning_text;
+        qreq.allow_llm_fallback = true;
+        const QuantityResolveResult qres = resolveUserQuantity(qreq, &m_provider);
+        state.last_quantity = qres.quantity;
+        if(qres.quantity.valid)
+        {
+            GetAuditLog().append("quantity_resolved",
+                                 {{"primary", qres.quantity.primary},
+                                  {"source", quantitySourceName(qres.quantity.source)}},
+                                 req.trace_id, req.session_id);
+        }
+    }
+
     const IntentParseResult intent_result =
         m_intent.parseWithOptionalLlm(&m_provider, planning_text);
     const LLMIntentKind intent = intent_result.kind;
     const TaskPathDecision task_path_decision =
-        decideTaskPath(planning_text, intent, session.autonomous_mode);
+        decideTaskPath(planning_text, intent, session.autonomous_mode, &state);
 
     if(intent == LLMIntentKind::Mutate && task_path_decision.use_task_path)
     {
@@ -453,10 +488,76 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
         tp_req.goal_en = planning_text;
         tp_req.session = session;
         tp_req.project_loaded = session.project_loaded;
+        tp_req.resolved_quantity = state.last_quantity;
+        tp_req.state = &state;
         TaskPlanResult tp = buildTaskPlan(m_provider, m_registry,
                                           LLMServices::instance().domain(), tp_req);
+        if(!tp.ok && isConnectGoalText(planning_text))
+        {
+            const bool env_fallback = []() {
+                const char* v = std::getenv("NMSDK_LLM_CONNECT_PLAN_LLM");
+                return v && v[0] == '1';
+            }();
+            const bool runtime_fallback = LLMServices::instance().isInitialized()
+                                          && LLMServices::instance()
+                                                 .settings()
+                                                 .runtime()
+                                                 .connect_plan_llm_fallback;
+            if((env_fallback || runtime_fallback) && tp_req.state)
+            {
+                ULinkPatternCatalog catalog;
+                std::filesystem::path root = std::filesystem::current_path();
+                for(int i = 0; i < 8 && root.has_parent_path(); ++i)
+                {
+                    if(std::filesystem::exists(root / "CMakeLists.txt"))
+                        break;
+                    root = root.parent_path();
+                }
+                if(!root.empty())
+                    catalog.loadFromFile(root / "Bin/LLM/index/link-patterns.json");
+                ConnectPlanBuildRequest cr{planning_text,
+                                           parseConnectGoal(planning_text),
+                                           session,
+                                           tp_req.state,
+                                           LLMServices::instance().domain(),
+                                           catalog,
+                                           1};
+                ConnectPlanBuildResult fb = tryBuildConnectPlanViaLlm(cr, m_provider);
+                if(fb.ok)
+                {
+                    tp.ok = true;
+                    tp.plan.plan_id = "task_" + std::to_string(std::hash<std::string>{}(planning_text));
+                    tp.plan.goal_en = planning_text;
+                    tp.plan.requires_user_confirmation = true;
+                    tp.plan.confidence = 0.7f;
+                    tp.plan.steps.clear();
+                    ExecutionPlanStep snap;
+                    snap.step_id = 1;
+                    snap.tool_name = "get_net_snapshot";
+                    snap.arguments = {{"channel_index", req.session.active_channel_index}};
+                    snap.success = SuccessCriteria{"tool_ok", nlohmann::json::object()};
+                    tp.plan.steps.push_back(snap);
+                    int sid = 2;
+                    for(auto& s : fb.steps)
+                    {
+                        s.step_id = sid++;
+                        s.depends_on = {1};
+                        tp.plan.steps.push_back(std::move(s));
+                    }
+                    tp.plan.goal_success = fb.goal_success;
+                    GetAuditLog().append("connect_plan_llm_fallback",
+                                         {{"link_count", static_cast<int>(fb.steps.size())}},
+                                         req.trace_id, req.session_id);
+                }
+            }
+        }
         if(tp.ok)
         {
+            const std::optional<int> session_qty =
+                state.last_quantity.valid
+                    ? std::optional<int>(state.last_quantity.primary)
+                    : std::nullopt;
+            applyGoalQuantityToExecutionPlan(tp.plan, session_qty);
             const PlanConfirmDecision confirm_decision = decidePlanConfirmation(
                 tp.plan, session.autonomous_mode, session.auto_apply_writes, !tp.issues.empty());
             if(confirm_decision.needs_user_confirmation)
@@ -473,7 +574,9 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
 
             setWorkflowPhase(state, LLMWorkflowPhase::TaskExecuting, req.trace_id);
             ULLMTaskExecutor task_executor(m_registry, m_gateway);
-            TaskExecuteResult exec = task_executor.execute(tp.plan, session, req.trace_id);
+            TaskExecuteOptions task_opts;
+            task_opts.conversation_state = &state;
+            TaskExecuteResult exec = task_executor.execute(tp.plan, session, req.trace_id, task_opts);
             final.ok = exec.ok;
             final.text = exec.summary;
             if(!exec.ok)
@@ -488,6 +591,15 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             m_store.persistToDisk(req.session_id);
             return final;
         }
+        final.ok = false;
+        final.error = "Task plan could not be built: "
+                      + (tp.issues.empty() ? std::string("unknown_issue")
+                                           : tp.issues.front());
+        final.text = final.error
+                     + ". [Enable connect plan LLM fallback or rephrase.]";
+        setWorkflowPhase(state, LLMWorkflowPhase::Failed, req.trace_id);
+        m_store.persistToDisk(req.session_id);
+        return final;
     }
     const char* intent_name = "query";
     switch(intent)
@@ -667,6 +779,33 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             GetAuditLog().append("lifecycle_args_resolved",
                                  {{"tool_name", pending.tool_name}}, req.trace_id,
                                  req.session_id);
+            const int add_count =
+                pending.tool_name == "add_component"
+                    ? std::max(1, pending.requested_repeat_count)
+                    : 1;
+            if(pending.tool_name == "add_component" && add_count > 1)
+            {
+                int added = 0;
+                std::string class_name = merged.value("class_name", "");
+                for(int rep = 0; rep < add_count; ++rep)
+                {
+                    const nlohmann::json rep_args = addComponentArgsForRepeat(merged, rep);
+                    LLMFinalResponse one = invokeLifecycleToolDirect(
+                        req.session_id, req.trace_id, pending.tool_name, rep_args, session, "");
+                    if(!one.ok)
+                        return one;
+                    ++added;
+                    if(!class_name.empty() && rep_args.contains("class_name"))
+                        class_name = rep_args["class_name"].get<std::string>();
+                }
+                LLMFinalResponse final;
+                final.ok = true;
+                final.text = "Added " + std::to_string(added) + " component(s)"
+                             + (class_name.empty() ? "." : (": " + class_name));
+                m_store.clearPendingToolArguments(req.session_id);
+                return final;
+            }
+
             // Merged args already include the user's pick; avoid re-merging user_text in gateway.
             LLMFinalResponse final = invokeLifecycleToolDirect(
                 req.session_id, req.trace_id, pending.tool_name, merged, session, "");
@@ -1499,6 +1638,9 @@ LLMFinalResponse ULLMAgentOrchestrator::confirmPlanExecution(const std::string& 
     setWorkflowPhase(state, LLMWorkflowPhase::Executing, trace_id);
     ULLMPlanExecutor executor(m_registry, m_gateway);
     ULLMExecutionPlan plan = *state.pending_plan;
+    const std::optional<int> session_qty =
+        state.last_quantity.valid ? std::optional<int>(state.last_quantity.primary) : std::nullopt;
+    applyGoalQuantityToExecutionPlan(plan, session_qty);
     const PlanExecutionResult exec =
         executor.execute(plan, session, trace_id, planExecuteWithCheckpointOnFailure());
 
@@ -1689,6 +1831,8 @@ LLMFinalResponse ULLMAgentOrchestrator::returnDisambiguationRequest(
     pending.class_disambiguation_candidates =
         kind == PendingDisambiguationKind::Class ? pending.disambiguation_candidates
                                                  : nlohmann::json::array();
+    if(call.name == "add_component")
+        pending.requested_repeat_count = primaryQuantityOr(state);
     m_store.setPendingToolArguments(state.session_id, pending);
 
     const std::string prompt = formatClarificationMessage(disambiguation);
@@ -1865,6 +2009,9 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
         final.text = formatLifecycleToolUserMessage(tool_name, tr);
     if(!tr.ok && !tr.message.empty())
         final.error = tr.message;
+    if(tr.ok)
+        recordWriteToolOutcome(state, LLMServices::instance().domain(), tool_name, tr.result,
+                               session.active_channel_index);
     setWorkflowPhase(state, LLMWorkflowPhase::Completed, trace_id);
     setWorkflowPhase(state, LLMWorkflowPhase::Idle, trace_id);
     m_store.persistToDisk(session_id);

@@ -146,6 +146,20 @@ void prependEphemeralSystemMessages(std::vector<LLMMessage>& provider_messages,
         prependSystem(provider_messages, std::move(notes));
     }
 
+    if(input.state.last_quantity.valid)
+    {
+        prependSystem(provider_messages,
+                      "## Resolved quantity (this turn)\nprimary=" + std::to_string(input.state.last_quantity.primary));
+    }
+    if(!input.state.session_graph.added_long_names.empty())
+    {
+        std::ostringstream sg;
+        sg << "## Session graph memory\n"
+           << "- added_count: " << input.state.session_graph.added_long_names.size() << "\n"
+           << "- linked_count: " << input.state.session_graph.linked_records.size() << "\n";
+        prependSystem(provider_messages, sg.str());
+    }
+
     prependSystem(provider_messages, buildRetrieverSummaryBlock(input));
     prependSystem(provider_messages, buildGuiFocusSystemHint(input.gui, input.session));
 

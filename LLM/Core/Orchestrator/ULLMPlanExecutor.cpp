@@ -1,5 +1,8 @@
 #include "ULLMPlanExecutor.h"
 
+#include "ULLMPlanQuantity.h"
+#include "ULLMPlanRepeatPolicy.h"
+
 #include "../LlmModuleInit.h"
 
 #include <algorithm>
@@ -162,26 +165,52 @@ PlanExecutionResult ULLMPlanExecutor::execute(ULLMExecutionPlan& plan, const LLM
                 continue;
             }
 
-            ToolInvokeRequest invoke;
-            invoke.trace_id = trace_id;
-            invoke.tool_name = step.tool_name;
-            invoke.arguments = step.arguments;
-            invoke.session = session;
-            if(def->requires_confirmation)
-                invoke.confirmed = true;
+            const int repeat_total =
+                toolSupportsPlanStepRepeat(step.tool_name) ? std::max(1, step.repeat_count) : 1;
+            nlohmann::json last_result;
+            bool step_failed = false;
+            std::string step_error;
+            for(int rep = 0; rep < repeat_total; ++rep)
+            {
+                ToolInvokeRequest invoke;
+                invoke.trace_id = trace_id;
+                invoke.tool_name = step.tool_name;
+                invoke.arguments = step.arguments;
+                if(toolSupportsPlanStepRepeat(step.tool_name) && step.tool_name == "add_component"
+                   && repeat_total > 1
+                   && invoke.arguments.contains("short_name")
+                   && invoke.arguments["short_name"].is_string())
+                {
+                    const std::string base = invoke.arguments["short_name"].get<std::string>();
+                    invoke.arguments["short_name"] = uniqueShortNameForAddRepeat(base, rep);
+                }
+                invoke.session = session;
+                if(def->requires_confirmation)
+                    invoke.confirmed = true;
 
-            const ToolGatewayResult tr = m_gateway.invoke(invoke);
-            if(!tr.ok)
+                const ToolGatewayResult tr = m_gateway.invoke(invoke);
+                if(!tr.ok)
+                {
+                    step_failed = true;
+                    step_error = tr.message;
+                    last_result = tr.result;
+                    break;
+                }
+                last_result = tr.result;
+            }
+
+            if(step_failed)
             {
                 step.status = "failed";
-                step.last_result = tr.result;
+                step.last_result = last_result;
                 result.failed_step_ids.push_back(step.step_id);
                 result.ok = false;
                 GetAuditLog().append("plan_step_failed",
                                      {{"plan_id", plan.plan_id},
                                       {"step_id", step.step_id},
                                       {"tool", step.tool_name},
-                                      {"error", tr.message}},
+                                      {"repeat_count", repeat_total},
+                                      {"error", step_error}},
                                      trace_id, session.session_id);
                 it = pending.erase(it);
                 progressed = true;
@@ -189,7 +218,7 @@ PlanExecutionResult ULLMPlanExecutor::execute(ULLMExecutionPlan& plan, const LLM
             }
 
             step.status = "done";
-            step.last_result = tr.result;
+            step.last_result = last_result;
             result.completed_step_ids.push_back(step.step_id);
             plan.checkpoint_after_step_id = step.step_id;
             GetAuditLog().append("plan_checkpoint",

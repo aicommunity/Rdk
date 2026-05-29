@@ -1,6 +1,9 @@
 #include "ULLMTaskPlanner.h"
 
 #include "ULLMQuantityParser.h"
+#include "ULLMConnectPlanBuilder.h"
+#include "ULLMConnectPlanParsing.h"
+#include "ULLMTaskPlanParsing.h"
 
 #include <algorithm>
 #include <filesystem>
@@ -86,17 +89,7 @@ void postValidatePlan(TaskPlanResult& out, URdkDomainAccess& domain, const TaskP
             const std::string from_prop = step.arguments.value("from_property", "");
             const std::string to_prop = step.arguments.value("to_property", "");
             if(from_prop.empty() || to_prop.empty())
-            {
-                const ULinkPatternCatalog* catalog = req.link_catalog ? req.link_catalog : &defaultLinkCatalog();
-                std::string from_class;
-                std::string to_class;
-                if(catalog && domain.getComponentClassName(from_ln, req.session.active_channel_index, from_class).ok()
-                   && domain.getComponentClassName(to_ln, req.session.active_channel_index, to_class).ok())
-                {
-                    if(catalog->suggest(from_class, to_class, 1).empty())
-                        appendIssue(out, "no_link_pattern_for_class_pair");
-                }
-            }
+                continue;
         }
     }
 }
@@ -125,45 +118,106 @@ TaskPlanResult buildTaskPlan(ILLMProvider& provider,
     snap.success = SuccessCriteria{"tool_ok", nlohmann::json::object()};
     out.plan.steps.push_back(snap);
 
-    const ParsedQuantity quantity = extractQuantity(req.goal_en);
+    ParsedQuantity quantity = extractQuantityHeuristic(req.goal_en);
+    if(req.resolved_quantity && req.resolved_quantity->valid
+       && req.resolved_quantity->primary
+              > (quantity.valid ? quantity.count : 1))
+    {
+        quantity.count = req.resolved_quantity->primary;
+        quantity.valid = true;
+    }
+    else if(req.resolved_quantity && req.resolved_quantity->valid && !quantity.valid)
+    {
+        quantity.count = req.resolved_quantity->primary;
+        quantity.valid = true;
+    }
+
     int step_id = 2;
     if(containsWord(req.goal_en, "add"))
     {
-        ExecutionPlanStep add;
-        add.step_id = step_id++;
-        add.tool_name = "add_component";
-        const std::string class_name = extractClassName(req.goal_en);
-        add.arguments = {{"class_name", class_name},
-                         {"parent_long_name", ""},
-                         {"short_name", "Neuron"},
-                         {"channel_index", req.session.active_channel_index}};
-        add.depends_on = {1};
-        const int min_count = quantity.count > 1 ? quantity.count : 1;
-        add.success = SuccessCriteria{
-            "component_count", {{"class_name", class_name}, {"min_count", min_count}}};
-        add.repeat_count = min_count;
-        out.plan.steps.push_back(add);
-        out.plan.goal_success = add.success;
-        out.plan.confidence = min_count > 1 ? 0.82f : 0.75f;
+        std::vector<ClassAddSpec> class_specs = extractClassAddSpecsFromGoal(req.goal_en);
+        if(class_specs.empty())
+        {
+            ClassAddSpec single;
+            single.class_name = extractClassName(req.goal_en);
+            single.count = quantity.valid && quantity.count > 1 ? quantity.count : 1;
+            class_specs.push_back(std::move(single));
+        }
+
+        nlohmann::json goal_specs = nlohmann::json::array();
+        int add_index = 0;
+        for(const ClassAddSpec& spec : class_specs)
+        {
+            ExecutionPlanStep add;
+            add.step_id = step_id++;
+            add.tool_name = "add_component";
+            std::string short_name = spec.class_name;
+            if(!short_name.empty() && short_name[0] == 'N')
+                short_name.erase(short_name.begin());
+            if(short_name.empty())
+                short_name = "Component" + std::to_string(add_index + 1);
+            add.arguments = {{"class_name", spec.class_name},
+                             {"parent_long_name", ""},
+                             {"short_name", short_name},
+                             {"channel_index", req.session.active_channel_index}};
+            add.depends_on = {1};
+            add.repeat_count = std::max(1, spec.count);
+            add.success = SuccessCriteria{
+                "component_count",
+                {{"class_name", spec.class_name}, {"min_count", add.repeat_count}}};
+            out.plan.steps.push_back(add);
+            goal_specs.push_back(
+                {{"class_name", spec.class_name}, {"min_count", add.repeat_count}});
+            ++add_index;
+        }
+
+        if(class_specs.size() == 1)
+            out.plan.goal_success = out.plan.steps.back().success;
+        else if(!goal_specs.empty())
+        {
+            out.plan.goal_success = SuccessCriteria{"multi_component_count", {{"specs", goal_specs}}};
+            out.plan.confidence = 0.85f;
+        }
+        else
+        {
+            out.plan.confidence = 0.75f;
+        }
     }
 
-    if(containsWord(req.goal_en, "connect") || containsWord(req.goal_en, "link"))
+    const ParsedConnectGoal parsed_connect = parseConnectGoal(req.goal_en);
+    if(isConnectGoalText(req.goal_en) || parsed_connect.kind != ConnectGoalKind::None)
     {
-        ExecutionPlanStep connect;
-        connect.step_id = step_id++;
-        connect.tool_name = "connect_components";
-        connect.arguments = {{"from_long_name", "PNeuron"},
-                             {"to_long_name", "PNeuron2"},
-                             {"from_property", ""},
-                             {"to_property", ""},
-                             {"channel_index", req.session.active_channel_index}};
-        connect.depends_on = {step_id > 3 ? 2 : 1};
-        connect.success = SuccessCriteria{"link_exists",
-                                          {{"from_long_name", "PNeuron"},
-                                           {"to_long_name", "PNeuron2"}}};
-        out.plan.steps.push_back(connect);
-        out.plan.goal_success = connect.success;
-        out.plan.confidence = std::max(out.plan.confidence, 0.8f);
+        const ULinkPatternCatalog* catalog =
+            req.link_catalog ? req.link_catalog : &defaultLinkCatalog();
+        if(req.state && catalog)
+        {
+            ConnectPlanBuildRequest build_req{
+                req.goal_en,
+                parsed_connect,
+                req.session,
+                req.state,
+                domain,
+                const_cast<ULinkPatternCatalog&>(*catalog),
+                1,
+            };
+            ConnectPlanBuildResult conn = buildConnectPlanSteps(build_req);
+            if(!conn.ok)
+            {
+                out.ok = false;
+                out.issues = conn.issues;
+                out.confidence = out.plan.confidence;
+                return out;
+            }
+            for(ExecutionPlanStep& s : conn.steps)
+            {
+                s.step_id = step_id++;
+                s.depends_on = {1};
+                out.plan.steps.push_back(std::move(s));
+            }
+            if(conn.goal_success)
+                out.plan.goal_success = conn.goal_success;
+            out.plan.confidence = std::max(out.plan.confidence, 0.8f);
+        }
     }
 
     if(out.plan.steps.size() == 1)

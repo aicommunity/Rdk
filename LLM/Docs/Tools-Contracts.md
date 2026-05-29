@@ -259,6 +259,10 @@
 
 **output:** `{ "from_long_name", "from_property", "to_long_name", "to_property" }`
 
+**idempotency:** If the exact link already exists (strict match of the 4-tuple:
+`from_long_name`, `from_property`, `to_long_name`, `to_property`), the tool returns `ok=true`
+and includes `"already_existed": true` in the result. This is not treated as an error.
+
 **Internal (not exposed to LLM API):** `disconnect_components` — undo link (`Model_BreakLinkByName`).
 
 ---

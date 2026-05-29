@@ -1,5 +1,9 @@
 #include "ULLMTaskPathRouting.h"
 
+#include "../Session/ULLMConversationStore.h"
+#include "ULLMConnectPlanParsing.h"
+#include "ULLMTaskPlanParsing.h"
+
 #include <regex>
 
 namespace RDK::LLM {
@@ -26,21 +30,38 @@ bool hasSequenceMarker(const std::string& text_en)
 } // namespace
 
 TaskPathDecision decideTaskPath(const std::string& text_en, LLMIntentKind intent,
-                                LLMAutonomousMode autonomous_mode)
+                                LLMAutonomousMode autonomous_mode,
+                                const ConversationState* state)
 {
     TaskPathDecision out;
-    out.quantity = extractQuantity(text_en);
+    if(state && state->last_quantity.valid)
+    {
+        out.quantity.count = state->last_quantity.primary;
+        out.quantity.valid = true;
+    }
+    else
+    {
+        out.quantity = extractQuantityHeuristic(text_en);
+    }
 
     if(intent != LLMIntentKind::Mutate)
         return out;
 
     if(out.quantity.count > 1)
         out.use_task_path = true;
+    if(extractClassAddSpecsFromGoal(text_en).size() >= 2)
+        out.use_task_path = true;
     if(countMutateVerbs(text_en) >= 2)
         out.use_task_path = true;
     if(autonomous_mode != LLMAutonomousMode::Off)
         out.use_task_path = true;
     if(hasSequenceMarker(text_en))
+        out.use_task_path = true;
+    const ParsedConnectGoal connect = parseConnectGoal(text_en);
+    if((connect.kind == ConnectGoalKind::RemainingSessionDelta
+        || connect.kind == ConnectGoalKind::AnalogousToPrevious)
+       || connect.explicit_links.size() >= 2
+       || (isConnectGoalText(text_en) && connect.link_count > 1))
         out.use_task_path = true;
 
     return out;

@@ -56,3 +56,14 @@ TEST(LLMNameResolution, ResolveComponentAmbiguousSubstring)
     ASSERT_EQ(r.status, ComponentEntityResolution::Status::Ambiguous);
     EXPECT_GE(r.candidates.size(), 2u);
 }
+
+TEST(LLMNameResolution, ResolvesExplicitClassFromRussianUserText)
+{
+    const std::vector<std::string> registered = {"NLPNeuron", "NPNeuron", "NSPNeuron"};
+    const std::string token = extractClassNameTokenFromUserText("добавь три нейрона NLPNeuron");
+    EXPECT_EQ(token, "NLPNeuron");
+    const RegisteredClassResolution resolved =
+        resolveRegisteredClassName(token, registered);
+    ASSERT_EQ(resolved.status, RegisteredClassResolution::Status::Resolved);
+    EXPECT_EQ(resolved.class_name, "NLPNeuron");
+}

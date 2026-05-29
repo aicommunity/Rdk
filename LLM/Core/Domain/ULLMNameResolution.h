@@ -31,6 +31,7 @@ std::string canonicalRegisteredClassName(const std::vector<std::string>& registe
                                          const std::string& name);
 
 std::string extractClassNameQuery(const std::string& class_name_field, const std::string& user_text);
+std::string extractClassNameTokenFromUserText(const std::string& user_text);
 
 RegisteredClassResolution resolveRegisteredClassName(const std::string& query,
                                                      const std::vector<std::string>& registered);

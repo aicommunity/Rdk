@@ -42,6 +42,8 @@ struct PendingToolArguments {
     std::string disambiguation_field;
     nlohmann::json disambiguation_candidates = nlohmann::json::array();
     int64_t created_at_unix_sec = 0;
+    /// Repeat count from the turn that started this pending flow (e.g. "add three neurons").
+    int requested_repeat_count = 1;
 };
 
 struct LifecycleArgumentPreflight {

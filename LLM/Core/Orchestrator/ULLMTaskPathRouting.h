@@ -8,6 +8,8 @@
 
 namespace RDK::LLM {
 
+struct ConversationState;
+
 struct TaskPathDecision {
     bool use_task_path = false;
     bool force_plan_intent = false;
@@ -15,7 +17,8 @@ struct TaskPathDecision {
 };
 
 TaskPathDecision decideTaskPath(const std::string& text_en, LLMIntentKind intent,
-                                LLMAutonomousMode autonomous_mode);
+                                LLMAutonomousMode autonomous_mode,
+                                const ConversationState* state = nullptr);
 
 } // namespace RDK::LLM
 

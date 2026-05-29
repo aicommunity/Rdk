@@ -11,10 +11,14 @@
 
 namespace RDK::LLM {
 
+struct ConversationState;
+
 struct TaskExecuteOptions {
     bool compensate_on_failure = true;
     int max_step_retries = 1;
     int max_replan_attempts = 1;
+    /// When set, successful add/connect steps update session graph memory incrementally.
+    ConversationState* conversation_state = nullptr;
 };
 
 struct TaskExecuteResult {

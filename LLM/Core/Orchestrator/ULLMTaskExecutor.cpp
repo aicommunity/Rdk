@@ -1,7 +1,12 @@
 #include "ULLMTaskExecutor.h"
 
+#include "ULLMPlanQuantity.h"
+#include "ULLMPlanRepeatPolicy.h"
+
 #include "../LlmModuleInit.h"
 #include "../LlmPublicApi.h"
+#include "../Session/ULLMConversationStore.h"
+#include "../Session/ULLMSessionGraphMemory.h"
 #include "ULLMPlanExecutor.h"
 #include "ULLMStepVerifier.h"
 
@@ -76,21 +81,47 @@ TaskExecuteResult ULLMTaskExecutor::execute(ULLMExecutionPlan& plan,
             bool step_ok = false;
             std::string step_fail;
             int retries = 0;
+            const int repeat_total =
+                toolSupportsPlanStepRepeat(step.tool_name) ? std::max(1, step.repeat_count) : 1;
             while(retries <= std::max(0, options.max_step_retries))
             {
-                ToolInvokeRequest invoke;
-                invoke.trace_id = trace_id;
-                invoke.tool_name = step.tool_name;
-                invoke.arguments = step.arguments;
-                invoke.session = session;
-                invoke.confirmed = def->requires_confirmation;
-                if(!plan.goal_en.empty())
-                    invoke.user_text_hint = plan.goal_en;
-
-                const ToolGatewayResult tr = m_gateway.invoke(invoke);
-                if(!tr.ok)
+                bool repeat_failed = false;
+                for(int rep = 0; rep < repeat_total; ++rep)
                 {
-                    step_fail = tr.message.empty() ? tr.error_code : tr.message;
+                    ToolInvokeRequest invoke;
+                    invoke.trace_id = trace_id;
+                    invoke.tool_name = step.tool_name;
+                    invoke.arguments = step.arguments;
+                    if(toolSupportsPlanStepRepeat(step.tool_name) && step.tool_name == "add_component"
+                       && repeat_total > 1
+                       && invoke.arguments.contains("short_name")
+                       && invoke.arguments["short_name"].is_string())
+                    {
+                        const std::string base = invoke.arguments["short_name"].get<std::string>();
+                        invoke.arguments["short_name"] = uniqueShortNameForAddRepeat(base, rep);
+                    }
+                    invoke.session = session;
+                    invoke.confirmed = def->requires_confirmation;
+                    if(!plan.goal_en.empty())
+                        invoke.user_text_hint = plan.goal_en;
+
+                    const ToolGatewayResult tr = m_gateway.invoke(invoke);
+                    if(!tr.ok)
+                    {
+                        step_fail = tr.message.empty() ? tr.error_code : tr.message;
+                        repeat_failed = true;
+                        break;
+                    }
+                    step.last_result = tr.result;
+                    if(options.conversation_state && tr.ok && tr.result.is_object())
+                    {
+                        recordWriteToolOutcome(*options.conversation_state, domain, step.tool_name,
+                                               tr.result, session.active_channel_index);
+                    }
+                }
+
+                if(repeat_failed)
+                {
                     if(retries < options.max_step_retries)
                     {
                         GetAuditLog().append("task_step_retry",
@@ -105,7 +136,6 @@ TaskExecuteResult ULLMTaskExecutor::execute(ULLMExecutionPlan& plan,
                     break;
                 }
 
-                step.last_result = tr.result;
                 VerifyResult vr;
                 vr.satisfied = true;
                 vr.detail = "no_criteria";
@@ -115,6 +145,7 @@ TaskExecuteResult ULLMTaskExecutor::execute(ULLMExecutionPlan& plan,
                 GetAuditLog().append("task_step_verified",
                                      {{"plan_id", plan.plan_id},
                                       {"step_id", step.step_id},
+                                      {"repeat_count", repeat_total},
                                       {"satisfied", vr.satisfied},
                                       {"detail", vr.detail}},
                                      trace_id, session.session_id);
