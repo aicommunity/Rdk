@@ -28,6 +28,32 @@ bool looksLikeComponentClassToken(const std::string& token)
 
 } // namespace
 
+bool isAddComponentGoal(const std::string& goal_en)
+{
+    std::string lower = goal_en;
+    std::transform(lower.begin(), lower.end(), lower.begin(),
+                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+    if(lower.find("проект") != std::string::npos || lower.find("project") != std::string::npos
+       || lower.find("конфиг") != std::string::npos || lower.find("config") != std::string::npos
+       || lower.find("конфигурац") != std::string::npos)
+        return false;
+
+    if(lower.find("нейрон") != std::string::npos || lower.find("neuron") != std::string::npos
+       || lower.find("компонент") != std::string::npos
+       || lower.find("component") != std::string::npos)
+        return true;
+
+    static const std::regex en_add(R"(\b(add|create)\b)", std::regex::icase);
+    if(std::regex_search(goal_en, en_add))
+        return true;
+    if(lower.find("добав") != std::string::npos || lower.find("созда") != std::string::npos)
+        return true;
+    if(!extractClassAddSpecsFromGoal(goal_en).empty())
+        return true;
+    return false;
+}
+
 std::vector<ClassAddSpec> extractClassAddSpecsFromGoal(const std::string& goal_en)
 {
     std::vector<ClassAddSpec> specs;

@@ -15,6 +15,8 @@ struct ClassAddSpec {
 /// Returns empty when no digit+class pairs found (caller uses single-class fallback).
 std::vector<ClassAddSpec> extractClassAddSpecsFromGoal(const std::string& goal_en);
 
+bool isAddComponentGoal(const std::string& goal_en);
+
 } // namespace RDK::LLM
 
 #endif

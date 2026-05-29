@@ -116,8 +116,6 @@ ParsedConnectGoal parseConnectGoal(const std::string& goal_en)
         }
         else if(out.wants_analogous)
             out.kind = ConnectGoalKind::AnalogousToPrevious;
-        else if(out.link_count > 1)
-            out.kind = ConnectGoalKind::CountOnly;
         else if(isConnectGoalText(goal_en))
         {
             out.kind = ConnectGoalKind::CountOnly;

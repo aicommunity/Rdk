@@ -476,13 +476,17 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
         }
     }
 
+    const ConfigurationLifecycleAction lifecycle_action =
+        detectConfigurationLifecycleAction(req.user_text);
+
     const IntentParseResult intent_result =
         m_intent.parseWithOptionalLlm(&m_provider, planning_text);
     const LLMIntentKind intent = intent_result.kind;
     const TaskPathDecision task_path_decision =
         decideTaskPath(planning_text, intent, session.autonomous_mode, &state);
 
-    if(intent == LLMIntentKind::Mutate && task_path_decision.use_task_path)
+    if(intent == LLMIntentKind::Mutate && task_path_decision.use_task_path
+       && lifecycle_action == ConfigurationLifecycleAction::None)
     {
         TaskPlanRequest tp_req;
         tp_req.goal_en = planning_text;
@@ -657,9 +661,6 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                                  req.trace_id, req.session_id);
         }
     }
-
-    const ConfigurationLifecycleAction lifecycle_action =
-        detectConfigurationLifecycleAction(req.user_text);
 
     RDK::UApplication* app = nullptr;
     if(LLMServices::instance().isInitialized())

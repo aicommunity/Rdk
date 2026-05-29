@@ -133,7 +133,7 @@ TaskPlanResult buildTaskPlan(ILLMProvider& provider,
     }
 
     int step_id = 2;
-    if(containsWord(req.goal_en, "add"))
+    if(isAddComponentGoal(req.goal_en))
     {
         std::vector<ClassAddSpec> class_specs = extractClassAddSpecsFromGoal(req.goal_en);
         if(class_specs.empty())
@@ -185,7 +185,14 @@ TaskPlanResult buildTaskPlan(ILLMProvider& provider,
     }
 
     const ParsedConnectGoal parsed_connect = parseConnectGoal(req.goal_en);
-    if(isConnectGoalText(req.goal_en) || parsed_connect.kind != ConnectGoalKind::None)
+    const bool plan_connect =
+        isConnectGoalText(req.goal_en)
+        || parsed_connect.kind == ConnectGoalKind::ExplicitPairs
+        || parsed_connect.kind == ConnectGoalKind::ExplicitPorts
+        || parsed_connect.kind == ConnectGoalKind::RemainingSessionDelta
+        || parsed_connect.kind == ConnectGoalKind::AnalogousToPrevious
+        || (parsed_connect.kind == ConnectGoalKind::CountOnly && isConnectGoalText(req.goal_en));
+    if(plan_connect)
     {
         const ULinkPatternCatalog* catalog =
             req.link_catalog ? req.link_catalog : &defaultLinkCatalog();
