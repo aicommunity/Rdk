@@ -101,7 +101,6 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-108 | E2E `e2e_no_tool_email` flaky on live Ollama phrasing | post-M | P2 | done | Relaxed `NoSuitableToolOrRefusal` analyzer + headless/no-project acceptance |
 | TD-109 | `Test_LLM_WriteToolsEngine` SIGSEGV on `UAppCore` exit | post-M | P2 | done | `ShutdownLlmWriteToolsEngine()` + gtest global env teardown |
 | TD-110 | Symbol search (`UApplication`) rank below generic hits | post-M | P2 | done | Path/title boost in `UDocSearchIndex::searchInternal` |
-| TD-119 | Manual GUI walkthrough: selection + connect after agent-quality | chat-22-15-PR7 | P3 | open | automated walkthrough only; optional human spot-check |
 
 ---
 
@@ -109,6 +108,8 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Resolved in | Resolution |
 |----|------|-------------|------------|
+| TD-119 | Manual GUI walkthrough: selection + connect after agent-quality | 2026-05-29 | `Test_LLM_TD041WalkthroughSim`, deterministic agent matrix (`link_*`), HITL fix `d4f631f7`; optional human GUI spot-check |
+| TD-128 | Dialog slot merge false connect on «add X to the model» | 2026-05-29 | `d4f631f7`: pair_re guard, disconnect routing, pre-gateway audit |
 | TD-120 | Remove hardcoded connect paths in Core ephemeral/heuristics | 2026-05-29 | `f3f4cc0b`: KnowledgeBlocks, acquisition policy, no LTZone in Core |
 | TD-121 | Context acquisition policy + catalog blocks in ephemeral | 2026-05-29 | `f3f4cc0b`: `computeContextAcquisitionPlan`, retriever diagram scope |
 | TD-122 | diagram_scope_long_name GUI + add parent parity | 2026-05-29 | `3c5b615f`: diagramScopeChanged, normalizer parent |
