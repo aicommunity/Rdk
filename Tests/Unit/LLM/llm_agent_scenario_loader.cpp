@@ -136,6 +136,14 @@ AgentScenarioExpect parseExpect(const nlohmann::json& j)
         e.mock_queue_empty = j["mock_queue_empty"].get<bool>();
     if(j.contains("expect_intent") && j["expect_intent"].is_string())
         e.expect_intent = parseIntentKindImpl(j["expect_intent"].get<std::string>());
+    if(j.contains("phase_entered") && j["phase_entered"].is_string())
+        e.phase_entered = j["phase_entered"].get<std::string>();
+    readStringArray(j, "audit_events_any", e.audit_events_any);
+    readStringArray(j, "audit_events_all", e.audit_events_all);
+    if(j.contains("tool_loop_entered"))
+        e.tool_loop_entered = j["tool_loop_entered"].get<bool>();
+    if(j.contains("turn_terminal") && j["turn_terminal"].is_string())
+        e.turn_terminal = j["turn_terminal"].get<std::string>();
     return e;
 }
 

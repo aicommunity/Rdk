@@ -1,6 +1,7 @@
 #include "llm_agent_scenario_runner.h"
 
 #include <cstdlib>
+#include <fstream>
 #include <filesystem>
 #include <memory>
 #include <sstream>
@@ -21,7 +22,9 @@
 #include "Tools/ULLMToolGateway.h"
 #include "Tools/ULLMToolRegistry.h"
 #include "Gui/ULLMNoopPresentationSink.h"
+#include "LlmModuleInit.h"
 #include "LlmPublicApi.h"
+#include "Orchestrator/ULLMWorkflowState.h"
 #include "Settings/ULLMSettingsStore.h"
 #include "llm_e2e_lab_harness.h"
 
@@ -82,6 +85,30 @@ LLMCompletionResult completionFromJson(const nlohmann::json& step)
         }
     }
     return r;
+}
+
+std::vector<std::string> readAuditEventTypes(const std::filesystem::path& audit_file)
+{
+    std::vector<std::string> types;
+    if(!std::filesystem::is_regular_file(audit_file))
+        return types;
+    std::ifstream in(audit_file);
+    std::string line;
+    while(std::getline(in, line))
+    {
+        if(line.empty())
+            continue;
+        try
+        {
+            const nlohmann::json j = nlohmann::json::parse(line);
+            if(j.contains("event_type") && j["event_type"].is_string())
+                types.push_back(j["event_type"].get<std::string>());
+        }
+        catch(...)
+        {
+        }
+    }
+    return types;
 }
 
 std::string collectPersistedSystemText(const ULLMConversationStore& store,
@@ -201,6 +228,10 @@ AgentScenarioRun runDeterministicScenario(AgentScenarioHarness& harness,
     applyEnv(scenario.env, env_restore);
     if(scenario.env.find("NMSDK_LLM_INTENT_LLM") == scenario.env.end())
         unsetenv("NMSDK_LLM_INTENT_LLM");
+    if(scenario.env.find("NMSDK_LLM_INPUT_ENSEMBLE") == scenario.env.end())
+        setenv("NMSDK_LLM_INPUT_ENSEMBLE", "0", 1);
+    if(scenario.env.find("NMSDK_LLM_INPUT_ENSEMBLE_LLM") == scenario.env.end())
+        unsetenv("NMSDK_LLM_INPUT_ENSEMBLE_LLM");
     if(scenario.env.find("NMSDK_LLM_TRANSLATE_QUERIES") == scenario.env.end())
         setenv("NMSDK_LLM_TRANSLATE_QUERIES", "0", 1);
 
@@ -218,6 +249,9 @@ AgentScenarioRun runDeterministicScenario(AgentScenarioHarness& harness,
         std::filesystem::temp_directory_path() / ("nmsdk_agent_scenario_" + scenario.id);
     std::filesystem::remove_all(storage_dir);
     std::filesystem::create_directories(storage_dir);
+    const std::filesystem::path audit_dir = storage_dir / "audit";
+    std::filesystem::create_directories(audit_dir);
+    GetAuditLog().setLogDirectory(audit_dir.string());
 
     auto store = std::make_unique<ULLMConversationStore>();
     store->setStorageDirectory(storage_dir.string());
@@ -287,6 +321,8 @@ AgentScenarioRun runDeterministicScenario(AgentScenarioHarness& harness,
     out.ephemeral_system_text = ephemeral_accum + collectPersistedSystemText(*store, session_id);
 
     ConversationState& state = store->getOrCreate(session_id);
+    out.final_workflow_phase = workflowPhaseName(state.workflow_phase);
+    out.audit_event_types = readAuditEventTypes(audit_dir / "audit.jsonl");
     for(const LLMMessage& m : state.messages)
     {
         if(m.role == LLMMessage::Role::Tool)

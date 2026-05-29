@@ -212,6 +212,40 @@ AgentScenarioVerdict evaluateDeterministic(const AgentScenarioCase& scenario,
         return v;
     }
 
+    if(e.phase_entered && run.final_workflow_phase != *e.phase_entered)
+    {
+        v.diagnosis = "phase_entered expected " + *e.phase_entered + " got " + run.final_workflow_phase;
+        return v;
+    }
+
+    if(!e.audit_events_any.empty() && !setContainsAny(run.audit_event_types, e.audit_events_any))
+    {
+        v.diagnosis = "None of audit_events_any were recorded.";
+        return v;
+    }
+
+    if(!e.audit_events_all.empty() && !setContainsAll(run.audit_event_types, e.audit_events_all))
+    {
+        v.diagnosis = "Not all audit_events_all present.";
+        return v;
+    }
+
+    if(e.tool_loop_entered)
+    {
+        const bool saw = setContains(run.audit_event_types, "tool_loop_entered");
+        if(*e.tool_loop_entered != saw)
+        {
+            v.diagnosis = "tool_loop_entered audit mismatch.";
+            return v;
+        }
+    }
+
+    if(e.turn_terminal && f.turn_terminal != *e.turn_terminal)
+    {
+        v.diagnosis = "turn_terminal expected " + *e.turn_terminal + " got " + f.turn_terminal;
+        return v;
+    }
+
     v.passed = true;
     v.diagnosis = "OK";
     return v;

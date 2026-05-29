@@ -59,6 +59,7 @@
 #include "ULLMSubagentRunner.h"
 #include "ULLMConnectPlanParsing.h"
 #include "ULLMConnectPlanLlmFallback.h"
+#include "ULLMModelRouter.h"
 #include "ULLMTurnTerminalHelpers.h"
 
 namespace RDK::LLM {
@@ -521,8 +522,9 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
     {
         intent_result = m_intent.parseWithOptionalLlm(&m_provider, planning_text);
         intent = intent_result.kind;
-        const InputUnderstandingResult understanding =
-            understandUserInput(&m_provider, planning_text, intent_result);
+        const InputUnderstandingResult understanding = understandUserInput(
+            &m_provider, planning_text, intent_result, &req.provider_profile, req.trace_id,
+            req.session_id);
         intent = understanding.intent;
         intent_result.confidence = understanding.confidence;
         if(understanding.needs_clarification)
@@ -934,6 +936,9 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
 
     const bool provider_tools = m_provider.capabilities().supports_tool_calling;
 
+    const ModelRoute cortex_route = routeModelForPhase(ModelTier::Cortex, req.provider_profile);
+    applyModelRouteAudit(cortex_route, req.trace_id, req.session_id);
+
     EphemeralContextInput ctx_input{state,
                                     session,
                                     req.gui,
@@ -1272,6 +1277,10 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
         }
 
         setWorkflowPhase(state, LLMWorkflowPhase::Executing, req.trace_id);
+        GetAuditLog().append("tool_loop_entered",
+                             {{"round", round},
+                              {"tool_count", static_cast<int>(completion.tool_calls.size())}},
+                             req.trace_id, req.session_id);
 
         LLMMessage assistant_tools;
         assistant_tools.role = LLMMessage::Role::Assistant;
@@ -1729,6 +1738,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                     final.text = formatWriteToolUserMessage(call_copy.name, tr);
                     if(!final.ok && !tr.message.empty())
                         final.error = tr.message;
+                    assignTurnTerminal(final, TurnTerminal::Completed);
                     setWorkflowPhase(state, LLMWorkflowPhase::Completed, req.trace_id);
                     setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
                     m_store.persistToDisk(req.session_id);

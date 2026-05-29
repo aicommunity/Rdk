@@ -53,6 +53,12 @@ struct AgentScenarioExpect {
     std::optional<int> tool_messages_max;
     std::optional<bool> mock_queue_empty;
     std::optional<LLMIntentKind> expect_intent;
+    /// Final or transitioned workflow phase name (e.g. Executing, Idle).
+    std::optional<std::string> phase_entered;
+    std::vector<std::string> audit_events_any;
+    std::vector<std::string> audit_events_all;
+    std::optional<bool> tool_loop_entered;
+    std::optional<std::string> turn_terminal;
 };
 
 struct AgentScenarioTurn {
@@ -106,6 +112,8 @@ struct AgentScenarioRun {
     size_t provider_invoke_count = 0;
     size_t mock_queue_remaining = 0;
     size_t tool_message_count = 0;
+    std::string final_workflow_phase;
+    std::vector<std::string> audit_event_types;
 };
 
 struct AgentScenarioVerdict {
