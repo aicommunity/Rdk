@@ -31,6 +31,8 @@ public:
     /// Обновление темы - инвалидирует кэш всех узлов и обновляет сцену
     void updateTheme();
 
+    UModernDiagramWidget* modernDiagramWidget() const { return modernScheme; }
+
 public slots:
     void componentDoubleClick(QString name);
     void componentSingleClick(QString name);

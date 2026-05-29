@@ -89,6 +89,90 @@ TEST(LLMOrchestrator, MutateNoSuitableToolAfterRecovery)
     EXPECT_EQ(resp.text, "Cannot find a suitable action.");
 }
 
+TEST(LLMOrchestrator, MutateFakeSuccessProseBlocked)
+{
+    ::unsetenv("NMSDK_LLM_INTENT_LLM");
+
+    ULLMMockProvider provider;
+    LLMCompletionResult read_round;
+    read_round.ok = true;
+    LLMToolCall find_call;
+    find_call.id = "tc-find";
+    find_call.name = "find_component";
+    find_call.arguments = {{"long_name", "Neuron1"}};
+    read_round.tool_calls.push_back(find_call);
+    provider.enqueue(read_round);
+    LLMCompletionResult prose;
+    prose.ok = true;
+    prose.text = "Property updated successfully.";
+    provider.enqueue(prose);
+    provider.enqueue(prose);
+
+    ULLMToolRegistry registry;
+    URdkDomainAccess domain(nullptr);
+    RegisterCoreRdkTools(registry, domain, nullptr);
+    ULLMPolicyEngine policy;
+    ULLMAuditLog audit;
+    ULLMIdempotencyStore idem;
+    ULLMToolArgumentValidator arg_validator;
+    ULLMToolGateway gateway(registry, policy, domain, audit, idem, arg_validator);
+    ULLMConversationStore store;
+    ULLMAgentOrchestrator orch(provider, registry, gateway, store);
+
+    LLMRequestEnvelope req;
+    req.session_id = "mutate-fake-success";
+    req.trace_id = "t-fake-success";
+    req.user_text = "set property Threshold to 1 on Neuron1";
+    req.session.project_loaded = true;
+    req.session.llm_write_enabled = true;
+
+    const LLMFinalResponse resp = orch.handleUserMessage(req);
+    EXPECT_TRUE(resp.ok);
+    EXPECT_TRUE(resp.no_suitable_tool);
+    EXPECT_NE(resp.text, "Property updated successfully.");
+}
+
+TEST(LLMOrchestrator, MutateEmbeddedGetPropertiesPortLikeRejected)
+{
+    ::unsetenv("NMSDK_LLM_INTENT_LLM");
+
+    ULLMMockProvider provider;
+    LLMCompletionResult embedded;
+    embedded.ok = true;
+    embedded.text =
+        R"({"name":"get_component_properties","arguments":{"long_name":"Neuron1.Output"}})";
+    provider.enqueue(embedded);
+    LLMCompletionResult prose;
+    prose.ok = true;
+    prose.text = "Found the port names.";
+    provider.enqueue(prose);
+    provider.enqueue(prose);
+    provider.enqueue(prose);
+
+    ULLMToolRegistry registry;
+    URdkDomainAccess domain(nullptr);
+    RegisterCoreRdkTools(registry, domain, nullptr);
+    ULLMPolicyEngine policy;
+    ULLMAuditLog audit;
+    ULLMIdempotencyStore idem;
+    ULLMToolArgumentValidator arg_validator;
+    ULLMToolGateway gateway(registry, policy, domain, audit, idem, arg_validator);
+    ULLMConversationStore store;
+    ULLMAgentOrchestrator orch(provider, registry, gateway, store);
+
+    LLMRequestEnvelope req;
+    req.session_id = "mutate-embedded-reject";
+    req.trace_id = "t-embedded-reject";
+    req.user_text = "connect the neurons";
+    req.session.project_loaded = true;
+    req.session.llm_write_enabled = true;
+
+    const LLMFinalResponse resp = orch.handleUserMessage(req);
+    EXPECT_TRUE(resp.ok);
+    EXPECT_TRUE(resp.no_suitable_tool);
+    EXPECT_NE(resp.text, "Found the port names.");
+}
+
 TEST(LLMOrchestrator, RollbackReportsFailureWhenCompensationFails)
 {
     ULLMMockProvider provider;

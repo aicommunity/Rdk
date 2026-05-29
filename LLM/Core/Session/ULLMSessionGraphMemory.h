@@ -43,6 +43,8 @@ void resetSessionGraphMemory(SessionGraphMemory& graph);
 void syncSessionGraphOnSessionChange(ConversationState& state, const LLMSessionContext& session);
 
 void recordSessionAdd(ConversationState& state, const std::string& long_name);
+std::string formatConnectKnownFact(const ConnectRecord& rec);
+void appendConnectKnownFact(ConversationState& state, const ConnectRecord& rec);
 void recordSessionConnect(ConversationState& state, URdkDomainAccess& domain,
                           const nlohmann::json& connect_result, int channel_index);
 void recordWriteToolOutcome(ConversationState& state, URdkDomainAccess& domain,

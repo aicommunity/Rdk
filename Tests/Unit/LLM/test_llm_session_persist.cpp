@@ -246,6 +246,57 @@ TEST(LLMSessionPersist, RoundTripLastSessionContextV2)
     std::filesystem::remove_all(dir);
 }
 
+TEST(LLMSessionPersist, RoundTripKnownFacts)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_known_facts";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+    ConversationState& state = store.getOrCreate("session-facts");
+    state.session_id = "session-facts";
+    state.known_facts = {"Connected Model/A to Model/B via Out -> In"};
+    ASSERT_TRUE(store.persistToDisk("session-facts"));
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-facts"));
+    const ConversationState& loaded = reloaded.getOrCreate("session-facts");
+    ASSERT_EQ(loaded.known_facts.size(), 1u);
+    EXPECT_EQ(loaded.known_facts[0], "Connected Model/A to Model/B via Out -> In");
+
+    std::filesystem::remove_all(dir);
+}
+
+TEST(LLMSessionPersist, RoundTripToolRoleMessage)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_tool_role";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+
+    LLMMessage tool;
+    tool.role = LLMMessage::Role::Tool;
+    tool.tool_call_id = "call-1";
+    tool.tool_name = "connect_components";
+    tool.content = R"({"ok":true})";
+    store.appendMessage("session-tool", tool);
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-tool"));
+    const ConversationState& loaded = reloaded.getOrCreate("session-tool");
+    ASSERT_EQ(loaded.messages.size(), 1u);
+    EXPECT_EQ(loaded.messages[0].role, LLMMessage::Role::Tool);
+    ASSERT_TRUE(loaded.messages[0].tool_name.has_value());
+    EXPECT_EQ(*loaded.messages[0].tool_name, "connect_components");
+    ASSERT_TRUE(loaded.messages[0].tool_call_id.has_value());
+    EXPECT_EQ(*loaded.messages[0].tool_call_id, "call-1");
+
+    std::filesystem::remove_all(dir);
+}
+
 TEST(LLMSessionPersist, BootstrapSeededFlagRoundTrip)
 {
     const std::string dir = "/tmp/rdk_llm_sessions_bootstrap";

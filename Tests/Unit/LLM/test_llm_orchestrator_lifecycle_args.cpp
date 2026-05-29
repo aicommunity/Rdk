@@ -14,8 +14,19 @@
 #include "Observability/ULLMAuditLog.h"
 #include "Observability/ULLMIdempotencyStore.h"
 #include "Tools/ULLMToolArgumentValidator.h"
+#include "Orchestrator/ULLMLifecycleArgumentGate.h"
 
 using namespace RDK::LLM;
+
+TEST(LLMOrchestratorLifecycleArgs, LoadConfigMissingPathDetectedInGate)
+{
+    ULLMToolRegistry registry;
+    RegisterApplicationTools(registry);
+    const auto missing =
+        findMissingArgumentsForTool("load_configuration", nlohmann::json::object(), nullptr, registry);
+    ASSERT_FALSE(missing.empty());
+    EXPECT_EQ(missing.front().name, "configuration_path");
+}
 
 TEST(LLMOrchestratorLifecycleArgs, CreateNewConfigUsesLlmToolCall)
 {

@@ -101,13 +101,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-108 | E2E `e2e_no_tool_email` flaky on live Ollama phrasing | post-M | P2 | done | Relaxed `NoSuitableToolOrRefusal` analyzer + headless/no-project acceptance |
 | TD-109 | `Test_LLM_WriteToolsEngine` SIGSEGV on `UAppCore` exit | post-M | P2 | done | `ShutdownLlmWriteToolsEngine()` + gtest global env teardown |
 | TD-110 | Symbol search (`UApplication`) rank below generic hits | post-M | P2 | done | Path/title boost in `UDocSearchIndex::searchInternal` |
-| TD-119 | Manual GUI walkthrough: selection + connect after agent-quality | chat-22-15-PR7 | P3 | open | optional human spot-check after PR7 |
-| TD-122 | diagram_scope_long_name GUI + add parent parity | chat-22-15-PR2 | P0 | in_progress | bridge, snapshot, normalizer |
-| TD-123 | ULLMDialogSlotMerge multi-turn connect/lifecycle | chat-22-15-PR3 | P0 | open | pending partial_arguments |
-| TD-124 | ActionIntentPreview + unified write execution | chat-22-15-PR4 | P0 | open | executeWriteWithPreviewAndVerify |
-| TD-125 | Post-tool verify + bounded repair loop | chat-22-15-PR5 | P0 | open | StepVerifier, WriteToolRepair |
-| TD-126 | Mutate-turn integrity (no fake success prose) | chat-22-15-PR6 | P1 | open | recovery partial_arguments |
-| TD-127 | HTML tool rows + known_facts on connect | chat-22-15-PR7 | P2 | open | dock archive |
+| TD-119 | Manual GUI walkthrough: selection + connect after agent-quality | chat-22-15-PR7 | P3 | open | automated walkthrough only; optional human spot-check |
 
 ---
 
@@ -115,6 +109,14 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Resolved in | Resolution |
 |----|------|-------------|------------|
+| TD-120 | Remove hardcoded connect paths in Core ephemeral/heuristics | 2026-05-29 | `f3f4cc0b`: KnowledgeBlocks, acquisition policy, no LTZone in Core |
+| TD-121 | Context acquisition policy + catalog blocks in ephemeral | 2026-05-29 | `f3f4cc0b`: `computeContextAcquisitionPlan`, retriever diagram scope |
+| TD-122 | diagram_scope_long_name GUI + add parent parity | 2026-05-29 | `3c5b615f`: diagramScopeChanged, normalizer parent |
+| TD-123 | ULLMDialogSlotMerge multi-turn connect/lifecycle | 2026-05-29 | `ULLMDialogSlotMerge`, orchestrator pending hook |
+| TD-124 | ActionIntentPreview + unified write execution | 2026-05-29 | `ULLMActionIntentPreview`, `executeWriteWithPreviewAndVerify` |
+| TD-125 | Post-tool verify + bounded repair loop | 2026-05-29 | `runPostToolVerification`, `attemptRepair`, max 2 repairs |
+| TD-126 | Mutate-turn integrity (no fake success prose) | 2026-05-29 | embedded validate, connect recovery partial JSON |
+| TD-127 | HTML tool rows + known_facts on connect | 2026-05-29 | `recordSessionConnect`, known_facts persist load |
 | TD-111 | GUI selection → `Env_SelectCurrentComponent` | 2026-05-29 | `UEngineSelectionSync`, list/diagram/LLM bridge |
 | TD-112 | `LLMGuiContextSnapshot` current_component_* from Env | 2026-05-29 | `guiSnapshotFromContext` + store JSON fields |
 | TD-113 | Write tools default scope = CurrentComponent | 2026-05-29 | `fillAddComponentDefaults` + `ULLMCurrentComponentScope` |

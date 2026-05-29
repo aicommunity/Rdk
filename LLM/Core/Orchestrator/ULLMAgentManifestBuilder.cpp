@@ -70,6 +70,7 @@ std::string buildAgentManifest(const ULLMToolRegistry& registry, const ToolFilte
     oss << "- Graph mutations: add_component, set_property, connect_components (and disconnect_components) as requested.\n";
     oss << "- connect_components: from_property must be a real output port on the source; to_property a real input on the target (not generic \"output\"/\"input\"). Use get_component_properties when unsure.\n";
     oss << "- Prefer one tool call per step, then inspect tool result.\n";
+    oss << "- After a write tool runs, the system emits a deterministic execution summary (not model prose).\n";
     oss << "- If no tool can satisfy a mutate request, respond NO_SUITABLE_TOOL.\n";
 
     std::string manifest = oss.str();

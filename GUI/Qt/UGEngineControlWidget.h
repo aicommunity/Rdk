@@ -143,6 +143,8 @@ public:
     void appendMenuSeparator(const QString& menuPath);
     void showCustomWidgetById(const QString& id);
 
+    UModernDiagramContainerWidget* modernDiagramContainer() const { return modernDiagram; }
+
 #ifndef RDK_DISABLE_EXT_GUI
     void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
 #endif

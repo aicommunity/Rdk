@@ -514,6 +514,14 @@ bool ULLMConversationStore::loadFromDisk(const std::string& session_id)
     {
         state.pending_tool_arguments.reset();
     }
+    if(j.contains("known_facts") && j["known_facts"].is_array())
+    {
+        for(const auto& fact : j["known_facts"])
+        {
+            if(fact.is_string())
+                state.known_facts.push_back(fact.get<std::string>());
+        }
+    }
     state.store_schema_version = j.value("store_schema_version", 1);
     if(j.contains("last_gui_context"))
         state.last_gui_context = guiSnapshotFromJson(j["last_gui_context"]);

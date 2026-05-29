@@ -111,9 +111,36 @@ void recordSessionAdd(ConversationState& state, const std::string& long_name)
         added.push_back(long_name);
 }
 
+std::string formatConnectKnownFact(const ConnectRecord& rec)
+{
+    std::string fact = "Connected " + rec.from_long_name + " to " + rec.to_long_name;
+    if(!rec.from_property.empty() || !rec.to_property.empty())
+    {
+        fact += " via ";
+        if(!rec.from_property.empty())
+            fact += rec.from_property;
+        if(!rec.to_property.empty())
+            fact += " -> " + rec.to_property;
+    }
+    return fact;
+}
+
+void appendConnectKnownFact(ConversationState& state, const ConnectRecord& rec)
+{
+    const std::string fact = formatConnectKnownFact(rec);
+    if(fact.empty())
+        return;
+    if(std::find(state.known_facts.begin(), state.known_facts.end(), fact)
+       == state.known_facts.end())
+        state.known_facts.push_back(fact);
+}
+
 void recordSessionConnect(ConversationState& state, URdkDomainAccess& domain,
                           const nlohmann::json& connect_result, int channel_index)
 {
+    if(connect_result.value("already_existed", false))
+        return;
+
     ConnectRecord rec;
     rec.from_long_name = connect_result.value("from_long_name", "");
     rec.to_long_name = connect_result.value("to_long_name", "");
@@ -123,6 +150,7 @@ void recordSessionConnect(ConversationState& state, URdkDomainAccess& domain,
     if(rec.from_long_name.empty() || rec.to_long_name.empty())
         return;
     state.session_graph.linked_records.push_back(rec);
+    appendConnectKnownFact(state, rec);
 
     std::string from_class;
     std::string to_class;
