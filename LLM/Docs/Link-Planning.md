@@ -52,9 +52,13 @@ The snapshot may set `links_truncated: true` when the max link limit is reached.
    - resolved entity store
    - exact short_name match in snapshot
 4. Infer ports (or ask for clarification) using published ports and the link pattern catalog.
+   When the user asks to connect «like previous», reuse `last_template` ports when component
+   classes match (fallback to catalog inference otherwise).
 5. For each target link quad:
    - if it is already present in snapshot `links[]`, skip creating a write step
    - otherwise, add a `connect_components` plan step with `success=link_exists`
+   For count-only goals, fail with `insufficient_new_links` when fewer new links remain
+   after skipping snapshot duplicates than requested.
 6. `goal_success` uses:
    - `link_exists` for a single link
    - `multi_link_exists` for multiple links
