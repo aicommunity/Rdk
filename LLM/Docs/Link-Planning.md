@@ -67,6 +67,37 @@ The snapshot may set `links_truncated: true` when the max link limit is reached.
 
 `connect_components` is idempotent with respect to the strict 4-tuple. If the link already exists, it returns `ok=true` and adds `already_existed: true`.
 
+## Remaining scope (TD-092)
+
+`parseConnectGoal` sets `remaining_scope`:
+
+- `SessionDelta` (default): endpoints from session graph memory (`added` not yet linked in session).
+- `ModelGraph`: all snapshot components with no incident link in the full model walk (`ULLMConnectEndpoints`).
+
+If the model link walk is truncated while computing global remaining, planning fails with `links_incomplete_for_global_remaining`.
+
+## Topologies (TD-092)
+
+| Topology | Behavior |
+|----------|----------|
+| `Sequential` | Pair endpoints FIFO (`e0→e1`, `e2→e3`, …) |
+| `Chain` | Ordered chain `e0→e1→…→eN` (catalog score ≥ 0.6 per step) |
+| `Tree` | Hub → each leaf; hub from `hub_token` or auto-pick (`ULLMConnectPairing`) |
+
+Routing to task path also triggers for `ModelGraph`, non-sequential topology, or multi-link connect goals.
+
+## Truncated snapshot dedup (TD-093)
+
+When `links_truncated: true`, duplicate detection uses `planSnapshotOrModelHasLink` (snapshot first, then `linkExistsInModel` via paginated walk). `connect_components` uses the same check before creating a link.
+
+## Container vs internal ports (TD-096)
+
+Users often mean **published ports on components** (for example `LTZone` → `Soma1.ExcSynapse1`), not abstract container boxes or generic `Output`/`Input` shell names. See [Connect-Semantics.md](Connect-Semantics.md) for the machine index and phrasing hints.
+
+## Connect semantics (TD-096)
+
+Port inference prefers machine index `connect-semantics.json` (see `Connect-Semantics.md`) over generic `Output`/`Input` when connecting neurons. Ephemeral system hint is injected for connect goals via `ULLMContextAssembler`.
+
 ## Optional LLM fallback
 
 When enabled, the orchestrator can attempt an LLM-based JSON extraction path if deterministic planning fails. The fallback is gated by:

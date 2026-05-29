@@ -1,10 +1,14 @@
 #include "ULLMConnectPlanBuilder.h"
 
+#include "../Context/ULLMConnectSemanticsCatalog.h"
 #include "../Domain/ULLMConnectPortInference.h"
 #include "../Domain/ULLMLinkIdentity.h"
+#include "../Domain/ULLMModelLinkWalker.h"
 #include "../Domain/ULLMResolvedEntityStore.h"
 #include "../Domain/URdkDomainAccess.h"
 #include "../Session/ULLMConversationStore.h"
+#include "../Domain/ULLMConnectEndpoints.h"
+#include "../Orchestrator/ULLMConnectPairing.h"
 #include "../Session/ULLMSessionGraphMemory.h"
 
 #include <algorithm>
@@ -108,7 +112,8 @@ bool needsSessionDelta(const ParsedConnectGoal& parsed)
 {
     return parsed.kind == ConnectGoalKind::RemainingSessionDelta
            || parsed.kind == ConnectGoalKind::AnalogousToPrevious
-           || parsed.kind == ConnectGoalKind::CountOnly;
+           || parsed.kind == ConnectGoalKind::CountOnly
+           || parsed.remaining_scope == ConnectRemainingScope::ModelGraph;
 }
 
 } // namespace
@@ -161,13 +166,21 @@ ConnectPlanBuildResult buildConnectPlanSteps(const ConnectPlanBuildRequest& req)
     }
     else if(needsSessionDelta(req.parsed))
     {
-        if(!req.state)
+        if(req.parsed.remaining_scope == ConnectRemainingScope::SessionDelta && !req.state)
         {
             out.issues.push_back("no_session_state");
             return out;
         }
-        std::vector<std::string> remaining = sessionRemainingLongNames(*req.state);
-        if(req.parsed.link_count > 0)
+        bool links_incomplete = false;
+        std::vector<std::string> remaining =
+            collectRemainingEndpoints(req.domain, snapshot_components, req.parsed, req.state,
+                                      req.session.active_channel_index, links_incomplete);
+        if(links_incomplete)
+        {
+            out.issues.push_back("links_incomplete_for_global_remaining");
+            return out;
+        }
+        if(req.parsed.link_count > 0 && req.parsed.topology == ConnectTopology::Sequential)
         {
             const size_t need = static_cast<size_t>(req.parsed.link_count * 2);
             if(remaining.size() < need)
@@ -177,18 +190,44 @@ ConnectPlanBuildResult buildConnectPlanSteps(const ConnectPlanBuildRequest& req)
             }
             remaining.resize(need);
         }
-        if(remaining.size() < 2)
+        if(remaining.size() < 2 && req.parsed.topology != ConnectTopology::Tree)
         {
             out.issues.push_back("no_remaining");
             return out;
         }
-        if((remaining.size() % 2) != 0)
+
+        PairingRequest pr;
+        pr.endpoints = remaining;
+        pr.snapshot_components = &snapshot_components;
+        pr.domain = &req.domain;
+        pr.catalog = &req.catalog;
+        pr.semantics = &defaultConnectSemanticsCatalog();
+        pr.channel_index = req.session.active_channel_index;
+        pr.topology = req.parsed.topology;
+        pr.link_count = req.parsed.link_count;
+        pr.goal_en = req.goal_en;
+        pr.prefer_internal_semantics = req.parsed.wants_internal_semantics_hint;
+        if(req.parsed.hub_token)
         {
-            out.issues.push_back("odd_remaining_count");
+            const auto hub_ln =
+                resolveEndpointToken(*req.parsed.hub_token, req, snapshot_components);
+            if(hub_ln)
+                pr.hub_long_name = *hub_ln;
+            else
+            {
+                out.issues.push_back("component_not_found:" + *req.parsed.hub_token);
+                return out;
+            }
+        }
+
+        const PairingResult pr_result = buildPairingCandidates(pr);
+        if(!pr_result.issues.empty())
+        {
+            out.issues = pr_result.issues;
             return out;
         }
-        for(size_t i = 0; i + 1 < remaining.size(); i += 2)
-            pairs.push_back({remaining[i], remaining[i + 1], "", ""});
+        for(const PairingCandidate& c : pr_result.pairs)
+            pairs.push_back({c.from_long_name, c.to_long_name, c.from_property, c.to_property});
     }
 
     if(!out.issues.empty())
@@ -225,8 +264,11 @@ ConnectPlanBuildResult buildConnectPlanSteps(const ConnectPlanBuildRequest& req)
                                  && !args.value("to_property", "").empty();
         if(!ports_ready)
         {
-            ConnectPortInferenceResult inf =
-                inferConnectPorts(args, req.domain, req.catalog, req.session.active_channel_index);
+            const ULLMConnectSemanticsCatalog& semantics = defaultConnectSemanticsCatalog();
+            ConnectPortInferenceResult inf = inferConnectPorts(
+                args, req.domain, req.catalog, req.session.active_channel_index,
+                semantics.empty() ? nullptr : &semantics, req.goal_en,
+                req.parsed.wants_internal_semantics_hint);
             if(!inf.ok)
             {
                 out.needs_clarification = inf.needs_clarification;
@@ -246,7 +288,8 @@ ConnectPlanBuildResult buildConnectPlanSteps(const ConnectPlanBuildRequest& req)
         if(!seen.insert(key).second)
             continue;
 
-        const bool already_in_snapshot = snapshotContainsLink(snap, quad);
+        const bool already_in_snapshot =
+            planSnapshotOrModelHasLink(snap, req.domain, quad, req.session.active_channel_index);
         if(check_new_link_quota && !already_in_snapshot)
             ++new_links_planned;
         if(already_in_snapshot)

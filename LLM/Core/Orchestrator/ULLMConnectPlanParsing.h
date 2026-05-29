@@ -1,10 +1,22 @@
 #ifndef RDK_ULLM_CONNECT_PLAN_PARSING_H
 #define RDK_ULLM_CONNECT_PLAN_PARSING_H
 
+#include <optional>
 #include <string>
 #include <vector>
 
 namespace RDK::LLM {
+
+enum class ConnectRemainingScope {
+    SessionDelta,
+    ModelGraph,
+};
+
+enum class ConnectTopology {
+    Sequential,
+    Chain,
+    Tree,
+};
 
 enum class ConnectGoalKind {
     None,
@@ -32,6 +44,10 @@ struct ParsedConnectGoal {
     int link_count = 0;
     bool wants_remaining = false;
     bool wants_analogous = false;
+    ConnectRemainingScope remaining_scope = ConnectRemainingScope::SessionDelta;
+    ConnectTopology topology = ConnectTopology::Sequential;
+    std::optional<std::string> hub_token;
+    bool wants_internal_semantics_hint = false;
 };
 
 bool isConnectGoalText(const std::string& text);

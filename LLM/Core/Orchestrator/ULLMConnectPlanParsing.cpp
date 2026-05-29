@@ -82,6 +82,30 @@ ParsedConnectGoal parseConnectGoal(const std::string& goal_en)
     if(q.valid)
         out.link_count = q.count;
 
+    static const std::regex model_remaining_re(
+        R"((на схеме|в модели|in the model|on the (schema|diagram)|all unlinked|все не связанные))",
+        std::regex::icase);
+    if(std::regex_search(goal_en, model_remaining_re))
+        out.remaining_scope = ConnectRemainingScope::ModelGraph;
+
+    static const std::regex chain_re(R"((цепочк|chain|последовательн))", std::regex::icase);
+    static const std::regex tree_re(
+        R"((дерев|tree|star|к остальным|to the rest|the rest|hub))", std::regex::icase);
+    if(std::regex_search(goal_en, chain_re))
+        out.topology = ConnectTopology::Chain;
+    else if(std::regex_search(goal_en, tree_re))
+        out.topology = ConnectTopology::Tree;
+
+    static const std::regex hub_re(
+        R"((?:\bот\b|\bfrom\b|\bhub\b)\s+([A-Za-z][A-Za-z0-9_./]{1,}))", std::regex::icase);
+    if(std::smatch hub_m; std::regex_search(goal_en, hub_m, hub_re))
+        out.hub_token = hub_m[1].str();
+
+    static const std::regex sem_hint_re(
+        R"((низкопорог|ltzone|lt zone|синапс|synapse|threshold|зона))", std::regex::icase);
+    if(std::regex_search(goal_en, sem_hint_re))
+        out.wants_internal_semantics_hint = true;
+
     if(out.kind == ConnectGoalKind::None)
     {
         if(out.wants_remaining)

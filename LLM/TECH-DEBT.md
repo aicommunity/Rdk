@@ -82,8 +82,6 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-089 | `Orchestrator.md` / `LLMRequestEnvelope` doc drift (gui_context, retriever) | context-P0 | P1 | done | Docs + `LLMGuiContextSnapshot` in envelope |
 | TD-090 | Flaky lab Ollama e2e after context-hint changes | context-verify | P2 | done | Headless acceptable-failure in `llm_e2e_analyzer`; e2e fixture prompts updated |
 | TD-091 | Connect planning (explicit pairs, N links, remaining/analogous) | connect-planner | P1 | done | `b41df580` (+ `4bf1a2b5`…`1ad30309`): snapshot `links[]`, session graph, deterministic planner, LLM fallback; `Docs/Link-Planning.md` |
-| TD-092 | «Оставшиеся» beyond session_delta + chain/tree topologies | connect-planner | P3 | open | Post-MVP: global model remaining + compatibility pairing |
-| TD-093 | Snapshot link walk perf/limits + list_model_links tool | connect-planner | P2 | open | Optimize `listNetSnapshot.links[]` and add dedicated read tool |
 
 ---
 
@@ -91,6 +89,9 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Resolved in | Resolution |
 |----|------|-------------|------------|
+| TD-093 | Snapshot link walk + list_model_links | 2026-05-29 | `ULLMModelLinkWalker`, paginated `list_model_links`, `linkExistsInModel` for truncated dedup |
+| TD-096 | Connect semantics index + runtime inference | 2026-05-29 | `connect-semantics.json` index, `ULLMConnectSemanticsCatalog`, port inference priority |
+| TD-092 | Global remaining + chain/tree pairing | 2026-05-29 | `ULLMConnectEndpoints`, `ULLMConnectPairing`, ModelGraph scope, routing |
 | TD-091 | Connect planning (explicit pairs, N links, remaining/analogous) | 2026-05-28 | `b41df580`: deterministic connect planner, session graph, snapshot links, idempotent connect |
 | TD-019 | MotionControlLib `Llm/` read tools | 2026-05-25 | `RegisterMotionControlLibLlmTools` |
 | TD-020 | Plan rollback for `set_property` | 2026-05-25 | `previous_value` + compensation in `ULLMPlanExecutor` |

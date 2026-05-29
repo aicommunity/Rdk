@@ -60,6 +60,8 @@ TaskPathDecision decideTaskPath(const std::string& text_en, LLMIntentKind intent
     const ParsedConnectGoal connect = parseConnectGoal(text_en);
     if((connect.kind == ConnectGoalKind::RemainingSessionDelta
         || connect.kind == ConnectGoalKind::AnalogousToPrevious)
+       || connect.remaining_scope == ConnectRemainingScope::ModelGraph
+       || connect.topology != ConnectTopology::Sequential
        || connect.explicit_links.size() >= 2
        || (isConnectGoalText(text_en) && connect.link_count > 1))
         out.use_task_path = true;
