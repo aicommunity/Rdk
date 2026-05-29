@@ -26,6 +26,7 @@
 #include "../UGEngineControlWidget.h"
 
 #include <cstdlib>
+#include <exception>
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -198,7 +199,7 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
             &ULlmAssistantDockWidget::onProviderChanged);
     connect(settings_btn, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onOpenSettings);
     connect(new_chat_btn, &QPushButton::clicked, this,
-            [this]() { startNewChat(tr("<i>New chat started.</i>")); });
+            [this]() { scheduleDeferredNewChat(tr("<i>New chat started.</i>")); });
     connect(m_history_btn, &QPushButton::clicked, this, &ULlmAssistantDockWidget::onOpenChatHistory);
     if(!chatArchiveEnabled())
         m_history_btn->setVisible(false);
@@ -387,6 +388,12 @@ std::string ULlmAssistantDockWidget::currentSessionId() const
 
 void ULlmAssistantDockWidget::startNewChat(const QString& system_note)
 {
+    if(orchestratorBusyForCurrentSession())
+    {
+        scheduleDeferredNewChat(system_note);
+        return;
+    }
+
     if(!m_archive_view_mode)
         finalizeActiveArchive();
 
@@ -428,12 +435,90 @@ void ULlmAssistantDockWidget::startNewChat(const QString& system_note)
 void ULlmAssistantDockWidget::onProjectOpened(const QString& configuration_ini_path)
 {
     (void)configuration_ini_path;
-    startNewChat(tr("<i>New chat — project was loaded.</i>"));
+    scheduleDeferredNewChat(tr("<i>New chat — project was loaded.</i>"));
 }
 
 void ULlmAssistantDockWidget::onProjectClosed()
 {
-    startNewChat(tr("<i>New chat — project was closed.</i>"));
+    scheduleDeferredNewChat(tr("<i>New chat — project was closed.</i>"));
+}
+
+bool ULlmAssistantDockWidget::orchestratorBusyForCurrentSession() const
+{
+    if(!RDK::LLM::LLMServices::instance().isInitialized() || m_session_id.isEmpty())
+        return false;
+    return RDK::LLM::LLMServices::instance().orchestrator().isSessionBusy(currentSessionId());
+}
+
+void ULlmAssistantDockWidget::scheduleDeferredNewChat(const QString& system_note)
+{
+    if(orchestratorBusyForCurrentSession())
+    {
+        m_deferred_new_chat_pending = true;
+        m_deferred_new_chat_note = system_note;
+        return;
+    }
+    startNewChat(system_note);
+}
+
+void ULlmAssistantDockWidget::flushDeferredUiActions()
+{
+    if(orchestratorBusyForCurrentSession())
+        return;
+
+    if(m_deferred_archive_action)
+    {
+        const DeferredArchiveAction action = *m_deferred_archive_action;
+        m_deferred_archive_action.reset();
+        if(action.kind == DeferredArchiveAction::Kind::Continue)
+            continueArchivedChatNow(action.chat_file, action.session_id);
+        else
+            openArchivedChatNow(action.chat_file, action.session_id);
+    }
+
+    if(!m_deferred_new_chat_pending)
+        return;
+    m_deferred_new_chat_pending = false;
+    const QString note = m_deferred_new_chat_note;
+    m_deferred_new_chat_note.clear();
+    startNewChat(note);
+}
+
+void ULlmAssistantDockWidget::handleAsyncLlmResult(
+    QFutureWatcher<RDK::LLM::LLMFinalResponse>* watcher,
+    const std::function<void(const RDK::LLM::LLMFinalResponse&)>& on_response)
+{
+    struct FlushDeferred {
+        ULlmAssistantDockWidget* dock;
+        ~FlushDeferred() { dock->flushDeferredUiActions(); }
+    } flush{this};
+
+    RDK::LLM::LLMFinalResponse resp;
+    try
+    {
+        resp = watcher->result();
+    }
+    catch(const std::exception& ex)
+    {
+        resp.ok = false;
+        resp.error = ex.what();
+    }
+    catch(...)
+    {
+        resp.ok = false;
+        resp.error = "Unknown error during LLM request.";
+    }
+    watcher->deleteLater();
+    if(on_response)
+        on_response(resp);
+}
+
+void ULlmAssistantDockWidget::handleAsyncLlmFinished(
+    QFutureWatcher<RDK::LLM::LLMFinalResponse>* watcher)
+{
+    handleAsyncLlmResult(watcher, [this](const RDK::LLM::LLMFinalResponse& resp) {
+        onStreamFinished(resp);
+    });
 }
 
 RDK::LLM::LLMSessionContext ULlmAssistantDockWidget::buildSession(const LLMGuiContext& ctx) const
@@ -757,6 +842,19 @@ void ULlmAssistantDockWidget::onOpenChatHistory()
 void ULlmAssistantDockWidget::openArchivedChat(const QString& chat_file_path,
                                                const QString& session_id)
 {
+    if(orchestratorBusyForCurrentSession())
+    {
+        m_deferred_archive_action =
+            DeferredArchiveAction{DeferredArchiveAction::Kind::OpenReadOnly, chat_file_path,
+                                  session_id};
+        return;
+    }
+    openArchivedChatNow(chat_file_path, session_id);
+}
+
+void ULlmAssistantDockWidget::openArchivedChatNow(const QString& chat_file_path,
+                                                  const QString& session_id)
+{
     if(!m_chat_archive)
         return;
 
@@ -784,6 +882,19 @@ void ULlmAssistantDockWidget::openArchivedChat(const QString& chat_file_path,
 
 void ULlmAssistantDockWidget::continueArchivedChat(const QString& chat_file_path,
                                                    const QString& session_id)
+{
+    if(orchestratorBusyForCurrentSession())
+    {
+        m_deferred_archive_action =
+            DeferredArchiveAction{DeferredArchiveAction::Kind::Continue, chat_file_path,
+                                  session_id};
+        return;
+    }
+    continueArchivedChatNow(chat_file_path, session_id);
+}
+
+void ULlmAssistantDockWidget::continueArchivedChatNow(const QString& chat_file_path,
+                                                    const QString& session_id)
 {
     if(!m_chat_archive)
         return;
@@ -916,11 +1027,7 @@ void ULlmAssistantDockWidget::runUserMessage(const QString& text)
 
     auto* watcher = new QFutureWatcher<RDK::LLM::LLMFinalResponse>(this);
     connect(watcher, &QFutureWatcher<RDK::LLM::LLMFinalResponse>::finished, this,
-            [this, watcher]() {
-                const RDK::LLM::LLMFinalResponse resp = watcher->result();
-                watcher->deleteLater();
-                onStreamFinished(resp);
-            });
+            [this, watcher]() { handleAsyncLlmFinished(watcher); });
     watcher->setFuture(future);
 }
 
@@ -928,13 +1035,18 @@ void ULlmAssistantDockWidget::onConfirmClicked()
 {
     if(m_pending_confirmation_id.isEmpty())
         return;
-    const LLMGuiContext ctx = m_bridge ? m_bridge->currentContext() : m_last_ctx;
+    if(orchestratorBusyForCurrentSession())
+    {
+        appendAssistantText(tr("Error: %1")
+                                .arg(QString::fromUtf8(
+                                    RDK::LLM::ULLMAgentOrchestrator::sessionBusyErrorMessage())));
+        return;
+    }
     const RDK::LLM::LLMFinalResponse resp = RDK::LLM::LLMServices::instance().orchestrator().confirmPending(
         currentSessionId(), m_pending_confirmation_id.toStdString());
     clearPendingConfirmation();
     appendAssistantText(resp.ok ? QString::fromStdString(resp.text)
                                 : QString::fromStdString("Error: " + resp.error));
-    (void)ctx;
 }
 
 void ULlmAssistantDockWidget::onRejectClicked()
@@ -950,9 +1062,17 @@ void ULlmAssistantDockWidget::onExecutePlanClicked()
 {
     if(m_pending_plan_id.isEmpty())
         return;
+    if(orchestratorBusyForCurrentSession())
+    {
+        appendAssistantText(tr("Error: %1")
+                                .arg(QString::fromUtf8(
+                                    RDK::LLM::ULLMAgentOrchestrator::sessionBusyErrorMessage())));
+        return;
+    }
     const LLMGuiContext ctx = m_bridge ? m_bridge->currentContext() : m_last_ctx;
     const RDK::LLM::LLMSessionContext session = buildSession(ctx);
     const std::string session_id = currentSessionId();
+    setRequestInProgress(true);
     auto future = QtConcurrent::run([session, session_id]() {
         return RDK::LLM::LLMServices::instance().orchestrator().confirmPlanExecution(
             session_id, "gui-plan-trace", session);
@@ -960,18 +1080,19 @@ void ULlmAssistantDockWidget::onExecutePlanClicked()
     auto* watcher = new QFutureWatcher<RDK::LLM::LLMFinalResponse>(this);
     connect(watcher, &QFutureWatcher<RDK::LLM::LLMFinalResponse>::finished, this,
             [this, watcher]() {
-                const RDK::LLM::LLMFinalResponse resp = watcher->result();
-                watcher->deleteLater();
-                if(resp.can_resume_plan)
-                    setPausedPlan(QString::fromStdString(resp.pending_plan_id),
-                                  QString::fromStdString(resp.text));
-                else
-                {
-                    clearPendingPlan();
-                    m_reject->setVisible(false);
-                }
-                appendAssistantText(resp.ok ? QString::fromStdString(resp.text)
-                                            : QString::fromStdString("Error: " + resp.error));
+                handleAsyncLlmResult(watcher, [this](const RDK::LLM::LLMFinalResponse& resp) {
+                    setRequestInProgress(false);
+                    if(resp.can_resume_plan)
+                        setPausedPlan(QString::fromStdString(resp.pending_plan_id),
+                                      QString::fromStdString(resp.text));
+                    else
+                    {
+                        clearPendingPlan();
+                        m_reject->setVisible(false);
+                    }
+                    appendAssistantText(resp.ok ? QString::fromStdString(resp.text)
+                                                : QString::fromStdString("Error: " + resp.error));
+                });
             });
     watcher->setFuture(future);
 }
@@ -980,9 +1101,17 @@ void ULlmAssistantDockWidget::onResumePlanClicked()
 {
     if(m_pending_plan_id.isEmpty() || !m_plan_paused)
         return;
+    if(orchestratorBusyForCurrentSession())
+    {
+        appendAssistantText(tr("Error: %1")
+                                .arg(QString::fromUtf8(
+                                    RDK::LLM::ULLMAgentOrchestrator::sessionBusyErrorMessage())));
+        return;
+    }
     const LLMGuiContext ctx = m_bridge ? m_bridge->currentContext() : m_last_ctx;
     const RDK::LLM::LLMSessionContext session = buildSession(ctx);
     const std::string session_id = currentSessionId();
+    setRequestInProgress(true);
     auto future = QtConcurrent::run([session, session_id]() {
         return RDK::LLM::LLMServices::instance().orchestrator().resumePlanExecution(
             session_id, "gui-plan-resume", session);
@@ -990,18 +1119,19 @@ void ULlmAssistantDockWidget::onResumePlanClicked()
     auto* watcher = new QFutureWatcher<RDK::LLM::LLMFinalResponse>(this);
     connect(watcher, &QFutureWatcher<RDK::LLM::LLMFinalResponse>::finished, this,
             [this, watcher]() {
-                const RDK::LLM::LLMFinalResponse resp = watcher->result();
-                watcher->deleteLater();
-                if(resp.can_resume_plan)
-                    setPausedPlan(QString::fromStdString(resp.pending_plan_id),
-                                  QString::fromStdString(resp.text));
-                else
-                {
-                    clearPendingPlan();
-                    m_reject->setVisible(false);
-                }
-                appendAssistantText(resp.ok ? QString::fromStdString(resp.text)
-                                            : QString::fromStdString("Error: " + resp.error));
+                handleAsyncLlmResult(watcher, [this](const RDK::LLM::LLMFinalResponse& resp) {
+                    setRequestInProgress(false);
+                    if(resp.can_resume_plan)
+                        setPausedPlan(QString::fromStdString(resp.pending_plan_id),
+                                      QString::fromStdString(resp.text));
+                    else
+                    {
+                        clearPendingPlan();
+                        m_reject->setVisible(false);
+                    }
+                    appendAssistantText(resp.ok ? QString::fromStdString(resp.text)
+                                                : QString::fromStdString("Error: " + resp.error));
+                });
             });
     watcher->setFuture(future);
 }
@@ -1010,9 +1140,17 @@ void ULlmAssistantDockWidget::onRollbackPlanClicked()
 {
     if(m_pending_plan_id.isEmpty())
         return;
+    if(orchestratorBusyForCurrentSession())
+    {
+        appendAssistantText(tr("Error: %1")
+                                .arg(QString::fromUtf8(
+                                    RDK::LLM::ULLMAgentOrchestrator::sessionBusyErrorMessage())));
+        return;
+    }
     const LLMGuiContext ctx = m_bridge ? m_bridge->currentContext() : m_last_ctx;
     const RDK::LLM::LLMSessionContext session = buildSession(ctx);
     const std::string session_id = currentSessionId();
+    setRequestInProgress(true);
     auto future = QtConcurrent::run([session, session_id]() {
         return RDK::LLM::LLMServices::instance().orchestrator().rollbackPlanExecution(
             session_id, "gui-plan-rollback", session);
@@ -1020,15 +1158,16 @@ void ULlmAssistantDockWidget::onRollbackPlanClicked()
     auto* watcher = new QFutureWatcher<RDK::LLM::LLMFinalResponse>(this);
     connect(watcher, &QFutureWatcher<RDK::LLM::LLMFinalResponse>::finished, this,
             [this, watcher]() {
-                const RDK::LLM::LLMFinalResponse resp = watcher->result();
-                watcher->deleteLater();
-                clearPendingPlan();
-                m_reject->setVisible(false);
-                appendRollbackStatusIfPresent(this, resp);
-                if(!resp.text.empty())
-                    appendAssistantText(QString::fromStdString(resp.text));
-                else if(!resp.ok)
-                    appendAssistantText(QString::fromStdString("Error: " + resp.error));
+                handleAsyncLlmResult(watcher, [this](const RDK::LLM::LLMFinalResponse& resp) {
+                    setRequestInProgress(false);
+                    clearPendingPlan();
+                    m_reject->setVisible(false);
+                    appendRollbackStatusIfPresent(this, resp);
+                    if(!resp.text.empty())
+                        appendAssistantText(QString::fromStdString(resp.text));
+                    else if(!resp.ok)
+                        appendAssistantText(QString::fromStdString("Error: " + resp.error));
+                });
             });
     watcher->setFuture(future);
 }

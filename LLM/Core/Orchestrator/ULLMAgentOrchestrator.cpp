@@ -84,6 +84,35 @@ void appendAgentNote(ConversationState& state, const std::string& line)
         state.agent_notes.resize(kMaxNotes);
 }
 
+const char* kSessionBusyError = "Session busy: wait for the current request to finish.";
+
+struct SessionBusyScope {
+    ULLMAgentOrchestrator* orch = nullptr;
+    std::string session_id;
+    bool held = false;
+
+    SessionBusyScope(ULLMAgentOrchestrator& o, const std::string& sid, LLMFinalResponse& final)
+        : orch(&o)
+        , session_id(sid)
+    {
+        if(!o.tryAcquireSessionBusy(sid))
+        {
+            final.ok = false;
+            final.error = kSessionBusyError;
+            return;
+        }
+        held = true;
+    }
+
+    ~SessionBusyScope()
+    {
+        if(held && orch)
+            orch->releaseSessionBusy(session_id);
+    }
+
+    explicit operator bool() const { return held; }
+};
+
 bool shouldPromptForMissingToolArguments(const std::string& tool_name,
                                          const ToolGatewayResult& tr,
                                          const std::vector<ToolArgumentFieldSpec>& missing)
@@ -301,24 +330,9 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
         m_cancelled_sessions.erase(req.session_id);
     }
     LLMFinalResponse final;
-    {
-        std::lock_guard<std::mutex> lock(m_session_busy_mu);
-        if(m_session_busy[req.session_id])
-        {
-            final.ok = false;
-            final.error = "Session busy: wait for the current request to finish.";
-            return final;
-        }
-        m_session_busy[req.session_id] = true;
-    }
-    auto clear_busy = [this, sid = req.session_id]() {
-        std::lock_guard<std::mutex> lock(m_session_busy_mu);
-        m_session_busy[sid] = false;
-    };
-    struct BusyGuard {
-        std::function<void()> fn;
-        ~BusyGuard() { fn(); }
-    } busy_guard{clear_busy};
+    SessionBusyScope busy(*this, req.session_id, final);
+    if(!busy)
+        return final;
 
     ConversationState& state = m_store.getOrCreate(req.session_id);
     state.session_id = req.session_id;
@@ -1408,6 +1422,10 @@ LLMFinalResponse ULLMAgentOrchestrator::confirmPending(const std::string& sessio
                                                       const std::string& confirmation_id)
 {
     LLMFinalResponse final;
+    SessionBusyScope busy(*this, session_id, final);
+    if(!busy)
+        return final;
+
     ConversationState& state = m_store.getOrCreate(session_id);
     const int confirmation_ttl = defaultPolicyLimits().confirmation_ttl_seconds;
     if(m_store.expirePendingIfStale(session_id, confirmation_ttl))
@@ -1446,6 +1464,10 @@ LLMFinalResponse ULLMAgentOrchestrator::confirmPlanExecution(const std::string& 
                                                              const LLMSessionContext& session)
 {
     LLMFinalResponse final;
+    SessionBusyScope busy(*this, session_id, final);
+    if(!busy)
+        return final;
+
     ConversationState& state = m_store.getOrCreate(session_id);
     if(!state.pending_plan)
     {
@@ -1509,6 +1531,10 @@ LLMFinalResponse ULLMAgentOrchestrator::resumePlanExecution(const std::string& s
                                                               const LLMSessionContext& session)
 {
     LLMFinalResponse final;
+    SessionBusyScope busy(*this, session_id, final);
+    if(!busy)
+        return final;
+
     ConversationState& state = m_store.getOrCreate(session_id);
     if(!state.pending_plan || !state.pending_plan->paused)
     {
@@ -1568,6 +1594,10 @@ LLMFinalResponse ULLMAgentOrchestrator::rollbackPlanExecution(const std::string&
                                                                 const LLMSessionContext& session)
 {
     LLMFinalResponse final;
+    SessionBusyScope busy(*this, session_id, final);
+    if(!busy)
+        return final;
+
     ConversationState& state = m_store.getOrCreate(session_id);
     if(!state.pending_plan)
     {
@@ -1899,14 +1929,37 @@ void ULLMAgentOrchestrator::seedSessionContext(const std::string& session_id,
     m_store.persistToDisk(session_id);
 }
 
+const char* ULLMAgentOrchestrator::sessionBusyErrorMessage()
+{
+    return kSessionBusyError;
+}
+
+bool ULLMAgentOrchestrator::tryAcquireSessionBusy(const std::string& session_id)
+{
+    std::lock_guard<std::mutex> lock(m_session_busy_mu);
+    if(m_session_busy[session_id])
+        return false;
+    m_session_busy[session_id] = true;
+    return true;
+}
+
+void ULLMAgentOrchestrator::releaseSessionBusy(const std::string& session_id)
+{
+    std::lock_guard<std::mutex> lock(m_session_busy_mu);
+    m_session_busy[session_id] = false;
+}
+
+bool ULLMAgentOrchestrator::isSessionBusy(const std::string& session_id) const
+{
+    std::lock_guard<std::mutex> lock(m_session_busy_mu);
+    const auto it = m_session_busy.find(session_id);
+    return it != m_session_busy.end() && it->second;
+}
+
 bool ULLMAgentOrchestrator::tryResumeSession(const std::string& session_id)
 {
-    {
-        std::lock_guard<std::mutex> lock(m_session_busy_mu);
-        const auto it = m_session_busy.find(session_id);
-        if(it != m_session_busy.end() && it->second)
-            return false;
-    }
+    if(isSessionBusy(session_id))
+        return false;
     if(!m_store.loadFromDisk(session_id))
         return false;
     {
@@ -1918,6 +1971,9 @@ bool ULLMAgentOrchestrator::tryResumeSession(const std::string& session_id)
 
 void ULLMAgentOrchestrator::discardSession(const std::string& session_id)
 {
+    if(isSessionBusy(session_id))
+        return;
+
     cancelSession(session_id);
     rejectPending(session_id);
     m_store.removeSession(session_id);

@@ -1,7 +1,9 @@
 #ifndef RDK_ULLM_ASSISTANT_DOCK_WIDGET_H
 #define RDK_ULLM_ASSISTANT_DOCK_WIDGET_H
 
+#include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 
 #include <QComboBox>
@@ -23,6 +25,9 @@ struct LLMFinalResponse;
 }
 
 class QTimer;
+
+template<typename T>
+class QFutureWatcher;
 
 class ULlmAssistantDockWidget : public UVisualControllerWidget {
     Q_OBJECT
@@ -78,8 +83,23 @@ private:
     void setArchiveViewMode(bool read_only, const QString& banner_text = QString());
     void openArchivedChat(const QString& chat_file_path, const QString& session_id);
     void continueArchivedChat(const QString& chat_file_path, const QString& session_id);
+    void openArchivedChatNow(const QString& chat_file_path, const QString& session_id);
+    void continueArchivedChatNow(const QString& chat_file_path, const QString& session_id);
     void rebuildHistoryFromSession(const std::string& session_id);
     void restoreHitlFromSession(const std::string& session_id);
+    bool orchestratorBusyForCurrentSession() const;
+    void scheduleDeferredNewChat(const QString& system_note);
+    void flushDeferredUiActions();
+    void handleAsyncLlmResult(QFutureWatcher<RDK::LLM::LLMFinalResponse>* watcher,
+                              const std::function<void(const RDK::LLM::LLMFinalResponse&)>& on_response);
+    void handleAsyncLlmFinished(QFutureWatcher<RDK::LLM::LLMFinalResponse>* watcher);
+
+    struct DeferredArchiveAction {
+        enum class Kind { OpenReadOnly, Continue };
+        Kind kind = Kind::OpenReadOnly;
+        QString chat_file;
+        QString session_id;
+    };
 
     ULlmGuiContextBridge* m_bridge = nullptr;
     QComboBox* m_provider_combo = nullptr;
@@ -113,6 +133,9 @@ private:
     std::unique_ptr<ULlmChatHistoryArchive> m_chat_archive;
     QString m_active_archive_path;
     bool m_archive_view_mode = false;
+    std::optional<DeferredArchiveAction> m_deferred_archive_action;
+    bool m_deferred_new_chat_pending = false;
+    QString m_deferred_new_chat_note;
 };
 
 #endif
