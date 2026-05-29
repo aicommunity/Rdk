@@ -192,7 +192,10 @@ void UModernDiagramWidget::SetApplication(RDK::UApplication* app)
 
 void UModernDiagramWidget::SetComponentName(const QString& name)
 {
+    if(m_componentName == name)
+        return;
     m_componentName = name;
+    emit diagramScopeChanged(name);
 }
 
 void UModernDiagramWidget::requestOpenProjectDescription()

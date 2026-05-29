@@ -17,6 +17,12 @@ LLMGuiContext ULlmGuiContextBridge::currentContext() const
     return m_ctx;
 }
 
+void ULlmGuiContextBridge::onDiagramScopeChanged(const QString& scope_long_name)
+{
+    m_ctx.diagram_scope_long_name = scope_long_name;
+    emitIfChanged();
+}
+
 void ULlmGuiContextBridge::onDiagramSelectionChanged(const UComponentGuiContext& ctx)
 {
     m_ctx.focused_component_long_name = ctx.componentLongName;

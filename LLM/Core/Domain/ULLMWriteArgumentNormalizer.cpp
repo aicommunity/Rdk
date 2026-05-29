@@ -51,9 +51,15 @@ void fillAddComponentDefaults(nlohmann::json& args,
     std::string& parent = args["parent_long_name"].get_ref<std::string&>();
     if(parent.empty())
     {
-        const CurrentComponentScope scope = readCurrentComponentScope(gui_fallback);
-        if(scope.valid)
-            parent = scope.long_name;
+        const std::string diagram_scope = readDiagramScopeLongName(gui_fallback);
+        if(!diagram_scope.empty())
+            parent = diagram_scope;
+        else
+        {
+            const CurrentComponentScope scope = readCurrentComponentScope(gui_fallback);
+            if(scope.valid)
+                parent = scope.long_name;
+        }
     }
     if(!args.contains("channel_index"))
         args["channel_index"] = 0;

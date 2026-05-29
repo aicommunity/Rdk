@@ -14,6 +14,8 @@ struct LLMGuiContext {
     QString project_xml_path;
     QString focused_component_long_name;
     QString focused_class_name;
+    /// Drill level of the open schematic (container long_name), not list selection.
+    QString diagram_scope_long_name;
     QRectF diagram_viewport_scene_rect;
     qint64 snapshot_fingerprint = 0;
 };

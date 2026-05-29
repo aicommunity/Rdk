@@ -19,6 +19,7 @@ public:
 
 public slots:
     void onDiagramSelectionChanged(const UComponentGuiContext& ctx);
+    void onDiagramScopeChanged(const QString& scope_long_name);
     void onProjectLoaded(const QString& path);
     void onProjectClosed();
     void onChannelChanged(int index);

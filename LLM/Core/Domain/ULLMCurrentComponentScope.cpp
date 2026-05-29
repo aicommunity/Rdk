@@ -26,4 +26,11 @@ CurrentComponentScope readCurrentComponentScope(const LLMGuiContextSnapshot* gui
     return scope;
 }
 
+std::string readDiagramScopeLongName(const LLMGuiContextSnapshot* gui)
+{
+    if(!gui)
+        return {};
+    return gui->diagram_scope_long_name;
+}
+
 } // namespace RDK::LLM

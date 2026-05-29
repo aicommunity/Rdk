@@ -16,6 +16,9 @@ struct CurrentComponentScope {
 /// Kernel CurrentComponent (authoritative); optional GUI snapshot fallback.
 CurrentComponentScope readCurrentComponentScope(const LLMGuiContextSnapshot* gui_fallback = nullptr);
 
+/// Open schematic drill level; empty at root.
+std::string readDiagramScopeLongName(const LLMGuiContextSnapshot* gui);
+
 } // namespace RDK::LLM
 
 #endif

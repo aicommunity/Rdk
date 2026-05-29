@@ -102,9 +102,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-109 | `Test_LLM_WriteToolsEngine` SIGSEGV on `UAppCore` exit | post-M | P2 | done | `ShutdownLlmWriteToolsEngine()` + gtest global env teardown |
 | TD-110 | Symbol search (`UApplication`) rank below generic hits | post-M | P2 | done | Path/title boost in `UDocSearchIndex::searchInternal` |
 | TD-119 | Manual GUI walkthrough: selection + connect after agent-quality | chat-22-15-PR7 | P3 | open | optional human spot-check after PR7 |
-| TD-120 | Remove hardcoded connect paths in Core ephemeral/heuristics | chat-22-15-PR1 | P0 | in_progress | Assembler, PortHeuristics, orchestrator port hint |
-| TD-121 | Context acquisition policy + knowledge blocks in ephemeral | chat-22-15-PR1 | P0 | in_progress | computeContextAcquisitionPlan, ULLMContextKnowledgeBlocks |
-| TD-122 | diagram_scope_long_name GUI + add parent parity | chat-22-15-PR2 | P0 | open | bridge, snapshot, normalizer |
+| TD-122 | diagram_scope_long_name GUI + add parent parity | chat-22-15-PR2 | P0 | in_progress | bridge, snapshot, normalizer |
 | TD-123 | ULLMDialogSlotMerge multi-turn connect/lifecycle | chat-22-15-PR3 | P0 | open | pending partial_arguments |
 | TD-124 | ActionIntentPreview + unified write execution | chat-22-15-PR4 | P0 | open | executeWriteWithPreviewAndVerify |
 | TD-125 | Post-tool verify + bounded repair loop | chat-22-15-PR5 | P0 | open | StepVerifier, WriteToolRepair |

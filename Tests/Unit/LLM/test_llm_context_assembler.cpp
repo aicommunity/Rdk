@@ -22,6 +22,17 @@ TEST(LLMContextAssembler, GuiFocusHintContainsFocusedComponent)
     EXPECT_NE(hint.find("GUI focus"), std::string::npos);
 }
 
+TEST(LLMContextAssembler, GuiFocusHintIncludesDiagramScope)
+{
+    LLMGuiContextSnapshot gui;
+    gui.diagram_scope_long_name = "Hardware/Drill";
+    LLMSessionContext session;
+    session.project_loaded = true;
+    const std::string hint = buildGuiFocusSystemHint(gui, session);
+    EXPECT_NE(hint.find("diagram_scope_long_name"), std::string::npos);
+    EXPECT_NE(hint.find("Hardware/Drill"), std::string::npos);
+}
+
 TEST(LLMContextAssembler, GuiFocusHintIncludesKernelCurrentComponent)
 {
     LLMGuiContextSnapshot gui;

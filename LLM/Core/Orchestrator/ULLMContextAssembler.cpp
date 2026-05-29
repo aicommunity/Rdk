@@ -91,7 +91,8 @@ std::string buildGuiFocusSystemHint(const LLMGuiContextSnapshot& gui,
         << "- project_config_path: " << config_display << "\n"
         << "- diagram_snapshot_fingerprint: " << gui.snapshot_fingerprint << "\n"
         << "All model mutations without explicit paths use engine CurrentComponent (same as "
-           "NeuroModeler UI). add_component: default parent = current long_name (child). "
+           "NeuroModeler UI). add_component: default parent = diagram_scope_long_name when "
+           "drilled into a container, else current_component_long_name. "
            "connect/remove/set_property: resolve short names under current subtree first.\n";
 
     std::string out = oss.str();

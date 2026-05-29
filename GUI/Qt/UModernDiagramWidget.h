@@ -74,6 +74,7 @@ public:
     /// Устанавливает приложение и имя компонента (модели) для отображения
     void SetApplication(RDK::UApplication* app);
     void SetComponentName(const QString& name);
+    QString diagramScopeLongName() const { return m_componentName; }
 
 public slots:
     /// Перезагрузка диаграммы из текущей модели
@@ -123,6 +124,8 @@ signals:
     void openProjectDescriptionRequested();
     /// Запрос на открытие специализированной GUI-формы компонента.
     void openComponentGuiRequested(const UComponentGuiContext& context);
+    /// Emitted when the schematic drill level changes (SetComponentName).
+    void diagramScopeChanged(const QString& scope_long_name);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;

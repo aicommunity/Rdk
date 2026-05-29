@@ -47,6 +47,7 @@ RDK::LLM::LLMGuiContextSnapshot guiSnapshotFromContext(const LLMGuiContext& ctx)
     snap.project_xml_path = ctx.project_xml_path.toStdString();
     snap.focused_component_long_name = ctx.focused_component_long_name.toStdString();
     snap.focused_class_name = ctx.focused_class_name.toStdString();
+    snap.diagram_scope_long_name = ctx.diagram_scope_long_name.toStdString();
     snap.snapshot_fingerprint = ctx.snapshot_fingerprint;
     if(const char* cur = Env_GetCurrentComponentName())
         snap.current_component_long_name = cur;
