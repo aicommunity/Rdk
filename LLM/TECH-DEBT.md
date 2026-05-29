@@ -98,6 +98,9 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-105 | Wire `ULLMModelRouter` before provider rounds in orchestrator | phase-M | P2 | done | `model_route_selected` audit + `model_override` for Router tier classifier |
 | TD-106 | Embedding `ULLMEmbeddingToolRouter` + `tools-embeddings.jsonl` | phase-I | P2 | done | `searchToolsHybrid`, `LLM/index/tools-embeddings.jsonl` manifest |
 | TD-107 | Agent scenario eval: `phase_entered`, `tool_loop_entered` audit expects | phase-G | P2 | done | `llm_agent_scenario_types` + `av2_tool_loop_audit` fixture |
+| TD-108 | E2E `e2e_no_tool_email` flaky on live Ollama phrasing | post-M | P2 | done | Relaxed `NoSuitableToolOrRefusal` analyzer + headless/no-project acceptance |
+| TD-109 | `Test_LLM_WriteToolsEngine` SIGSEGV on `UAppCore` exit | post-M | P2 | done | `ShutdownLlmWriteToolsEngine()` + gtest global env teardown |
+| TD-110 | Symbol search (`UApplication`) rank below generic hits | post-M | P2 | done | Path/title boost in `UDocSearchIndex::searchInternal` |
 
 ---
 

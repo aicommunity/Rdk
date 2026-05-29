@@ -432,8 +432,33 @@ std::vector<DocSnippet> UDocSearchIndex::searchInternal(const std::string& query
                 std::log(1.0 + static_cast<double>(m_doc_count) / (1.0 + df_it->second));
             tfidf += tf * idf;
         }
+        double path_boost = 0.0;
+        std::string path_lower;
+        path_lower.reserve(doc.path.size());
+        for(unsigned char c : doc.path)
+            path_lower += static_cast<char>(std::tolower(c));
+        std::string title_lower;
+        title_lower.reserve(doc.title.size());
+        for(unsigned char c : doc.title)
+            title_lower += static_cast<char>(std::tolower(c));
+        std::string stem_lower = fs::path(doc.path).stem().string();
+        for(char& c : stem_lower)
+            c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+        for(const std::string& term : qtokens)
+        {
+            if(term.size() < 3)
+                continue;
+            if(stem_lower == term)
+                path_boost += 4.0;
+            else if(path_lower.find(term) != std::string::npos)
+                path_boost += 1.5;
+            if(title_lower.find(term) != std::string::npos)
+                path_boost += 1.0;
+        }
+
         const double semantic = cosineSimilarity(query_embed, doc.embedding);
-        const double hybrid = (1.0 - kSemanticWeight) * tfidf + kSemanticWeight * semantic;
+        const double hybrid =
+            (1.0 - kSemanticWeight) * tfidf + kSemanticWeight * semantic + path_boost;
         if(hybrid <= 0.0)
             continue;
         max_score = std::max(max_score, hybrid);

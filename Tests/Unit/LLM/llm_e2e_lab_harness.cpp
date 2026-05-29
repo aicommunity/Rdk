@@ -120,6 +120,7 @@ E2eConversationDigest digestConversation(const ULLMConversationStore& store,
     d.orchestrator_ok = final_resp.ok;
     d.orchestrator_error = final_resp.error;
     d.assistant_text = final_resp.text;
+    d.no_suitable_tool = final_resp.no_suitable_tool;
     d.had_pending_confirmation = final_resp.pending_confirmation;
 
     ConversationState& state = const_cast<ULLMConversationStore&>(store).getOrCreate(session_id);

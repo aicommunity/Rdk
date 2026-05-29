@@ -17,6 +17,7 @@ struct E2eConversationDigest {
     bool orchestrator_ok = false;
     std::string orchestrator_error;
     std::string assistant_text;
+    bool no_suitable_tool = false;
     bool had_pending_confirmation = false;
     std::string pending_tool_name;
     std::vector<std::string> tools_invoked;

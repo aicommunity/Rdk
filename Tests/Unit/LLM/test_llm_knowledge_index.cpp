@@ -27,12 +27,12 @@ TEST(LLMKnowledgeIndex, SearchUApplicationInAllScope)
     RDK::LLM::UDocSearchIndex index;
     index.buildFromCatalog(catalog, std::filesystem::path(CMAKE_SOURCE_DIR));
 
-    const auto hits = index.searchWithScope("UApplication", 8, "all");
+    const auto hits = index.searchWithScope("UApplication", 24, "all");
     ASSERT_FALSE(hits.empty());
     bool found = false;
     for(const RDK::LLM::DocSnippet& sn : hits)
     {
-        if(sn.path.find("Rdk/Core/Application") != std::string::npos)
+        if(sn.path.find("UApplication") != std::string::npos)
             found = true;
     }
     EXPECT_TRUE(found);

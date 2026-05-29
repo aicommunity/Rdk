@@ -76,8 +76,23 @@ struct EngineGateway {
 
 } // namespace
 
+class WriteToolsEngineEnv : public ::testing::Environment {
+public:
+    void TearDown() override { NmsdkTests::ShutdownLlmWriteToolsEngine(); }
+};
+
 class LLMWriteToolsEngine : public ::testing::Test {
 protected:
+    static void SetUpTestSuite()
+    {
+        static bool registered = false;
+        if(!registered)
+        {
+            ::testing::AddGlobalTestEnvironment(new WriteToolsEngineEnv());
+            registered = true;
+        }
+    }
+
     void SetUp() override
     {
         ctx_ = &NmsdkTests::EnsureLlmWriteToolsEngine();

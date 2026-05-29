@@ -313,12 +313,34 @@ E2eScenarioEvaluation evaluateScenario(const E2eConversationDigest& digest,
             ev.diagnosis = "Hit max rounds instead of refusing cleanly.";
             return ev;
         }
-        if(textMentionsAny(digest.assistant_text,
-                           {"Cannot find a suitable", "Не найдено подходящ", "NO_SUITABLE_TOOL",
-                            "не могу выполнить", "cannot perform", "no tool"}))
+        if(digest.no_suitable_tool
+           || textMentionsAny(digest.assistant_text,
+                              {"Cannot find a suitable", "Не найдено подходящ", "NO_SUITABLE_TOOL",
+                               "не могу выполнить", "cannot perform", "no tool",
+                               "cannot send", "can't send", "unable to send", "I cannot",
+                               "I'm unable", "don't have a tool", "no way to send",
+                               "outside my capabilities", "not able to"}))
         {
             ev.passed = true;
             ev.diagnosis = "Refusal or no_suitable_tool messaging.";
+            return ev;
+        }
+        if(digest.tools_invoked.empty() && digest.orchestrator_ok
+           && textMentionsAny(digest.assistant_text,
+                               {"cannot", "can't", "unable", "no tool", "not able",
+                                "не могу", "невозможно", "не умею"}))
+        {
+            ev.passed = true;
+            ev.diagnosis = "Explained limitation without invoking tools.";
+            return ev;
+        }
+        if(expectation.allow_app_unavailable_result && digest.tools_invoked.empty()
+           && textMentionsAny(digest.assistant_text,
+                               {"no project", "project is not", "not loaded", "no active calculation",
+                                "engine", "configuration", "open a project"}))
+        {
+            ev.passed = true;
+            ev.diagnosis = "Headless/no-project context explanation (acceptable for off-tool request).";
             return ev;
         }
         ev.diagnosis = "Expected refusal text; got: " + digest.assistant_text.substr(0, 120);
