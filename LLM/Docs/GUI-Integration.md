@@ -123,6 +123,8 @@ void RegisterLlmUi(UGEngineControlWidget* host,
 
 **Таймаут:** `NMSDK_LLM_PRESENTATION_TIMEOUT_MS` (default 30000) — worker ждёт `BlockingQueuedConnection` не дольше этого значения; при таймауте UI refresh пропускается (без падения tool).
 
+**Session busy / deferred UI:** пока orchestrator держит `session_id` busy (async message или plan execute/resume/rollback), `discardSession` не вызывается; **New chat**, смена проекта и переключение архива чата откладываются до `flushDeferredUiActions()` после завершения запроса. Plan/Apply при busy показывают ошибку «Session busy». См. [Context-Memory.md](Context-Memory.md).
+
 ---
 
 ## 6. `ULlmChangePreviewWidget` (HITL)

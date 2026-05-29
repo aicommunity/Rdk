@@ -456,6 +456,8 @@ bool ULLMConversationStore::loadFromDisk(const std::string& session_id)
     state.session_context_seeded = j.value("session_context_seeded", false);
     if(j.contains("session_summary") && j["session_summary"].is_string())
         state.session_summary = j["session_summary"].get<std::string>();
+    if(j.contains("last_session_context"))
+        state.last_session_context = sessionContextFromJson(j["last_session_context"]);
     m_sessions[session_id] = std::move(state);
     return true;
 }
@@ -499,6 +501,8 @@ bool ULLMConversationStore::persistToDisk(const std::string& session_id)
         j["session_context_seeded"] = true;
     if(it->second.session_summary && !it->second.session_summary->empty())
         j["session_summary"] = *it->second.session_summary;
+    if(it->second.last_session_context)
+        j["last_session_context"] = sessionContextToJson(*it->second.last_session_context);
     const fs::path file = fs::path(m_storage_dir) / (session_id + ".json");
     std::ofstream out(file);
     if(!out)

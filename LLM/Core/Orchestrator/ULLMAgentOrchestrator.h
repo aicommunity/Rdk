@@ -81,6 +81,9 @@ public:
     void cancel();
     void cancelSession(const std::string& session_id);
     bool isSessionBusy(const std::string& session_id) const;
+    bool tryAcquireSessionBusy(const std::string& session_id);
+    void releaseSessionBusy(const std::string& session_id);
+    static const char* sessionBusyErrorMessage();
 
     void seedSessionContext(const std::string& session_id, const LLMSessionContext& session,
                             const LLMGuiContextSnapshot& gui);
@@ -119,10 +122,6 @@ private:
                                                  const nlohmann::json& disambiguation);
 
     static constexpr int kMaxRounds = kDefaultMaxToolRounds;
-
-    bool tryAcquireSessionBusy(const std::string& session_id);
-    void releaseSessionBusy(const std::string& session_id);
-    static const char* sessionBusyErrorMessage();
 };
 
 } // namespace RDK::LLM

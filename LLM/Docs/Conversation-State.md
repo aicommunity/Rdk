@@ -48,8 +48,9 @@ struct PendingConfirmation {
 | `agent_notes` | Orchestrator scratchpad (markdown, max 4 KB) |
 | `session_context_seeded` | Bootstrap system block written once per session |
 | `session_summary` | Rule-based compaction artifact (P2) |
+| `last_session_context` | Last `LLMSessionContext` snapshot from orchestrator (write/autonomy flags for resume; TD-088) |
 
-Session flags (`llm_write_enabled`, `auto_apply_writes`, …) are passed per request via `LLMSessionContext` in `LLMRequestEnvelope`, not duplicated in session JSON (TD-088).
+Per-turn flags still arrive via `LLMRequestEnvelope.session`; on resume the GUI merges persisted `last_session_context` with live user/channel/project state (`ULlmAssistantDockWidget::buildSession`).
 
 ---
 

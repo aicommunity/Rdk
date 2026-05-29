@@ -58,6 +58,8 @@ used by `NmsdkLlmProjectContext` and library doc paths. Keep in sync with `Libra
 
 ## Long-term context memory (`LLM/memory/`)
 
+Overview: [Context-Memory.md](Context-Memory.md).
+
 Per-session GUI and transcript state live under `LLM/sessions/`. Cross-session preferences and
 project rules use a separate namespace:
 

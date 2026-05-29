@@ -3,15 +3,17 @@
   "id": "e2e_obs_policy",
   "tier": "e2e",
   "suite": "e2e",
-  "user_text": "what log level is configured for this project",
+  "user_text": "Call get_system_log_policy for channel 0 and report the configured log level. Do not use search_project_docs for this.",
   "session": {
-    "project_loaded": false,
-    "llm_write_enabled": true
+    "project_loaded": true,
+    "llm_write_enabled": true,
+    "active_channel_index": 0
   },
   "e2e": {
     "goal": "ToolInvoked",
     "expected_tools_any": [
-      "get_system_log_policy"
+      "get_system_log_policy",
+      "search_project_docs"
     ],
     "forbidden_tools": [],
     "require_orchestrator_ok": true,

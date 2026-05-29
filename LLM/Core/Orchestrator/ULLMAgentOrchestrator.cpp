@@ -74,6 +74,12 @@ std::string buildToolMessageContent(const ToolGatewayResult& tr, ULLMSystemLogRe
     return sanitizeUntrustedToolContent(toolJsonWithSystemLogExcerpt(tr, excerpt).dump());
 }
 
+void snapshotLastSessionContext(ConversationState& state, const LLMSessionContext& session)
+{
+    state.last_session_context = session;
+    state.last_session_context->session_id = state.session_id;
+}
+
 void appendAgentNote(ConversationState& state, const std::string& line)
 {
     constexpr std::size_t kMaxNotes = 4096;
@@ -336,6 +342,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
 
     ConversationState& state = m_store.getOrCreate(req.session_id);
     state.session_id = req.session_id;
+    snapshotLastSessionContext(state, req.session);
 
     if(!req.gui.focused_component_long_name.empty() || !req.gui.focused_class_name.empty()
        || !req.gui.project_xml_path.empty() || req.gui.snapshot_fingerprint != 0
@@ -1445,6 +1452,7 @@ LLMFinalResponse ULLMAgentOrchestrator::confirmPending(const std::string& sessio
         final.error = "No matching pending confirmation";
         return final;
     }
+    snapshotLastSessionContext(state, state.pending->request.session);
     ToolInvokeRequest req = state.pending->request;
     req.confirmed = true;
     req.idempotency_key =
@@ -1475,6 +1483,8 @@ LLMFinalResponse ULLMAgentOrchestrator::confirmPlanExecution(const std::string& 
         final.error = "No pending execution plan";
         return final;
     }
+
+    snapshotLastSessionContext(state, session);
 
     ULLMPolicyEngine policy;
     const PolicyDecision plan_pol = policy.checkPlan(*state.pending_plan, session, m_registry);
@@ -1543,6 +1553,8 @@ LLMFinalResponse ULLMAgentOrchestrator::resumePlanExecution(const std::string& s
         return final;
     }
 
+    snapshotLastSessionContext(state, session);
+
     ULLMPolicyEngine policy;
     const PolicyDecision plan_pol = policy.checkPlan(*state.pending_plan, session, m_registry);
     if(!plan_pol.allowed)
@@ -1605,6 +1617,8 @@ LLMFinalResponse ULLMAgentOrchestrator::rollbackPlanExecution(const std::string&
         final.error = "No plan to rollback";
         return final;
     }
+
+    snapshotLastSessionContext(state, session);
 
     ULLMPlanExecutor executor(m_registry, m_gateway);
     std::string note;

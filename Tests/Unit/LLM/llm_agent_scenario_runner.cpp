@@ -242,6 +242,9 @@ AgentScenarioRun runDeterministicScenario(AgentScenarioHarness& harness,
             store = std::move(reloaded_store);
             orch = std::make_unique<ULLMAgentOrchestrator>(*harness.mock_provider, registry,
                                                            gateway, *store);
+            if(const ConversationState* reloaded = store->findSession(session_id);
+               reloaded && reloaded->last_session_context)
+                session = *reloaded->last_session_context;
         }
 
         harness.mock_provider->resetQueue();

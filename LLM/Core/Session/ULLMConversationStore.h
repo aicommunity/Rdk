@@ -43,6 +43,8 @@ struct ConversationState {
     std::string agent_notes;
     bool session_context_seeded = false;
     std::optional<std::string> session_summary;
+    /// Last `LLMSessionContext` from an orchestrator entry (resume parity, TD-088).
+    std::optional<LLMSessionContext> last_session_context;
     int store_schema_version = 2;
 };
 

@@ -159,6 +159,41 @@ TEST(LLMSessionPersist, RoundTripGuiContextV2)
     EXPECT_EQ(loaded.store_schema_version, 2);
 }
 
+TEST(LLMSessionPersist, RoundTripLastSessionContextV2)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_ctx_flags";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+    ConversationState& state = store.getOrCreate("session-flags");
+    state.store_schema_version = 2;
+    LLMSessionContext session;
+    session.session_id = "session-flags";
+    session.llm_write_enabled = false;
+    session.auto_apply_writes = true;
+    session.autonomous_mode = LLMAutonomousMode::Strict;
+    session.allow_cloud_llm = true;
+    session.allow_save = false;
+    session.active_channel_index = 2;
+    state.last_session_context = session;
+    ASSERT_TRUE(store.persistToDisk("session-flags"));
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-flags"));
+    const ConversationState& loaded = *reloaded.findSession("session-flags");
+    ASSERT_TRUE(loaded.last_session_context.has_value());
+    EXPECT_FALSE(loaded.last_session_context->llm_write_enabled);
+    EXPECT_TRUE(loaded.last_session_context->auto_apply_writes);
+    EXPECT_EQ(loaded.last_session_context->autonomous_mode, LLMAutonomousMode::Strict);
+    EXPECT_TRUE(loaded.last_session_context->allow_cloud_llm);
+    EXPECT_FALSE(loaded.last_session_context->allow_save);
+    EXPECT_EQ(loaded.last_session_context->active_channel_index, 2);
+
+    std::filesystem::remove_all(dir);
+}
+
 TEST(LLMSessionPersist, BootstrapSeededFlagRoundTrip)
 {
     const std::string dir = "/tmp/rdk_llm_sessions_bootstrap";

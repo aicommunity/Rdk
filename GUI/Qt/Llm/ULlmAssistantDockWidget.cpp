@@ -535,6 +535,23 @@ RDK::LLM::LLMSessionContext ULlmAssistantDockWidget::buildSession(const LLMGuiCo
     s.autonomous_mode = runtime.autonomous_mode;
     s.autonomous_steps_taken = 0;
     s.allow_cloud_llm = runtime.allow_cloud_providers;
+
+    if(RDK::LLM::LLMServices::instance().isInitialized())
+    {
+        const RDK::LLM::ConversationState* persisted =
+            RDK::LLM::LLMServices::instance().conversationState(currentSessionId());
+        if(persisted && persisted->last_session_context)
+        {
+            const RDK::LLM::LLMSessionContext& p = *persisted->last_session_context;
+            s.llm_write_enabled = p.llm_write_enabled;
+            s.auto_apply_writes = p.auto_apply_writes;
+            s.autonomous_mode = p.autonomous_mode;
+            s.autonomous_steps_taken = p.autonomous_steps_taken;
+            s.allow_cloud_llm = p.allow_cloud_llm;
+            s.allow_save = p.allow_save;
+        }
+    }
+
     return s;
 }
 
