@@ -89,9 +89,9 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Resolved in | Resolution |
 |----|------|-------------|------------|
-| TD-093 | Snapshot link walk + list_model_links | 2026-05-29 | `ULLMModelLinkWalker`, paginated `list_model_links`, `linkExistsInModel` for truncated dedup |
-| TD-096 | Connect semantics index + runtime inference | 2026-05-29 | `connect-semantics.json` index, `ULLMConnectSemanticsCatalog`, port inference priority |
-| TD-092 | Global remaining + chain/tree pairing | 2026-05-29 | `ULLMConnectEndpoints`, `ULLMConnectPairing`, ModelGraph scope, routing |
+| TD-093 | Snapshot link walk + list_model_links | 2026-05-29 | `7e7ac67f`: `ULLMModelLinkWalker`, `list_model_links`, `linkExistsInModel` truncated dedup |
+| TD-096 | Connect semantics index + runtime inference | 2026-05-29 | `8641b0a3`: `connect-semantics.json`, catalog, port inference, context hint |
+| TD-092 | Global remaining + chain/tree pairing | 2026-05-29 | `b41e7082`: `ULLMConnectEndpoints`, `ULLMConnectPairing`, ModelGraph, topologies |
 | TD-091 | Connect planning (explicit pairs, N links, remaining/analogous) | 2026-05-28 | `b41df580`: deterministic connect planner, session graph, snapshot links, idempotent connect |
 | TD-019 | MotionControlLib `Llm/` read tools | 2026-05-25 | `RegisterMotionControlLibLlmTools` |
 | TD-020 | Plan rollback for `set_property` | 2026-05-25 | `previous_value` + compensation in `ULLMPlanExecutor` |
