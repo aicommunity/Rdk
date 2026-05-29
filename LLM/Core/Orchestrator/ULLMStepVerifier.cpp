@@ -35,8 +35,74 @@ bool verifyLinkExistsInSnapshot(const SuccessCriteria& criteria, URdkDomainAcces
         out.detail = "link_found_in_snapshot";
         return true;
     }
+    if(st.ok() && snap.value("links_truncated", false))
+    {
+        bool exists = false;
+        if(domain.linkExistsInModel(quad, channel_index, "", exists).ok() && exists)
+        {
+            out.satisfied = true;
+            out.detail = "link_found_in_model";
+            return true;
+        }
+    }
     out.detail = "link_missing_in_snapshot";
     return false;
+}
+
+bool verifyComponentExists(const std::string& long_name, URdkDomainAccess& domain, int channel_index,
+                           VerifyResult& out)
+{
+    if(long_name.empty())
+    {
+        out.detail = "component_exists_missing_long_name";
+        return false;
+    }
+    nlohmann::json found;
+    if(domain.findComponentByLongName(long_name, found, channel_index).ok())
+    {
+        out.satisfied = true;
+        out.detail = "component_found:" + long_name;
+        return true;
+    }
+    out.detail = "component_missing:" + long_name;
+    return false;
+}
+
+bool verifyComponentUnderParent(const SuccessCriteria& criteria, URdkDomainAccess& domain,
+                                int channel_index, VerifyResult& out)
+{
+    const std::string expected_ln = criteria.params.value("long_name", "");
+    if(!expected_ln.empty())
+        return verifyComponentExists(expected_ln, domain, channel_index, out);
+
+    const std::string parent = criteria.params.value("parent_long_name", "");
+    const std::string class_name = criteria.params.value("class_name", "");
+    if(parent.empty() || class_name.empty())
+    {
+        out.detail = "component_under_parent_missing_fields";
+        return false;
+    }
+
+    nlohmann::json snap;
+    const DomainStatus st = domain.listNetSnapshot(snap, channel_index);
+    if(!st.ok())
+    {
+        out.detail = st.message;
+        return false;
+    }
+
+    int count = 0;
+    for(const auto& c : snap.value("components", nlohmann::json::array()))
+    {
+        if(c.value("class_name", "") != class_name)
+            continue;
+        const std::string ln = c.value("long_name", "");
+        if(ln == parent || ln.rfind(parent + "/", 0) == 0)
+            ++count;
+    }
+    out.satisfied = count >= 1;
+    out.detail = "component_under_parent count=" + std::to_string(count) + " class=" + class_name;
+    return out.satisfied;
 }
 
 } // namespace
@@ -116,6 +182,18 @@ VerifyResult verifySuccessCriteria(const SuccessCriteria& criteria,
         return out;
     }
 
+    if(criteria.type == "component_exists")
+    {
+        verifyComponentExists(criteria.params.value("long_name", ""), domain, channel_index, out);
+        return out;
+    }
+
+    if(criteria.type == "component_under_parent")
+    {
+        verifyComponentUnderParent(criteria, domain, channel_index, out);
+        return out;
+    }
+
     if(criteria.type == "multi_link_exists")
     {
         const nlohmann::json links = criteria.params.value("links", nlohmann::json::array());
@@ -145,6 +223,80 @@ VerifyResult verifySuccessCriteria(const SuccessCriteria& criteria,
 
     out.detail = "unsupported_success_type:" + criteria.type;
     return out;
+}
+
+SuccessCriteria buildPostVerifyCriteria(const std::string& tool_name, const nlohmann::json& args,
+                                        const ToolGatewayResult& gateway_result)
+{
+    SuccessCriteria criteria;
+    if(tool_name == "add_component")
+    {
+        criteria.type = "component_under_parent";
+        criteria.params["parent_long_name"] = args.value("parent_long_name", "");
+        criteria.params["class_name"] = args.value("class_name", "");
+        if(gateway_result.result.contains("long_name")
+           && gateway_result.result["long_name"].is_string())
+            criteria.params["long_name"] = gateway_result.result["long_name"].get<std::string>();
+        return criteria;
+    }
+
+    if(tool_name == "connect_components")
+    {
+        criteria.type = "link_exists";
+        criteria.params["from_long_name"] = args.value("from_long_name", "");
+        criteria.params["from_property"] = args.value("from_property", "");
+        criteria.params["to_long_name"] = args.value("to_long_name", "");
+        criteria.params["to_property"] = args.value("to_property", "");
+        return criteria;
+    }
+
+    return criteria;
+}
+
+VerifyResult runPostToolVerification(const std::string& tool_name, const nlohmann::json& args,
+                                     const ToolGatewayResult& gateway_result,
+                                     URdkDomainAccess& domain, int channel_index)
+{
+    VerifyResult out;
+    if(!gateway_result.ok)
+    {
+        out.detail = "gateway_not_ok";
+        return out;
+    }
+
+    if(tool_name != "add_component" && tool_name != "connect_components")
+    {
+        out.satisfied = true;
+        out.detail = "post_verify_skipped";
+        return out;
+    }
+
+    if(tool_name == "connect_components")
+    {
+        const std::string from_ln = args.value("from_long_name", "");
+        const std::string to_ln = args.value("to_long_name", "");
+        VerifyResult from_check;
+        if(!verifyComponentExists(from_ln, domain, channel_index, from_check))
+        {
+            out.detail = "from_" + from_check.detail;
+            return out;
+        }
+        VerifyResult to_check;
+        if(!verifyComponentExists(to_ln, domain, channel_index, to_check))
+        {
+            out.detail = "to_" + to_check.detail;
+            return out;
+        }
+    }
+
+    const SuccessCriteria criteria = buildPostVerifyCriteria(tool_name, args, gateway_result);
+    if(criteria.type.empty())
+    {
+        out.satisfied = true;
+        out.detail = "no_criteria";
+        return out;
+    }
+    return verifySuccessCriteria(criteria, domain, channel_index);
 }
 
 } // namespace RDK::LLM

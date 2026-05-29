@@ -11,6 +11,8 @@ struct LLMPolicyLimits {
     int confirmation_ttl_seconds = 600;
     /// Scenario D: max tool invocations per user message when autonomous_mode != Off.
     int max_autonomous_steps_per_message = 3;
+    /// Post-tool domain verification repair attempts after write invoke (PR5).
+    int max_verify_repair_attempts = 2;
 };
 
 inline constexpr int kDefaultMaxToolRounds = 8;

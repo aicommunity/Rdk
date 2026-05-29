@@ -20,6 +20,9 @@
 
 namespace RDK::LLM {
 
+struct WriteToolExecutionRequest;
+struct WriteToolExecutionResult;
+
 struct LLMRequestEnvelope {
     std::string session_id;
     std::string trace_id;
@@ -63,6 +66,8 @@ struct LLMFinalResponse {
     bool context_compacted = false;
     /// Agent v2 terminal state (`TurnTerminal` name); empty when not set.
     std::string turn_terminal;
+    /// Deterministic action preview shown before HITL Apply (phase F).
+    std::string action_preview_text;
 };
 
 inline void assignTurnTerminal(LLMFinalResponse& response, TurnTerminal terminal)
@@ -74,6 +79,9 @@ class ULLMUnifiedTurnController;
 
 class ULLMAgentOrchestrator {
     friend class ULLMUnifiedTurnController;
+    friend WriteToolExecutionResult executeWriteWithPreviewAndVerify(ULLMAgentOrchestrator& orch,
+                                                                     ConversationState& state,
+                                                                     const WriteToolExecutionRequest& req);
 
 public:
     ULLMAgentOrchestrator(ILLMProvider& provider, ULLMToolRegistry& registry,

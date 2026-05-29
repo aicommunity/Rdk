@@ -15,3 +15,11 @@ TEST(LLMStepVerifier, MultiLinkExistsEmptyIsFalse)
     EXPECT_FALSE(r.satisfied);
 }
 
+TEST(LLMStepVerifier, BuildPostVerifyCriteriaUnknownToolEmpty)
+{
+    ToolGatewayResult tr;
+    tr.ok = true;
+    const SuccessCriteria c = buildPostVerifyCriteria("save_configuration", nlohmann::json::object(), tr);
+    EXPECT_TRUE(c.type.empty());
+}
+
