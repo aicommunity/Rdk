@@ -1,8 +1,13 @@
 #include <gtest/gtest.h>
-#include <cstdlib>
 
+#include <cstdlib>
+#include <filesystem>
+#include <fstream>
+
+#include "LlmModuleInit.h"
 #include "Orchestrator/ULLMAgentOrchestrator.h"
 #include "Providers/ULLMMockProvider.h"
+#include "Tools/RegisterCoreRdkTools.h"
 #include "Session/ULLMConversationStore.h"
 #include "Tools/ULLMToolGateway.h"
 #include "Tools/ULLMToolRegistry.h"
@@ -164,4 +169,53 @@ TEST(LLMOrchestrator, CancelSessionDoesNotAffectOtherSessions)
     const LLMFinalResponse resp = orch.handleUserMessage(req);
     EXPECT_TRUE(resp.ok);
     EXPECT_EQ(resp.text, "ok");
+}
+
+TEST(LLMOrchestrator, ContextBudgetAuditAndResponseFields)
+{
+    ::unsetenv("NMSDK_LLM_INTENT_LLM");
+    const std::filesystem::path audit_dir =
+        std::filesystem::temp_directory_path() / "nmsdk_llm_audit_context_budget";
+    std::filesystem::remove_all(audit_dir);
+    std::filesystem::create_directories(audit_dir);
+    GetAuditLog().setLogDirectory(audit_dir.string());
+
+    ULLMMockProvider provider;
+    LLMCompletionResult mock;
+    mock.ok = true;
+    mock.text = "Answer.";
+    provider.enqueue(mock);
+
+    ULLMToolRegistry registry;
+    URdkDomainAccess domain(nullptr);
+    RegisterCoreRdkTools(registry, domain, nullptr);
+    ULLMPolicyEngine policy;
+    ULLMAuditLog audit;
+    ULLMIdempotencyStore idem;
+    ULLMToolArgumentValidator validator;
+    ULLMToolGateway gateway(registry, policy, domain, GetAuditLog(), idem, validator);
+    ULLMConversationStore store;
+    ULLMAgentOrchestrator orch(provider, registry, gateway, store);
+
+    LLMRequestEnvelope req;
+    req.session_id = "ctx-budget";
+    req.trace_id = "t-budget";
+    req.user_text = "list components on diagram";
+    req.session.project_loaded = true;
+    req.session.llm_write_enabled = true;
+    req.gui.focused_component_long_name = "NeuronA";
+    req.gui.channel_index = 0;
+
+    const LLMFinalResponse resp = orch.handleUserMessage(req);
+    EXPECT_TRUE(resp.ok);
+    EXPECT_GT(resp.context_messages_chars, 0u);
+
+    const std::filesystem::path audit_file = audit_dir / "audit.jsonl";
+    ASSERT_TRUE(std::filesystem::is_regular_file(audit_file));
+    std::ifstream in(audit_file);
+    std::string log((std::istreambuf_iterator<char>(in)), std::istreambuf_iterator<char>());
+    EXPECT_NE(log.find("context_budget"), std::string::npos);
+    EXPECT_NE(log.find("messages_chars"), std::string::npos);
+
+    std::filesystem::remove_all(audit_dir);
 }

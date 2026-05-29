@@ -158,3 +158,29 @@ TEST(LLMSessionPersist, RoundTripGuiContextV2)
     EXPECT_TRUE(loaded.session_context_seeded);
     EXPECT_EQ(loaded.store_schema_version, 2);
 }
+
+TEST(LLMSessionPersist, BootstrapSeededFlagRoundTrip)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_bootstrap";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+    ConversationState& state = store.getOrCreate("session-boot");
+    state.session_context_seeded = true;
+    LLMMessage boot;
+    boot.role = LLMMessage::Role::System;
+    boot.content = "## Session bootstrap\n- project_loaded: true\n";
+    state.messages.push_back(boot);
+    ASSERT_TRUE(store.persistToDisk("session-boot"));
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-boot"));
+    const ConversationState& loaded = *reloaded.findSession("session-boot");
+    EXPECT_TRUE(loaded.session_context_seeded);
+    ASSERT_FALSE(loaded.messages.empty());
+    EXPECT_NE(loaded.messages.front().content.find("Session bootstrap"), std::string::npos);
+
+    std::filesystem::remove_all(dir);
+}

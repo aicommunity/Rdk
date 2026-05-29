@@ -12,6 +12,40 @@
     "registry_profile": { "enum": ["core", "full"] },
     "mock_script": { "type": "array" },
     "expect": { "type": "object" },
+    "gui": {
+      "type": "object",
+      "properties": {
+        "focused_component_long_name": { "type": "string" },
+        "focused_class_name": { "type": "string" },
+        "project_xml_path": { "type": "string" },
+        "channel_index": { "type": "integer" }
+      }
+    },
+    "turns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "user_text": { "type": "string" },
+          "mock_script": { "type": "array" },
+          "confirm_pending": { "type": "boolean" },
+          "reload_persisted_session": { "type": "boolean" },
+          "expect": { "type": "object" }
+        }
+      }
+    },
+    "pre_resolved_entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string" },
+          "query_key": { "type": "string" },
+          "canonical_value": { "type": "string" },
+          "channel_index": { "type": "integer" }
+        }
+      }
+    },
     "e2e": { "type": "object" }
   },
   "additionalProperties": true

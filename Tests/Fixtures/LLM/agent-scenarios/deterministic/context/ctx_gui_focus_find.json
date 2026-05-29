@@ -34,6 +34,7 @@
     }
   ],
   "expect": {
-    "tools_invoked_any": ["find_component"]
+    "tools_invoked_any": ["find_component"],
+    "system_prompt_contains_any": ["GUI focus", "TestNeuron"]
   }
 }

@@ -4,7 +4,7 @@
   "tier": "deterministic",
   "suite": "context",
   "registry_profile": "core",
-  "user_text": "проверка контекста",
+  "user_text": "placeholder",
   "session": {
     "project_loaded": true
   },
@@ -17,12 +17,27 @@
   "env": {
     "NMSDK_LLM_INTENT_LLM": ""
   },
-  "mock_script": [
+  "turns": [
     {
-      "text": "OK"
+      "user_text": "проверка контекста",
+      "mock_script": [
+        {
+          "text": "OK"
+        }
+      ]
+    },
+    {
+      "reload_persisted_session": true,
+      "user_text": "продолжение",
+      "mock_script": [
+        {
+          "text": "Resumed."
+        }
+      ]
     }
   ],
   "expect": {
-    "orchestrator_ok": true
+    "orchestrator_ok": true,
+    "system_prompt_contains_any": ["GUI focus", "PersistNeuron"]
   }
 }
