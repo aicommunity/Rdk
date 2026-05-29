@@ -29,7 +29,10 @@ ConfigurationLifecycleAction detectConfigurationLifecycleAction(const std::strin
     const std::string lower = toLower(user_text);
 
     if(contains(lower, "validate") || contains(lower, "валид")
-       || (contains(lower, "провер") && contains(lower, "конфиг")))
+       || (contains(lower, "провер") && contains(lower, "конфиг"))
+       || ((contains(lower, "configuration") || contains(lower, "project.ini"))
+           && (contains(lower, " is valid") || contains(lower, "check whether")
+               || contains(lower, "check if"))))
         return ConfigurationLifecycleAction::Validate;
 
     if((contains(lower, "create") || contains(lower, "созда") || contains(lower, "new "))

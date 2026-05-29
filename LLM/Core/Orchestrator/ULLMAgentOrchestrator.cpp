@@ -836,7 +836,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
     }
 
     if(intent == LLMIntentKind::Mutate && !state.pending_tool_arguments
-       && lifecycle_action == ConfigurationLifecycleAction::None)
+       && lifecycle_action == ConfigurationLifecycleAction::None
+       && !isValidateConfigurationGoalText(planning_text))
     {
         const DialogSlotMergeInput slot_in{&state.messages, nullptr, &req.gui, &m_registry};
         const DialogSlotMergeResult slot = mergeDialogSlotsIntoToolArgs(slot_in);

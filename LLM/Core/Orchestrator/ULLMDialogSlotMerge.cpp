@@ -156,6 +156,9 @@ void applyStandaloneComponentToken(nlohmann::json& partial, const std::string& t
 
 void mergeConnectFromUserText(nlohmann::json& partial, const std::string& user_text)
 {
+    if(isValidateConfigurationGoalText(user_text))
+        return;
+
     const ParsedConnectGoal parsed = parseConnectGoal(user_text);
     for(const ConnectLinkSpec& link : parsed.explicit_links)
         applyConnectLinkSpec(partial, link);

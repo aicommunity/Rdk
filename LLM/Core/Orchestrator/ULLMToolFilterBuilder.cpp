@@ -27,7 +27,9 @@ std::unordered_set<std::string> kQueryTools()
                   "list_ui_panels",
                   "search_project_docs",
                   "validate_project",
-                  "validate_configuration"});
+                  "validate_configuration",
+                  "get_system_log_policy",
+                  "read_system_log"});
     return tools;
 }
 

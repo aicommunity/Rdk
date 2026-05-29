@@ -27,6 +27,21 @@ ConnectEndpointRef makeEndpoint(const std::string& token, const std::string& pro
 
 } // namespace
 
+bool isValidateConfigurationGoalText(const std::string& text)
+{
+    const std::string lower = text;
+    if(lower.find("validate") != std::string::npos || lower.find("валид") != std::string::npos)
+        return true;
+    if(lower.find("провер") != std::string::npos
+       && (lower.find("конфиг") != std::string::npos || lower.find("project.ini") != std::string::npos))
+        return true;
+    if((lower.find("configuration") != std::string::npos || lower.find("project.ini") != std::string::npos)
+       && (lower.find(" is valid") != std::string::npos || lower.find("check whether") != std::string::npos
+           || lower.find("check if") != std::string::npos))
+        return true;
+    return false;
+}
+
 bool isDisconnectGoalText(const std::string& text)
 {
     static const std::regex en_re(R"(\b(disconnect|unlink)\b)", std::regex::icase);

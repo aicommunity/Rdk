@@ -12,6 +12,17 @@ TEST(LLMConnectPlanParsing, DisconnectGoalDoesNotCountAsConnect)
     EXPECT_TRUE(isDisconnectGoalText("соедини и разорви Source1 и Net1"));
 }
 
+TEST(LLMConnectPlanParsing, ValidateConfigurationPathIsNotConnectGoal)
+{
+    EXPECT_TRUE(isValidateConfigurationGoalText(
+        "Could you check whether the configuration at /tmp/proj/project.ini is valid?"));
+    EXPECT_FALSE(isConnectGoalText(
+        "Could you check whether the configuration at /tmp/proj/project.ini is valid?"));
+    ParsedConnectGoal g = parseConnectGoal(
+        "Could you check whether the configuration at /tmp/proj/project.ini is valid?");
+    EXPECT_TRUE(g.explicit_links.empty());
+}
+
 TEST(LLMConnectPlanParsing, AddComponentToModelIsNotExplicitPair)
 {
     ParsedConnectGoal g = parseConnectGoal("add MatrixSource to the model");
