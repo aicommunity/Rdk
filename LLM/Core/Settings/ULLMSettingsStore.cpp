@@ -111,6 +111,11 @@ void ULLMSettingsStore::setTaskPathMode(const LLMTaskPathMode mode)
     m_runtime.task_path_mode = mode;
 }
 
+void ULLMSettingsStore::setContextAcquisitionMode(const LLMContextAcquisitionMode mode)
+{
+    m_runtime.context_acquisition_mode = mode;
+}
+
 void ULLMSettingsStore::setPreferredResponseLanguage(const std::string& code)
 {
     m_runtime.preferred_response_language = code;

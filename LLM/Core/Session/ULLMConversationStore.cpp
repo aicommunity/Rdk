@@ -313,6 +313,7 @@ nlohmann::json guiSnapshotToJson(const LLMGuiContextSnapshot& gui)
             {"current_component_id", gui.current_component_id},
             {"focused_component_long_name", gui.focused_component_long_name},
             {"focused_class_name", gui.focused_class_name},
+            {"diagram_scope_long_name", gui.diagram_scope_long_name},
             {"snapshot_fingerprint", gui.snapshot_fingerprint}};
 }
 
@@ -327,6 +328,7 @@ std::optional<LLMGuiContextSnapshot> guiSnapshotFromJson(const nlohmann::json& j
     gui.current_component_id = j.value("current_component_id", "");
     gui.focused_component_long_name = j.value("focused_component_long_name", "");
     gui.focused_class_name = j.value("focused_class_name", "");
+    gui.diagram_scope_long_name = j.value("diagram_scope_long_name", "");
     gui.snapshot_fingerprint = j.value("snapshot_fingerprint", int64_t{0});
     return gui;
 }

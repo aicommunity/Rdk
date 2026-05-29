@@ -38,12 +38,12 @@ TEST(LLMConnectPortInference, PickPreferredSkipsInhibitoryWhenExcitatoryExists)
     EXPECT_EQ(*in_port, "Input");
 }
 
-TEST(LLMConnectPortInference, PickPreferredOutputPrefersLtZoneOverInhSynapse)
+TEST(LLMConnectPortInference, PickPreferredOutputSkipsInhibitoryFirst)
 {
-    const std::vector<std::string> outputs = {"Soma1.InhSynapse1", "LTZone"};
+    const std::vector<std::string> outputs = {"Soma1.InhSynapse1", "CustomOut"};
     const auto out_port = pickPreferredOutputPort(outputs);
     ASSERT_TRUE(out_port);
-    EXPECT_EQ(*out_port, "LTZone");
+    EXPECT_EQ(*out_port, "CustomOut");
 }
 
 TEST(LLMConnectPortInference, PreferInternalSemanticsOverGeneric)

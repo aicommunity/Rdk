@@ -30,6 +30,7 @@ public:
     void setMaxAutonomousSteps(int max_steps);
     void setTranslateQueriesToEn(bool enabled);
     void setTaskPathMode(LLMTaskPathMode mode);
+    void setContextAcquisitionMode(LLMContextAcquisitionMode mode);
 
     void setPreferredResponseLanguage(const std::string& code);
     const std::string& preferredResponseLanguage() const;

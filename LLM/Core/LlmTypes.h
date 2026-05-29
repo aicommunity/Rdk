@@ -173,6 +173,8 @@ enum class LLMSendShortcutMode {
     Enter
 };
 
+enum class LLMContextAcquisitionMode { Auto, Minimal };
+
 struct LLMRuntimeProviderSettings {
     std::string active_profile_id = "ollama-local";
     bool allow_cloud_providers = false;
@@ -194,6 +196,7 @@ struct LLMRuntimeProviderSettings {
     /// Empty = Auto (system locale → supported code → en).
     std::string preferred_response_language;
     LLMSendShortcutMode send_shortcut = LLMSendShortcutMode::CtrlEnter;
+    LLMContextAcquisitionMode context_acquisition_mode = LLMContextAcquisitionMode::Auto;
 };
 
 struct LLMGuiContextSnapshot {
@@ -202,6 +205,8 @@ struct LLMGuiContextSnapshot {
     /// Engine CurrentComponent (authoritative for mutate scope).
     std::string current_component_long_name;
     std::string current_component_id;
+    /// Diagram drill level (container owning the open schematic); may differ from list focus.
+    std::string diagram_scope_long_name;
     std::string focused_component_long_name;
     std::string focused_class_name;
     int64_t snapshot_fingerprint = 0;

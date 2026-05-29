@@ -31,16 +31,6 @@ std::optional<std::string> pickPreferredOutputPort(const std::vector<std::string
     }
     for(const std::string& port : outputs)
     {
-        if(port.find("ExcSynapse1") != std::string::npos)
-            return port;
-    }
-    for(const std::string& port : outputs)
-    {
-        if(port.find("LTZone") != std::string::npos)
-            return port;
-    }
-    for(const std::string& port : outputs)
-    {
         if(!isInhibitoryLinkPortName(port))
             return port;
     }
@@ -56,16 +46,6 @@ std::optional<std::string> pickPreferredInputPort(const std::vector<std::string>
     for(const std::string& port : inputs)
     {
         if(port == "Input")
-            return port;
-    }
-    for(const std::string& port : inputs)
-    {
-        if(port.find("Soma1.ExcSynapse1") != std::string::npos)
-            return port;
-    }
-    for(const std::string& port : inputs)
-    {
-        if(port.find("ExcSynapse1") != std::string::npos)
             return port;
     }
     for(const std::string& port : inputs)

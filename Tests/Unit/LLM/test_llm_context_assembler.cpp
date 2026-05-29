@@ -80,26 +80,53 @@ TEST(LLMContextAssembler, QueryPrefetchBlockPrepended)
     EXPECT_TRUE(found_query_hint);
 }
 
-TEST(LLMContextAssembler, ConnectSemanticsBlockForConnectGoal)
+TEST(LLMContextAssembler, NoHardcodedLtZoneConnectParagraph)
 {
     std::vector<LLMMessage> messages;
     messages.push_back({LLMMessage::Role::User, "connect two neurons"});
 
     ConversationState conv;
-    conv.last_user_text_en = "connect two neurons";
+    conv.last_user_text_en = "connect PNeuron to PNeuron2";
     EphemeralContextInput input{conv,
                                 LLMSessionContext{},
                                 LLMGuiContextSnapshot{},
                                 LLMIntentKind::Mutate,
                                 ConfigurationLifecycleAction::None,
                                 true};
+    input.connect_semantics_block =
+        "## Connect semantics (index)\n- from_class: NSPNeuron\n- Out -> In\n";
+    input.link_patterns_block = "## Link patterns (index)\n- LTZone -> Soma1.ExcSynapse1\n";
+
+    prependEphemeralSystemMessages(messages, input);
+    for(const LLMMessage& m : messages)
+    {
+        if(m.role != LLMMessage::Role::System)
+            continue;
+        EXPECT_EQ(m.content.find("Typical NSPNeuron"), std::string::npos);
+        EXPECT_EQ(m.content.find("Connect semantics (summary)"), std::string::npos);
+    }
+}
+
+TEST(LLMContextAssembler, InjectsCatalogConnectBlocks)
+{
+    std::vector<LLMMessage> messages;
+    messages.push_back({LLMMessage::Role::User, "connect"});
+
+    ConversationState conv;
+    EphemeralContextInput input{conv,
+                                LLMSessionContext{},
+                                LLMGuiContextSnapshot{},
+                                LLMIntentKind::Mutate,
+                                ConfigurationLifecycleAction::None,
+                                true};
+    input.connect_semantics_block = "## Connect semantics (index)\n- A -> B\n";
 
     prependEphemeralSystemMessages(messages, input);
     bool found = false;
     for(const LLMMessage& m : messages)
     {
         if(m.role == LLMMessage::Role::System
-           && m.content.find("Connect semantics (summary)") != std::string::npos)
+           && m.content.find("Connect semantics (index)") != std::string::npos)
             found = true;
     }
     EXPECT_TRUE(found);

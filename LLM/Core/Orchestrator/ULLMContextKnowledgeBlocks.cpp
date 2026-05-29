@@ -1,0 +1,95 @@
+#include "ULLMContextKnowledgeBlocks.h"
+
+#include "../Context/UDocSearchIndex.h"
+#include "../Context/ULLMConnectSemanticsCatalog.h"
+#include "../Context/ULinkPatternCatalog.h"
+
+#include <sstream>
+
+namespace RDK::LLM {
+
+namespace {
+
+constexpr std::size_t kDefaultExcerptChars = 400;
+
+void truncateInPlace(std::string& s, const std::size_t max_chars)
+{
+    if(s.size() <= max_chars)
+        return;
+    s.resize(max_chars);
+    s += "\n...(truncated)";
+}
+
+} // namespace
+
+std::string buildLinkPatternHintBlock(const ULinkPatternCatalog& cat,
+                                    const std::string& from_class, const std::string& to_class,
+                                    int top_k)
+{
+    if(from_class.empty() || to_class.empty() || cat.empty())
+        return {};
+
+    const std::vector<LinkPortSuggestion> suggestions = cat.suggest(from_class, to_class, top_k);
+    if(suggestions.empty())
+        return {};
+
+    std::ostringstream oss;
+    oss << "## Link patterns (index)\n"
+        << "- from_class: " << from_class << "\n"
+        << "- to_class: " << to_class << "\n";
+    for(const LinkPortSuggestion& s : suggestions)
+    {
+        oss << "- " << s.from_port << " -> " << s.to_port << " (score=" << s.score
+            << ", count=" << s.count << ")\n";
+    }
+    return oss.str();
+}
+
+std::string buildConnectSemanticsHintBlock(const ULLMConnectSemanticsCatalog& sem,
+                                           const std::string& from_class,
+                                           const std::string& to_class, int top_k)
+{
+    if(from_class.empty() || to_class.empty() || sem.empty())
+        return {};
+
+    const auto suggestions = sem.suggestContainerPair(from_class, to_class, top_k);
+    if(suggestions.empty())
+        return {};
+
+    std::ostringstream oss;
+    oss << "## Connect semantics (index)\n"
+        << "- from_class: " << from_class << "\n"
+        << "- to_class: " << to_class << "\n";
+    for(const ULLMConnectSemanticsCatalog::Suggestion& s : suggestions)
+    {
+        oss << "- " << s.from_port << " -> " << s.to_port << " (score=" << s.score << ")\n";
+    }
+    oss << "Use get_component_properties if port names are unclear.\n";
+    return oss.str();
+}
+
+std::string buildDocsPrefetchBlock(UDocSearchIndex& index, const std::string& query,
+                                   const std::string& scope, int top_k, std::size_t max_chars)
+{
+    if(query.empty() || top_k <= 0)
+        return {};
+
+    const std::vector<DocSnippet> hits = index.searchWithScope(query, top_k, scope);
+    if(hits.empty())
+        return {};
+
+    std::ostringstream prefetch;
+    prefetch << "## Prefetched documentation\n";
+    for(const DocSnippet& snip : hits)
+    {
+        std::string excerpt = snip.excerpt;
+        if(excerpt.size() > kDefaultExcerptChars)
+            excerpt.resize(kDefaultExcerptChars);
+        prefetch << "- [" << snip.source_id << "] " << snip.path << ": " << excerpt << "\n";
+    }
+    std::string block = prefetch.str();
+    truncateInPlace(block, max_chars);
+    return block;
+}
+
+} // namespace RDK::LLM

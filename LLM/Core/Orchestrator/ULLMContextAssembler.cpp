@@ -42,8 +42,9 @@ void prependSystem(std::vector<LLMMessage>& messages, std::string content)
 bool guiSnapshotHasData(const LLMGuiContextSnapshot& gui)
 {
     return !gui.current_component_long_name.empty() || !gui.focused_component_long_name.empty()
-           || !gui.focused_class_name.empty() || !gui.project_xml_path.empty()
-           || gui.snapshot_fingerprint != 0 || gui.channel_index != 0;
+           || !gui.diagram_scope_long_name.empty() || !gui.focused_class_name.empty()
+           || !gui.project_xml_path.empty() || gui.snapshot_fingerprint != 0
+           || gui.channel_index != 0;
 }
 
 } // namespace
@@ -86,6 +87,7 @@ std::string buildGuiFocusSystemHint(const LLMGuiContextSnapshot& gui,
         << "## GUI focus\n"
         << "- focused_component_long_name: " << noneOr(gui.focused_component_long_name) << "\n"
         << "- focused_class_name: " << noneOr(gui.focused_class_name) << "\n"
+        << "- diagram_scope_long_name: " << noneOr(gui.diagram_scope_long_name) << "\n"
         << "- project_config_path: " << config_display << "\n"
         << "- diagram_snapshot_fingerprint: " << gui.snapshot_fingerprint << "\n"
         << "All model mutations without explicit paths use engine CurrentComponent (same as "
@@ -101,7 +103,10 @@ static std::string buildRetrieverSummaryBlock(const EphemeralContextInput& input
 {
     if(!input.context_retriever || !input.session.project_loaded)
         return {};
-    if(input.gui.focused_class_name.empty() && input.gui.focused_component_long_name.empty())
+    const bool has_focus = !input.gui.focused_class_name.empty()
+                           || !input.gui.focused_component_long_name.empty();
+    const bool has_diagram_scope = !input.gui.diagram_scope_long_name.empty();
+    if(!has_focus && !has_diagram_scope && !input.allow_retriever_without_list_focus)
         return {};
 
     const nlohmann::json summary =
@@ -169,17 +174,10 @@ void prependEphemeralSystemMessages(std::vector<LLMMessage>& provider_messages,
         prependSystem(provider_messages, sg.str());
     }
 
-    if((!input.planning_text.empty() && isConnectGoalText(input.planning_text))
-       || (!input.state.last_user_text_en.empty()
-           && isConnectGoalText(input.state.last_user_text_en)))
-    {
-        prependSystem(provider_messages,
-                      "## Connect semantics (summary)\n"
-                      "- Users often mean internal published ports when naming two neurons.\n"
-                      "- Typical NSPNeuron→NSPNeuron: LTZone → Soma1.ExcSynapse1 (see "
-                      "Connect-Semantics.md).\n"
-                      "- Use get_component_properties if port names are unclear.\n");
-    }
+    if(!input.connect_semantics_block.empty())
+        prependSystem(provider_messages, input.connect_semantics_block);
+    if(!input.link_patterns_block.empty())
+        prependSystem(provider_messages, input.link_patterns_block);
 
     prependSystem(provider_messages, buildRetrieverSummaryBlock(input));
     prependSystem(provider_messages, buildGuiFocusSystemHint(input.gui, input.session));

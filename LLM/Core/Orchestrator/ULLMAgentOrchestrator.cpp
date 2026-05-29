@@ -56,6 +56,9 @@
 #include "ULLMInputUnderstanding.h"
 #include "ULLMToolExposurePolicy.h"
 #include "ULLMContextAcquisitionPolicy.h"
+#include "ULLMContextKnowledgeBlocks.h"
+#include "../Context/ULLMIndexCatalogs.h"
+#include "../Context/ULLMConnectSemanticsCatalog.h"
 #include "ULLMSubagentRunner.h"
 #include "ULLMConnectPlanParsing.h"
 #include "ULLMConnectPlanLlmFallback.h"
@@ -215,7 +218,7 @@ std::string formatClarificationMessage(const nlohmann::json& payload)
         {
             oss << index++ << ". " << c.value("port_name", c.value("name", "")) << "\n";
         }
-        oss << "\nReply with the exact port name (e.g. `Soma1.ExcSynapse1`).";
+        oss << "\nReply with the exact port name (e.g. `PortName`).";
         return oss.str();
     }
 
@@ -899,8 +902,14 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
         }
     }
 
-    const ContextAcquisitionPlan ctx_plan =
-        defaultContextAcquisitionPlan(state, session);
+    LLMContextAcquisitionMode acquisition_mode = LLMContextAcquisitionMode::Auto;
+    if(LLMServices::instance().isInitialized())
+        acquisition_mode = LLMServices::instance().settings().runtime().context_acquisition_mode;
+
+    const ContextAcquisitionSignals ctx_signals =
+        buildContextAcquisitionSignals(state, session, req.gui, intent, planning_text);
+    const ContextAcquisitionPlan ctx_plan = computeContextAcquisitionPlan(
+        state, session, req.gui, ctx_signals, acquisition_mode);
     if(ctx_plan.bootstrap_session && !state.session_context_seeded)
         state.session_context_seeded = true;
     const std::string known_facts_block = formatKnownFactsBlock(state.known_facts);
@@ -959,28 +968,53 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                                     {},
                                     {}};
 
-    if(provider_tools && intent == LLMIntentKind::Query)
+    if(provider_tools && ctx_plan.prefetch_docs && LLMServices::instance().isInitialized()
+       && !ctx_signals.retrieval_query.empty())
+    {
+        ctx_input.prefetched_docs_block = buildDocsPrefetchBlock(
+            LLMServices::instance().searchIndex(), ctx_signals.retrieval_query,
+            ctx_plan.docs_scope, ctx_plan.docs_top_k, 4096);
+    }
+    else if(provider_tools && intent == LLMIntentKind::Query)
     {
         const char* prefetch_env = std::getenv("NMSDK_LLM_QUERY_PREFETCH_DOCS");
-        if(prefetch_env && prefetch_env[0] == '1')
+        if(prefetch_env && prefetch_env[0] == '1' && LLMServices::instance().isInitialized())
         {
-            const auto hits =
-                LLMServices::instance().searchIndex().searchWithScope(planning_text, 3, "docs");
-            if(!hits.empty())
-            {
-                std::ostringstream prefetch;
-                prefetch << "## Prefetched documentation\n";
-                for(const DocSnippet& snip : hits)
-                {
-                    std::string excerpt = snip.excerpt;
-                    if(excerpt.size() > 400)
-                        excerpt.resize(400);
-                    prefetch << "- [" << snip.source_id << "] " << snip.path << ": " << excerpt
-                             << "\n";
-                }
-                ctx_input.prefetched_docs_block = prefetch.str();
-            }
+            ctx_input.prefetched_docs_block = buildDocsPrefetchBlock(
+                LLMServices::instance().searchIndex(), planning_text, "docs", 3, 4096);
         }
+    }
+
+    if(ctx_plan.inject_link_patterns)
+    {
+        const ULinkPatternCatalog& link_cat = defaultLinkPatternCatalog();
+        ctx_input.link_patterns_block =
+            buildLinkPatternHintBlock(link_cat, ctx_signals.from_class, ctx_signals.to_class,
+                                      ctx_plan.link_pattern_top_k);
+        const ULLMConnectSemanticsCatalog& sem_cat = defaultConnectSemanticsCatalog();
+        ctx_input.connect_semantics_block =
+            buildConnectSemanticsHintBlock(sem_cat, ctx_signals.from_class, ctx_signals.to_class,
+                                           ctx_plan.link_pattern_top_k);
+    }
+
+    ctx_input.allow_retriever_without_list_focus =
+        ctx_plan.prefetch_snapshot && !req.gui.diagram_scope_long_name.empty();
+
+    {
+        nlohmann::json acquired_blocks = nlohmann::json::array();
+        if(!ctx_input.link_patterns_block.empty())
+            acquired_blocks.push_back("link_patterns");
+        if(!ctx_input.connect_semantics_block.empty())
+            acquired_blocks.push_back("connect_semantics");
+        if(!ctx_input.prefetched_docs_block.empty())
+            acquired_blocks.push_back("docs");
+        if(ctx_input.allow_retriever_without_list_focus)
+            acquired_blocks.push_back("retriever_diagram_scope");
+        GetAuditLog().append("context_acquired",
+                             {{"blocks", acquired_blocks},
+                              {"from_class", ctx_signals.from_class},
+                              {"to_class", ctx_signals.to_class}},
+                             req.trace_id, req.session_id);
     }
 
     if(LLMServices::instance().isInitialized() && LLMServices::instance().projectContext())
