@@ -23,6 +23,7 @@ public:
 
     static bool isAutonomousReadTool(const std::string& tool_name);
     static bool isAutonomousWriteTool(const std::string& tool_name);
+    static bool isAutonomousLifecycleTool(const std::string& tool_name);
 };
 
 } // namespace RDK::LLM

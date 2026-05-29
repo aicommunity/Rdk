@@ -16,8 +16,10 @@ TEST(LLMAutonomousPolicy, StrictWhitelistsCoreTools)
 {
     EXPECT_TRUE(ULLMAutonomousPolicy::isToolWhitelisted("add_component", LLMAutonomousMode::Strict));
     EXPECT_TRUE(ULLMAutonomousPolicy::isToolWhitelisted("set_property", LLMAutonomousMode::Strict));
-    EXPECT_FALSE(ULLMAutonomousPolicy::isToolWhitelisted("create_configuration",
-                                                          LLMAutonomousMode::Strict));
+    EXPECT_TRUE(ULLMAutonomousPolicy::isToolWhitelisted("create_configuration",
+                                                         LLMAutonomousMode::Strict));
+    EXPECT_TRUE(ULLMAutonomousPolicy::isToolWhitelisted("load_configuration",
+                                                         LLMAutonomousMode::SemiAuto));
 }
 
 TEST(LLMAutonomousPolicy, StepLimitDenied)
@@ -47,7 +49,14 @@ TEST(LLMAutonomousPolicy, AutonomousAllowsConnect)
 TEST(LLMAutonomousPolicy, NonWhitelistedDenied)
 {
     AutonomousStepDecision d = ULLMAutonomousPolicy::checkStep(
-        "create_configuration", LLMAutonomousMode::SemiAuto, 0, 3);
+        "delete_everything", LLMAutonomousMode::SemiAuto, 0, 3);
     EXPECT_FALSE(d.allowed);
     EXPECT_EQ(d.deny_code, "AUTONOMOUS_TOOL_NOT_WHITELISTED");
+}
+
+TEST(LLMAutonomousPolicy, LifecycleCreateAllowedInAutonomous)
+{
+    AutonomousStepDecision d = ULLMAutonomousPolicy::checkStep(
+        "create_configuration", LLMAutonomousMode::SemiAuto, 0, 3);
+    EXPECT_TRUE(d.allowed);
 }

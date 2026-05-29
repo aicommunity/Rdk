@@ -33,6 +33,25 @@ const std::unordered_set<std::string>& autonomousWriteTools()
     return k;
 }
 
+const std::unordered_set<std::string>& autonomousLifecycleTools()
+{
+    static const std::unordered_set<std::string> k = {
+        "create_configuration",
+        "load_configuration",
+        "load_project",
+        "open_recent_configuration",
+        "save_configuration",
+        "save_project",
+        "save_project_metadata",
+        "close_configuration",
+        "copy_configuration",
+        "rename_configuration",
+        "update_configuration",
+        "reload_configuration_parameters",
+    };
+    return k;
+}
+
 } // namespace
 
 bool ULLMAutonomousPolicy::isAutonomousReadTool(const std::string& tool_name)
@@ -45,11 +64,17 @@ bool ULLMAutonomousPolicy::isAutonomousWriteTool(const std::string& tool_name)
     return autonomousWriteTools().count(tool_name) > 0;
 }
 
+bool ULLMAutonomousPolicy::isAutonomousLifecycleTool(const std::string& tool_name)
+{
+    return autonomousLifecycleTools().count(tool_name) > 0;
+}
+
 bool ULLMAutonomousPolicy::isToolWhitelisted(const std::string& tool_name, LLMAutonomousMode mode)
 {
     if(mode == LLMAutonomousMode::Off)
         return true;
-    return isAutonomousReadTool(tool_name) || isAutonomousWriteTool(tool_name);
+    return isAutonomousReadTool(tool_name) || isAutonomousWriteTool(tool_name)
+           || isAutonomousLifecycleTool(tool_name);
 }
 
 AutonomousStepDecision ULLMAutonomousPolicy::checkStep(const std::string& tool_name,
@@ -68,7 +93,7 @@ AutonomousStepDecision ULLMAutonomousPolicy::checkStep(const std::string& tool_n
         return out;
     }
 
-    if(isAutonomousReadTool(tool_name))
+    if(isAutonomousReadTool(tool_name) || isAutonomousLifecycleTool(tool_name))
         return out;
 
     if(steps_taken >= max_steps)
