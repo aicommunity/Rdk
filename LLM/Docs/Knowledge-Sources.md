@@ -56,6 +56,23 @@ indexed `source_id` roots for external LLM crawlers. Regenerate with the index p
 `NmsdkBuiltinKnowledgeCatalog::loadedLibraries()` is the single source for `library_id` → `cl_desc_folder`
 used by `NmsdkLlmProjectContext` and library doc paths. Keep in sync with `Libraries.cpp` when adding libs.
 
+## Long-term context memory (`LLM/memory/`)
+
+Per-session GUI and transcript state live under `LLM/sessions/`. Cross-session preferences and
+project rules use a separate namespace:
+
+```
+<repo>/LLM/memory/
+  user_{user_id}/
+    preferences.json    # e.g. {"response_language":"ru","notes":"..."}
+  project_{sha256_8}/
+    rules.md            # optional markdown rules for the open project
+```
+
+`sha256_8` is the first 8 hex chars of SHA256 of the absolute `project_xml_path`. The orchestrator
+loads these files into an ephemeral `## Long-term memory` system block (max 2 KB) via
+`ULLMLongTermMemoryLoader`. Guest users (`user_id < 0`) skip user preferences.
+
 ## Post-MVP placeholders (TD-031 / TD-034 / TD-036)
 
 | ID | Artifact | Env / flag | Current behavior |

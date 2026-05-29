@@ -78,9 +78,9 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-085 | LLM-based session summarize for compactor (v1.1) | context-P2 | P2 | open | v1 rule-based only; `deferred:DD-CTX-002` |
 | TD-086 | `diagram_viewport_scene_rect` in GUI context hints | context-P3 | P3 | open | post-MVP; non-goal MVP |
 | TD-087 | `turn_id` per message in conversation store | post-context-plan | P3 | open | ADR: post-MVP |
-| TD-088 | Persist `LLMSessionContext` snapshot in session JSON (resume parity) | context-P3 | P2 | open | Today flags only in envelope |
+| TD-088 | Persist `LLMSessionContext` snapshot in session JSON (resume parity) | post-context-plan | P2 | open | Deferred post-plan; flags stay in envelope per DD-CTX-001 scope |
 | TD-089 | `Orchestrator.md` / `LLMRequestEnvelope` doc drift (gui_context, retriever) | context-P0 | P1 | done | Docs + `LLMGuiContextSnapshot` in envelope |
-| TD-090 | Flaky lab Ollama e2e after context-hint changes | context-verify | P2 | open | Per-scenario RCA; see context plan §0.H |
+| TD-090 | Flaky lab Ollama e2e after context-hint changes | context-verify | P2 | open | RCA: e2e_link_connect, e2e_obs_policy, e2e_write_add fail with lab up; deterministic ctx_* green |
 
 ---
 

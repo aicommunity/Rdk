@@ -12,7 +12,7 @@
 | L6 Orchestrator | Mock provider | Integration | No |
 | L7 Regression phrases | Intent/rules smoke | Unit + fixtures | No |
 | L7.5 Agent scenarios | JSON matrix + mock runner | `Test_LLM_AgentScenarios` | D: No / E2e: Yes |
-| L7.5b Context scenarios | `deterministic/context/ctx_*.json` | same | No |
+| L7.5b Context scenarios | `deterministic/context/ctx_*.json` (5 cases) | same | No |
 | L8 E2E / Manual | Real Ollama | Manual | Yes |
 
 **CI default (`RDK_USE_LLM=OFF`):** LLM tests **не собираются**.
