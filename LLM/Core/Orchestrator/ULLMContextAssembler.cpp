@@ -2,6 +2,7 @@
 
 #include "../Context/URdkContextRetriever.h"
 #include "ULLMAgentManifestBuilder.h"
+#include "ULLMConnectPlanParsing.h"
 
 #include <filesystem>
 #include <sstream>
@@ -158,6 +159,17 @@ void prependEphemeralSystemMessages(std::vector<LLMMessage>& provider_messages,
            << "- added_count: " << input.state.session_graph.added_long_names.size() << "\n"
            << "- linked_count: " << input.state.session_graph.linked_records.size() << "\n";
         prependSystem(provider_messages, sg.str());
+    }
+
+    if(!input.state.last_user_text_en.empty()
+       && isConnectGoalText(input.state.last_user_text_en))
+    {
+        prependSystem(provider_messages,
+                      "## Connect semantics (summary)\n"
+                      "- Users often mean internal published ports when naming two neurons.\n"
+                      "- Typical NSPNeuron→NSPNeuron: LTZone → Soma1.ExcSynapse1 (see "
+                      "Connect-Semantics.md).\n"
+                      "- Use get_component_properties if port names are unclear.\n");
     }
 
     prependSystem(provider_messages, buildRetrieverSummaryBlock(input));

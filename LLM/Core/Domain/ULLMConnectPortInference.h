@@ -8,6 +8,7 @@ namespace RDK::LLM {
 
 class URdkDomainAccess;
 class ULinkPatternCatalog;
+class ULLMConnectSemanticsCatalog;
 
 struct ConnectPortInferenceResult {
     bool ok = false;
@@ -18,7 +19,10 @@ struct ConnectPortInferenceResult {
 };
 
 ConnectPortInferenceResult inferConnectPorts(nlohmann::json& args, URdkDomainAccess& domain,
-                                             ULinkPatternCatalog& catalog, int channel_index);
+                                             ULinkPatternCatalog& catalog, int channel_index,
+                                             const ULLMConnectSemanticsCatalog* semantics = nullptr,
+                                             const std::string& goal_en = "",
+                                             bool prefer_internal_semantics = false);
 
 } // namespace RDK::LLM
 

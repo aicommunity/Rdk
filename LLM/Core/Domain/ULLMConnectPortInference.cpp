@@ -1,6 +1,8 @@
 #include "ULLMConnectPortInference.h"
 
 #include "../Context/ULinkPatternCatalog.h"
+#include "../Context/ULLMConnectSemanticsCatalog.h"
+#include "ULLMConnectPortHeuristics.h"
 #include "URdkDomainAccess.h"
 
 #include <algorithm>
@@ -8,14 +10,6 @@
 namespace RDK::LLM {
 
 namespace {
-
-bool isGenericLinkPortName(const std::string& value)
-{
-    std::string lower = value;
-    std::transform(lower.begin(), lower.end(), lower.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-    return lower == "input" || lower == "output";
-}
 
 std::optional<std::string> findPortCaseInsensitive(const std::vector<std::string>& ports,
                                                    const std::string& requested)
@@ -33,36 +27,6 @@ std::optional<std::string> findPortCaseInsensitive(const std::vector<std::string
             return p;
     }
     return std::nullopt;
-}
-
-std::optional<std::string> pickPreferredOutputPort(const std::vector<std::string>& ports)
-{
-    if(ports.empty())
-        return std::nullopt;
-    for(const std::string& p : ports)
-    {
-        std::string lower = p;
-        std::transform(lower.begin(), lower.end(), lower.begin(),
-                       [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-        if(lower == "output")
-            return p;
-    }
-    return ports.front();
-}
-
-std::optional<std::string> pickPreferredInputPort(const std::vector<std::string>& ports)
-{
-    if(ports.empty())
-        return std::nullopt;
-    for(const std::string& p : ports)
-    {
-        std::string lower = p;
-        std::transform(lower.begin(), lower.end(), lower.begin(),
-                       [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-        if(lower == "input")
-            return p;
-    }
-    return ports.front();
 }
 
 nlohmann::json portCandidatesJson(const std::vector<std::string>& ports)
@@ -90,7 +54,10 @@ std::string formatPortListForMessage(const std::vector<std::string>& ports)
 } // namespace
 
 ConnectPortInferenceResult inferConnectPorts(nlohmann::json& args, URdkDomainAccess& domain,
-                                             ULinkPatternCatalog& catalog, int channel_index)
+                                             ULinkPatternCatalog& catalog, int channel_index,
+                                             const ULLMConnectSemanticsCatalog* semantics,
+                                             const std::string& goal_en,
+                                             bool prefer_internal_semantics)
 {
     ConnectPortInferenceResult out;
     const std::string from_ln = args.value("from_long_name", "");
@@ -107,6 +74,18 @@ ConnectPortInferenceResult inferConnectPorts(nlohmann::json& args, URdkDomainAcc
         domain.listComponentPubPorts(from_ln, channel_index, from_outputs, from_inputs_unused);
     if(!st_from.ok())
     {
+        if(prefer_internal_semantics && semantics && !goal_en.empty())
+        {
+            std::string hint_from;
+            std::string hint_to;
+            if(semantics->matchGoalPortHint(goal_en, hint_from, hint_to))
+            {
+                args["from_property"] = hint_from;
+                args["to_property"] = hint_to;
+                out.ok = true;
+                return out;
+            }
+        }
         out.error_code = "ENTITY_NOT_FOUND";
         out.message = st_from.message;
         return out;
@@ -122,6 +101,38 @@ ConnectPortInferenceResult inferConnectPorts(nlohmann::json& args, URdkDomainAcc
         out.message = st_to.message;
         return out;
     }
+
+    auto trySemanticsFill = [&]() -> bool {
+        if(!semantics || semantics->empty())
+            return false;
+        std::string hint_from;
+        std::string hint_to;
+        if(!goal_en.empty() && semantics->matchGoalPortHint(goal_en, hint_from, hint_to))
+        {
+            args["from_property"] = hint_from;
+            args["to_property"] = hint_to;
+            out.ok = true;
+            return true;
+        }
+        std::string from_class;
+        std::string to_class;
+        if(!domain.getComponentClassName(from_ln, channel_index, from_class).ok()
+           || !domain.getComponentClassName(to_ln, channel_index, to_class).ok())
+            return false;
+        const auto suggestions = semantics->suggestContainerPair(from_class, to_class, 3);
+        if(suggestions.empty())
+            return false;
+        const double top = suggestions[0].score;
+        const double second = suggestions.size() > 1 ? suggestions[1].score : 0.0;
+        constexpr double kMinAutoFillScore = 0.6;
+        constexpr double kMinScoreGap = 0.2;
+        if(top < kMinAutoFillScore || (top - second) < kMinScoreGap)
+            return false;
+        args["from_property"] = suggestions[0].from_port;
+        args["to_property"] = suggestions[0].to_port;
+        out.ok = true;
+        return true;
+    };
 
     auto tryCatalogFill = [&]() -> bool {
         std::string from_class;
@@ -202,17 +213,28 @@ ConnectPortInferenceResult inferConnectPorts(nlohmann::json& args, URdkDomainAcc
         return false;
     };
 
+    if(prefer_internal_semantics && trySemanticsFill())
+        return out;
+
     if(!resolveField("from_property", from_ln, from_outputs, true))
     {
-        if(tryCatalogFill())
+        if(trySemanticsFill() || tryCatalogFill())
             return out;
         return out;
     }
     if(!resolveField("to_property", to_ln, to_inputs, false))
     {
-        if(tryCatalogFill())
+        if(trySemanticsFill() || tryCatalogFill())
             return out;
         return out;
+    }
+
+    const std::string fp = args.value("from_property", "");
+    const std::string tp = args.value("to_property", "");
+    if(isGenericLinkPortName(fp) && isGenericLinkPortName(tp))
+    {
+        if(trySemanticsFill() || tryCatalogFill())
+            return out;
     }
 
     out.ok = true;

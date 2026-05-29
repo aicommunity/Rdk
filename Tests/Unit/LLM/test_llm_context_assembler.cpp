@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include "Orchestrator/ULLMConnectPlanParsing.h"
 #include "Orchestrator/ULLMContextAssembler.h"
 #include "Tools/ULLMToolRegistry.h"
 
@@ -60,4 +61,29 @@ TEST(LLMContextAssembler, QueryPrefetchBlockPrepended)
     }
     EXPECT_TRUE(found_prefetch);
     EXPECT_TRUE(found_query_hint);
+}
+
+TEST(LLMContextAssembler, ConnectSemanticsBlockForConnectGoal)
+{
+    std::vector<LLMMessage> messages;
+    messages.push_back({LLMMessage::Role::User, "connect two neurons"});
+
+    ConversationState conv;
+    conv.last_user_text_en = "connect two neurons";
+    EphemeralContextInput input{conv,
+                                LLMSessionContext{},
+                                LLMGuiContextSnapshot{},
+                                LLMIntentKind::Mutate,
+                                ConfigurationLifecycleAction::None,
+                                true};
+
+    prependEphemeralSystemMessages(messages, input);
+    bool found = false;
+    for(const LLMMessage& m : messages)
+    {
+        if(m.role == LLMMessage::Role::System
+           && m.content.find("Connect semantics (summary)") != std::string::npos)
+            found = true;
+    }
+    EXPECT_TRUE(found);
 }

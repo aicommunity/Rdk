@@ -2,10 +2,12 @@
 
 #include "../LlmModuleInit.h"
 #include "../LlmPublicApi.h"
+#include "../Context/ULLMConnectSemanticsCatalog.h"
 #include "../Context/ULinkPatternCatalog.h"
 #include "../Orchestrator/ULLMLibraryScopeHint.h"
 #include "../Orchestrator/ULLMLifecycleArgumentGate.h"
 #include "../Session/ULLMConversationStore.h"
+#include "ULLMConnectPortHeuristics.h"
 #include "ULLMConnectPortInference.h"
 #include "ULLMNameResolution.h"
 #include "ULLMResolvedEntityStore.h"
@@ -314,54 +316,6 @@ std::optional<std::string> findPortCaseInsensitive(const std::vector<std::string
     return std::nullopt;
 }
 
-std::optional<std::string> pickPreferredOutputPort(const std::vector<std::string>& outputs)
-{
-    if(outputs.empty())
-        return std::nullopt;
-    if(outputs.size() == 1)
-        return outputs.front();
-    for(const std::string& port : outputs)
-    {
-        if(port == "Output")
-            return port;
-    }
-    for(const std::string& port : outputs)
-    {
-        if(port.find("ExcSynapse1") != std::string::npos)
-            return port;
-    }
-    for(const std::string& port : outputs)
-    {
-        if(port.find("LTZone") != std::string::npos)
-            return port;
-    }
-    return std::nullopt;
-}
-
-std::optional<std::string> pickPreferredInputPort(const std::vector<std::string>& inputs)
-{
-    if(inputs.empty())
-        return std::nullopt;
-    if(inputs.size() == 1)
-        return inputs.front();
-    for(const std::string& port : inputs)
-    {
-        if(port == "Input")
-            return port;
-    }
-    for(const std::string& port : inputs)
-    {
-        if(port.find("Soma1.ExcSynapse1") != std::string::npos)
-            return port;
-    }
-    for(const std::string& port : inputs)
-    {
-        if(port.find("ExcSynapse1") != std::string::npos)
-            return port;
-    }
-    return std::nullopt;
-}
-
 std::string formatPortListForMessage(const std::vector<std::string>& ports)
 {
     if(ports.empty())
@@ -453,8 +407,9 @@ bool normalizeConnectComponentsArguments(nlohmann::json& arguments, URdkDomainAc
                                          int channel_index, WriteArgumentNormalizeResult& out)
 {
     ULinkPatternCatalog catalog = linkPatternCatalog();
-    ConnectPortInferenceResult inf =
-        inferConnectPorts(arguments, domain, catalog, channel_index);
+    const ULLMConnectSemanticsCatalog& semantics = defaultConnectSemanticsCatalog();
+    ConnectPortInferenceResult inf = inferConnectPorts(
+        arguments, domain, catalog, channel_index, semantics.empty() ? nullptr : &semantics);
     out.ok = inf.ok;
     out.needs_clarification = inf.needs_clarification;
     out.error_code = inf.error_code;

@@ -941,6 +941,13 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
         LLMContextBudget budget;
         budget.compacted = context_compacted;
         prependEphemeralSystemMessages(provider_messages, ctx_input, &budget);
+        if(round == 0 && !ctx_input.planning_text.empty()
+           && isConnectGoalText(ctx_input.planning_text))
+        {
+            GetAuditLog().append("connect_semantics_context_injected",
+                                 {{"goal_en_length", static_cast<int>(ctx_input.planning_text.size())}},
+                                 req.trace_id, req.session_id);
+        }
         GetAuditLog().append("context_budget",
                              {{"messages_chars", budget.messages_chars},
                               {"ephemeral_chars", budget.ephemeral_chars},

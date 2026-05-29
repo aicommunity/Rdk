@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "Context/ULinkPatternCatalog.h"
+#include "Context/ULLMConnectSemanticsCatalog.h"
 
 using namespace RDK::LLM;
 
@@ -32,5 +33,23 @@ TEST(LLMLinkPatternCatalog, ParsesTestValidationFixture)
         }
     }
     EXPECT_TRUE(found);
+}
+
+TEST(LLMLinkPatternCatalog, BuildSemanticsFromTestValidation)
+{
+    const auto entries = buildConnectSemanticsFromConfigs(
+        findRepoRoot() / "Bin/Configs/TestValidation/test_valid");
+    ASSERT_FALSE(entries.empty());
+    bool has_neuron = false;
+    for(const auto& e : entries)
+    {
+        if(e.from_class.find("Neuron") != std::string::npos
+           && e.to_class.find("Neuron") != std::string::npos)
+        {
+            has_neuron = true;
+            break;
+        }
+    }
+    EXPECT_TRUE(has_neuron);
 }
 

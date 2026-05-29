@@ -5,6 +5,7 @@
 #include "NmsdkBuiltinKnowledgeCatalog.h"
 #include "../../Core/Context/UDocSearchIndex.h"
 #include "../../Core/Context/ULinkPatternCatalog.h"
+#include "../../Core/Context/ULLMConnectSemanticsCatalog.h"
 
 namespace fs = std::filesystem;
 
@@ -69,6 +70,20 @@ int main(int argc, char** argv)
     else
     {
         std::cerr << "Warning: failed to write link patterns\n";
+    }
+
+    const auto semantics = RDK::LLM::buildConnectSemanticsFromConfigs(configs_root);
+    const fs::path sem_json = out_dir / "connect-semantics.json";
+    const fs::path sem_manifest = out_dir / "connect-semantics-manifest.json";
+    if(RDK::LLM::writeConnectSemantics(sem_json, sem_manifest, semantics,
+                                        catalog.catalogFingerprint(),
+                                        countModelConfigFiles(configs_root)))
+    {
+        std::cout << "Wrote connect semantics to " << sem_json << '\n';
+    }
+    else
+    {
+        std::cerr << "Warning: failed to write connect semantics\n";
     }
 
     if(catalog.writeLlmsTxt(repo))
