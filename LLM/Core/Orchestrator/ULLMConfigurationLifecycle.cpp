@@ -3,6 +3,7 @@
 #include "../LlmTypes.h"
 
 #include <cctype>
+#include <cstdlib>
 #include <unordered_set>
 
 namespace RDK::LLM {
@@ -194,6 +195,25 @@ std::string formatLifecycleToolUserMessage(const std::string& tool_name,
     if(tool_name == "validate_configuration")
         return "Validation finished. See tool result in the conversation.";
     return "Operation completed: " + tool_name;
+}
+
+bool lifecycleDirectInvokeEnabled()
+{
+    const char* v = std::getenv("NMSDK_LLM_LIFECYCLE_DIRECT");
+    return v && v[0] == '1';
+}
+
+bool lifecycleForceToolChoiceEnabled()
+{
+    const char* v = std::getenv("NMSDK_LLM_LIFECYCLE_FORCE_TOOL_CHOICE");
+    return v && v[0] == '1';
+}
+
+bool shouldForceLifecycleToolChoice(float intent_confidence)
+{
+    if(!lifecycleForceToolChoiceEnabled())
+        return false;
+    return intent_confidence >= 0.95f;
 }
 
 } // namespace RDK::LLM

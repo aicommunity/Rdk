@@ -61,7 +61,14 @@ struct LLMFinalResponse {
     std::size_t context_ephemeral_chars = 0;
     std::size_t context_manifest_chars = 0;
     bool context_compacted = false;
+    /// Agent v2 terminal state (`TurnTerminal` name); empty when not set.
+    std::string turn_terminal;
 };
+
+inline void assignTurnTerminal(LLMFinalResponse& response, TurnTerminal terminal)
+{
+    response.turn_terminal = turnTerminalName(terminal);
+}
 
 class ULLMUnifiedTurnController;
 

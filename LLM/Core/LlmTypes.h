@@ -31,6 +31,39 @@ enum class LLMIntentKind { Auto, Query, Mutate, Explain, Plan };
 
 enum class LLMTaskPathMode { HintOnly, FastPath };
 
+/// Agent v2: explicit turn outcome for UI/telemetry (see Unified-Turn-Contract.md).
+enum class TurnTerminal {
+    Completed,
+    MaxRounds,
+    Cancelled,
+    ProviderError,
+    AwaitingUser,
+    AwaitingConfirm,
+    TaskFastPathCompleted
+};
+
+inline const char* turnTerminalName(TurnTerminal terminal)
+{
+    switch(terminal)
+    {
+    case TurnTerminal::Completed:
+        return "Completed";
+    case TurnTerminal::MaxRounds:
+        return "MaxRounds";
+    case TurnTerminal::Cancelled:
+        return "Cancelled";
+    case TurnTerminal::ProviderError:
+        return "ProviderError";
+    case TurnTerminal::AwaitingUser:
+        return "AwaitingUser";
+    case TurnTerminal::AwaitingConfirm:
+        return "AwaitingConfirm";
+    case TurnTerminal::TaskFastPathCompleted:
+        return "TaskFastPathCompleted";
+    }
+    return "Completed";
+}
+
 /// Scenario D: configurable multi-step autonomy (Post-MVP). Default Off.
 enum class LLMAutonomousMode { Off, Strict, SemiAuto };
 

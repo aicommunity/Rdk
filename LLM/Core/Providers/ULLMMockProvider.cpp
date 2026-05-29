@@ -6,6 +6,8 @@ LLMProviderCapabilities ULLMMockProvider::capabilities() const
 {
     LLMProviderCapabilities c;
     c.requires_network = false;
+    c.supports_tool_calling = true;
+    c.supports_streaming = false;
     return c;
 }
 

@@ -2,6 +2,13 @@
 
 При работе с подсистемой LLM **сначала** откройте [Docs/README.md](Docs/README.md).
 
+## Agent v2 (текущая архитектура)
+
+- Единый контракт хода: [Docs/Unified-Turn-Contract.md](Docs/Unified-Turn-Contract.md) (`TurnTerminal`, workflow phases).
+- Взаимодействие и HITL: [Docs/Agent-Interaction.md](Docs/Agent-Interaction.md) (`ask_user`, `propose_plan`, task path `HintOnly` по умолчанию).
+- Миграция с v1: [Docs/Migration-Agent-V2.md](Docs/Migration-Agent-V2.md).
+- Lifecycle: подсказки в ephemeral context; прямой вызов до LLM — `NMSDK_LLM_LIFECYCLE_DIRECT=1`; принудительный `tool_choice` — `NMSDK_LLM_LIFECYCLE_FORCE_TOOL_CHOICE=1`.
+
 ## Workflow (обязательно)
 
 После **каждой фазы** 0–4: [Development-Workflow.md](Docs/Development-Workflow.md) — checklist, **git commit на английском**, обновить [TECH-DEBT.md](TECH-DEBT.md).
@@ -21,6 +28,7 @@
 | Новый tool | [Tools-Contracts.md](Docs/Tools-Contracts.md) + [Tool-Gateway-and-Registry.md](Docs/Tool-Gateway-and-Registry.md) |
 | Policy / HITL | [Policy-and-Safety.md](Docs/Policy-and-Safety.md) |
 | Qt dock | [GUI-Integration.md](Docs/GUI-Integration.md) |
+| Orchestrator / turn loop | [Orchestrator.md](Docs/Orchestrator.md), [Unified-Turn-Contract.md](Docs/Unified-Turn-Contract.md) |
 | NMSDK paths | [Project-Context-NMSDK.md](Docs/Project-Context-NMSDK.md) |
 | CMake | [Build.md](Docs/Build.md) |
 | Сборка OFF | [Build.md](Docs/Build.md) §5 |

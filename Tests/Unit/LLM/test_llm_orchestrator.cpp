@@ -49,6 +49,7 @@ TEST(LLMOrchestrator, TextResponseFromMock)
     LLMFinalResponse resp = orch.handleUserMessage(req);
     EXPECT_TRUE(resp.ok);
     EXPECT_EQ(resp.text, "Hello from mock");
+    EXPECT_EQ(resp.turn_terminal, "Completed");
 }
 
 TEST(LLMOrchestrator, MutateNoSuitableToolAfterRecovery)

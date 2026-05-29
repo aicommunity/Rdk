@@ -39,6 +39,13 @@ std::string formatLifecycleToolUserMessage(const std::string& tool_name,
 bool toolInvokeNeedsArgumentClarification(const std::string& tool_name,
                                           const ToolGatewayResult& result);
 
+/// Agent v2: lifecycle tools are suggested via ephemeral hints, not forced tool_choice (phase J).
+bool lifecycleDirectInvokeEnabled();
+
+bool lifecycleForceToolChoiceEnabled();
+
+bool shouldForceLifecycleToolChoice(float intent_confidence);
+
 } // namespace RDK::LLM
 
 #endif

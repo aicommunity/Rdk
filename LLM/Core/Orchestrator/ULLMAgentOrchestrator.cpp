@@ -59,6 +59,7 @@
 #include "ULLMSubagentRunner.h"
 #include "ULLMConnectPlanParsing.h"
 #include "ULLMConnectPlanLlmFallback.h"
+#include "ULLMTurnTerminalHelpers.h"
 
 namespace RDK::LLM {
 
@@ -619,6 +620,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 final.text = formatExecutionPlanPreview(tp.plan)
                              + "\n\n[Task plan ready — confirm execution in the assistant panel.]";
                 setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation, req.trace_id);
+                assignTurnTerminal(final, TurnTerminal::AwaitingConfirm);
                 m_store.persistToDisk(req.session_id);
                 return final;
             }
@@ -639,6 +641,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
             setWorkflowPhase(
                 state, exec.ok ? LLMWorkflowPhase::Completed : LLMWorkflowPhase::Failed, req.trace_id);
             setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
+            assignTurnTerminal(final,
+                               exec.ok ? TurnTerminal::TaskFastPathCompleted : TurnTerminal::Completed);
             m_store.persistToDisk(req.session_id);
             return final;
         }
@@ -732,8 +736,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
     if(LLMServices::instance().isInitialized())
         app = LLMServices::instance().domain().application();
 
-    if(lifecycle_action == ConfigurationLifecycleAction::Load && wantsRecentConfiguration(req.user_text)
-       && app)
+    if(lifecycleDirectInvokeEnabled() && lifecycle_action == ConfigurationLifecycleAction::Load
+       && wantsRecentConfiguration(req.user_text) && app)
     {
         PendingToolArguments bootstrap;
         bootstrap.tool_name = "load_configuration";
@@ -993,7 +997,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
         opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
     else
         opts.tools_for_api.clear();
-    if(provider_tools && lifecycle_action != ConfigurationLifecycleAction::None)
+    if(provider_tools && lifecycle_action != ConfigurationLifecycleAction::None
+       && shouldForceLifecycleToolChoice(intent_result.confidence))
     {
         if(lifecycle_action == ConfigurationLifecycleAction::Load
            && wantsRecentConfiguration(req.user_text))
@@ -1047,7 +1052,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
             final.context_compacted = budget.compacted;
         }
 
-        if(lifecycle_action != ConfigurationLifecycleAction::None && round >= 1)
+        if(round >= 1)
             opts.tool_choice.reset();
         if(is_cloud_profile)
         {
@@ -1103,12 +1108,27 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 else
                     final.error += " (check: ollama serve, model pulled, Ollama 0.3+ for tools)";
             }
+            assignTurnTerminal(final, TurnTerminal::ProviderError);
             setWorkflowPhase(state, LLMWorkflowPhase::Failed, req.trace_id);
             return final;
         }
 
+        if(session_cancelled() && !completion.tool_calls.empty())
+        {
+            appendCancelledToolResults(m_store, req.session_id, completion.tool_calls);
+            final.ok = false;
+            final.text = "Turn cancelled.";
+            assignTurnTerminal(final, TurnTerminal::Cancelled);
+            setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
+            m_store.persistToDisk(req.session_id);
+            GetAuditLog().append("turn_cancelled_with_pending_tools",
+                                 {{"tool_count", static_cast<int>(completion.tool_calls.size())}},
+                                 req.trace_id, req.session_id);
+            return final;
+        }
+
         if(completion.tool_calls.empty() && intent == LLMIntentKind::Mutate && filter.include_write
-           && provider_tools)
+           && provider_tools && state.workflow_phase != LLMWorkflowPhase::Understanding)
         {
             std::vector<LLMToolCall> embedded =
                 tryExtractEmbeddedToolCalls(completion.text, m_registry);
@@ -1125,6 +1145,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                                                         last_graph_write->second);
                 if(!final.ok && !last_graph_write->second.message.empty())
                     final.error = last_graph_write->second.message;
+                assignTurnTerminal(final, TurnTerminal::Completed);
                 setWorkflowPhase(state, LLMWorkflowPhase::Completed, req.trace_id);
                 setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
                 m_store.persistToDisk(req.session_id);
@@ -1147,6 +1168,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 }
                 final.no_suitable_tool = true;
                 final.text = formatUserMessage("error.no_suitable_tool", user_lang);
+                assignTurnTerminal(final, TurnTerminal::Completed);
                 setWorkflowPhase(state, LLMWorkflowPhase::Completed, req.trace_id);
                 setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
                 m_store.persistToDisk(req.session_id);
@@ -1207,6 +1229,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                                 formatExecutionPlanPreview(*plan)
                                 + "\n\n[Plan ready — confirm execution in the assistant panel.]";
                             setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation, req.trace_id);
+                            assignTurnTerminal(final, TurnTerminal::AwaitingConfirm);
                             m_store.persistToDisk(req.session_id);
                             return final;
                         }
@@ -1234,12 +1257,14 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                                              req.trace_id);
                             setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
                         }
+                        assignTurnTerminal(final, TurnTerminal::Completed);
                         m_store.persistToDisk(req.session_id);
                         return final;
                     }
                     final.text += "\n\n(Plan rejected by policy: " + plan_pol.deny_message + ")";
                 }
             }
+            assignTurnTerminal(final, TurnTerminal::Completed);
             setWorkflowPhase(state, LLMWorkflowPhase::Completed, req.trace_id);
             setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
             m_store.persistToDisk(req.session_id);
@@ -1325,6 +1350,37 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                                      req.session_id);
                 return {call, denied};
             }
+            if(call.name == "propose_plan")
+            {
+                ToolGatewayResult tr;
+                if(const std::optional<ULLMExecutionPlan> plan =
+                       executionPlanFromProposePlanArguments(call.arguments))
+                {
+                    ULLMPolicyEngine policy;
+                    const PolicyDecision plan_pol = policy.checkPlan(*plan, session, m_registry);
+                    if(plan_pol.allowed)
+                    {
+                        state.pending_plan = *plan;
+                        tr.ok = true;
+                        tr.result = {{"plan_id", plan->plan_id}, {"step_count", plan->steps.size()}};
+                        tr.message = formatExecutionPlanPreview(*plan)
+                                       + "\n\n[Plan ready — confirm execution in the assistant panel.]";
+                    }
+                    else
+                    {
+                        tr.ok = false;
+                        tr.error_code = "PLAN_POLICY_DENIED";
+                        tr.message = "Plan rejected by policy: " + plan_pol.deny_message;
+                    }
+                }
+                else
+                {
+                    tr.ok = false;
+                    tr.error_code = "INVALID_PLAN";
+                    tr.message = "propose_plan requires non-empty goal and steps with tool_name.";
+                }
+                return {call, tr};
+            }
             if(call.name == "ask_user")
             {
                 PendingUserQuestion pq;
@@ -1399,6 +1455,9 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
         const bool all_read = std::all_of(
             completion.tool_calls.begin(), completion.tool_calls.end(),
             [&](const LLMToolCall& call) {
+                if(call.name == "ask_user" || call.name == "propose_plan"
+                   || call.name == "spawn_explore_subagent")
+                    return false;
                 const LLMToolDefinition* def = m_registry.find(call.name);
                 return def && def->kind == LLMToolKind::Read;
             });
@@ -1434,6 +1493,28 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                     buildToolMessageContent(tr, m_system_log_reader.get(), session.active_channel_index);
                 m_store.appendMessage(req.session_id, tool_msg);
                 capturePendingOpenRecentAfterList(m_store, req.session_id, call.name, tr);
+                if(call.name == "ask_user" && state.pending_user_question)
+                {
+                    final.ok = true;
+                    final.awaiting_user_input = true;
+                    final.pending_question_id = state.pending_user_question->question_id;
+                    final.user_choice_options = state.pending_user_question->choices;
+                    final.text = state.pending_user_question->prompt;
+                    assignTurnTerminal(final, TurnTerminal::AwaitingUser);
+                    m_store.persistToDisk(req.session_id);
+                    return final;
+                }
+                if(call.name == "propose_plan" && tr.ok && state.pending_plan)
+                {
+                    final.ok = true;
+                    final.pending_plan_execution = true;
+                    final.pending_plan_id = state.pending_plan->plan_id;
+                    final.text = tr.message;
+                    setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation, req.trace_id);
+                    assignTurnTerminal(final, TurnTerminal::AwaitingConfirm);
+                    m_store.persistToDisk(req.session_id);
+                    return final;
+                }
             }
         }
         else
@@ -1692,6 +1773,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
     }
     else
         final.text = formatUserMessage("error.max_rounds", user_lang);
+    assignTurnTerminal(final, TurnTerminal::MaxRounds);
     m_store.persistToDisk(req.session_id);
     return final;
 }

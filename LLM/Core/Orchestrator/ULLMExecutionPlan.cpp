@@ -148,6 +148,35 @@ std::optional<ULLMExecutionPlan> executionPlanFromJson(const nlohmann::json& j)
     return plan;
 }
 
+std::optional<ULLMExecutionPlan> executionPlanFromProposePlanArguments(const nlohmann::json& args)
+{
+    if(!args.contains("steps") || !args["steps"].is_array() || args["steps"].empty())
+        return std::nullopt;
+
+    nlohmann::json plan_j = nlohmann::json::object();
+    plan_j["goal_en"] = args.value("goal", std::string());
+    plan_j["confidence"] = args.value("confidence", 0.8f);
+    plan_j["requires_user_confirmation"] = true;
+    plan_j["steps"] = nlohmann::json::array();
+
+    int step_id = 1;
+    for(const nlohmann::json& item : args["steps"])
+    {
+        if(!item.is_object())
+            continue;
+        nlohmann::json step_j;
+        step_j["step_id"] = step_id++;
+        step_j["tool_name"] = item.value("tool_name", item.value("tool", std::string()));
+        step_j["arguments"] = item.value("arguments", nlohmann::json::object());
+        if(step_j["tool_name"].get<std::string>().empty())
+            return std::nullopt;
+        plan_j["steps"].push_back(std::move(step_j));
+    }
+    if(plan_j["steps"].empty())
+        return std::nullopt;
+    return executionPlanFromJson(plan_j);
+}
+
 void prepareExecutionPlanForResume(ULLMExecutionPlan& plan)
 {
     for(ExecutionPlanStep& step : plan.steps)

@@ -92,6 +92,7 @@ _add_llm_unit_test(Test_LLM_FreeDialogueCorpus test_llm_free_dialogue_corpus.cpp
 target_compile_definitions(Test_LLM_FreeDialogueCorpus PRIVATE
   RDK_LLM_FREE_DIALOGUE_CORPUS_DIR="${CMAKE_SOURCE_DIR}/Rdk/Tests/Fixtures/LLM/free-dialogue-corpus")
 _add_llm_unit_test(Test_LLM_AskUserProtocol test_llm_ask_user_protocol.cpp)
+_add_llm_unit_test(Test_LLM_LifecycleSoftAndTerminal test_llm_lifecycle_soft_and_terminal.cpp)
 _add_llm_unit_test(Test_LLM_SearchTools test_llm_search_tools.cpp)
 _add_llm_unit_test(Test_LLM_SubagentRunner test_llm_subagent_runner.cpp)
 _add_llm_unit_test(Test_LLM_InputUnderstanding test_llm_input_understanding.cpp)

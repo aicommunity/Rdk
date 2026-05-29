@@ -50,6 +50,9 @@ std::optional<ULLMExecutionPlan> parseExecutionPlanFromAssistantText(const std::
 nlohmann::json executionPlanToJson(const ULLMExecutionPlan& plan);
 std::optional<ULLMExecutionPlan> executionPlanFromJson(const nlohmann::json& j);
 
+/// Build a plan from the `propose_plan` agent tool arguments (`goal`, `steps[]`).
+std::optional<ULLMExecutionPlan> executionPlanFromProposePlanArguments(const nlohmann::json& args);
+
 std::string formatExecutionPlanPreview(const ULLMExecutionPlan& plan);
 
 /// OpenAI `response_format` for strict execution-plan JSON (cloud OpenAI-compat only).

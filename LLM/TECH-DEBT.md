@@ -92,6 +92,12 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-099 | Default 14B migration: lab/embedded profiles | phase-M | P1 | done | `ULLMProviderCatalog` ollama defaults → qwen2.5:14b |
 | TD-100 | Model benchmark CI tier gate | phase-M | P2 | done | `Test_LLM_ModelRouter` + manifest `free-dialogue-corpus` in CI via ctest |
 | TD-101 | Lite tier router profile for weak GPUs | phase-M | P3 | done | `ollama-lite` profile + `routeModelForPhase(Router)` |
+| TD-102 | Soft lifecycle: no default forced `tool_choice`; gate pre-LLM direct | phase-J | P1 | done | `lifecycleDirectInvokeEnabled`, `shouldForceLifecycleToolChoice`, `Test_LLM_LifecycleSoftAndTerminal` |
+| TD-103 | `TurnTerminal` on `LLMFinalResponse` + cancel synthetic `tool_result` | phase-K | P1 | done | `TurnTerminal` enum, orchestrator assign + cancel audit |
+| TD-104 | `propose_plan` orchestrator handler (not registry stub only) | phase-F | P1 | done | `executionPlanFromProposePlanArguments` + HITL pending_plan |
+| TD-105 | Wire `ULLMModelRouter` before provider rounds in orchestrator | phase-M | P2 | open | Router exists; orchestrator still uses envelope profile as-is |
+| TD-106 | Embedding `ULLMEmbeddingToolRouter` + `tools-embeddings.jsonl` | phase-I | P2 | open | Lexical `ULLMSearchTools` only |
+| TD-107 | Agent scenario eval: `phase_entered`, `tool_loop_entered` audit expects | phase-G | P2 | open | Manifest suite exists; scenario types not extended |
 
 ---
 
