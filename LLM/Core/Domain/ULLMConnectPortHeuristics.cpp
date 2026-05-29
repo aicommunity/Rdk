@@ -4,6 +4,12 @@
 
 namespace RDK::LLM {
 
+bool isInhibitoryLinkPortName(const std::string& port)
+{
+    return port.find("InhSynapse") != std::string::npos || port.find("InhChannel") != std::string::npos
+           || port.find("Inhib") != std::string::npos;
+}
+
 bool isGenericLinkPortName(const std::string& value)
 {
     std::string lower = value;
@@ -33,6 +39,11 @@ std::optional<std::string> pickPreferredOutputPort(const std::vector<std::string
         if(port.find("LTZone") != std::string::npos)
             return port;
     }
+    for(const std::string& port : outputs)
+    {
+        if(!isInhibitoryLinkPortName(port))
+            return port;
+    }
     return outputs.front();
 }
 
@@ -55,6 +66,11 @@ std::optional<std::string> pickPreferredInputPort(const std::vector<std::string>
     for(const std::string& port : inputs)
     {
         if(port.find("ExcSynapse1") != std::string::npos)
+            return port;
+    }
+    for(const std::string& port : inputs)
+    {
+        if(!isInhibitoryLinkPortName(port))
             return port;
     }
     return inputs.front();

@@ -12,7 +12,7 @@ bool hasRuCue(const std::string& text)
 {
     const std::string lower = text;
     return lower.find("связ") != std::string::npos || lower.find("соедин") != std::string::npos
-           || lower.find("линк") != std::string::npos;
+           || lower.find("линк") != std::string::npos || lower.find("подключ") != std::string::npos;
 }
 
 ConnectEndpointRef makeEndpoint(const std::string& token, const std::string& property = "")

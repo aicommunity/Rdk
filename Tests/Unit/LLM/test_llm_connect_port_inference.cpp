@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "Context/ULLMConnectSemanticsCatalog.h"
+#include "Domain/ULLMConnectPortHeuristics.h"
 #include "Domain/ULLMConnectPortInference.h"
 #include "Domain/URdkDomainAccess.h"
 #include "Context/ULinkPatternCatalog.h"
@@ -24,6 +25,26 @@ ConnectSemanticEntry neuronEntry()
 }
 
 } // namespace
+
+TEST(LLMConnectPortInference, PickPreferredSkipsInhibitoryWhenExcitatoryExists)
+{
+    const std::vector<std::string> outputs = {"Soma1.InhSynapse1", "LTZone", "Output"};
+    const std::vector<std::string> inputs = {"Soma1.InhChannel", "Soma1.ExcSynapse1", "Input"};
+    const auto out_port = pickPreferredOutputPort(outputs);
+    const auto in_port = pickPreferredInputPort(inputs);
+    ASSERT_TRUE(out_port);
+    ASSERT_TRUE(in_port);
+    EXPECT_EQ(*out_port, "Output");
+    EXPECT_EQ(*in_port, "Input");
+}
+
+TEST(LLMConnectPortInference, PickPreferredOutputPrefersLtZoneOverInhSynapse)
+{
+    const std::vector<std::string> outputs = {"Soma1.InhSynapse1", "LTZone"};
+    const auto out_port = pickPreferredOutputPort(outputs);
+    ASSERT_TRUE(out_port);
+    EXPECT_EQ(*out_port, "LTZone");
+}
 
 TEST(LLMConnectPortInference, PreferInternalSemanticsOverGeneric)
 {

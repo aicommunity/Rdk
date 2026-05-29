@@ -37,6 +37,52 @@ nlohmann::json portCandidatesJson(const std::vector<std::string>& ports)
     return arr;
 }
 
+bool bindPortsIfPublished(nlohmann::json& args, const std::vector<std::string>& from_outputs,
+                          const std::vector<std::string>& to_inputs)
+{
+    const std::string from_p = args.value("from_property", "");
+    const std::string to_p = args.value("to_property", "");
+    const std::optional<std::string> out_port = findPortCaseInsensitive(from_outputs, from_p);
+    const std::optional<std::string> in_port = findPortCaseInsensitive(to_inputs, to_p);
+    if(!out_port || !in_port)
+        return false;
+    args["from_property"] = *out_port;
+    args["to_property"] = *in_port;
+    return true;
+}
+
+bool finalizePublishedPorts(nlohmann::json& args, const std::vector<std::string>& from_outputs,
+                            const std::vector<std::string>& to_inputs,
+                            ConnectPortInferenceResult& out, const std::string& from_ln,
+                            const std::string& to_ln)
+{
+    if(bindPortsIfPublished(args, from_outputs, to_inputs))
+    {
+        out.ok = true;
+        return true;
+    }
+    const std::optional<std::string> picked_out = pickPreferredOutputPort(from_outputs);
+    const std::optional<std::string> picked_in = pickPreferredInputPort(to_inputs);
+    if(picked_out && picked_in)
+    {
+        args["from_property"] = *picked_out;
+        args["to_property"] = *picked_in;
+        out.ok = true;
+        return true;
+    }
+    out.needs_clarification = true;
+    out.error_code = "CONNECT_PORTS_AMBIGUOUS";
+    out.message = "Cannot infer published link ports between " + from_ln + " and " + to_ln
+                  + ". Call get_component_properties or specify exact port names.";
+    out.clarification = {{"ambiguous", true},
+                         {"kind", "connect_ports"},
+                         {"from_long_name", from_ln},
+                         {"to_long_name", to_ln},
+                         {"from_candidates", portCandidatesJson(from_outputs)},
+                         {"to_candidates", portCandidatesJson(to_inputs)}};
+    return false;
+}
+
 std::string formatPortListForMessage(const std::vector<std::string>& ports)
 {
     if(ports.empty())
@@ -128,9 +174,12 @@ ConnectPortInferenceResult inferConnectPorts(nlohmann::json& args, URdkDomainAcc
         constexpr double kMinScoreGap = 0.2;
         if(top < kMinAutoFillScore || (top - second) < kMinScoreGap)
             return false;
-        args["from_property"] = suggestions[0].from_port;
-        args["to_property"] = suggestions[0].to_port;
-        out.ok = true;
+        nlohmann::json trial = args;
+        trial["from_property"] = suggestions[0].from_port;
+        trial["to_property"] = suggestions[0].to_port;
+        if(!bindPortsIfPublished(trial, from_outputs, to_inputs))
+            return false;
+        args = std::move(trial);
         return true;
     };
 
@@ -156,9 +205,12 @@ ConnectPortInferenceResult inferConnectPorts(nlohmann::json& args, URdkDomainAcc
         if(top < kMinAutoFillScore || (top - second) < kMinScoreGap)
             return false;
 
-        args["from_property"] = candidates[0].from_port;
-        args["to_property"] = candidates[0].to_port;
-        out.ok = true;
+        nlohmann::json trial = args;
+        trial["from_property"] = candidates[0].from_port;
+        trial["to_property"] = candidates[0].to_port;
+        if(!bindPortsIfPublished(trial, from_outputs, to_inputs))
+            return false;
+        args = std::move(trial);
         return true;
     };
 
@@ -234,10 +286,13 @@ ConnectPortInferenceResult inferConnectPorts(nlohmann::json& args, URdkDomainAcc
     if(isGenericLinkPortName(fp) && isGenericLinkPortName(tp))
     {
         if(trySemanticsFill() || tryCatalogFill())
+        {
+            finalizePublishedPorts(args, from_outputs, to_inputs, out, from_ln, to_ln);
             return out;
+        }
     }
 
-    out.ok = true;
+    finalizePublishedPorts(args, from_outputs, to_inputs, out, from_ln, to_ln);
     return out;
 }
 
