@@ -459,6 +459,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
                 final.error = exec.summary;
             GetAuditLog().append(exec.ok ? "task_completed" : "task_failed",
                                  {{"summary", exec.summary}}, req.trace_id, req.session_id);
+            if(exec.ok)
+                appendAgentNote(state, "Autonomous task completed: " + exec.summary.substr(0, 200));
             setWorkflowPhase(
                 state, exec.ok ? LLMWorkflowPhase::Completed : LLMWorkflowPhase::Failed, req.trace_id);
             setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);

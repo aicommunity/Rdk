@@ -59,7 +59,15 @@ struct AgentScenarioTurn {
     std::string user_text;
     std::vector<nlohmann::json> mock_script;
     bool confirm_pending = false;
+    bool reload_persisted_session = false;
     std::optional<AgentScenarioExpect> expect;
+};
+
+struct AgentPreResolvedEntity {
+    std::string kind;
+    std::string query_key;
+    std::string canonical_value;
+    int channel_index = 0;
 };
 
 struct AgentE2eSpec {
@@ -80,6 +88,7 @@ struct AgentScenarioCase {
     std::string user_text;
     std::vector<AgentScenarioTurn> turns;
     std::optional<AgentGuiSpec> gui;
+    std::vector<AgentPreResolvedEntity> pre_resolved_entities;
     AgentSessionSpec session;
     std::map<std::string, std::string> env;
     std::optional<LLMIntentKind> expect_intent;

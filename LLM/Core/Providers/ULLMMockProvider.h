@@ -13,6 +13,8 @@ public:
 
     size_t remaining() const { return m_queue.size(); }
     size_t invokeCount() const { return m_invoke_count; }
+    /// Concatenated System-role content from the last chat() / chatStream() call.
+    const std::string& lastProviderSystemText() const { return m_last_provider_system_text; }
 
     LLMProviderKind kind() const override { return LLMProviderKind::Mock; }
     LLMProviderCapabilities capabilities() const override;
@@ -27,6 +29,7 @@ public:
 private:
     std::deque<LLMCompletionResult> m_queue;
     size_t m_invoke_count = 0;
+    std::string m_last_provider_system_text;
 };
 
 } // namespace RDK::LLM

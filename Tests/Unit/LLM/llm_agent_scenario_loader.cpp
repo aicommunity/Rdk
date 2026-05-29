@@ -204,9 +204,26 @@ AgentScenarioCase parseScenarioFile(const nlohmann::json& root, const std::strin
                     turn.mock_script.push_back(step);
             }
             turn.confirm_pending = turn_j.value("confirm_pending", false);
+            turn.reload_persisted_session = turn_j.value("reload_persisted_session", false);
             if(turn_j.contains("expect"))
                 turn.expect = parseExpect(turn_j["expect"]);
             c.turns.push_back(std::move(turn));
+        }
+    }
+
+    if(root.contains("pre_resolved_entities") && root["pre_resolved_entities"].is_array())
+    {
+        for(const auto& ent : root["pre_resolved_entities"])
+        {
+            if(!ent.is_object())
+                continue;
+            AgentPreResolvedEntity rec;
+            rec.kind = ent.value("kind", "");
+            rec.query_key = ent.value("query_key", "");
+            rec.canonical_value = ent.value("canonical_value", "");
+            rec.channel_index = ent.value("channel_index", 0);
+            if(!rec.kind.empty() && !rec.query_key.empty() && !rec.canonical_value.empty())
+                c.pre_resolved_entities.push_back(std::move(rec));
         }
     }
 

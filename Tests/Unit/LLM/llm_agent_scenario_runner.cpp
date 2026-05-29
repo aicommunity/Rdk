@@ -1,12 +1,15 @@
 #include "llm_agent_scenario_runner.h"
 
 #include <cstdlib>
+#include <filesystem>
 #include <memory>
 #include <sstream>
+#include <stdexcept>
 
 #include "Domain/URdkDomainAccess.h"
 #include "Observability/ULLMAuditLog.h"
 #include "Observability/ULLMIdempotencyStore.h"
+#include "Domain/ULLMResolvedEntityStore.h"
 #include "Orchestrator/ULLMAgentOrchestrator.h"
 #include "Policy/ULLMPolicyEngine.h"
 #include "Providers/ULLMMockProvider.h"
@@ -80,8 +83,8 @@ LLMCompletionResult completionFromJson(const nlohmann::json& step)
     return r;
 }
 
-std::string collectEphemeralSystemText(const ULLMConversationStore& store,
-                                       const std::string& session_id)
+std::string collectPersistedSystemText(const ULLMConversationStore& store,
+                                     const std::string& session_id)
 {
     std::ostringstream oss;
     const ConversationState* state = store.findSession(session_id);
@@ -93,6 +96,15 @@ std::string collectEphemeralSystemText(const ULLMConversationStore& store,
             oss << m.content << '\n';
     }
     return oss.str();
+}
+
+void applyPreResolvedEntities(ConversationState& state,
+                              const std::vector<AgentPreResolvedEntity>& pre)
+{
+    for(const AgentPreResolvedEntity& ent : pre)
+    {
+        upsertResolvedEntity(state, ent.kind, ent.query_key, ent.canonical_value, ent.channel_index);
+    }
 }
 
 LLMGuiContextSnapshot guiFromSpec(const std::optional<AgentGuiSpec>& gui,
@@ -200,30 +212,54 @@ AgentScenarioRun runDeterministicScenario(AgentScenarioHarness& harness,
     ULLMIdempotencyStore idem;
     ULLMToolArgumentValidator validator;
     ULLMToolGateway gateway(registry, policy, domain, audit, idem, validator);
-    ULLMConversationStore store;
-    ULLMAgentOrchestrator orch(*harness.mock_provider, registry, gateway, store);
+    const std::filesystem::path storage_dir =
+        std::filesystem::temp_directory_path() / ("nmsdk_agent_scenario_" + scenario.id);
+    std::filesystem::remove_all(storage_dir);
+    std::filesystem::create_directories(storage_dir);
+
+    auto store = std::make_unique<ULLMConversationStore>();
+    store->setStorageDirectory(storage_dir.string());
+    auto orch = std::make_unique<ULLMAgentOrchestrator>(*harness.mock_provider, registry, gateway,
+                                                        *store);
 
     const std::string session_id = "agent-scenario-" + scenario.id;
     LLMSessionContext session = sessionFromSpec(scenario.session, session_id);
     const LLMGuiContextSnapshot gui_snap = guiFromSpec(scenario.gui, scenario.session);
 
-    auto run_one_turn = [&](const std::string& user_text,
-                            const std::vector<nlohmann::json>& mock_script, bool confirm_pending) {
+    ConversationState& initial_state = store->getOrCreate(session_id);
+    applyPreResolvedEntities(initial_state, scenario.pre_resolved_entities);
+
+    std::string ephemeral_accum;
+
+    auto run_one_turn = [&](const AgentScenarioTurn& turn) {
+        if(turn.reload_persisted_session)
+        {
+            store->persistToDisk(session_id);
+            auto reloaded_store = std::make_unique<ULLMConversationStore>();
+            reloaded_store->setStorageDirectory(storage_dir.string());
+            if(!reloaded_store->loadFromDisk(session_id))
+                throw std::runtime_error("reload_persisted_session: load failed for " + session_id);
+            store = std::move(reloaded_store);
+            orch = std::make_unique<ULLMAgentOrchestrator>(*harness.mock_provider, registry,
+                                                           gateway, *store);
+        }
+
         harness.mock_provider->resetQueue();
-        enqueueMockScript(*harness.mock_provider, mock_script);
+        enqueueMockScript(*harness.mock_provider, turn.mock_script);
         LLMRequestEnvelope req;
         req.session_id = session_id;
         req.trace_id = "trace-" + scenario.id;
-        req.user_text = user_text;
+        req.user_text = turn.user_text;
         req.session = session;
         req.gui = gui_snap;
-        out.final_response = orch.handleUserMessage(req);
-        if(confirm_pending && out.final_response.pending_confirmation
+        out.final_response = orch->handleUserMessage(req);
+        if(turn.confirm_pending && out.final_response.pending_confirmation
            && !out.final_response.pending_confirmation_id.empty())
         {
             out.final_response =
-                orch.confirmPending(session_id, out.final_response.pending_confirmation_id);
+                orch->confirmPending(session_id, out.final_response.pending_confirmation_id);
         }
+        ephemeral_accum += harness.mock_provider->lastProviderSystemText();
         out.provider_invoke_count += harness.mock_provider->invokeCount();
         out.mock_queue_remaining = harness.mock_provider->remaining();
     };
@@ -231,17 +267,21 @@ AgentScenarioRun runDeterministicScenario(AgentScenarioHarness& harness,
     if(!scenario.turns.empty())
     {
         for(const AgentScenarioTurn& turn : scenario.turns)
-            run_one_turn(turn.user_text, turn.mock_script, turn.confirm_pending);
+            run_one_turn(turn);
     }
     else
     {
-        run_one_turn(scenario.user_text, scenario.mock_script, scenario.confirm_pending);
+        AgentScenarioTurn single;
+        single.user_text = scenario.user_text;
+        single.mock_script = scenario.mock_script;
+        single.confirm_pending = scenario.confirm_pending;
+        run_one_turn(single);
     }
 
-    out.digest = E2eLab::digestConversation(store, session_id, out.final_response, &registry);
-    out.ephemeral_system_text = collectEphemeralSystemText(store, session_id);
+    out.digest = E2eLab::digestConversation(*store, session_id, out.final_response, &registry);
+    out.ephemeral_system_text = ephemeral_accum + collectPersistedSystemText(*store, session_id);
 
-    ConversationState& state = store.getOrCreate(session_id);
+    ConversationState& state = store->getOrCreate(session_id);
     for(const LLMMessage& m : state.messages)
     {
         if(m.role == LLMMessage::Role::Tool)

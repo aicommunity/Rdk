@@ -1,5 +1,7 @@
 #include "ULLMWriteArgumentNormalizer.h"
 
+#include "../LlmModuleInit.h"
+#include "../LlmPublicApi.h"
 #include "../Context/ULinkPatternCatalog.h"
 #include "../Orchestrator/ULLMLibraryScopeHint.h"
 #include "../Orchestrator/ULLMLifecycleArgumentGate.h"
@@ -217,6 +219,13 @@ bool resolveField(const std::string& tool_name, const std::string& field,
                lookupResolvedEntity(*conversation, "component", value, channel_index))
         {
             arguments[field] = *cached;
+            if(LLMServices::instance().isInitialized())
+            {
+                GetAuditLog().append(
+                    "entity_resolved_cache_hit",
+                    {{"kind", "component"}, {"query_key", value}, {"canonical", *cached}},
+                    "", conversation->session_id);
+            }
             return true;
         }
     }

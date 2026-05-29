@@ -12,9 +12,14 @@ LLMProviderCapabilities ULLMMockProvider::capabilities() const
 LLMCompletionResult ULLMMockProvider::chat(const std::vector<LLMMessage>& messages,
                                            const LLMCompletionOptions& opts)
 {
-    (void)messages;
     (void)opts;
     ++m_invoke_count;
+    m_last_provider_system_text.clear();
+    for(const LLMMessage& msg : messages)
+    {
+        if(msg.role == LLMMessage::Role::System)
+            m_last_provider_system_text += msg.content + '\n';
+    }
     if(!m_queue.empty())
     {
         LLMCompletionResult r = m_queue.front();
