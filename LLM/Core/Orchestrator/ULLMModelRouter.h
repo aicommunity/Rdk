@@ -15,6 +15,11 @@ struct ModelRoute {
 
 ModelRoute routeModelForPhase(ModelTier tier, const LLMProviderProfile& active);
 
+std::optional<std::string> modelOverrideForRoute(const ModelRoute& route);
+
+void applyModelRouteAudit(const ModelRoute& route, const std::string& trace_id,
+                          const std::string& session_id);
+
 } // namespace RDK::LLM
 
 #endif

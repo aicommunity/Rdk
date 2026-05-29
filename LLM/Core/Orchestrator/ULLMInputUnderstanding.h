@@ -16,7 +16,10 @@ struct InputUnderstandingResult {
 };
 
 InputUnderstandingResult understandUserInput(ILLMProvider* provider, const std::string& text_en,
-                                             const IntentParseResult& heuristic);
+                                             const IntentParseResult& heuristic,
+                                             const LLMProviderProfile* active_profile = nullptr,
+                                             const std::string& trace_id = {},
+                                             const std::string& session_id = {});
 
 } // namespace RDK::LLM
 

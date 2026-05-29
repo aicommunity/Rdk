@@ -1,5 +1,7 @@
 #include "ULLMInputUnderstanding.h"
 
+#include "ULLMModelRouter.h"
+
 #include <cctype>
 #include <cstdlib>
 #include <cstring>
@@ -41,7 +43,10 @@ LLMIntentKind intentFromLabel(const std::string& label_raw)
 } // namespace
 
 InputUnderstandingResult understandUserInput(ILLMProvider* provider, const std::string& text_en,
-                                             const IntentParseResult& heuristic)
+                                             const IntentParseResult& heuristic,
+                                             const LLMProviderProfile* active_profile,
+                                             const std::string& trace_id,
+                                             const std::string& session_id)
 {
     InputUnderstandingResult out;
     out.intent = heuristic.kind;
@@ -69,6 +74,13 @@ InputUnderstandingResult understandUserInput(ILLMProvider* provider, const std::
         opts.max_tokens = 64;
         opts.temperature = 0.f;
         opts.tools_for_api.clear();
+        if(active_profile)
+        {
+            const ModelRoute route = routeModelForPhase(ModelTier::Router, *active_profile);
+            applyModelRouteAudit(route, trace_id, session_id);
+            if(const std::optional<std::string> model = modelOverrideForRoute(route))
+                opts.model_override = *model;
+        }
 
         const LLMCompletionResult completion = provider->chat(msgs, opts);
         if(completion.ok)

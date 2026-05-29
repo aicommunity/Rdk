@@ -16,6 +16,9 @@ OllamaChatTemplateFamily fetchOllamaTemplateFamily(const LLMProviderProfile& pro
 /// GET /api/tags — empty on failure.
 std::vector<std::string> listOllamaTagModels(const LLMProviderProfile& profile);
 
+/// POST /api/show — best-effort context window; 0 when unknown.
+int probeOllamaNumCtx(const LLMProviderProfile& profile);
+
 /// Human-readable hint when configured model is missing on the server.
 std::string formatOllamaModelMismatchHint(const LLMProviderProfile& profile);
 

@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <map>
 #include <mutex>
+#include <regex>
 #include <sstream>
 
 namespace RDK::LLM {
@@ -96,6 +97,42 @@ OllamaChatTemplateFamily fetchOllamaTemplateFamily(const LLMProviderProfile& pro
     std::lock_guard<std::mutex> lock(g_cache_mutex);
     g_template_cache[key] = resolved;
     return resolved;
+}
+
+int probeOllamaNumCtx(const LLMProviderProfile& profile)
+{
+    if(!isOllamaProvider(profile) || profile.model.empty())
+        return 0;
+
+    ULLMHttpClient http;
+    const std::string url = ollamaHostKey(profile) + "/api/show";
+    const nlohmann::json body = {{"model", profile.model}};
+    const auto resp = http.postJson(url, body.dump(), profile.api_key, 8000);
+    if(resp.status_code < 200 || resp.status_code >= 300 || resp.body.empty())
+        return 0;
+
+    try
+    {
+        const nlohmann::json j = nlohmann::json::parse(resp.body);
+        if(j.contains("model_info") && j["model_info"].is_object())
+        {
+            const auto& info = j["model_info"];
+            if(info.contains("context_length") && info["context_length"].is_number_integer())
+                return info["context_length"].get<int>();
+        }
+        const std::string parameters = j.value("parameters", std::string());
+        if(!parameters.empty())
+        {
+            static const std::regex kNumCtx(R"(num_ctx\s+(\d+))");
+            std::smatch match;
+            if(std::regex_search(parameters, match, kNumCtx) && match.size() > 1)
+                return std::stoi(match[1].str());
+        }
+    }
+    catch(...)
+    {
+    }
+    return 0;
 }
 
 std::vector<std::string> listOllamaTagModels(const LLMProviderProfile& profile)

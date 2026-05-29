@@ -109,7 +109,8 @@ nlohmann::json UOpenAICompatProvider::buildRequestBody(const std::vector<LLMMess
         prepared = prepareMessagesForOllama(m_profile, std::move(prepared), lang);
 
     nlohmann::json body;
-    body["model"] = m_profile.model;
+    body["model"] =
+        opts.model_override && !opts.model_override->empty() ? *opts.model_override : m_profile.model;
     body["temperature"] = opts.temperature;
     body["max_tokens"] = opts.max_tokens;
     body["messages"] = buildOpenAiChatMessagesJson(prepared);
@@ -335,6 +336,16 @@ bool UOpenAICompatProvider::healthCheck(std::string& error_out)
     {
         error_out = r.error_message;
         return false;
+    }
+    if(m_profile.kind == LLMProviderKind::OllamaOpenAICompat
+       || m_profile.kind == LLMProviderKind::OllamaNative)
+    {
+        const int n_ctx = probeOllamaNumCtx(m_profile);
+        if(n_ctx > 0 && n_ctx < 8192)
+        {
+            error_out = "Connected (n_ctx=" + std::to_string(n_ctx)
+                        + "). For multi-tool agent turns, prefer models with n_ctx >= 8192.";
+        }
     }
     return true;
 }

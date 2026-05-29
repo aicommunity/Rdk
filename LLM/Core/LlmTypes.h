@@ -256,6 +256,8 @@ struct LLMCompletionOptions {
     std::optional<nlohmann::json> response_format;
     /// Resolved BCP47-like code (en, ru, …). Empty → providers use "en".
     std::string response_language;
+    /// When set, overrides provider profile model for this completion only.
+    std::optional<std::string> model_override;
 };
 
 using LLMStreamCallback = std::function<void(const std::string& chunk)>;

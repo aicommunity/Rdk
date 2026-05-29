@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "id": "router_tier_audit",
+  "tier": "deterministic",
+  "suite": "model-tiers",
+  "registry_profile": "core",
+  "user_text": "explain what this project does",
+  "session": {
+    "project_loaded": false,
+    "llm_write_enabled": false
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": "",
+    "NMSDK_LLM_INPUT_ENSEMBLE": "0",
+    "NMSDK_LLM_INPUT_ENSEMBLE_LLM": "1"
+  },
+  "mock_script": [
+    {
+      "text": "{\"intent\":\"explain\",\"confidence\":0.9,\"needs_clarification\":false}"
+    },
+    {
+      "text": "This is a NeuroModeler configuration project."
+    }
+  ],
+  "expect": {
+    "orchestrator_ok": true,
+    "audit_events_any": ["model_route_selected", "unified_turn_started"],
+    "provider_rounds_max": 3
+  }
+}

@@ -95,9 +95,9 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-102 | Soft lifecycle: no default forced `tool_choice`; gate pre-LLM direct | phase-J | P1 | done | `lifecycleDirectInvokeEnabled`, `shouldForceLifecycleToolChoice`, `Test_LLM_LifecycleSoftAndTerminal` |
 | TD-103 | `TurnTerminal` on `LLMFinalResponse` + cancel synthetic `tool_result` | phase-K | P1 | done | `TurnTerminal` enum, orchestrator assign + cancel audit |
 | TD-104 | `propose_plan` orchestrator handler (not registry stub only) | phase-F | P1 | done | `executionPlanFromProposePlanArguments` + HITL pending_plan |
-| TD-105 | Wire `ULLMModelRouter` before provider rounds in orchestrator | phase-M | P2 | open | Router exists; orchestrator still uses envelope profile as-is |
-| TD-106 | Embedding `ULLMEmbeddingToolRouter` + `tools-embeddings.jsonl` | phase-I | P2 | open | Lexical `ULLMSearchTools` only |
-| TD-107 | Agent scenario eval: `phase_entered`, `tool_loop_entered` audit expects | phase-G | P2 | open | Manifest suite exists; scenario types not extended |
+| TD-105 | Wire `ULLMModelRouter` before provider rounds in orchestrator | phase-M | P2 | done | `model_route_selected` audit + `model_override` for Router tier classifier |
+| TD-106 | Embedding `ULLMEmbeddingToolRouter` + `tools-embeddings.jsonl` | phase-I | P2 | done | `searchToolsHybrid`, `LLM/index/tools-embeddings.jsonl` manifest |
+| TD-107 | Agent scenario eval: `phase_entered`, `tool_loop_entered` audit expects | phase-G | P2 | done | `llm_agent_scenario_types` + `av2_tool_loop_audit` fixture |
 
 ---
 
