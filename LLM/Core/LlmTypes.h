@@ -199,6 +199,9 @@ struct LLMRuntimeProviderSettings {
 struct LLMGuiContextSnapshot {
     int channel_index = 0;
     std::string project_xml_path;
+    /// Engine CurrentComponent (authoritative for mutate scope).
+    std::string current_component_long_name;
+    std::string current_component_id;
     std::string focused_component_long_name;
     std::string focused_class_name;
     int64_t snapshot_fingerprint = 0;

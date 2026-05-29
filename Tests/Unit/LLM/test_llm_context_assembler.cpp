@@ -22,6 +22,23 @@ TEST(LLMContextAssembler, GuiFocusHintContainsFocusedComponent)
     EXPECT_NE(hint.find("GUI focus"), std::string::npos);
 }
 
+TEST(LLMContextAssembler, GuiFocusHintIncludesKernelCurrentComponent)
+{
+    LLMGuiContextSnapshot gui;
+    gui.current_component_long_name = "Hardware/Container1";
+    gui.current_component_id = "123";
+    gui.focused_component_long_name = "Hardware/Container1/PNeuron1";
+    gui.channel_index = 0;
+
+    LLMSessionContext session;
+    session.project_loaded = true;
+
+    const std::string hint = buildGuiFocusSystemHint(gui, session);
+    EXPECT_NE(hint.find("Current component"), std::string::npos);
+    EXPECT_NE(hint.find("Hardware/Container1"), std::string::npos);
+    EXPECT_NE(hint.find("add_component"), std::string::npos);
+}
+
 TEST(LLMContextAssembler, QueryPrefetchBlockPrepended)
 {
     std::vector<LLMMessage> messages;

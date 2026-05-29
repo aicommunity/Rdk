@@ -1,6 +1,9 @@
 #include "ULlmGuiContextBridge.h"
 
+#include "../UEngineSelectionSync.h"
+
 #include <rdk_application.h>
+#include <rdk_init.h>
 
 ULlmGuiContextBridge::ULlmGuiContextBridge(RDK::UApplication* app, QObject* parent)
     : QObject(parent)
@@ -20,6 +23,7 @@ void ULlmGuiContextBridge::onDiagramSelectionChanged(const UComponentGuiContext&
     m_ctx.focused_class_name = ctx.componentClassName;
     if(ctx.channelIndex >= 0)
         m_ctx.channel_index = ctx.channelIndex;
+    syncEngineCurrentComponent(ctx.componentLongName);
     emitIfChanged();
 }
 

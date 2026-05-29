@@ -20,6 +20,7 @@
 #include <QScreen>
 
 #include "UGuiTelemetry.h"
+#include "UEngineSelectionSync.h"
 #include "UComponentGuiService.h"
 #include "UComponentFormRegistry.h"
 
@@ -469,6 +470,7 @@ void UComponentsListWidgetModern::componentListItemSelectionChanged()
 
     // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     currentDrawComponentName = selectedComponentLongName;
+    syncEngineCurrentComponent(selectedComponentLongName);
     emit componentSelected(selectedComponentLongName);
 }
 

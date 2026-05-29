@@ -29,6 +29,7 @@ struct EphemeralContextInput {
     const URdkContextRetriever* context_retriever = nullptr;
     std::string prefetched_docs_block;
     std::string long_term_memory_block;
+    std::string response_language;
 };
 
 std::string buildGuiFocusSystemHint(const LLMGuiContextSnapshot& gui, const LLMSessionContext& session);

@@ -25,6 +25,8 @@
 #include "../../../LLM/Core/Settings/ULLMProviderAuth.h"
 #include "../UGEngineControlWidget.h"
 
+#include <rdk_init.h>
+
 #include <cstdlib>
 #include <exception>
 #include <filesystem>
@@ -46,6 +48,12 @@ RDK::LLM::LLMGuiContextSnapshot guiSnapshotFromContext(const LLMGuiContext& ctx)
     snap.focused_component_long_name = ctx.focused_component_long_name.toStdString();
     snap.focused_class_name = ctx.focused_class_name.toStdString();
     snap.snapshot_fingerprint = ctx.snapshot_fingerprint;
+    if(const char* cur = Env_GetCurrentComponentName())
+        snap.current_component_long_name = cur;
+    if(const char* cur_id = Env_GetCurrentComponentId())
+        snap.current_component_id = cur_id;
+    if(snap.current_component_long_name.empty())
+        snap.current_component_long_name = snap.focused_component_long_name;
     return snap;
 }
 

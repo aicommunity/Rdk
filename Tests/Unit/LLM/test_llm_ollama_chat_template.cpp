@@ -44,6 +44,23 @@ TEST(OllamaChatTemplate, EnsurePromptUsesLanguage)
     EXPECT_NE(prepared.front().content.find("de"), std::string::npos);
 }
 
+TEST(OllamaChatTemplate, ManifestWithLanguageSkipsDuplicateRdkPrompt)
+{
+    std::vector<LLMMessage> msgs;
+    LLMMessage manifest;
+    manifest.role = LLMMessage::Role::System;
+    manifest.content = "## Response language\nAlways respond in Russian (code: ru).\n## Tools";
+    msgs.push_back(manifest);
+    LLMMessage user;
+    user.role = LLMMessage::Role::User;
+    user.content = "hello";
+    msgs.push_back(user);
+
+    const auto prepared = ensureRdkSystemPrompt(std::move(msgs), "ru");
+    EXPECT_EQ(prepared.size(), 2u);
+    EXPECT_EQ(prepared.front().content.find("NeuroModeler AI assistant"), std::string::npos);
+}
+
 TEST(OllamaChatTemplate, SerializesAssistantToolCalls)
 {
     std::vector<LLMMessage> msgs;

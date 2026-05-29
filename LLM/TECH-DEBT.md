@@ -101,6 +101,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-108 | E2E `e2e_no_tool_email` flaky on live Ollama phrasing | post-M | P2 | done | Relaxed `NoSuitableToolOrRefusal` analyzer + headless/no-project acceptance |
 | TD-109 | `Test_LLM_WriteToolsEngine` SIGSEGV on `UAppCore` exit | post-M | P2 | done | `ShutdownLlmWriteToolsEngine()` + gtest global env teardown |
 | TD-110 | Symbol search (`UApplication`) rank below generic hits | post-M | P2 | done | Path/title boost in `UDocSearchIndex::searchInternal` |
+| TD-119 | Manual GUI walkthrough: selection + connect after agent-quality | agent-quality-AG-Q5 | P3 | open | optional human spot-check; automated corpus/manifest tests added |
 
 ---
 
@@ -108,6 +109,14 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 
 | ID | Item | Resolved in | Resolution |
 |----|------|-------------|------------|
+| TD-111 | GUI selection → `Env_SelectCurrentComponent` | 2026-05-29 | `UEngineSelectionSync`, list/diagram/LLM bridge |
+| TD-112 | `LLMGuiContextSnapshot` current_component_* from Env | 2026-05-29 | `guiSnapshotFromContext` + store JSON fields |
+| TD-113 | Write tools default scope = CurrentComponent | 2026-05-29 | `fillAddComponentDefaults` + `ULLMCurrentComponentScope` |
+| TD-114 | Entity resolve under current scope; connect vs add class | 2026-05-29 | `snapshotComponentsUnderScope`, `WRONG_TOOL_FOR_CONNECT` |
+| TD-115 | Connect recovery round + narrowed tool filter | 2026-05-29 | orchestrator `connect_recovery_round` |
+| TD-116 | RU connect pair regex (`к`, `→`) | 2026-05-29 | `ULLMConnectPlanParsing` pair_re |
+| TD-117 | Response language in manifest | 2026-05-29 | `buildAgentManifest(..., response_language)` |
+| TD-118 | `FindComponent("")` = CurrentComponent (docs) | 2026-05-29 | `GUI-Integration.md` DD-AG-001 |
 | TD-093 | Snapshot link walk + list_model_links | 2026-05-29 | `7e7ac67f`: `ULLMModelLinkWalker`, `list_model_links`, `linkExistsInModel` truncated dedup |
 | TD-096 | Connect semantics index + runtime inference | 2026-05-29 | `8641b0a3`: `connect-semantics.json`, catalog, port inference, context hint |
 | TD-092 | Global remaining + chain/tree pairing | 2026-05-29 | `b41e7082`: `ULLMConnectEndpoints`, `ULLMConnectPairing`, ModelGraph, topologies |

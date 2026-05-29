@@ -99,8 +99,16 @@ std::optional<std::unordered_set<std::string>> preferredToolsForText(const std::
     if(containsAny(lower, {"close config", "close project", "закрой"}))
         return std::unordered_set<std::string>{"close_configuration"};
 
-    if(containsAny(lower, {"add component", "add ", "добав", "connect", "link", "соедин",
-                           "set property", "свойств"}))
+    if(containsAny(lower, {"connect", "link", "соедин", "подключ", "связ", "линк"})
+       && !containsAny(lower, {"добав", "add component", "add "}))
+        return std::unordered_set<std::string>{"connect_components",
+                                               "get_component_properties",
+                                               "disconnect_components",
+                                               "find_component",
+                                               "get_net_snapshot",
+                                               "list_registered_classes"};
+
+    if(containsAny(lower, {"add component", "add ", "добав", "set property", "свойств"}))
         return std::unordered_set<std::string>{"add_component",          "connect_components",
                                                "set_property",           "set_active_channel",
                                                "describe_class",         "list_registered_classes",

@@ -9,9 +9,12 @@
 #include "../Session/ULLMConversationStore.h"
 #include "ULLMConnectPortHeuristics.h"
 #include "ULLMConnectPortInference.h"
+#include "ULLMCurrentComponentScope.h"
 #include "ULLMNameResolution.h"
+#include "../Orchestrator/ULLMConnectPlanParsing.h"
 #include "ULLMResolvedEntityStore.h"
 #include "URdkEntityResolver.h"
+#include "../Session/ULLMConversationStore.h"
 
 #include <algorithm>
 #include <cctype>
@@ -40,10 +43,18 @@ const std::unordered_map<std::string, std::vector<std::string>>& entityFieldsByT
     return kMap;
 }
 
-void fillAddComponentDefaults(nlohmann::json& args)
+void fillAddComponentDefaults(nlohmann::json& args,
+                              const LLMGuiContextSnapshot* gui_fallback = nullptr)
 {
     if(!args.contains("parent_long_name"))
         args["parent_long_name"] = "";
+    std::string& parent = args["parent_long_name"].get_ref<std::string&>();
+    if(parent.empty())
+    {
+        const CurrentComponentScope scope = readCurrentComponentScope(gui_fallback);
+        if(scope.valid)
+            parent = scope.long_name;
+    }
     if(!args.contains("channel_index"))
         args["channel_index"] = 0;
     if(!args.contains("class_name") || !args["class_name"].is_string())
@@ -120,8 +131,18 @@ bool fillClassDisambiguationOut(WriteArgumentNormalizeResult& out, const std::st
 
 bool normalizeAddComponentArguments(nlohmann::json& args, URdkDomainAccess& domain,
                                     const std::string& user_text,
-                                    WriteArgumentNormalizeResult& out)
+                                    WriteArgumentNormalizeResult& out,
+                                    const LLMGuiContextSnapshot* gui_fallback)
 {
+    if(isConnectGoalText(user_text))
+    {
+        out.ok = false;
+        out.error_code = "WRONG_TOOL_FOR_CONNECT";
+        out.message =
+            "User asked to link components; use connect_components, not add_component.";
+        return false;
+    }
+
     std::vector<std::string> registered;
     const DomainStatus list_st = domain.listRegisteredClassNames(registered);
     const bool have_registry = list_st.ok() && !registered.empty();
@@ -148,7 +169,7 @@ bool normalizeAddComponentArguments(nlohmann::json& args, URdkDomainAccess& doma
             if(!explicit_class.empty() && isRegisteredClassName(registered, explicit_class))
             {
                 args["class_name"] = canonicalRegisteredClassName(registered, explicit_class);
-                fillAddComponentDefaults(args);
+                fillAddComponentDefaults(args, gui_fallback);
                 return true;
             }
         }
@@ -192,7 +213,7 @@ bool normalizeAddComponentArguments(nlohmann::json& args, URdkDomainAccess& doma
             args["class_name"] = resolveComponentClassName(user_text, scope);
     }
 
-    fillAddComponentDefaults(args);
+    fillAddComponentDefaults(args, gui_fallback);
     return true;
 }
 
@@ -215,6 +236,28 @@ bool fillEntityDisambiguationOut(WriteArgumentNormalizeResult& out, const std::s
     out.clarification["field"] = field;
     out.clarification["query"] = query;
     return false;
+}
+
+nlohmann::json snapshotComponentsUnderScope(const nlohmann::json& snap,
+                                            const std::string& scope_long_name)
+{
+    if(scope_long_name.empty() || !snap.contains("components") || !snap["components"].is_array())
+        return snap;
+
+    const std::string prefix = scope_long_name + ".";
+    nlohmann::json scoped = snap;
+    nlohmann::json filtered = nlohmann::json::array();
+    for(const nlohmann::json& comp : snap["components"])
+    {
+        if(!comp.is_object())
+            continue;
+        const std::string ln = comp.value("long_name", "");
+        if(ln == scope_long_name || (ln.size() > prefix.size() && ln.compare(0, prefix.size(), prefix) == 0))
+            filtered.push_back(comp);
+    }
+    if(!filtered.empty())
+        scoped["components"] = std::move(filtered);
+    return scoped;
 }
 
 bool resolveField(const std::string& tool_name, const std::string& field,
@@ -258,9 +301,23 @@ bool resolveField(const std::string& tool_name, const std::string& field,
         return false;
     }
 
+    const LLMGuiContextSnapshot* gui =
+        conversation && conversation->last_gui_context
+            ? &*conversation->last_gui_context
+            : nullptr;
+    const CurrentComponentScope scope = readCurrentComponentScope(gui);
+    nlohmann::json scoped_snap =
+        scope.valid ? snapshotComponentsUnderScope(snap, scope.long_name) : snap;
+
     URdkEntityResolver resolver(domain);
-    const ComponentEntityResolution resolved =
-        resolveComponentEntity(value, snap["components"]);
+    auto try_resolve = [&](const nlohmann::json& components_json) -> ComponentEntityResolution {
+        return resolveComponentEntity(value, components_json);
+    };
+
+    ComponentEntityResolution resolved = try_resolve(scoped_snap["components"]);
+    if(resolved.status != ComponentEntityResolution::Status::Resolved
+       && resolved.status != ComponentEntityResolution::Status::Ambiguous && scope.valid)
+        resolved = try_resolve(snap["components"]);
     (void)tool_name;
 
     if(resolved.status == ComponentEntityResolution::Status::Resolved)
@@ -447,9 +504,13 @@ WriteArgumentNormalizeResult normalizeWriteToolArguments(const std::string& tool
     WriteArgumentNormalizeResult out;
     out.normalized_arguments = std::move(arguments);
 
+    const LLMGuiContextSnapshot* gui =
+        conversation && conversation->last_gui_context ? &*conversation->last_gui_context
+                                                       : nullptr;
+
     if(tool_name == "add_component")
     {
-        if(!normalizeAddComponentArguments(out.normalized_arguments, domain, user_text, out))
+        if(!normalizeAddComponentArguments(out.normalized_arguments, domain, user_text, out, gui))
             return out;
     }
 

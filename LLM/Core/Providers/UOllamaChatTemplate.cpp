@@ -25,6 +25,18 @@ bool hasSystemMessage(const std::vector<LLMMessage>& messages)
                        [](const LLMMessage& m) { return m.role == LLMMessage::Role::System; });
 }
 
+bool manifestHasResponseLanguageBlock(const std::vector<LLMMessage>& messages)
+{
+    for(const LLMMessage& m : messages)
+    {
+        if(m.role != LLMMessage::Role::System)
+            continue;
+        if(m.content.find("## Response language") != std::string::npos)
+            return true;
+    }
+    return false;
+}
+
 void appendTurn(std::string& out, const char* header, const std::string& body,
                 const char* footer)
 {
@@ -87,8 +99,20 @@ std::string buildRdkSystemPrompt(const std::string& response_language)
 std::vector<LLMMessage> ensureRdkSystemPrompt(std::vector<LLMMessage> messages,
                                               const std::string& response_language)
 {
-    if(hasSystemMessage(messages))
+    if(hasSystemMessage(messages) && manifestHasResponseLanguageBlock(messages))
         return messages;
+    if(hasSystemMessage(messages) && !manifestHasResponseLanguageBlock(messages))
+    {
+        const std::string code =
+            response_language.empty() ? "en" : response_language;
+        const std::string display = responseLanguageDisplayName(code);
+        LLMMessage lang;
+        lang.role = LLMMessage::Role::System;
+        lang.content = "## Response language\nAlways respond to the user in " + display
+                       + " (code: " + code + "). Tool arguments may stay in English.";
+        messages.insert(messages.begin(), std::move(lang));
+        return messages;
+    }
     LLMMessage system;
     system.role = LLMMessage::Role::System;
     system.content = buildRdkSystemPrompt(response_language);

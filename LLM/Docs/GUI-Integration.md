@@ -27,6 +27,8 @@ struct LLMGuiContext {
 };
 ```
 
+**CurrentComponent sync (agent-quality):** on user selection, GUI calls `syncEngineCurrentComponent` (`UEngineSelectionSync.cpp`) → `Env_SelectCurrentComponent`. At Send, `guiSnapshotFromContext` fills `LLMGuiContextSnapshot.current_component_*` from `Env_GetCurrentComponentName()` / `Env_GetCurrentComponentId()`. Write tools default `parent_long_name` to that scope when omitted.
+
 Обновление: bridge подписан на сигналы, **не** опрашивает engine в timer без необходимости.
 
 При Send dock конвертирует `LLMGuiContext` → `LLMGuiContextSnapshot` и заполняет `LLMRequestEnvelope::gui`. Orchestrator сохраняет snapshot в `ConversationState::last_gui_context` и добавляет ephemeral hint `## GUI focus` через `ULLMContextAssembler`.

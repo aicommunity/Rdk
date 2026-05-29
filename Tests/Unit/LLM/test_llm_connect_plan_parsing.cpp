@@ -20,6 +20,15 @@ TEST(LLMConnectPlanParsing, ExplicitPairsRussian)
     ASSERT_EQ(g.explicit_links.size(), 1u);
 }
 
+TEST(LLMConnectPlanParsing, ExplicitPairsRussianK)
+{
+    ParsedConnectGoal g = parseConnectGoal("подключи PNeuron2 к PNeuron3");
+    EXPECT_EQ(g.kind, ConnectGoalKind::ExplicitPairs);
+    ASSERT_EQ(g.explicit_links.size(), 1u);
+    EXPECT_EQ(g.explicit_links[0].from.token, "PNeuron2");
+    EXPECT_EQ(g.explicit_links[0].to.token, "PNeuron3");
+}
+
 TEST(LLMConnectPlanParsing, ExplicitPorts)
 {
     ParsedConnectGoal g = parseConnectGoal("/ch0/A.Out -> /ch0/B.In");

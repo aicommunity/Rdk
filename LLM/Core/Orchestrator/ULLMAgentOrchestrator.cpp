@@ -1015,10 +1015,12 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
     if(strict_plan_schema)
         opts.response_format = executionPlanOpenAiResponseFormat();
     const std::string user_lang = opts.response_language;
+    ctx_input.response_language = opts.response_language;
 
     int tool_invocations = 0;
     const int max_tool_invocations = defaultPolicyLimits().max_tool_invocations_per_message;
     bool recovery_used = false;
+    bool connect_recovery_used = false;
     std::optional<std::pair<std::string, ToolGatewayResult>> last_graph_write;
 
     const bool is_cloud_profile = req.provider_profile.is_cloud;
@@ -1169,6 +1171,36 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                         "Mutate request detected. Call exactly one suitable tool. "
                         "If no tool can satisfy the request, reply exactly: NO_SUITABLE_TOOL.";
                     m_store.appendMessage(req.session_id, recovery);
+                    continue;
+                }
+                if(isConnectGoalText(planning_text) && !connect_recovery_used)
+                {
+                    connect_recovery_used = true;
+                    filter.allowed_tool_names = std::unordered_set<std::string>{
+                        "connect_components",
+                        "get_component_properties",
+                        "disconnect_components",
+                        "ask_user",
+                        "find_component",
+                        "get_net_snapshot",
+                        "search_project_docs",
+                    };
+                    std::string hint = "Connect/link goal: call connect_components only. Do not "
+                                       "add components. Use get_component_properties for port names.";
+                    const ParsedConnectGoal parsed = parseConnectGoal(planning_text);
+                    if(!parsed.explicit_links.empty())
+                    {
+                        const ConnectLinkSpec& link = parsed.explicit_links.front();
+                        hint += " Suggested endpoints: from=" + link.from.token + " to="
+                                + link.to.token + ".";
+                    }
+                    LLMMessage recovery;
+                    recovery.role = LLMMessage::Role::System;
+                    recovery.content = hint;
+                    m_store.appendMessage(req.session_id, recovery);
+                    GetAuditLog().append("connect_recovery_round",
+                                         {{"session_id", req.session_id}},
+                                         req.trace_id, req.session_id);
                     continue;
                 }
                 final.no_suitable_tool = true;

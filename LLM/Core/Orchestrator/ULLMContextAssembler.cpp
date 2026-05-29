@@ -41,9 +41,9 @@ void prependSystem(std::vector<LLMMessage>& messages, std::string content)
 
 bool guiSnapshotHasData(const LLMGuiContextSnapshot& gui)
 {
-    return !gui.focused_component_long_name.empty() || !gui.focused_class_name.empty()
-           || !gui.project_xml_path.empty() || gui.snapshot_fingerprint != 0
-           || gui.channel_index != 0;
+    return !gui.current_component_long_name.empty() || !gui.focused_component_long_name.empty()
+           || !gui.focused_class_name.empty() || !gui.project_xml_path.empty()
+           || gui.snapshot_fingerprint != 0 || gui.channel_index != 0;
 }
 
 } // namespace
@@ -73,16 +73,24 @@ std::string buildGuiFocusSystemHint(const LLMGuiContextSnapshot& gui,
             config_display = std::filesystem::path(gui.project_xml_path).filename().string();
     }
 
+    const std::string& kernel_current = gui.current_component_long_name.empty()
+                                            ? gui.focused_component_long_name
+                                            : gui.current_component_long_name;
+
     std::ostringstream oss;
-    oss << "## GUI focus (authoritative for this turn)\n"
+    oss << "## Current component (kernel scope)\n"
+        << "- current_component_long_name: " << noneOr(kernel_current) << "\n"
+        << "- current_component_id: " << noneOr(gui.current_component_id) << "\n"
         << "- channel_index: " << gui.channel_index << "\n"
         << "- project_loaded: " << (session.project_loaded ? "true" : "false") << "\n"
+        << "## GUI focus\n"
         << "- focused_component_long_name: " << noneOr(gui.focused_component_long_name) << "\n"
         << "- focused_class_name: " << noneOr(gui.focused_class_name) << "\n"
         << "- project_config_path: " << config_display << "\n"
         << "- diagram_snapshot_fingerprint: " << gui.snapshot_fingerprint << "\n"
-        << "Interpret focused_component as the default target for mutate/read unless the user "
-           "names another target.\n";
+        << "All model mutations without explicit paths use engine CurrentComponent (same as "
+           "NeuroModeler UI). add_component: default parent = current long_name (child). "
+           "connect/remove/set_property: resolve short names under current subtree first.\n";
 
     std::string out = oss.str();
     truncateInPlace(out, kGuiFocusMaxChars);
@@ -130,9 +138,9 @@ void prependEphemeralSystemMessages(std::vector<LLMMessage>& provider_messages,
     std::size_t manifest_chars = 0;
     if(input.registry)
     {
-        manifest_content =
-            buildAgentManifest(*input.registry, input.tool_filter, 6000, input.planning_text,
-                               input.system_log_summary);
+        manifest_content = buildAgentManifest(*input.registry, input.tool_filter, 6000,
+                                              input.planning_text, input.system_log_summary,
+                                              input.response_language);
         manifest_chars = manifest_content.size();
     }
 
@@ -161,8 +169,9 @@ void prependEphemeralSystemMessages(std::vector<LLMMessage>& provider_messages,
         prependSystem(provider_messages, sg.str());
     }
 
-    if(!input.state.last_user_text_en.empty()
-       && isConnectGoalText(input.state.last_user_text_en))
+    if((!input.planning_text.empty() && isConnectGoalText(input.planning_text))
+       || (!input.state.last_user_text_en.empty()
+           && isConnectGoalText(input.state.last_user_text_en)))
     {
         prependSystem(provider_messages,
                       "## Connect semantics (summary)\n"

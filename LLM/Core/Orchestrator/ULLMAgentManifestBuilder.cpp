@@ -1,6 +1,8 @@
 #include "ULLMAgentManifestBuilder.h"
 
+#include "../Settings/ULLMResponseLanguage.h"
 #include "ULLMLibraryScopeHint.h"
+#include "ULLMConnectPlanParsing.h"
 
 #include <sstream>
 
@@ -8,12 +10,42 @@ namespace RDK::LLM {
 
 std::string buildAgentManifest(const ULLMToolRegistry& registry, const ToolFilter& filter,
                                const std::size_t max_chars, const std::string& user_text,
-                               const std::string& system_log_summary)
+                               const std::string& system_log_summary,
+                               const std::string& response_language)
 {
     std::ostringstream oss;
     const std::vector<LLMToolDefinition> tools = registry.listForLlmApi(filter);
 
+    if(!response_language.empty())
+    {
+        oss << "## Response language\n"
+            << "- Always respond to the user in "
+            << responseLanguageDisplayName(response_language) << " (code: " << response_language
+            << "). Tool arguments may stay in English.\n";
+    }
+
     oss << libraryScopeHintManifestSection(detectLibraryScopeFromUserText(user_text));
+
+    if(isConnectGoalText(user_text))
+    {
+        oss << "## Connect vs Add\n"
+            << "- User wants a **link** (connect, link, подключи, связь, соедини): use "
+               "connect_components only — never add_component.\n"
+            << "- connect_components needs from_long_name, from_property (published output), "
+               "to_long_name, to_property (published input). Same API as GUI "
+               "Model_CreateLinkByName.\n"
+            << "- Use get_component_properties when port names are unknown.\n";
+    }
+    else if(!user_text.empty())
+    {
+        const std::string lower = user_text;
+        if(lower.find("добав") != std::string::npos || lower.find("add ") != std::string::npos)
+        {
+            oss << "## Add component\n"
+                << "- add_component creates a **child** under current kernel CurrentComponent "
+                   "when parent_long_name is omitted.\n";
+        }
+    }
 
     if(!system_log_summary.empty())
     {

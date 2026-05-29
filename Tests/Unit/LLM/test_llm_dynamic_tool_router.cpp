@@ -47,7 +47,7 @@ TEST(LLMDynamicToolRouter, EnabledCreateRouteNarrowsToCreateTool)
     EXPECT_FALSE(out.allowed_tool_names->count("load_configuration"));
 }
 
-TEST(LLMDynamicToolRouter, EnabledConnectRouteKeepsGraphMutationTools)
+TEST(LLMDynamicToolRouter, EnabledConnectRouteNarrowsToLinkTools)
 {
     ::setenv("NMSDK_LLM_DYNAMIC_TOOL_ROUTING", "1", 1);
     const ToolFilter base = makeBaseMutateFilter();
@@ -57,8 +57,20 @@ TEST(LLMDynamicToolRouter, EnabledConnectRouteKeepsGraphMutationTools)
 
     ASSERT_TRUE(out.allowed_tool_names.has_value());
     EXPECT_TRUE(out.allowed_tool_names->count("connect_components"));
-    EXPECT_TRUE(out.allowed_tool_names->count("add_component"));
+    EXPECT_FALSE(out.allowed_tool_names->count("add_component"));
     EXPECT_FALSE(out.allowed_tool_names->count("create_configuration"));
+}
+
+TEST(LLMDynamicToolRouter, EnabledConnectRouteRussianK)
+{
+    ::setenv("NMSDK_LLM_DYNAMIC_TOOL_ROUTING", "1", 1);
+    const ToolFilter base = makeBaseMutateFilter();
+    const ToolFilter out = ULLMDynamicToolRouter::apply(base, "подключи PNeuron2 к PNeuron3");
+    ::unsetenv("NMSDK_LLM_DYNAMIC_TOOL_ROUTING");
+
+    ASSERT_TRUE(out.allowed_tool_names.has_value());
+    EXPECT_TRUE(out.allowed_tool_names->count("connect_components"));
+    EXPECT_FALSE(out.allowed_tool_names->count("add_component"));
 }
 
 TEST(LLMDynamicToolRouter, EnabledScoreSubsetLimitsToolCount)

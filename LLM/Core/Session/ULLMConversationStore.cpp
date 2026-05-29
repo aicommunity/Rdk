@@ -309,6 +309,8 @@ nlohmann::json guiSnapshotToJson(const LLMGuiContextSnapshot& gui)
 {
     return {{"channel_index", gui.channel_index},
             {"project_xml_path", gui.project_xml_path},
+            {"current_component_long_name", gui.current_component_long_name},
+            {"current_component_id", gui.current_component_id},
             {"focused_component_long_name", gui.focused_component_long_name},
             {"focused_class_name", gui.focused_class_name},
             {"snapshot_fingerprint", gui.snapshot_fingerprint}};
@@ -321,6 +323,8 @@ std::optional<LLMGuiContextSnapshot> guiSnapshotFromJson(const nlohmann::json& j
     LLMGuiContextSnapshot gui;
     gui.channel_index = j.value("channel_index", 0);
     gui.project_xml_path = j.value("project_xml_path", "");
+    gui.current_component_long_name = j.value("current_component_long_name", "");
+    gui.current_component_id = j.value("current_component_id", "");
     gui.focused_component_long_name = j.value("focused_component_long_name", "");
     gui.focused_class_name = j.value("focused_class_name", "");
     gui.snapshot_fingerprint = j.value("snapshot_fingerprint", int64_t{0});

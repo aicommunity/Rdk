@@ -60,7 +60,7 @@ ParsedConnectGoal parseConnectGoal(const std::string& goal_en)
     if(out.explicit_links.empty())
     {
         static const std::regex pair_re(
-            R"(\b([A-Za-z][A-Za-z0-9_./]{1,})\s*(->|→|and|и|to)\s*([A-Za-z][A-Za-z0-9_./]{1,})\b)",
+            R"(\b([A-Za-z][A-Za-z0-9_./]{1,})\s*(->|→|and|и|to|к)\s*([A-Za-z][A-Za-z0-9_./]{1,})\b)",
             std::regex::icase);
         for(std::sregex_iterator it(goal_en.begin(), goal_en.end(), pair_re), end; it != end;
             ++it)
