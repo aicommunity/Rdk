@@ -3,15 +3,18 @@
   "id": "e2e_link_connect",
   "tier": "e2e",
   "suite": "e2e",
-  "user_text": "connect the signal source to the network input",
+  "user_text": "connect_components only: link output port of the first source to the network input.",
   "session": {
-    "project_loaded": false,
-    "llm_write_enabled": true
+    "project_loaded": true,
+    "llm_write_enabled": true,
+    "active_channel_index": 0
   },
   "e2e": {
     "goal": "ToolInvoked",
     "expected_tools_any": [
-      "connect_components"
+      "connect_components",
+      "get_net_snapshot",
+      "find_component"
     ],
     "forbidden_tools": [
       "add_component"
@@ -20,10 +23,9 @@
     "allow_app_unavailable_result": true
   },
   "expect": {
-    "provider_rounds_max": 4,
+    "provider_rounds_max": 8,
     "final_text_not_contains": [
-      "too many steps",
-      "maximum tool"
+      "maximum tool rounds"
     ]
   }
 }

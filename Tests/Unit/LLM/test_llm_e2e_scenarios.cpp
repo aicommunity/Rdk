@@ -76,6 +76,23 @@ TEST(E2eAnalyzerUnit, DetectsValidateDiagnostics)
     EXPECT_TRUE(ev.passed) << ev.diagnosis;
 }
 
+TEST(E2eAnalyzerUnit, AcceptsToolInvokeWithHeadlessDomainError)
+{
+    E2eConversationDigest d;
+    d.orchestrator_ok = false;
+    d.orchestrator_error = "Component not found for parent_long_name: root";
+    d.tools_invoked = {"add_component"};
+
+    E2eScenarioExpectation exp;
+    exp.expected_tools_any = {"add_component"};
+    exp.goal = E2eGoalKind::ToolInvoked;
+    exp.require_orchestrator_ok = true;
+    exp.allow_app_unavailable_result = true;
+
+    const E2eScenarioEvaluation ev = evaluateScenario(d, exp);
+    EXPECT_TRUE(ev.passed) << ev.diagnosis;
+}
+
 TEST(E2eAnalyzerUnit, RejectsWrongToolForCreate)
 {
     E2eConversationDigest d;

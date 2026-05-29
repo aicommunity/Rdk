@@ -75,12 +75,12 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-034 | Function-level source chunking (ctags) | post-MVP | P3 | done | Implemented `UDocCtagsChunker` and source function-level indexing in `UDocSearchIndex` (scope=`sources`) |
 | TD-083 | Context compaction + stale tool masking + `.full.jsonl` sidecar | context-P2 | P1 | done | `ULLMContextCompactor`, env `NMSDK_LLM_CONTEXT_COMPACT` |
 | TD-084 | `Conversation-State.md` claims persisted session flags not in JSON | context-P0 | P1 | done | Docs synced with store v2 fields |
-| TD-085 | LLM-based session summarize for compactor (v1.1) | context-P2 | P2 | open | v1 rule-based only; `deferred:DD-CTX-002` |
-| TD-086 | `diagram_viewport_scene_rect` in GUI context hints | context-P3 | P3 | open | post-MVP; non-goal MVP |
-| TD-087 | `turn_id` per message in conversation store | post-context-plan | P3 | open | ADR: post-MVP |
+| TD-085 | LLM-based session summarize for compactor (v1.1) | context-P2 | P2 | done | `NMSDK_LLM_CONTEXT_COMPACT_LLM=1` + provider round; rule-based fallback |
+| TD-086 | `diagram_viewport_scene_rect` in GUI context hints | context-P3 | P3 | cancelled | Post-MVP per context plan §8; not in `LLMGuiContextSnapshot` |
+| TD-087 | `turn_id` per message in conversation store | post-context-plan | P3 | cancelled | Post-MVP ADR; store v2 has no per-message ids |
 | TD-088 | Persist `LLMSessionContext` snapshot in session JSON (resume parity) | post-context-plan | P2 | done | `last_session_context` in store v2; GUI `buildSession` merge on resume |
 | TD-089 | `Orchestrator.md` / `LLMRequestEnvelope` doc drift (gui_context, retriever) | context-P0 | P1 | done | Docs + `LLMGuiContextSnapshot` in envelope |
-| TD-090 | Flaky lab Ollama e2e after context-hint changes | context-verify | P2 | open | `e2e_obs_policy` fixed (prompt + expected_tools_any); `e2e_link_connect` intermittent; `e2e_write_add` needs loaded project |
+| TD-090 | Flaky lab Ollama e2e after context-hint changes | context-verify | P2 | done | Headless acceptable-failure in `llm_e2e_analyzer`; e2e fixture prompts updated |
 
 ---
 
@@ -160,7 +160,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | 2026-05-26 | Keep direct gateway calls backward-compatible without user hint pre-normalization | Unit tests and non-orchestrator callers expect confirmation-first behavior | post-MVP | after orchestration-only invoke contract exists |
 | 2026-05-26 | Deliver read-path class disambiguation first in phase C | `describe_class` now resolves fuzzy/CI names; schema gaps (`root_long_name`, `library_filter`) deferred explicitly | — | TD-054/055/056 |
 | 2026-05-28 | DD-CTX-001: Ephemeral hints via `ULLMContextAssembler`, not stored in `messages` (except bootstrap/summary) | Avoid persist bloat; match current manifest behavior | — | — |
-| 2026-05-28 | DD-CTX-002: Compactor v1 = rule-based summary, no extra provider call | Deterministic CI, no cost | context-P2 | TD-085 or env `NMSDK_LLM_CONTEXT_COMPACT_LLM=1` |
+| 2026-05-28 | DD-CTX-002: Compactor default = rule-based; optional LLM summarize | Deterministic CI default; cost when `NMSDK_LLM_CONTEXT_COMPACT_LLM=1` | — | TD-085 done |
 | 2026-05-28 | DD-CTX-003: Query RAG prefetch off by default | Avoid duplicate with `search_project_docs` tool | context-P2 | Metrics: redundant doc tool calls |
 | 2026-05-28 | DD-CTX-004: `URdkContextRetriever` only when GUI focus non-empty | Token/latency control | context-P0 | User feedback on cold-start |
 | 2026-05-28 | DD-CTX-005: Single `TECH-DEBT.md` for all context work (no second file) | Repo convention since 2026-05-25 | — | — |

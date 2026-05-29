@@ -1,5 +1,7 @@
 #include "ULLMContextCompactor.h"
 
+#include "../Providers/ILLMProvider.h"
+
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -87,6 +89,38 @@ std::string ruleBasedSummary(const std::vector<LLMMessage>& messages)
     return oss.str();
 }
 
+std::string buildSessionSummary(const std::vector<LLMMessage>& messages,
+                                ILLMProvider* summarize_provider)
+{
+    const std::string rules = ruleBasedSummary(messages);
+    if(!envEnabled("NMSDK_LLM_CONTEXT_COMPACT_LLM") || !summarize_provider)
+        return rules;
+
+    LLMMessage system;
+    system.role = LLMMessage::Role::System;
+    system.content =
+        "Summarize the session transcript below for future model turns. "
+        "Keep user goals, tool names, and outcomes. Use at most 1200 characters.";
+
+    LLMMessage user;
+    user.role = LLMMessage::Role::User;
+    user.content = rules;
+
+    LLMCompletionOptions opts;
+    opts.max_tokens = 512;
+    const LLMCompletionResult result =
+        summarize_provider->chat({system, user}, opts);
+    if(result.ok && !result.text.empty())
+    {
+        std::string text = result.text;
+        constexpr std::size_t kMaxSummary = 4000;
+        if(text.size() > kMaxSummary)
+            text.resize(kMaxSummary);
+        return text;
+    }
+    return rules;
+}
+
 int countUserTurns(const std::vector<LLMMessage>& messages)
 {
     int n = 0;
@@ -125,7 +159,8 @@ void maskStaleToolMessages(std::vector<LLMMessage>& messages, const int keep_tai
 } // namespace
 
 bool ULLMContextCompactor::maybeCompact(ConversationState& state, const std::string& session_id,
-                                        const std::string& storage_dir)
+                                        const std::string& storage_dir,
+                                        ILLMProvider* summarize_provider)
 {
     maskStaleToolMessages(state.messages, envInt("NMSDK_LLM_CONTEXT_COMPACT_KEEP_TAIL", 6));
 
@@ -163,7 +198,7 @@ bool ULLMContextCompactor::maybeCompact(ConversationState& state, const std::str
         appendFullJsonl(sidecar, head);
     }
 
-    const std::string summary = ruleBasedSummary(head);
+    const std::string summary = buildSessionSummary(head, summarize_provider);
     state.session_summary = summary;
 
     LLMMessage summary_msg;

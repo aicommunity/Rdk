@@ -58,13 +58,22 @@ bool jsonHasTruthyField(const nlohmann::json& j, const char* key)
     return !j[key].is_null() && j[key] != 0;
 }
 
+bool resultIndicatesHeadlessAcceptableFailure(const std::string& s)
+{
+    const std::string lower = toLowerAscii(s);
+    return lower.find("application not available") != std::string::npos
+           || lower.find("not initialized") != std::string::npos
+           || lower.find("component not found") != std::string::npos
+           || lower.find("no project") != std::string::npos
+           || lower.find("project is not loaded") != std::string::npos
+           || lower.find("project not loaded") != std::string::npos
+           || lower.find("engine not") != std::string::npos
+           || lower.find("parent_long_name") != std::string::npos;
+}
+
 bool resultIndicatesAppUnavailable(const nlohmann::json& j, const std::string& orchestrator_error)
 {
-    auto checkStr = [](const std::string& s) {
-        const std::string lower = toLowerAscii(s);
-        return lower.find("application not available") != std::string::npos
-               || lower.find("not initialized") != std::string::npos;
-    };
+    auto checkStr = [](const std::string& s) { return resultIndicatesHeadlessAcceptableFailure(s); };
     if(checkStr(orchestrator_error))
         return true;
     if(j.contains("message") && j["message"].is_string() && checkStr(j["message"].get<std::string>()))

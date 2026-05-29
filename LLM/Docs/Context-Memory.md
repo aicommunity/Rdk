@@ -24,6 +24,7 @@ Normative overview for **ephemeral context**, **session store v2**, and **long-t
 | `NMSDK_LLM_SESSION_BOOTSTRAP` | off | One-time read `get_net_snapshot` on new chat |
 | `NMSDK_LLM_QUERY_PREFETCH_DOCS` | off | Query intent: prefetch top doc snippets (DD-CTX-003) |
 | `NMSDK_LLM_CONTEXT_COMPACT` | off | Rule-based compaction + `.full.jsonl` sidecar |
+| `NMSDK_LLM_CONTEXT_COMPACT_LLM` | off | Use one provider round for summary (fallback: rule-based) |
 | `NMSDK_LLM_MASK_STALE_TOOLS` | off | Mask old tool message bodies |
 
 ---

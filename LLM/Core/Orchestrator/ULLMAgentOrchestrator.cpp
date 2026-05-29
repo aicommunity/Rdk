@@ -690,7 +690,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
             session_storage = LLMServices::instance().projectContext()->paths().repository_root.string()
                               + "/LLM/sessions";
         }
-        if(compactor.maybeCompact(state, req.session_id, session_storage))
+        if(compactor.maybeCompact(state, req.session_id, session_storage, &m_provider))
         {
             context_compacted = true;
             m_store.persistToDisk(req.session_id);
