@@ -64,6 +64,38 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
         });
 
     registry.registerTool(
+        makeDef("list_model_links", LLMToolKind::Read,
+                "Lists model links with pagination (strict 4-tuple identity)",
+                {{"type", "object"},
+                 {"properties",
+                  {{"channel_index", {{"type", "integer"}, {"minimum", 0}}},
+                   {"root_long_name", {{"type", "string"}}},
+                   {"offset", {{"type", "integer"}, {"minimum", 0}, {"default", 0}}},
+                   {"limit",
+                    {{"type", "integer"}, {"minimum", 1}, {"maximum", 2000}, {"default", 500}}}}},
+                 {"additionalProperties", false}},
+                {{"type", "object"}}),
+        [domain_access](const nlohmann::json& args) -> ToolGatewayResult {
+            ToolGatewayResult r;
+            const int ch = args.value("channel_index", 0);
+            const int offset = args.value("offset", 0);
+            const int limit = args.value("limit", 500);
+            const std::string root =
+                args.contains("root_long_name") && args["root_long_name"].is_string()
+                    ? args["root_long_name"].get<std::string>()
+                    : std::string();
+            const DomainStatus st =
+                domain_access->listModelLinks(r.result, ch, root, offset, limit);
+            r.ok = st.ok();
+            if(!r.ok)
+            {
+                r.error_code = "DomainError";
+                r.message = st.message;
+            }
+            return r;
+        });
+
+    registry.registerTool(
         makeDef("list_registered_classes", LLMToolKind::Read,
                 "Lists registered component class names",
                 {{"type", "object"},

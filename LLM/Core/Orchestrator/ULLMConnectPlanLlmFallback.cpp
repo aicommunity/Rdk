@@ -1,7 +1,9 @@
 #include "ULLMConnectPlanLlmFallback.h"
 
+#include "../Context/ULLMConnectSemanticsCatalog.h"
 #include "../Domain/ULLMConnectPortInference.h"
 #include "../Domain/ULLMLinkIdentity.h"
+#include "../Domain/ULLMModelLinkWalker.h"
 #include "../Domain/URdkDomainAccess.h"
 #include "../Providers/ILLMProvider.h"
 
@@ -98,7 +100,7 @@ ConnectPlanBuildResult tryBuildConnectPlanViaLlm(const ConnectPlanBuildRequest& 
         LinkQuad quad = linkQuadFromJson(item);
         if(quad.from_long_name.empty() || quad.to_long_name.empty())
             continue;
-        if(snapshotContainsLink(snap, quad))
+        if(planSnapshotOrModelHasLink(snap, req.domain, quad, req.session.active_channel_index))
             continue;
         const std::string key = linkQuadDedupKey(quad);
         if(!seen.insert(key).second)
@@ -106,8 +108,11 @@ ConnectPlanBuildResult tryBuildConnectPlanViaLlm(const ConnectPlanBuildRequest& 
 
         nlohmann::json args = linkQuadToJson(quad);
         args["channel_index"] = req.session.active_channel_index;
-        ConnectPortInferenceResult inf =
-            inferConnectPorts(args, req.domain, req.catalog, req.session.active_channel_index);
+        const ULLMConnectSemanticsCatalog& semantics = defaultConnectSemanticsCatalog();
+        ConnectPortInferenceResult inf = inferConnectPorts(
+            args, req.domain, req.catalog, req.session.active_channel_index,
+            semantics.empty() ? nullptr : &semantics, req.goal_en,
+            req.parsed.wants_internal_semantics_hint);
         if(!inf.ok)
         {
             out.needs_clarification = inf.needs_clarification;

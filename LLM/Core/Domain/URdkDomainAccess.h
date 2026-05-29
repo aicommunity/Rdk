@@ -2,6 +2,7 @@
 #define RDK_URDK_DOMAIN_ACCESS_H
 
 #include "../LlmTypes.h"
+#include "ULLMLinkIdentity.h"
 #include <nlohmann/json.hpp>
 #include <vector>
 
@@ -42,6 +43,12 @@ public:
     DomainStatus listNetSnapshot(nlohmann::json& out, int channel_index = 0,
                                 int max_components = 200,
                                 const std::string& root_long_name = "") const;
+    DomainStatus listModelLinks(nlohmann::json& out, int channel_index = 0,
+                                const std::string& root_long_name = "",
+                                int offset = 0, int limit = -1) const;
+    DomainStatus linkExistsInModel(const LinkQuad& quad, int channel_index,
+                                   const std::string& root_long_name,
+                                   bool& out_exists) const;
     DomainStatus listRegisteredClassNames(std::vector<std::string>& out) const;
     DomainStatus listRegisteredClasses(nlohmann::json& out,
                                      const std::string& library_filter = "") const;

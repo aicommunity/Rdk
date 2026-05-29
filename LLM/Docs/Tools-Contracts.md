@@ -85,6 +85,26 @@
 
 ---
 
+### `list_model_links`
+
+**input:**
+```json
+{
+  "type": "object",
+  "properties": {
+    "channel_index": { "type": "integer", "minimum": 0, "default": 0 },
+    "root_long_name": { "type": "string" },
+    "offset": { "type": "integer", "minimum": 0, "default": 0 },
+    "limit": { "type": "integer", "minimum": 1, "maximum": 2000, "default": 500 }
+  },
+  "additionalProperties": false
+}
+```
+
+**output:** `links[]` (strict 4-tuple), `offset`, `limit`, `returned_count`, `total_links_seen`, `truncated`, `next_offset`.
+
+---
+
 ### `find_component`
 
 **input:**

@@ -97,11 +97,13 @@ public:
   ],
   "links": [
     {
-      "from": "Source1.Output",
-      "to": "Net1.Input",
-      "link_kind": "data"
+      "from_long_name": "/ch0/MModel.Neuron1",
+      "from_property": "Output",
+      "to_long_name": "/ch0/MModel.Neuron2",
+      "to_property": "Input"
     }
   ],
+  "links_truncated": false,
   "truncated": false,
   "max_components_applied": 500
 }
@@ -109,9 +111,12 @@ public:
 
 **Лимиты (policy + domain):**
 - `max_components_applied`: 500 по умолчанию (конфиг `llm.context.max_components`);
-- при превышении `truncated: true` и сообщение модели «показана часть схемы».
+- `links_truncated`: true когда достигнут лимит `NMSDK_LLM_SNAPSHOT_MAX_LINKS` (default 2000);
+- при превышении компонентов `truncated: true` и сообщение модели «показана часть схемы».
 
 Обход: DFS от `rootNet`, без сериализации значений матриц целиком (только scalar/meta в `get_component_properties`).
+
+**Пагинация связей:** для полного обхода без snapshot cap используйте read-tool `list_model_links` (`offset`, `limit`, optional `root_long_name`). Реализация: `ULLMModelLinkWalker` + `URdkDomainAccess::listModelLinks`.
 
 ### 2.5 Write-операции и `rdk_init`
 
@@ -129,7 +134,8 @@ public:
 
 | Tool | Domain метод |
 |------|----------------|
-| `get_net_snapshot` | `listComponents` + links |
+| `get_net_snapshot` | `listComponents` + links (capped) |
+| `list_model_links` | `listModelLinks` (paginated strict quads) |
 | `find_component` | обход + fuzzy match (см. Entity-Resolution) |
 | `get_component_properties` | `getComponentDetail` |
 | `list_registered_classes` | `listRegisteredClassNames` + ClDesc provider |

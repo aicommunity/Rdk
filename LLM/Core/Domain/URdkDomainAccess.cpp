@@ -1,5 +1,6 @@
 #include "URdkDomainAccess.h"
 #include "ULLMLinkIdentity.h"
+#include "ULLMModelLinkWalker.h"
 #include "URdkApplicationCommands.h"
 #include "../Gui/ILLMPresentationSink.h"
 #include "../Tools/ApplicationToolHelpers.h"
@@ -135,86 +136,6 @@ void refreshDiagramPresentation(ILLMPresentationSink* sink)
     sink->apply(ev);
 }
 
-int snapshotMaxLinks()
-{
-    constexpr int kDefault = 2000;
-    const char* v = std::getenv("NMSDK_LLM_SNAPSHOT_MAX_LINKS");
-    if(!v || !v[0])
-        return kDefault;
-    try
-    {
-        const int parsed = std::stoi(v);
-        return parsed > 0 ? parsed : kDefault;
-    }
-    catch(...)
-    {
-        return kDefault;
-    }
-}
-
-void appendLinksFromContainer(RDK::UContainer* walk_root, RDK::UContainer* model_root,
-                              nlohmann::json& links_out, int& link_count, int max_links,
-                              bool& truncated, std::unordered_set<std::string>& seen_keys)
-{
-    if(!walk_root || !model_root || link_count >= max_links)
-        return;
-
-    RDK::UNet* net = dynamic_cast<RDK::UNet*>(walk_root);
-    if(net)
-    {
-        RDK::UStringLinksList linkslist;
-        net->GetLinks(linkslist, RDK::UEPtr<RDK::UContainer>(model_root), true,
-                      RDK::UEPtr<RDK::UContainer>(walk_root));
-
-        for(int i = 0; i < linkslist.GetSize() && link_count < max_links; ++i)
-        {
-            const RDK::UStringLink& link = linkslist[i];
-            for(size_t j = 0; j < link.Connector.size() && link_count < max_links; ++j)
-            {
-                LinkQuad quad;
-                quad.from_long_name = link.Item.Id;
-                quad.from_property = link.Item.Name;
-                quad.to_long_name = link.Connector[j].Id;
-                quad.to_property = link.Connector[j].Name;
-                if(quad.from_long_name.empty() || quad.to_long_name.empty())
-                    continue;
-                const std::string key = linkQuadDedupKey(quad);
-                if(!seen_keys.insert(key).second)
-                    continue;
-                links_out.push_back(linkQuadToJson(quad));
-                ++link_count;
-            }
-        }
-        if(linkslist.GetSize() > 0 && link_count >= max_links)
-            truncated = true;
-    }
-
-    const int n = walk_root->GetNumComponents();
-    for(int i = 0; i < n && link_count < max_links; ++i)
-    {
-        RDK::UEPtr<RDK::UContainer> child = walk_root->GetComponentByIndex(i);
-        if(child)
-            appendLinksFromContainer(child.Get(), model_root, links_out, link_count, max_links,
-                                    truncated, seen_keys);
-    }
-}
-
-void collectModelLinks(RDK::UContainer* walk_root, RDK::UContainer* model_root,
-                       nlohmann::json& links_out, bool& links_truncated)
-{
-    links_out = nlohmann::json::array();
-    links_truncated = false;
-    if(!walk_root || !model_root)
-        return;
-    int link_count = 0;
-    const int max_links = snapshotMaxLinks();
-    std::unordered_set<std::string> seen_keys;
-    appendLinksFromContainer(walk_root, model_root, links_out, link_count, max_links,
-                             links_truncated, seen_keys);
-    if(link_count >= max_links)
-        links_truncated = true;
-}
-
 } // namespace
 
 URdkDomainAccess::URdkDomainAccess(RDK::UApplication* app)
@@ -315,11 +236,86 @@ DomainStatus URdkDomainAccess::listNetSnapshot(nlohmann::json& out, int channel_
     if(!applied_root_long_name.empty())
         out["root_long_name"] = applied_root_long_name;
     out["components"] = components;
-    bool links_truncated = false;
-    collectModelLinks(walk_root, model_root, out["links"], links_truncated);
-    out["links_truncated"] = links_truncated;
+    ModelLinkWalkOptions link_opts;
+    link_opts.limit = modelLinkSnapshotMaxLinks();
+    link_opts.offset = 0;
+    link_opts.count_all = true;
+    const ModelLinkWalkResult link_walk = walkModelLinks(walk_root, model_root, link_opts);
+    nlohmann::json links = nlohmann::json::array();
+    for(const LinkQuad& q : link_walk.links)
+        links.push_back(linkQuadToJson(q));
+    out["links"] = std::move(links);
+    out["links_truncated"] = link_walk.truncated;
     out["truncated"] = (count >= max_components);
     out["max_components_applied"] = max_components;
+    return {};
+}
+
+DomainStatus URdkDomainAccess::listModelLinks(nlohmann::json& out, int channel_index,
+                                              const std::string& root_long_name, int offset,
+                                              int limit) const
+{
+    out = nlohmann::json::object();
+    URdkDomainAccess* self = const_cast<URdkDomainAccess*>(this);
+    ModelLinkWalkScope scope;
+    scope.channel_index = channel_index;
+    scope.root_long_name = root_long_name;
+    RDK::UContainer* walk_root = nullptr;
+    RDK::UContainer* model_root = nullptr;
+    const DomainStatus root_st = resolveModelLinkWalkRoot(*self, scope, walk_root, model_root);
+    if(!root_st.ok())
+        return root_st;
+
+    int effective_limit = limit;
+    if(effective_limit < 0)
+        effective_limit = modelLinkWalkDefaultPageSize();
+    effective_limit = std::min(effective_limit, modelLinkWalkMaxLimit());
+
+    ModelLinkWalkOptions opts;
+    opts.offset = std::max(0, offset);
+    opts.limit = effective_limit;
+    opts.count_all = true;
+    const ModelLinkWalkResult walk = walkModelLinks(walk_root, model_root, opts);
+
+    nlohmann::json links = nlohmann::json::array();
+    for(const LinkQuad& q : walk.links)
+        links.push_back(linkQuadToJson(q));
+
+    out["channel_index"] = channel_index;
+    if(!root_long_name.empty())
+        out["root_long_name"] = root_long_name;
+    out["offset"] = opts.offset;
+    out["limit"] = effective_limit;
+    out["returned_count"] = static_cast<int>(walk.links.size());
+    out["total_links_seen"] = walk.total_quads_seen;
+    out["truncated"] = walk.truncated;
+    out["next_offset"] = walk.next_offset;
+    out["links"] = std::move(links);
+    return {};
+}
+
+DomainStatus URdkDomainAccess::linkExistsInModel(const LinkQuad& quad, int channel_index,
+                                                 const std::string& root_long_name,
+                                                 bool& out_exists) const
+{
+    out_exists = false;
+    URdkDomainAccess* self = const_cast<URdkDomainAccess*>(this);
+    ModelLinkWalkScope scope;
+    scope.channel_index = channel_index;
+    scope.root_long_name = root_long_name;
+    RDK::UContainer* walk_root = nullptr;
+    RDK::UContainer* model_root = nullptr;
+    const DomainStatus root_st = resolveModelLinkWalkRoot(*self, scope, walk_root, model_root);
+    if(!root_st.ok())
+        return root_st;
+
+    ModelLinkWalkOptions opts;
+    opts.match_quad = quad;
+    opts.stop_on_first_match = true;
+    opts.limit = 1;
+    opts.offset = 0;
+    const ModelLinkWalkResult walk = walkModelLinks(walk_root, model_root, opts);
+    out_exists = walk.found_match;
     return {};
 }
 
@@ -649,8 +645,16 @@ DomainStatus URdkDomainAccess::connectComponents(const std::string& from_long_na
 
     nlohmann::json snap;
     const DomainStatus snap_st = listNetSnapshot(snap, channel_index);
-    if(snap_st.ok() && !snap.value("links_truncated", false)
-       && snapshotContainsLink(snap, quad))
+    bool already = false;
+    if(snap_st.ok() && snapshotContainsLink(snap, quad))
+        already = true;
+    else if(snap_st.ok() && snap.value("links_truncated", false))
+    {
+        bool ex = false;
+        if(linkExistsInModel(quad, channel_index, "", ex).ok() && ex)
+            already = true;
+    }
+    if(already)
     {
         if(already_existed_out)
             *already_existed_out = true;
