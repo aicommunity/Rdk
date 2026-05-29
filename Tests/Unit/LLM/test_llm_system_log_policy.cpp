@@ -3,6 +3,7 @@
 #include "Observability/ULLMSystemLogPolicy.h"
 
 #include "../../../Core/Application/UProject.h"
+#include "../../../Deploy/Include/rdk_init.h"
 
 using namespace RDK::LLM;
 

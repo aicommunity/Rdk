@@ -33,6 +33,8 @@ std::string readAuditFile(const std::filesystem::path& path)
 TEST(LLMWriteToolsAudit, LlmFirstCreateLogsToolInvokeOnly)
 {
     ::unsetenv("NMSDK_LLM_INTENT_LLM");
+    ::unsetenv("NMSDK_LLM_INPUT_ENSEMBLE_LLM");
+    ::setenv("NMSDK_LLM_INPUT_ENSEMBLE", "0", 1);
     ::setenv("NMSDK_LLM_PATH_POLICY_STRICT", "0", 1);
 
     const std::filesystem::path audit_dir =
@@ -51,6 +53,7 @@ TEST(LLMWriteToolsAudit, LlmFirstCreateLogsToolInvokeOnly)
     call.arguments =
         nlohmann::json{{"project_ini_path", (audit_dir / "proj/project.ini").string()}};
     mock.tool_calls.push_back(call);
+    provider.enqueue(mock);
     provider.enqueue(mock);
 
     ULLMToolRegistry registry;

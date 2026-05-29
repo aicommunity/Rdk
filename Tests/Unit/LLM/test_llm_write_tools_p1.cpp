@@ -133,6 +133,8 @@ TEST(LLMWriteToolsP1, AddComponentSchemaRequiresParentAndNames)
 TEST(LLMWriteToolsP1, AddComponentMockOrchestratorHitl)
 {
     ::unsetenv("NMSDK_LLM_INTENT_LLM");
+    ::unsetenv("NMSDK_LLM_INPUT_ENSEMBLE_LLM");
+    ::setenv("NMSDK_LLM_INPUT_ENSEMBLE", "0", 1);
 
     ULLMMockProvider provider;
     LLMCompletionResult mock;
@@ -142,6 +144,7 @@ TEST(LLMWriteToolsP1, AddComponentMockOrchestratorHitl)
     call.name = "add_component";
     call.arguments = loadJsonFixture("add_component_model.json");
     mock.tool_calls.push_back(call);
+    provider.enqueue(mock);
     provider.enqueue(mock);
 
     GatewayHarness gh;

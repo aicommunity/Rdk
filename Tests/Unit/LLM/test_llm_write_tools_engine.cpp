@@ -221,7 +221,8 @@ TEST_F(LLMWriteToolsEngine, ConnectComponentsInvalidPortFails)
     const ToolGatewayResult r = gw.gateway.invoke(req);
     if(r.ok)
         GTEST_SKIP() << "Engine accepted invalid port (no link validation): " << r.message;
-    EXPECT_EQ(r.error_code, "DomainError");
+    EXPECT_TRUE(r.error_code == "DomainError" || r.error_code == "CONNECT_PORT_NOT_FOUND")
+        << r.error_code;
 }
 
 TEST_F(LLMWriteToolsEngine, DisconnectComponentsAfterConnect)

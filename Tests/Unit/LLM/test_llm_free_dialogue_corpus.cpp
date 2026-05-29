@@ -24,6 +24,7 @@
 #endif
 
 namespace fs = std::filesystem;
+using namespace RDK::LLM;
 
 TEST(FreeDialogueCorpus, LoadsAtLeast30Scenarios)
 {
@@ -62,6 +63,8 @@ TEST(FreeDialogueCorpus, ExpectsNoHardTaskPathFailFlag)
 TEST(FreeDialogueCorpus, MockOrchestratorHandlesCorpusPrompts)
 {
     unsetenv("NMSDK_LLM_INTENT_LLM");
+    unsetenv("NMSDK_LLM_INPUT_ENSEMBLE_LLM");
+    setenv("NMSDK_LLM_INPUT_ENSEMBLE", "0", 1);
     unsetenv("NMSDK_LLM_TASK_PATH_STRICT");
 
     const fs::path root(RDK_LLM_FREE_DIALOGUE_CORPUS_DIR);
@@ -83,6 +86,7 @@ TEST(FreeDialogueCorpus, MockOrchestratorHandlesCorpusPrompts)
         LLMCompletionResult mock;
         mock.ok = true;
         mock.text = "Free dialogue response.";
+        provider.enqueue(mock);
         provider.enqueue(mock);
 
         ULLMToolRegistry registry;
