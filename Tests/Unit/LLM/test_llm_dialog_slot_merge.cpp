@@ -107,3 +107,11 @@ TEST(LLMDialogSlotMerge, EmptyWhenNoSlots)
     EXPECT_FALSE(result.has_connect_endpoints);
     EXPECT_TRUE(result.partial_arguments.empty());
 }
+
+TEST(LLMDialogSlotMerge, AddComponentPhraseDoesNotInferConnect)
+{
+    const std::vector<LLMMessage> messages = {userMsg("add MatrixSource to the model")};
+    const DialogSlotMergeResult result = mergeMessages(messages);
+    EXPECT_FALSE(result.has_connect_endpoints);
+    EXPECT_TRUE(result.partial_arguments.empty());
+}

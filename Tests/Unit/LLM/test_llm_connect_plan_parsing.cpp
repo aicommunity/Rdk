@@ -4,6 +4,21 @@
 
 using namespace RDK::LLM;
 
+TEST(LLMConnectPlanParsing, DisconnectGoalDoesNotCountAsConnect)
+{
+    EXPECT_TRUE(isDisconnectGoalText("разорви связь Source1 и Net1"));
+    EXPECT_FALSE(isConnectGoalText("разорви связь Source1 и Net1"));
+    EXPECT_TRUE(isConnectGoalText("соедини и разорви Source1 и Net1"));
+    EXPECT_TRUE(isDisconnectGoalText("соедини и разорви Source1 и Net1"));
+}
+
+TEST(LLMConnectPlanParsing, AddComponentToModelIsNotExplicitPair)
+{
+    ParsedConnectGoal g = parseConnectGoal("add MatrixSource to the model");
+    EXPECT_TRUE(g.explicit_links.empty());
+    EXPECT_EQ(g.kind, ConnectGoalKind::None);
+}
+
 TEST(LLMConnectPlanParsing, ExplicitPairsEnglish)
 {
     ParsedConnectGoal g = parseConnectGoal("connect Neuron1 and Neuron2");

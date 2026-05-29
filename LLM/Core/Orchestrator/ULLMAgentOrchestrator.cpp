@@ -842,16 +842,31 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
         const DialogSlotMergeResult slot = mergeDialogSlotsIntoToolArgs(slot_in);
         if(slot.has_connect_endpoints || !slot.partial_arguments.empty())
         {
-            PendingToolArguments pending_slot;
-            pending_slot.tool_name =
-                slot.inferred_tool_name.empty() ? "connect_components" : slot.inferred_tool_name;
-            pending_slot.partial_arguments = slot.partial_arguments;
-            pending_slot.created_at_unix_sec = confirmationNowUnixSec();
-            m_store.setPendingToolArguments(req.session_id, pending_slot);
-            GetAuditLog().append("dialog_slot_merge_pending",
-                                 {{"tool_name", pending_slot.tool_name},
-                                  {"has_connect_endpoints", slot.has_connect_endpoints}},
-                                 req.trace_id, req.session_id);
+            const bool connect_goal = isConnectGoalText(planning_text);
+            const bool disconnect_goal = isDisconnectGoalText(planning_text);
+            if(!(connect_goal && disconnect_goal))
+            {
+                PendingToolArguments pending_slot;
+                if(disconnect_goal)
+                    pending_slot.tool_name = "disconnect_components";
+                else if(!slot.inferred_tool_name.empty())
+                    pending_slot.tool_name = slot.inferred_tool_name;
+                else
+                    pending_slot.tool_name = "connect_components";
+                pending_slot.partial_arguments = slot.partial_arguments;
+                const std::vector<ToolArgumentFieldSpec> slot_missing =
+                    findMissingArgumentsForTool(pending_slot.tool_name, pending_slot.partial_arguments,
+                                              app, m_registry);
+                if(slot_missing.empty())
+                {
+                    pending_slot.created_at_unix_sec = confirmationNowUnixSec();
+                    m_store.setPendingToolArguments(req.session_id, pending_slot);
+                    GetAuditLog().append("dialog_slot_merge_pending",
+                                         {{"tool_name", pending_slot.tool_name},
+                                          {"has_connect_endpoints", slot.has_connect_endpoints}},
+                                         req.trace_id, req.session_id);
+                }
+            }
         }
     }
 

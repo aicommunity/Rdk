@@ -218,6 +218,11 @@ WriteToolExecutionResult executeWriteWithPreviewAndVerify(ULLMAgentOrchestrator&
             result.gateway.ok = true;
             result.gateway.pending_confirmation = true;
             result.gateway.confirmation_id = makeConfirmationId();
+            GetAuditLog().append("confirmation_requested",
+                                 {{"tool_name", req.tool_name},
+                                  {"confirmation_id", result.gateway.confirmation_id},
+                                  {"stage", "pre_gateway"}},
+                                 req.trace_id, req.session_id);
             result.outcome_text = formatHitlConfirmationText(result.preview_text, req.user_lang);
             return result;
         }

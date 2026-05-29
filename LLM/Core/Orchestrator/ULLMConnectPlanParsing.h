@@ -51,6 +51,7 @@ struct ParsedConnectGoal {
 };
 
 bool isConnectGoalText(const std::string& text);
+bool isDisconnectGoalText(const std::string& text);
 ParsedConnectGoal parseConnectGoal(const std::string& goal_en);
 
 } // namespace RDK::LLM

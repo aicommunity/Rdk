@@ -27,10 +27,27 @@ ConnectEndpointRef makeEndpoint(const std::string& token, const std::string& pro
 
 } // namespace
 
+bool isDisconnectGoalText(const std::string& text)
+{
+    static const std::regex en_re(R"(\b(disconnect|unlink)\b)", std::regex::icase);
+    if(std::regex_search(text, en_re))
+        return true;
+    const std::string lower = text;
+    return lower.find("разорви") != std::string::npos || lower.find("разорв") != std::string::npos
+           || lower.find("отключ") != std::string::npos;
+}
+
 bool isConnectGoalText(const std::string& text)
 {
     static const std::regex en_re(R"(\b(connect|link|links)\b)", std::regex::icase);
-    return std::regex_search(text, en_re) || hasRuCue(text);
+    if(std::regex_search(text, en_re))
+        return true;
+    const std::string lower = text;
+    if(lower.find("соедин") != std::string::npos || lower.find("подключ") != std::string::npos)
+        return true;
+    if(isDisconnectGoalText(text))
+        return false;
+    return hasRuCue(text);
 }
 
 ParsedConnectGoal parseConnectGoal(const std::string& goal_en)
@@ -44,7 +61,7 @@ ParsedConnectGoal parseConnectGoal(const std::string& goal_en)
     out.wants_analogous = std::regex_search(goal_en, analogous_re);
 
     static const std::regex explicit_ports(
-        R"(([A-Za-z0-9_./]+)\.([A-Za-z0-9_]+)\s*(->|→|to|на)\s*([A-Za-z0-9_./]+)\.([A-Za-z0-9_]+))",
+        R"(([A-Za-z0-9_./]+)\.([A-Za-z0-9_]+)\s*(->|→|to|на|с)\s*([A-Za-z0-9_./]+)\.([A-Za-z0-9_]+))",
         std::regex::icase);
     for(std::sregex_iterator it(goal_en.begin(), goal_en.end(), explicit_ports), end; it != end;
         ++it)
@@ -66,9 +83,20 @@ ParsedConnectGoal parseConnectGoal(const std::string& goal_en)
             ++it)
         {
             const std::string a = (*it)[1].str();
+            const std::string delim = (*it)[2].str();
             const std::string b = (*it)[3].str();
             if(a == "connect" || a == "link" || b == "connect" || b == "link")
                 continue;
+            // English "add X to the model" uses "to" as a preposition, not a connect delimiter.
+            if(delim == "to" || delim == "TO")
+            {
+                static const std::regex add_to_phrase(
+                    R"(\badd\b[\s\S]*\bto\s+the\b)", std::regex::icase);
+                if(std::regex_search(goal_en, add_to_phrase))
+                    continue;
+                if(b == "the" || b == "model" || b == "diagram" || b == "schema")
+                    continue;
+            }
             ConnectLinkSpec spec;
             spec.from = makeEndpoint(a);
             spec.to = makeEndpoint(b);
