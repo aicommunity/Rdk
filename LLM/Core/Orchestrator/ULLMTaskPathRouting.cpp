@@ -1,5 +1,7 @@
 #include "ULLMTaskPathRouting.h"
 
+#include "ULLMTaskPathMode.h"
+
 #include "../Session/ULLMConversationStore.h"
 #include "ULLMConnectPlanParsing.h"
 #include "ULLMTaskPlanParsing.h"
@@ -51,19 +53,19 @@ TaskPathDecision decideTaskPath(const std::string& text_en, LLMIntentKind intent
         out.use_task_path = true;
     if(extractClassAddSpecsFromGoal(text_en).size() >= 2)
         out.use_task_path = true;
-    if(countMutateVerbs(text_en) >= 2)
-        out.use_task_path = true;
-    if(autonomous_mode != LLMAutonomousMode::Off)
-        out.use_task_path = true;
-    if(hasSequenceMarker(text_en))
+    if(autonomous_mode == LLMAutonomousMode::Strict
+       || autonomous_mode == LLMAutonomousMode::SemiAuto)
         out.use_task_path = true;
     const ParsedConnectGoal connect = parseConnectGoal(text_en);
-    if((connect.kind == ConnectGoalKind::RemainingSessionDelta
-        || connect.kind == ConnectGoalKind::AnalogousToPrevious)
+    if(connect.kind == ConnectGoalKind::RemainingSessionDelta
+       || connect.kind == ConnectGoalKind::AnalogousToPrevious
        || connect.remaining_scope == ConnectRemainingScope::ModelGraph
        || connect.topology != ConnectTopology::Sequential
-       || connect.explicit_links.size() >= 2
-       || (isConnectGoalText(text_en) && connect.link_count > 1))
+       || connect.explicit_links.size() >= 2)
+        out.use_task_path = true;
+    if(taskPathStrictFastPathEnabled()
+       && (countMutateVerbs(text_en) >= 2 || hasSequenceMarker(text_en)
+           || (isConnectGoalText(text_en) && connect.link_count > 1)))
         out.use_task_path = true;
 
     return out;

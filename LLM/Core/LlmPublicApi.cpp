@@ -49,6 +49,7 @@ void LLMServices::initialize(RDK::UApplication* app, ILLMProjectContextProvider*
     m_policy = std::make_unique<ULLMPolicyEngine>();
 
     RegisterCoreRdkTools(GetToolRegistry(), *m_domain, project_context);
+    RegisterAgentTools(GetToolRegistry());
     if(project_context)
         project_context->registerExtraTools(GetToolRegistry(), *m_domain);
 

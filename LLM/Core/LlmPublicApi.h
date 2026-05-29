@@ -17,6 +17,7 @@
 #include "Settings/ULLMSettingsStore.h"
 #include "Tools/ULLMToolGateway.h"
 #include "Tools/RegisterCoreRdkTools.h"
+#include "Tools/RegisterAgentTools.h"
 
 namespace RDK {
 class UApplication;

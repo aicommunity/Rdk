@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "fd_corpus_06_ru",
+  "user_text": "расскажи про add_component",
+  "lang": "ru",
+  "tags": [
+    "free_dialogue",
+    "ru"
+  ],
+  "expect": {
+    "orchestrator_ok": true,
+    "no_hard_task_path_fail": true
+  }
+}

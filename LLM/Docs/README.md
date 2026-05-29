@@ -55,6 +55,10 @@
 | Патчи CMake (до кода) | [Pending-CMake-Changes.md](Pending-CMake-Changes.md) |
 | Коммиты, техдолг | [Development-Workflow.md](Development-Workflow.md) |
 | Техдолг (живой файл) | [../TECH-DEBT.md](../TECH-DEBT.md) |
+| **Unified turn (Agent v2)** | [Unified-Turn-Contract.md](Unified-Turn-Contract.md) |
+| Agent UX / ask_user | [Agent-Interaction.md](Agent-Interaction.md) |
+| Migration Agent v2 | [Migration-Agent-V2.md](Migration-Agent-V2.md) |
+| Model tiers | [Model-Capability-Matrix.md](Model-Capability-Matrix.md) |
 
 **Навигатор верхнего уровня (краткий):** `.cursor/plans/rdk_llm_integration_*.plan.md` — только дорожная карта; при расхождении **приоритет у `Rdk/LLM/Docs/`**.
 

@@ -19,3 +19,15 @@ TEST(LlmWorkflow, AwaitingConfirmationToIdle)
     EXPECT_TRUE(RDK::LLM::workflowTransitionAllowed(
         RDK::LLM::LLMWorkflowPhase::AwaitingConfirmation, RDK::LLM::LLMWorkflowPhase::Idle));
 }
+
+TEST(LlmWorkflow, RunningToUnderstanding)
+{
+    EXPECT_TRUE(RDK::LLM::workflowTransitionAllowed(RDK::LLM::LLMWorkflowPhase::Running,
+                                                     RDK::LLM::LLMWorkflowPhase::Understanding));
+}
+
+TEST(LlmWorkflow, RunningToAwaitingUserInput)
+{
+    EXPECT_TRUE(RDK::LLM::workflowTransitionAllowed(
+        RDK::LLM::LLMWorkflowPhase::Running, RDK::LLM::LLMWorkflowPhase::AwaitingUserInput));
+}

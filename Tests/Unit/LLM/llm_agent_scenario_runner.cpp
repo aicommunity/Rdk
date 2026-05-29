@@ -16,6 +16,7 @@
 #include "Session/ULLMConversationStore.h"
 #include "Tools/RegisterApplicationTools.h"
 #include "Tools/RegisterCoreRdkTools.h"
+#include "Tools/RegisterAgentTools.h"
 #include "Tools/ULLMToolArgumentValidator.h"
 #include "Tools/ULLMToolGateway.h"
 #include "Tools/ULLMToolRegistry.h"
@@ -127,6 +128,7 @@ void registerToolsForProfile(const RegistryProfile profile, ULLMToolRegistry& re
 {
     URdkDomainAccess domain(nullptr);
     RegisterCoreRdkTools(registry, domain, nullptr);
+    RegisterAgentTools(registry);
 #ifdef CMAKE_SOURCE_DIR
     if(profile == RegistryProfile::Full)
     {

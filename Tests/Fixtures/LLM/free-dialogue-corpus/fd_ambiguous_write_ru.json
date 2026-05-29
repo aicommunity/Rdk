@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "fd_ambiguous_write_ru",
+  "user_text": "добавь что-нибудь полезное",
+  "lang": "ru",
+  "tags": [
+    "free_dialogue",
+    "ru",
+    "edge"
+  ],
+  "expect": {
+    "orchestrator_ok": true,
+    "no_hard_task_path_fail": true,
+    "intent_hint": "mutate"
+  }
+}

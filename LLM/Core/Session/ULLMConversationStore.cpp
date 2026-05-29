@@ -466,6 +466,14 @@ bool ULLMConversationStore::loadFromDisk(const std::string& session_id)
         state.workflow_phase = LLMWorkflowPhase::Completed;
     else if(phase == "Failed")
         state.workflow_phase = LLMWorkflowPhase::Failed;
+    else if(phase == "Understanding")
+        state.workflow_phase = LLMWorkflowPhase::Understanding;
+    else if(phase == "AwaitingUserInput")
+        state.workflow_phase = LLMWorkflowPhase::AwaitingUserInput;
+    else if(phase == "Planning")
+        state.workflow_phase = LLMWorkflowPhase::Planning;
+    else if(phase == "TaskExecuting")
+        state.workflow_phase = LLMWorkflowPhase::TaskExecuting;
     else
         state.workflow_phase = LLMWorkflowPhase::Idle;
     if(j.contains("messages") && j["messages"].is_array())
@@ -548,6 +556,17 @@ bool ULLMConversationStore::persistToDisk(const std::string& session_id)
         j["pending"] = pendingConfirmationToJson(*it->second.pending);
     if(it->second.pending_tool_arguments)
         j["pending_tool_arguments"] = pendingToolArgumentsToJson(*it->second.pending_tool_arguments);
+    if(it->second.pending_user_question)
+    {
+        const PendingUserQuestion& pq = *it->second.pending_user_question;
+        j["pending_user_question"] = {{"question_id", pq.question_id},
+                                      {"prompt", pq.prompt},
+                                      {"choices", pq.choices},
+                                      {"allow_free_text", pq.allow_free_text},
+                                      {"resume_context", pq.resume_context}};
+    }
+    if(!it->second.known_facts.empty())
+        j["known_facts"] = it->second.known_facts;
     if(it->second.last_gui_context)
         j["last_gui_context"] = guiSnapshotToJson(*it->second.last_gui_context);
     if(!it->second.resolved_entities.empty())

@@ -721,6 +721,22 @@ void ULlmAssistantDockWidget::onStreamFinished(const RDK::LLM::LLMFinalResponse&
         setPausedPlan(QString::fromStdString(resp.pending_plan_id), QString::fromStdString(resp.text));
         return;
     }
+    if(resp.awaiting_user_input)
+    {
+        appendAssistantText(tr("<b>Question</b>"));
+        appendAssistantText(QString::fromStdString(resp.text));
+        if(resp.user_choice_options.is_array() && !resp.user_choice_options.empty())
+        {
+            int idx = 1;
+            for(const auto& choice : resp.user_choice_options)
+            {
+                if(choice.is_string())
+                    appendAssistantText(QStringLiteral("%1) %2").arg(idx++).arg(
+                        QString::fromStdString(choice.get<std::string>())));
+            }
+        }
+        return;
+    }
     if(resp.needs_entity_clarification || resp.needs_tool_disambiguation)
     {
         appendAssistantText(tr("<b>Clarification needed</b>"));

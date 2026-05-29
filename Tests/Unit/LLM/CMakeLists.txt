@@ -87,6 +87,10 @@ target_include_directories(Test_LLM_ChatHistoryArchive PRIVATE
   ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt/Llm)
 _add_llm_unit_test(Test_LLM_DocSearch test_llm_doc_search.cpp)
 _add_llm_unit_test(Test_LLM_Workflow test_llm_workflow.cpp)
+_add_llm_unit_test(Test_LLM_UnifiedTurnContract test_llm_unified_turn_contract.cpp)
+_add_llm_unit_test(Test_LLM_FreeDialogueCorpus test_llm_free_dialogue_corpus.cpp)
+target_compile_definitions(Test_LLM_FreeDialogueCorpus PRIVATE
+  RDK_LLM_FREE_DIALOGUE_CORPUS_DIR="${CMAKE_SOURCE_DIR}/Rdk/Tests/Fixtures/LLM/free-dialogue-corpus")
 _add_llm_unit_test(Test_LLM_OllamaNative test_llm_ollama_native.cpp)
 _add_llm_unit_test(Test_LLM_OllamaChatTemplate test_llm_ollama_chat_template.cpp)
 _add_llm_unit_test(Test_LLM_ResponseLanguage test_llm_response_language.cpp)

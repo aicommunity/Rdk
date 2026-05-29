@@ -12,7 +12,7 @@ std::vector<LLMProviderProfile> ULLMProviderCatalog::builtInProfiles()
     ollama.profile_id = "ollama-local";
     ollama.kind = LLMProviderKind::OllamaOpenAICompat;
     ollama.base_url = "http://127.0.0.1:11434/v1";
-    ollama.model = "qwen2.5:7b";
+    ollama.model = "qwen2.5:14b";
     ollama.chat_template = OllamaChatTemplateFamily::Qwen2;
     ollama.is_cloud = false;
     ollama.prefer_local = true;
@@ -22,7 +22,7 @@ std::vector<LLMProviderProfile> ULLMProviderCatalog::builtInProfiles()
     ollama_native.profile_id = "ollama-native";
     ollama_native.kind = LLMProviderKind::OllamaNative;
     ollama_native.base_url = "http://127.0.0.1:11434";
-    ollama_native.model = "qwen2.5:7b";
+    ollama_native.model = "qwen2.5:14b";
     ollama_native.chat_template = OllamaChatTemplateFamily::Qwen2;
     ollama_native.is_cloud = false;
     ollama_native.prefer_local = true;

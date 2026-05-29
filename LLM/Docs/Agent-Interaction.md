@@ -1,41 +1,24 @@
-# Agent interaction (LLM-first)
+# Agent interaction (v2)
 
-Architecture: [Developer-Architecture.md](Developer-Architecture.md).
+Normative UX and protocol for free dialogue, clarification, and plans.
 
-## Turn loop
+See [Unified-Turn-Contract.md](Unified-Turn-Contract.md).
 
-1. Classify intent (`query`, `mutate`, `explain`, `plan`).
-2. Build tool filter and agent manifest (`buildAgentManifest(registry, filter, max_chars, user_text)` — library focus from `ULLMLibraryScopeHint`).
-3. Provider round: assistant may return tool calls or text.
-4. **Mutate recovery:** if no tool call on the first round, a system recovery message asks for
-   exactly one tool or `NO_SUITABLE_TOOL`; a second empty round sets `no_suitable_tool`.
-5. Tool results are appended; lifecycle tools may return argument clarification or HITL.
-6. **Parallel reads:** when all tool calls in a round are Read, orchestrator may invoke them concurrently.
+## Clarification
 
-## Configuration lifecycle (PR1)
+- Prefer `ask_user` tool → `AwaitingUserInput` workflow phase.
+- GUI shows question text and numbered choices when provided.
+- Resume turns with list picks skip quantity/intent re-parse (`skip_pre_llm_funnel`).
 
-Russian phrases such as «создай новый проект» map to `create_configuration` via the LLM tool
-path. Pre-LLM `preflightLifecycleArguments` bypass was removed; the model must emit tool calls.
+## Plans
 
-Follow-up messages merge into pending args via `ULLMLifecycleArgumentGate` (paths, `add_component` class names).
+- `propose_plan` tool → preview in assistant panel → user **Run plan** (HITL).
+- Task executor fast-path only when `NMSDK_LLM_TASK_PATH_STRICT=1`.
 
-## UI panel actions (phases D/E)
+## Settings
 
-User phrases like «покажи логгер» / «show logger» trigger `show_ui_panel` with `panel: "logger"`.
-UI panel actions are executed via the GUI presentation sink (`LLMPresentationEvent.show_panel`).
-
-## Human-in-the-loop
-
-Write tools with `requires_confirmation` return `pending_confirmation` until the user clicks **Apply**, unless:
-
-| Condition | Behavior |
-|-----------|----------|
-| `session.auto_apply_writes` | From Settings **Apply write tools automatically**; gateway runs write immediately |
-| Low-risk `set_property` | Exempt per `ULLMWriteToolPolicy` (Comment, Description, …) |
-| **Plans** | Still require **Run plan**; auto-apply does not auto-execute plans |
-
-See [Policy-and-Safety.md](Policy-and-Safety.md), [Conversation-State.md](Conversation-State.md).
-
-## Graph mutations (library-agnostic)
-
-Use core `add_component` / `set_property` for all libraries. Optional library read tools and manifest hints narrow class choice; see [Extension-Guide.md](Extension-Guide.md) §4.
+| Key | Default |
+|-----|---------|
+| `LLM/task_path_mode` | `hint_only` (env strict for CI) |
+| `NMSDK_LLM_INPUT_ENSEMBLE` | on |
+| `NMSDK_LLM_CLARIFY_IN_LOOP` | on |

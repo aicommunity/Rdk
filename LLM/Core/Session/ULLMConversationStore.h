@@ -27,12 +27,22 @@ struct ResolvedEntityRecord {
     int channel_index = 0;
 };
 
+struct PendingUserQuestion {
+    std::string question_id;
+    std::string prompt;
+    nlohmann::json choices = nlohmann::json::array();
+    bool allow_free_text = true;
+    std::string resume_context;
+};
+
 struct ConversationState {
     std::string session_id;
     std::vector<LLMMessage> messages;
     std::optional<PendingConfirmation> pending;
     std::optional<PendingToolArguments> pending_tool_arguments;
+    std::optional<PendingUserQuestion> pending_user_question;
     std::optional<ULLMExecutionPlan> pending_plan;
+    std::vector<std::string> known_facts;
     std::string last_user_text_original;
     std::string last_user_text_en;
     ResolvedUserQuantity last_quantity;
@@ -49,7 +59,7 @@ struct ConversationState {
     /// Last `LLMSessionContext` from an orchestrator entry (resume parity, TD-088).
     std::optional<LLMSessionContext> last_session_context;
     SessionGraphMemory session_graph;
-    int store_schema_version = 2;
+    int store_schema_version = 3;
 };
 
 class ULLMConversationStore {

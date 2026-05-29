@@ -8,6 +8,7 @@
 #include "Orchestrator/ULLMAgentOrchestrator.h"
 #include "Providers/ULLMMockProvider.h"
 #include "Tools/RegisterCoreRdkTools.h"
+#include "Tools/RegisterAgentTools.h"
 #include "Session/ULLMConversationStore.h"
 #include "Tools/ULLMToolGateway.h"
 #include "Tools/ULLMToolRegistry.h"
@@ -189,6 +190,7 @@ TEST(LLMOrchestrator, ContextBudgetAuditAndResponseFields)
     ULLMToolRegistry registry;
     URdkDomainAccess domain(nullptr);
     RegisterCoreRdkTools(registry, domain, nullptr);
+    RegisterAgentTools(registry);
     ULLMPolicyEngine policy;
     ULLMAuditLog audit;
     ULLMIdempotencyStore idem;

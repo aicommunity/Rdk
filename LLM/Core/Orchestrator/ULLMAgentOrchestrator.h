@@ -50,6 +50,9 @@ struct LLMFinalResponse {
     nlohmann::json clarification_candidates = nlohmann::json::array();
     /// Lifecycle tool needs more parameters from the user (see ConversationState::pending_tool_arguments).
     bool needs_argument_clarification = false;
+    bool awaiting_user_input = false;
+    std::string pending_question_id;
+    nlohmann::json user_choice_options = nlohmann::json::array();
     bool no_suitable_tool = false;
     /// Explicit rollback status for UI/API handling.
     std::string rollback_status;
@@ -60,13 +63,19 @@ struct LLMFinalResponse {
     bool context_compacted = false;
 };
 
+class ULLMUnifiedTurnController;
+
 class ULLMAgentOrchestrator {
+    friend class ULLMUnifiedTurnController;
+
 public:
     ULLMAgentOrchestrator(ILLMProvider& provider, ULLMToolRegistry& registry,
                           ULLMToolGateway& gateway, ULLMConversationStore& store);
 
     LLMFinalResponse handleUserMessage(const LLMRequestEnvelope& req,
                                        const LLMStreamHandlers* stream = nullptr);
+    LLMFinalResponse handleUserMessageImpl(const LLMRequestEnvelope& req,
+                                           const LLMStreamHandlers* stream = nullptr);
     LLMFinalResponse confirmPending(const std::string& session_id, const std::string& confirmation_id);
     LLMFinalResponse confirmPlanExecution(const std::string& session_id, const std::string& trace_id,
                                           const LLMSessionContext& session);
