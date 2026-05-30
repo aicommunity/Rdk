@@ -124,6 +124,13 @@ void appendAgentNote(ConversationState& state, const std::string& line)
 
 const char* kSessionBusyError = "Session busy: wait for the current request to finish.";
 
+std::string combinedUserTextHint(const ConversationState& state, const std::string& planning_text)
+{
+    if(state.last_user_text_original.empty() || state.last_user_text_original == planning_text)
+        return planning_text;
+    return state.last_user_text_original + "\n" + planning_text;
+}
+
 struct SessionBusyScope {
     ULLMAgentOrchestrator* orch = nullptr;
     std::string session_id;
@@ -528,6 +535,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
         (!qnorm.text_en.empty() ? qnorm.text_en : req.user_text);
     state.last_user_text_original = req.user_text;
     state.last_user_text_en = planning_text;
+    const std::string entity_user_text_hint = combinedUserTextHint(state, planning_text);
     if(qnorm.used_llm_translate)
     {
         GetAuditLog().append(
@@ -986,7 +994,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
 
             // Merged args already include the user's pick; avoid re-merging user_text in gateway.
             LLMFinalResponse final = invokeLifecycleToolDirect(
-                req.session_id, req.trace_id, pending.tool_name, merged, session, "");
+                req.session_id, req.trace_id, pending.tool_name, merged, session,
+                entity_user_text_hint);
             if(final.ok && !final.needs_argument_clarification && !final.needs_entity_clarification
                && !final.needs_tool_disambiguation && !final.pending_confirmation)
                 m_store.clearPendingToolArguments(req.session_id);
@@ -1636,7 +1645,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 invoke.arguments = mergeArgumentsFromUserText(bootstrap, req.user_text, app);
             }
             invoke.session = session;
-            invoke.user_text_hint = planning_text;
+            invoke.user_text_hint = entity_user_text_hint;
             if(call_def && call_def->kind == LLMToolKind::Write)
             {
                 WriteToolExecutionRequest wreq;
@@ -1647,7 +1656,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 wreq.session = session;
                 wreq.gui = req.gui;
                 wreq.user_lang = user_lang;
-                wreq.user_text_hint = planning_text;
+                wreq.user_text_hint = entity_user_text_hint;
                 wreq.idempotency_action_id = call.id;
                 const WriteToolExecutionResult wres =
                     executeWriteWithPreviewAndVerify(*this, state, wreq);
@@ -1793,7 +1802,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                                 makeIdempotencyKey(req.session_id, req.trace_id, call_copy.name, merged,
                                                    call_copy.id.empty() ? "retry" : call_copy.id + ":retry");
                             retry_req.session = session;
-                            retry_req.user_text_hint = planning_text;
+                            retry_req.user_text_hint = entity_user_text_hint;
                             const LLMToolDefinition* retry_def = m_registry.find(call_copy.name);
                             ToolGatewayResult retry_tr;
                             if(retry_def && retry_def->kind == LLMToolKind::Write)
@@ -1806,7 +1815,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                                 wreq.session = session;
                                 wreq.gui = req.gui;
                                 wreq.user_lang = user_lang;
-                                wreq.user_text_hint = planning_text;
+                                wreq.user_text_hint = entity_user_text_hint;
                                 wreq.idempotency_action_id =
                                     call_copy.id.empty() ? "retry" : call_copy.id + ":retry";
                                 const WriteToolExecutionResult wres =

@@ -11,6 +11,41 @@ namespace RDK::LLM {
 
 namespace {
 
+std::string stripTrailingPunctuation(std::string token)
+{
+    while(!token.empty())
+    {
+        const char c = token.back();
+        if(c == '.' || c == ',' || c == ';' || c == ':' || c == '!' || c == '?')
+            token.pop_back();
+        else
+            break;
+    }
+    return token;
+}
+
+std::vector<std::string> tokenizeUserText(const std::string& user_text)
+{
+    std::vector<std::string> tokens;
+    std::string current;
+    for(char c : user_text)
+    {
+        if(std::isspace(static_cast<unsigned char>(c)))
+        {
+            if(!current.empty())
+            {
+                tokens.push_back(stripTrailingPunctuation(current));
+                current.clear();
+            }
+            continue;
+        }
+        current += c;
+    }
+    if(!current.empty())
+        tokens.push_back(stripTrailingPunctuation(current));
+    return tokens;
+}
+
 std::string trimCopy(const std::string& s)
 {
     size_t b = 0;
@@ -125,6 +160,36 @@ std::vector<ClassCandidate> findSimilarRegisteredClasses(const std::string& quer
 }
 
 } // namespace
+
+std::optional<std::string> findExplicitRegisteredClassInUserText(
+    const std::string& user_text, const std::vector<std::string>& registered)
+{
+    if(user_text.empty() || registered.empty())
+        return std::nullopt;
+
+    std::optional<std::string> best;
+    size_t best_score = 0;
+    size_t token_index = 0;
+    for(const std::string& raw_token : tokenizeUserText(user_text))
+    {
+        ++token_index;
+        if(!looksLikeClassIdentifierLocal(raw_token))
+            continue;
+        if(!isRegisteredClassName(registered, raw_token))
+            continue;
+
+        const std::string canonical = canonicalRegisteredClassName(registered, raw_token);
+        size_t score = canonical.size() * 4 + token_index;
+        if(canonical == raw_token)
+            score += 32;
+        if(!best || score >= best_score)
+        {
+            best = canonical;
+            best_score = score;
+        }
+    }
+    return best;
+}
 
 std::string extractClassNameTokenFromUserText(const std::string& user_text)
 {

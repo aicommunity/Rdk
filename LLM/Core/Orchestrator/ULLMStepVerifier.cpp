@@ -49,6 +49,9 @@ bool verifyLinkExistsInSnapshot(const SuccessCriteria& criteria, URdkDomainAcces
     return false;
 }
 
+bool verifyComponentUnderParent(const SuccessCriteria& criteria, URdkDomainAccess& domain,
+                                int channel_index, VerifyResult& out);
+
 bool verifyComponentExists(const std::string& long_name, URdkDomainAccess& domain, int channel_index,
                            VerifyResult& out)
 {
@@ -68,12 +71,56 @@ bool verifyComponentExists(const std::string& long_name, URdkDomainAccess& domai
     return false;
 }
 
+bool verifyAddComponentEffect(const SuccessCriteria& criteria, URdkDomainAccess& domain,
+                              int channel_index, VerifyResult& out)
+{
+    const std::string expected_ln = criteria.params.value("long_name", "");
+    const std::string parent = criteria.params.value("parent_long_name", "");
+    const std::string short_name = criteria.params.value("short_name", "");
+    const std::string class_name = criteria.params.value("class_name", "");
+
+    if(!expected_ln.empty() && verifyComponentExists(expected_ln, domain, channel_index, out))
+        return true;
+
+    if(!parent.empty() && !short_name.empty())
+    {
+        std::string resolved;
+        if(domain.resolveComponentLongName(short_name, channel_index, resolved, parent).ok()
+           && verifyComponentExists(resolved, domain, channel_index, out))
+            return true;
+    }
+
+    if(!expected_ln.empty() && !parent.empty())
+    {
+        std::string resolved;
+        if(domain.resolveComponentLongName(expected_ln, channel_index, resolved, parent).ok()
+           && verifyComponentExists(resolved, domain, channel_index, out))
+            return true;
+    }
+
+    SuccessCriteria under_parent = criteria;
+    under_parent.params.erase("long_name");
+    if(!parent.empty() && !class_name.empty())
+    {
+        if(verifyComponentUnderParent(under_parent, domain, channel_index, out))
+            return true;
+    }
+
+    if(!expected_ln.empty())
+    {
+        out.detail = "component_missing:" + expected_ln;
+        return false;
+    }
+    out.detail = "component_under_parent_missing_fields";
+    return false;
+}
+
 bool verifyComponentUnderParent(const SuccessCriteria& criteria, URdkDomainAccess& domain,
                                 int channel_index, VerifyResult& out)
 {
     const std::string expected_ln = criteria.params.value("long_name", "");
     if(!expected_ln.empty())
-        return verifyComponentExists(expected_ln, domain, channel_index, out);
+        return verifyAddComponentEffect(criteria, domain, channel_index, out);
 
     const std::string parent = criteria.params.value("parent_long_name", "");
     const std::string class_name = criteria.params.value("class_name", "");
@@ -190,7 +237,7 @@ VerifyResult verifySuccessCriteria(const SuccessCriteria& criteria,
 
     if(criteria.type == "component_under_parent")
     {
-        verifyComponentUnderParent(criteria, domain, channel_index, out);
+        verifyAddComponentEffect(criteria, domain, channel_index, out);
         return out;
     }
 
@@ -234,9 +281,13 @@ SuccessCriteria buildPostVerifyCriteria(const std::string& tool_name, const nloh
         criteria.type = "component_under_parent";
         criteria.params["parent_long_name"] = args.value("parent_long_name", "");
         criteria.params["class_name"] = args.value("class_name", "");
+        criteria.params["short_name"] = args.value("short_name", "");
         if(gateway_result.result.contains("long_name")
            && gateway_result.result["long_name"].is_string())
             criteria.params["long_name"] = gateway_result.result["long_name"].get<std::string>();
+        if(gateway_result.result.contains("short_name")
+           && gateway_result.result["short_name"].is_string())
+            criteria.params["short_name"] = gateway_result.result["short_name"].get<std::string>();
         return criteria;
     }
 

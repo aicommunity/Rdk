@@ -296,6 +296,19 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
             r.ok = st.ok();
             r.result["long_name"] = out_name;
             r.result["class_name"] = args.at("class_name").get<std::string>();
+            r.result["parent_long_name"] = args.at("parent_long_name").get<std::string>();
+            nlohmann::json found;
+            if(r.ok && domain_access->findComponentByLongName(out_name, found, args.value("channel_index", 0)).ok())
+            {
+                if(found.contains("short_name"))
+                    r.result["short_name"] = found["short_name"];
+                if(found.contains("long_name"))
+                    r.result["long_name"] = found["long_name"];
+            }
+            else if(r.ok)
+            {
+                r.result["short_name"] = args.at("short_name").get<std::string>();
+            }
             if(!r.ok)
             {
                 r.error_code = "DomainError";

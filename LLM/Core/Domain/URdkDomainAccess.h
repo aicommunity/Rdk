@@ -55,6 +55,11 @@ public:
     DomainStatus findComponentByLongName(const std::string& long_name,
                                          nlohmann::json& out,
                                          int channel_index = 0) const;
+    /// Resolve short name or partial path under parent (snapshot walk).
+    DomainStatus resolveComponentLongName(const std::string& hint,
+                                          int channel_index,
+                                          std::string& out_long_name,
+                                          const std::string& parent_scope = "") const;
     DomainStatus getComponentProperties(const std::string& long_name,
                                         nlohmann::json& out,
                                         int channel_index = 0,

@@ -57,6 +57,15 @@ TEST(LLMNameResolution, ResolveComponentAmbiguousSubstring)
     EXPECT_GE(r.candidates.size(), 2u);
 }
 
+TEST(LLMNameResolution, FindsExplicitClassAmongMultipleTokens)
+{
+    const std::vector<std::string> registered = {"NLPNeuron", "NPNeuron", "NSPNeuron"};
+    const auto found =
+        findExplicitRegisteredClassInUserText("add two NSPNeuron neurons", registered);
+    ASSERT_TRUE(found.has_value());
+    EXPECT_EQ(*found, "NSPNeuron");
+}
+
 TEST(LLMNameResolution, ResolvesExplicitClassFromRussianUserText)
 {
     const std::vector<std::string> registered = {"NLPNeuron", "NPNeuron", "NSPNeuron"};

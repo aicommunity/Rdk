@@ -19,6 +19,7 @@ TEST(LLMPostToolVerify, BuildCriteriaAddComponent)
     EXPECT_EQ(c.params["class_name"], "PulseNeuron");
     EXPECT_EQ(c.params["parent_long_name"], "Model/Zone");
     EXPECT_EQ(c.params["long_name"], "Model/Zone/N1");
+    EXPECT_EQ(c.params["short_name"], "N1");
 }
 
 TEST(LLMPostToolVerify, BuildCriteriaConnectComponents)

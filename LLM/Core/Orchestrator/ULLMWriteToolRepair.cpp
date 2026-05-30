@@ -34,7 +34,8 @@ RepairAttemptResult attemptRepair(const std::string& tool_name, const nlohmann::
         return out;
     }
 
-    if(tool_name == "add_component" && attempt_index == 0 && detailLooksRepairableForAdd(verify.detail)
+    if(tool_name == "add_component" && attempt_index == 0
+       && verify.detail.find("component_under_parent count=0") != std::string::npos
        && out.new_args.contains("short_name") && out.new_args["short_name"].is_string())
     {
         const std::string base = out.new_args["short_name"].get<std::string>();

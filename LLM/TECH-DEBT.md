@@ -112,6 +112,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-128 | Dialog slot merge false connect on «add X to the model» | 2026-05-29 | `d4f631f7`: pair_re guard, disconnect routing, pre-gateway audit |
 | TD-129 | Validate EN phrasing + observability tools in Query filter | 2026-05-29 | `f94a7dec`: `isValidateConfigurationGoalText`, `get_system_log_policy` in filter |
 | TD-130 | GUI `context_acquisition_mode` + Mutate doc prefetch in Auto | 2026-05-29 | QSettings `LLM/context_acquisition_mode`; `Chat-22-15-GUI-Walkthrough.md` |
+| TD-131 | Exact class in user text + post-verify resolve under parent | 2026-05-30 | `findExplicitRegisteredClassInUserText`, `resolveComponentLongName` |
 | TD-120 | Remove hardcoded connect paths in Core ephemeral/heuristics | 2026-05-29 | `f3f4cc0b`: KnowledgeBlocks, acquisition policy, no LTZone in Core |
 | TD-121 | Context acquisition policy + catalog blocks in ephemeral | 2026-05-29 | `f3f4cc0b`: `computeContextAcquisitionPlan`, retriever diagram scope |
 | TD-122 | diagram_scope_long_name GUI + add parent parity | 2026-05-29 | `3c5b615f`: diagramScopeChanged, normalizer parent |

@@ -171,6 +171,13 @@ bool normalizeAddComponentArguments(nlohmann::json& args, URdkDomainAccess& doma
     {
         if(!user_text.empty())
         {
+            if(const std::optional<std::string> embedded =
+                   findExplicitRegisteredClassInUserText(user_text, registered))
+            {
+                args["class_name"] = *embedded;
+                fillAddComponentDefaults(args, gui_fallback);
+                return true;
+            }
             const std::string explicit_class = extractClassNameTokenFromUserText(user_text);
             if(!explicit_class.empty() && isRegisteredClassName(registered, explicit_class))
             {

@@ -2,6 +2,7 @@
 #define RDK_ULLM_NAME_RESOLUTION_H
 
 #include <optional>
+#include <vector>
 #include <string>
 #include <utility>
 #include <vector>
@@ -32,6 +33,10 @@ std::string canonicalRegisteredClassName(const std::vector<std::string>& registe
 
 std::string extractClassNameQuery(const std::string& class_name_field, const std::string& user_text);
 std::string extractClassNameTokenFromUserText(const std::string& user_text);
+
+/// Prefer an exact registered class token anywhere in user text (avoids fuzzy on trailing "neurons").
+std::optional<std::string> findExplicitRegisteredClassInUserText(
+    const std::string& user_text, const std::vector<std::string>& registered);
 
 RegisteredClassResolution resolveRegisteredClassName(const std::string& query,
                                                      const std::vector<std::string>& registered);

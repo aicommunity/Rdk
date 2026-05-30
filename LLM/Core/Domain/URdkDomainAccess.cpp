@@ -394,6 +394,68 @@ DomainStatus URdkDomainAccess::findComponentByLongName(const std::string& long_n
     return {};
 }
 
+namespace {
+
+bool componentMatchesHint(const nlohmann::json& component, const std::string& hint)
+{
+    if(!component.is_object() || hint.empty())
+        return false;
+    const std::string ln = component.value("long_name", "");
+    const std::string sn = component.value("short_name", "");
+    if(sn == hint || ln == hint)
+        return true;
+    const std::string suffix = "/" + hint;
+    return !ln.empty() && ln.size() >= suffix.size()
+           && ln.compare(ln.size() - suffix.size(), suffix.size(), suffix) == 0;
+}
+
+} // namespace
+
+DomainStatus URdkDomainAccess::resolveComponentLongName(const std::string& hint,
+                                                        int channel_index,
+                                                        std::string& out_long_name,
+                                                        const std::string& parent_scope) const
+{
+    out_long_name.clear();
+    if(hint.empty())
+        return {DomainStatusCode::ComponentNotFound, "Empty component hint"};
+
+    nlohmann::json direct;
+    if(findComponentByLongName(hint, direct, channel_index).ok()
+       && direct.contains("long_name"))
+    {
+        out_long_name = direct["long_name"].get<std::string>();
+        return {};
+    }
+
+    nlohmann::json snap;
+    const DomainStatus st = listNetSnapshot(snap, channel_index, 5000, parent_scope);
+    if(!st.ok())
+        return st;
+
+    const nlohmann::json* best = nullptr;
+    for(const auto& component : snap.value("components", nlohmann::json::array()))
+    {
+        if(!componentMatchesHint(component, hint))
+            continue;
+        if(!best)
+            best = &component;
+        else
+        {
+            const std::string ln = component.value("long_name", "");
+            if(ln.size() > best->value("long_name", "").size())
+                best = &component;
+        }
+    }
+    if(!best || !best->contains("long_name"))
+    {
+        return {DomainStatusCode::ComponentNotFound,
+                "Component not found under scope \"" + parent_scope + "\": " + hint};
+    }
+    out_long_name = (*best)["long_name"].get<std::string>();
+    return {};
+}
+
 DomainStatus URdkDomainAccess::getComponentProperties(const std::string& long_name,
                                                       nlohmann::json& out,
                                                       int channel_index,
@@ -546,7 +608,15 @@ DomainStatus URdkDomainAccess::addComponent(const std::string& class_name,
     nlohmann::json found;
     if(findComponentByLongName(added, found, channel_index).ok()
        && found.contains("long_name"))
+    {
         out_long_name = found["long_name"].get<std::string>();
+    }
+    else
+    {
+        std::string resolved;
+        if(resolveComponentLongName(added, channel_index, resolved, parent_long_name).ok())
+            out_long_name = resolved;
+    }
     refreshDiagramPresentation(m_sink);
     return {};
 }
