@@ -130,6 +130,16 @@ TEST(LLMWriteToolsP1, AddComponentSchemaRequiresParentAndNames)
         << err;
 }
 
+TEST(LLMWriteToolsP1, AddComponentHandlerMissingFieldsReturnsErrorNotThrow)
+{
+    GatewayHarness h;
+    const ToolGatewayResult r =
+        h.registry.invokeHandler("add_component", nlohmann::json{{"class_name", "NSPNeuron"}});
+    EXPECT_FALSE(r.ok);
+    EXPECT_EQ(r.error_code, "ARGS_REQUIRED");
+    EXPECT_NE(r.message.find("parent_long_name"), std::string::npos);
+}
+
 TEST(LLMWriteToolsP1, AddComponentMockOrchestratorHitl)
 {
     ::unsetenv("NMSDK_LLM_INTENT_LLM");

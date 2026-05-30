@@ -15,6 +15,24 @@
 
 namespace RDK::LLM {
 
+namespace {
+
+bool requireStringField(const nlohmann::json& args, const char* key, ToolGatewayResult& r,
+                        std::string& out)
+{
+    if(!args.contains(key) || !args[key].is_string())
+    {
+        r.ok = false;
+        r.error_code = "ARGS_REQUIRED";
+        r.message = std::string("Missing required field: ") + key;
+        return false;
+    }
+    out = args[key].get<std::string>();
+    return true;
+}
+
+} // namespace
+
 static LLMToolDefinition makeDef(const std::string& name, LLMToolKind kind,
                                  const std::string& desc, nlohmann::json input,
                                  nlohmann::json output, bool confirm = false)
@@ -288,15 +306,20 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                 true),
         [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
             ToolGatewayResult r;
+            std::string class_name;
+            std::string parent_long_name;
+            std::string short_name;
+            if(!requireStringField(args, "class_name", r, class_name)
+               || !requireStringField(args, "parent_long_name", r, parent_long_name)
+               || !requireStringField(args, "short_name", r, short_name))
+                return r;
             std::string out_name;
             DomainStatus st = domain_access->addComponent(
-                args.at("class_name").get<std::string>(),
-                args.at("parent_long_name").get<std::string>(),
-                args.at("short_name").get<std::string>(), args.value("channel_index", 0), out_name);
+                class_name, parent_long_name, short_name, args.value("channel_index", 0), out_name);
             r.ok = st.ok();
             r.result["long_name"] = out_name;
-            r.result["class_name"] = args.at("class_name").get<std::string>();
-            r.result["parent_long_name"] = args.at("parent_long_name").get<std::string>();
+            r.result["class_name"] = class_name;
+            r.result["parent_long_name"] = parent_long_name;
             nlohmann::json found;
             if(r.ok && domain_access->findComponentByLongName(out_name, found, args.value("channel_index", 0)).ok())
             {
@@ -306,9 +329,7 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                     r.result["long_name"] = found["long_name"];
             }
             else if(r.ok)
-            {
-                r.result["short_name"] = args.at("short_name").get<std::string>();
-            }
+                r.result["short_name"] = short_name;
             if(!r.ok)
             {
                 r.error_code = "DomainError";

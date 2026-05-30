@@ -12,6 +12,7 @@
 #include "ULLMCurrentComponentScope.h"
 #include "ULLMNameResolution.h"
 #include "../Orchestrator/ULLMConnectPlanParsing.h"
+#include "../Orchestrator/ULLMLifecycleArgumentGate.h"
 #include "ULLMResolvedEntityStore.h"
 #include "URdkEntityResolver.h"
 #include "../Session/ULLMConversationStore.h"
@@ -549,6 +550,69 @@ WriteArgumentNormalizeResult normalizeWriteToolArguments(const std::string& tool
 
     out.ok = true;
     return out;
+}
+
+namespace {
+
+bool isAddComponentGoalUserText(const std::string& user_text)
+{
+    if(user_text.empty() || isConnectGoalText(user_text) || isValidateConfigurationGoalText(user_text))
+        return false;
+    const std::string lower = user_text;
+    std::string lc;
+    lc.reserve(lower.size());
+    for(char c : lower)
+        lc += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return lc.find("add ") != std::string::npos || lc.find("добав") != std::string::npos
+           || lc.find("созда") != std::string::npos || lc.find("create ") != std::string::npos;
+}
+
+} // namespace
+
+std::optional<PreparedAddComponentInvoke> tryPrepareAddComponentDirect(
+    const std::string& user_text, const LLMGuiContextSnapshot& gui, URdkDomainAccess& domain,
+    int channel_index, int repeat_count)
+{
+    if(!isAddComponentGoalUserText(user_text))
+        return std::nullopt;
+
+    std::vector<std::string> registered;
+    const DomainStatus list_st = domain.listRegisteredClassNames(registered);
+    if(!list_st.ok() || registered.empty())
+        return std::nullopt;
+
+    const std::optional<std::string> explicit_class =
+        findExplicitRegisteredClassInUserText(user_text, registered);
+    if(!explicit_class)
+        return std::nullopt;
+
+    nlohmann::json args = nlohmann::json::object();
+    args["class_name"] = *explicit_class;
+
+    WriteArgumentNormalizeResult norm =
+        normalizeWriteToolArguments("add_component", args, domain, channel_index, user_text, nullptr);
+    PreparedAddComponentInvoke prepared;
+    prepared.repeat_count = std::max(1, repeat_count);
+    prepared.arguments = norm.normalized_arguments;
+
+    if(norm.needs_clarification)
+    {
+        prepared.needs_clarification = true;
+        prepared.clarification = norm.clarification;
+        return prepared;
+    }
+    if(!norm.ok)
+        return std::nullopt;
+
+    fillAddComponentDefaults(prepared.arguments, &gui);
+    if(!prepared.arguments.contains("class_name")
+       || !prepared.arguments.contains("parent_long_name")
+       || !prepared.arguments.contains("short_name"))
+        return std::nullopt;
+    if(findMissingLifecycleFields("add_component", prepared.arguments, domain.application())
+           .empty())
+        return prepared;
+    return std::nullopt;
 }
 
 } // namespace RDK::LLM

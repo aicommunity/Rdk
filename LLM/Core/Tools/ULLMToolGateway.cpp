@@ -194,7 +194,16 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
                     {"user_role", userRoleName(resolveUserRole(req.session.user_id))}},
                    req.trace_id, req.session.session_id);
 
-    result = m_registry.invokeHandler(invoke_req.tool_name, invoke_req.arguments);
+    try
+    {
+        result = m_registry.invokeHandler(invoke_req.tool_name, invoke_req.arguments);
+    }
+    catch(const std::exception& ex)
+    {
+        result.ok = false;
+        result.error_code = "ToolInvokeException";
+        result.message = ex.what() ? ex.what() : "tool handler threw";
+    }
 
     nlohmann::json finish = {{"tool_name", req.tool_name},
                              {"ok", result.ok},

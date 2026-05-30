@@ -76,3 +76,12 @@ TEST(LLMNameResolution, ResolvesExplicitClassFromRussianUserText)
     ASSERT_EQ(resolved.status, RegisteredClassResolution::Status::Resolved);
     EXPECT_EQ(resolved.class_name, "NLPNeuron");
 }
+
+TEST(LLMNameResolution, FindsExplicitClassInCreateTwoNeuronsRussian)
+{
+    const std::vector<std::string> registered = {"NLPNeuron", "NPNeuron", "NSPNeuron"};
+    const auto found =
+        findExplicitRegisteredClassInUserText("создай два нейрона NSPNeuron", registered);
+    ASSERT_TRUE(found.has_value());
+    EXPECT_EQ(*found, "NSPNeuron");
+}

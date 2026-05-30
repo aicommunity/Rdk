@@ -3,9 +3,14 @@
 
 #include "ULLMNameResolution.h"
 
+#include <optional>
 #include <string>
 
 #include <nlohmann/json.hpp>
+
+namespace RDK::LLM {
+struct LLMGuiContextSnapshot;
+}
 
 namespace RDK::LLM {
 
@@ -32,6 +37,18 @@ WriteArgumentNormalizeResult normalizeWriteToolArguments(const std::string& tool
                                                          int channel_index,
                                                          const std::string& user_text = "",
                                                          const ConversationState* conversation = nullptr);
+
+struct PreparedAddComponentInvoke {
+    nlohmann::json arguments;
+    int repeat_count = 1;
+    bool needs_clarification = false;
+    nlohmann::json clarification = nlohmann::json::object();
+};
+
+/// When user names a registered class and asks to add/create (quantity from caller), build normalized args.
+std::optional<PreparedAddComponentInvoke> tryPrepareAddComponentDirect(
+    const std::string& user_text, const LLMGuiContextSnapshot& gui, URdkDomainAccess& domain,
+    int channel_index, int repeat_count);
 
 } // namespace RDK::LLM
 

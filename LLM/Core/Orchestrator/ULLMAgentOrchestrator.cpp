@@ -837,6 +837,67 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
         }
     }
 
+    if(intent == LLMIntentKind::Mutate && app && LLMServices::instance().isInitialized()
+       && !state.pending_tool_arguments && !isConnectGoalText(planning_text)
+       && !isValidateConfigurationGoalText(planning_text))
+    {
+        URdkDomainAccess& domain = LLMServices::instance().domain();
+        const int qty = state.last_quantity.valid
+                            ? std::max(1, std::min(state.last_quantity.primary, 32))
+                            : 1;
+        if(const std::optional<PreparedAddComponentInvoke> add_prep = tryPrepareAddComponentDirect(
+               entity_user_text_hint, req.gui, domain, session.active_channel_index, qty))
+        {
+            if(add_prep->needs_clarification)
+            {
+                LLMToolCall call;
+                call.name = "add_component";
+                call.arguments = add_prep->arguments;
+                const nlohmann::json& disambiguation = add_prep->clarification;
+                if(disambiguation.value("kind", "") == "component")
+                {
+                    return routeClarificationOrDisambiguation(
+                        state, req.trace_id, call, PendingDisambiguationKind::Component,
+                        disambiguation.value("field", "long_name"), disambiguation);
+                }
+                return routeClarificationOrDisambiguation(state, req.trace_id, call,
+                                                            PendingDisambiguationKind::Class,
+                                                            "class_name", disambiguation);
+            }
+
+            const int add_count = std::max(1, add_prep->repeat_count);
+            if(add_count > 1)
+            {
+                int added = 0;
+                std::string class_name = add_prep->arguments.value("class_name", "");
+                for(int rep = 0; rep < add_count; ++rep)
+                {
+                    const nlohmann::json rep_args =
+                        addComponentArgsForRepeat(add_prep->arguments, rep);
+                    LLMFinalResponse one = invokeLifecycleToolDirect(
+                        req.session_id, req.trace_id, "add_component", rep_args, session,
+                        entity_user_text_hint);
+                    if(!one.ok)
+                        return one;
+                    ++added;
+                }
+                LLMFinalResponse final;
+                final.ok = true;
+                final.text = "Added " + std::to_string(added) + " component(s)"
+                             + (class_name.empty() ? "." : (": " + class_name));
+                m_store.clearPendingToolArguments(req.session_id);
+                return final;
+            }
+
+            LLMFinalResponse direct = invokeLifecycleToolDirect(
+                req.session_id, req.trace_id, "add_component", add_prep->arguments, session,
+                entity_user_text_hint);
+            if(direct.ok && !direct.needs_argument_clarification && !direct.pending_confirmation)
+                m_store.clearPendingToolArguments(req.session_id);
+            return direct;
+        }
+    }
+
     if(lifecycleDirectInvokeEnabled() && lifecycle_action == ConfigurationLifecycleAction::Load
        && app && !wantsRecentConfiguration(req.user_text))
     {
@@ -1002,7 +1063,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 {
                     const nlohmann::json rep_args = addComponentArgsForRepeat(merged, rep);
                     LLMFinalResponse one = invokeLifecycleToolDirect(
-                        req.session_id, req.trace_id, pending.tool_name, rep_args, session, "");
+                        req.session_id, req.trace_id, pending.tool_name, rep_args, session,
+                        entity_user_text_hint);
                     if(!one.ok)
                         return one;
                     ++added;
