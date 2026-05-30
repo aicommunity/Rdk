@@ -16,6 +16,7 @@ class UApplication;
 
 namespace RDK::LLM {
 
+struct ConversationState;
 class ULLMToolRegistry;
 
 struct ToolArgumentFieldSpec {
@@ -104,6 +105,11 @@ std::vector<ToolArgumentFieldSpec> findMissingArgumentsForTool(const std::string
 /// After `list_recent_configurations`, keep numbered-list follow-up for `open_recent_configuration`.
 std::optional<PendingToolArguments>
 pendingOpenRecentFromConfigurationList(const nlohmann::json& list_payload);
+
+/// Build invoke args for `open_recent_configuration` from lifecycle intent (no LLM required).
+std::optional<nlohmann::json> tryBuildOpenRecentInvokeArguments(
+    ConfigurationLifecycleAction action, const std::string& user_text,
+    const ConversationState& state, RDK::UApplication* app, const ULLMToolRegistry& registry);
 
 } // namespace RDK::LLM
 

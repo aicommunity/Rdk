@@ -29,6 +29,7 @@
 #include "ULLMConfigurationLifecycle.h"
 #include "ULLMDialogSlotMerge.h"
 #include "ULLMLifecycleArgumentGate.h"
+#include "../Domain/URdkApplicationCommands.h"
 #include "ULLMToolFilterBuilder.h"
 #include "ULLMWriteToolUserMessage.h"
 #include "ULLMWriteToolExecution.h"
@@ -805,28 +806,52 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
     if(LLMServices::instance().isInitialized())
         app = LLMServices::instance().domain().application();
 
+    if(app)
+    {
+        if(const std::optional<nlohmann::json> open_recent_args = tryBuildOpenRecentInvokeArguments(
+               lifecycle_action, req.user_text, state, app, m_registry))
+        {
+            LLMFinalResponse direct = invokeLifecycleToolDirect(
+                req.session_id, req.trace_id, "open_recent_configuration", *open_recent_args, session,
+                entity_user_text_hint);
+            if(direct.ok && !direct.needs_argument_clarification && !direct.pending_confirmation)
+                m_store.clearPendingToolArguments(req.session_id);
+            return direct;
+        }
+        if(lifecycle_action == ConfigurationLifecycleAction::Load
+           && wantsRecentConfiguration(req.user_text))
+        {
+            const URdkApplicationCommands cmds(app);
+            const nlohmann::json list = cmds.listRecentConfigurations();
+            const nlohmann::json items = list.value("items", nlohmann::json::array());
+            if(!items.is_array() || items.empty())
+            {
+                LLMFinalResponse final;
+                final.ok = false;
+                final.text =
+                    "No recent configurations are available. Open or create a project first.";
+                setWorkflowPhase(state, LLMWorkflowPhase::Failed, req.trace_id);
+                m_store.persistToDisk(req.session_id);
+                return final;
+            }
+        }
+    }
+
     if(lifecycleDirectInvokeEnabled() && lifecycle_action == ConfigurationLifecycleAction::Load
-       && wantsRecentConfiguration(req.user_text) && app)
+       && app && !wantsRecentConfiguration(req.user_text))
     {
         PendingToolArguments bootstrap;
         bootstrap.tool_name = "load_configuration";
         bootstrap.action = ConfigurationLifecycleAction::Load;
         bootstrap.partial_arguments = nlohmann::json::object();
         nlohmann::json merged = mergeArgumentsFromUserText(bootstrap, req.user_text, app);
-        std::string open_tool = "load_configuration";
-        if(!merged.contains("configuration_path"))
-        {
-            bootstrap.tool_name = "open_recent_configuration";
-            merged = mergeArgumentsFromUserText(bootstrap, req.user_text, app);
-            open_tool = "open_recent_configuration";
-        }
         const std::vector<ToolArgumentFieldSpec> missing =
-            findMissingArgumentsForTool(open_tool, merged, app, m_registry);
-        if(missing.empty()
-           && (merged.contains("configuration_path") || merged.contains("index")))
+            findMissingArgumentsForTool("load_configuration", merged, app, m_registry);
+        if(missing.empty() && merged.contains("configuration_path"))
         {
             LLMFinalResponse direct = invokeLifecycleToolDirect(
-                req.session_id, req.trace_id, open_tool, merged, session, req.user_text);
+                req.session_id, req.trace_id, "load_configuration", merged, session,
+                entity_user_text_hint);
             if(direct.ok && !direct.needs_argument_clarification && !direct.pending_confirmation)
                 m_store.clearPendingToolArguments(req.session_id);
             return direct;

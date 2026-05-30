@@ -2,6 +2,7 @@
 
 #include "../Domain/ULLMNameResolution.h" // pickFromNumberedList
 #include "../Domain/URdkApplicationCommands.h"
+#include "../Session/ULLMConversationStore.h"
 #include "../Tools/ULLMToolRegistry.h"
 #include "ULLMLibraryScopeHint.h"
 
@@ -513,6 +514,97 @@ std::string formatArgumentRequestPrompt(const std::string& tool_name,
 
     prompt += "\n\nReply with the missing value(s) in your next message.";
     return prompt;
+}
+
+bool lastAssistantAskedClassDisambiguation(const ConversationState& state)
+{
+    for(auto it = state.messages.rbegin(); it != state.messages.rend(); ++it)
+    {
+        if(it->role != LLMMessage::Role::Assistant)
+            continue;
+        const std::string& content = it->content;
+        return content.find("exact component class") != std::string::npos
+               || content.find("точное имя класса") != std::string::npos
+               || content.find("choose one and reply with the exact class name")
+                      != std::string::npos;
+    }
+    return false;
+}
+
+bool conversationMentionsRecentConfiguration(const ConversationState& state, int max_messages)
+{
+    int seen = 0;
+    for(auto it = state.messages.rbegin(); it != state.messages.rend() && seen < max_messages; ++it, ++seen)
+    {
+        if(it->role == LLMMessage::Role::User && wantsRecentConfiguration(it->content))
+            return true;
+        if(it->role == LLMMessage::Role::Assistant)
+        {
+            const std::string lower = toLowerAsciiLocal(it->content);
+            if(lower.find("recent configuration") != std::string::npos
+               || lower.find("недавно открыт") != std::string::npos
+               || lower.find("последн") != std::string::npos)
+                return true;
+        }
+    }
+    return false;
+}
+
+bool isBareRecentListIndexFollowUp(const std::string& user_text, const ConversationState& state)
+{
+    if(state.pending_tool_arguments || lastAssistantAskedClassDisambiguation(state))
+        return false;
+    const std::string trimmed = trim(user_text);
+    if(trimmed.empty() || trimmed.find_first_of(" \t\n\r") != std::string::npos)
+        return false;
+    if(!isUnsignedListIndex(trimmed))
+        return false;
+    return conversationMentionsRecentConfiguration(state, 8);
+}
+
+std::optional<nlohmann::json> tryBuildOpenRecentInvokeArguments(
+    ConfigurationLifecycleAction action, const std::string& user_text,
+    const ConversationState& state, RDK::UApplication* app, const ULLMToolRegistry& registry)
+{
+    auto args_ready = [&](const nlohmann::json& merged) -> bool {
+        if(!merged.contains("index") && !merged.contains("configuration_path"))
+            return false;
+        if(findMissingLifecycleFields("open_recent_configuration", merged, app).empty())
+            return true;
+        return false;
+    };
+
+    auto finalize = [&](nlohmann::json merged) -> std::optional<nlohmann::json> {
+        if(!merged.contains("if_open_project"))
+            merged["if_open_project"] = "close";
+        if(!args_ready(merged))
+            return std::nullopt;
+        if(app && !findMissingArgumentsForTool("open_recent_configuration", merged, app, registry).empty())
+            return std::nullopt;
+        return merged;
+    };
+
+    if(state.pending_tool_arguments
+       && state.pending_tool_arguments->tool_name == "open_recent_configuration")
+    {
+        PendingToolArguments pending = *state.pending_tool_arguments;
+        return finalize(mergeArgumentsFromUserText(pending, user_text, app));
+    }
+
+    const bool open_recent_intent =
+        (action == ConfigurationLifecycleAction::Load && wantsRecentConfiguration(user_text))
+        || isBareRecentListIndexFollowUp(user_text, state);
+    if(!open_recent_intent)
+        return std::nullopt;
+
+    PendingToolArguments bootstrap;
+    bootstrap.tool_name = "open_recent_configuration";
+    bootstrap.action = ConfigurationLifecycleAction::Load;
+    bootstrap.partial_arguments = nlohmann::json{{"if_open_project", "close"}, {"index", 1}};
+    nlohmann::json merged = mergeArgumentsFromUserText(bootstrap, user_text, app);
+    if(!merged.contains("index") && !merged.contains("configuration_path"))
+        merged["index"] = 1;
+    return finalize(std::move(merged));
 }
 
 std::optional<PendingToolArguments>

@@ -336,9 +336,20 @@ void RegisterApplicationTools(ULLMToolRegistry& registry)
                 return invokeApplicationTool(activeSink(),
                                              [&]() { return commands().openRecentConfiguration(idx, if_open); });
             }
-            const std::string path = args.at("configuration_path").get<std::string>();
-            return invokeApplicationTool(activeSink(),
-                                         [&]() { return commands().openRecentConfigurationByPath(path, if_open); });
+            if(args.contains("configuration_path") && args["configuration_path"].is_string()
+               && !args["configuration_path"].get<std::string>().empty())
+            {
+                const std::string path = args["configuration_path"].get<std::string>();
+                return invokeApplicationTool(
+                    activeSink(),
+                    [&]() { return commands().openRecentConfigurationByPath(path, if_open); });
+            }
+            ToolGatewayResult r;
+            r.ok = false;
+            r.error_code = "ARGS_REQUIRED";
+            r.message =
+                "open_recent_configuration requires index (1 = most recent) or configuration_path.";
+            return r;
         });
 
     registry.registerTool(

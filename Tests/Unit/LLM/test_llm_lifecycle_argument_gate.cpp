@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "Orchestrator/ULLMLifecycleArgumentGate.h"
+#include "Session/ULLMConversationStore.h"
 #include "Tools/ULLMToolRegistry.h"
 
 using namespace RDK::LLM;
@@ -88,6 +89,36 @@ TEST(LLMLifecycleArgumentGate, PendingOpenRecentFromConfigurationList)
     ASSERT_TRUE(pending.has_value());
     EXPECT_EQ(pending->tool_name, "open_recent_configuration");
     EXPECT_EQ(pending->disambiguation_candidates.size(), 2u);
+}
+
+TEST(LLMLifecycleArgumentGate, TryBuildOpenRecentFromLastConfigPhrase)
+{
+    ConversationState state;
+    ULLMToolRegistry registry;
+    const std::optional<nlohmann::json> args = tryBuildOpenRecentInvokeArguments(
+        ConfigurationLifecycleAction::Load, "открой последний конфиг", state, nullptr, registry);
+    ASSERT_TRUE(args.has_value());
+    EXPECT_EQ(args->value("index", 0), 1);
+}
+
+TEST(LLMLifecycleArgumentGate, TryBuildOpenRecentFromBareIndexFollowUp)
+{
+    ConversationState state;
+    LLMMessage user;
+    user.role = LLMMessage::Role::User;
+    user.content = "открой последний конфиг";
+    state.messages.push_back(user);
+    LLMMessage assistant;
+    assistant.role = LLMMessage::Role::Assistant;
+    assistant.content = "Choose 1 or 2 for recent configurations.";
+    state.messages.push_back(assistant);
+
+    ULLMToolRegistry registry;
+    const std::optional<nlohmann::json> args =
+        tryBuildOpenRecentInvokeArguments(ConfigurationLifecycleAction::None, "1", state, nullptr,
+                                          registry);
+    ASSERT_TRUE(args.has_value());
+    EXPECT_EQ(args->value("index", 0), 1);
 }
 
 TEST(LLMLifecycleArgumentGate, MergeOpenRecentFromLastConfigPhrase)
