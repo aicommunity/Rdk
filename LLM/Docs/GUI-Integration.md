@@ -117,7 +117,7 @@ void RegisterLlmUi(UGEngineControlWidget* host,
 | Run plan | `confirmPlanExecution()` |
 | Resume / Rollback plan | После checkpoint (`resumePlanExecution` / `rollbackPlanExecution`); UI показывает `LLMFinalResponse.rollback_status` (`rolled_back`, `partial_rollback`, `rollback_failed`, …) |
 | Apply / Reject | `confirmPending()` / `rejectPending()` (skipped when auto-apply enabled) |
-| Settings | **Allow LLM write tools**; **Apply write tools automatically** (`LLM/llm_auto_apply_writes`); **Autonomous mode** (`LLM/autonomous_mode`: off / strict / semi_auto) |
+| Settings | **Allow LLM write tools**; **Apply write tools automatically** (`LLM/llm_auto_apply_writes`); **Context acquisition** (`LLM/context_acquisition_mode`: `auto` / `minimal`); **Autonomous mode** (`LLM/autonomous_mode`: off / strict / semi_auto) |
 
 **Потоки:** orchestrator в `QThread` worker или `QtConcurrent::run` + signals `finished` — **запрещено** блокировать GUI на curl/LLM.
 

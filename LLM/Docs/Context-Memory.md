@@ -43,7 +43,7 @@ Signals come from `buildContextAcquisitionSignals` (intent, mutate subkind, conn
 
 **Retriever (DD-CTX-004):** `URdkContextRetriever` runs when the user has **list focus** (`focused_class_name` / `focused_component_long_name`) or **diagram scope** is set (`diagram_scope_long_name` on the modern diagram widget). On a loaded project, diagram scope alone is enough for a subtree snapshot without selecting a component in the list.
 
-**Doc prefetch (DD-CTX-003):** enabled for Query when `NMSDK_LLM_QUERY_PREFETCH_DOCS=1`; for Mutate only when `NMSDK_LLM_CONTEXT_PREFETCH_DOCS=1` (both off by default).
+**Doc prefetch (DD-CTX-003):** Query turns prefetch when `retrieval_query` is non-empty. Mutate turns prefetch in **Auto** acquisition mode (or when `NMSDK_LLM_CONTEXT_PREFETCH_DOCS=1`). Legacy Query-only env `NMSDK_LLM_QUERY_PREFETCH_DOCS=1` still applies in the orchestrator fallback path.
 
 Index-backed catalog blocks (`ULLMIndexCatalogs`, `ULLMContextKnowledgeBlocks`) are merged in the assembler for connect/add goals without hardcoded component paths in Core.
 

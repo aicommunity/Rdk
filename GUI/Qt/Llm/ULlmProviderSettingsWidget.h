@@ -48,6 +48,7 @@ private:
     QComboBox* m_response_language = nullptr;
     QComboBox* m_send_shortcut = nullptr;
     QComboBox* m_task_path_mode = nullptr;
+    QComboBox* m_context_acquisition_mode = nullptr;
     QLabel* m_status = nullptr;
 };
 

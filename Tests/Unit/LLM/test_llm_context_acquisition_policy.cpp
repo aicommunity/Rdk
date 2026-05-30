@@ -42,6 +42,28 @@ TEST(LLMContextAcquisitionPolicy, MinimalModeDisablesInjection)
     EXPECT_FALSE(plan.prefetch_snapshot);
 }
 
+TEST(LLMContextAcquisitionPolicy, PrefetchDocsMutateInAutoMode)
+{
+    ConversationState state;
+    LLMSessionContext session;
+    session.project_loaded = true;
+
+    ContextAcquisitionSignals signals;
+    signals.intent = LLMIntentKind::Mutate;
+    signals.mutate_subkind = MutateSubkind::Connect;
+    signals.retrieval_query = "connect neurons";
+
+    const ContextAcquisitionPlan auto_plan =
+        computeContextAcquisitionPlan(state, session, LLMGuiContextSnapshot{}, signals,
+                                      LLMContextAcquisitionMode::Auto);
+    EXPECT_TRUE(auto_plan.prefetch_docs);
+
+    const ContextAcquisitionPlan minimal_plan =
+        computeContextAcquisitionPlan(state, session, LLMGuiContextSnapshot{}, signals,
+                                      LLMContextAcquisitionMode::Minimal);
+    EXPECT_FALSE(minimal_plan.prefetch_docs);
+}
+
 TEST(LLMContextAcquisitionPolicy, PrefetchSnapshotWithDiagramScope)
 {
     ConversationState state;

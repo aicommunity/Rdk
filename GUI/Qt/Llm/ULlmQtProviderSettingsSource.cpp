@@ -210,6 +210,13 @@ RDK::LLM::LLMRuntimeProviderSettings ULlmQtProviderSettingsSource::load() const
                                 ? RDK::LLM::LLMSendShortcutMode::Enter
                                 : RDK::LLM::LLMSendShortcutMode::CtrlEnter;
 
+    const QString acquisition =
+        settings.value(QStringLiteral("LLM/context_acquisition_mode"), QStringLiteral("auto"))
+            .toString();
+    runtime.context_acquisition_mode =
+        acquisition == QStringLiteral("minimal") ? RDK::LLM::LLMContextAcquisitionMode::Minimal
+                                               : RDK::LLM::LLMContextAcquisitionMode::Auto;
+
     for(const RDK::LLM::LLMProviderProfile& profile : RDK::LLM::ULLMProviderCatalog::builtInProfiles())
         loadProfileKeys(settings, runtime, profile);
     return runtime;
@@ -252,6 +259,10 @@ void ULlmQtProviderSettingsSource::save(const RDK::LLM::LLMRuntimeProviderSettin
                        settings.send_shortcut == RDK::LLM::LLMSendShortcutMode::Enter
                            ? QStringLiteral("enter")
                            : QStringLiteral("ctrl_enter"));
+    qsettings.setValue(QStringLiteral("LLM/context_acquisition_mode"),
+                       settings.context_acquisition_mode == RDK::LLM::LLMContextAcquisitionMode::Minimal
+                           ? QStringLiteral("minimal")
+                           : QStringLiteral("auto"));
 
     for(const auto& entry : settings.api_keys_by_profile_id)
     {

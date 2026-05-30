@@ -140,11 +140,14 @@ ContextAcquisitionPlan computeContextAcquisitionPlan(const ConversationState& st
                                 && !acq_signals.from_class.empty() && !acq_signals.to_class.empty();
     plan.inject_connect_semantics = plan.inject_link_patterns;
 
-    const bool prefetch_docs_env = envFlagEnabled("NMSDK_LLM_CONTEXT_PREFETCH_DOCS");
+    const bool mutate_prefetch_env = envFlagEnabled("NMSDK_LLM_CONTEXT_PREFETCH_DOCS");
+    const bool mutate_prefetch_auto =
+        mode == LLMContextAcquisitionMode::Auto && acq_signals.intent == LLMIntentKind::Mutate;
     plan.prefetch_docs =
         !acq_signals.retrieval_query.empty()
         && (acq_signals.intent == LLMIntentKind::Query
-            || (acq_signals.intent == LLMIntentKind::Mutate && prefetch_docs_env));
+            || (acq_signals.intent == LLMIntentKind::Mutate
+                && (mutate_prefetch_auto || mutate_prefetch_env)));
 
     plan.max_known_facts = 12;
     return plan;

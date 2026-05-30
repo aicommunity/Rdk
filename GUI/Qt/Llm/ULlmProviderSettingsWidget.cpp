@@ -88,6 +88,19 @@ ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UAp
     m_task_path_mode->setToolTip(task_path_label->toolTip());
     layout->addWidget(m_task_path_mode);
 
+    m_context_acquisition_mode = new QComboBox(this);
+    m_context_acquisition_mode->addItem(
+        tr("Auto (link hints, snapshot, doc prefetch on mutate)"), QStringLiteral("auto"));
+    m_context_acquisition_mode->addItem(
+        tr("Minimal (bootstrap only, lower token use)"), QStringLiteral("minimal"));
+    auto* acquisition_label = new QLabel(tr("Context acquisition:"), this);
+    acquisition_label->setToolTip(
+        tr("Auto injects index-backed connect hints and may prefetch documentation snippets "
+           "before mutate turns. Minimal keeps only session bootstrap."));
+    layout->addWidget(acquisition_label);
+    m_context_acquisition_mode->setToolTip(acquisition_label->toolTip());
+    layout->addWidget(m_context_acquisition_mode);
+
     m_translate_queries_to_en =
         new QCheckBox(tr("Translate non-English requests to English (planning only)"), this);
     layout->addWidget(m_translate_queries_to_en);
@@ -182,6 +195,13 @@ void ULlmProviderSettingsWidget::loadFromStore()
             : QStringLiteral("hint_only");
     const int task_path_index = m_task_path_mode->findData(task_path);
     m_task_path_mode->setCurrentIndex(task_path_index >= 0 ? task_path_index : 0);
+
+    const QString acquisition =
+        store.runtime().context_acquisition_mode == RDK::LLM::LLMContextAcquisitionMode::Minimal
+            ? QStringLiteral("minimal")
+            : QStringLiteral("auto");
+    const int acquisition_index = m_context_acquisition_mode->findData(acquisition);
+    m_context_acquisition_mode->setCurrentIndex(acquisition_index >= 0 ? acquisition_index : 0);
 
     onProfileChanged(select_index);
 }
@@ -363,6 +383,10 @@ void ULlmProviderSettingsWidget::saveToStore()
     store.setTaskPathMode(m_task_path_mode->currentData().toString() == QStringLiteral("fast_path")
                               ? RDK::LLM::LLMTaskPathMode::FastPath
                               : RDK::LLM::LLMTaskPathMode::HintOnly);
+    store.setContextAcquisitionMode(
+        m_context_acquisition_mode->currentData().toString() == QStringLiteral("minimal")
+            ? RDK::LLM::LLMContextAcquisitionMode::Minimal
+            : RDK::LLM::LLMContextAcquisitionMode::Auto);
     store.save();
     RDK::LLM::LLMServices::instance().applyActiveProvider();
 }
