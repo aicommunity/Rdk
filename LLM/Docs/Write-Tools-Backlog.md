@@ -6,7 +6,7 @@ MVP/post-MVP план закрыт. Дальше: **довести write-tools �
 
 | Tool | Статус | Реализация / тесты |
 |------|--------|-------------------|
-| `add_component` | done | `parent_long_name` → `MModel_AddComponent`; `Test_LLM_WriteToolsP1` |
+| `add_component` | done | `parent_long_name` → `GetComponentL` + `TakeObject`/`AddComponent` (engine lock); `Test_LLM_WriteToolsEngine` |
 | `set_property` | done | `ULLMWriteToolPolicy` low-risk props без HITL |
 | `remove_component` | done | Plan compensation TD-018/020; gateway HITL |
 | `connect_components` | done | `MModel_CreateLinkByName`; schema fixture |

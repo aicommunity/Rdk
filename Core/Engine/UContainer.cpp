@@ -746,18 +746,6 @@ const UId& UContainer::GetComponentId(const NameT &name, bool no_throw) const
  {
   if(no_throw)
    return ForbiddenId;
-  // Диагностика отсутствующего компонента по имени через глобальный логгер
-  try
-  {
-   RDK::UEPtr<RDK::UExceptionLogger> logger = RDK::GetLogger();
-   if (logger)
-   {
-    std::ostringstream oss;
-    oss << "UContainer::GetComponentId: Component name not found in CompsLookupTable: '" << name << "'";
-    logger->LogMessageEx(RDK_EX_ERROR, "UContainer", oss.str());
-   }
-  }
-  catch (...) {}
   RDK_THROW(EComponentNameNotExist(name));
  }
 

@@ -48,6 +48,7 @@
 #include <sstream>
 #include "UClassDescriptionDisplay.h"
 #include "UQuickLinkDialog.h"
+#include "UEngineSelectionSync.h"
 #include "../Core/Engine/UStorage.h"
 #include "../Core/Engine/UEngine.h"
 #include "../Core/Engine/UNet.h"
@@ -205,6 +206,11 @@ void UModernDiagramWidget::requestOpenProjectDescription()
 
 void UModernDiagramWidget::Reload()
 {
+    RDK::UELockPtr<RDK::UContainer> modelLock =
+        RDK::GetModelLock<RDK::UContainer>(Core_GetSelectedChannelIndex());
+    if(!modelLock)
+        return;
+
     // Профилирование: начало операции Reload
     // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
     // QString componentDisplayName = m_componentName.isEmpty() ? "root" : m_componentName;
@@ -224,10 +230,8 @@ void UModernDiagramWidget::Reload()
         const UModernDiagramSceneCache& cache = m_cacheManager->getLevelCache(m_componentName);
 
         // Проверяем, изменилась ли структура компонентов
-        const char* compRaw = Model_GetComponentsNameList(m_componentName.toStdString().c_str());
-        QString compListStr = QString::fromUtf8(compRaw ? compRaw : "");
-        QStringList currentComponents = compListStr.split(",", Qt::SkipEmptyParts);
-        Engine_FreeBufString(compRaw);
+        const QStringList currentComponents =
+            childComponentShortNamesFromModelScope(Core_GetSelectedChannelIndex(), m_componentName);
 
         // Сравниваем списки компонентов
         bool structureChanged = (currentComponents.size() != cache.componentNames.size());
@@ -414,11 +418,7 @@ void UModernDiagramWidget::clearScene()
 
 QStringList UModernDiagramWidget::loadComponentList() const
 {
-    const char* compRaw = Model_GetComponentsNameList(m_componentName.toStdString().c_str());
-    QString compListStr = QString::fromUtf8(compRaw ? compRaw : "");
-    QStringList components = compListStr.split(",", Qt::SkipEmptyParts);
-    Engine_FreeBufString(compRaw);
-    return components;
+    return childComponentShortNamesFromModelScope(Core_GetSelectedChannelIndex(), m_componentName);
 }
 
 QPointF UModernDiagramWidget::loadAndCacheCoordinates(const QStringList& components, bool& coordsLoaded,
@@ -511,9 +511,7 @@ void UModernDiagramWidget::createNodes(const QStringList& components, const QHas
         }
         else
         {
-            const char* clsRaw = Model_GetComponentClassName(fullName.toStdString().c_str());
-            cls = QString::fromUtf8(clsRaw ? clsRaw : "");
-            Engine_FreeBufString(clsRaw);
+            cls = componentClassNameFromModelScope(Core_GetSelectedChannelIndex(), fullName);
             classNameCache[fullName] = cls;
 
             // Сохраняем имя класса в сессионный кэш
@@ -555,7 +553,8 @@ void UModernDiagramWidget::createNodes(const QStringList& components, const QHas
             QString logMsg3 = QString("[UModernDiagramWidget::buildScene] Component '%1': coordinates not loaded, using grid: loaded=(%2, %3)")
                 .arg(fullName)
                 .arg(loaded.x()).arg(loaded.y());
-            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg3.toStdString().c_str(), 0);
+            const QByteArray logMsg3Utf8 = logMsg3.toUtf8();
+            MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg3Utf8.constData(), 0);
         }
 
         nodesToAdd.append(node);
@@ -659,10 +658,8 @@ UModernDiagramNodeItem* UModernDiagramWidget::addSingleComponent(const QString& 
         return m_nodeByName.value(shortName);
     }
 
-    // Получаем имя класса
-    const char* clsRaw = Model_GetComponentClassName(fullName.toStdString().c_str());
-    QString cls = QString::fromUtf8(clsRaw ? clsRaw : "");
-    Engine_FreeBufString(clsRaw);
+    const QString cls =
+        componentClassNameFromModelScope(Core_GetSelectedChannelIndex(), fullName);
 
     // Загружаем координаты из ядра
     QPointF kernelPos;
@@ -786,8 +783,9 @@ void UModernDiagramWidget::buildLinks()
     if(m_mainView)
         m_mainView->setUpdatesEnabled(false);
 
-    const char* xmlRaw = Model_GetComponentInternalLinks(m_componentName.toStdString().c_str(), nullptr);
-    if(!xmlRaw)
+    const std::string linksXml =
+        internalLinksXmlFromModelScope(Core_GetSelectedChannelIndex(), m_componentName);
+    if(linksXml.empty())
     {
         setUpdatesEnabled(updatesWereEnabled);
         if(m_mainView)
@@ -799,13 +797,9 @@ void UModernDiagramWidget::buildLinks()
         // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
         return;
     }
-    std::string raw(xmlRaw ? xmlRaw : "");
-    // Удалено избыточное логирование - создавало спам в INFO логах
-
     RDK::USerStorageXML xml;
-    if(!xml.Load(raw, "Links"))
+    if(!xml.Load(linksXml, "Links"))
     {
-        Engine_FreeBufString(xmlRaw);
         setUpdatesEnabled(updatesWereEnabled);
         if(m_mainView)
             m_mainView->setUpdatesEnabled(updatesWereEnabled);
@@ -819,7 +813,6 @@ void UModernDiagramWidget::buildLinks()
 
     RDK::UStringLinksList linkslist;
     xml >> linkslist;
-    Engine_FreeBufString(xmlRaw);
     // Удалено избыточное логирование - создавало спам в INFO логах
 
     // Обновляем имя телеметрии с количеством связей
@@ -1141,14 +1134,10 @@ void UModernDiagramWidget::buildLinks()
                     // Если у srcNode есть дочерний компонент с таким именем, это Child
                     // Иначе это Own (связь к собственному порту внешнего компонента)
                     QString fullName = m_componentName.isEmpty() ? srcNode->nodeName : m_componentName + "." + srcNode->nodeName;
-                    const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
-                    bool isChild = false;
-                    if(compList)
-                    {
-                        QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
-                        isChild = components.contains(firstPart);
-                        Engine_FreeBufString(compList);
-                    }
+                    const QStringList components =
+                        childComponentShortNamesFromModelScope(Core_GetSelectedChannelIndex(),
+                                                               fullName);
+                    const bool isChild = components.contains(firstPart);
                     dstCategory = isChild ? PortCategory::Child : PortCategory::Own;
                 }
                 else

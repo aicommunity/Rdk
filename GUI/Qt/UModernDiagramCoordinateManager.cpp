@@ -1,4 +1,5 @@
 #include "UModernDiagramCoordinateManager.h"
+#include "UEngineSelectionSync.h"
 #include "UModernDiagramWidget.h"
 #include "UModernDiagramNodeItem.h"
 #include "UModernDiagramCacheManager.h" // For UModernDiagramComponentCacheEntry
@@ -6,6 +7,7 @@
 #include <sstream>
 #include <QDateTime>
 #include "../../Deploy/Include/rdk_init.h"
+#include "../../Deploy/Include/rdk_cpp_init.h"
 #include "../Core/Engine/UEngine.h"
 #include "../Core/Engine/UXMLEnvSerialize.h"
 #include "UGuiTelemetry.h"
@@ -39,8 +41,13 @@ QPointF UModernDiagramCoordinateManager::kernelPosFromScene(const QPointF& scene
 
 bool UModernDiagramCoordinateManager::loadCoord(const QString& fullName, QPointF& outPos) const
 {
-    const char* coordRaw = Model_GetComponentParameterValue(fullName.toStdString().c_str(), "Coord");
-    if(!coordRaw)
+    RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock<RDK::UContainer>(Core_GetSelectedChannelIndex());
+    if(!model)
+        return false;
+
+    std::string coordBuf;
+    if(!propertyValueFromModelScope(model.Get(), fullName, QByteArrayLiteral("Coord"), coordBuf)
+       || coordBuf.empty())
     {
         // DEBUG: Commented out to reduce log flood
         // QString logMsg = QString("[UModernDiagramCoordinateManager::loadCoord] Coordinates not found for '%1'")
@@ -48,7 +55,6 @@ bool UModernDiagramCoordinateManager::loadCoord(const QString& fullName, QPointF
         // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
         return false;
     }
-    std::string coordBuf(coordRaw);
     // fallback: если пришла строка "x y z" без XML
     {
         std::istringstream iss(coordBuf);
@@ -56,21 +62,12 @@ bool UModernDiagramCoordinateManager::loadCoord(const QString& fullName, QPointF
         if(iss >> x >> y >> z)
         {
             QPointF kernel(x,y);
-            outPos = kernel; // возвращаем ядровые координаты, сцену вычисляем выше
-
-            // DEBUG: Commented out to reduce log flood - Logging for debugging coordinate loading
-            // QString logMsg = QString("[UModernDiagramCoordinateManager::loadCoord] Loaded coordinates for '%1' (string): kernel=(%2, %3)")
-            //     .arg(fullName)
-            //     .arg(kernel.x()).arg(kernel.y());
-            // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
-
-            Engine_FreeBufString(coordRaw);
+            outPos = kernel;
             return true;
         }
     }
     RDK::USerStorageXML xml;
     bool ok = xml.Load(coordBuf, "Coord");
-    Engine_FreeBufString(coordRaw);
     if(!ok)
     {
         // DEBUG: Commented out to reduce log flood
@@ -117,7 +114,10 @@ void UModernDiagramCoordinateManager::saveCoord(const QString& fullName, const Q
     xml << posVec;
     std::string buffer;
     xml.Save(buffer);
-    Model_SetComponentParameterValue(fullName.toStdString().c_str(), "Coord", buffer.c_str());
+
+    RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock<RDK::UContainer>(Core_GetSelectedChannelIndex());
+    if(model)
+        setPropertyValueFromModelScope(model.Get(), fullName, QByteArrayLiteral("Coord"), buffer);
 
     // Update cache with new coordinates so buildScene() uses fresh data on next load
     // m_componentCache is mutable, so we can modify it in this const method

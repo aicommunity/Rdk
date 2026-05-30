@@ -14,6 +14,7 @@
 #include <QLineEdit>
 #include <QDialog>
 #include "../../Deploy/Include/rdk_init.h"
+#include "../../Deploy/Include/rdk_cpp_init.h"
 #include "../Core/Engine/UEngine.h"
 #include "rdk_application.h"
 
@@ -517,12 +518,16 @@ void UModernDiagramContextMenu::componentDefault()
     }
 
     RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock();
-    std::string stringid = selectedComponentLongName.toLocal8Bit().constData();
+    RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock<RDK::UContainer>(Core_GetSelectedChannelIndex());
+    if(!storage || !model)
+        return;
+
     RDK::UEPtr<RDK::UNet> object;
-    if(stringid.empty())
-        object = RDK::dynamic_pointer_cast<RDK::UNet>(RDK::GetModel());
+    const QByteArray path = selectedComponentLongName.trimmed().toUtf8();
+    if(path.isEmpty())
+        object = RDK::dynamic_pointer_cast<RDK::UNet>(RDK::UEPtr<RDK::UContainer>(model.Get()));
     else
-        object = RDK::dynamic_pointer_cast<RDK::UNet>(RDK::GetEngine()->FindComponent(stringid.c_str()));
+        object = RDK::dynamic_pointer_cast<RDK::UNet>(model->GetComponentL(path.constData(), true));
 
     RDK::UEPtr<RDK::UNet> owner = RDK::dynamic_pointer_cast<RDK::UNet>(object->GetOwner());
     RDK::UStringLinksList links_list;

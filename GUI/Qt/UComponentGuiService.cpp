@@ -8,6 +8,7 @@
 #include <QDebug>
 
 #include "../../Deploy/Include/rdk_cpp_init.h"
+#include "../../Deploy/Include/rdk_engine_support.h"
 #include "UVisualControllerWidget.h"
 #include "UComponentGuiTabHostWidget.h"
 
@@ -18,11 +19,14 @@ QString resolveComponentGuiTitle(const UComponentGuiContext& context)
     if(!context.componentLongName.trimmed().isEmpty())
         return context.componentLongName;
 
-    if(auto model = RDK::GetModel())
+    if(RDK::UELockPtr<RDK::UContainer> modelLock = RDK::GetModelLock())
     {
-        const std::string modelName = model->GetName();
-        if(!modelName.empty())
-            return QString::fromStdString(modelName);
+        if(RDK::UContainer* model = modelLock.Get())
+        {
+            const std::string modelName = model->GetName();
+            if(!modelName.empty())
+                return QString::fromStdString(modelName);
+        }
     }
 
     return QStringLiteral("NModel");
@@ -700,11 +704,14 @@ QString UComponentGuiService::makeSessionKeyFromContext(const UComponentGuiConte
     QString longName = context.componentLongName.trimmed();
     if(!longName.isEmpty())
         return longName;
-    if(auto model = RDK::GetModel())
+    if(RDK::UELockPtr<RDK::UContainer> modelLock = RDK::GetModelLock())
     {
-        const std::string name = model->GetName();
-        if(!name.empty())
-            return QString::fromStdString(name);
+        if(RDK::UContainer* model = modelLock.Get())
+        {
+            const std::string name = model->GetName();
+            if(!name.empty())
+                return QString::fromStdString(name);
+        }
     }
     return QStringLiteral("NModel");
 }

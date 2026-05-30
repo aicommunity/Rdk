@@ -28,6 +28,10 @@ AddParentResolution resolveValidAddParent(URdkDomainAccess& domain, const std::s
                                           const std::string& class_name, int channel_index,
                                           const LLMGuiContextSnapshot& pin);
 
+/// Legacy hook; returns canonical full parent path (identity). LLM add uses GetComponentL paths.
+std::string engineContainerStringId(const std::string& parent_long_name,
+                                  const LLMGuiContextSnapshot* gui);
+
 } // namespace RDK::LLM
 
 #endif

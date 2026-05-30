@@ -11,6 +11,7 @@
 #include "ULLMConnectPortInference.h"
 #include "ULLMAddParentResolution.h"
 #include "ULLMCurrentComponentScope.h"
+#include "../Orchestrator/ULLMQuantityParser.h"
 #include "../Session/ULLMGuiTurnPin.h"
 #include "ULLMNameResolution.h"
 #include "../Orchestrator/ULLMConnectPlanParsing.h"
@@ -59,7 +60,7 @@ void fillAddComponentDefaults(nlohmann::json& args,
     if(!args.contains("parent_long_name"))
         args["parent_long_name"] = "";
     std::string& parent = args["parent_long_name"].get_ref<std::string&>();
-    if(parent.empty())
+    if(parent.empty() || isModelRootContainerToken(parent, gui_fallback))
     {
         const std::string diagram_scope = readDiagramScopeLongName(gui_fallback);
         if(!diagram_scope.empty())
@@ -67,7 +68,7 @@ void fillAddComponentDefaults(nlohmann::json& args,
         else
         {
             const CurrentComponentScope scope = readCurrentComponentScope(gui_fallback);
-            if(scope.valid)
+            if(scope.valid && !isModelRootContainerToken(scope.long_name, gui_fallback))
                 parent = scope.long_name;
         }
     }
@@ -81,9 +82,15 @@ void fillAddComponentDefaults(nlohmann::json& args,
     if(!args.contains("short_name") || !args["short_name"].is_string()
        || args["short_name"].get<std::string>().empty())
     {
-        std::string sn = cn;
-        if(!sn.empty() && sn[0] == 'N')
-            sn.erase(sn.begin());
+        std::string sn;
+        if(cn.size() > 2 && cn.compare(0, 2, "NS") == 0)
+            sn = cn.substr(2);
+        else
+        {
+            sn = cn;
+            if(!sn.empty() && sn[0] == 'N')
+                sn.erase(sn.begin());
+        }
         if(sn.empty())
             sn = "Component1";
         args["short_name"] = sn;
@@ -264,7 +271,7 @@ bool normalizeAddComponentArguments(nlohmann::json& args, URdkDomainAccess& doma
             }
             return false;
         }
-        if(parent_res.ok && !parent_res.parent_long_name.empty())
+        if(parent_res.ok)
             args["parent_long_name"] = parent_res.parent_long_name;
     }
 
@@ -631,7 +638,11 @@ std::optional<PreparedAddComponentInvoke> tryPrepareAddComponentDirect(
     WriteArgumentNormalizeResult norm =
         normalizeWriteToolArguments("add_component", args, domain, channel_index, user_text, nullptr);
     PreparedAddComponentInvoke prepared;
-    prepared.repeat_count = std::max(1, repeat_count);
+    int effective_repeat = std::max(1, repeat_count);
+    const ParsedQuantity from_text = extractQuantityHeuristic(user_text);
+    if(from_text.valid && from_text.count > effective_repeat)
+        effective_repeat = std::min(from_text.count, 32);
+    prepared.repeat_count = effective_repeat;
     prepared.arguments = norm.normalized_arguments;
 
     if(norm.needs_clarification)
@@ -662,7 +673,7 @@ std::optional<PreparedAddComponentInvoke> tryPrepareAddComponentDirect(
         }
         return prepared;
     }
-    if(parent_res.ok && !parent_res.parent_long_name.empty())
+    if(parent_res.ok)
         prepared.arguments["parent_long_name"] = parent_res.parent_long_name;
     if(!prepared.arguments.contains("class_name")
        || !prepared.arguments.contains("parent_long_name")

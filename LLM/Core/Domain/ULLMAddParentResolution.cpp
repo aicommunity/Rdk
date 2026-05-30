@@ -6,18 +6,13 @@ namespace RDK::LLM {
 
 namespace {
 
-bool isRootModelParent(const std::string& parent)
-{
-    return parent.empty() || parent == "Model";
-}
-
 std::string preferredScopeParent(const LLMGuiContextSnapshot& pin)
 {
     const std::string diagram = readDiagramScopeLongName(&pin);
-    if(!diagram.empty() && !isRootModelParent(diagram))
+    if(!diagram.empty())
         return diagram;
     const CurrentComponentScope cur = readCurrentComponentScope(&pin);
-    if(cur.valid && !isRootModelParent(cur.long_name))
+    if(cur.valid && !isModelRootContainerToken(cur.long_name, &pin))
         return cur.long_name;
     return {};
 }
@@ -32,14 +27,14 @@ std::vector<AddParentCandidate> listContainerCandidatesUnderScope(URdkDomainAcce
     if(!st.ok() || !snap.contains("components"))
         return out;
 
-    const std::string prefix = scope.empty() || isRootModelParent(scope) ? std::string()
-                                                                         : scope + ".";
+    const std::string prefix =
+        scope.empty() || isModelRootContainerToken(scope, nullptr) ? std::string() : scope + ".";
     for(const auto& c : snap["components"])
     {
         const std::string ln = c.value("long_name", "");
         if(ln.empty())
             continue;
-        if(!scope.empty() && !isRootModelParent(scope))
+        if(!scope.empty() && !isModelRootContainerToken(scope, nullptr))
         {
             if(ln != scope && ln.rfind(prefix, 0) != 0)
                 continue;
@@ -54,6 +49,12 @@ std::vector<AddParentCandidate> listContainerCandidatesUnderScope(URdkDomainAcce
 
 } // namespace
 
+std::string engineContainerStringId(const std::string& parent_long_name,
+                                    const LLMGuiContextSnapshot* /*gui*/)
+{
+    return parent_long_name;
+}
+
 AddParentResolution resolveValidAddParent(URdkDomainAccess& domain, const std::string& parent_hint,
                                           const std::string& class_name, int channel_index,
                                           const LLMGuiContextSnapshot& pin)
@@ -62,17 +63,13 @@ AddParentResolution resolveValidAddParent(URdkDomainAccess& domain, const std::s
     (void)class_name;
 
     std::string parent = parent_hint;
-    if(parent.empty())
+    const std::string diagram_scope = readDiagramScopeLongName(&pin);
+    if(!diagram_scope.empty() && (parent.empty() || parent == "Model"))
+        parent = diagram_scope;
+    else if(parent.empty() || isModelRootContainerToken(parent, &pin))
         parent = preferredScopeParent(pin);
 
-    if(isRootModelParent(parent))
-    {
-        const std::string scoped = preferredScopeParent(pin);
-        if(!scoped.empty())
-            parent = scoped;
-    }
-
-    if(!parent.empty() && !isRootModelParent(parent))
+    if(!parent.empty() && !isModelRootContainerToken(parent, &pin))
     {
         std::string resolved;
         const std::string scope = readDiagramScopeLongName(&pin);
@@ -85,7 +82,7 @@ AddParentResolution resolveValidAddParent(URdkDomainAccess& domain, const std::s
         }
     }
 
-    if(isRootModelParent(parent))
+    if(parent.empty() || isModelRootContainerToken(parent, &pin))
     {
         const std::string scope = readDiagramScopeLongName(&pin);
         const std::vector<AddParentCandidate> candidates =
@@ -106,7 +103,7 @@ AddParentResolution resolveValidAddParent(URdkDomainAccess& domain, const std::s
     }
 
     res.ok = true;
-    res.parent_long_name = parent.empty() ? std::string("Model") : parent;
+    res.parent_long_name = parent;
     return res;
 }
 

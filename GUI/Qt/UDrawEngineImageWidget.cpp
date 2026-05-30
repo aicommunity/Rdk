@@ -1,4 +1,5 @@
 #include "UDrawEngineImageWidget.h"
+#include "UEngineSelectionSync.h"
 #include "UQuickLinkDialog.h"
 #include "UStyleManager.h"
 
@@ -409,7 +410,7 @@ void UDrawEngineImageWidget::dropEvent(QDropEvent *event)
 
     if (event->mimeData()->hasFormat("Component"))
     {
-        const char* pname = Model_AddComponent(ComponentName.toLocal8Bit(), classname.toLocal8Bit());
+        const char* pname = Model_AddComponent("", classname.toLocal8Bit());
         if(pname)
         {
             std::string name=pname;
@@ -798,9 +799,8 @@ void UDrawEngineImageWidget::componentGUI()
         return;
     }
 
-    const char* classNameRaw = Model_GetComponentClassName(selectedComponentLongName.toLocal8Bit().constData());
-    const QString componentClassName = classNameRaw ? QString::fromUtf8(classNameRaw) : QString();
-    Engine_FreeBufString(classNameRaw);
+    const QString componentClassName = componentClassNameFromModelScope(
+        Core_GetSelectedChannelIndex(), selectedComponentLongName);
 
     UComponentGuiContext context;
     context.componentLongName = selectedComponentLongName;

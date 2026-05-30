@@ -127,6 +127,11 @@ void appendAgentNote(ConversationState& state, const std::string& line)
 
 const char* kSessionBusyError = "Session busy: wait for the current request to finish.";
 
+void attachTurnToolTrace(const ConversationState& state, LLMFinalResponse& response)
+{
+    response.tool_trace = state.current_turn_tool_trace;
+}
+
 LLMGuiContextSnapshot guiSnapshotForWrite(const ConversationState& state,
                                           const LLMGuiContextSnapshot& fallback)
 {
@@ -833,6 +838,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 entity_user_text_hint);
             if(direct.ok && !direct.needs_argument_clarification && !direct.pending_confirmation)
                 m_store.clearPendingToolArguments(req.session_id);
+            attachTurnToolTrace(state, direct);
             return direct;
         }
         if(lifecycle_action == ConfigurationLifecycleAction::Load
@@ -896,15 +902,19 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                         req.session_id, req.trace_id, "add_component", rep_args, session,
                         entity_user_text_hint);
                     if(!one.ok)
+                    {
+                        attachTurnToolTrace(state, one);
                         return one;
+                    }
                     ++added;
                 }
-                LLMFinalResponse final;
-                final.ok = true;
-                final.text = "Added " + std::to_string(added) + " component(s)"
-                             + (class_name.empty() ? "." : (": " + class_name));
+                LLMFinalResponse batch_final;
+                batch_final.ok = true;
+                batch_final.text = "Added " + std::to_string(added) + " component(s)"
+                                   + (class_name.empty() ? "." : (": " + class_name));
                 m_store.clearPendingToolArguments(req.session_id);
-                return final;
+                attachTurnToolTrace(state, batch_final);
+                return batch_final;
             }
 
             LLMFinalResponse direct = invokeLifecycleToolDirect(
@@ -912,6 +922,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 entity_user_text_hint);
             if(direct.ok && !direct.needs_argument_clarification && !direct.pending_confirmation)
                 m_store.clearPendingToolArguments(req.session_id);
+            attachTurnToolTrace(state, direct);
             return direct;
         }
     }
@@ -933,6 +944,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 entity_user_text_hint);
             if(direct.ok && !direct.needs_argument_clarification && !direct.pending_confirmation)
                 m_store.clearPendingToolArguments(req.session_id);
+            attachTurnToolTrace(state, direct);
             return direct;
         }
     }

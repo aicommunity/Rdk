@@ -41,6 +41,7 @@ private:
     UGEngineControlWidget* m_host = nullptr;
     ULlmGuiContextBridge* m_bridge = nullptr;
     RDK::LLM::LLMPresentationEvent m_pending;
+    bool m_diagramRefreshQueued = false;
     mutable std::mutex m_host_mu;
     std::function<RDK::LLM::ApplicationCommandResult()> m_pending_host_run;
     RDK::LLM::ApplicationCommandResult m_pending_host_result{};

@@ -119,6 +119,8 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-135 | GuiTurnPin + resolveValidAddParent for add scope | 2026-05-30 | `active_turn_pin`, `ULLMAddParentResolution` |
 | TD-136 | Entity path canonicalize + presentation scope guard | 2026-05-30 | `x-llm-semantic`, `ULLMPresentationScopeGuard`, `pin_diagram_for_writes` |
 | TD-137 | Post-verify add uses gateway long_name only | 2026-05-30 | `verifyAddComponentEffect` early return on `long_name` |
+| TD-138 | Migrate `set_property` / `remove_component` / link writes off `MModel_*` to engine-lock + `GetComponentL` | post-model-firmata | P2 | open | `add_component` done 2026-05-29; remaining tools already pass **full** `long_name` to C API — no `Current` coupling |
+| TD-139 | Never call `refreshDiagramPresentation` while holding engine/model lock | post-model-firmata | P1 | done | Scoped lock in `addComponent`; `DiagramRefresh` uses `QueuedConnection`; diagram list via `childComponentShortNamesFromModelScope` |
 | TD-120 | Remove hardcoded connect paths in Core ephemeral/heuristics | 2026-05-29 | `f3f4cc0b`: KnowledgeBlocks, acquisition policy, no LTZone in Core |
 | TD-121 | Context acquisition policy + catalog blocks in ephemeral | 2026-05-29 | `f3f4cc0b`: `computeContextAcquisitionPlan`, retriever diagram scope |
 | TD-122 | diagram_scope_long_name GUI + add parent parity | 2026-05-29 | `3c5b615f`: diagramScopeChanged, normalizer parent |

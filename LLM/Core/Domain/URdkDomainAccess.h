@@ -36,7 +36,6 @@ public:
     RDK::UApplication* application() const { return m_app; }
     RDK::UEngine* engine() const;
     RDK::UEnvironment* environment(int channel_index = 0) const;
-    RDK::UStorage* storage() const;
 
     DomainSessionInfo sessionInfo() const;
 

@@ -27,7 +27,7 @@ struct LLMGuiContext {
 };
 ```
 
-**CurrentComponent sync (agent-quality):** on user selection, GUI calls `syncEngineCurrentComponent` (`UEngineSelectionSync.cpp`) → `Env_SelectCurrentComponent`. At Send, `guiSnapshotFromContext` fills `LLMGuiContextSnapshot.current_component_*` from `Env_GetCurrentComponentName()` / `Env_GetCurrentComponentId()`. Write tools default `parent_long_name` to that scope when omitted.
+**Selection vs diagram scope:** on component selection, GUI may call `syncEngineCurrentComponent` (`UEngineSelectionSync.cpp`) for legacy C APIs. `diagram_scope_long_name` is updated on schematic drill **without** changing engine `CurrentComponent`. Write tools resolve `parent_long_name` as a **full model path** (`GetComponentL` under model lock); defaults come from pinned `diagram_scope_long_name`, not from `Env_GetCurrentComponentName()`.
 
 Обновление: bridge подписан на сигналы, **не** опрашивает engine в timer без необходимости.
 

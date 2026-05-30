@@ -131,6 +131,8 @@ void refreshDiagramPresentation(ILLMPresentationSink* sink)
 {
     if(!sink)
         return;
+    // Must not run while holding channel engine/model lock: sink blocks on GUI thread,
+    // which reloads the diagram via Model_GetComponentsNameList (same mutex).
     LLMPresentationEvent ev;
     ev.effect = LLMPresentationEffect::DiagramRefresh;
     sink->apply(ev);
@@ -156,12 +158,6 @@ RDK::UEnvironment* URdkDomainAccess::environment(int channel_index) const
     if(!lock)
         return nullptr;
     return lock->GetEnvironment();
-}
-
-RDK::UStorage* URdkDomainAccess::storage() const
-{
-    RDK::UELockPtr<RDK::UStorage> lock = RDK::GetStorageLock();
-    return lock.Get();
 }
 
 DomainSessionInfo URdkDomainAccess::sessionInfo() const
@@ -385,7 +381,7 @@ DomainStatus URdkDomainAccess::findComponentByLongName(const std::string& long_n
     RDK::UEPtr<RDK::UContainer> model = env->GetModel();
     if(!model)
         return {DomainStatusCode::ProjectNotLoaded, "Model not loaded"};
-    RDK::UEPtr<RDK::UContainer> found = model->GetComponent(long_name, true);
+    RDK::UEPtr<RDK::UContainer> found = model->GetComponentL(long_name.c_str(), true);
     if(!found)
         return {DomainStatusCode::ComponentNotFound, "Component not found: " + long_name};
     out["long_name"] = found->GetLongName(model);
@@ -590,32 +586,65 @@ DomainStatus URdkDomainAccess::addComponent(const std::string& class_name,
                                             int channel_index,
                                             std::string& out_long_name)
 {
-    (void)short_name;
+    out_long_name.clear();
     const DomainSessionInfo session = sessionInfo();
     if(!session.engine_ready)
         return {DomainStatusCode::NotInitialized, "Engine not ready"};
     if(m_app && !session.project_loaded)
         return {DomainStatusCode::ProjectNotLoaded, "No configuration is open"};
-    const char* added =
-        MModel_AddComponent(channel_index, parent_long_name.c_str(), class_name.c_str());
-    if(!added || !added[0])
+
     {
-        return {DomainStatusCode::LinkFailed,
-                "add_component failed for class " + class_name + " under parent \"" + parent_long_name
-                    + "\""};
-    }
-    out_long_name = added;
-    nlohmann::json found;
-    if(findComponentByLongName(added, found, channel_index).ok()
-       && found.contains("long_name"))
-    {
-        out_long_name = found["long_name"].get<std::string>();
-    }
-    else
-    {
-        std::string resolved;
-        if(resolveComponentLongName(added, channel_index, resolved, parent_long_name).ok())
-            out_long_name = resolved;
+        RDK::UELockPtr<RDK::UEngine> eng = RDK::GetEngineLock(channel_index);
+        if(!eng)
+            return {DomainStatusCode::NotInitialized, "Engine lock unavailable"};
+        RDK::UELockPtr<RDK::UStorage> storLock = RDK::GetStorageLock(channel_index);
+        if(!storLock)
+            return {DomainStatusCode::NotInitialized, "Storage lock unavailable"};
+        RDK::UEnvironment* env = eng->GetEnvironment();
+        if(!env)
+            return {DomainStatusCode::NotInitialized, "Environment not available"};
+        RDK::UEPtr<RDK::UContainer> model = env->GetModel();
+        if(!model)
+            return {DomainStatusCode::ProjectNotLoaded, "Model not loaded on channel"};
+        RDK::UStorage* stor = storLock.Get();
+
+        RDK::UEPtr<RDK::UContainer> parent;
+        if(parent_long_name.empty())
+            parent = model;
+        else
+            parent = model->GetComponentL(parent_long_name.c_str(), true);
+        if(!parent)
+        {
+            return {DomainStatusCode::ComponentNotFound,
+                    "add_component: parent container not found: " + parent_long_name};
+        }
+
+        RDK::UEPtr<RDK::UContainer> cont =
+            dynamic_pointer_cast<RDK::UContainer>(stor->TakeObject(class_name.c_str()));
+        if(!cont)
+        {
+            return {DomainStatusCode::LinkFailed,
+                    "add_component failed to instantiate class " + class_name};
+        }
+
+        if(!short_name.empty())
+            cont->SetName(short_name.c_str());
+
+        if(!parent->AddComponent(cont))
+        {
+            stor->ReturnObject(cont);
+            return {DomainStatusCode::LinkFailed,
+                    "add_component failed for class " + class_name + " under parent \""
+                        + parent_long_name + "\""};
+        }
+
+        if(!cont->IsInit())
+            cont->Init();
+        else
+            cont->Reset();
+
+        std::string buffer;
+        out_long_name = cont->GetLongName(model.Get(), buffer);
     }
     refreshDiagramPresentation(m_sink);
     return {};
@@ -665,14 +694,16 @@ DomainStatus URdkDomainAccess::setProperty(const std::string& long_name,
         return {DomainStatusCode::NotInitialized, "Engine not ready"};
     if(m_app && !session.project_loaded)
         return {DomainStatusCode::ProjectNotLoaded, "No configuration is open"};
-    RDK::UELockPtr<RDK::UEngine> eng = RDK::GetEngineLockTimeout(channel_index, 500);
-    if(!eng)
-        return {DomainStatusCode::NotInitialized, "Engine lock unavailable"};
-    if(!componentHasProperty(eng.Get(), long_name, property_name))
     {
-        return {DomainStatusCode::PropertyNotFound,
-                "Unknown property_name \"" + property_name + "\" for component " + long_name
-                    + ". Use get_component_properties to list available properties."};
+        RDK::UELockPtr<RDK::UEngine> eng = RDK::GetEngineLockTimeout(channel_index, 500);
+        if(!eng)
+            return {DomainStatusCode::NotInitialized, "Engine lock unavailable"};
+        if(!componentHasProperty(eng.Get(), long_name, property_name))
+        {
+            return {DomainStatusCode::PropertyNotFound,
+                    "Unknown property_name \"" + property_name + "\" for component " + long_name
+                        + ". Use get_component_properties to list available properties."};
+        }
     }
     if(previous_value_out)
     {

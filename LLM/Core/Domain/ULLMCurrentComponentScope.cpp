@@ -33,4 +33,17 @@ std::string readDiagramScopeLongName(const LLMGuiContextSnapshot* gui)
     return gui->diagram_scope_long_name;
 }
 
+bool isAtRootDiagramView(const LLMGuiContextSnapshot* gui)
+{
+    return readDiagramScopeLongName(gui).empty();
+}
+
+bool isModelRootContainerToken(const std::string& parent_long_name,
+                                const LLMGuiContextSnapshot* gui)
+{
+    if(parent_long_name != "Model")
+        return false;
+    return isAtRootDiagramView(gui);
+}
+
 } // namespace RDK::LLM

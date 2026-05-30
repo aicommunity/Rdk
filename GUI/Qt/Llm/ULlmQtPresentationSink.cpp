@@ -42,6 +42,15 @@ void ULlmQtPresentationSink::apply(const RDK::LLM::LLMPresentationEvent& event)
         return;
     }
 
+    if(event.effect == RDK::LLM::LLMPresentationEffect::DiagramRefresh)
+    {
+        if(m_diagramRefreshQueued)
+            return;
+        m_diagramRefreshQueued = true;
+        QMetaObject::invokeMethod(this, "applyOnGuiThread", Qt::QueuedConnection);
+        return;
+    }
+
     const int timeout_ms = defaultInvokeTimeoutMs();
     auto fut = std::async(std::launch::async, [this]() {
         QMetaObject::invokeMethod(this, "applyOnGuiThread", Qt::BlockingQueuedConnection);
@@ -156,7 +165,10 @@ void ULlmQtPresentationSink::applyOnGuiThread()
     if(m_pending.effect == RDK::LLM::LLMPresentationEffect::FullShellRefresh)
         m_host->refreshLlmPresentationShell();
     else if(m_pending.effect == RDK::LLM::LLMPresentationEffect::DiagramRefresh)
+    {
         m_host->refreshLlmPresentationDiagram();
+        m_diagramRefreshQueued = false;
+    }
 
     if(m_pending.show_panel != RDK::LLM::LLMUiPanel::None)
     {
@@ -208,11 +220,8 @@ void ULlmQtPresentationSink::navigateToDiagramScope(const std::string& scope_lon
     UModernDiagramWidget* diagram = container->modernDiagramWidget();
     if(!diagram)
         return;
-    QString name = QString::fromStdString(scope_long_name);
-    if(name == QLatin1String("Model"))
-        name.clear();
+    const QString name = QString::fromStdString(scope_long_name);
     diagram->SetComponentName(name);
-    syncEngineCurrentComponent(name.isEmpty() ? QStringLiteral("Model") : name);
     diagram->Reload();
     if(m_bridge)
         m_bridge->onDiagramScopeChanged(name.isEmpty() ? QStringLiteral("Model") : name);

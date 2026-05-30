@@ -1,5 +1,7 @@
 #include "UModernDiagramPortManager.h"
+#include "UEngineSelectionSync.h"
 #include "../../Deploy/Include/rdk_init.h"
+#include "../../Deploy/Include/rdk_cpp_init.h"
 #include "../Core/Engine/UEngine.h"
 #include "../Core/Engine/UNet.h"
 #include "rdk_application.h"
@@ -17,11 +19,15 @@ QVector<UModernDiagramPort> UModernDiagramPortManager::loadPortsFromProperties(
 {
     QVector<UModernDiagramPort> result;
 
-    const char* props = Model_GetComponentPropertiesLookupList(fullName.toStdString().c_str(), propertyTypeMask);
-    if(!props)
+    RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock<RDK::UContainer>(Core_GetSelectedChannelIndex());
+    if(!model)
         return result;
 
-    QStringList propsList = QString::fromUtf8(props).split(",", Qt::SkipEmptyParts);
+    const QString props = propertiesLookupListFromModelScope(model.Get(), fullName, propertyTypeMask);
+    if(props.isEmpty())
+        return result;
+
+    QStringList propsList = props.split(",", Qt::SkipEmptyParts);
     for(const QString& prop : propsList)
     {
         QStringList parts = prop.split(":");
@@ -43,7 +49,6 @@ QVector<UModernDiagramPort> UModernDiagramPortManager::loadPortsFromProperties(
             result.append(port);
         }
     }
-    Engine_FreeBufString(props);
 
     return result;
 }
@@ -59,15 +64,17 @@ QVector<UModernDiagramPort> UModernDiagramPortManager::loadAliasPortsFromNet(
 
     try
     {
-        RDK::UEPtr<RDK::UContainer> model = RDK::GetEngine() ? RDK::GetEngine()->GetModel() : nullptr;
-        if(!model)
+        RDK::UELockPtr<RDK::UContainer> modelLock =
+            RDK::GetModelLock<RDK::UContainer>(Core_GetSelectedChannelIndex());
+        if(!modelLock)
             return result;
+        RDK::UContainer* model = modelLock.Get();
 
         RDK::UEPtr<RDK::UContainer> component;
         if(fullName.isEmpty())
             component = model;
         else
-            component = model->GetComponentL(fullName.toStdString(), true);
+            component = model->GetComponentL(fullName.toUtf8().constData(), true);
 
         if(component)
         {
@@ -106,41 +113,37 @@ QVector<UModernDiagramPort> UModernDiagramPortManager::loadOwnOutputPorts(const 
 QVector<UModernDiagramPort> UModernDiagramPortManager::loadChildOutputPorts(const QString& fullName, const QString& nodeName)
 {
     QVector<UModernDiagramPort> result;
-
-    // Получаем список дочерних компонентов
-    const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
-    if(!compList)
+    RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock<RDK::UContainer>(Core_GetSelectedChannelIndex());
+    if(!model)
         return result;
 
-    QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
+    const QStringList components =
+        childComponentShortNamesFromModelScope(Core_GetSelectedChannelIndex(), fullName);
     for(const QString& comp : components)
     {
-        QString nestedFullName = fullName + "." + comp;
-        const char* nestedProps = Model_GetComponentPropertiesLookupList(
-            nestedFullName.toStdString().c_str(), ptPubOutput | ptOutput);
-        if(nestedProps)
+        const QString nestedFullName = fullName + QLatin1Char('.') + comp;
+        const QString nestedProps =
+            propertiesLookupListFromModelScope(model.Get(), nestedFullName, ptPubOutput | ptOutput);
+        if(nestedProps.isEmpty())
+            continue;
+
+        const QStringList nestedPropsList = nestedProps.split(",", Qt::SkipEmptyParts);
+        for(const QString& prop : nestedPropsList)
         {
-            QStringList nestedPropsList = QString::fromUtf8(nestedProps).split(",", Qt::SkipEmptyParts);
-            for(const QString& prop : nestedPropsList)
-            {
-                QStringList parts = prop.split(":");
-                if(parts.size() >= 1)
-                {
-                    QString propName = parts[0].trimmed();
-                    UModernDiagramPort port;
-                    port.isInput = false;
-                    port.name = propName;
-                    port.componentName = comp;
-                    port.fullPath = comp + "." + propName;
-                    port.displayName = nodeName + "." + comp + "." + propName;
-                    port.category = UModernDiagramPortCategory::Child;
-                    result.append(port);
-                }
-            }
-            Engine_FreeBufString(nestedProps);
+            const QStringList parts = prop.split(":");
+            if(parts.isEmpty())
+                continue;
+            const QString propName = parts[0].trimmed();
+            UModernDiagramPort port;
+            port.isInput = false;
+            port.name = propName;
+            port.componentName = comp;
+            port.fullPath = comp + QLatin1Char('.') + propName;
+            port.displayName = nodeName + QLatin1Char('.') + comp + QLatin1Char('.') + propName;
+            port.category = UModernDiagramPortCategory::Child;
+            result.append(port);
         }
     }
-    Engine_FreeBufString(compList);
 
     return result;
 }
@@ -158,41 +161,37 @@ QVector<UModernDiagramPort> UModernDiagramPortManager::loadOwnInputPorts(const Q
 QVector<UModernDiagramPort> UModernDiagramPortManager::loadChildInputPorts(const QString& fullName, const QString& nodeName)
 {
     QVector<UModernDiagramPort> result;
-
-    // Получаем список дочерних компонентов
-    const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
-    if(!compList)
+    RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock<RDK::UContainer>(Core_GetSelectedChannelIndex());
+    if(!model)
         return result;
 
-    QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
+    const QStringList components =
+        childComponentShortNamesFromModelScope(Core_GetSelectedChannelIndex(), fullName);
     for(const QString& comp : components)
     {
-        QString nestedFullName = fullName + "." + comp;
-        const char* nestedProps = Model_GetComponentPropertiesLookupList(
-            nestedFullName.toStdString().c_str(), ptPubInput | ptInput);
-        if(nestedProps)
+        const QString nestedFullName = fullName + QLatin1Char('.') + comp;
+        const QString nestedProps =
+            propertiesLookupListFromModelScope(model.Get(), nestedFullName, ptPubInput | ptInput);
+        if(nestedProps.isEmpty())
+            continue;
+
+        const QStringList nestedPropsList = nestedProps.split(",", Qt::SkipEmptyParts);
+        for(const QString& prop : nestedPropsList)
         {
-            QStringList nestedPropsList = QString::fromUtf8(nestedProps).split(",", Qt::SkipEmptyParts);
-            for(const QString& prop : nestedPropsList)
-            {
-                QStringList parts = prop.split(":");
-                if(parts.size() >= 1)
-                {
-                    QString propName = parts[0].trimmed();
-                    UModernDiagramPort port;
-                    port.isInput = true;
-                    port.name = propName;
-                    port.componentName = comp;
-                    port.fullPath = comp + "." + propName;
-                    port.displayName = nodeName + "." + comp + "." + propName;
-                    port.category = UModernDiagramPortCategory::Child;
-                    result.append(port);
-                }
-            }
-            Engine_FreeBufString(nestedProps);
+            const QStringList parts = prop.split(":");
+            if(parts.isEmpty())
+                continue;
+            const QString propName = parts[0].trimmed();
+            UModernDiagramPort port;
+            port.isInput = true;
+            port.name = propName;
+            port.componentName = comp;
+            port.fullPath = comp + QLatin1Char('.') + propName;
+            port.displayName = nodeName + QLatin1Char('.') + comp + QLatin1Char('.') + propName;
+            port.category = UModernDiagramPortCategory::Child;
+            result.append(port);
         }
     }
-    Engine_FreeBufString(compList);
 
     return result;
 }
@@ -205,48 +204,41 @@ QVector<UModernDiagramPort> UModernDiagramPortManager::loadAliasInputPorts(const
 QVector<UModernDiagramPort> UModernDiagramPortManager::loadChildInputPortsRecursive(const QString& fullName, const QString& nodeName, const QString& prefixPath)
 {
     QVector<UModernDiagramPort> result;
-
-    // Получаем список дочерних компонентов
-    const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
-    if(!compList)
+    RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock<RDK::UContainer>(Core_GetSelectedChannelIndex());
+    if(!model)
         return result;
 
-    QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
+    const QStringList components =
+        childComponentShortNamesFromModelScope(Core_GetSelectedChannelIndex(), fullName);
     for(const QString& comp : components)
     {
-        QString nestedFullName = fullName + "." + comp;
-        QString displayPrefix = prefixPath.isEmpty() ? comp : prefixPath + "." + comp;
+        const QString nestedFullName = fullName + QLatin1Char('.') + comp;
+        const QString displayPrefix = prefixPath.isEmpty() ? comp : prefixPath + QLatin1Char('.') + comp;
 
-        // Получаем порты текущего дочернего компонента
-        const char* nestedProps = Model_GetComponentPropertiesLookupList(
-            nestedFullName.toStdString().c_str(), ptPubInput | ptInput);
-        if(nestedProps)
+        const QString nestedProps =
+            propertiesLookupListFromModelScope(model.Get(), nestedFullName, ptPubInput | ptInput);
+        if(!nestedProps.isEmpty())
         {
-            QStringList nestedPropsList = QString::fromUtf8(nestedProps).split(",", Qt::SkipEmptyParts);
+            const QStringList nestedPropsList = nestedProps.split(",", Qt::SkipEmptyParts);
             for(const QString& prop : nestedPropsList)
             {
-                QStringList parts = prop.split(":");
-                if(parts.size() >= 1)
-                {
-                    QString propName = parts[0].trimmed();
-                    UModernDiagramPort port;
-                    port.isInput = true;
-                    port.name = propName;
-                    port.componentName = displayPrefix;  // Сохраняем полный путь к компоненту-владельцу
-                    port.fullPath = displayPrefix + "." + propName;
-                    port.displayName = nodeName + "." + displayPrefix + "." + propName;
-                    port.category = UModernDiagramPortCategory::Child;
-                    result.append(port);
-                }
+                const QStringList parts = prop.split(":");
+                if(parts.isEmpty())
+                    continue;
+                const QString propName = parts[0].trimmed();
+                UModernDiagramPort port;
+                port.isInput = true;
+                port.name = propName;
+                port.componentName = displayPrefix;
+                port.fullPath = displayPrefix + QLatin1Char('.') + propName;
+                port.displayName = nodeName + QLatin1Char('.') + displayPrefix + QLatin1Char('.') + propName;
+                port.category = UModernDiagramPortCategory::Child;
+                result.append(port);
             }
-            Engine_FreeBufString(nestedProps);
         }
 
-        // Рекурсивно получаем порты вложенных компонентов
-        QVector<UModernDiagramPort> nestedPorts = loadChildInputPortsRecursive(nestedFullName, nodeName, displayPrefix);
-        result.append(nestedPorts);
+        result.append(loadChildInputPortsRecursive(nestedFullName, nodeName, displayPrefix));
     }
-    Engine_FreeBufString(compList);
 
     return result;
 }
@@ -254,48 +246,41 @@ QVector<UModernDiagramPort> UModernDiagramPortManager::loadChildInputPortsRecurs
 QVector<UModernDiagramPort> UModernDiagramPortManager::loadChildOutputPortsRecursive(const QString& fullName, const QString& nodeName, const QString& prefixPath)
 {
     QVector<UModernDiagramPort> result;
-
-    // Получаем список дочерних компонентов
-    const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
-    if(!compList)
+    RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock<RDK::UContainer>(Core_GetSelectedChannelIndex());
+    if(!model)
         return result;
 
-    QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
+    const QStringList components =
+        childComponentShortNamesFromModelScope(Core_GetSelectedChannelIndex(), fullName);
     for(const QString& comp : components)
     {
-        QString nestedFullName = fullName + "." + comp;
-        QString displayPrefix = prefixPath.isEmpty() ? comp : prefixPath + "." + comp;
+        const QString nestedFullName = fullName + QLatin1Char('.') + comp;
+        const QString displayPrefix = prefixPath.isEmpty() ? comp : prefixPath + QLatin1Char('.') + comp;
 
-        // Получаем порты текущего дочернего компонента
-        const char* nestedProps = Model_GetComponentPropertiesLookupList(
-            nestedFullName.toStdString().c_str(), ptPubOutput | ptOutput);
-        if(nestedProps)
+        const QString nestedProps =
+            propertiesLookupListFromModelScope(model.Get(), nestedFullName, ptPubOutput | ptOutput);
+        if(!nestedProps.isEmpty())
         {
-            QStringList nestedPropsList = QString::fromUtf8(nestedProps).split(",", Qt::SkipEmptyParts);
+            const QStringList nestedPropsList = nestedProps.split(",", Qt::SkipEmptyParts);
             for(const QString& prop : nestedPropsList)
             {
-                QStringList parts = prop.split(":");
-                if(parts.size() >= 1)
-                {
-                    QString propName = parts[0].trimmed();
-                    UModernDiagramPort port;
-                    port.isInput = false;
-                    port.name = propName;
-                    port.componentName = displayPrefix;  // Сохраняем полный путь к компоненту-владельцу
-                    port.fullPath = displayPrefix + "." + propName;
-                    port.displayName = nodeName + "." + displayPrefix + "." + propName;
-                    port.category = UModernDiagramPortCategory::Child;
-                    result.append(port);
-                }
+                const QStringList parts = prop.split(":");
+                if(parts.isEmpty())
+                    continue;
+                const QString propName = parts[0].trimmed();
+                UModernDiagramPort port;
+                port.isInput = false;
+                port.name = propName;
+                port.componentName = displayPrefix;
+                port.fullPath = displayPrefix + QLatin1Char('.') + propName;
+                port.displayName = nodeName + QLatin1Char('.') + displayPrefix + QLatin1Char('.') + propName;
+                port.category = UModernDiagramPortCategory::Child;
+                result.append(port);
             }
-            Engine_FreeBufString(nestedProps);
         }
 
-        // Рекурсивно получаем порты вложенных компонентов
-        QVector<UModernDiagramPort> nestedPorts = loadChildOutputPortsRecursive(nestedFullName, nodeName, displayPrefix);
-        result.append(nestedPorts);
+        result.append(loadChildOutputPortsRecursive(nestedFullName, nodeName, displayPrefix));
     }
-    Engine_FreeBufString(compList);
 
     return result;
 }
@@ -304,28 +289,26 @@ QVector<UModernDiagramPort> UModernDiagramPortManager::loadNestedPorts(const QSt
 {
     QVector<UModernDiagramPort> result;
 
-    // Получаем порты текущего компонента
     unsigned int mask = isInput ? (ptPubInput | ptInput) : (ptPubOutput | ptOutput);
-    const char* propsList = Model_GetComponentPropertiesLookupList(fullName.toStdString().c_str(), mask);
-    if(propsList)
+    RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock<RDK::UContainer>(Core_GetSelectedChannelIndex());
+    if(model)
     {
-        QStringList props = QString::fromUtf8(propsList).split(",", Qt::SkipEmptyParts);
+        const QString propsList = propertiesLookupListFromModelScope(model.Get(), fullName, mask);
+        const QStringList props = propsList.split(",", Qt::SkipEmptyParts);
         for(const QString& prop : props)
         {
-            QStringList parts = prop.split(":");
-            if(parts.size() >= 1)
-            {
-                QString propName = parts[0].trimmed();
-                UModernDiagramPort port;
-                port.isInput = isInput;
-                port.name = propName;
-                port.componentName = nodeName;
-                port.fullPath = propName;
-                port.displayName = nodeName + "." + propName;
-                result.append(port);
-            }
+            const QStringList parts = prop.split(":");
+            if(parts.isEmpty())
+                continue;
+            const QString propName = parts[0].trimmed();
+            UModernDiagramPort port;
+            port.isInput = isInput;
+            port.name = propName;
+            port.componentName = nodeName;
+            port.fullPath = propName;
+            port.displayName = nodeName + QLatin1Char('.') + propName;
+            result.append(port);
         }
-        Engine_FreeBufString(propsList);
     }
 
     // Добавляем алиасы свойств из UNet
@@ -333,39 +316,31 @@ QVector<UModernDiagramPort> UModernDiagramPortManager::loadNestedPorts(const QSt
     result.append(aliasPorts);
 
     // Если нужно включить вложенные порты
-    if(includeNested)
+    if(includeNested && model)
     {
-        const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
-        if(compList)
+        const QStringList components =
+            childComponentShortNamesFromModelScope(Core_GetSelectedChannelIndex(), fullName);
+        for(const QString& comp : components)
         {
-            QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
-            for(const QString& comp : components)
+            const QString nestedFullName = fullName + QLatin1Char('.') + comp;
+            const QString nestedProps = propertiesLookupListFromModelScope(model.Get(), nestedFullName, mask);
+            if(nestedProps.isEmpty())
+                continue;
+            const QStringList nestedPropsList = nestedProps.split(",", Qt::SkipEmptyParts);
+            for(const QString& prop : nestedPropsList)
             {
-                QString nestedFullName = fullName + "." + comp;
-                const char* nestedProps = Model_GetComponentPropertiesLookupList(
-                    nestedFullName.toStdString().c_str(), mask);
-                if(nestedProps)
-                {
-                    QStringList nestedPropsList = QString::fromUtf8(nestedProps).split(",", Qt::SkipEmptyParts);
-                    for(const QString& prop : nestedPropsList)
-                    {
-                        QStringList parts = prop.split(":");
-                        if(parts.size() >= 1)
-                        {
-                            QString propName = parts[0].trimmed();
-                            UModernDiagramPort port;
-                            port.isInput = isInput;
-                            port.name = propName;
-                            port.componentName = comp;
-                            port.fullPath = comp + "." + propName;
-                            port.displayName = nodeName + "." + comp + "." + propName;
-                            result.append(port);
-                        }
-                    }
-                    Engine_FreeBufString(nestedProps);
-                }
+                const QStringList parts = prop.split(":");
+                if(parts.isEmpty())
+                    continue;
+                const QString propName = parts[0].trimmed();
+                UModernDiagramPort port;
+                port.isInput = isInput;
+                port.name = propName;
+                port.componentName = comp;
+                port.fullPath = comp + QLatin1Char('.') + propName;
+                port.displayName = nodeName + QLatin1Char('.') + comp + QLatin1Char('.') + propName;
+                result.append(port);
             }
-            Engine_FreeBufString(compList);
         }
     }
 
@@ -384,16 +359,11 @@ UModernDiagramPortCategory UModernDiagramPortManager::determinePortCategory(
     // Сначала проверяем, содержит ли propertyName путь к дочернему компоненту
     if(!fullName.isEmpty())
     {
-        const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
-        if(compList)
+        const QStringList components =
+            childComponentShortNamesFromModelScope(Core_GetSelectedChannelIndex(), fullName);
+        if(!components.isEmpty())
         {
-            QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
-            Engine_FreeBufString(compList);
-
-            if(!components.isEmpty())
-            {
-                // Проверяем, начинается ли propertyName с любого дочернего компонента
-                for(const QString& comp : components)
+            for(const QString& comp : components)
                 {
                     if(propertyName.startsWith(comp + ".") || propertyName == comp)
                     {
@@ -418,11 +388,9 @@ UModernDiagramPortCategory UModernDiagramPortManager::determinePortCategory(
                         }
                     }
                 }
-            }
         }
     }
 
-    // Извлекаем имя свойства
     QString propName = propertyName;
     if(propName.contains('.'))
     {
