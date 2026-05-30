@@ -1,16 +1,24 @@
 #include "ULLMToolGateway.h"
 
 #include "ApplicationToolAudit.h"
+#include "../Domain/ULLMEntityPathCanonicalizer.h"
 #include "../Domain/ULLMWriteArgumentNormalizer.h"
+#include "../Gui/ULLMPresentationScopeGuard.h"
 #include "../LlmPublicApi.h"
+#include "../Observability/ULLMToolTrace.h"
+#include "../Session/ULLMGuiTurnPin.h"
 #include "../Policy/ULLMUserRole.h"
 #include "../Policy/ULLMWriteToolPolicy.h"
 
+#include <chrono>
+#include <optional>
 #include <random>
 
 namespace RDK::LLM {
 
-static std::string makeConfirmationId()
+namespace {
+
+std::string makeConfirmationId()
 {
     static std::mt19937 rng{std::random_device{}()};
     static std::uniform_int_distribution<int> dist(0, 15);
@@ -20,6 +28,24 @@ static std::string makeConfirmationId()
         id += hex[dist(rng)];
     return id;
 }
+
+void maybeRecordTurnToolTrace(const ToolInvokeRequest& req, const LLMToolDefinition* def,
+                              const nlohmann::json& display_arguments,
+                              const ToolGatewayResult& result, int duration_ms = 0)
+{
+    if(!LLMServices::instance().isInitialized())
+        return;
+    const std::string session_id = req.session.session_id;
+    if(session_id.empty())
+        return;
+    ConversationState* state = LLMServices::instance().mutableConversationState(session_id);
+    if(!state)
+        return;
+    recordTurnToolInvocation(*state, req.tool_name, display_arguments, result, duration_ms,
+                             def ? def->input_schema : nlohmann::json::object());
+}
+
+} // namespace
 
 ULLMToolGateway::ULLMToolGateway(ULLMToolRegistry& registry, ULLMPolicyEngine& policy,
                                  URdkDomainAccess& domain, ULLMAuditLog& audit,
@@ -43,6 +69,7 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
         result.ok = false;
         result.error_code = "ToolNotFound";
         result.message = req.tool_name;
+        maybeRecordTurnToolTrace(req, nullptr, req.arguments, result);
         return result;
     }
 
@@ -71,6 +98,7 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
                             {"error", pre.error_code},
                             {"pre_normalize", true}},
                            req.trace_id, req.session.session_id);
+            maybeRecordTurnToolTrace(req, def, working_req.arguments, result);
             return result;
         }
         working_req.arguments = pre.normalized_arguments;
@@ -98,6 +126,7 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
         m_audit.append("tool_invoke_finish",
                        {{"tool_name", req.tool_name}, {"ok", false}, {"error", validation_error}},
                        req.trace_id, req.session.session_id);
+        maybeRecordTurnToolTrace(req, def, working_req.arguments, result);
         return result;
     }
 
@@ -110,6 +139,7 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
         m_audit.append("policy_deny",
                        {{"tool_name", req.tool_name}, {"code", pol.deny_code}},
                        req.trace_id, req.session.session_id);
+        maybeRecordTurnToolTrace(req, def, working_req.arguments, result);
         return result;
     }
 
@@ -124,6 +154,7 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
         m_audit.append("confirmation_requested",
                        {{"tool_name", req.tool_name}, {"confirmation_id", result.confirmation_id}},
                        req.trace_id, req.session.session_id);
+        maybeRecordTurnToolTrace(req, def, working_req.arguments, result);
         return result;
     }
 
@@ -135,6 +166,7 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
                            {{"tool_name", req.tool_name},
                             {"idempotency_key", req.idempotency_key}},
                            req.trace_id, req.session.session_id);
+            maybeRecordTurnToolTrace(req, def, working_req.arguments, *cached);
             return *cached;
         }
         m_audit.append("tool_idempotency_cache_miss",
@@ -161,6 +193,7 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
                             {"error", normalized.error_code},
                             {"entity_resolution", true}},
                            req.trace_id, req.session.session_id);
+            maybeRecordTurnToolTrace(req, def, working_req.arguments, result);
             return result;
         }
         invoke_req.arguments = normalized.normalized_arguments;
@@ -184,6 +217,7 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
                             {"error", port_norm.error_code},
                             {"connect_port_normalize", true}},
                            req.trace_id, req.session.session_id);
+            maybeRecordTurnToolTrace(req, def, invoke_req.arguments, result);
             return result;
         }
         invoke_req.arguments = port_norm.normalized_arguments;
@@ -194,6 +228,35 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
                     {"user_role", userRoleName(resolveUserRole(req.session.user_id))}},
                    req.trace_id, req.session.session_id);
 
+    ConversationState* mutable_state = nullptr;
+    const LLMGuiContextSnapshot* pin_gui = nullptr;
+    if(LLMServices::instance().isInitialized() && !req.session.session_id.empty())
+    {
+        mutable_state = LLMServices::instance().mutableConversationState(req.session.session_id);
+        if(mutable_state)
+            pin_gui = guiContextForWrite(*mutable_state);
+    }
+
+    if(pin_gui && def->kind == LLMToolKind::Write)
+    {
+        canonicalizeEntityPaths(invoke_req.tool_name, invoke_req.arguments, m_domain,
+                                invoke_req.session.active_channel_index, *pin_gui,
+                                def->input_schema);
+    }
+
+    bool pin_diagram = true;
+    if(LLMServices::instance().isInitialized())
+        pin_diagram = LLMServices::instance().settings().runtime().pin_diagram_for_writes;
+
+    ILLMPresentationSink* sink =
+        LLMServices::instance().isInitialized() ? LLMServices::instance().presentationSink()
+                                                  : nullptr;
+    std::optional<ULLMPresentationScopeGuard> presentation_guard;
+    if(pin_gui && def->kind == LLMToolKind::Write && sink)
+        presentation_guard.emplace(sink, *pin_gui, invoke_req.session.active_channel_index,
+                                   pin_diagram);
+
+    const auto started = std::chrono::steady_clock::now();
     try
     {
         result = m_registry.invokeHandler(invoke_req.tool_name, invoke_req.arguments);
@@ -204,18 +267,26 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
         result.error_code = "ToolInvokeException";
         result.message = ex.what() ? ex.what() : "tool handler threw";
     }
+    const int duration_ms = static_cast<int>(
+        std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()
+                                                              - started)
+            .count());
 
     nlohmann::json finish = {{"tool_name", req.tool_name},
                              {"ok", result.ok},
-                             {"error", result.message}};
+                             {"error", result.message},
+                             {"duration_ms", duration_ms}};
     if(req.tool_name == "connect_components" && result.result.value("already_existed", false))
         finish["connect_components_skipped_existing"] = true;
     if(result.result.contains(kAuditConfigurationPathKey))
         finish["configuration_path"] = result.result[kAuditConfigurationPathKey];
     if(result.result.contains(kAuditPresentationEffectKey))
         finish["presentation_effect"] = result.result[kAuditPresentationEffectKey];
+    finish["arguments_preview"] = sanitizeToolArgumentsForDisplay(invoke_req.arguments, def->input_schema);
 
     m_audit.append("tool_invoke_finish", finish, req.trace_id, req.session.session_id);
+
+    maybeRecordTurnToolTrace(req, def, invoke_req.arguments, result, duration_ms);
 
     if(def->idempotent && !req.idempotency_key.empty() && result.ok)
     {

@@ -68,6 +68,8 @@ struct LLMFinalResponse {
     std::string turn_terminal;
     /// Deterministic action preview shown before HITL Apply (phase F).
     std::string action_preview_text;
+    /// Sanitized tool invocations for this user turn (GUI chat / archive).
+    std::vector<TurnToolInvocationView> tool_trace;
 };
 
 inline void assignTurnTerminal(LLMFinalResponse& response, TurnTerminal terminal)

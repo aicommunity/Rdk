@@ -115,6 +115,10 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-131 | Exact class in user text + post-verify resolve under parent | 2026-05-30 | `findExplicitRegisteredClassInUserText`, `resolveComponentLongName` |
 | TD-132 | Open recent config without LLM prose / fix std::exception on open_recent | 2026-05-30 | `tryBuildOpenRecentInvokeArguments`, safe `open_recent_configuration` args |
 | TD-133 | Direct add_component + safe tool args (no json::at throw) | 2026-05-30 | `tryPrepareAddComponentDirect`, gateway catch, `requireStringField` |
+| TD-134 | Turn tool trace in chat + audit arguments_preview | 2026-05-30 | `TurnToolInvocationView`, gateway collector, GUI `<details>` |
+| TD-135 | GuiTurnPin + resolveValidAddParent for add scope | 2026-05-30 | `active_turn_pin`, `ULLMAddParentResolution` |
+| TD-136 | Entity path canonicalize + presentation scope guard | 2026-05-30 | `x-llm-semantic`, `ULLMPresentationScopeGuard`, `pin_diagram_for_writes` |
+| TD-137 | Post-verify add uses gateway long_name only | 2026-05-30 | `verifyAddComponentEffect` early return on `long_name` |
 | TD-120 | Remove hardcoded connect paths in Core ephemeral/heuristics | 2026-05-29 | `f3f4cc0b`: KnowledgeBlocks, acquisition policy, no LTZone in Core |
 | TD-121 | Context acquisition policy + catalog blocks in ephemeral | 2026-05-29 | `f3f4cc0b`: `computeContextAcquisitionPlan`, retriever diagram scope |
 | TD-122 | diagram_scope_long_name GUI + add parent parity | 2026-05-29 | `3c5b615f`: diagramScopeChanged, normalizer parent |

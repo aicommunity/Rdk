@@ -1,6 +1,8 @@
 #include "ULlmQtPresentationSink.h"
 
 #include "../UGEngineControlWidget.h"
+#include "../UModernDiagramContainerWidget.h"
+#include "../UEngineSelectionSync.h"
 #include "ULlmGuiContextBridge.h"
 
 #include <QSettings>
@@ -176,6 +178,55 @@ void ULlmQtPresentationSink::applyOnGuiThread()
         if(m_bridge)
             m_bridge->onChannelChanged(m_pending.select_active_channel);
     }
+}
+
+std::string ULlmQtPresentationSink::captureNavigationToken() const
+{
+    if(!m_bridge)
+        return {};
+    const LLMGuiContext ctx = m_bridge->currentContext();
+    nlohmann::json token;
+    token["diagram_scope"] = ctx.diagram_scope_long_name.toStdString();
+    token["channel_index"] = ctx.channel_index;
+    return token.dump();
+}
+
+void ULlmQtPresentationSink::navigateToDiagramScope(const std::string& scope_long_name,
+                                                    int channel_index)
+{
+    if(!m_host)
+        return;
+    if(channel_index >= 0)
+    {
+        m_host->setLlmActiveChannel(channel_index);
+        if(m_bridge)
+            m_bridge->onChannelChanged(channel_index);
+    }
+    UModernDiagramContainerWidget* container = m_host->modernDiagramContainer();
+    if(!container)
+        return;
+    UModernDiagramWidget* diagram = container->modernDiagramWidget();
+    if(!diagram)
+        return;
+    QString name = QString::fromStdString(scope_long_name);
+    if(name == QLatin1String("Model"))
+        name.clear();
+    diagram->SetComponentName(name);
+    syncEngineCurrentComponent(name.isEmpty() ? QStringLiteral("Model") : name);
+    diagram->Reload();
+    if(m_bridge)
+        m_bridge->onDiagramScopeChanged(name.isEmpty() ? QStringLiteral("Model") : name);
+}
+
+void ULlmQtPresentationSink::restoreNavigationToken(const std::string& token)
+{
+    if(token.empty())
+        return;
+    const nlohmann::json j = nlohmann::json::parse(token, nullptr, false);
+    if(!j.is_object())
+        return;
+    navigateToDiagramScope(j.value("diagram_scope", std::string()),
+                           j.value("channel_index", 0));
 }
 
 void ULlmQtPresentationSink::runHostListUiPanelsOnGuiThread()

@@ -196,4 +196,11 @@ const ConversationState* LLMServices::conversationState(const std::string& sessi
     return m_store ? m_store->findSession(session_id) : nullptr;
 }
 
+ConversationState* LLMServices::mutableConversationState(const std::string& session_id)
+{
+    if(!m_store || session_id.empty())
+        return nullptr;
+    return &m_store->getOrCreate(session_id);
+}
+
 } // namespace RDK::LLM

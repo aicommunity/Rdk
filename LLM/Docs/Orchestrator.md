@@ -108,6 +108,10 @@ function handleUserMessage(envelope):
 
 **Also:** `invokeLifecycleToolDirect` after argument gate; `buildAgentManifest(..., user_text)`; parallel read batch when all tools in a round are Read. After each completed tool invoke, tool result JSON may include `system_log_excerpt` (glog delta since the round mark; see Observability-and-Audit.md).
 
+**GuiTurnPin:** at turn start `beginGuiTurnPin(state, req.gui)`; all `WriteToolExecutionRequest.gui` and entity normalization read `guiContextForWrite(state)` → frozen `at_user_message`.
+
+**Turn tool trace:** `ULLMToolGateway` appends to `ConversationState::current_turn_tool_trace`; copied to `LLMFinalResponse::tool_trace` when the turn ends.
+
 ---
 
 ## 5. Plan / Execute (фаза 2)

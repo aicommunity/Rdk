@@ -197,6 +197,8 @@ struct LLMRuntimeProviderSettings {
     std::string preferred_response_language;
     LLMSendShortcutMode send_shortcut = LLMSendShortcutMode::CtrlEnter;
     LLMContextAcquisitionMode context_acquisition_mode = LLMContextAcquisitionMode::Auto;
+    /// When true (GUI default), temporarily navigate diagram to pinned scope before write tools.
+    bool pin_diagram_for_writes = true;
 };
 
 struct LLMGuiContextSnapshot {
@@ -302,6 +304,16 @@ struct ToolGatewayResult {
     std::string message;
     bool pending_confirmation = false;
     std::string confirmation_id;
+};
+
+struct TurnToolInvocationView {
+    std::string tool_name;
+    nlohmann::json arguments = nlohmann::json::object();
+    bool ok = false;
+    std::string error_code;
+    std::string message;
+    int duration_ms = 0;
+    bool pending_confirmation = false;
 };
 
 struct PolicyDecision {

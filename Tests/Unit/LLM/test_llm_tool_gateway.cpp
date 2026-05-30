@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include "LlmModuleInit.h"
+#include "LlmPublicApi.h"
 #include "Domain/URdkDomainAccess.h"
 #include "Observability/ULLMAuditLog.h"
 #include "Observability/ULLMIdempotencyStore.h"
@@ -74,6 +76,48 @@ TEST(LLMToolGateway, AutoApplySkipsPendingConfirmation)
     EXPECT_FALSE(r.pending_confirmation);
     EXPECT_TRUE(r.ok);
     EXPECT_TRUE(r.result.value("applied", false));
+}
+
+TEST(LLMToolGateway, RecordsTurnToolTraceWhenServicesInitialized)
+{
+    ULLMToolRegistry registry;
+    LLMToolDefinition def;
+    def.name = "test_read";
+    def.kind = LLMToolKind::Read;
+    def.requires_project_loaded = false;
+    def.input_schema = {{"type", "object"}, {"additionalProperties", false}};
+    registry.registerTool(def, [](const nlohmann::json&) {
+        ToolGatewayResult r;
+        r.ok = true;
+        r.result["value"] = 1;
+        return r;
+    });
+
+    ULLMPolicyEngine policy;
+    URdkDomainAccess domain(nullptr);
+    ULLMAuditLog audit;
+    ULLMIdempotencyStore idem;
+    ULLMToolArgumentValidator validator;
+    ULLMToolGateway gateway(registry, policy, domain, audit, idem, validator);
+
+    LLMServices& svc = LLMServices::instance();
+    if(!svc.isInitialized())
+        svc.initialize(nullptr, nullptr);
+
+    ToolInvokeRequest req;
+    req.tool_name = "test_read";
+    req.arguments = nlohmann::json::object();
+    req.session.project_loaded = true;
+    req.session.session_id = "trace-test-session";
+    req.trace_id = "t-trace";
+
+    ConversationState& state = *svc.mutableConversationState(req.session.session_id);
+    state.current_turn_tool_trace.clear();
+
+    const ToolGatewayResult r = gateway.invoke(req);
+    EXPECT_TRUE(r.ok);
+    ASSERT_EQ(state.current_turn_tool_trace.size(), 1u);
+    EXPECT_EQ(state.current_turn_tool_trace.front().tool_name, "test_read");
 }
 
 TEST(LLMToolGateway, IdempotencyReturnsCachedResult)

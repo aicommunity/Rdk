@@ -26,6 +26,17 @@ public:
     {
         return run();
     }
+
+    /// Opaque host navigation state for diagram drill level (GUI sinks only).
+    virtual std::string captureNavigationToken() const { return {}; }
+
+    virtual void restoreNavigationToken(const std::string& token) { (void)token; }
+
+    virtual void navigateToDiagramScope(const std::string& scope_long_name, int channel_index)
+    {
+        (void)scope_long_name;
+        (void)channel_index;
+    }
 };
 
 } // namespace RDK::LLM

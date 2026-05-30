@@ -24,6 +24,7 @@
 #include "../Settings/ULLMUserMessages.h"
 #include "../Observability/ULLMSystemLogExcerpt.h"
 #include "../Observability/ULLMSystemLogReader.h"
+#include "../Observability/ULLMToolTrace.h"
 #include "../TrustBoundary/ULLMTrustBoundary.h"
 #include "../Intent/ULLMIntentAmbiguityGate.h"
 #include "ULLMConfigurationLifecycle.h"
@@ -43,6 +44,7 @@
 #include "../Context/URdkContextRetriever.h"
 #include "../Domain/ULLMResolvedEntityStore.h"
 #include "../Session/ULLMContextCompactor.h"
+#include "../Session/ULLMGuiTurnPin.h"
 #include "../Session/ULLMSessionGraphMemory.h"
 #include "ULLMPlanConfidence.h"
 #include "ULLMPlanExecutor.h"
@@ -124,6 +126,14 @@ void appendAgentNote(ConversationState& state, const std::string& line)
 }
 
 const char* kSessionBusyError = "Session busy: wait for the current request to finish.";
+
+LLMGuiContextSnapshot guiSnapshotForWrite(const ConversationState& state,
+                                          const LLMGuiContextSnapshot& fallback)
+{
+    if(const LLMGuiContextSnapshot* pin = guiContextForWrite(state))
+        return *pin;
+    return fallback;
+}
 
 std::string combinedUserTextHint(const ConversationState& state, const std::string& planning_text)
 {
@@ -449,8 +459,15 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
 
     ConversationState& state = m_store.getOrCreate(req.session_id);
     state.session_id = req.session_id;
+    state.current_turn_tool_trace.clear();
+    struct TurnToolTraceAttacher {
+        ConversationState& turn_state;
+        LLMFinalResponse& response;
+        ~TurnToolTraceAttacher() { response.tool_trace = turn_state.current_turn_tool_trace; }
+    } turn_tool_trace_attach{state, final};
     snapshotLastSessionContext(state, req.session);
 
+    beginGuiTurnPin(state, req.gui);
     if(!req.gui.focused_component_long_name.empty() || !req.gui.focused_class_name.empty()
        || !req.gui.project_xml_path.empty() || req.gui.snapshot_fingerprint != 0
        || req.gui.channel_index != 0)
@@ -846,7 +863,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                             ? std::max(1, std::min(state.last_quantity.primary, 32))
                             : 1;
         if(const std::optional<PreparedAddComponentInvoke> add_prep = tryPrepareAddComponentDirect(
-               entity_user_text_hint, req.gui, domain, session.active_channel_index, qty))
+               entity_user_text_hint, guiSnapshotForWrite(state, req.gui), domain,
+               session.active_channel_index, qty))
         {
             if(add_prep->needs_clarification)
             {
@@ -1741,7 +1759,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 wreq.tool_name = call.name;
                 wreq.arguments = invoke.arguments;
                 wreq.session = session;
-                wreq.gui = req.gui;
+                wreq.gui = guiSnapshotForWrite(state, req.gui);
                 wreq.user_lang = user_lang;
                 wreq.user_text_hint = entity_user_text_hint;
                 wreq.idempotency_action_id = call.id;
@@ -1900,7 +1918,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                                 wreq.tool_name = call_copy.name;
                                 wreq.arguments = retry_req.arguments;
                                 wreq.session = session;
-                                wreq.gui = req.gui;
+                                wreq.gui = guiSnapshotForWrite(state, req.gui);
                                 wreq.user_lang = user_lang;
                                 wreq.user_text_hint = entity_user_text_hint;
                                 wreq.idempotency_action_id =
@@ -2178,7 +2196,9 @@ LLMFinalResponse ULLMAgentOrchestrator::confirmPending(const std::string& sessio
             LLMServices::instance().settings().runtime().preferred_response_language, "en");
 
     LLMGuiContextSnapshot gui;
-    if(state.last_gui_context)
+    if(const LLMGuiContextSnapshot* pin_gui = guiContextForWrite(state))
+        gui = *pin_gui;
+    else if(state.last_gui_context)
         gui = *state.last_gui_context;
 
     WriteToolExecutionRequest wreq;
@@ -2228,6 +2248,7 @@ LLMFinalResponse ULLMAgentOrchestrator::confirmPending(const std::string& sessio
         m_store.appendMessage(session_id, tool_msg);
     }
     m_store.persistToDisk(session_id);
+    final.tool_trace = state.current_turn_tool_trace;
     return final;
 }
 
@@ -2592,7 +2613,7 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
     wreq.tool_name = tool_name;
     wreq.arguments = arguments;
     wreq.session = session;
-    wreq.gui = state.last_gui_context.value_or(LLMGuiContextSnapshot{});
+    wreq.gui = guiSnapshotForWrite(state, LLMGuiContextSnapshot{});
     wreq.user_lang = user_lang;
     wreq.user_text_hint = user_text_hint;
     wreq.idempotency_action_id = "lifecycle_direct";

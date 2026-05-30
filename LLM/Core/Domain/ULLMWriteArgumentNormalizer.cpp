@@ -9,7 +9,9 @@
 #include "../Session/ULLMConversationStore.h"
 #include "ULLMConnectPortHeuristics.h"
 #include "ULLMConnectPortInference.h"
+#include "ULLMAddParentResolution.h"
 #include "ULLMCurrentComponentScope.h"
+#include "../Session/ULLMGuiTurnPin.h"
 #include "ULLMNameResolution.h"
 #include "../Orchestrator/ULLMConnectPlanParsing.h"
 #include "../Orchestrator/ULLMLifecycleArgumentGate.h"
@@ -30,6 +32,13 @@
 namespace RDK::LLM {
 
 namespace {
+
+const LLMGuiContextSnapshot* resolveGuiForWrite(const ConversationState* conversation)
+{
+    if(!conversation)
+        return nullptr;
+    return guiContextForWrite(*conversation);
+}
 
 const std::unordered_map<std::string, std::vector<std::string>>& entityFieldsByTool()
 {
@@ -228,6 +237,37 @@ bool normalizeAddComponentArguments(nlohmann::json& args, URdkDomainAccess& doma
     }
 
     fillAddComponentDefaults(args, gui_fallback);
+
+    if(gui_fallback)
+    {
+        const std::string class_name = args.value("class_name", "");
+        const std::string parent_hint = args.value("parent_long_name", "");
+        const AddParentResolution parent_res =
+            resolveValidAddParent(domain, parent_hint, class_name, args.value("channel_index", 0),
+                                  *gui_fallback);
+        if(parent_res.needs_clarification)
+        {
+            out.ok = false;
+            out.needs_clarification = true;
+            out.error_code = "PARENT_AMBIGUOUS";
+            out.message = parent_res.message;
+            out.clarification = nlohmann::json::object();
+            out.clarification["ambiguous"] = true;
+            out.clarification["kind"] = "component";
+            out.clarification["field"] = "parent_long_name";
+            out.clarification["query"] = parent_hint;
+            out.clarification["candidates"] = nlohmann::json::array();
+            for(const AddParentCandidate& c : parent_res.candidates)
+            {
+                out.clarification["candidates"].push_back(
+                    {{"long_name", c.long_name}, {"class_name", c.class_name}});
+            }
+            return false;
+        }
+        if(parent_res.ok && !parent_res.parent_long_name.empty())
+            args["parent_long_name"] = parent_res.parent_long_name;
+    }
+
     return true;
 }
 
@@ -315,10 +355,9 @@ bool resolveField(const std::string& tool_name, const std::string& field,
         return false;
     }
 
-    const LLMGuiContextSnapshot* gui =
-        conversation && conversation->last_gui_context
-            ? &*conversation->last_gui_context
-            : nullptr;
+    const LLMGuiContextSnapshot* gui = resolveGuiForWrite(conversation);
+    if(!gui && conversation && conversation->last_gui_context)
+        gui = &*conversation->last_gui_context;
     const CurrentComponentScope scope = readCurrentComponentScope(gui);
     nlohmann::json scoped_snap =
         scope.valid ? snapshotComponentsUnderScope(snap, scope.long_name) : snap;
@@ -518,9 +557,9 @@ WriteArgumentNormalizeResult normalizeWriteToolArguments(const std::string& tool
     WriteArgumentNormalizeResult out;
     out.normalized_arguments = std::move(arguments);
 
-    const LLMGuiContextSnapshot* gui =
-        conversation && conversation->last_gui_context ? &*conversation->last_gui_context
-                                                       : nullptr;
+    const LLMGuiContextSnapshot* gui = resolveGuiForWrite(conversation);
+    if(!gui && conversation && conversation->last_gui_context)
+        gui = &*conversation->last_gui_context;
 
     if(tool_name == "add_component")
     {
@@ -605,6 +644,26 @@ std::optional<PreparedAddComponentInvoke> tryPrepareAddComponentDirect(
         return std::nullopt;
 
     fillAddComponentDefaults(prepared.arguments, &gui);
+    const AddParentResolution parent_res = resolveValidAddParent(
+        domain, prepared.arguments.value("parent_long_name", ""), *explicit_class, channel_index,
+        gui);
+    if(parent_res.needs_clarification)
+    {
+        prepared.needs_clarification = true;
+        prepared.clarification = nlohmann::json::object();
+        prepared.clarification["ambiguous"] = true;
+        prepared.clarification["kind"] = "component";
+        prepared.clarification["field"] = "parent_long_name";
+        prepared.clarification["candidates"] = nlohmann::json::array();
+        for(const AddParentCandidate& c : parent_res.candidates)
+        {
+            prepared.clarification["candidates"].push_back(
+                {{"long_name", c.long_name}, {"class_name", c.class_name}});
+        }
+        return prepared;
+    }
+    if(parent_res.ok && !parent_res.parent_long_name.empty())
+        prepared.arguments["parent_long_name"] = parent_res.parent_long_name;
     if(!prepared.arguments.contains("class_name")
        || !prepared.arguments.contains("parent_long_name")
        || !prepared.arguments.contains("short_name"))

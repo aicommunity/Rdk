@@ -23,3 +23,17 @@ TEST(LLMStepVerifier, BuildPostVerifyCriteriaUnknownToolEmpty)
     EXPECT_TRUE(c.type.empty());
 }
 
+TEST(LLMStepVerifier, AddComponentVerifyUsesGatewayLongNameOnly)
+{
+    URdkDomainAccess domain(nullptr);
+    ToolGatewayResult tr;
+    tr.ok = true;
+    tr.result["long_name"] = "Model.Zone.Neuron1";
+    const nlohmann::json args = {{"short_name", "PNeuron"}, {"class_name", "NSPNeuron"},
+                                 {"parent_long_name", "Model.Zone"}};
+    const SuccessCriteria c = buildPostVerifyCriteria("add_component", args, tr);
+    VerifyResult vr = verifySuccessCriteria(c, domain, 0);
+    EXPECT_FALSE(vr.satisfied);
+    EXPECT_NE(vr.detail.find("Model.Zone.Neuron1"), std::string::npos);
+}
+

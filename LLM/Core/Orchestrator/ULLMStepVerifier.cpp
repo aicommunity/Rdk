@@ -79,8 +79,8 @@ bool verifyAddComponentEffect(const SuccessCriteria& criteria, URdkDomainAccess&
     const std::string short_name = criteria.params.value("short_name", "");
     const std::string class_name = criteria.params.value("class_name", "");
 
-    if(!expected_ln.empty() && verifyComponentExists(expected_ln, domain, channel_index, out))
-        return true;
+    if(!expected_ln.empty())
+        return verifyComponentExists(expected_ln, domain, channel_index, out);
 
     if(!parent.empty() && !short_name.empty())
     {

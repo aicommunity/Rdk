@@ -26,6 +26,10 @@ public:
     RDK::LLM::ApplicationCommandResult invokeHostSynchronized(
         const std::function<RDK::LLM::ApplicationCommandResult()>& run) override;
 
+    std::string captureNavigationToken() const override;
+    void restoreNavigationToken(const std::string& token) override;
+    void navigateToDiagramScope(const std::string& scope_long_name, int channel_index) override;
+
     static int defaultInvokeTimeoutMs();
 
 private slots:

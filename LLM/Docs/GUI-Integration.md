@@ -31,7 +31,15 @@ struct LLMGuiContext {
 
 Обновление: bridge подписан на сигналы, **не** опрашивает engine в timer без необходимости.
 
-При Send dock конвертирует `LLMGuiContext` → `LLMGuiContextSnapshot` и заполняет `LLMRequestEnvelope::gui`. Orchestrator сохраняет snapshot в `ConversationState::last_gui_context` и добавляет ephemeral hint `## GUI focus` через `ULLMContextAssembler`.
+При Send dock конвертирует `LLMGuiContext` → `LLMGuiContextSnapshot` и заполняет `LLMRequestEnvelope::gui`. Orchestrator сохраняет snapshot в `ConversationState::last_gui_context`, **замораживает** его в `ConversationState::active_turn_pin` (`beginGuiTurnPin`) на весь user turn, и добавляет ephemeral hint `## GUI focus` через `ULLMContextAssembler`. Write tools и нормализатор используют pin, а не live navigation во время долгого LLM-ответа.
+
+### Tool trace в чате (TD-134)
+
+После каждого ответа ассистента dock показывает collapsible блок **Tools (N)** из `LLMFinalResponse::tool_trace` (санитизированные аргументы, ok/error, duration). Тот же HTML пишется в `Bin/AiChats/.../*.html` через `formatTurnToolTraceHtml`.
+
+### Presentation scope guard (TD-136)
+
+Перед write invoke gateway может временно открыть drill-level из pin (`ILLMPresentationSink::navigateToDiagramScope`) и восстановить вид пользователя после invoke (`captureNavigationToken` / `restoreNavigationToken`). Управляется `LLMRuntimeProviderSettings::pin_diagram_for_writes` (GUI default: true).
 
 `seedSessionContext()` вызывается из `startNewChat` / `onProjectLoaded` когда проект открыт (bootstrap system message; optional `get_net_snapshot` при `NMSDK_LLM_SESSION_BOOTSTRAP=1`).
 

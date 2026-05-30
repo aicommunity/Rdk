@@ -35,7 +35,7 @@ struct ULLMTraceContext {
 | `provider_request` | Перед HTTP/inference |
 | `provider_response` | После; tokens, latency_ms, model_id |
 | `tool_invoke_start` | Gateway step 6 |
-| `tool_invoke_finish` | ok/error, duration_ms |
+| `tool_invoke_finish` | ok/error, duration_ms, optional `arguments_preview` (sanitized) |
 | `policy_deny` | PolicyDecision !allowed |
 | `confirmation_requested` | pending_confirmation |
 | `confirmation_accepted` | user confirm |

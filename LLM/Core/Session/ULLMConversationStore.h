@@ -9,6 +9,7 @@
 #include "../Orchestrator/ULLMLifecycleArgumentGate.h"
 #include "../Orchestrator/ULLMQuantityTypes.h"
 #include "../Orchestrator/ULLMWorkflowState.h"
+#include "ULLMGuiTurnPin.h"
 #include "ULLMSessionGraphMemory.h"
 
 namespace RDK::LLM {
@@ -52,6 +53,7 @@ struct ConversationState {
     LLMWorkflowPhase workflow_phase = LLMWorkflowPhase::Idle;
     int cloud_provider_rounds = 0;
     std::optional<LLMGuiContextSnapshot> last_gui_context;
+    std::optional<GuiTurnPin> active_turn_pin;
     std::vector<ResolvedEntityRecord> resolved_entities;
     std::string agent_notes;
     bool session_context_seeded = false;
@@ -59,6 +61,8 @@ struct ConversationState {
     /// Last `LLMSessionContext` from an orchestrator entry (resume parity, TD-088).
     std::optional<LLMSessionContext> last_session_context;
     SessionGraphMemory session_graph;
+    /// Tool invocations for the current user turn (cleared at turn start; copied to response).
+    std::vector<TurnToolInvocationView> current_turn_tool_trace;
     int store_schema_version = 3;
 };
 

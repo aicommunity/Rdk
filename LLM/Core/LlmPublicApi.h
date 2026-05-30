@@ -50,6 +50,7 @@ public:
     ILLMProjectContextProvider* projectContext() const { return m_project_context; }
     bool loadConversationSession(const std::string& session_id);
     const ConversationState* conversationState(const std::string& session_id) const;
+    ConversationState* mutableConversationState(const std::string& session_id);
 
     void setPresentationSink(std::unique_ptr<ILLMPresentationSink> sink);
     ILLMPresentationSink* presentationSink() const;

@@ -18,6 +18,7 @@
 #include <QVBoxLayout>
 
 #include "../../../LLM/Core/LlmPublicApi.h"
+#include "../../../LLM/Core/Observability/ULLMToolTrace.h"
 #include "../../../LLM/Core/Orchestrator/ULLMAgentOrchestrator.h"
 #include "../../../LLM/Core/Orchestrator/ULLMWorkflowState.h"
 #include "../../../LLM/Core/Policy/ULLMPolicyLimits.h"
@@ -38,6 +39,21 @@ namespace {
 fs::path toArchivePath(const QString& path)
 {
     return fs::path(path.toStdString());
+}
+
+void appendToolTraceToHistory(QTextEdit* history,
+                              const std::function<void(const QString&)>& archive_fn,
+                              const RDK::LLM::LLMFinalResponse& resp)
+{
+    if(resp.tool_trace.empty())
+        return;
+    const std::string html = RDK::LLM::formatTurnToolTraceHtml(resp.tool_trace);
+    if(html.empty())
+        return;
+    const QString qhtml = QString::fromStdString(html);
+    history->append(qhtml);
+    if(archive_fn)
+        archive_fn(qhtml);
 }
 
 RDK::LLM::LLMGuiContextSnapshot guiSnapshotFromContext(const LLMGuiContext& ctx)
@@ -707,6 +723,10 @@ void ULlmAssistantDockWidget::onStreamFinished(const RDK::LLM::LLMFinalResponse&
 
     appendRollbackStatusIfPresent(this, resp);
 
+    appendToolTraceToHistory(m_history,
+                             [this](const QString& fragment) { archiveHtmlFragment(fragment); },
+                             resp);
+
     if(!resp.ok)
     {
         appendAssistantText(QString::fromStdString("Error: " + resp.error));
@@ -1087,6 +1107,9 @@ void ULlmAssistantDockWidget::onConfirmClicked()
     const RDK::LLM::LLMFinalResponse resp = RDK::LLM::LLMServices::instance().orchestrator().confirmPending(
         currentSessionId(), m_pending_confirmation_id.toStdString());
     clearPendingConfirmation();
+    appendToolTraceToHistory(m_history,
+                             [this](const QString& fragment) { archiveHtmlFragment(fragment); },
+                             resp);
     appendAssistantText(resp.ok ? QString::fromStdString(resp.text)
                                 : QString::fromStdString("Error: " + resp.error));
 }

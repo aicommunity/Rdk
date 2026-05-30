@@ -5,6 +5,7 @@
 #include <thread>
 
 #include "../../../GUI/Qt/Llm/ULlmChatHistoryArchive.h"
+#include "Observability/ULLMToolTrace.h"
 
 namespace fs = std::filesystem;
 
@@ -44,6 +45,24 @@ TEST(LLMChatHistoryArchive, StartNewChat_CreatesDirectories)
     EXPECT_TRUE(fs::exists(*file));
     EXPECT_EQ(file->extension(), ".html");
     EXPECT_NE(file->filename().string().find("NeuroModelerChat"), std::string::npos);
+}
+
+TEST(LLMChatHistoryArchive, Append_ToolTraceFragment)
+{
+    const fs::path bin_root = uniqueTempDir();
+    ULlmChatHistoryArchive archive(bin_root);
+    const auto file = archive.startNewChatFile(sampleMeta());
+    ASSERT_TRUE(file.has_value());
+
+    RDK::LLM::TurnToolInvocationView view;
+    view.tool_name = "add_component";
+    view.arguments = {{"class_name", "NSPNeuron"}};
+    view.ok = true;
+    const std::string trace_html = RDK::LLM::formatTurnToolTraceHtml({view});
+    EXPECT_TRUE(archive.appendHtmlFragment(*file, trace_html));
+
+    const std::string body = archive.loadChatBodyHtml(*file);
+    EXPECT_NE(body.find("add_component"), std::string::npos);
 }
 
 TEST(LLMChatHistoryArchive, Append_TwoTurns)
