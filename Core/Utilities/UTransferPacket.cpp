@@ -183,7 +183,7 @@ unsigned int UTransferPacket::IntCompose(const UParamT &value, int istart)
  union {
   unsigned char bytes[sizeof(int)];
   unsigned int value;
- } converter;
+ } converter{};
  
  // Копируем байты в union
  for(size_t i = 0; i < sizeof(int) && (istart + i) < value.size(); ++i)

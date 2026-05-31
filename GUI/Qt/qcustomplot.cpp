@@ -10341,9 +10341,9 @@ QList<QCPLegend*> QCustomPlot::selectedLegends() const
 */
 void QCustomPlot::deselectAll()
 {
-  foreach (QCPLayer *layer, mLayers)
+  for (QCPLayer *layer : mLayers)
   {
-    foreach (QCPLayerable *layerable, layer->children())
+    for (QCPLayerable *layerable : layer->children())
       layerable->deselectEvent(0);
   }
 }
@@ -10788,9 +10788,9 @@ void QCustomPlot::mouseReleaseEvent(QMouseEvent *event)
       // deselect all other layerables if not additive selection:
       if (!additive)
       {
-        foreach (QCPLayer *layer, mLayers)
+        for (QCPLayer *layer : mLayers)
         {
-          foreach (QCPLayerable *layerable, layer->children())
+          for (QCPLayerable *layerable : layer->children())
           {
             if (layerable != clickedLayerable && mInteractions.testFlag(layerable->selectionCategory()))
             {
@@ -10880,9 +10880,9 @@ void QCustomPlot::draw(QCPPainter *painter)
   drawBackground(painter);
 
   // draw all layered objects (grid, axes, plottables, items, legend,...):
-  foreach (QCPLayer *layer, mLayers)
+  for (QCPLayer *layer : mLayers)
   {
-    foreach (QCPLayerable *child, layer->children())
+    for (QCPLayerable *child : layer->children())
     {
       if (child->realVisibility())
       {

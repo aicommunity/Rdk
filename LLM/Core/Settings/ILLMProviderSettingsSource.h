@@ -9,7 +9,7 @@ class ILLMProviderSettingsSource {
 public:
     virtual ~ILLMProviderSettingsSource() = default;
     virtual LLMRuntimeProviderSettings load() const = 0;
-    virtual void save(const LLMRuntimeProviderSettings& settings) {}
+    virtual void save(const LLMRuntimeProviderSettings& /*settings*/) {}
 };
 
 } // namespace RDK::LLM

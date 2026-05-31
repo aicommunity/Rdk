@@ -275,6 +275,7 @@ std::vector<ToolArgumentFieldSpec> findMissingLifecycleFields(const std::string&
                                                               const nlohmann::json& args,
                                                               RDK::UApplication* app)
 {
+    (void)app;
     std::vector<ToolArgumentFieldSpec> missing;
     if(tool_name == "create_configuration")
     {

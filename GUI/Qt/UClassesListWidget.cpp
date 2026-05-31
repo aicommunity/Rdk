@@ -1166,29 +1166,29 @@ void UClassesListWidget::BuildGroupedTree(const QString& searchText)
     bool isRTlib = false;
     bool isMocklib = false;
 
-    foreach(str, libraryNames)
+    for (const QString& libName : libraryNames)
     {
-        if(str == "")
+        if(libName == "")
             continue;
 
         isMocklib = false;
         isRTlib = false;
 
-        if(MockLibsNames.indexOf(str) != -1)
+        if(MockLibsNames.indexOf(libName) != -1)
             isMocklib = true;
-        if(RTlibsNames.indexOf(str) != -1)
+        if(RTlibsNames.indexOf(libName) != -1)
             isRTlib = true;
 
         // Получение классов библиотеки
-        stringBuff = Storage_GetLibraryClassNames(str.toLocal8Bit());
+        stringBuff = Storage_GetLibraryClassNames(libName.toLocal8Bit());
         QStringList libClasses = QString(stringBuff).split(",");
         Engine_FreeBufString(stringBuff);
 
         // Фильтрация по поисковому запросу
         QStringList filteredClasses;
-        bool libMatchesSearch = str.contains(searchText, Qt::CaseInsensitive);
+        bool libMatchesSearch = libName.contains(searchText, Qt::CaseInsensitive);
 
-        foreach(QString className, libClasses)
+        for (const QString& className : libClasses)
         {
             if(className == "")
                 continue;
@@ -1208,7 +1208,7 @@ void UClassesListWidget::BuildGroupedTree(const QString& searchText)
         // Создание элемента библиотеки
         QTreeWidgetItem* libItem = new QTreeWidgetItem(ui->treeWidgetStorageByLibs);
         libItem->setExpanded(true);
-        libItem->setText(0, str);
+        libItem->setText(0, libName);
         if(isMocklib)
             libItem->setForeground(0, QBrush(Qt::darkMagenta));
         if(isRTlib)
@@ -1217,7 +1217,7 @@ void UClassesListWidget::BuildGroupedTree(const QString& searchText)
         if(method == GroupingMethod::None)
         {
             // Без группировки - двухуровневая структура
-            foreach(QString className, filteredClasses)
+            for (const QString& className : filteredClasses)
             {
                 QTreeWidgetItem* classItem = new QTreeWidgetItem(libItem);
                 classItem->setText(0, className);
@@ -1233,7 +1233,7 @@ void UClassesListWidget::BuildGroupedTree(const QString& searchText)
             // С группировкой - трехуровневая структура
             QHash<QString, QStringList> groups;
 
-            foreach(QString className, filteredClasses)
+            for (const QString& className : filteredClasses)
             {
                 QString group = GetClassGroup(className, method);
                 if(group.isEmpty())
@@ -1248,7 +1248,7 @@ void UClassesListWidget::BuildGroupedTree(const QString& searchText)
             QStringList groupNames = groups.keys();
             groupNames.sort();
 
-            foreach(QString groupName, groupNames)
+            for (const QString& groupName : groupNames)
             {
                 QTreeWidgetItem* groupItem = new QTreeWidgetItem(libItem);
                 groupItem->setExpanded(true);
@@ -1257,7 +1257,7 @@ void UClassesListWidget::BuildGroupedTree(const QString& searchText)
                 QStringList classesInGroup = groups[groupName];
                 classesInGroup.sort();
 
-                foreach(QString className, classesInGroup)
+                for (const QString& className : classesInGroup)
                 {
                     QTreeWidgetItem* classItem = new QTreeWidgetItem(groupItem);
                     classItem->setText(0, className);

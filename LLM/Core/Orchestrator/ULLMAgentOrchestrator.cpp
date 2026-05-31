@@ -849,13 +849,13 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
             const nlohmann::json items = list.value("items", nlohmann::json::array());
             if(!items.is_array() || items.empty())
             {
-                LLMFinalResponse final;
-                final.ok = false;
-                final.text =
+                LLMFinalResponse response;
+                response.ok = false;
+                response.text =
                     "No recent configurations are available. Open or create a project first.";
                 setWorkflowPhase(state, LLMWorkflowPhase::Failed, req.trace_id);
                 m_store.persistToDisk(req.session_id);
-                return final;
+                return response;
             }
         }
     }
@@ -1033,24 +1033,24 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 }
                 if(all_digits && !pickFromNumberedList(trimmed_reply, candidates, candidate_key))
                 {
-                    LLMFinalResponse final;
-                    final.ok = true;
-                    final.needs_argument_clarification = true;
-                    final.needs_tool_disambiguation = true;
-                    final.needs_entity_clarification = true;
-                    final.clarification_candidates = candidates;
+                    LLMFinalResponse response;
+                    response.ok = true;
+                    response.needs_argument_clarification = true;
+                    response.needs_tool_disambiguation = true;
+                    response.needs_entity_clarification = true;
+                    response.clarification_candidates = candidates;
                     nlohmann::json payload;
                     payload["kind"] =
                         pending.disambiguation_kind == PendingDisambiguationKind::Component
                             ? "component"
                             : "class";
                     payload["candidates"] = candidates;
-                    final.text = "Invalid list number. Please choose 1-"
+                    response.text = "Invalid list number. Please choose 1-"
                                    + std::to_string(candidates.size()) + ".\n\n"
                                    + formatClarificationMessage(payload);
                     m_store.setPendingToolArguments(req.session_id, pending);
                     m_store.persistToDisk(req.session_id);
-                    return final;
+                    return response;
                 }
             }
 
@@ -1101,22 +1101,22 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                     if(!class_name.empty() && rep_args.contains("class_name"))
                         class_name = rep_args["class_name"].get<std::string>();
                 }
-                LLMFinalResponse final;
-                final.ok = true;
-                final.text = "Added " + std::to_string(added) + " component(s)"
+                LLMFinalResponse response;
+                response.ok = true;
+                response.text = "Added " + std::to_string(added) + " component(s)"
                              + (class_name.empty() ? "." : (": " + class_name));
                 m_store.clearPendingToolArguments(req.session_id);
-                return final;
+                return response;
             }
 
             // Merged args already include the user's pick; avoid re-merging user_text in gateway.
-            LLMFinalResponse final = invokeLifecycleToolDirect(
+            LLMFinalResponse response = invokeLifecycleToolDirect(
                 req.session_id, req.trace_id, pending.tool_name, merged, session,
                 entity_user_text_hint);
-            if(final.ok && !final.needs_argument_clarification && !final.needs_entity_clarification
-               && !final.needs_tool_disambiguation && !final.pending_confirmation)
+            if(response.ok && !response.needs_argument_clarification && !response.needs_entity_clarification
+               && !response.needs_tool_disambiguation && !response.pending_confirmation)
                 m_store.clearPendingToolArguments(req.session_id);
-            return final;
+            return response;
         }
     }
 
@@ -2695,10 +2695,10 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
     if(!tr.ok && tool_name == "add_component"
        && (tr.error_code == "CLASS_NOT_REGISTERED" || tr.error_code == "CLASS_AMBIGUOUS"))
     {
-        LLMFinalResponse final;
-        final.ok = false;
-        final.error = tr.message;
-        final.text = tr.message;
+        LLMFinalResponse response;
+        response.ok = false;
+        response.error = tr.message;
+        response.text = tr.message;
         if(state.pending_tool_arguments
            && state.pending_tool_arguments->class_disambiguation_candidates.is_array()
            && !state.pending_tool_arguments->class_disambiguation_candidates.empty())
@@ -2706,13 +2706,13 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
             nlohmann::json payload;
             payload["kind"] = "class";
             payload["candidates"] = state.pending_tool_arguments->class_disambiguation_candidates;
-            final.text = tr.message + "\n\n" + formatClarificationMessage(payload);
-            final.needs_tool_disambiguation = true;
-            final.needs_entity_clarification = true;
-            final.clarification_candidates = payload["candidates"];
+            response.text = tr.message + "\n\n" + formatClarificationMessage(payload);
+            response.needs_tool_disambiguation = true;
+            response.needs_entity_clarification = true;
+            response.clarification_candidates = payload["candidates"];
         }
         m_store.persistToDisk(session_id);
-        return final;
+        return response;
     }
 
     const std::vector<ToolArgumentFieldSpec> direct_missing =

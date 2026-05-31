@@ -207,10 +207,10 @@ QList<UComponentGuiContext> UComponentGuiTabHostWidget::contexts() const
         return out;
     for(int i = 0; i < m_tabWidget->count(); ++i)
     {
-        const QVariant data = m_tabWidget->tabBar()->tabData(i);
-        if(data.canConvert<QString>())
+        const QVariant tabData = m_tabWidget->tabBar()->tabData(i);
+        if(tabData.canConvert<QString>())
         {
-            const QStringList parts = data.toString().split('|');
+            const QStringList parts = tabData.toString().split('|');
             if(parts.size() >= 3)
             {
                 UComponentGuiContext context;
@@ -260,8 +260,8 @@ void UComponentGuiTabHostWidget::pruneStaleTabForContext(const UComponentGuiCont
         if(!host)
             continue;
 
-        const QVariant data = m_tabWidget->tabBar()->tabData(i);
-        const bool keyedHere = (data.toString() == key) || (m_tabHosts.value(key).data() == host);
+        const QVariant tabData = m_tabWidget->tabBar()->tabData(i);
+        const bool keyedHere = (tabData.toString() == key) || (m_tabHosts.value(key).data() == host);
         if(!keyedHere)
             continue;
 
@@ -399,10 +399,10 @@ void UComponentGuiTabHostWidget::startDragFromTab(int index)
 {
     if(index < 0 || index >= m_tabWidget->count())
         return;
-    const QVariant data = m_tabWidget->tabBar()->tabData(index);
-    if(!data.canConvert<QString>())
+    const QVariant tabData = m_tabWidget->tabBar()->tabData(index);
+    if(!tabData.canConvert<QString>())
         return;
-    const QStringList parts = data.toString().split('|');
+    const QStringList parts = tabData.toString().split('|');
     if(parts.size() < 3)
         return;
     UComponentGuiContext context;
@@ -426,8 +426,8 @@ int UComponentGuiTabHostWidget::tabIndexForContext(const UComponentGuiContext& c
     const QString key = contextKey(context);
     for(int i = 0; i < m_tabWidget->count(); ++i)
     {
-        const QVariant data = m_tabWidget->tabBar()->tabData(i);
-        if(data.toString() == key)
+        const QVariant tabData = m_tabWidget->tabBar()->tabData(i);
+        if(tabData.toString() == key)
             return i;
     }
     return -1;

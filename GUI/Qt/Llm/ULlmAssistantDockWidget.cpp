@@ -249,8 +249,8 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
                        .arg(QUuid::createUuid().toString(QUuid::WithoutBraces));
 
     m_shortcut_ctrl_return =
-        new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Return), m_input);
-    m_shortcut_ctrl_enter = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_Enter), m_input);
+        new QShortcut(QKeySequence(static_cast<int>(Qt::CTRL) | static_cast<int>(Qt::Key_Return)), m_input);
+    m_shortcut_ctrl_enter = new QShortcut(QKeySequence(static_cast<int>(Qt::CTRL) | static_cast<int>(Qt::Key_Enter)), m_input);
     connect(m_shortcut_ctrl_return, &QShortcut::activated, this,
             &ULlmAssistantDockWidget::trySendFromShortcut);
     connect(m_shortcut_ctrl_enter, &QShortcut::activated, this,

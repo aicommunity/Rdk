@@ -540,8 +540,8 @@ void UGEngineControlWidget::actionLoadConfig()
     }
 
     // Начальная папка диалога: последняя открытая или Configs
-    QSettings settings("NeuroModeler", "NeuroModeler");
-    QString dialog_initial_dir = settings.value("LastConfigDialogDir").toString();
+    QSettings registrySettings("NeuroModeler", "NeuroModeler");
+    QString dialog_initial_dir = registrySettings.value("LastConfigDialogDir").toString();
     if(dialog_initial_dir.isEmpty() || !QDir(dialog_initial_dir).exists())
         dialog_initial_dir = configs_path;
 
@@ -561,7 +561,7 @@ void UGEngineControlWidget::actionLoadConfig()
       application->OpenProject(fileName.toLocal8Bit().constData());
       UpdateInterface();
 
-      settings.setValue("LastConfigDialogDir", QFileInfo(fileName).absolutePath());
+      registrySettings.setValue("LastConfigDialogDir", QFileInfo(fileName).absolutePath());
 
       addToRecentConfigs(fileName);
 
@@ -2829,8 +2829,8 @@ void UGEngineControlWidget::updateRecentConfigsMenu()
 {
     ui->menuRecentConfigs->clear();
 
-    QSettings settings("NeuroModeler", "NeuroModeler");
-    QStringList paths = settings.value("RecentConfigs").toStringList();
+    QSettings registrySettings("NeuroModeler", "NeuroModeler");
+    QStringList paths = registrySettings.value("RecentConfigs").toStringList();
 
     if (paths.isEmpty())
     {
@@ -2857,13 +2857,13 @@ void UGEngineControlWidget::addToRecentConfigs(const QString& path)
     if (canonical.isEmpty())
         return;
 
-    QSettings settings("NeuroModeler", "NeuroModeler");
-    QStringList paths = settings.value("RecentConfigs").toStringList();
+    QSettings registrySettings("NeuroModeler", "NeuroModeler");
+    QStringList paths = registrySettings.value("RecentConfigs").toStringList();
     paths.removeAll(canonical);
     paths.prepend(canonical);
     while (paths.size() > kMaxRecentConfigs)
         paths.removeLast();
-    settings.setValue("RecentConfigs", paths);
+    registrySettings.setValue("RecentConfigs", paths);
     updateRecentConfigsMenu();
 }
 
