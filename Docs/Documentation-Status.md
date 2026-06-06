@@ -1,5 +1,7 @@
 # Статус документации Rdk Core
 
+## RU
+
 Краткий статус документации ядра Rdk (`Rdk/Docs/`) и чеклист синхронизации с кодом.
 
 **Аудит:** 2026-06-06 — [Documentation-Inventory.json](../../Docs/Audit/Documentation-Inventory.json), [Link-Health-Report.md](../../Docs/Audit/Link-Health-Report.md), [Bilingual-Parity-Report.md](../../Docs/Audit/Bilingual-Parity-Report.md)

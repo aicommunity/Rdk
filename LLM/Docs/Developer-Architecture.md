@@ -1,10 +1,14 @@
 # Developer architecture — RDK LLM assistant
 
+## RU
+
 Normative overview for implementers and coding agents. Contract details remain in topic-specific docs; this file is the **single source of truth** for structure and request flow.
 
 **See also:** [Extension-Guide.md](Extension-Guide.md) (how to add tools/knowledge), [Architecture.md](Architecture.md) (short index + CMake), [Post-MVP-Implementation-Plan.md](Post-MVP-Implementation-Plan.md) (deferred features).
 
 ---
+
+## EN
 
 ## 1. Role of the LLM
 

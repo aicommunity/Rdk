@@ -1,8 +1,12 @@
 # Development Workflow — Commits and Tech Debt
 
+## RU
+
 Mandatory process for **all agents and developers** implementing RDK LLM (phases 0–4).
 
 ---
+
+## EN
 
 ## 1. Phase completion checklist
 

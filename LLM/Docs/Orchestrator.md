@@ -1,5 +1,7 @@
 # LLM Orchestrator
 
+## RU
+
 Normative flow: [Developer-Architecture.md](Developer-Architecture.md) §4.
 
 ## 1. `ULLMAgentOrchestrator`
@@ -39,6 +41,8 @@ public:
 ```
 
 ---
+
+## EN
 
 ## 2. `LLMRequestEnvelope`
 

@@ -1,5 +1,7 @@
 # Testing Strategy
 
+## RU
+
 ## 1. Уровни (как у платформы, не как у чата)
 
 | Уровень | Что | Где | LLM required |
@@ -42,6 +44,8 @@ BUILD_DIR=build-llm-ci ./Scripts/ci-llm-agent-scenarios.sh
 ```
 
 ---
+
+## EN
 
 ## 2. Mock `ILLMProvider`
 

@@ -1,5 +1,7 @@
 # Архитектура RDK LLM (краткий индекс)
 
+## RU
+
 **Подробная normative-архитектура:** [Developer-Architecture.md](Developer-Architecture.md).  
 **Как расширять:** [Extension-Guide.md](Extension-Guide.md).
 
@@ -23,6 +25,8 @@ LLM — **планировщик и интерпретатор намерени�
 - расширяет права пользователя.
 
 ---
+
+## EN
 
 ## 2. Три плоскости
 

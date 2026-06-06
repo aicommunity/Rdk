@@ -1,5 +1,7 @@
 # Post-Audit Phase 2 — Implementation Plan (agent-ready)
 
+## RU
+
 **Audience:** Cursor / CI agents implementing the next LLM hardening sprint after the assistant audit (dialog + autonomy).
 
 **Baseline:** Audit burn-down complete; all rows TD-068 … TD-071 are `done` in [TECH-DEBT.md](../TECH-DEBT.md). Normative architecture: [Developer-Architecture.md](Developer-Architecture.md). Process: [Development-Workflow.md](Development-Workflow.md).
@@ -7,6 +9,8 @@
 **Do not edit:** `.cursor/plans/llm_assistant_audit_*.plan.md` (historical audit only).
 
 ---
+
+## EN
 
 ## Как использовать (для человека)
 

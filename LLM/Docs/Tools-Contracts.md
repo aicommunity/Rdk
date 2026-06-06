@@ -1,10 +1,14 @@
 # Tools Contracts — JSON Schema
 
+## RU
+
 `TOOL_REGISTRY_VERSION`: **1.0.0**
 
 Все tools используют `additionalProperties: false` где указано (strict).
 
 ---
+
+## EN
 
 ## Read tools (фаза 1)
 

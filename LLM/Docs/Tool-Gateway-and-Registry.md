@@ -1,5 +1,7 @@
 # Tool Gateway and Registry
 
+## RU
+
 ## 1. Tool-first (не prompt-first)
 
 Все действия над доменом — **именованные tools** с JSON Schema. Промпт объясняет *когда* вызывать tool, но не *как* обойти схему.
@@ -7,6 +9,8 @@
 Практика (production agent gateways): registry публикует schema до вызова; gateway валидирует input **до** domain; версии tools для regression ([schema-gateway](https://github.com/sravan27/schema-gateway), micro-agents pattern).
 
 ---
+
+## EN
 
 ## 2. `ULLMToolRegistry`
 

@@ -1,5 +1,7 @@
 # Policy and Safety
 
+## RU
+
 ## 1. Принцип
 
 **Guardrails вне LLM.** System prompt дополняет, но не заменяет `ULLMPolicyEngine`.
@@ -7,6 +9,8 @@
 Практика: policy-as-code (YAML/JSON rules или C++ rules engine), audit deny events ([governed-llm-gateway](https://github.com/NathanMaine/governed-llm-gateway), [Microsoft agent-governance-toolkit](https://github.com/microsoft/agent-governance-toolkit)).
 
 ---
+
+## EN
 
 ## 2. `ULLMPolicyEngine`
 

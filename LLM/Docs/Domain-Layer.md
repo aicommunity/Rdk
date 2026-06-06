@@ -1,5 +1,7 @@
 # Domain Layer — UApplication, UNet
 
+## RU
+
 ## 1. Определение «домена» в RDK LLM
 
 **Домен** — не отдельный микросервис, а **слой приложения RDK**:
@@ -20,6 +22,8 @@ UApplication
 `UGuiModelSnapshot` — **кэш для GUI**, может использоваться read-tools как быстрый путь, но **источник истины для write** — Domain через `URdkDomainAccess`.
 
 ---
+
+## EN
 
 ## 2. Класс `URdkDomainAccess`
 

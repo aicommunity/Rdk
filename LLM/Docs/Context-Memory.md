@@ -1,10 +1,14 @@
 # Context and memory (LLM assistant)
 
+## RU
+
 Normative overview for **ephemeral context**, **session store v2**, and **long-term memory files**. Implementation: `ULLMContextAssembler`, `ULLMConversationStore`, `ULLMLongTermMemoryLoader`.
 
 **See also:** [Conversation-State.md](Conversation-State.md), [Knowledge-Sources.md](Knowledge-Sources.md) § Long-term context memory, [GUI-Integration.md](GUI-Integration.md).
 
 ---
+
+## EN
 
 ## Ephemeral vs persisted
 

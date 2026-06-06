@@ -1,8 +1,12 @@
 # Extension guide — tools, knowledge, libraries
 
+## RU
+
 Step-by-step guide for adding assistant capabilities. Architecture context: [Developer-Architecture.md](Developer-Architecture.md).
 
 ---
+
+## EN
 
 ## 1. Add a read-tool in core
 

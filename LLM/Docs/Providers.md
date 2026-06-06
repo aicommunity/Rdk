@@ -1,5 +1,7 @@
 # LLM Providers
 
+## RU
+
 ## 1. `ILLMProvider`
 
 ```cpp
@@ -48,6 +50,8 @@ public:
 ```
 
 ---
+
+## EN
 
 ## 2. `UOpenAICompatProvider` (фаза 1)
 

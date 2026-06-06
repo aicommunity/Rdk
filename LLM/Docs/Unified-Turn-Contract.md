@@ -1,10 +1,14 @@
 # Unified Turn Contract (Agent v2)
 
+## RU
+
 Normative contract for the LLM assistant turn pipeline. Implementation: `ULLMUnifiedTurnController`, `ULLMAgentOrchestrator` (delegate). Deferred ADR entries: [TECH-DEBT.md](../TECH-DEBT.md) § Deferred decisions log.
 
 **See also:** [Developer-Architecture.md](Developer-Architecture.md), [Orchestrator.md](Orchestrator.md), [Agent-Interaction.md](Agent-Interaction.md).
 
 ---
+
+## EN
 
 ## 1. Goals
 

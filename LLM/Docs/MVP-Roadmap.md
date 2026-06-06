@@ -1,5 +1,7 @@
 # MVP Roadmap
 
+## RU
+
 ## Git and tech debt (each phase)
 
 After each implementation phase, follow [Development-Workflow.md](Development-Workflow.md):
@@ -9,6 +11,8 @@ After each implementation phase, follow [Development-Workflow.md](Development-Wo
 3. Tick criteria below when verified
 
 ---
+
+## EN
 
 ## Этапы продукта (из enterprise LLM integration practices)
 

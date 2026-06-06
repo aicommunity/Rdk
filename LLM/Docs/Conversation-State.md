@@ -1,10 +1,14 @@
 # Conversation State
 
+## RU
+
 ## 1. Принцип
 
 **Не полагаться на память модели.** Состояние диалога — в `ULLMConversationStore` (per session).
 
 ---
+
+## EN
 
 ## 2. Идентификаторы сессии
 

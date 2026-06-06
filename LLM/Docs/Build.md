@@ -1,5 +1,7 @@
 # Build and CI
 
+## RU
+
 ## 1. CMake option
 
 ```cmake
@@ -16,6 +18,8 @@ endif()
 ```
 
 ---
+
+## EN
 
 ## 2. Target `rdk.llm.core`
 

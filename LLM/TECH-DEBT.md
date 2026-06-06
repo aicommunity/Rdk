@@ -1,5 +1,7 @@
 # RDK LLM — Technical Debt Log
 
+## RU
+
 Living document. Update **after every phase** (see [Docs/Development-Workflow.md](Docs/Development-Workflow.md)).
 
 **Rules:**
@@ -11,6 +13,8 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
   - as an entry in **Deferred decisions log** (if it is an ADR-style choice to revisit).
 
 ---
+
+## EN
 
 ## Status legend
 

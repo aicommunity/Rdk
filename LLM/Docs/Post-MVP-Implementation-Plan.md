@@ -1,10 +1,14 @@
 # Post-MVP implementation plan
 
+## RU
+
 Roadmap for **deferred code** after MVP / write-tools P1–P3. Architecture baseline: [Developer-Architecture.md](Developer-Architecture.md).
 
 **Not in scope here:** documentation-only changes (see Development-Workflow). **Forbidden:** unbounded autonomous agent (Anti-Patterns #11).
 
 ---
+
+## EN
 
 ## 1. Inventory
 

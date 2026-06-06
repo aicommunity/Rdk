@@ -1,5 +1,7 @@
 # Anti-Patterns
 
+## RU
+
 Явные запреты для реализации и code review.
 
 | # | Антипаттерн | Почему | Правильно |
@@ -14,6 +16,33 @@
 | 8 | Все tools в каждом запросе | Cost, confusion | `ToolFilter` |
 | 9 | Парсинг JSON из markdown | Fragile | Native tool_calls |
 | 10 | LLM в GUI thread | UI freeze | Worker + signals |
+| 11 | Unbounded autonomous agent | Risk | [Post-MVP-Implementation-Plan.md](Post-MVP-Implementation-Plan.md) Scenario D with limits |
+| 12 | Global `RDK_USE_LLM` on rdk.static.qt | Breaks OFF build | Target-level define |
+| 13 | vcpkg required on Linux for LLM | Project policy | apt packages |
+| 14 | Monolith LLM in UGEngineControlWidget | Unmaintainable | LlmGuiBootstrap + bridge |
+| 15 | Skip tool_result after tool_use | Provider errors | Always pair results |
+| 16 | Full matrix in get_properties | Token explosion | `value_repr` truncate |
+| 17 | Trust model for permissions | Escalation | Policy + domain checks |
+| 18 | No audit log | Unsupportable | `ULLMAuditLog` mandatory |
+
+---
+
+## EN
+
+Explicit prohibitions for implementation and code review.
+
+| # | Anti-pattern | Why | Correct approach |
+|---|-------------|--------|-----------|
+| 1 | LLM calls `UEngine`/`UNet` directly | No audit/policy | `ULLMToolGateway` |
+| 2 | Hardcoded `Bin/` in `Rdk/LLM` | Core not portable | `ILLMProjectContextProvider` |
+| 3 | Generating SQL/XML for apply | Injection, corruption | High-level tools |
+| 4 | Write without confirmation | Data loss | HITL preview; optional auto-apply in Settings; plans still need Run plan |
+| 5 | Rules only in system prompt | Jailbreak | `ULLMPolicyEngine` |
+| 6 | Write by fuzzy name | Wrong component | `URdkEntityResolver` |
+| 7 | No idempotency on add | Duplicates on retry | `client_request_id` |
+| 8 | All tools in every request | Cost, confusion | `ToolFilter` |
+| 9 | Parsing JSON from markdown | Fragile | Native tool_calls |
+| 10 | LLM on GUI thread | UI freeze | Worker + signals |
 | 11 | Unbounded autonomous agent | Risk | [Post-MVP-Implementation-Plan.md](Post-MVP-Implementation-Plan.md) Scenario D with limits |
 | 12 | Global `RDK_USE_LLM` on rdk.static.qt | Breaks OFF build | Target-level define |
 | 13 | vcpkg required on Linux for LLM | Project policy | apt packages |

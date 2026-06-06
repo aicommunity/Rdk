@@ -1,5 +1,7 @@
 # GUI Integration — Qt, слабая связность
 
+## RU
+
 ## 1. Принцип
 
 GUI RDK — **набор слабосвязанных виджетов**. LLM **не** монолитно встраивается в `UGEngineControlWidget.cpp`.
@@ -12,6 +14,8 @@ GUI RDK — **набор слабосвязанных виджетов**. LLM **
 | **Bootstrap** | `LlmGuiBootstrap.cpp` — `#ifdef RDK_USE_LLM` |
 
 ---
+
+## EN
 
 ## 2. `LLMGuiContext` (структура данных)
 
