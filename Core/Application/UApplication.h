@@ -594,7 +594,7 @@ void ApplyCliLogOverrides(const boost::program_options::variables_map& vm);
 #endif
 void RegisterChannelOverrideToken(const std::string& token, LogRoutingOverrides& target);
 int ParseSeverityToken(const std::string& token, int fallback) const;
-int DetermineBaseLogLevel(bool events_log_mode, bool debug_mode) const;
+int DetermineBaseLogLevel(bool debug_mode) const;
 int ResolveChannelLevel(int channel_index, int base_level) const;
 int ResolveVerbosityLevel(int base_level) const;
 

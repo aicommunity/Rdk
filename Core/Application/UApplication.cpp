@@ -836,13 +836,11 @@ int UApplication::ParseSeverityToken(const std::string& token, int fallback) con
  return ParseSeverityString(token, fallback);
 }
 
-int UApplication::DetermineBaseLogLevel(bool events_log_mode, bool debug_mode) const
+int UApplication::DetermineBaseLogLevel(bool debug_mode) const
 {
  if(debug_mode)
   return RDK_EX_DEBUG;
- if(events_log_mode)
-  return RDK_EX_INFO;
- return RDK_EX_WARNING;
+ return RDK_EX_INFO;
 }
 
 int UApplication::ResolveChannelLevel(int channel_index, int base_level) const
@@ -882,7 +880,7 @@ int UApplication::ResolveVerbosityLevel(int base_level) const
 
 void UApplication::ApplyLogRouting(const TProjectConfig& config)
 {
- const int base_system_level = DetermineBaseLogLevel(config.EventsLogMode, config.DebugMode);
+ const int base_system_level = DetermineBaseLogLevel(config.DebugMode);
  const int base_default_level = base_system_level;
  const int base_verbosity = ResolveVerbosityLevel(config.DebugMode ? 1 : 0);
 
@@ -902,8 +900,7 @@ void UApplication::ApplyLogRouting(const TProjectConfig& config)
  {
   const auto& channel_cfg = config.ChannelsConfig[i];
   const bool channel_debug = channel_cfg.DebugMode || config.DebugMode;
-  const bool channel_info = channel_cfg.EventsLogMode || config.EventsLogMode;
-  const int base_channel_level = DetermineBaseLogLevel(channel_info, channel_debug);
+  const int base_channel_level = DetermineBaseLogLevel(channel_debug);
   const int channel_verbosity = ResolveVerbosityLevel(channel_debug ? 1 : 0);
   RDK::Logging::SetChannelRuntimeConfig(
    i,
@@ -1359,6 +1356,9 @@ google::InstallFailureSignalHandler();
 /// Деинициализирует приложение
 bool UApplication::UnInit(void)
 {
+ if(!AppIsInit)
+  return true;
+
  RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Application uninitialization has been started.");
  if(EngineControl)
  {
@@ -1663,7 +1663,7 @@ bool UApplication::CreateProject(const std::string &file_name, const std::string
 {
  RDK::TProjectConfig project_config;
 
- project_config.DebugMode=true;
+ project_config.DebugMode=false;
  project_config.SetNumChannels(1);
  project_config.ProjectMode=0;
  project_config.ProjectName="Autocreated configuration";
@@ -1687,6 +1687,7 @@ bool UApplication::CreateProject(const std::string &file_name, const std::string
  project_config.ChannelsConfig[0].DefaultTimeStep=2000;
  project_config.ChannelsConfig[0].MinInterstepsInterval=1;
  project_config.ChannelsConfig[0].MaxCalculationModelTime=0;
+ project_config.ChannelsConfig[0].DebugMode=false;
 
  return CreateProject(file_name,project_config);
 }

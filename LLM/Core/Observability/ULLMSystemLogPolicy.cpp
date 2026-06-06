@@ -16,7 +16,7 @@ ChannelLogPolicy channelPolicyFromFlags(int channel_index, bool events_log_mode,
     ch.channel_index = channel_index;
     ch.debug_mode = debug_mode;
     ch.events_log_mode = events_log_mode;
-    ch.effective_min_severity = determineBaseLogSeverity(events_log_mode, debug_mode);
+    ch.effective_min_severity = determineBaseLogSeverity(debug_mode);
     ch.effective_min_severity_name = severityName(ch.effective_min_severity);
     ch.max_verbosity = debug_mode ? 1 : 0;
     return ch;
@@ -56,13 +56,11 @@ std::string buildSummary(const SystemLogPolicySnapshot& snap)
 
 } // namespace
 
-int determineBaseLogSeverity(bool events_log_mode, bool debug_mode)
+int determineBaseLogSeverity(bool debug_mode)
 {
     if(debug_mode)
         return RDK_EX_DEBUG;
-    if(events_log_mode)
-        return RDK_EX_INFO;
-    return RDK_EX_WARNING;
+    return RDK_EX_INFO;
 }
 
 std::string severityName(int rdk_severity)
@@ -86,8 +84,7 @@ SystemLogPolicySnapshot buildSystemLogPolicySnapshotFromConfig(const TProjectCon
     snap.project_debug_mode = config.DebugMode;
     snap.project_events_log_mode = config.EventsLogMode;
     snap.active_channel_index = active_channel_index;
-    snap.project_effective_min_severity =
-        determineBaseLogSeverity(config.EventsLogMode, config.DebugMode);
+    snap.project_effective_min_severity = determineBaseLogSeverity(config.DebugMode);
     snap.project_effective_min_severity_name = severityName(snap.project_effective_min_severity);
 
     const int num_channels = static_cast<int>(config.ChannelsConfig.size());
@@ -95,8 +92,8 @@ SystemLogPolicySnapshot buildSystemLogPolicySnapshotFromConfig(const TProjectCon
     {
         const auto& channel_cfg = config.ChannelsConfig[i];
         const bool channel_debug = channel_cfg.DebugMode || config.DebugMode;
-        const bool channel_info = channel_cfg.EventsLogMode || config.EventsLogMode;
-        snap.channels.push_back(channelPolicyFromFlags(i, channel_info, channel_debug));
+        const bool channel_events = channel_cfg.EventsLogMode || config.EventsLogMode;
+        snap.channels.push_back(channelPolicyFromFlags(i, channel_events, channel_debug));
     }
 
     snap.details = {{"project",

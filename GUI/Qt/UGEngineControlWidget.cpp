@@ -443,7 +443,6 @@ bool UGEngineControlWidget::eventFilter(QObject* watched, QEvent* event)
 
 UGEngineControlWidget::~UGEngineControlWidget()
 {
-    application->UnInit();
     delete ui;
 }
 
@@ -1801,8 +1800,6 @@ void UGEngineControlWidget::createOrActivateCustomWidget(const QString &id)
 void UGEngineControlWidget::closeEvent(QCloseEvent *event)
 {
  application->PauseChannel(-1);
- //application->CloseProject();
- application->UnInit();
  event->accept();
  //   if (maybeSave()) {
  //       writeSettings();

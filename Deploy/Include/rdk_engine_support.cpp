@@ -18,7 +18,7 @@ namespace
 {
 
 std::mutex gChannelConfigMutex;
-RDK::Logging::ChannelRuntimeConfig gDefaultChannelConfig{RDK_EX_WARNING, 0};
+RDK::Logging::ChannelRuntimeConfig gDefaultChannelConfig{RDK_EX_INFO, 0};
 
 // Используем "вечный" heap-объект для карты конфигураций каналов логирования,
 // чтобы избежать проблем с порядком разрушения статиков при завершении процесса.
@@ -1052,6 +1052,9 @@ int URdkCoreManager::ChannelUnInit(int channel_index)
 void URdkCoreManager::Destroy(void)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
+
+ if(NumChannels <= 0 && EngineList.empty() && StorageList.empty())
+  return;
 
  for(int i=0;i<NumChannels;i++)
  {

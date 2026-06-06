@@ -29,7 +29,7 @@ TProjectChannelConfig::TProjectChannelConfig(void)
 
  ResetAfterLoad=true;
 
- DebugMode=true;
+ DebugMode=false;
 
  EventsLogMode=false;
 

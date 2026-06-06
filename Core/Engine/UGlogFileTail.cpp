@@ -264,7 +264,15 @@ bool UGlogFileTail::ParseLine(const std::string& line, const std::string& severi
   payload.erase(payload.begin());
 
  entry.Timestamp = timestamp;
- entry.Severity = MapSeverityTag(severity_tag);
+ if(payload.rfind("[DEBUG] ", 0) == 0)
+ {
+  entry.Severity = RDK_EX_DEBUG;
+  payload.erase(0, 8);
+ }
+ else
+ {
+  entry.Severity = MapSeverityTag(severity_tag);
+ }
  entry.Text = payload;
  return true;
 }

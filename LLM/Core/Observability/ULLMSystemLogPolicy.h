@@ -32,7 +32,7 @@ struct SystemLogPolicySnapshot {
     nlohmann::json details;
 };
 
-int determineBaseLogSeverity(bool events_log_mode, bool debug_mode);
+int determineBaseLogSeverity(bool debug_mode);
 std::string severityName(int rdk_severity);
 SystemLogPolicySnapshot buildSystemLogPolicySnapshotFromConfig(const TProjectConfig& config,
                                                                int active_channel_index,

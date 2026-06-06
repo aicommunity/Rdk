@@ -16,19 +16,20 @@ TEST(LLMSystemLogPolicy, DebugModeMapsToDebug)
     EXPECT_EQ(snap.project_effective_min_severity_name, "DEBUG");
 }
 
-TEST(LLMSystemLogPolicy, EventsOnlyMapsToInfo)
+TEST(LLMSystemLogPolicy, DefaultWithoutDebugMapsToInfo)
+{
+    RDK::TProjectConfig cfg;
+    const SystemLogPolicySnapshot snap = buildSystemLogPolicySnapshotFromConfig(cfg, 0);
+    EXPECT_EQ(snap.project_effective_min_severity, RDK_EX_INFO);
+    EXPECT_EQ(snap.project_effective_min_severity_name, "INFO");
+}
+
+TEST(LLMSystemLogPolicy, EventsLogModeDoesNotChangeMinSeverity)
 {
     RDK::TProjectConfig cfg;
     cfg.EventsLogMode = true;
     const SystemLogPolicySnapshot snap = buildSystemLogPolicySnapshotFromConfig(cfg, 0);
     EXPECT_EQ(snap.project_effective_min_severity, RDK_EX_INFO);
-}
-
-TEST(LLMSystemLogPolicy, BothOffMapsToWarning)
-{
-    RDK::TProjectConfig cfg;
-    const SystemLogPolicySnapshot snap = buildSystemLogPolicySnapshotFromConfig(cfg, 0);
-    EXPECT_EQ(snap.project_effective_min_severity, RDK_EX_WARNING);
 }
 
 TEST(LLMSystemLogPolicy, SummaryMentionsDebugDisclaimer)
