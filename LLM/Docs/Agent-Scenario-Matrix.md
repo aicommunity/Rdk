@@ -33,7 +33,7 @@ Bin/Platform/Linux/llm_scenario_runner --tier deterministic --root Rdk/Tests/Fix
 
 ## Схема fixture (v1)
 
-Обязательные поля: `schema_version`, `id`, `tier`, `user_text`, `expect`. Для `tier=e2e` — блок `e2e` с `goal` ([`E2eGoalKind`](../Tests/Unit/LLM/llm_e2e_analyzer.h)).
+Обязательные поля: `schema_version`, `id`, `tier`, `user_text`, `expect`. Для `tier=e2e` — блок `e2e` с `goal` ([`E2eGoalKind`](../../Tests/Unit/LLM/llm_e2e_analyzer.h)).
 
 Для deterministic: `mock_script[]` — очередь ответов mock-провайдера (`tool_calls` и/или `text`). Поле `registry_profile`: `core` (по умолчанию) или `full` (Pulse/Hardware/MotionControl Llm tools).
 
