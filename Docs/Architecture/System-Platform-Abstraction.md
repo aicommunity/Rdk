@@ -11,7 +11,7 @@
 ```mermaid
 flowchart TB
     subgraph "Абстрактный интерфейс"
-        Interface[rdk_system.h<br/>UGenericMutex<br/>UGenericEvent]
+        Interface["rdk_system.h<br/>UGenericMutex<br/>UGenericEvent"]
     end
     
     subgraph "Платформенные реализации"
@@ -141,12 +141,12 @@ endif()
 ```mermaid
 flowchart TB
     Start[CMake конфигурация] --> CheckQt{QT_FOUND?}
-    CheckQt -->|Да| QtImpl[System/Qt<br/>QLibrary, QReadWriteLock]
+    CheckQt -->|Да| QtImpl["System/Qt<br/>QLibrary, QReadWriteLock"]
     CheckQt -->|Нет| CheckWin{WIN32?}
-    CheckWin -->|Да| WinImpl[System/Win<br/>LoadLibrary, CreateMutex]
+    CheckWin -->|Да| WinImpl["System/Win<br/>LoadLibrary, CreateMutex"]
     CheckWin -->|Нет| CheckUnix{UNIX?}
-    CheckUnix -->|Да| GccImpl[System/Gcc<br/>dlopen, pthread]
-    CheckUnix -->|Нет| ANSIImpl[System/ANSI<br/>Fallback]
+    CheckUnix -->|Да| GccImpl["System/Gcc<br/>dlopen, pthread"]
+    CheckUnix -->|Нет| ANSIImpl["System/ANSI<br/>Fallback"]
     
     QtImpl --> Link[Линковка реализации]
     WinImpl --> Link

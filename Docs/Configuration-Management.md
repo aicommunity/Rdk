@@ -117,18 +117,18 @@ XML файлы с метаданными о компонентах.
 ```mermaid
 flowchart TB
     Start[Запуск приложения] --> InitApp[UApplication::Init]
-    InitApp --> ReadINI[Чтение .ini<br/>Qt QSettings]
+    InitApp --> ReadINI["Чтение .ini<br/>Qt QSettings"]
     
     Start --> LoadProject[UProject::Load]
-    LoadProject --> ReadXML[USerStorageXML<br/>Чтение XML]
-    ReadXML --> Deserialize[UXMLEnvSerialize<br/>Десериализация компонентов]
-    Deserialize --> CreateComps[Создание компонентов<br/>через UStorage]
+    LoadProject --> ReadXML["USerStorageXML<br/>Чтение XML"]
+    ReadXML --> Deserialize["UXMLEnvSerialize<br/>Десериализация компонентов"]
+    Deserialize --> CreateComps["Создание компонентов<br/>через UStorage"]
     
-    Start --> LoadStyles[UStyleManager<br/>loadTheme]
+    Start --> LoadStyles["UStyleManager<br/>loadTheme"]
     LoadStyles --> ReadJSON[Чтение theme.json]
     LoadStyles --> ReadQSS[Чтение .qss]
     
-    Start --> LoadLibraries[UStorage<br/>LoadLibraries]
+    Start --> LoadLibraries["UStorage<br/>LoadLibraries"]
     LoadLibraries --> LoadClDesc[LoadClassesDescription]
     LoadClDesc --> ReadClDescXML[Чтение ClDesc/*.xml]
 ```
@@ -348,18 +348,18 @@ XML files with component metadata.
 ```mermaid
 flowchart TB
     Start[Application Start] --> InitApp[UApplication::Init]
-    InitApp --> ReadINI[Read .ini<br/>Qt QSettings]
+    InitApp --> ReadINI["Read .ini<br/>Qt QSettings"]
     
     Start --> LoadProject[UProject::Load]
-    LoadProject --> ReadXML[USerStorageXML<br/>Read XML]
-    ReadXML --> Deserialize[UXMLEnvSerialize<br/>Deserialize components]
-    Deserialize --> CreateComps[Create components<br/>via UStorage]
+    LoadProject --> ReadXML["USerStorageXML<br/>Read XML"]
+    ReadXML --> Deserialize["UXMLEnvSerialize<br/>Deserialize components"]
+    Deserialize --> CreateComps["Create components<br/>via UStorage"]
     
-    Start --> LoadStyles[UStyleManager<br/>loadTheme]
+    Start --> LoadStyles["UStyleManager<br/>loadTheme"]
     LoadStyles --> ReadJSON[Read theme.json]
     LoadStyles --> ReadQSS[Read .qss]
     
-    Start --> LoadLibraries[UStorage<br/>LoadLibraries]
+    Start --> LoadLibraries["UStorage<br/>LoadLibraries"]
     LoadLibraries --> LoadClDesc[LoadClassesDescription]
     LoadClDesc --> ReadClDescXML[Read ClDesc/*.xml]
 ```

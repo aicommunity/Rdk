@@ -94,11 +94,11 @@ sequenceDiagram
 
 ```mermaid
 flowchart LR
-    Component[Компонент<br/>UComponent] --> Description[Описание<br/>UGEDescription]
-    Description --> DrawEngine[UDrawEngine<br/>Paint]
-    DrawEngine --> Graphics[UGraphics<br/>Примитивы]
-    Graphics --> Bitmap[UBitmap<br/>Пиксели]
-    Bitmap --> Display[Отображение<br/>GUI Widget]
+    Component["Компонент<br/>UComponent"] --> Description["Описание<br/>UGEDescription"]
+    Description --> DrawEngine["UDrawEngine<br/>Paint"]
+    DrawEngine --> Graphics["UGraphics<br/>Примитивы"]
+    Graphics --> Bitmap["UBitmap<br/>Пиксели"]
+    Bitmap --> Display["Отображение<br/>GUI Widget"]
 ```
 
 #### UBitmap

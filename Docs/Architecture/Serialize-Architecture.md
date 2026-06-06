@@ -145,8 +145,8 @@ sequenceDiagram
 ```mermaid
 flowchart TB
     Save[Сохранение проекта] --> Format{Формат?}
-    Format -->|XML| XML[USerStorageXML<br/>UXMLEnvSerialize]
-    Format -->|Binary| Binary[USerStorageBinary<br/>UBinaryEnvSerialize]
+    Format -->|XML| XML["USerStorageXML<br/>UXMLEnvSerialize"]
+    Format -->|Binary| Binary["USerStorageBinary<br/>UBinaryEnvSerialize"]
     XML --> FileXML[Файл .xml]
     Binary --> FileBin[Файл .bin]
     
