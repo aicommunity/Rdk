@@ -52,6 +52,7 @@ public:
  int autoexecLastProjectFlag;
  int hideAdminForm;
  int startMinimized;
+ int showLlmAssistantMenu;
  double calcTimeIntervalSec;
  int exitAfterCalcFlag;
 
@@ -179,6 +180,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  exitAfterCalcFlag = RDK::atoi(projectIniFile("General", "ExitAfterCalcFlag", "0"));
  hideAdminForm        = RDK::atoi(projectIniFile("General", "HideAdminForm", "0"));
  startMinimized       = RDK::atoi(projectIniFile("General", "StartMinimized", "0"));
+ showLlmAssistantMenu = RDK::atoi(projectIniFile("General", "ShowLlmAssistantMenu", "0"));
 
  mainFormName=projectIniFile("General", "MainFormName", "");
  minimizeToTray=atoi(projectIniFile("General","MinimizeToTray","0"));

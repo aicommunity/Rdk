@@ -82,7 +82,7 @@ signals:
 ```cpp
 #ifdef RDK_USE_LLM
     m_llmBridge = new ULlmGuiContextBridge(application, this);
-    LlmGui::RegisterLlmUi(this, application, m_llmBridge);
+    LlmGui::RegisterLlmUi(this, application, m_llmBridge, showLlmAssistantMenu);
     connect(modernDiagram, &UModernDiagramContainerWidget::openComponentGuiFromScheme,
             m_llmBridge, &ULlmGuiContextBridge::onDiagramSelectionChanged);
 #endif
@@ -98,9 +98,12 @@ signals:
 namespace LlmGui {
 void RegisterLlmUi(UGEngineControlWidget* host,
                    RDK::UApplication* app,
-                   ULlmGuiContextBridge* bridge);
+                   ULlmGuiContextBridge* bridge,
+                   bool showMenu = false);
 }
 ```
+
+**Видимость меню:** параметр `[General] ShowLlmAssistantMenu` в `NeuroModeler.ini` (default `0`). При `0` пункт меню AI Assistant и горячие клавиши не регистрируются; dock-виджеты и LLM-сервисы остаются доступными программно (presentation sink, `showCustomWidgetById`).
 
 Действия:
 1. `host->registerCustomWidget` — dock «AI Assistant»

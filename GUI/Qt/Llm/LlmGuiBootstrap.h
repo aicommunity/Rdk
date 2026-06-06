@@ -12,7 +12,8 @@ class UApplication;
 
 namespace LlmGui {
 
-void RegisterLlmUi(UGEngineControlWidget* host, RDK::UApplication* app, ULlmGuiContextBridge* bridge);
+void RegisterLlmUi(UGEngineControlWidget* host, RDK::UApplication* app, ULlmGuiContextBridge* bridge,
+                   bool showMenu = false);
 void OpenProviderSettingsDialog(QWidget* parent, RDK::UApplication* app);
 void showPlanPreview(UGEngineControlWidget* host, const QString& summary);
 

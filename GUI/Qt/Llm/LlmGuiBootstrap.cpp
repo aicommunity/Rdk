@@ -36,7 +36,8 @@ void OpenProviderSettingsDialog(QWidget* parent, RDK::UApplication* app)
     dlg.exec();
 }
 
-void RegisterLlmUi(UGEngineControlWidget* host, RDK::UApplication* app, ULlmGuiContextBridge* bridge)
+void RegisterLlmUi(UGEngineControlWidget* host, RDK::UApplication* app, ULlmGuiContextBridge* bridge,
+                   bool showMenu)
 {
     if(!host || !app || !bridge)
         return;
@@ -45,13 +46,18 @@ void RegisterLlmUi(UGEngineControlWidget* host, RDK::UApplication* app, ULlmGuiC
     RDK::LLM::EnsureEmbeddedLlamaProviderRegistered();
 #endif
 
+    const QString aiAssistantMenu = QObject::tr("AI Assistant");
+
     UCustomWidgetDescriptor assistant;
     assistant.id = QStringLiteral("llm.assistant");
-    assistant.title = QObject::tr("AI Assistant");
-    assistant.menuPath = QObject::tr("AI Assistant");
+    assistant.title = aiAssistantMenu;
+    if(showMenu)
+    {
+        assistant.menuPath = aiAssistantMenu;
+        assistant.shortcut = QKeySequence(QStringLiteral("Ctrl+Shift+A"));
+    }
     assistant.placement = UCustomWidgetPlacement::Dock;
     assistant.defaultDockArea = Qt::RightDockWidgetArea;
-    assistant.shortcut = QKeySequence(QStringLiteral("Ctrl+Shift+A"));
     assistant.factory = [bridge](RDK::UApplication* application) -> UVisualControllerWidget* {
         return new ULlmAssistantDockWidget(nullptr, application, bridge);
     };
@@ -60,8 +66,11 @@ void RegisterLlmUi(UGEngineControlWidget* host, RDK::UApplication* app, ULlmGuiC
     UCustomWidgetDescriptor preview;
     preview.id = QStringLiteral("llm.preview");
     preview.title = QObject::tr("AI Change Preview");
-    preview.menuPath =
-        QObject::tr("AI Assistant") + QStringLiteral("/") + QObject::tr("AI Change Preview");
+    if(showMenu)
+    {
+        preview.menuPath =
+            aiAssistantMenu + QStringLiteral("/") + QObject::tr("AI Change Preview");
+    }
     preview.placement = UCustomWidgetPlacement::Dock;
     preview.defaultDockArea = Qt::BottomDockWidgetArea;
     preview.factory = [](RDK::UApplication* application) -> UVisualControllerWidget* {
@@ -71,18 +80,21 @@ void RegisterLlmUi(UGEngineControlWidget* host, RDK::UApplication* app, ULlmGuiC
     };
     host->registerCustomWidget(preview);
 
-    host->appendMenuSeparator(QObject::tr("AI Assistant"));
+    if(showMenu)
+    {
+        host->appendMenuSeparator(aiAssistantMenu);
 
-    auto* settings_action = new QAction(QObject::tr("AI Assistant Settings"), host);
-    settings_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+L")));
-    QObject::connect(settings_action, &QAction::triggered, host,
-                     [host, app]() { OpenProviderSettingsDialog(host, app); });
-    host->appendMenuAction(QObject::tr("AI Assistant"), settings_action);
+        auto* settings_action = new QAction(QObject::tr("AI Assistant Settings"), host);
+        settings_action->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+L")));
+        QObject::connect(settings_action, &QAction::triggered, host,
+                         [host, app]() { OpenProviderSettingsDialog(host, app); });
+        host->appendMenuAction(aiAssistantMenu, settings_action);
 
-    auto* shortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+A")), host);
-    QObject::connect(shortcut, &QShortcut::activated, host, [host]() {
-        host->showCustomWidgetById(QStringLiteral("llm.assistant"));
-    });
+        auto* shortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+A")), host);
+        QObject::connect(shortcut, &QShortcut::activated, host, [host]() {
+            host->showCustomWidgetById(QStringLiteral("llm.assistant"));
+        });
+    }
 
     QObject::connect(host, &UGEngineControlWidget::openComponentGuiFromScheme, bridge,
                      &ULlmGuiContextBridge::onDiagramSelectionChanged);
