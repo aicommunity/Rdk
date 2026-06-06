@@ -8,10 +8,6 @@
 
 Жёстко прошивать `/home/.../Bin` в `Rdk/LLM` **запрещено**.
 
----
-
-## EN
-
 ## 2. Интерфейс `ILLMProjectContextProvider`
 
 ```cpp
@@ -201,3 +197,203 @@ endif()
 ```
 
 Per-library Llm — добавлять в `Libraries/Rdk-HardwareLib/CMakeLists.txt` только если `RDK_USE_LLM` и линковка через NeuroModeler (как `.gui`).
+
+---
+
+## EN
+
+## 1. Problem
+
+`Rdk/LLM` is the **core**, reusable. Paths to `Bin/`, the set of libraries, and documentation are **specific to the root NMSDK repository** (NeuroModeler).
+
+Hard-coding `/home/.../Bin` in `Rdk/LLM` is **forbidden**.
+
+## 2. Interface `ILLMProjectContextProvider`
+
+```cpp
+namespace RDK::LLM {
+
+struct ProjectPaths {
+    std::filesystem::path repository_root;   // Nmsdk root (where CMakeLists.txt lives)
+    std::filesystem::path bin_root;          // usually <root>/Bin
+    std::filesystem::path cl_desc_root;      // <bin>/ClDesc or app->GetClDescPath()
+    std::filesystem::path configs_root;      // <bin>/Configs
+    std::filesystem::path docs_root;         // <root>/Docs and <bin>/Docs
+};
+
+class ILLMProjectContextProvider {
+public:
+    virtual ~ILLMProjectContextProvider() = default;
+
+    virtual ProjectPaths paths() const = 0;
+
+    /// Library names as in RdkLoadPredefinedLibraries (BasicLib → "Rdk-BasicLib" mapping)
+    virtual std::vector<LibraryDescriptor> loadedLibraries() const = 0;
+
+    /// ClDesc XML fragment for ClassName (empty if none)
+    virtual std::string clDescFragment(const std::string& class_name,
+                                       const std::string& locale = "ru-RU") const = 0;
+
+    /// Documentation search (Markdown), top-K fragments, max_chars
+    virtual std::vector<DocSnippet> searchDocs(const std::string& query,
+                                               int top_k = 5,
+                                               int max_chars = 8000) const = 0;
+
+    /// Optional: register extra library tools
+    virtual void registerExtraTools(ULLMToolRegistry& registry, URdkDomainAccess& domain) {}
+};
+
+class ILLMProjectContextProviderRegistry {
+public:
+    void setPrimary(std::shared_ptr<ILLMProjectContextProvider> p);
+    ILLMProjectContextProvider* primary() const;
+};
+
+} // namespace RDK::LLM
+```
+
+---
+
+## 3. NMSDK implementation: `NmsdkLlmProjectContext`
+
+**Files (normative paths):**
+- `App/NeuroModeler/NmsdkLlmProjectContext.h`
+- `App/NeuroModeler/NmsdkLlmProjectContext.cpp`
+- `App/NeuroModeler/NmsdkRegisterLlm.cpp`
+
+### 3.1 Path initialization
+
+```cpp
+ProjectPaths NmsdkLlmProjectContext::paths() const {
+    // repository_root: from app->GetWorkDirectory() walk up to root OR env NMSDK_ROOT
+    // cl_desc: app->GetClDescPath() relative to work dir → absolute
+    // bin_root: work_dir + "/../Bin" or fixed NeuroModeler deploy scheme
+}
+```
+
+**Priority:**
+1. `UApplication::GetClDescPath()`, `GetConfigsMainPath()`, `GetWorkDirectory()`
+2. Environment variable `NMSDK_ROOT` (optional, for CI)
+3. Fallback: `repository_root / "Bin"`
+
+### 3.2 `loadedLibraries()`
+
+Static list, **synchronized** with `Libraries/Libraries.cpp`:
+
+| Library global | ClDesc folder | Docs |
+|----------------|---------------|------|
+| `RDK::BasicLibrary` | `BasicLibrary` / `Rdk-BasicLib` | — |
+| `RDK::CvBasicLibrary` | `CvBasicLibrary` | — |
+| `RDK::HardwareLibrary` | `HardwareLibrary` | `Libraries/Rdk-HardwareLib/Docs/` |
+| `NMSDK::PulseLibrary` | `PulseLibrary` | `Libraries/Nmsdk-PulseLib/Docs/` |
+| `NMSDK::MotionControlLibrary` | `MotionControlLibrary` | `Libraries/Nmsdk-MotionControlLib/Docs/` |
+
+**Rule:** when adding a library to `RdkLoadPredefinedLibraries` — **must** update the table in this document and in `NmsdkLlmProjectContext.cpp`.
+
+### 3.3 `clDescFragment(class_name)`
+
+1. Iterate `paths().cl_desc_root / <lib> / ru-RU / <ClassName>.xml`
+2. If file > 32 KiB — extract only `<Properties>` (simple XML slice, no full DOM if heavy)
+3. In-memory cache per session (LRU 100 classes)
+
+### 3.4 `searchDocs(query)`
+
+Index (MVP — simple):
+- Glob traversal: `Docs/**/*.md`, `Bin/Docs/**/*.md`, `Libraries/*/Docs/**/*.md`
+- Scoring: keyword match (MVP); post-MVP — embeddings offline
+- Return: `{path, title, excerpt, score}`
+
+**Do not index:** `Rdk/ThirdParty`, binaries, full project `*.xml`.
+
+---
+
+## 4. Per-library extensions (`Libraries/*/Llm/`)
+
+### 4.1 When to create
+
+If a library adds **specific** tools or context (Hardware pinout, Pulse SNN params).
+
+### 4.2 Structure (HardwareLib example)
+
+```
+Libraries/Rdk-HardwareLib/Llm/
+  HardwareLibLlmRegistration.cpp
+  HardwareLibLlmTools.cpp
+```
+
+```cpp
+void RegisterHardwareLibLlmTools(RDK::LLM::ULLMToolRegistry& reg,
+                                 RDK::LLM::ILLMProjectContextProvider& ctx) {
+    reg.registerTool(/* describe_arduino_board */, ...);
+}
+```
+
+Called from `NmsdkLlmProjectContext::registerExtraTools` during `LLMServices::initialize` (not a separate manual call after register).
+
+### 4.3 Separation: core vs library
+
+| Category | Where |
+|----------|-------|
+| Universal (net, component, project) | `Rdk/LLM` — **always** |
+| Library domain (docs, class lists) | `Libraries/*/Llm/` — **read tools only**; mutations via core `add_component` |
+| ClDesc / Docs paths | `NmsdkLlmProjectContext` + library docs roots |
+
+**Forbidden:** duplicating `add_component` in each library.
+
+---
+
+## 5. Retrieval in orchestrator
+
+```cpp
+struct RetrievedContext {
+    std::string net_snapshot_json;       // from URdkDomainAccess
+    std::vector<DocSnippet> doc_snippets;
+    std::string cl_desc_for_focus_class; // if GUI selection known
+    int estimated_tokens;
+};
+```
+
+**Token budget (default):**
+- net_snapshot: ≤ 4000 tokens (truncate)
+- doc_snippets: ≤ 3000 tokens
+- cl_desc fragment: ≤ 2000 tokens
+- system prompt: ≤ 1500 tokens
+
+Trim order on overflow: doc_snippets → net_snapshot (keep only selected component + neighbors) → cl_desc.
+
+---
+
+## 6. Registration at NeuroModeler startup
+
+```cpp
+#ifdef RDK_USE_LLM
+void NmsdkRegisterLlm(RDK::UApplication* app) {
+    auto ctx = std::make_shared<NmsdkLlmProjectContext>(app);
+    RDK::LLM::GetContextRegistry().setPrimary(ctx);
+
+    auto& tools = RDK::LLM::GetToolRegistry();
+    RDK::LLM::RegisterCoreRdkTools(tools);  // in Rdk/LLM
+
+    RegisterHardwareLibLlmTools(tools, *ctx);  // optional, phase 2
+    // ...
+}
+#endif
+```
+
+Call: from `UGEngineControlWidget` constructor **after** `application` valid, **once** (std::call_once).
+
+---
+
+## 7. CMake (NMSDK)
+
+```cmake
+if(RDK_USE_LLM)
+  target_sources(NeuroModeler PRIVATE
+    App/NeuroModeler/NmsdkLlmProjectContext.cpp
+    App/NeuroModeler/NmsdkRegisterLlm.cpp
+  )
+  target_link_libraries(NeuroModeler PRIVATE rdk.llm.core)
+endif()
+```
+
+Per-library Llm — add to `Libraries/Rdk-HardwareLib/CMakeLists.txt` only if `RDK_USE_LLM` and link via NeuroModeler (like `.gui`).
