@@ -745,7 +745,7 @@ if (!error.empty())
 - [Application Architecture](../Architecture/Application-Architecture.md) - архитектура приложения
 - [Component System](Component-System.md) - компонентная система
 - [Configuration Management](../Configuration-Management.md) - управление конфигурациями
-- [Bin/Docs/Configs-Structure.md](../../Bin/Docs/Configs-Structure.md) - структура конфигурационных файлов
+- [Bin/Docs/Configs-Structure.md](../../../Bin/Docs/Configs-Structure.md) - структура конфигурационных файлов
 
 ---
 
@@ -1492,6 +1492,6 @@ if (!error.empty())
 
 ### See Also
 
-- [Bin/Docs/Configs-Structure.md](../../Bin/Docs/Configs-Structure.md) - configuration file structure
-- [Docs/Rdk-Core/Application-Architecture.md](../Rdk-Core/Application-Architecture.md) - application architecture
-- [Docs/Components-And-Configuration/Component-System.md](../Components-And-Configuration/Component-System.md) - component system
+- [Bin/Docs/Configs-Structure.md](../../../Bin/Docs/Configs-Structure.md) - configuration file structure
+- [Docs/Rdk-Core/Application-Architecture.md](../../../Docs/Rdk-Core/Application-Architecture.md) - application architecture
+- [Docs/Components-And-Configuration/Component-System.md](../../../Docs/Components-And-Configuration/Component-System.md) - component system

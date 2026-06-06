@@ -191,8 +191,8 @@ Rdk Core не зависит от других библиотек проекта
 
 #### Индексы
 
-- [Полный индекс документации Rdk](../../Docs/Submodules/Rdk-Index.md) - структурированный индекс всей документации Rdk
-- [Навигационная карта](../../Docs/Submodules/Navigation-Map.md) - визуальная карта документации
+- [Полный индекс документации Rdk](../../../Docs/Submodules/Rdk-Index.md) - структурированный индекс всей документации Rdk
+- [Навигационная карта](../../../Docs/Submodules/Navigation-Map.md) - визуальная карта документации
 
 ---
 
@@ -298,5 +298,5 @@ Rdk Core does not depend on other project libraries but uses:
 
 #### Indexes
 
-- [Complete Rdk Documentation Index](../../Docs/Submodules/Rdk-Index.md) - structured index of all Rdk documentation
-- [Navigation Map](../../Docs/Submodules/Navigation-Map.md) - visual documentation map
+- [Complete Rdk Documentation Index](../../../Docs/Submodules/Rdk-Index.md) - structured index of all Rdk documentation
+- [Navigation Map](../../../Docs/Submodules/Navigation-Map.md) - visual documentation map

@@ -203,7 +203,7 @@ event->signal();
 
 ### См. также
 
-- [Cross-Platform Support](../../Docs/Build-And-Deploy/Cross-Platform.md)
+- [Cross-Platform Support](../../../Docs/Build-And-Deploy/Cross-Platform.md)
 - [Rdk Core Overview](Overview.md)
 - [Application Architecture](Application-Architecture.md)
 - [Детальная документация System](../System-Detailed.md)
@@ -276,6 +276,6 @@ Implementation is selected at build time through CMake.
 
 ### See Also
 
-- [Cross-Platform Support](../Build-And-Deploy/Cross-Platform.md)
+- [Cross-Platform Support](../../../Docs/Build-And-Deploy/Cross-Platform.md)
 - [Rdk Core Overview](Overview.md)
 - [Application Architecture](Application-Architecture.md)
