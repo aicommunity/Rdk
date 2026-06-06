@@ -26,26 +26,51 @@ RDK::UEPtr<RDK::UContainer> containerFromModelScope(RDK::UContainer* model, cons
     return model->GetComponentL(scope_utf8.constData(), true);
 }
 
-void syncEnvironmentCurrentComponent(RDK::UEnvironment* env, const QString& component_long_name)
+QString pathRelativeToModelRoot(RDK::UContainer* model, const QString& component_long_name)
 {
+    const QString trimmed = component_long_name.trimmed();
+    if(!model || trimmed.isEmpty())
+        return QString();
+
+    const QString modelName = QString::fromUtf8(model->GetName().c_str());
+    if(modelName.isEmpty())
+        return trimmed;
+
+    if(trimmed == modelName)
+        return QString();
+    if(trimmed.startsWith(modelName + QLatin1Char('.')))
+        return trimmed.mid(modelName.length() + 1);
+    return trimmed;
+}
+
+void syncEnvironmentCurrentComponent(RDK::UEngine* engine, const QString& component_long_name)
+{
+    if(!engine)
+        return;
+
+    RDK::UEnvironment* env = engine->GetEnvironment();
     if(!env)
         return;
+
     const QString trimmed = component_long_name.trimmed();
     if(trimmed.isEmpty())
     {
-        env->ResetCurrentComponent();
+        engine->Env_ResetCurrentComponent("");
         return;
     }
-    const QStringList parts = trimmed.split(QLatin1Char('.'), Qt::SkipEmptyParts);
-    if(parts.isEmpty())
+
+    RDK::UEPtr<RDK::UContainer> model = env->GetModel();
+    if(!model)
+        return;
+
+    const QString pathFromRoot = pathRelativeToModelRoot(model.Get(), trimmed);
+    if(pathFromRoot.isEmpty())
     {
-        env->ResetCurrentComponent();
+        engine->Env_ResetCurrentComponent("");
         return;
     }
-    env->ResetCurrentComponent();
-    env->SelectCurrentComponent(parts.front().toUtf8().constData());
-    for(int i = 1; i < parts.size(); ++i)
-        env->DownCurrentComponent(parts[i].toUtf8().constData());
+
+    engine->Env_SelectCurrentComponent(pathFromRoot.toUtf8().constData());
 }
 
 DiagramAddComponentResult addComponentUnderModelScopeImpl(RDK::UEngine* eng,
@@ -93,6 +118,34 @@ DiagramAddComponentResult addComponentUnderModelScopeImpl(RDK::UEngine* eng,
 }
 } // namespace
 
+QString resolveComponentLongNameFromModelRoot(int channel_index, const QString& path)
+{
+    const QString trimmed = path.trimmed();
+    if(trimmed.isEmpty())
+        return QString();
+
+    RDK::UELockPtr<RDK::UContainer> model =
+        RDK::GetModelLockTimeout<RDK::UContainer>(channel_index, 250);
+    if(model)
+    {
+        RDK::UEPtr<RDK::UContainer> cont =
+            model->GetComponentL(trimmed.toUtf8().constData(), true);
+        if(cont)
+            return trimmed;
+    }
+
+    const char* longRaw =
+        MModel_GetComponentLongName(channel_index, trimmed.toUtf8().constData(), "");
+    if(longRaw && longRaw[0] != '\0')
+    {
+        const QString resolved = QString::fromUtf8(longRaw);
+        Engine_FreeBufString(longRaw);
+        return resolved;
+    }
+    Engine_FreeBufString(longRaw);
+    return trimmed;
+}
+
 void syncEngineCurrentComponent(const QString& component_long_name)
 {
     RDK::UELockPtr<RDK::UEngine> eng = RDK::GetEngineLock();
@@ -105,7 +158,7 @@ void syncEngineCurrentComponentWithEngine(RDK::UEngine* engine, const QString& c
 {
     if(!engine)
         return;
-    syncEnvironmentCurrentComponent(engine->GetEnvironment(), component_long_name);
+    syncEnvironmentCurrentComponent(engine, component_long_name);
 }
 
 QStringList childComponentShortNamesFromModelScope(int channel_index, const QString& scope_long_name)

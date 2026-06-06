@@ -7,6 +7,7 @@
 #include "UModernDiagramCoordinateManager.h"
 #include "UModernDiagramCacheManager.h"
 #include "UModernDiagramContextMenu.h"
+#include "UEngineSelectionSync.h"
 #include "UStyleManager.h"
 
 #include <QVBoxLayout>
@@ -196,6 +197,7 @@ void UModernDiagramWidget::SetComponentName(const QString& name)
     if(m_componentName == name)
         return;
     m_componentName = name;
+    syncEngineCurrentComponent(name);
     emit diagramScopeChanged(name);
 }
 

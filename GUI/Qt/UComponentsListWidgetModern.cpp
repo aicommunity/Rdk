@@ -258,19 +258,31 @@ void UComponentsListWidgetModern::AUpdateInterface()
     m_isUpdatingFromScheme = true;
     componentsTree->blockSignals(true);
 
-    componentsTree->clear();
+    if(lastSnapshot && !lastSnapshot->Components.isEmpty())
+    {
+        rebuildTreeFromSnapshot(lastSnapshot);
+        if(expandedItems.isEmpty())
+            componentsTree->expandAll();
+        restoreTreeSelection(oldRootItem, oldSelectedItem);
+        m_treeRebuildRetryCount = 0;
+    }
+    else
+    {
+        componentsTree->clear();
 
-    QTreeWidgetItem *rootItem = new QTreeWidgetItem(componentsTree);
-    rootItem->setText(0, "Model");
-    rootItem->setData(0, Qt::UserRole, QString());
-    rootItem->setExpanded(true);
-    addComponentSons("", rootItem, oldRootItem, oldSelectedItem, expandedItems);
+        QTreeWidgetItem *rootItem = new QTreeWidgetItem(componentsTree);
+        rootItem->setText(0, "Model");
+        rootItem->setData(0, Qt::UserRole, QString());
+        rootItem->setExpanded(true);
+        addComponentSons("", rootItem, oldRootItem, oldSelectedItem, expandedItems);
 
-    applyFilter(rootItem);
+        applyFilter(rootItem);
 
-    // При первой загрузке (expandedItems пустой) разворачиваем всё дерево
-    if (expandedItems.isEmpty())
-        componentsTree->expandAll();
+        // При первой загрузке (expandedItems пустой) разворачиваем всё дерево
+        if(expandedItems.isEmpty())
+            componentsTree->expandAll();
+        m_treeRebuildRetryCount = 0;
+    }
 
     componentsTree->verticalScrollBar()->setMaximum(componentsListScrollMaximum);
     componentsTree->verticalScrollBar()->setValue(componentsListScrollPosition);
@@ -448,6 +460,8 @@ void UComponentsListWidgetModern::componentListItemSelectionChanged()
     }
 
     selectedComponentLongName = item->data(0,Qt::UserRole).toString();
+    m_propertyReloadRetryCount = 0;
+    m_propertyReloadRetryTarget = selectedComponentLongName;
 
     // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Не эмитируем componentSelected если выделение обновляется программно из схемы
     // Это предотвращает бесконечный цикл: selectComponent -> componentSelected -> componentSingleClick -> selectComponent
@@ -466,12 +480,65 @@ void UComponentsListWidgetModern::componentListItemSelectionChanged()
     //     .arg(selectedComponentLongName);
     // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 
-    reloadPropertys();
-
-    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     currentDrawComponentName = selectedComponentLongName;
     syncEngineCurrentComponent(selectedComponentLongName);
+    reloadPropertys();
     emit componentSelected(selectedComponentLongName);
+}
+
+void UComponentsListWidgetModern::schedulePropertyReloadRetry()
+{
+    if(m_propertyReloadRetryTarget != selectedComponentLongName)
+    {
+        m_propertyReloadRetryCount = 0;
+        m_propertyReloadRetryTarget = selectedComponentLongName;
+    }
+    if(m_propertyReloadRetryCount >= kMaxPropertyReloadRetries)
+        return;
+
+    ++m_propertyReloadRetryCount;
+    QTimer::singleShot(200, this, [this]() {
+        if(m_propertyReloadRetryTarget != selectedComponentLongName)
+            return;
+        reloadPropertys(true);
+    });
+}
+
+void UComponentsListWidgetModern::scheduleTreeRebuildRetry()
+{
+    if(m_treeRebuildRetryCount >= kMaxTreeRebuildRetries)
+        return;
+
+    ++m_treeRebuildRetryCount;
+    QTimer::singleShot(200, this, [this]() {
+        UpdateInterface(true);
+    });
+}
+
+void UComponentsListWidgetModern::restoreTreeSelection(const QString& oldRootItem,
+                                                       const QString& oldSelectedItem)
+{
+    const QString selectName = !oldSelectedItem.isEmpty() ? oldSelectedItem : oldRootItem;
+    if(selectName.isEmpty())
+        return;
+
+    QTreeWidgetItemIterator iterator(componentsTree);
+    while(*iterator)
+    {
+        if((*iterator)->data(0, Qt::UserRole).toString() == selectName)
+        {
+            QTreeWidgetItem* item = *iterator;
+            while(item)
+            {
+                item->setExpanded(true);
+                item = item->parent();
+            }
+            componentsTree->setCurrentItem(*iterator);
+            componentsTree->scrollToItem(*iterator, QAbstractItemView::EnsureVisible);
+            return;
+        }
+        ++iterator;
+    }
 }
 
 void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
@@ -479,31 +546,24 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
     if(currentDrawPropertyComponentName == selectedComponentLongName && !forceReload)
       return;
 
-    currentDrawPropertyComponentName = selectedComponentLongName;
+    const QString targetComponent = selectedComponentLongName;
 
     std::map<std::string, std::string> Favorites;
     // описание класса компонента, нужно ниже для проверки алиасов избранных свойств
     RDK::UEPtr<RDK::UContainerDescription> class_desc;
 
-    //Class
-    const char *className=MModel_GetComponentClassName(getWorkChannelIndex(), currentDrawPropertyComponentName.toLocal8Bit());
+    const QString classNameStr =
+        componentClassNameFromModelScope(getWorkChannelIndex(), targetComponent);
 
-    if(className)
+    if(!classNameStr.isEmpty())
     {
-        class_desc = RDK::GetStorageLock()->GetClassDescription(className, true);
+        class_desc = RDK::GetStorageLock()->GetClassDescription(classNameStr.toLocal8Bit().constData(), true);
 
         if(class_desc)
             Favorites = class_desc->GetFavorites();
 
-        ui->labelComponentClassName->setText(className);
+        ui->labelComponentClassName->setText(classNameStr);
     }
-    Engine_FreeBufString(className);
-
-    ui->treeWidgetParameters->clear();
-    ui->treeWidgetState->clear();
-    ui->treeWidgetInputs->clear();
-    ui->treeWidgetOutputs->clear();
-    ui->treeWidgetFavorites->clear();
 
     // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ treeWidget'пїЅпїЅ
     int paramScrollPosition = ui->treeWidgetParameters->verticalScrollBar()->value(),
@@ -516,24 +576,32 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
     {
      UpdateInterfaceFlag=true;
         // Use timeout to avoid blocking UI for too long during calculation
-        RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLockTimeout(getWorkChannelIndex(), 100);
+        RDK::UELockPtr<RDK::UContainer> model =
+            RDK::GetModelLockTimeout(getWorkChannelIndex(), kModelLockTimeoutMs);
         if (!model) {
-            // Lock acquisition timed out - skip this update
             UpdateInterfaceFlag=false;
+            schedulePropertyReloadRetry();
             return;
         }
 
         RDK::UEPtr<RDK::UContainer> cont;
-        if (currentDrawPropertyComponentName.isEmpty())
+        if (targetComponent.isEmpty())
             cont = model.Get();
         else
-            cont = model->GetComponentL(currentDrawPropertyComponentName.toLocal8Bit().constData(), true);
+            cont = model->GetComponentL(targetComponent.toLocal8Bit().constData(), true);
 
         if(!cont)
         {
          UpdateInterfaceFlag=false;
+         schedulePropertyReloadRetry();
          return;
         }
+
+    ui->treeWidgetParameters->clear();
+    ui->treeWidgetState->clear();
+    ui->treeWidgetInputs->clear();
+    ui->treeWidgetOutputs->clear();
+    ui->treeWidgetFavorites->clear();
         RDK::UComponent::VariableMapT varMap = cont->GetPropertiesList();
         std::string buffer;
 
@@ -658,7 +726,7 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
 
             QString favoriteName = QString::fromLocal8Bit(i->first.c_str());
             QString favoritePath = QString::fromLocal8Bit(i->second.c_str());
-            favoritePath.replace("{CompName}", currentDrawPropertyComponentName);
+            favoritePath.replace("{CompName}", targetComponent);
 
             // Проверяем, является ли это алиасом
             bool isAlias = class_desc && class_desc->IsFavoriteAlias(i->first);
@@ -688,7 +756,7 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
                 if (class_desc->ParseFavoritePath(i->second, componentPath, propertyName))
                 {
                     // Формируем полный путь: текущий компонент + путь к вложенному компоненту
-                    component_long_name = currentDrawPropertyComponentName;
+                    component_long_name = targetComponent;
                     if (!componentPath.empty())
                     {
                         component_long_name += "." + QString::fromStdString(componentPath);
@@ -749,16 +817,20 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
         ui->treeWidgetOutputs->verticalScrollBar()->setValue(outputsScrollPosition);
         ui->treeWidgetFavorites->verticalScrollBar()->setMaximum(favoritesScrollPosition);
         ui->treeWidgetFavorites->verticalScrollBar()->setValue(favoritesScrollPosition);
+        currentDrawPropertyComponentName = targetComponent;
+        m_propertyReloadRetryCount = 0;
         UpdateInterfaceFlag=false;
     }
     catch (RDK::UException &exception)
     {
      UpdateInterfaceFlag=false;
+        schedulePropertyReloadRetry();
         RDK::Logging::SystemLog(exception.GetType(), (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     catch (std::exception &exception)
     {
      UpdateInterfaceFlag=false;
+        schedulePropertyReloadRetry();
         RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
 }
@@ -785,9 +857,13 @@ void UComponentsListWidgetModern::parametersListItemChanged(QTreeWidgetItem *ite
   if(UpdateInterfaceFlag)
    return;
   // Use timeout to avoid blocking UI during calculation
-  RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLockTimeout(getWorkChannelIndex(), 500);
+  RDK::UELockPtr<RDK::UContainer> model =
+      RDK::GetModelLockTimeout(getWorkChannelIndex(), kModelLockTimeoutMs);
   if (!model)
-   return; // Lock acquisition timed out
+  {
+   schedulePropertyReloadRetry();
+   return;
+  }
 
   RDK::UEPtr<RDK::UContainer> cont;
   if (currentDrawPropertyComponentName.isEmpty())
@@ -897,14 +973,11 @@ try
      if(!item)
         return;
 
-     // Получаем описание класса для проверки алиасов
-     const char *className=MModel_GetComponentClassName(getWorkChannelIndex(), currentDrawPropertyComponentName.toLocal8Bit());
+     const QString classNameStr =
+         componentClassNameFromModelScope(getWorkChannelIndex(), currentDrawPropertyComponentName);
      RDK::UEPtr<RDK::UContainerDescription> class_desc;
-     if(className)
-     {
-         class_desc = RDK::GetStorageLock()->GetClassDescription(className, true);
-         Engine_FreeBufString(className);
-     }
+     if(!classNameStr.isEmpty())
+         class_desc = RDK::GetStorageLock()->GetClassDescription(classNameStr.toLocal8Bit().constData(), true);
 
      QString favoritePath = item->text(1);
      QString favoriteName = item->text(0);
@@ -945,9 +1018,10 @@ try
 
 
      // Use timeout to avoid blocking UI during calculation
-     RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLockTimeout(getWorkChannelIndex(), 500);
+     RDK::UELockPtr<RDK::UContainer> model =
+         RDK::GetModelLockTimeout(getWorkChannelIndex(), kModelLockTimeoutMs);
      if (!model)
-      return; // Lock acquisition timed out
+      return;
 
      RDK::UEPtr<RDK::UContainer> cont;
 
@@ -1090,61 +1164,40 @@ bool UComponentsListWidgetModern::applyFilter(QTreeWidgetItem *item)
 
 void UComponentsListWidgetModern::componentSelectedFromScheme(QString name)
 {
-    // DEBUG: Commented out to reduce log flood
-    // QString logMsg = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentSelectedFromScheme: called with name='%1', blocking signals")
-    //     .arg(name);
-    // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
+    const QString resolvedName =
+        resolveComponentLongNameFromModelRoot(getWorkChannelIndex(), name);
 
-    // Устанавливаем флаг для предотвращения эмиссии componentSelected при программном обновлении
+    m_propertyReloadRetryCount = 0;
+    m_propertyReloadRetryTarget = resolvedName;
+    selectedComponentLongName = resolvedName;
+    currentDrawComponentName = resolvedName;
+    syncEngineCurrentComponent(resolvedName);
+
     m_isUpdatingFromScheme = true;
-
-    // Блокируем сигналы, чтобы предотвратить вызов componentListItemSelectionChanged
-    // и последующую эмиссию componentSelected, которая вызовет повторное выделение в диаграмме
     componentsTree->blockSignals(true);
 
     QTreeWidgetItemIterator iterator(componentsTree);
     while(*iterator)
     {
-        if((*iterator)->data(0, Qt::UserRole) == name)
+        if((*iterator)->data(0, Qt::UserRole).toString() == resolvedName)
         {
-            // Раскрываем путь к компоненту (все родительские элементы)
             QTreeWidgetItem *item = *iterator;
-            while (item) {
+            while(item)
+            {
                 item->setExpanded(true);
                 item = item->parent();
             }
 
-            // Устанавливаем текущий элемент
             componentsTree->setCurrentItem(*iterator);
-
-            // Прокручиваем к выбранному элементу
             componentsTree->scrollToItem(*iterator, QAbstractItemView::EnsureVisible);
-
-            // Обновляем выбранный компонент и свойства
-            selectedComponentLongName = name;
-            reloadPropertys();
-
-            // DEBUG: Commented out to reduce log flood
-            // QString logMsg2 = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentSelectedFromScheme: found item, unblocking signals")
-            //     .arg(name);
-            // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg2.toStdString().c_str(), 0);
-            componentsTree->blockSignals(false);
-
-            // Сбрасываем флаг после небольшой задержки, чтобы все события успели обработаться
-            QTimer::singleShot(0, [this]() {
-                m_isUpdatingFromScheme = false;
-            });
-            return;
+            break;
         }
         ++iterator;
     }
 
-    // DEBUG: Commented out to reduce log flood
-    // QString logMsg3 = QString("[SELECTION_DEBUG] UComponentsListWidgetModern::componentSelectedFromScheme: item not found, unblocking signals");
-    // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg3.toStdString().c_str(), 0);
     componentsTree->blockSignals(false);
+    reloadPropertys(true);
 
-    // Сбрасываем флаг после небольшой задержки, чтобы все события успели обработаться
     QTimer::singleShot(0, [this]() {
         m_isUpdatingFromScheme = false;
     });
@@ -1203,9 +1256,6 @@ void UComponentsListWidgetModern::onComponentItemClicked(QTreeWidgetItem* item, 
 
     // Прокручиваем к выбранному элементу
     componentsTree->scrollToItem(item, QAbstractItemView::EnsureVisible);
-
-    // Вызываем обработчик выбора компонента
-    componentListItemSelectionChanged();
 }
 
 void UComponentsListWidgetModern::drawSelectedComponent(QModelIndex index)
@@ -1311,13 +1361,13 @@ void UComponentsListWidgetModern::componentCopyLongNameToClipboard()
 
 void UComponentsListWidgetModern::componentCopyClassNameToClipboard()
 {
-    const char *className=MModel_GetComponentClassName(getWorkChannelIndex(), selectedComponentLongName.toLocal8Bit());
-    if(className)
+    const QString className =
+        componentClassNameFromModelScope(getWorkChannelIndex(), selectedComponentLongName);
+    if(!className.isEmpty())
     {
         QClipboard *clipboard = QApplication::clipboard();
-        clipboard->setText(QString(className));
+        clipboard->setText(className);
     }
-    Engine_FreeBufString(className);
 }
 
 void UComponentsListWidgetModern::componentReset()
@@ -1361,9 +1411,8 @@ void UComponentsListWidgetModern::componentGUI()
     if(!componentsTree->currentItem() || selectedComponentLongName.isEmpty())
         return;
 
-    const char* classNameRaw = Model_GetComponentClassName(selectedComponentLongName.toLocal8Bit().constData());
-    const QString componentClassName = QString::fromUtf8(classNameRaw ? classNameRaw : "");
-    Engine_FreeBufString(classNameRaw);
+    const QString componentClassName =
+        componentClassNameFromModelScope(getWorkChannelIndex(), selectedComponentLongName);
 
     UComponentGuiContext context;
     context.componentLongName = selectedComponentLongName;
@@ -1394,9 +1443,13 @@ void UComponentsListWidgetModern::setUpdateInterval(long value)
 void UComponentsListWidgetModern::addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem, const QSet<QString> &expandedItems)
 {
  // Use timeout to avoid blocking UI during calculation
- RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLockTimeout<RDK::UEngine>(getWorkChannelIndex(), 100);
+ RDK::UELockPtr<RDK::UEngine> engine=
+     RDK::GetEngineLockTimeout<RDK::UEngine>(getWorkChannelIndex(), kModelLockTimeoutMs);
  if (!engine)
-  return; // Lock acquisition timed out
+ {
+  scheduleTreeRebuildRetry();
+  return;
+ }
     const char * stringBuff = MModel_GetComponentsNameList(getWorkChannelIndex(), componentName.toLocal8Bit());
     QStringList componentNames = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);

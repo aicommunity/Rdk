@@ -13,6 +13,9 @@ class UContainer;
 class UStorage;
 }
 
+/// Resolves a UI selection path to a model-root long name (e.g. PNeuron -> Model.PNeuron).
+QString resolveComponentLongNameFromModelRoot(int channel_index, const QString& path);
+
 /// Keeps RDK engine CurrentComponent aligned with NeuroModeler UI selection.
 void syncEngineCurrentComponent(const QString& component_long_name);
 

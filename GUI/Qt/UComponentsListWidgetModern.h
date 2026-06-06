@@ -251,6 +251,17 @@ private:
 
     void rebuildTreeFromSnapshot(const NMSDK::UGuiSnapshotPtr &snapshot);
     bool applyFilter(QTreeWidgetItem *item);
+    void restoreTreeSelection(const QString& oldRootItem, const QString& oldSelectedItem);
+    void schedulePropertyReloadRetry();
+    void scheduleTreeRebuildRetry();
+
+    static constexpr unsigned kModelLockTimeoutMs = 250;
+    static constexpr int kMaxPropertyReloadRetries = 5;
+    static constexpr int kMaxTreeRebuildRetries = 5;
+
+    int m_propertyReloadRetryCount = 0;
+    QString m_propertyReloadRetryTarget;
+    int m_treeRebuildRetryCount = 0;
 
     Ui::UComponentsListWidgetModern *ui;
     QLineEdit *filterLineEdit;

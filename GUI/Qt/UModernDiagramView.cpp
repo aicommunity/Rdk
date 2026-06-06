@@ -592,12 +592,22 @@ void UModernDiagramView::dropEvent(QDropEvent *event)
 
     if(auto* node = m_owner->m_nodeByName.value(added.short_name))
     {
+        m_owner->m_isProgrammaticSelection = true;
         m_owner->m_scene->clearSelection();
         node->setSelected(true);
+        QTimer::singleShot(0, m_owner, [owner = m_owner]() {
+            if(owner)
+                owner->m_isProgrammaticSelection = false;
+        });
     }
 
-    emit m_owner->componentSelected(added.short_name);
     emit m_owner->updateComponentsList();
+
+    const QString selectedLongName = added.long_name;
+    QTimer::singleShot(0, m_owner, [owner = m_owner, selectedLongName]() {
+        if(owner)
+            emit owner->componentSelected(selectedLongName);
+    });
     event->accept();
 }
 

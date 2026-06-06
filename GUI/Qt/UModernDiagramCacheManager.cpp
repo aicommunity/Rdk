@@ -17,6 +17,7 @@
 #include <QDateTime>
 #include "../../Deploy/Include/rdk_init.h"
 #include "../Core/Engine/UEngine.h"
+#include "UEngineSelectionSync.h"
 #include "UGuiTelemetry.h"
 
 // --------------------------- ComponentCache implementation ---------------------------
@@ -81,11 +82,8 @@ void UModernDiagramCacheManager::saveSceneToCache(const QString& componentName)
     cache.lastNodePositions = m_owner->m_lastNodePositions;
     cache.normalizationOffset = m_owner->m_coordinateManager->getNormalizationOffset();
 
-    // Сохраняем список компонентов для проверки изменений структуры
-    const char* compRaw = Model_GetComponentsNameList(componentName.toStdString().c_str());
-    QString compListStr = QString::fromUtf8(compRaw ? compRaw : "");
-    cache.componentNames = compListStr.split(",", Qt::SkipEmptyParts);
-    Engine_FreeBufString(compRaw);
+    cache.componentNames =
+        childComponentShortNamesFromModelScope(Core_GetSelectedChannelIndex(), componentName);
 
     cache.isValid = true;
     m_levelCache[componentName] = cache;
@@ -211,30 +209,23 @@ QString UModernDiagramCacheManager::computeComponentHash(const QString& componen
     // Добавляем имя компонента
     hash.addData(componentFullName.toUtf8());
 
-    // Добавляем список дочерних компонентов
-    const char* compList = Model_GetComponentsNameList(componentFullName.toStdString().c_str());
-    if(compList)
-    {
-        const int len = static_cast<int>(strlen(compList));
-        hash.addData(compList, len);
-        Engine_FreeBufString(compList);
-    }
+    const int channel = Core_GetSelectedChannelIndex();
+    const QStringList childComponents =
+        childComponentShortNamesFromModelScope(channel, componentFullName);
+    hash.addData(childComponents.join(QLatin1Char(',')).toUtf8());
 
-    // Добавляем список портов (входных и выходных)
-    const char* inputProps = Model_GetComponentPropertiesLookupList(componentFullName.toStdString().c_str(), ptPubInput | ptInput);
-    if(inputProps)
+    RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock<RDK::UContainer>(channel);
+    if(model)
     {
-        const int len = static_cast<int>(strlen(inputProps));
-        hash.addData(inputProps, len);
-        Engine_FreeBufString(inputProps);
-    }
+        const QString inputProps =
+            propertiesLookupListFromModelScope(model.Get(), componentFullName, ptPubInput | ptInput);
+        if(!inputProps.isEmpty())
+            hash.addData(inputProps.toUtf8());
 
-    const char* outputProps = Model_GetComponentPropertiesLookupList(componentFullName.toStdString().c_str(), ptPubOutput | ptOutput);
-    if(outputProps)
-    {
-        const int len = static_cast<int>(strlen(outputProps));
-        hash.addData(outputProps, len);
-        Engine_FreeBufString(outputProps);
+        const QString outputProps =
+            propertiesLookupListFromModelScope(model.Get(), componentFullName, ptPubOutput | ptOutput);
+        if(!outputProps.isEmpty())
+            hash.addData(outputProps.toUtf8());
     }
 
     // Добавляем список связей
