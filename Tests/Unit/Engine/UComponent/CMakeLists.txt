@@ -7,6 +7,11 @@ add_executable(Test_UComponent_Lifecycle
 )
 
 foreach(TARGET Test_UComponent_Properties Test_UComponent_Lifecycle)
+    target_sources(${TARGET}
+        PRIVATE
+        ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/RdkDummyLibraries.cpp
+    )
+
     target_link_libraries(${TARGET}
         PRIVATE
         rdk.static.qt
@@ -16,8 +21,8 @@ foreach(TARGET Test_UComponent_Properties Test_UComponent_Lifecycle)
 
     target_include_directories(${TARGET}
         PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../../Deploy/Include
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../../Core
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../../Deploy/Include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../../../Core
     )
 
     target_compile_definitions(${TARGET}

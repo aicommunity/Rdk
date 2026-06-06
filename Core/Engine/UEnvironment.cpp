@@ -681,6 +681,59 @@ void UEnvironment::UnRegisterAllDataReaders(void)
 // --------------------------
 UControllerDataReader* UEnvironment::GetDataReader(const std::string &component_name, const std::string &property_name, int row, int col)
 {
+ UContainer *current_component = 0;
+ UEPtr<UIProperty> current_property;
+ if(Model)
+ {
+  current_component = Model->GetComponentL(component_name,true);
+  if(current_component)
+   current_property = current_component->FindProperty(property_name);
+ }
+
+ // If current model/property for this key does not exist, remove stale reader entries.
+ if(!current_component || !current_property)
+ {
+  for(size_t i=0;i<DataReaders.size();)
+  {
+   if(DataReaders[i].first &&
+      DataReaders[i].first->GetComponentName() == component_name &&
+      DataReaders[i].first->GetPropertyName() == property_name &&
+      DataReaders[i].first->MRow == row &&
+      DataReaders[i].first->MCol == col)
+   {
+    delete DataReaders[i].first;
+    DataReaders.erase(DataReaders.begin()+i);
+    continue;
+   }
+   ++i;
+  }
+  return 0;
+ }
+
+ // Validate matrix coordinates against the current property binding.
+ UControllerDataReader probe;
+ if(!probe.Configure(current_component, current_property))
+  return 0;
+ probe.SetMatrixCoord(row,col);
+ if(!probe.Update())
+ {
+  for(size_t i=0;i<DataReaders.size();)
+  {
+   if(DataReaders[i].first &&
+      DataReaders[i].first->GetComponentName() == component_name &&
+      DataReaders[i].first->GetPropertyName() == property_name &&
+      DataReaders[i].first->MRow == row &&
+      DataReaders[i].first->MCol == col)
+   {
+    delete DataReaders[i].first;
+    DataReaders.erase(DataReaders.begin()+i);
+    continue;
+   }
+   ++i;
+  }
+  return 0;
+ }
+
  for(size_t i=0;i<DataReaders.size();i++)
  {
   if(DataReaders[i].first && DataReaders[i].first->GetComponentName() == component_name && DataReaders[i].first->GetPropertyName() == property_name &&

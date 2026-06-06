@@ -356,7 +356,6 @@ void USerStorageBinary::InternalResize(int size)
 
  unsigned char *temp = new unsigned char[optimalSize];
 
- int minsize = (optimalSize < MaxSize) ? optimalSize : MaxSize;
  if(MaxSize > 0 && Size > 0)
  {
   // Копируем данные с учетом возможного разрыва

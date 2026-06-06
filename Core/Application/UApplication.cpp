@@ -67,11 +67,17 @@ std::string RemoveSpaces(const std::string& str)
 std::string EnsureDirectoryAndNormalize(const std::string& dir)
 {
  if(dir.empty())
-  return dir;
+  return {};
 
  std::string normalized = NormalizeLogDir(dir);
  std::error_code ec;
  std::filesystem::create_directories(normalized, ec);
+ if(ec)
+ {
+  // Если не удалось создать каталог, возвращаем пустую строку,
+  // чтобы вызывающий код мог безопасно перейти в fallback-режим.
+  return {};
+ }
  return normalized;
 }
 
@@ -564,6 +570,26 @@ std::string UApplication::GetWorkLogDir(void) const
  return base;
 }
 
+ApplicationLogReadPaths UApplication::GetApplicationLogReadPaths(void) const
+{
+ ApplicationLogReadPaths out;
+ out.base_name = GetLogFileBaseName();
+ out.session_start_unix = CurrentLogSessionStart;
+
+ auto add_unique = [&out](const std::string& dir) {
+  if(dir.empty())
+   return;
+  if(std::find(out.directories.begin(), out.directories.end(), dir) == out.directories.end())
+   out.directories.push_back(dir);
+ };
+
+ add_unique(GetWorkLogDir());
+ if(GetProjectOpenFlag())
+  add_unique(CalcCurrentLogDir());
+
+ return out;
+}
+
 const std::string& UApplication::GetLogFileBaseName(void) const
 {
  if(!CachedLogBaseName.empty())
@@ -631,7 +657,7 @@ void UApplication::ApplyPrimaryLogDestination(const std::string& directory)
   }
  }
 
- std::string work_dir_normalized = NormalizeLogDir(GetWorkLogDir());
+ std::string work_dir_normalized = EnsureDirectoryAndNormalize(GetWorkLogDir());
 
  // Ensure glog always writes to the working directory to prevent message loss
 #ifdef RDK_USE_GLOG
@@ -810,13 +836,11 @@ int UApplication::ParseSeverityToken(const std::string& token, int fallback) con
  return ParseSeverityString(token, fallback);
 }
 
-int UApplication::DetermineBaseLogLevel(bool events_log_mode, bool debug_mode) const
+int UApplication::DetermineBaseLogLevel(bool debug_mode) const
 {
  if(debug_mode)
   return RDK_EX_DEBUG;
- if(events_log_mode)
-  return RDK_EX_INFO;
- return RDK_EX_WARNING;
+ return RDK_EX_INFO;
 }
 
 int UApplication::ResolveChannelLevel(int channel_index, int base_level) const
@@ -856,7 +880,7 @@ int UApplication::ResolveVerbosityLevel(int base_level) const
 
 void UApplication::ApplyLogRouting(const TProjectConfig& config)
 {
- const int base_system_level = DetermineBaseLogLevel(config.EventsLogMode, config.DebugMode);
+ const int base_system_level = DetermineBaseLogLevel(config.DebugMode);
  const int base_default_level = base_system_level;
  const int base_verbosity = ResolveVerbosityLevel(config.DebugMode ? 1 : 0);
 
@@ -876,8 +900,7 @@ void UApplication::ApplyLogRouting(const TProjectConfig& config)
  {
   const auto& channel_cfg = config.ChannelsConfig[i];
   const bool channel_debug = channel_cfg.DebugMode || config.DebugMode;
-  const bool channel_info = channel_cfg.EventsLogMode || config.EventsLogMode;
-  const int base_channel_level = DetermineBaseLogLevel(channel_info, channel_debug);
+  const int base_channel_level = DetermineBaseLogLevel(channel_debug);
   const int channel_verbosity = ResolveVerbosityLevel(channel_debug ? 1 : 0);
   RDK::Logging::SetChannelRuntimeConfig(
    i,
@@ -1230,14 +1253,22 @@ bool UApplication::Init(void)
   UGlogGuiSink::Instance().StartSession(work_log_dir, GetLogFileBaseName(), CurrentLogSessionStart);
  }
 #ifdef RDK_USE_GLOG
- std::string initial_log_dir = EnsureDirectoryAndNormalize(GetWorkLogDir());
- FLAGS_logtostderr = false;
- FLAGS_alsologtostderr = false;
+ std::string initial_log_dir = work_log_dir;
  FLAGS_log_prefix = true;
  if(initial_log_dir.empty())
+ {
+  // Если каталог для файловых логов создать не удалось,
+  // включаем вывод только в stderr и не пытаемся создавать файлы.
   FLAGS_log_dir.clear();
+  FLAGS_logtostderr = true;
+  FLAGS_alsologtostderr = false;
+ }
  else
+ {
   FLAGS_log_dir = StripTrailingSeparators(initial_log_dir);
+  FLAGS_logtostderr = false;
+  FLAGS_alsologtostderr = false;
+ }
 
 google::InitGoogleLogging(GetLogFileBaseName().c_str());
 GoogleLoggingInitialized = true;
@@ -1325,6 +1356,9 @@ google::InstallFailureSignalHandler();
 /// Деинициализирует приложение
 bool UApplication::UnInit(void)
 {
+ if(!AppIsInit)
+  return true;
+
  RLOG(RDK_EX_DEBUG, RDK_SYS_MESSAGE, "sys", "Application uninitialization has been started.");
  if(EngineControl)
  {
@@ -1470,6 +1504,105 @@ void UApplication::ProcessCommandLineArgs(int argc, char **argv)
 // --------------------------
 // Методы управления проектом
 // --------------------------
+
+namespace {
+
+std::string joinProjectPath(const std::string& dir, const std::string& file)
+{
+ if(dir.empty())
+  return file;
+ std::string d = dir;
+ if(d.back() != '/' && d.back() != '\\')
+  d.push_back('/');
+ return d + file;
+}
+
+std::string canonicalFilesystemPath(const std::string& path)
+{
+ if(path.empty())
+  return path;
+ std::error_code ec;
+ const std::filesystem::path canon = std::filesystem::weakly_canonical(std::filesystem::path(path), ec);
+ if(ec)
+  return path;
+ return canon.generic_string();
+}
+
+} // namespace
+
+std::string UApplication::GetDefaultConfigsDirectory() const
+{
+ std::string configs_path = GetWorkDirectory() + "/../../Configs/";
+ std::error_code ec;
+ if(!std::filesystem::exists(configs_path, ec))
+ {
+  configs_path = GetWorkDirectory() + "/../../../Configs/";
+  if(!std::filesystem::exists(configs_path, ec))
+   configs_path = GetWorkDirectory();
+ }
+ if(!GetUserName().empty())
+ {
+  const std::string user_rel = GetUserConfigPath();
+  if(!user_rel.empty())
+  {
+   const std::string users_dir = configs_path + "Users";
+   CreateNewDirectory(users_dir.c_str());
+   const std::string user_path = configs_path + user_rel;
+   CreateNewDirectory(user_path.c_str());
+   configs_path = user_path;
+  }
+ }
+ return configs_path;
+}
+
+std::string UApplication::PrepareNewProjectIniPath(bool autocreate_subdirectory,
+                                                   const std::string& parent_directory,
+                                                   std::string* err_out) const
+{
+ auto set_err = [&](const std::string& msg) {
+  if(err_out)
+   *err_out = msg;
+ };
+ set_err({});
+
+ std::string parent = parent_directory;
+ if(parent.empty())
+  parent = GetDefaultConfigsDirectory();
+ if(parent.empty())
+ {
+  set_err("configs directory is not available");
+  return {};
+ }
+
+ if(autocreate_subdirectory)
+ {
+  const std::time_t now = std::time(nullptr);
+  const std::string folder = RDK::get_text_time(now, '.', '_');
+  parent = joinProjectPath(parent, "Autocreate" + folder);
+  if(CreateNewDirectory(parent.c_str()) != 0)
+  {
+   set_err("failed to create configuration directory");
+   return {};
+  }
+  parent = canonicalFilesystemPath(parent);
+ }
+
+ const std::string ini_path = joinProjectPath(parent, "project.ini");
+ return canonicalFilesystemPath(ini_path);
+}
+
+bool UApplication::CreateAutocreatedProject(const std::string& model_classname,
+                                          bool autocreate_subdirectory,
+                                          const std::string& parent_directory)
+{
+ std::string err;
+ const std::string ini_path =
+  PrepareNewProjectIniPath(autocreate_subdirectory, parent_directory, &err);
+ if(ini_path.empty())
+  return false;
+ return CreateProject(ini_path, model_classname);
+}
+
 /// Создает проект (через сохранение и открытие)
 bool UApplication::CreateProject(const std::string &file_name, RDK::TProjectConfig &project_config)
 {
@@ -1530,7 +1663,7 @@ bool UApplication::CreateProject(const std::string &file_name, const std::string
 {
  RDK::TProjectConfig project_config;
 
- project_config.DebugMode=true;
+ project_config.DebugMode=false;
  project_config.SetNumChannels(1);
  project_config.ProjectMode=0;
  project_config.ProjectName="Autocreated configuration";
@@ -1554,6 +1687,7 @@ bool UApplication::CreateProject(const std::string &file_name, const std::string
  project_config.ChannelsConfig[0].DefaultTimeStep=2000;
  project_config.ChannelsConfig[0].MinInterstepsInterval=1;
  project_config.ChannelsConfig[0].MaxCalculationModelTime=0;
+ project_config.ChannelsConfig[0].DebugMode=false;
 
  return CreateProject(file_name,project_config);
 }

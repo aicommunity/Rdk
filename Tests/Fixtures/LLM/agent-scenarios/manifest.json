@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "suites": [
+    {
+      "id": "deterministic-all",
+      "tier": "deterministic",
+      "gtest": "Test_LLM_AgentScenarios",
+      "filter": "AgentDeterministic"
+    },
+    {
+      "id": "e2e-nl",
+      "tier": "e2e",
+      "gtest": "Test_LLM_AgentScenarios",
+      "filter": "AgentE2e"
+    },
+    {
+      "id": "free-dialogue-corpus",
+      "tier": "deterministic",
+      "gtest": "Test_LLM_FreeDialogueCorpus",
+      "filter": "FreeDialogueCorpus"
+    }
+  ]
+}

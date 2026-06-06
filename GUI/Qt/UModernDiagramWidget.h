@@ -26,6 +26,7 @@
 #include "../Core/Engine/UXMLEnvSerialize.h"
 #include "../Core/Engine/UEnvSupport.h"
 #include "UModernDiagramPort.h"  // Для Port и PortCategory
+#include "UComponentGuiContext.h"
 
 // Константы для диаграммы
 namespace UModernDiagramConstants {
@@ -73,6 +74,7 @@ public:
     /// Устанавливает приложение и имя компонента (модели) для отображения
     void SetApplication(RDK::UApplication* app);
     void SetComponentName(const QString& name);
+    QString diagramScopeLongName() const { return m_componentName; }
 
 public slots:
     /// Перезагрузка диаграммы из текущей модели
@@ -120,6 +122,10 @@ signals:
     void switchLinks(QString firstComponentName, QString secondComponentName);
     /// Запрос на открытие окна описания проекта (кнопка на диаграмме)
     void openProjectDescriptionRequested();
+    /// Запрос на открытие специализированной GUI-формы компонента.
+    void openComponentGuiRequested(const UComponentGuiContext& context);
+    /// Emitted when the schematic drill level changes (SetComponentName).
+    void diagramScopeChanged(const QString& scope_long_name);
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
@@ -283,6 +289,7 @@ private:
     void emitViewLinks(const QString& componentName);
     void emitCreateLinks(const QString& firstComponentName, const QString& secondComponentName);
     void emitSwitchLinks(const QString& firstComponentName, const QString& secondComponentName);
+    void emitOpenComponentGui(const UComponentGuiContext& context);
 
     // Context menu slots
 private slots:

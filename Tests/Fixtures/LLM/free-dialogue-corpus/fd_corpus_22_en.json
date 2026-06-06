@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "fd_corpus_22_en",
+  "user_text": "help me understand validation errors",
+  "lang": "en",
+  "tags": [
+    "free_dialogue",
+    "en"
+  ],
+  "expect": {
+    "orchestrator_ok": true,
+    "no_hard_task_path_fail": true
+  }
+}

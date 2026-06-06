@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "id": "graph_snapshot",
+  "tier": "deterministic",
+  "suite": "graph",
+  "registry_profile": "core",
+  "user_text": "какие компоненты на схеме",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "id": "c1",
+          "name": "get_net_snapshot",
+          "arguments": {
+            "channel_index": 0,
+            "max_components": 200
+          }
+        }
+      ]
+    }
+  ],
+  "expect": {
+    "orchestrator_ok": true,
+    "tools_invoked_any": [
+      "get_net_snapshot"
+    ],
+    "final_text_not_contains": [
+      "Done.",
+      "need additional information"
+    ],
+    "needs_argument_clarification": false
+  },
+  "variants": [
+    {
+      "id_suffix": "ru_modules",
+      "user_text": "какие модули есть в проекте"
+    },
+    {
+      "id_suffix": "en",
+      "user_text": "what components are on the diagram"
+    }
+  ]
+}

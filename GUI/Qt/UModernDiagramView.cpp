@@ -28,6 +28,8 @@
 #include <QLineF>
 #include <cmath>
 #include "../../Deploy/Include/rdk_init.h"
+#include "../../Deploy/Include/rdk_cpp_init.h"
+#include "UEngineSelectionSync.h"
 #include "../Core/Engine/UEngine.h"
 #include "../Core/Engine/UNet.h"
 #include "../Core/Application/UIVisualController.h"
@@ -562,42 +564,50 @@ void UModernDiagramView::dropEvent(QDropEvent *event)
         return;
     }
 
-    // Создать компонент
-    const char* pname = Model_AddComponent(m_owner->m_componentName.toLocal8Bit(), classname.toLocal8Bit());
-    if(pname)
-    {
-        std::string name = pname;
-        Engine_FreeBufString(pname);
-
-        // Преобразовать координаты drop из view в сцену
-        QPointF scenePos = mapToScene(event->pos());
-
-        QString fullName = QString::fromStdString(name);
-
-        // Вычисляем абсолютные координаты для сохранения в ядро
-        // Используем текущий offset без пересчета, чтобы избежать бесконечных циклов
-        QPointF absoluteScenePos = scenePos + m_owner->m_coordinateManager->getNormalizationOffset();
-        m_owner->m_coordinateManager->saveCoord(fullName, absoluteScenePos);
-
-        // Добавляем только новый компонент без полного перестроения сцены
-        // Это сохранит визуальные позиции всех существующих компонентов
-        auto* node = m_owner->addSingleComponent(fullName);
-
-        // Выделяем новый компонент
-        if(node)
-        {
-            m_owner->m_scene->clearSelection();
-            node->setSelected(true);
-        }
-
-        emit m_owner->componentSelected(QString::fromStdString(name));
-        emit m_owner->updateComponentsList();
-
-        event->accept();
-    }
-    else
+    const int channel = Core_GetSelectedChannelIndex();
+    const QByteArray classUtf8 = classname.toUtf8();
+    RDK::UELockPtr<RDK::UEngine> eng = RDK::GetEngineLock(channel);
+    RDK::UELockPtr<RDK::UStorage> stor = RDK::GetStorageLock(channel);
+    if(!eng || !stor)
     {
         event->ignore();
+        return;
     }
+
+    const DiagramAddComponentResult added = addComponentUnderModelScopeWithLocks(
+        eng.Get(), stor.Get(), m_owner->diagramScopeLongName(), classUtf8);
+    if(!added.ok)
+    {
+        event->ignore();
+        return;
+    }
+
+    syncEngineCurrentComponentWithEngine(eng.Get(), m_owner->diagramScopeLongName());
+
+    const QPointF scenePos = mapToScene(event->pos());
+    const QPointF absoluteScenePos = scenePos + m_owner->m_coordinateManager->getNormalizationOffset();
+    m_owner->m_coordinateManager->saveCoord(added.long_name, absoluteScenePos);
+
+    m_owner->Reload();
+
+    if(auto* node = m_owner->m_nodeByName.value(added.short_name))
+    {
+        m_owner->m_isProgrammaticSelection = true;
+        m_owner->m_scene->clearSelection();
+        node->setSelected(true);
+        QTimer::singleShot(0, m_owner, [owner = m_owner]() {
+            if(owner)
+                owner->m_isProgrammaticSelection = false;
+        });
+    }
+
+    emit m_owner->updateComponentsList();
+
+    const QString selectedLongName = added.long_name;
+    QTimer::singleShot(0, m_owner, [owner = m_owner, selectedLongName]() {
+        if(owner)
+            emit owner->componentSelected(selectedLongName);
+    });
+    event->accept();
 }
 

@@ -11,6 +11,9 @@ extern RDK_LIB_TYPE bool RDK_CALL RdkLoadPredefinedLibraries(std::list<RDK::ULib
 /// Функция должна быть реализована в конечном проекте
 extern RDK_LIB_TYPE bool RDK_CALL RdkCreatePredefinedStructure(RDK::UEnvironment* env, int predefined_structure);
 
+/// Загрузка дополнительных создателей свойств из библиотек (конечный проект)
+extern RDK_LIB_TYPE bool RDK_CALL RdkLoadPredefinedCrPropFunctions(RDK::UStorage* storage);
+
 }
 
 #endif

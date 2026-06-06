@@ -203,7 +203,7 @@ USerStorageBinary& operator << (USerStorageBinary& storage, const std::string &d
   return storage;
 
  // Оптимизация: используем блоковую запись вместо поэлементной
- storage.WriteBlock(reinterpret_cast<const unsigned char*>(data.c_str()), size);
+ storage.WriteBlock(reinterpret_cast<const unsigned char*>(data.c_str()), static_cast<int>(size));
 
  return storage;
 }
@@ -222,7 +222,7 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, std::string &data)
  data.resize(size);
 
  // Оптимизация: используем блоковое чтение вместо поэлементного
- int bytesRead = storage.ReadBlock(reinterpret_cast<unsigned char*>(&data[0]), size);
+ int bytesRead = storage.ReadBlock(reinterpret_cast<unsigned char*>(&data[0]), static_cast<int>(size));
  if(bytesRead != size)
  {
   data.resize(bytesRead);

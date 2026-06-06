@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "id": "ctx_multi_turn_entity",
+  "tier": "deterministic",
+  "suite": "context",
+  "registry_profile": "core",
+  "user_text": "placeholder",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true,
+    "auto_apply_writes": true
+  },
+  "gui": {
+    "focused_component_long_name": "/ch0/Neuron3",
+    "channel_index": 0
+  },
+  "pre_resolved_entities": [
+    {
+      "kind": "component",
+      "query_key": "нейрон 3",
+      "canonical_value": "/ch0/Neuron3",
+      "channel_index": 0
+    }
+  ],
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "turns": [
+    {
+      "user_text": "измени параметр у нейрон 3",
+      "mock_script": [
+        {
+          "tool_calls": [
+            {
+              "name": "set_property",
+              "arguments": {
+                "long_name": "нейрон 3",
+                "property_name": "bias",
+                "value": 1.0,
+                "channel_index": 0
+              }
+            }
+          ]
+        },
+        {
+          "text": "Готово."
+        }
+      ]
+    },
+    {
+      "user_text": "ещё раз для нейрон 3",
+      "mock_script": [
+        {
+          "tool_calls": [
+            {
+              "name": "set_property",
+              "arguments": {
+                "long_name": "нейрон 3",
+                "property_name": "bias",
+                "value": 2.0,
+                "channel_index": 0
+              }
+            }
+          ]
+        },
+        {
+          "text": "Обновлено."
+        }
+      ]
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": ["set_property"],
+    "orchestrator_ok": true,
+    "needs_entity_clarification": false
+  }
+}

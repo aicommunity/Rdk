@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "e2e_write_add",
+  "tier": "e2e",
+  "suite": "e2e",
+  "user_text": "Use add_component to add a Neuron to the root net on channel 0.",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true,
+    "active_channel_index": 0
+  },
+  "e2e": {
+    "goal": "ToolInvoked",
+    "expected_tools_any": [
+      "add_component"
+    ],
+    "forbidden_tools": [],
+    "require_orchestrator_ok": true,
+    "allow_app_unavailable_result": true
+  },
+  "expect": {
+    "provider_rounds_max": 4,
+    "final_text_not_contains": [
+      "too many steps",
+      "maximum tool"
+    ]
+  }
+}

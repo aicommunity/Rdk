@@ -1,0 +1,324 @@
+#include <gtest/gtest.h>
+
+#include <filesystem>
+
+#include "Session/ULLMConversationStore.h"
+
+using namespace RDK::LLM;
+
+TEST(LLMSessionPersist, RoundTripMessages)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_test";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+
+    LLMMessage user;
+    user.role = LLMMessage::Role::User;
+    user.content = "hello";
+    store.appendMessage("session-a", user);
+
+    ULLMConversationStore store2;
+    store2.setStorageDirectory(dir);
+    EXPECT_TRUE(store2.loadFromDisk("session-a"));
+    ConversationState& loaded = store2.getOrCreate("session-a");
+    ASSERT_EQ(loaded.messages.size(), 1u);
+    EXPECT_EQ(loaded.messages[0].content, "hello");
+}
+
+TEST(LLMSessionPersist, RemoveSessionDropsPersistedFile)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_remove_test";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+    LLMMessage user;
+    user.role = LLMMessage::Role::User;
+    user.content = "bye";
+    store.appendMessage("session-drop", user);
+    EXPECT_TRUE(std::filesystem::exists(dir + "/session-drop.json"));
+
+    store.removeSession("session-drop");
+    EXPECT_FALSE(std::filesystem::exists(dir + "/session-drop.json"));
+    ULLMConversationStore store2;
+    store2.setStorageDirectory(dir);
+    EXPECT_FALSE(store2.loadFromDisk("session-drop"));
+}
+
+TEST(LLMSessionPersist, RoundTripPendingToolArguments)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_pending_args";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+    ConversationState& state = store.getOrCreate("session-pending");
+    state.session_id = "session-pending";
+
+    PendingToolArguments pending;
+    pending.tool_name = "add_component";
+    pending.action = ConfigurationLifecycleAction::Create;
+    pending.partial_arguments = {{"short_name", "N1"}};
+    pending.disambiguation_kind = PendingDisambiguationKind::Class;
+    pending.disambiguation_field = "class_name";
+    pending.disambiguation_candidates = nlohmann::json::array(
+        {{{"class_name", "NLPNeuron"}}, {{"class_name", "NModel"}}});
+    pending.missing_fields = {ToolArgumentFieldSpec{"class_name", "string",
+                                                    "Registered class name", true}};
+    pending.created_at_unix_sec = 12345;
+    store.setPendingToolArguments("session-pending", pending);
+    ASSERT_TRUE(store.persistToDisk("session-pending"));
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-pending"));
+    ConversationState& loaded = reloaded.getOrCreate("session-pending");
+    ASSERT_TRUE(loaded.pending_tool_arguments.has_value());
+    EXPECT_EQ(loaded.pending_tool_arguments->tool_name, "add_component");
+    EXPECT_EQ(loaded.pending_tool_arguments->disambiguation_field, "class_name");
+    EXPECT_EQ(loaded.pending_tool_arguments->created_at_unix_sec, 12345);
+    ASSERT_EQ(loaded.pending_tool_arguments->missing_fields.size(), 1u);
+    EXPECT_EQ(loaded.pending_tool_arguments->missing_fields.front().name, "class_name");
+}
+
+TEST(LLMSessionPersist, RoundTripPendingToolArgumentsRequestedAddCount)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_pending_add_count";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+    ConversationState& state = store.getOrCreate("session-add-count");
+    state.session_id = "session-add-count";
+
+    PendingToolArguments pending;
+    pending.tool_name = "add_component";
+    pending.partial_arguments = {{"class_name", "NLPNeuron"}, {"short_name", "N1"}};
+    pending.requested_repeat_count = 3;
+    pending.created_at_unix_sec = 99;
+    store.setPendingToolArguments("session-add-count", pending);
+    ASSERT_TRUE(store.persistToDisk("session-add-count"));
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-add-count"));
+    ASSERT_TRUE(reloaded.getOrCreate("session-add-count").pending_tool_arguments.has_value());
+    EXPECT_EQ(
+        reloaded.getOrCreate("session-add-count").pending_tool_arguments->requested_repeat_count,
+        3);
+}
+
+TEST(LLMSessionPersist, RoundTripLastQuantity)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_last_quantity";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+    ConversationState& state = store.getOrCreate("session-qty");
+    state.session_id = "session-qty";
+    state.last_quantity.valid = true;
+    state.last_quantity.primary = 6;
+    state.last_quantity.source = QuantitySource::Heuristic;
+    state.last_quantity.bound_turn_hash = "abc";
+    ASSERT_TRUE(store.persistToDisk("session-qty"));
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-qty"));
+    const ConversationState& loaded = reloaded.getOrCreate("session-qty");
+    EXPECT_TRUE(loaded.last_quantity.valid);
+    EXPECT_EQ(loaded.last_quantity.primary, 6);
+    EXPECT_EQ(loaded.last_quantity.source, QuantitySource::Heuristic);
+    EXPECT_EQ(loaded.last_quantity.bound_turn_hash, "abc");
+}
+
+TEST(LLMSessionPersist, RedactsSensitiveMessageContentOnPersist)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_redaction";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+
+    LLMMessage user;
+    user.role = LLMMessage::Role::User;
+    user.content = "api_key=secret123 token=abcd password=qwerty";
+    store.appendMessage("session-redact", user);
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-redact"));
+    ConversationState& loaded = reloaded.getOrCreate("session-redact");
+    ASSERT_EQ(loaded.messages.size(), 1u);
+    EXPECT_EQ(loaded.messages[0].content.find("secret123"), std::string::npos);
+    EXPECT_EQ(loaded.messages[0].content.find("qwerty"), std::string::npos);
+    EXPECT_NE(loaded.messages[0].content.find("[REDACTED]"), std::string::npos);
+}
+
+TEST(LLMSessionPersist, PersistsIntentContractState)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_intent_contract";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+    ConversationState& state = store.getOrCreate("session-intent");
+    state.session_id = "session-intent";
+    state.intent_contract_kind = LLMIntentKind::Mutate;
+    state.intent_contract_confidence = 0.87f;
+    state.intent_contract_requires_confirmation_for_writes = false;
+    ASSERT_TRUE(store.persistToDisk("session-intent"));
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-intent"));
+    ConversationState& loaded = reloaded.getOrCreate("session-intent");
+    EXPECT_EQ(loaded.intent_contract_kind, LLMIntentKind::Mutate);
+    EXPECT_FLOAT_EQ(loaded.intent_contract_confidence, 0.87f);
+    EXPECT_FALSE(loaded.intent_contract_requires_confirmation_for_writes);
+}
+
+TEST(LLMSessionPersist, RoundTripGuiContextV2)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_gui_v2";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+    ConversationState& state = store.getOrCreate("session-gui");
+    state.store_schema_version = 2;
+    LLMGuiContextSnapshot gui;
+    gui.channel_index = 1;
+    gui.focused_component_long_name = "PersistNeuron";
+    gui.focused_class_name = "Neuron";
+    gui.project_xml_path = "/tmp/test/project.ini";
+    state.last_gui_context = gui;
+    state.agent_notes = "## notes\nok";
+    state.session_context_seeded = true;
+    ASSERT_TRUE(store.persistToDisk("session-gui"));
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-gui"));
+    const ConversationState& loaded = *reloaded.findSession("session-gui");
+    ASSERT_TRUE(loaded.last_gui_context.has_value());
+    EXPECT_EQ(loaded.last_gui_context->focused_component_long_name, "PersistNeuron");
+    EXPECT_EQ(loaded.agent_notes, "## notes\nok");
+    EXPECT_TRUE(loaded.session_context_seeded);
+    EXPECT_EQ(loaded.store_schema_version, 2);
+}
+
+TEST(LLMSessionPersist, RoundTripLastSessionContextV2)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_ctx_flags";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+    ConversationState& state = store.getOrCreate("session-flags");
+    state.store_schema_version = 2;
+    LLMSessionContext session;
+    session.session_id = "session-flags";
+    session.llm_write_enabled = false;
+    session.auto_apply_writes = true;
+    session.autonomous_mode = LLMAutonomousMode::Strict;
+    session.allow_cloud_llm = true;
+    session.allow_save = false;
+    session.active_channel_index = 2;
+    state.last_session_context = session;
+    ASSERT_TRUE(store.persistToDisk("session-flags"));
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-flags"));
+    const ConversationState& loaded = *reloaded.findSession("session-flags");
+    ASSERT_TRUE(loaded.last_session_context.has_value());
+    EXPECT_FALSE(loaded.last_session_context->llm_write_enabled);
+    EXPECT_TRUE(loaded.last_session_context->auto_apply_writes);
+    EXPECT_EQ(loaded.last_session_context->autonomous_mode, LLMAutonomousMode::Strict);
+    EXPECT_TRUE(loaded.last_session_context->allow_cloud_llm);
+    EXPECT_FALSE(loaded.last_session_context->allow_save);
+    EXPECT_EQ(loaded.last_session_context->active_channel_index, 2);
+
+    std::filesystem::remove_all(dir);
+}
+
+TEST(LLMSessionPersist, RoundTripKnownFacts)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_known_facts";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+    ConversationState& state = store.getOrCreate("session-facts");
+    state.session_id = "session-facts";
+    state.known_facts = {"Connected Model/A to Model/B via Out -> In"};
+    ASSERT_TRUE(store.persistToDisk("session-facts"));
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-facts"));
+    const ConversationState& loaded = reloaded.getOrCreate("session-facts");
+    ASSERT_EQ(loaded.known_facts.size(), 1u);
+    EXPECT_EQ(loaded.known_facts[0], "Connected Model/A to Model/B via Out -> In");
+
+    std::filesystem::remove_all(dir);
+}
+
+TEST(LLMSessionPersist, RoundTripToolRoleMessage)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_tool_role";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+
+    LLMMessage tool;
+    tool.role = LLMMessage::Role::Tool;
+    tool.tool_call_id = "call-1";
+    tool.tool_name = "connect_components";
+    tool.content = R"({"ok":true})";
+    store.appendMessage("session-tool", tool);
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-tool"));
+    const ConversationState& loaded = reloaded.getOrCreate("session-tool");
+    ASSERT_EQ(loaded.messages.size(), 1u);
+    EXPECT_EQ(loaded.messages[0].role, LLMMessage::Role::Tool);
+    ASSERT_TRUE(loaded.messages[0].tool_name.has_value());
+    EXPECT_EQ(*loaded.messages[0].tool_name, "connect_components");
+    ASSERT_TRUE(loaded.messages[0].tool_call_id.has_value());
+    EXPECT_EQ(*loaded.messages[0].tool_call_id, "call-1");
+
+    std::filesystem::remove_all(dir);
+}
+
+TEST(LLMSessionPersist, BootstrapSeededFlagRoundTrip)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_bootstrap";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+    ConversationState& state = store.getOrCreate("session-boot");
+    state.session_context_seeded = true;
+    LLMMessage boot;
+    boot.role = LLMMessage::Role::System;
+    boot.content = "## Session bootstrap\n- project_loaded: true\n";
+    state.messages.push_back(boot);
+    ASSERT_TRUE(store.persistToDisk("session-boot"));
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-boot"));
+    const ConversationState& loaded = *reloaded.findSession("session-boot");
+    EXPECT_TRUE(loaded.session_context_seeded);
+    ASSERT_FALSE(loaded.messages.empty());
+    EXPECT_NE(loaded.messages.front().content.find("Session bootstrap"), std::string::npos);
+
+    std::filesystem::remove_all(dir);
+}

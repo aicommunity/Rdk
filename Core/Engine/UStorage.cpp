@@ -27,8 +27,17 @@ See file license.txt for more information
 #include <future>
 #include <mutex>
 #include <unordered_set>
+#include <sstream>
 
 namespace RDK {
+
+namespace {
+// Диагностический режим трассировки TakeObject во время Default() NNeuronLearner.
+// Помогает понять, на каком "внутреннем" TakeObject/Default происходит AV/SEH.
+thread_local bool g_takeobject_trace_nneuronlearner_default = false;
+thread_local int g_takeobject_trace_depth = 0;
+thread_local std::string g_takeobject_trace_root_name;
+} // namespace
 
 /* *********************************************************************** */
 /* *********************************************************************** */
@@ -511,6 +520,13 @@ void UStorage::ClearClassesStorage(bool force)
 // Флаг 'Activity' объекта выставляется в true
 UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponent> &prototype)
 {
+ // Поддержка вложенной трассировки (показывает последний успешный шаг перед падением)
+ struct DepthGuard
+ {
+  DepthGuard() { ++g_takeobject_trace_depth; }
+  ~DepthGuard() { --g_takeobject_trace_depth; }
+ } depth_guard;
+
  // Защита от использования неинициализированных классов
  if(classid == ForbiddenId)
  {
@@ -532,6 +548,27 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
  UClassStorageElement tmpl=tmplI->second;
 
  UObjectsStorageIterator instances=ObjectsStorage.find(classid);
+ // Диагностическое имя класса для логирования
+ std::string diag_class_name;
+ try
+ {
+  diag_class_name = FindClassName(classid);
+ }
+ catch(...)
+ {
+  diag_class_name = "<unknown>";
+ }
+
+ // Если мы находимся внутри Default() NNeuronLearner — пишем полный трейс всех TakeObject.
+ if(Logger && g_takeobject_trace_nneuronlearner_default)
+ {
+  std::ostringstream oss;
+  oss << "TakeObject trace (depth=" << g_takeobject_trace_depth
+      << ", root='" << g_takeobject_trace_root_name
+      << "'): request class '" << diag_class_name << "'";
+  Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, oss.str());
+ }
+
  if(instances != ObjectsStorage.end())
  {
   UInstancesStorageElement* element=0;// Заглушка!! instances->FindFree();
@@ -553,16 +590,94 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
    {
     element->UseFlag=true;
 
+    if(Logger)
+    {
+     Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+      std::string("TakeObject reuse path for class '") + diag_class_name + "'");
+    }
+
     // КРИТИЧНО: Сохраняем ClassId перед операциями, которые могут его изменить
     UId saved_class_id = obj->GetClass();
     if(saved_class_id == ForbiddenId || saved_class_id != classid)
      saved_class_id = classid; // Используем правильный classid если текущий невалидный
 
+    if(Logger)
+    {
+     Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+      std::string("TakeObject before Default() for class '") + diag_class_name + "'");
+    }
+
+    // Для NNeuronLearner включаем расширенную трассировку вложенных TakeObject на время Default().
+    struct TraceGuard
+    {
+     bool enabled = false;
+     TraceGuard(const std::string& class_name, const std::string& root_name)
+     {
+      if(class_name == "NNeuronLearner")
+      {
+       enabled = true;
+       g_takeobject_trace_nneuronlearner_default = true;
+       g_takeobject_trace_root_name = root_name;
+      }
+     }
+     ~TraceGuard()
+     {
+      if(enabled)
+      {
+       g_takeobject_trace_nneuronlearner_default = false;
+       g_takeobject_trace_root_name.clear();
+      }
+     }
+    } trace_guard(diag_class_name, obj->GetName());
+
+    if(Logger && trace_guard.enabled)
+    {
+     Logger->LogMessageEx(RDK_EX_DEBUG, "TakeObjectTrace",
+      std::string("Enter Default() for root '") + obj->GetName() + "'");
+    }
+
     obj->Default();
+
+    if(Logger && trace_guard.enabled)
+    {
+     Logger->LogMessageEx(RDK_EX_DEBUG, "TakeObjectTrace",
+      std::string("Exit Default() for root '") + obj->GetName() + "'");
+    }
+
+    if(Logger)
+    {
+     Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+      std::string("TakeObject after Default() for class '") + diag_class_name + "'");
+    }
+
     if(!prototype)
+    {
+     if(Logger)
+     {
+      Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+       std::string("TakeObject before ResetComponent() for class '") + diag_class_name + "'");
+     }
      tmpl->ResetComponent(static_pointer_cast<UComponent>(obj));
+     if(Logger)
+     {
+      Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+       std::string("TakeObject after ResetComponent() for class '") + diag_class_name + "'");
+     }
+    }
     else
+    {
+     if(Logger)
+     {
+      Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+       std::string("TakeObject before Copy() from prototype for class '") + diag_class_name + "'");
+     }
      dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj,this);
+     if(Logger)
+     {
+      Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+       std::string("TakeObject after Copy() from prototype for class '") + diag_class_name + "'");
+     }
+    }
 
     // КРИТИЧНО: Восстанавливаем ClassId ПОСЛЕ всех операций, которые могут его изменить
     UId current_class_id = obj->GetClass();
@@ -570,7 +685,6 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
     {
      // Восстанавливаем ClassId из параметра classid
      obj->SetClass(classid);
-     // Удалено избыточное логирование - создавало спам в DEBUG логах
     }
 
     obj->Activity = true;
@@ -601,6 +715,12 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
  PushObject(classid,obj);
  obj->SetLogger(Logger);
  obj->Activity = true;
+
+ if(Logger)
+ {
+  Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+   std::string("TakeObject new-object path for class '") + diag_class_name + "'");
+ }
 
  return static_pointer_cast<UComponent>(obj);
 }
@@ -681,7 +801,16 @@ int UStorage::CalcNumObjects(const UId &classid) const
 
 size_t UStorage::CalcNumObjects(const string &classname) const
 {
- return CalcNumObjects(FindClassId(classname));
+ // Для удобства вызывающих: если для класса пока нет ни одного объекта
+ // в ObjectsStorage, возвращаем 0 вместо выбрасывания EClassIdNotExist.
+ try
+ {
+  return CalcNumObjects(FindClassId(classname));
+ }
+ catch (const EClassIdNotExist &)
+ {
+  return 0;
+ }
 }
 
 

@@ -1,4 +1,78 @@
 cmake_minimum_required(VERSION 3.16)
 
+include(${CMAKE_SOURCE_DIR}/cmake/SelectQt.cmake)
+
 # Unit tests for Rdk Engine components
 add_subdirectory(Engine)
+
+if(RDK_USE_LLM)
+  add_subdirectory(LLM)
+endif()
+
+add_executable(Test_ComponentGuiRegistry
+    Test_ComponentGuiRegistry.cpp
+    ../../GUI/Qt/UComponentFormRegistry.cpp
+    ../../GUI/Qt/UComponentGuiService.cpp
+    ../../GUI/Qt/UComponentGuiDndPayload.cpp
+    ../../GUI/Qt/UComponentGuiTabHostWidget.cpp
+    ../../GUI/Qt/UGenericComponentControllerWidget.cpp
+    ../../GUI/Qt/UVisualControllerWidget.cpp
+    ../../GUI/Qt/UGuiTelemetry.cpp
+    ../../Deploy/Include/RdkDummyLibraries.cpp
+)
+
+target_include_directories(Test_ComponentGuiRegistry PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../GUI/Qt
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Deploy/Include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Core
+)
+
+target_link_libraries(Test_ComponentGuiRegistry PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+    rdk.static.qt
+    Nmsdk::Qt::Core
+    Nmsdk::Qt::Widgets
+)
+
+target_compile_definitions(Test_ComponentGuiRegistry PRIVATE
+    RDK_QT
+    RDK_LIB_TYPE=
+    RDK_CALL=
+)
+
+add_test(NAME Test_ComponentGuiRegistry COMMAND Test_ComponentGuiRegistry)
+
+add_executable(Test_ComponentGuiLifecycle
+    Test_ComponentGuiLifecycle.cpp
+    ../../GUI/Qt/UComponentFormRegistry.cpp
+    ../../GUI/Qt/UComponentGuiService.cpp
+    ../../GUI/Qt/UComponentGuiDndPayload.cpp
+    ../../GUI/Qt/UComponentGuiTabHostWidget.cpp
+    ../../GUI/Qt/UGenericComponentControllerWidget.cpp
+    ../../GUI/Qt/UVisualControllerWidget.cpp
+    ../../GUI/Qt/UGuiTelemetry.cpp
+    ../../Deploy/Include/RdkDummyLibraries.cpp
+)
+
+target_include_directories(Test_ComponentGuiLifecycle PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../GUI/Qt
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Deploy/Include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../Core
+)
+
+target_link_libraries(Test_ComponentGuiLifecycle PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+    rdk.static.qt
+    Nmsdk::Qt::Core
+    Nmsdk::Qt::Widgets
+)
+
+target_compile_definitions(Test_ComponentGuiLifecycle PRIVATE
+    RDK_QT
+    RDK_LIB_TYPE=
+    RDK_CALL=
+)
+
+add_test(NAME Test_ComponentGuiLifecycle COMMAND Test_ComponentGuiLifecycle)

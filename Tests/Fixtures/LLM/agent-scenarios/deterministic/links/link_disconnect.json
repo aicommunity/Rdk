@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "id": "link_disconnect",
+  "tier": "deterministic",
+  "suite": "links",
+  "registry_profile": "core",
+  "user_text": "разорви связь Source1 и Net1",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "disconnect_components",
+          "arguments": {
+            "from_long_name": "Model.Source1",
+            "from_property": "Output",
+            "to_long_name": "Model.Net1",
+            "to_property": "Input",
+            "channel_index": 0
+          }
+        }
+      ]
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": [
+      "disconnect_components"
+    ]
+  }
+}

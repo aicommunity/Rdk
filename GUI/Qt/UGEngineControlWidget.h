@@ -1,12 +1,23 @@
 #ifndef UGENGINECONTROLWIDGET_H
 #define UGENGINECONTROLWIDGET_H
 
+#include <QAction>
 #include <QMainWindow>
 #include <QSettings>
 #include <QMdiSubWindow>
 #include <QKeyEvent>
+#include <QString>
+#include <QKeySequence>
+#include <QVector>
+#include <QHash>
+#include <QPointer>
+#include <QSet>
+#include <QPair>
+#include <QPoint>
 
 #include <rdk_application.h>
+
+#include <functional>
 
 #include "UVisualControllerMainWidget.h"
 #include "UComponentsListWidget.h"
@@ -33,14 +44,20 @@
 #include "UAboutDialog.h"
 #include "UHelpWindow.h"
 #include "UProjectDescriptionWindow.h"
+#include "UComponentGuiService.h"
+#include "UComponentGuiContext.h"
+#include "UComponentGuiTabHostWidget.h"
 
 #ifndef RDK_DISABLE_EXT_GUI
 #include "UVideoAnalyticsSimpleSettingsWidget.h"
 #endif
 
+#include "../../LLM/Core/LlmTypes.h"
+
 namespace Ui {
 class UGEngineControllWidget;
 }
+class QMimeData;
 
 struct USubTabDescription
 {
@@ -73,6 +90,31 @@ USubTabDescriptionWatches(void)
 {};
 };
 
+// Размещение пользовательского виджета в UGEngineControlWidget
+enum class UCustomWidgetPlacement
+{
+    Dock,
+    Mdi
+};
+
+// Описатель пользовательского виджета, который может быть зарегистрирован
+// в UGEngineControlWidget и создан по требованию из меню/toolbar.
+struct UCustomWidgetDescriptor
+{
+    QString id;   // стабильный идентификатор
+    QString title;
+
+    std::function<UVisualControllerWidget*(RDK::UApplication*)> factory;
+
+    UCustomWidgetPlacement placement = UCustomWidgetPlacement::Dock;
+    Qt::DockWidgetArea defaultDockArea = Qt::RightDockWidgetArea;
+    bool singleInstance = true;
+
+    QString menuPath;     // например, "Window/NeuroModeler/Manipulator"
+    QString toolbarGroup; // опционально: имя группы/toolbar
+    QKeySequence shortcut;
+};
+
 /// UGEngineControllWidget class - пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 ///
 /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.
@@ -88,11 +130,20 @@ public:
     ///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void showChannelsWidget(void);
 
-    ///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ)
+    /// загрузка проекта извне (используется, например, пунктами меню и автозагрузкой)
     void loadProjectExternal(const QString &config_path);
 
     /// Open help window (public method for use by child widgets)
     void openHelpWindow();
+
+    // Регистрация пользовательского виджета (дополнительного окна/панели),
+    // который затем создаётся по требованию из меню/toolbar.
+    void registerCustomWidget(const UCustomWidgetDescriptor &descriptor);
+    void appendMenuAction(const QString& menuPath, QAction* action);
+    void appendMenuSeparator(const QString& menuPath);
+    void showCustomWidgetById(const QString& id);
+
+    UModernDiagramContainerWidget* modernDiagramContainer() const { return modernDiagram; }
 
 #ifndef RDK_DISABLE_EXT_GUI
     void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
@@ -111,7 +162,16 @@ public slots:
     void showLinksForSingleComponent(QString componentName);
     void showLinksForTwoComponents(QString firstComponentName, QString secondComponentName);
     void switchLinksForTwoComponents(QString firstComponentName, QString secondComponentName);
+    void openComponentGuiFromScheme(const UComponentGuiContext& context);
 
+    /// LLM presentation sink helpers (main-thread UI refresh after configuration tools).
+    void refreshLlmPresentationShell();
+    void refreshLlmPresentationDiagram();
+    void registerRecentConfigurationPath(const QString& path);
+
+    void showLlmUiPanel(RDK::LLM::LLMUiPanel panel);
+    nlohmann::json listLlmUiPanelsState() const;
+    void setLlmActiveChannel(int channel_index);
 
     // actions:
 
@@ -181,8 +241,12 @@ private slots:
 
     void on_actionImages_triggered();
 
+    // обработчик нажатий на actions зарегистрированных пользовательских виджетов
+    void handleCustomWidgetActionTriggered();
+
 private:
     static const int kMaxRecentConfigs = 10;
+    static const int kComponentGuiLayoutSchemaVersion = 1;
 
     // Helper methods
     void createThemeMenu();
@@ -237,6 +301,53 @@ private:
 
     /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     RDK::UApplication *application;
+
+    // зарегистрированные пользовательские виджеты
+    QVector<UCustomWidgetDescriptor> customWidgets;
+    // активные экземпляры по id; QPointer обнуляется при удалении виджета
+    QHash<QString, QList<QPointer<UVisualControllerWidget>>> customWidgetInstances;
+    UComponentGuiService m_componentGuiService;
+    bool m_componentSpecialFormsEnabled = true;
+    bool m_componentSpecialFormsMotionControlEnabled = true;
+    bool m_componentSpecialFormsPulseLibEnabled = true;
+    bool m_componentSpecialFormsBasicLibEnabled = true;
+    bool m_componentSpecialFormsCvBasicLibEnabled = true;
+    bool m_componentSpecialFormsHardwareLibEnabled = true;
+    QHash<QString, QPointer<UComponentGuiTabHostWidget>> m_componentGuiTabHosts;
+    QPointer<QMainWindow> m_componentGuiSecondaryHostWindow;
+    QPointer<UComponentGuiTabHostWidget> m_componentGuiSecondaryTabHost;
+
+    // служебный метод для создания/активации пользовательского виджета
+    void createOrActivateCustomWidget(const QString &id);
+    UComponentGuiTabHostWidget* ensureComponentGuiTabHost(const QString& hostId);
+    UComponentGuiTabHostWidget* ensureComponentGuiSecondaryTabHost();
+    void saveComponentGuiLayoutToXml(RDK::USerStorageXML &xml);
+    void loadComponentGuiLayoutFromXml(RDK::USerStorageXML &xml);
+    void writeComponentGuiSettings(QSettings& projectSettings);
+    void readComponentGuiSettings(QSettings& projectSettings);
+    QString hostModeToString(UComponentGuiHostMode mode) const;
+    UComponentGuiHostMode hostModeFromString(const QString& mode) const;
+    void showComponentGuiHostMenu(UVisualControllerWidget* widget, const QPoint& globalPos);
+    bool resolveComponentGuiWidgetContext(UVisualControllerWidget* widget,
+                                          UComponentGuiContext& context,
+                                          UComponentGuiHostMode* mode = nullptr) const;
+    void promptAndOpenComponentGuiTabHost();
+    UComponentGuiTabHostWidget* findComponentGuiTabHost(const QString& hostId) const;
+    QStringList componentGuiTabHostIds() const;
+    bool moveContextToTabHost(const UComponentGuiContext& context, const QString& hostId);
+    bool moveContextToSecondaryHost(const UComponentGuiContext& context);
+    void wireComponentGuiTabHostPruning(UComponentGuiTabHostWidget* host);
+    void pruneEmptyTabHostSlotsForContext(const UComponentGuiContext& context);
+    void startComponentGuiDrag(const UComponentGuiContext& context, QWidget* dragSource, bool detachOnIgnoredDrop);
+    void ensureComponentGuiDragSourcesInstalled(UVisualControllerWidget* widget);
+    void installDragFilterRecursively(QWidget* root);
+    void ensureComponentGuiQuickActionsInstalled(UVisualControllerWidget* widget);
+    void positionComponentGuiQuickActions(UVisualControllerWidget* widget);
+    void showComponentGuiSecondaryHostWindow();
+    bool handleDropToSecondaryHost(const QMimeData* mimeData);
+    bool handleDropToTabHost(const QMimeData* mimeData, const QString& hostId);
+    QString resolveTabHostDropTargetAtCursor() const;
+    bool isCursorOverSecondaryHost() const;
 
     // methods
 
@@ -298,6 +409,13 @@ private:
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
+    bool eventFilter(QObject* watched, QEvent* event) override;
+
+private:
+    QPoint m_componentGuiTabDragStartPos;
+    int m_componentGuiTabDragIndex = -1;
+    QPoint m_componentGuiWidgetDragStartPos;
+    QPointer<QObject> m_componentGuiWidgetDragPressedObject;
 
 };
 

@@ -52,6 +52,7 @@ public:
  int autoexecLastProjectFlag;
  int hideAdminForm;
  int startMinimized;
+ int showLlmAssistantMenu;
  double calcTimeIntervalSec;
  int exitAfterCalcFlag;
 
@@ -152,8 +153,6 @@ FuncProgressBarCallback=func;
 template<class ApplicationT, class EngineControlT, class ProjectT, class ServerControlT, class TestManagerT, class DispatcherT, class DecoderT, class DecoderCommonT, class ServerTransportT, class ProjectDeployerT>
 UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManagerT, DispatcherT, DecoderT, DecoderCommonT, ServerTransportT, ProjectDeployerT>::~UAppCore(void)
 {
- application.PauseChannel(-1);
- application.CloseProject();
  application.UnInit();
 }
 
@@ -179,6 +178,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  exitAfterCalcFlag = RDK::atoi(projectIniFile("General", "ExitAfterCalcFlag", "0"));
  hideAdminForm        = RDK::atoi(projectIniFile("General", "HideAdminForm", "0"));
  startMinimized       = RDK::atoi(projectIniFile("General", "StartMinimized", "0"));
+ showLlmAssistantMenu = RDK::atoi(projectIniFile("General", "ShowLlmAssistantMenu", "0"));
 
  mainFormName=projectIniFile("General", "MainFormName", "");
  minimizeToTray=atoi(projectIniFile("General","MinimizeToTray","0"));

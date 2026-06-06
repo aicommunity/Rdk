@@ -4,6 +4,7 @@
 #include "UModernDiagramCacheManager.h"
 #include "UClassDescriptionDisplay.h"
 #include "UQuickLinkDialog.h"
+#include "UComponentFormRegistry.h"
 
 #include <QInputDialog>
 #include <QMessageBox>
@@ -13,6 +14,7 @@
 #include <QLineEdit>
 #include <QDialog>
 #include "../../Deploy/Include/rdk_init.h"
+#include "../../Deploy/Include/rdk_cpp_init.h"
 #include "../Core/Engine/UEngine.h"
 #include "rdk_application.h"
 
@@ -32,6 +34,7 @@ UModernDiagramContextMenu::UModernDiagramContextMenu(UModernDiagramWidget* owner
     , m_actionCancelSwitching(nullptr)
     , m_actionCloneComponent(nullptr)
     , m_actionQuickLink(nullptr)
+    , m_actionComponentGui(nullptr)
     , m_contextMenuNode(nullptr)
 {
     createContextMenu();
@@ -137,9 +140,9 @@ void UModernDiagramContextMenu::createContextMenu()
     QAction* actionDefaultComponent = new QAction(m_contextMenu);
     actionDefaultComponent->setText("Default");
 
-    QAction* actionGUI = new QAction(m_contextMenu);
-    actionGUI->setText("GUI (not implemented)");
-    actionGUI->setEnabled(false);
+    m_actionComponentGui = new QAction(m_contextMenu);
+    m_actionComponentGui->setText("GUI...");
+    m_actionComponentGui->setEnabled(false);
 
     QAction* actionCopyComponentXMLDescription = new QAction(m_contextMenu);
     actionCopyComponentXMLDescription->setText("Copy component XML description");
@@ -174,7 +177,7 @@ void UModernDiagramContextMenu::createContextMenu()
     m_contextMenu->addAction(actionCalculateComponent);
     m_contextMenu->addAction(actionDefaultComponent);
     m_contextMenu->addAction(actionSeparator6);
-    m_contextMenu->addAction(actionGUI);
+    m_contextMenu->addAction(m_actionComponentGui);
     m_contextMenu->addAction(actionCopyComponentXMLDescription);
     m_contextMenu->addAction(actionSeparator8);
     m_contextMenu->addAction(m_actionCloneComponent);
@@ -201,7 +204,7 @@ void UModernDiagramContextMenu::createContextMenu()
     connect(actionResetComponent, SIGNAL(triggered(bool)), this, SLOT(componentReset()));
     connect(actionCalculateComponent, SIGNAL(triggered(bool)), this, SLOT(componentCalculate()));
     connect(actionDefaultComponent, SIGNAL(triggered(bool)), this, SLOT(componentDefault()));
-    connect(actionGUI, SIGNAL(triggered(bool)), this, SLOT(componentGUI()));
+    connect(m_actionComponentGui, SIGNAL(triggered(bool)), this, SLOT(componentGUI()));
     connect(actionCopyComponentXMLDescription, SIGNAL(triggered(bool)), this, SLOT(componentCopyXMLDescription()));
     connect(m_actionCloneComponent, SIGNAL(triggered(bool)), this, SLOT(componentCloneComponent()));
     connect(m_actionQuickLink, SIGNAL(triggered(bool)), this, SLOT(componentQuickLink()));
@@ -214,6 +217,7 @@ void UModernDiagramContextMenu::showMenu(const QPoint& globalPos, UModernDiagram
         return;
 
     m_contextMenuNode = node;
+    updateActionsState();
     m_contextMenu->popup(globalPos);
 }
 
@@ -225,10 +229,33 @@ QString UModernDiagramContextMenu::getSelectedComponentLongName() const
                                              : m_owner->m_componentName + "." + m_contextMenuNode->nodeName;
 }
 
+QString UModernDiagramContextMenu::getSelectedComponentClassName() const
+{
+    const QString selectedName = getSelectedComponentLongName();
+    if(selectedName.isEmpty())
+        return QString();
+    const char* className = Model_GetComponentClassName(selectedName.toLocal8Bit().constData());
+    const QString result = QString::fromUtf8(className ? className : "");
+    Engine_FreeBufString(className);
+    return result;
+}
+
+UComponentGuiContext UModernDiagramContextMenu::buildComponentGuiContext() const
+{
+    UComponentGuiContext context;
+    context.componentLongName = getSelectedComponentLongName();
+    context.componentClassName = getSelectedComponentClassName();
+    context.channelIndex = Core_GetSelectedChannelIndex();
+    return context;
+}
+
 void UModernDiagramContextMenu::updateActionsState()
 {
-    // Метод для обновления состояния действий меню
-    // Может быть вызван из виджета при изменении состояния
+    if(!m_actionComponentGui)
+        return;
+    const UComponentGuiContext context = buildComponentGuiContext();
+    const bool canOpen = UComponentFormRegistry::instance().canOpen(context);
+    m_actionComponentGui->setEnabled(canOpen);
 }
 
 // Context menu action handlers
@@ -491,12 +518,16 @@ void UModernDiagramContextMenu::componentDefault()
     }
 
     RDK::UELockPtr<RDK::UStorage> storage = RDK::GetStorageLock();
-    std::string stringid = selectedComponentLongName.toLocal8Bit().constData();
+    RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock<RDK::UContainer>(Core_GetSelectedChannelIndex());
+    if(!storage || !model)
+        return;
+
     RDK::UEPtr<RDK::UNet> object;
-    if(stringid.empty())
-        object = RDK::dynamic_pointer_cast<RDK::UNet>(RDK::GetModel());
+    const QByteArray path = selectedComponentLongName.trimmed().toUtf8();
+    if(path.isEmpty())
+        object = RDK::dynamic_pointer_cast<RDK::UNet>(RDK::UEPtr<RDK::UContainer>(model.Get()));
     else
-        object = RDK::dynamic_pointer_cast<RDK::UNet>(RDK::GetEngine()->FindComponent(stringid.c_str()));
+        object = RDK::dynamic_pointer_cast<RDK::UNet>(model->GetComponentL(path.constData(), true));
 
     RDK::UEPtr<RDK::UNet> owner = RDK::dynamic_pointer_cast<RDK::UNet>(object->GetOwner());
     RDK::UStringLinksList links_list;
@@ -513,7 +544,15 @@ void UModernDiagramContextMenu::componentDefault()
 
 void UModernDiagramContextMenu::componentGUI()
 {
-    // Не реализовано
+    if(!m_owner)
+        return;
+    const UComponentGuiContext context = buildComponentGuiContext();
+    if(!UComponentFormRegistry::instance().canOpen(context))
+    {
+        QMessageBox::information(m_owner, "Component GUI", "Component GUI form is not registered for this class.");
+        return;
+    }
+    m_owner->emitOpenComponentGui(context);
 }
 
 void UModernDiagramContextMenu::componentCopyXMLDescription()

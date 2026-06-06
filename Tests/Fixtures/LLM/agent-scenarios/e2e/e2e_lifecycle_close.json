@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "id": "e2e_lifecycle_close",
+  "tier": "e2e",
+  "suite": "e2e",
+  "user_text": "close the open project configuration",
+  "session": {
+    "project_loaded": false,
+    "llm_write_enabled": true
+  },
+  "e2e": {
+    "goal": "LifecycleToolUsed",
+    "expected_tools_any": [
+      "close_configuration"
+    ],
+    "forbidden_tools": [],
+    "require_orchestrator_ok": true,
+    "allow_app_unavailable_result": true
+  },
+  "expect": {
+    "provider_rounds_max": 4,
+    "final_text_not_contains": [
+      "too many steps",
+      "maximum tool"
+    ]
+  }
+}

@@ -4,6 +4,7 @@
 #include "UVisualControllerWidget.h"
 #include "UDrawEngineImageWidget.h"
 #include "UGuiModelSnapshot.h"
+#include "UComponentGuiContext.h"
 
 #include <QLineEdit>
 #include <QTreeWidgetItem>
@@ -19,6 +20,7 @@
 #include <QDialog>
 #include <QVBoxLayout>
 #include <QKeyEvent>
+#include <QSet>
 
 namespace Ui {
 class UComponentsListWidgetModern;
@@ -133,6 +135,7 @@ signals:
     void updateScheme(bool forceUpdate);
     void selectedPropertyValue(QString value);
     void itemChanged(QTreeWidgetItem *item, int column);
+    void openComponentGuiRequested(const UComponentGuiContext& context);
 
 public slots:
     void updateComponentsListFromScheme();
@@ -241,13 +244,24 @@ private:
     QString currentDrawComponentName;
 
     /// Скрытый рекурсивный метод заполнения списка компонентов
-    void addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem);
+    void addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem, const QSet<QString> &expandedItems);
 
     /// Перерисовка виджета со списком каналов
     void redrawChannelsList();
 
     void rebuildTreeFromSnapshot(const NMSDK::UGuiSnapshotPtr &snapshot);
     bool applyFilter(QTreeWidgetItem *item);
+    void restoreTreeSelection(const QString& oldRootItem, const QString& oldSelectedItem);
+    void schedulePropertyReloadRetry();
+    void scheduleTreeRebuildRetry();
+
+    static constexpr unsigned kModelLockTimeoutMs = 250;
+    static constexpr int kMaxPropertyReloadRetries = 5;
+    static constexpr int kMaxTreeRebuildRetries = 5;
+
+    int m_propertyReloadRetryCount = 0;
+    QString m_propertyReloadRetryTarget;
+    int m_treeRebuildRetryCount = 0;
 
     Ui::UComponentsListWidgetModern *ui;
     QLineEdit *filterLineEdit;

@@ -28,6 +28,7 @@ See file license.txt for more information
 #include "UEnvironment.h"
 #include "../../Deploy/Include/rdk_exceptions.h"
 #include "UEnvException.h"
+#include "../../Deploy/Include/rdk_cpp_init.h"
 
 namespace RDK {
 
@@ -1170,7 +1171,7 @@ UEPtr<UContainer> UContainer::GetComponent(const UId &id, bool no_throw) const
    return PComponents[index];
  }
 
- // Fallback to linear search if index is out of sync
+ // Обращение ко всем компонентам объекта
  UEPtr<UContainer>* comps=PComponents;
  for(int i=0;i<NumComponents;i++,comps++)
   if(id == (*comps)->Id)
@@ -1744,7 +1745,10 @@ ULongIdVector& UContainer::GetNetsList(ULongIdVector &buffer,
 // Методы управления локальными указателями
 // --------------------------
 // Устанавливает дочерний компонент 'id' в качестве заданного класса локальных указателей
-// 'pointerid'
+// --------------------------
+// Методы управления локальными указателями
+// --------------------------
+// Устанавливает дочерний компонент 'id' в качестве заданного класса локальных указателей
 // 'pointerid'
 bool UContainer::SetComponentAs(const UId &id, const UId &pointerid)
 {
@@ -1776,7 +1780,7 @@ bool UContainer::SetComponentAs(const UId &id, const UId &pointerid)
  return false;
 }
 
-// 'pointername'
+// Устанавливает дочерний компонент 'name' в качестве заданного класса локальных указателей
 // 'pointername'
 bool UContainer::SetComponentAs(const NameT &name,const NameT &pointername)
 {
@@ -1808,7 +1812,7 @@ bool UContainer::SetComponentAs(const NameT &name,const NameT &pointername)
  return false;
 }
 
-// 'pointerid'
+// Сбрасывает отношение дочерниего компонента 'id' к заданному классу локальных указателей
 // 'pointerid'
 bool UContainer::ResetComponentAs(const UId &id, const UId &pointerid)
 {
@@ -1830,7 +1834,7 @@ bool UContainer::ResetComponentAs(const UId &id, const UId &pointerid)
  return true;
 }
 
-// 'pointername'
+// Сбрасывает отношение дочерниего компонента 'name' к заданному классу локальных указателей
 // 'pointername'
 bool UContainer::ResetComponentAs(const NameT &name,const NameT &pointername)
 {

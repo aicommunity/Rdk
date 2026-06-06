@@ -26,7 +26,7 @@ namespace RDK {
 
 
 /// Возвращает RDK_UNHANDLED_EXCEPTION если не удалось обработать исключение
-/// Иначе возвращает RDK_EXCEPTION_CATCHED
+/// См. описание в rdk_init.cpp
 int RDK_CALL ProcessException(int channel_index, const UException &ex)
 {
  UEPtr<UExceptionLogger> logger=RdkCoreManager.GetLogger(channel_index);
@@ -342,13 +342,13 @@ int RDK_CALL Core_SetDebugMode(bool value)
  return RdkCoreManager.SetDebugMode(value);
 }
 
-/// ���������� ���� ��������� ������ ���� � ��������
+/// Возвращает флаг вывода сообщений в отладчик
 bool RDK_CALL Core_GetDebuggerMessageFlag(void)
 {
  return RdkCoreManager.GetDebuggerMessageFlag();
 }
 
-/// ������������� ���� ��������� ������ ���� � ��������
+/// Устанавливает флаг вывода сообщений в отладчик
 int RDK_CALL Core_SetDebuggerMessageFlag(bool value)
 {
  return RdkCoreManager.SetDebuggerMessageFlag(value);
@@ -1116,7 +1116,7 @@ bool RDK_CALL MEnv_IsStructured(int channel_index)
  return RdkCoreManager.GetEngineLock(channel_index)->Env_IsStructured();
 }
 
-// Инициализирует Environment
+/// Возвращает число каналов
 int RDK_CALL Env_Init(void)
 {
  return RdkCoreManager.GetEngineLock()->Env_Init();
@@ -1182,7 +1182,7 @@ int RDK_CALL MEnv_Destroy(int channel_index)
 }
 
 
-// Инициализирует модель
+/// Возвращает число каналов
 int RDK_CALL Env_ModelInit(const char *stringid)
 {
     return RdkCoreManager.GetEngineLock()->Env_ModelInit(stringid);
@@ -1392,7 +1392,7 @@ int RDK_CALL MEnv_SetCurrentDataDir(int channel_index, const char *dir)
  return RdkCoreManager.GetEngineLock(channel_index)->Env_SetCurrentDataDir(dir);
 }
 
-/// ���������� ��������� ����� ����������� ������ �����
+/// См. описание в rdk_init.cpp
 bool RDK_CALL Env_GetDebugMode(void)
 {
  return Log_GetDebugMode();
@@ -1403,7 +1403,7 @@ bool RDK_CALL MEnv_GetDebugMode(int channel_index)
  return MLog_GetDebugMode(channel_index);
 }
 
-/// ������������� ��������� ����� ����������� ������ �����
+/// См. описание в rdk_init.cpp
 int RDK_CALL Env_SetDebugMode(bool value)
 {
  return Log_SetDebugMode(value);
@@ -1414,7 +1414,7 @@ int RDK_CALL MEnv_SetDebugMode(int channel_index, bool value)
  return MLog_SetDebugMode(channel_index, value);
 }
 
-/// ���������� ����� ��������� ������� ��� �����������
+/// См. описание в rdk_init.cpp
 unsigned int RDK_CALL Env_GetDebugSysEventsMask(void)
 {
  return Log_GetDebugSysEventsMask();
@@ -1425,7 +1425,7 @@ unsigned int RDK_CALL MEnv_GetDebugSysEventsMask(int channel_index)
  return MLog_GetDebugSysEventsMask(channel_index);
 }
 
-/// ������������� ����� ��������� ������� ��� �����������
+/// См. описание в rdk_init.cpp
 int RDK_CALL Env_SetDebugSysEventsMask(unsigned int value)
 {
  return Log_SetDebugSysEventsMask(value);
@@ -1437,7 +1437,7 @@ int RDK_CALL MEnv_SetDebugSysEventsMask(int channel_index, unsigned int value)
 }
 
 
-/// ���������� ���� ��������� ������ ���� � ��������
+/// См. описание в rdk_init.cpp
 bool RDK_CALL Env_GetDebuggerMessageFlag(void)
 {
  return Log_GetDebuggerMessageFlag();
@@ -1448,7 +1448,7 @@ bool RDK_CALL MEnv_GetDebuggerMessageFlag(int channel_index)
  return MLog_GetDebuggerMessageFlag(channel_index);
 }
 
-/// ������������� ���� ��������� ������ ���� � ��������
+/// См. описание в rdk_init.cpp
 bool RDK_CALL Env_SetDebuggerMessageFlag(bool value)
 {
  return Log_SetDebuggerMessageFlag(value);
@@ -1460,10 +1460,14 @@ bool RDK_CALL MEnv_SetDebuggerMessageFlag(int channel_index, bool value)
 }
 
 // ***********************************************
-// Функции работы с текущим компонентом
-// !!! ВНИМАНИЕ: эти функции работают по stringid
-// компонента, определенного в Environment по stringid id !!!
+// Методы управления текущим компонентом
+// !!! Следующие методы влияют на все
+// методы, обращающиеся к компонентам по строковому id !!!
 // ***********************************************
+// Устанавливает текущий компонент (адресация относительно корня - модели)
+// Функции работы с текущим компонентом
+// См. описание в rdk_init.cpp
+// компонента, определенного в Environment по stringid id !!!
 // Устанавливает текущий компонент (переданный stringid - компонент)
 int RDK_CALL Env_SelectCurrentComponent(const char *stringid)
 {
@@ -1653,23 +1657,23 @@ int RDK_CALL MModel_MoveComponent(int channel_index, const char* component, cons
  return RdkCoreManager.GetEngineLock(channel_index)->Model_MoveComponent(component, target);
 }
 
-// ���������� ����� ���� ��������� � ��������� ���������� 'stringid'
-// ���� stringid - ������ ������, �� ���������� ����� ���� ��������� ������
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_GetNumComponents(const char* stringid)
 {
  return RdkCoreManager.GetEngineLock()->Model_GetNumComponents(stringid);
 }
 
-// ���������� ������ ���� id ��������� ���������� 'stringid'
-// ���� stringid - ������ ������, �� ���������� ������ ���� id ������
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_GetComponentsList(const char* stringid, int *buffer)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentsList(stringid, buffer);
 }
 
-// ���������� ������, ���������� ������ ���� ���� ��������� ��������� ���������� 'stringid'
-// ����� ����������� �������� ','
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const char* RDK_CALL Model_GetComponentsNameList(const char* stringid)
 {
 
@@ -1684,20 +1688,20 @@ const char* RDK_CALL MModel_GetComponentsNameList(int channel_index, const char*
  return RdkCoreManager.GetEngineLock(channel_index)->Model_GetComponentsNameList(stringid);
 }
 
-// ���������� ������, ���������� ������ ���� ���� ��������� ��������� ���������� 'stringid'
-// ����� ����������� �������� ',' � ������� ��� ������ 'class_name'
-// ���� find_all == true �� ����� ������� � �� ���� ��������������
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const char* RDK_CALL Model_FindComponentsByClassName(const char* stringid, const char* class_name, bool find_all)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_FindComponentsByClassName(stringid,class_name,find_all);
 }
 
-// ���������� ��������� � ������� �������� index ��� ������ 'name' ����� ���
-// ���� �� ������ �� �������� ����� ���������
-// ����������� ��� ��������� ������� ������� ���������
-// ���� �������� 'step' ������� �� ������� �������, �� ��������� ���������������
-// �� ��� �������
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_ChangeComponentPosition(const char* stringid, int step)
 {
 
@@ -1712,15 +1716,15 @@ int RDK_CALL MModel_ChangeComponentPosition(int channel_index, const char* strin
  return RdkCoreManager.GetEngineLock(channel_index)->Model_ChangeComponentPosition(stringid, step);
 }
 
-// ���������� xml-������ ������� ��������������� ���� ����������� ����.
-// 'sublevel' ����������� ����� ������� ����������� �������� ��� �������
-// ���������� ����� ��������� � ������.
-// ���� 'sublevel' == -2, �� ���������� �������������� ���� ��������� �������
-// ��� ��������� ���� � ��� ������������ ���������.
-// ���� 'sublevel' == -1, �� ���������� �������������� ���� ����������� �������
-// ��� ��������� ����.
-// ���� 'sublevel' == 0, �� ���������� �������������� ����������� ������ ���� ����
-// ��������������� ������� ������ �� ������������.
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const char* RDK_CALL Model_GetConnectorsList(const char* stringid,
 						  int sublevel, const char* owner_level_stringid)
 {
@@ -1728,15 +1732,15 @@ const char* RDK_CALL Model_GetConnectorsList(const char* stringid,
  return RdkCoreManager.GetEngineLock()->Model_GetConnectorsList(stringid, sublevel, owner_level_stringid);
 }
 
-// ���������� xml-������ ������� ��������������� ���� ��������� ����.
-// 'sublevel' ����������� ����� ������� ����������� �������� ��� �������
-// �������� ����� ��������� � ������.
-// ���� 'sublevel' == -2, �� ���������� �������������� ���� ��������� �������
-// ��� ��������� ���� � ��� ������������ ���������.
-// ���� 'sublevel' == -1, �� ���������� �������������� ���� ��������� �������
-// ��� ��������� ����.
-// ���� 'sublevel' == 0, �� ���������� �������������� ��������� ������ ���� ����
-// ��������������� ������� ������ �� ������������.
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const char* RDK_CALL Model_GetItemsList(const char* stringid,
 							int sublevel, const char* owner_level_stringid)
 {
@@ -1744,35 +1748,35 @@ const char* RDK_CALL Model_GetItemsList(const char* stringid,
  return RdkCoreManager.GetEngineLock()->Model_GetItemsList(stringid, sublevel, owner_level_stringid);
 }
 
-// ���������� xml-������ ������� ��������������� ���� �������� ����.
-// 'sublevel' ����������� ����� ������� ����������� �������� ��� �������
-// ������� ����� ��������� � ������.
-// ���� 'sublevel' == -2, �� ���������� �������������� ���� ��������� �������
-// ��� ��������� ���� � ��� ������������ ���������.
-// ���� 'sublevel' == -1, �� ���������� �������������� ���� �������� �������
-// ��� ��������� ����.
-// ���� 'sublevel' == 0, �� ���������� �������������� �������� ������ ���� ����
-// ��������������� ������� ������ �� ������������.
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const char* RDK_CALL Model_GetNetsList(const char* stringid,
 							int sublevel, const char* owner_level_stringid)
 {
  return RdkCoreManager.GetEngineLock()->Model_GetNetsList(stringid, sublevel, owner_level_stringid);
 }
 
-// ���������� ��� ���������� �� ��������� 'stringid'
-// ���� stringid - ������ ������, �� ���������� ��� ������
-// ������ ���������� � ������������� ������ dll
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const char* RDK_CALL Model_GetComponentName(const char* stringid)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentName(stringid);
 }
 
-// ���������� ������� ��� ���������� �� ��������� 'stringid'
-// ���� stringid - ������ ������, �� ���������� ��� ������
-// ������ ���������� � ������������� ������ dll
-// ��� ����������� �� ������ ���������� owner_level_stringid
-// ���� owner_level_stringid �� �����, �� ��� ����������� �� ������ �������� ����������
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const char* RDK_CALL Model_GetComponentLongName(const char* stringid, const char* owner_level_stringid)
 {
 
@@ -1787,19 +1791,19 @@ const char* RDK_CALL MModel_GetComponentLongName(int channel_index, const char* 
  return RdkCoreManager.GetEngineLock(channel_index)->Model_GetComponentLongName(stringid,owner_level_stringid);
 }
 
-// ���������� ������� id ���������� �� ��������� 'stringid'
-// ���� stringid - ������ ������, �� ���������� ��� ������
-// ������ ���������� � ������������� ������ dll
-// ��� ����������� �� ������ ���������� owner_level_stringid
-// ���� owner_level_stringid �� �����, �� ��� ����������� �� ������ �������� ����������
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const char* RDK_CALL Model_GetComponentLongId(const char* stringid, const char* owner_level_stringid)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentLongId(stringid,owner_level_stringid);
 }
 
-// ���������� ��� ������ ���������� � ��������� �� �������� 'stringid'
-// ���� stringid - ������ ������, �� ���������� ��� ������ ������
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const char* RDK_CALL Model_GetComponentClassName(const char* stringid)
 {
 
@@ -1815,43 +1819,43 @@ const char* RDK_CALL MModel_GetComponentClassName(int channel_index, const char*
 }
 
 
-// ���������� ������ ������� ���������� ����������� ��������
+// См. описание в rdk_init.cpp
 const char* RDK_CALL Model_GetComponentPropertiesList(const char* stringid, unsigned int type_mask)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentPropertiesList(stringid,type_mask);
 }
 
-// ���������� ������ ���� � �������� ������� ���������� ����������� ��������
-// ������ ������� ����� ��� ���_��������:������_�����(������)
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const char* RDK_CALL Model_GetComponentPropertiesLookupList(const char* stringid, unsigned int type_mask)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentPropertiesLookupList(stringid,type_mask);
 }
 
-// ���������� �������� ���������� �� ��������������
+// См. описание в rdk_init.cpp
 const char * RDK_CALL Model_GetComponentProperties(const char *stringid, unsigned int type_mask)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentProperties(stringid,type_mask);
 }
 
-// ���������� �������� ���������� �� �������������� � ����������
+// См. описание в rdk_init.cpp
 const char * RDK_CALL Model_GetComponentPropertiesEx(const char *stringid, unsigned int type_mask)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentPropertiesEx(stringid, type_mask);
 }
 
-// ���������� ���������� �������� ���������� �� ��������������
+// См. описание в rdk_init.cpp
 const char * RDK_CALL Model_GetComponentSelectedProperties(const char *stringid, unsigned int type_mask)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentSelectedProperties(stringid);
 }
 
-// ���������� �������� �������� ���������� �� �������������� ���������� � ����� ��������
+// См. описание в rdk_init.cpp
 const char * RDK_CALL Model_GetComponentPropertyValue(const char *stringid, const char *paramname)
 {
 
@@ -1867,7 +1871,7 @@ const char * RDK_CALL MModel_GetComponentPropertyValue(int channel_index, const 
  return RdkCoreManager.GetEngineLock(channel_index)->Model_GetComponentPropertyValue(stringid,paramname);
 }
 
-// ������������� �������� ���������� �� ��������������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_SetComponentProperties(const char *stringid, const char* buffer)
 {
 
@@ -1882,7 +1886,7 @@ RDK_LIB_TYPE int RDK_CALL MModel_SetComponentProperties(int engine_index, const 
  return RdkCoreManager.GetEngineLock(engine_index)->Model_SetComponentProperties(stringid,buffer);
 }
 
-// ������������� �������� �������� ���������� �� �������������� ���������� � ����� ��������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_SetComponentPropertyValue(const char *stringid, const char *paramname, const char *buffer)
 {
  return RdkCoreManager.GetEngineLock()->Model_SetComponentPropertyValue(stringid,paramname,buffer);
@@ -1896,23 +1900,23 @@ int RDK_CALL MModel_SetComponentPropertyValue(int channel_index, const char *str
  return RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentPropertyValue(stringid,paramname,buffer);
 }
 
-// ������������� �������� �������� ���� �������� ����������� ���������� stringid, ����������� �� ������ class_stringid
-// ������� ���� ���������
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_SetGlobalComponentPropertyValue(const char *stringid, const char* class_stringid, const char *paramname, const char *buffer)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_SetGlobalComponentPropertyValue(stringid,class_stringid, paramname,buffer);
 }
 
-// ������������� �������� �������� ���� �������� ����������� ���������� stringid, ����������� �� ������ class_stringid
-// � ����������, ����������� �� ������ 'class_owner_stringid' ������� ���� ���������
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_SetGlobalOwnerComponentPropertyValue(const char *stringid, const char* class_stringid, const char* class_owner_stringid, const char *paramname, const char *buffer)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_SetGlobalOwnerComponentPropertyValue(stringid, class_stringid, class_owner_stringid, paramname,buffer);
 }
 
-// ���������� ��������� void* �� ������ �������� ����������
+// См. описание в rdk_init.cpp
 const void* RDK_CALL Model_GetComponentPropertyData(const char *stringid, const char *property_name)
 {
 
@@ -1927,7 +1931,7 @@ const void* RDK_CALL MModel_GetComponentPropertyData(int channel_index, const ch
  return RdkCoreManager.GetEngineLock(channel_index)->Model_GetComponentPropertyData(stringid, property_name);
 }
 
-// �������� ������ 'data' � �������� �������� ����������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_SetComponentPropertyData(const char *stringid, const char *property_name, const void *data)
 {
 
@@ -1942,8 +1946,8 @@ int RDK_CALL MModel_SetComponentPropertyData(int channel_index, const char *stri
  return RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentPropertyData(stringid, property_name, data);
 }
 
-// ���������� ��������� ���������� �� ��������������
-// ������ ��� buffer ������ ���� ��������!
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const char * RDK_CALL Model_GetComponentParameters(const char *stringid, unsigned int type_mask)
 {
 
@@ -1958,22 +1962,22 @@ const char * RDK_CALL MModel_GetComponentParameters(int channel_index, const cha
  return RdkCoreManager.GetEngineLock(channel_index)->Model_GetComponentProperties(stringid,type_mask & 0xFFFFFF01);
 }
 
-// ���������� ���������� ��������� ���������� �� ��������������
-// ������ ��� buffer ������ ���� ��������!
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const char * RDK_CALL Model_GetComponentSelectedParameters(const char *stringid)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentSelectedProperties(stringid);
 }
 
-// ���������� ��������� ���������� �� �������������� � ����������
+// См. описание в rdk_init.cpp
 const char * RDK_CALL Model_GetComponentParametersEx(const char *stringid, unsigned int type_mask)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentPropertiesEx(stringid, type_mask & 0xFFFFFF01);
 }
 
-// ���������� �������� ��������� ���������� �� �������������� ���������� � ����� ���������
+// См. описание в rdk_init.cpp
 const char * RDK_CALL Model_GetComponentParameterValue(const char *stringid, const char *paramname)
 {
 
@@ -1988,7 +1992,7 @@ const char * RDK_CALL MModel_GetComponentParameterValue(int channel_index, const
  return RdkCoreManager.GetEngineLock(channel_index)->Model_GetComponentPropertyValue(stringid,paramname);
 }
 
-// ������������� ��������� ���������� �� ��������������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_SetComponentParameters(const char *stringid, const char* buffer)
 {
 
@@ -2003,7 +2007,7 @@ int RDK_CALL MModel_SetComponentParameters(int channel_index, const char *string
  return RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentProperties(stringid, buffer);
 }
 
-// ������������� �������� ��������� ���������� �� �������������� ���������� � ����� ���������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_SetComponentParameterValue(const char *stringid, const char *paramname, const char *buffer)
 {
 
@@ -2020,7 +2024,7 @@ int RDK_CALL MModel_SetComponentParameterValue(int channel_index, const char *st
  return 0;
 }
 /*
-// ��������� ��������� ���������� ���� � ������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_CreateLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
  return RdkCoreManager.GetEngineLock()->Model_CreateLink(stringid1, output_number, stringid2, input_number);
@@ -2034,10 +2038,9 @@ int RDK_CALL Model_CreateLinkByName(const char* stringid1, const char* item_prop
 int RDK_CALL MModel_CreateLinkByName(int channel_index, const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name)
 {
   if(channel_index<0 || channel_index>=Core_GetNumChannels())
-  return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
+    return RDK_E_CORE_INCORRECT_CHANNELS_NUMBER;
 
- RdkCoreManager.GetEngineLock(channel_index)->Model_CreateLink(stringid1, item_property_name, stringid2, connector_property_name);
- return 0;
+  return RdkCoreManager.GetEngineLock(channel_index)->Model_CreateLink(stringid1, item_property_name, stringid2, connector_property_name);
 }
 
 int RDK_CALL Model_CreateLinkByNameEx(const char* stringid1, const char* item_property_name, const char* stringid2, const char* connector_property_name, int connector_c_index)
@@ -2050,20 +2053,20 @@ int RDK_CALL Model_BreakLinkByName(const char* stringid1, const char* item_prope
  return RdkCoreManager.GetEngineLock()->Model_BreakLink(stringid1, item_property_name, stringid2, connector_property_name);
 }
 
-// ��������� ��� �����
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_BreakAllLinks(void)
 {
  return RdkCoreManager.GetEngineLock()->Model_BreakAllLinks();
 }
 
 
-// ��������� ��� ������� � �������� ����� ���������� ����������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_BreakAllComponentLinks(const char* stringid)
 {
  return RdkCoreManager.GetEngineLock()->Model_BreakAllComponentLinks(stringid);
 }
 
-// ��������� ��� ������� ����� ���������� ����������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_BreakAllComponentInputLinks(const char* stringid)
 {
  return RdkCoreManager.GetEngineLock()->Model_BreakAllComponentInputLinks(stringid);
@@ -2078,14 +2081,14 @@ int RDK_CALL MModel_BreakAllComponentInputLinks(int channel_index, const char* s
  return 0;
 }
 
-// ��������� ��� �������� ����� ���������� ����������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_BreakAllComponentOutputLinks(const char* stringid)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_BreakAllComponentOutputLinks(stringid);
 }
 
-// ���������, ���������� �� ������� �����
+// См. описание в rdk_init.cpp
 bool RDK_CALL Model_CheckLink(const char* stringid1, int output_number, const char* stringid2, int input_number)
 {
 
@@ -2097,7 +2100,7 @@ bool RDK_CALL Model_CheckLinkByName(const char* stringid1, const char* item_prop
  return RdkCoreManager.GetEngineLock()->Model_CheckLink(stringid1, item_property_name, stringid2, connector_property_name);
 }
 
-/// ����������� ��� ����� ������������ � ������ ���������� 1 �� ����� ���������� 2
+/// См. описание в rdk_init.cpp
 int RDK_CALL Model_SwitchOutputLinks(const char* item_name_1, const char* item_property_name1, const char* item_name_2, const char* item_property_name2)
 {
  return RdkCoreManager.GetEngineLock()->Model_SwitchOutputLinks(item_name_1, item_property_name1, item_name_2, item_property_name2);
@@ -2225,67 +2228,67 @@ int RDK_CALL MModel_BreakLinkByAlias(int channel_index, const char* stringid, co
 }
 // --------------------------
 
-// ��������� ��� ����� ������ ���������� stringid � ���� xml � ����� buffer
-// ����� ����������� �� ������ ���������� owner_level_stringid
-// ���� owner_level_stringid �� �����, �� ����� ����������� �� ������ �������� ����������
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const char * RDK_CALL Model_GetComponentInternalLinks(const char* stringid, const char* owner_level_stringid)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentInternalLinks(stringid, owner_level_stringid);
 }
 
-// ������������� ��� ����� ������ ���������� stringid �� ������ xml � ������ buffer
-// ����� ����������� � ������ ���������� owner_level_stringid
-// ���� owner_level_stringid �� �����, �� ����������� ������� �������� ����������
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_SetComponentInternalLinks(const char* stringid, const char* buffer, const char* owner_level_stringid)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_SetComponentInternalLinks(stringid,buffer, owner_level_stringid);
 }
 
-// ��������� ��� ������� ����� � ���������� stringid � ���� xml � ����� buffer
-// ���� 'sublevel' == -2, �� ���������� ����� ���� ��������� �������
-// ��� ��������� ���� � ��� ������������ ���������.
-// ���� 'sublevel' == -1, �� ���������� ����� ���� �������� �������
-// ��� ��������� ����.
-// ���� 'sublevel' == 0, �� ���������� ����� �������� ������ ���� ����
-// ����� ����������� �� ������ ���������� owner_level_stringid
-// ���� owner_level_stringid �� �����, �� ����� ����������� �� ������ �������� ����������
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const char * RDK_CALL Model_GetComponentInputLinks(const char* stringid, const char* owner_level_stringid, int sublevel)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentInputLinks(stringid,owner_level_stringid, sublevel);
 }
 
-// ��������� ��� �������� ����� �� ���������� stringid � ���� xml � ����� buffer
-// ���� 'sublevel' == -2, �� ���������� ����� ���� ��������� �������
-// ��� ��������� ���� � ��� ������������ ���������.
-// ���� 'sublevel' == -1, �� ���������� ����� ���� �������� �������
-// ��� ��������� ����.
-// ���� 'sublevel' == 0, �� ���������� ����� �������� ������ ���� ����
-// ����� ����������� �� ������ ���������� owner_level_stringid
-// ���� owner_level_stringid �� �����, �� ����� ����������� �� ������ �������� ����������
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const char * RDK_CALL Model_GetComponentOutputLinks(const char* stringid, const char* owner_level_stringid, int sublevel)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentOutputLinks(stringid,owner_level_stringid, sublevel);
 }
 
-// ��������� ��� ����� ����� ����� ������������ � ���� xml � ����� buffer
-// ������� ����� ����� ����������
-// ���� 'sublevel' == -1, �� ���������� ����� ��� ����� ����� �������� � ����� �������� �����������
-// ������� �������. �������� ����������� � ��� �������.
-// ���� 'sublevel' == 0, �� ���������� ����� ������ ����� ����� ���������
-// ����� ����������� �� ������ ���������� owner_level_stringid
-// ���� owner_level_stringid �� �����, �� ����� ����������� �� ������ �������� ����������
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const char* RDK_CALL Model_GetComponentPersonalLinks(const char* stringid, const char* owner_level_stringid)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentPersonalLinks(stringid,owner_level_stringid);
 }
 
-// ���������� ��������� ���������� �� ��������������
-// ������ ��� buffer ������ ���� ��������!
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const char * RDK_CALL Model_GetComponentState(const char *stringid, unsigned int type_mask)
 {
 
@@ -2300,15 +2303,15 @@ const char * RDK_CALL MModel_GetComponentState(int channel_index, const char *st
  return RdkCoreManager.GetEngineLock(channel_index)->Model_GetComponentProperties(stringid, type_mask & 0xFFFFFF02);
 }
 
-// ���������� ���������� ������ ��������� ���������� �� ��������������
-// ������ ��� buffer ������ ���� ��������!
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const char * RDK_CALL Model_GetComponentSelectedState(const char *stringid)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentSelectedProperties(stringid);
 }
 
-// ���������� �������� ���������� ��������� ���������� �� �������������� ���������� � ����� ����������
+// См. описание в rdk_init.cpp
 const char * RDK_CALL Model_GetComponentStateValue(const char *stringid, const char *statename)
 {
 
@@ -2323,7 +2326,7 @@ const char * RDK_CALL MModel_GetComponentStateValue(int channel_index, const cha
  return RdkCoreManager.GetEngineLock(channel_index)->Model_GetComponentPropertyValue(stringid,statename);
 }
 
-// ������������� ��������� ���������� �� ��������������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_SetComponentState(const char *stringid, const char* buffer)
 {
 
@@ -2338,87 +2341,86 @@ int RDK_CALL MModel_SetComponentState(int channel_index, const char *stringid, c
  return RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentProperties(stringid, buffer);
 }
 
-// ������������� �������� ���������� ��������� ���������� �� �������������� ���������� � ����� ����������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_SetComponentStateValue(const char *stringid, const char *statename, const char *buffer)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_SetComponentPropertyValue(stringid,statename,buffer);
 }
 
-// ���������� ����� ������ � ����������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_GetComponentNumInputs(const char *stringid)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentNumInputs(stringid);
 }
 
-// ���������� ������ ����� ���������� � ����� ���������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_GetComponentInputDataSize(const char *stringid, int index)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentInputDataSize(stringid, index);
 }
 
-// ���������� ������ �������� ����� � ������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_GetComponentInputElementSize(const char *stringid, int index)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentInputElementSize(stringid, index);
 }
 
-// ���������� ������ ����� ���������� � ������ ���������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_GetComponentInputByteSize(const char *stringid, int index)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentInputByteSize(stringid, index);
 }
 
-// ���������� ��������� �� ������ ����� ��� �� ������ ����
-// ������ ��� ������!
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 unsigned char* RDK_CALL Model_GetComponentInputData(const char *stringid, int index)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentInputData(stringid, index);
 }
 
-// ���������� ����� ������� � ����������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_GetComponentNumOutputs(const char *stringid)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentNumOutputs(stringid);
 }
 
-// ���������� ������ ������ ���������� � ����� ���������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_GetComponentOutputDataSize(const char *stringid, int index)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentOutputDataSize(stringid, index);
 }
 
-// ���������� ������ �������� ������ � ������
-//int RDK_CALL Model_GetComponentOutputElementSize(const char *stringid, int index)
+// См. описание в rdk_init.cpp
+// Возвращает размер выхода компонента в байтах элементов
 //{
-//
 // return RdkCoreManager.GetEngineLock()->Model_GetComponentOutputElementSize(stringid, index);
 //}
 
-// ���������� ������ ������ ���������� � ������ ���������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_GetComponentOutputByteSize(const char *stringid, int index)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentOutputByteSize(stringid, index);
 }
 
-// ���������� ��������� �� ������ ������ ��� �� ������ ����
-// ������ ��� ������!
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 unsigned char* RDK_CALL Model_GetComponentOutputData(const char *stringid, int index)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_GetComponentOutputData(stringid, index);
 }
 
-// ��������� ��� ���������� ������ ����������, � ���� ��� �������� ���������, ��������
-// ���������� ��������� � xml
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const char * RDK_CALL Model_SaveComponent(const char *stringid, unsigned int params_type_mask)
 {
 
@@ -2433,8 +2435,8 @@ const char * RDK_CALL MModel_SaveComponent(int channel_index, const char *string
  return RdkCoreManager.GetEngineLock(channel_index)->Model_SaveComponent(stringid, params_type_mask);
 }
 
-// ��������� ��� ���������� ������ ����������, � ���� ��� �������� ���������, ��������
-// ���������� ��������� � xml
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_SaveComponentToFile(const char *stringid, const char* file_name, unsigned int params_type_mask)
 {
 
@@ -2449,8 +2451,8 @@ int RDK_CALL MModel_SaveComponentToFile(int channel_index, const char *stringid,
  return RdkCoreManager.GetEngineLock(channel_index)->Model_SaveComponentToFile(stringid, file_name, params_type_mask);
 }
 
-// ��������� ��� ���������� ������ ����������, � ���� ��� �������� ���������, ��������
-// ���������� ��������� �� xml
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_LoadComponent(const char *stringid, const char* buffer)
 {
 
@@ -2465,8 +2467,8 @@ int RDK_CALL MModel_LoadComponent(int channel_index, const char *stringid, const
  return RdkCoreManager.GetEngineLock(channel_index)->Model_LoadComponent(stringid, buffer);
 }
 
-// ��������� ��� ���������� ������ ����������, � ���� ��� �������� ���������, ��������
-// ���������� ��������� �� xml
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_LoadComponentFromFile(const char *stringid, const char* file_name)
 {
 
@@ -2481,42 +2483,42 @@ int RDK_CALL MModel_LoadComponentFromFile(int channel_index, const char *stringi
  return RdkCoreManager.GetEngineLock(channel_index)->Model_LoadComponentFromFile(stringid, file_name);
 }
 
-// ��������� ��� �������� ���������� � ��� �������� ��������� � xml
+// См. описание в rdk_init.cpp
 const char * RDK_CALL Model_SaveComponentProperties(const char *stringid, unsigned int type_mask)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_SaveComponentProperties(stringid, type_mask);
 }
 
-// ��������� ��� �������� ���������� � ��� �������� ��������� � xml
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_SaveComponentPropertiesToFile(const char *stringid, const char* file_name, unsigned int type_mask)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_SaveComponentPropertiesToFile(stringid, file_name, type_mask);
 }
 
-// ��������� ��� �������� ���������� � ��� �������� ��������� �� xml
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_LoadComponentProperties(const char *stringid, char* buffer)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_LoadComponentProperties(stringid, buffer);
 }
 
-// ��������� ��� �������� ���������� � ��� �������� ��������� �� xml
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_LoadComponentPropertiesFromFile(const char *stringid, const char* file_name)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_LoadComponentPropertiesFromFile(stringid, file_name);
 }
 
-// ��������� ��� ��������� ���������� � ��� �������� ��������� � xml
+// См. описание в rdk_init.cpp
 const char * RDK_CALL Model_SaveComponentParameters(const char *stringid, unsigned int type_mask)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_SaveComponentProperties(stringid, type_mask & 0xFFFFFF01);
 }
 
-// ��������� ��� ��������� ���������� � ��� �������� ��������� � xml
+// См. описание в rdk_init.cpp
 const char * RDK_CALL MModel_SaveComponentParameters(int channel_index, const char *stringid, unsigned int type_mask)
 {
  if(channel_index<0 || channel_index>=Core_GetNumChannels())
@@ -2525,7 +2527,7 @@ const char * RDK_CALL MModel_SaveComponentParameters(int channel_index, const ch
  return RdkCoreManager.GetEngineLock(channel_index)->Model_SaveComponentProperties(stringid, type_mask & 0xFFFFFF01);
 }
 
-// ��������� ��� ��������� ���������� � ��� �������� ��������� �� xml
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_LoadComponentParameters(const char *stringid, const char* buffer)
 {
 
@@ -2540,14 +2542,14 @@ int RDK_CALL MModel_LoadComponentParameters(int channel_index, const char *strin
  return RdkCoreManager.GetEngineLock(channel_index)->Model_LoadComponentProperties(stringid, buffer);
 }
 
-// ��������� ��������� ���������� � ��� �������� ��������� � xml
+// См. описание в rdk_init.cpp
 const char * RDK_CALL Model_SaveComponentState(const char *stringid, unsigned int type_mask)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_SaveComponentProperties(stringid, type_mask & 0xFFFFFF02);
 }
 
-// ��������� ��������� ���������� � ��� �������� ��������� �� xml
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_LoadComponentState(const char *stringid, char* buffer)
 {
 
@@ -2563,15 +2565,15 @@ int RDK_CALL MModel_LoadComponentState(int channel_index, const char *stringid, 
 }
 
 
-// ��������� ���������� ������ ����������, � ��� _����������������_ �������� ���������, ��������
-// ���������� ��������� � xml
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const char* RDK_CALL Model_SaveComponentDrawInfo(const char *stringid)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_SaveComponentDrawInfo(stringid);
 }
 
-// ��������� ����� ����� ������ �� ���������
+// См. описание в rdk_init.cpp
 unsigned int RDK_CALL Model_GetDefaultTimeStep(void)
 {
 
@@ -2592,7 +2594,7 @@ int RDK_CALL MModel_SetDefaultTimeStep(int channel_index, unsigned int value)
  return RdkCoreManager.GetEngineLock(channel_index)->Model_SetDefaultTimeStep(value);
 }
 
-// ��������� ����� ����� ����������
+// См. описание в rdk_init.cpp
 unsigned int RDK_CALL Model_GetTimeStep(const char *stringid)
 {
 
@@ -2605,7 +2607,7 @@ int RDK_CALL Model_SetTimeStep(const char *stringid, unsigned int value)
  return RdkCoreManager.GetEngineLock()->Model_SetTimeStep(stringid, value);
 }
 
-// ������������� ��� ����� ���������� � ���� ��� �������� ���������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_SetGlobalTimeStep(const char *stringid, unsigned int value)
 {
 
@@ -2620,7 +2622,7 @@ int RDK_CALL MModel_SetGlobalTimeStep(int channel_index, const char *stringid, u
  return RdkCoreManager.GetEngineLock(channel_index)->Model_SetGlobalTimeStep(stringid, value);
 }
 
-// ���������� ������� ����� ������
+// См. описание в rdk_init.cpp
 unsigned long long RDK_CALL Model_GetTime(void)
 {
 
@@ -2649,14 +2651,14 @@ double RDK_CALL MModel_GetDoubleTime(int channel_index)
  return RdkCoreManager.GetEngineLock(channel_index)->Model_GetDoubleTime();
 }
 
-// ������������� ������� ����� ������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_SetTime(unsigned long long value)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_SetTime(value);
 }
 
-// ���������� �������� �����
+// См. описание в rdk_init.cpp
 unsigned long long RDK_CALL Model_GetRealTime(void)
 {
 
@@ -2677,21 +2679,21 @@ double RDK_CALL MModel_GetDoubleRealTime(int channel_index)
  return RdkCoreManager.GetEngineLock(channel_index)->Model_GetDoubleRealTime();
 }
 
-// ������������� �������� �����
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_SetRealTime(unsigned long long value)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_SetRealTime(value);
 }
 
-// ����������� �������� ����� �� �������� ��������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_IncreaseRealTime(unsigned long long value)
 {
 
  return RdkCoreManager.GetEngineLock()->Model_IncreaseRealTime(value);
 }
 
-// ���������� ���������� ��� � �������� �������
+// См. описание в rdk_init.cpp
 unsigned long long RDK_CALL Model_GetRealTimeStep(void)
 {
 
@@ -2718,7 +2720,7 @@ double RDK_CALL MModel_GetDoubleSourceTime(int channel_index)
  return RdkCoreManager.GetEngineLock(channel_index)->Model_GetDoubleSourceTime();
 }
 
-// ������������� ����� ������� ���������� ������
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_SetDoubleSourceTime(double value)
 {
 
@@ -2745,7 +2747,7 @@ int RDK_CALL Model_SetDoubleSourceTimeAll(double value)
  return res;
 }
 
-// ���������� ����� ������� ���������� ��� ������� ������� �������� ��������� (��)
+// См. описание в rdk_init.cpp
 unsigned long long RDK_CALL Model_GetStepDuration(const char *stringid)
 {
  return RdkCoreManager.GetEngineLock()->Model_GetStepDuration(stringid);
@@ -2759,8 +2761,8 @@ unsigned long long RDK_CALL MModel_GetStepDuration(int channel_index, const char
  return RdkCoreManager.GetEngineLock(channel_index)->Model_GetStepDuration(stringid);
 }
 
-// ���������� �����, ����������� �� ��������� �������
-// (������ �� ������� ������� �������� ��������) (��)
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 unsigned long long RDK_CALL Model_GetFullStepDuration(const char *stringid)
 {
 
@@ -2775,8 +2777,8 @@ unsigned long long RDK_CALL MModel_GetFullStepDuration(int channel_index, const 
  return RdkCoreManager.GetEngineLock(channel_index)->Model_GetFullStepDuration(stringid);
 }
 
-// ���������� ���������� ��������������, ������ ���������
-// ������� ������������ ������� � ���������� ������� ���� �����
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 double RDK_CALL Model_GetInstantPerformance(const char *stringid)
 {
  return RdkCoreManager.GetEngineLock()->Model_GetInstantPerformance(stringid);
@@ -2790,7 +2792,7 @@ double RDK_CALL MModel_GetInstantPerformance(int channel_index, const char *stri
  return RdkCoreManager.GetEngineLock(channel_index)->Model_GetInstantPerformance(stringid);
 }
 
-// �����, ��������� ����� ����� ���������� ���������� �����
+// См. описание в rdk_init.cpp
 unsigned long long RDK_CALL Model_GetInterstepsInterval(const char *stringid)
 {
  return RdkCoreManager.GetEngineLock()->Model_GetInterstepsInterval(stringid);
@@ -2806,9 +2808,9 @@ unsigned long long RDK_CALL MModel_GetInterstepsInterval(int channel_index, cons
 // --------------------------
 
 // --------------------------
-// ������ ���������� ������������
+// См. описание в rdk_init.cpp
 // ----------------------------
-// ���������� ��������-������������ ����������
+// См. описание в rdk_init.cpp
 void* RDK_CALL Engine_GetExceptionHandler(void)
 {
 
@@ -2830,8 +2832,8 @@ int RDK_CALL MEngine_SetExceptionHandler(int channel_index, void* value)
  return MLog_SetExceptionHandler(channel_index, value);
 }
 
-// ���������� ������ ����� ����
-// ���������� � ��� ����� ���������
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 int RDK_CALL Engine_LogMessage(int log_level, const char *message)
 {
  return Log_LogMessage(log_level, message);
@@ -2842,7 +2844,7 @@ int RDK_CALL MEngine_LogMessage(int channel_index, int log_level, const char *me
  return MLog_LogMessage(channel_index, log_level, message);
 }
 
-// ���������� � ��� ����� ��������� � ����� ������
+// См. описание в rdk_init.cpp
 int RDK_CALL Engine_LogMessageEx(int log_level, const char *message, int error_event_number)
 {
  return Log_LogMessageEx(log_level, message, error_event_number);
@@ -2853,15 +2855,15 @@ int RDK_CALL MEngine_LogMessageEx(int channel_index, int log_level, const char *
  return MLog_LogMessageEx(channel_index, log_level, message, error_event_number);
 }
 
-// ���������� ��������� ������ ����� ���� � ������� ���������� ���������� ����
-// ���� ��������
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 // ----------------------------
 
 
 // --------------------------
-// ������ ���������� ������
+// См. описание в rdk_init.cpp
 // --------------------------
-// ������ ����� ������ �����
+// См. описание в rdk_init.cpp
 void RDK_CALL Env_SetNumInputImages(int number)
 {
 
@@ -2876,7 +2878,7 @@ void RDK_CALL MEnv_SetNumInputImages(int channel_index, int number)
  return RdkCoreManager.GetEngineLock(channel_index)->Env_SetNumInputImages(number);
 }
 
-// ������ ����� ������� �����
+// См. описание в rdk_init.cpp
 void RDK_CALL Env_SetNumOutputImages(int number)
 {
 
@@ -2891,21 +2893,21 @@ void RDK_CALL MEnv_SetNumOutputImages(int channel_index, int number)
  return RdkCoreManager.GetEngineLock(channel_index)->Env_SetNumOutputImages(number);
 }
 
-// ������ ����� ������ �����
+// См. описание в rdk_init.cpp
 int RDK_CALL Env_GetNumInputImages(void)
 {
 
  return RdkCoreManager.GetEngineLock()->Env_GetNumInputImages();
 }
 
-// ������ ����� ������� �����
+// См. описание в rdk_init.cpp
 int RDK_CALL Env_GetNumOutputImages(void)
 {
 
  return RdkCoreManager.GetEngineLock()->Env_GetNumInputImages();
 }
 
-// ������ ���������� �� ��������� (������� ����������)
+// См. описание в rdk_init.cpp
 void RDK_CALL Env_SetInputRes(int number, int width, int height)
 {
 
@@ -2920,14 +2922,14 @@ void RDK_CALL MEnv_SetInputRes(int channel_index, int number, int width, int hei
  return RdkCoreManager.GetEngineLock(channel_index)->Env_SetInputRes(number, width, height);
 }
 
-// ������ ������ �����������
+// См. описание в rdk_init.cpp
 void RDK_CALL Env_SetInputImage(int number, unsigned char* image, int width, int height,int cmodel)
 {
 
  return RdkCoreManager.GetEngineLock()->Env_SetInputImage(number, image, width, height,cmodel);
 }
 
-// ������ ���� ��������� �������� ����������� ������ �������������� ���
+// См. описание в rdk_init.cpp
 RDK_LIB_TYPE void Env_SetReflectionXFlag(bool value)
 {
 
@@ -2943,7 +2945,7 @@ RDK_LIB_TYPE void MEnv_SetReflectionXFlag(int channel_index, bool value)
 }
 
 
-// ���������� ���������� �� ��������� (������� ����������)
+// См. описание в rdk_init.cpp
 int RDK_CALL Env_GetInputImageWidth(int number)
 {
 
@@ -2962,7 +2964,7 @@ int RDK_CALL Env_GetInputImageColorModel(int number)
  return RdkCoreManager.GetEngineLock()->Env_GetInputImageColorModel(number);
 }
 
-// ���������� ������� �������� ����������
+// См. описание в rdk_init.cpp
 int RDK_CALL Env_GetOutputImageWidth(int number)
 {
 
@@ -3001,11 +3003,11 @@ unsigned char* RDK_CALL Env_GetOutputImageY8(int index)
 // --------------------------
 
 // --------------------------
-// ������ ���������� ����������� �������
+// См. описание в rdk_init.cpp
 // --------------------------
-// ���������� ��������� �� ����� � �������� 'index' ���������� 'id'
-// ������������ �������� ����� ����������� ��� RDK::MDMatrix*
-// ���� ����� �� �������� ������ ������ ����, �� ���������� 0
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 const /* RDK::MDMatrix* */void* RDK_CALL Model_GetComponentOutputAsMatrix(const char *stringid, const char *property_name)
 {
 
@@ -3018,7 +3020,7 @@ const /* RDK::MDMatrix* */void* RDK_CALL Model_GetComponentOutputAsMatrixByIndex
  return RdkCoreManager.GetEngineLock()->Model_GetComponentOutputAsMatrix(stringid, index);
 }
 
-// ���������� ��������� �� ����� � �������� 'index' ���������� 'id'
+// См. описание в rdk_init.cpp
 const /* RDK::UBitmap* */ void* RDK_CALL Model_GetComponentOutput(const char *stringid, const char *property_name)
 {
 
@@ -3043,7 +3045,7 @@ const /* RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentOutputByIndex(int ch
  return RdkCoreManager.GetEngineLock()->Model_GetComponentOutput(stringid, index);
 }
 
-// ���������� ��������� �� ����� � �������� 'index' ���������� 'id'
+// См. описание в rdk_init.cpp
 const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapOutput(const char *stringid, const char *property_name)
 {
 
@@ -3070,7 +3072,7 @@ const /*RDK::UBitmap* */ void* RDK_CALL MModel_GetComponentBitmapOutputByIndex(i
  return RdkCoreManager.GetEngineLock()->Model_GetComponentBitmapOutput(stringid, index);
 }
 
-// ���������� ��������� �� ���� � �������� 'index' ���������� 'id'
+// См. описание в rdk_init.cpp
 const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInput(const char *stringid, const char *property_name)
 {
 
@@ -3083,8 +3085,8 @@ const /*RDK::UBitmap* */ void* RDK_CALL Model_GetComponentBitmapInputByIndex(con
  return RdkCoreManager.GetEngineLock()->Model_GetComponentBitmapInput(stringid, index);
 }
 
-/// �������� ������ � ���������� ����������� ������ � �������� 'index' ���������� 'id'
-/// � �������� bmp_param
+/// См. описание в rdk_init.cpp
+/// См. описание в rdk_init.cpp
 int RDK_CALL Model_CopyComponentBitmapOutputHeader(const char *stringid, const char *property_name, /*RDK::UBitmapParam* */ void* bmp_param)
 {
  return RdkCoreManager.GetEngineLock()->Model_CopyComponentBitmapOutputHeader(stringid, property_name, (RDK::UBitmapParam*)bmp_param);
@@ -3111,8 +3113,8 @@ int RDK_CALL MModel_CopyComponentBitmapOutputHeaderByIndex(int channel_index, co
  return RdkCoreManager.GetEngineLock(channel_index)->Model_CopyComponentBitmapOutputHeaderByIndex(stringid, index, (RDK::UBitmapParam*)bmp_param);
 }
 
-/// �������� ����������� ������ � �������� 'index' ���������� 'id'
-/// ����� ������������, ��� bmp ��� ����� ���������� ������ ��� ���������� ���������� �������
+/// См. описание в rdk_init.cpp
+/// См. описание в rdk_init.cpp
 int RDK_CALL Model_CopyComponentBitmapOutput(const char *stringid, const char *property_name, /*RDK::UBitmap* */ void* bmp)
 {
  return RdkCoreManager.GetEngineLock()->Model_CopyComponentBitmapOutput(stringid, property_name, (RDK::UBitmap*)bmp);
@@ -3138,7 +3140,7 @@ int RDK_CALL MModel_CopyComponentBitmapOutputByIndex(int channel_index, const ch
  return RdkCoreManager.GetEngineLock(channel_index)->Model_CopyComponentBitmapOutput(stringid, index, (RDK::UBitmap*)bmp);
 }
 
-// �������� ����������� ������ � �������� 'index' ���������� 'id'
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_SetComponentBitmapOutput(const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
 
@@ -3175,7 +3177,7 @@ int RDK_CALL MModel_SetComponentBitmapOutputByIndex(int channel_index, const cha
  return RdkCoreManager.GetEngineLock(channel_index)->Model_SetComponentBitmapOutput(stringid, index, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
 }
 
-// �������� ����������� ����� � �������� 'index' ���������� 'id'
+// См. описание в rdk_init.cpp
 int RDK_CALL Model_SetComponentBitmapInput(const char *stringid, const char *property_name, const /*RDK::UBitmap* */ void* const bmp, bool reflect)
 {
  return RdkCoreManager.GetEngineLock()->Model_SetComponentBitmapInput(stringid, property_name, reinterpret_cast<const RDK::UBitmap* const >(bmp),reflect);
@@ -3202,10 +3204,10 @@ int RDK_CALL Model_SetComponentBitmapInputByIndex(const char *stringid, int inde
 
 
 // ----------------------------
-// ���������� ������ �������������
+// См. описание в rdk_init.cpp
 // ----------------------------
-// ���������� ���������� ����������
-// ������ ���� ������ � ���������� ����������� ����������������� ��
+// См. описание в rdk_init.cpp
+// См. описание в rdk_init.cpp
 int RDK_CALL ExceptionDispatcher(void *exception)
 {
  if(!RdkCoreManager.GetEngine())

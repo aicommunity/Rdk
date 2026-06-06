@@ -160,11 +160,6 @@ void UCreateConfigurationWizardWidget::UpdateInterface(void)
  if(!application)
   return;
 
- QTextCodec *codec = QTextCodec::codecForName("Windows-1251");
- //QByteArray byteArray(n.XMLDescription.c_str(), n.XMLDescription.length());
- //QString utf8Str = codec->toUnicode(byteArray);
-
-
  if(application->GetProjectOpenFlag())
  {
   ProjectConfig=application->GetProjectConfig();

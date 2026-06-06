@@ -32,6 +32,7 @@ UDrawEngineWidget::UDrawEngineWidget(QWidget *parent, RDK::UApplication *app) :
     connect(modelScheme, SIGNAL(viewLinks(QString)), this, SIGNAL(viewLinksFromScheme(QString)));
     connect(modelScheme, SIGNAL(createLinks(QString,QString)), this, SIGNAL(createLinksFromScheme(QString,QString)));
     connect(modelScheme, SIGNAL(switchLinks(QString,QString)), this, SIGNAL(switchLinksFromScheme(QString,QString)));
+    connect(modelScheme, SIGNAL(openComponentGuiRequested(UComponentGuiContext)), this, SIGNAL(openComponentGuiFromScheme(UComponentGuiContext)));
     ui->scrollArea->setWidget(modelScheme);
     ui->scrollArea->setWidgetResizable(true);
     modelScheme->setFixedSize(ui->scrollArea->width(),ui->scrollArea->height());

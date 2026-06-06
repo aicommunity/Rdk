@@ -1,4 +1,7 @@
 #include "UModernDiagramContainerWidget.h"
+
+#include "UEngineSelectionSync.h"
+
 #include <QHBoxLayout>
 #include <QSettings>
 
@@ -37,6 +40,7 @@ UModernDiagramContainerWidget::UModernDiagramContainerWidget(QWidget *parent, RD
     connect(modernScheme, SIGNAL(viewLinks(QString)), this, SIGNAL(viewLinksFromScheme(QString)));
     connect(modernScheme, SIGNAL(createLinks(QString,QString)), this, SIGNAL(createLinksFromScheme(QString,QString)));
     connect(modernScheme, SIGNAL(switchLinks(QString,QString)), this, SIGNAL(switchLinksFromScheme(QString,QString)));
+    connect(modernScheme, SIGNAL(openComponentGuiRequested(UComponentGuiContext)), this, SIGNAL(openComponentGuiFromScheme(UComponentGuiContext)));
     connect(modernScheme, SIGNAL(openProjectDescriptionRequested()), this, SIGNAL(openProjectDescriptionRequested()));
 
     UpdateInterval = 0; // don't update by core ticks
@@ -94,6 +98,7 @@ void UModernDiagramContainerWidget::ALoadParameters()
 void UModernDiagramContainerWidget::componentDoubleClick(QString name)
 {
     modernScheme->SetComponentName(name);
+    syncEngineCurrentComponent(name);
     modernScheme->Reload();
 }
 

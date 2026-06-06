@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "id": "life_copy",
+  "tier": "deterministic",
+  "suite": "lifecycle",
+  "registry_profile": "core",
+  "user_text": "скопируй проект в /tmp/copy",
+  "session": {
+    "project_loaded": false,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "copy_configuration",
+          "arguments": {
+            "destination_directory": "/tmp/copy"
+          }
+        }
+      ]
+    },
+    {
+      "text": "Краткий ответ по результатам tool."
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": [
+      "copy_configuration"
+    ]
+  }
+}

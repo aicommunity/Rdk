@@ -29,6 +29,8 @@
 
 // RDK includes
 #include "../../Deploy/Include/rdk_init.h"
+#include "../../Deploy/Include/rdk_engine_support.h"
+#include "UEngineSelectionSync.h"
 #include "../Core/Engine/UStorage.h"
 #include "../Core/Engine/UEngine.h"
 #include "../Core/Engine/UNet.h"
@@ -832,14 +834,10 @@ PortCategory UModernDiagramNodeItem::determinePortCategory(const QString& proper
     // Убеждаемся, что fullName не пустое перед запросом дочерних компонентов
     if(!fullName.isEmpty())
     {
-        const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
-        if(compList)
+        const QStringList components =
+            childComponentShortNamesFromModelScope(Core_GetSelectedChannelIndex(), fullName);
+        if(!components.isEmpty())
         {
-            QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
-            Engine_FreeBufString(compList);
-
-            if(!components.isEmpty())
-            {
                 // Проверяем, начинается ли propertyName с любого дочернего компонента
                 // Это важно для многоуровневых путей (например, "Dendrite1_1.ExcSynapse1.SynapticInputs")
                 // На верхнем уровне propertyName уже относительный (например, "Dendrite1_1.ExcSynapse1")
@@ -869,7 +867,6 @@ PortCategory UModernDiagramNodeItem::determinePortCategory(const QString& proper
                         }
                     }
                 }
-            }
         }
     }
 
@@ -1363,39 +1360,17 @@ QVector<Port> UModernDiagramNodeItem::getChildInputPorts() const
 
     QString fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
 
-    // Получаем список дочерних компонентов
-    const char* compList = Model_GetComponentsNameList(fullName.toStdString().c_str());
-    if(compList)
+    QVector<UModernDiagramPort> ports = UModernDiagramPortManager::loadChildInputPorts(fullName, nodeName);
+    for(const UModernDiagramPort& p : ports)
     {
-        QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
-        for(const QString& comp : components)
-        {
-            QString nestedFullName = fullName + "." + comp;
-            const char* nestedProps = Model_GetComponentPropertiesLookupList(
-                nestedFullName.toStdString().c_str(), ptPubInput | ptInput);
-            if(nestedProps)
-            {
-                QStringList nestedPropsList = QString::fromUtf8(nestedProps).split(",", Qt::SkipEmptyParts);
-                for(const QString& prop : nestedPropsList)
-                {
-                    QStringList parts = prop.split(":");
-                    if(parts.size() >= 1)
-                    {
-                        QString propName = parts[0].trimmed();
-                        Port port;
-                        port.isInput = true;
-                        port.name = propName;
-                        port.componentName = comp;
-                        port.fullPath = comp + "." + propName;
-                        port.displayName = nodeName + "." + comp + "." + propName;
-                        port.category = PortCategory::Child;
-                        result.append(port);
-                    }
-                }
-                Engine_FreeBufString(nestedProps);
-            }
-        }
-        Engine_FreeBufString(compList);
+        Port port;
+        port.isInput = p.isInput;
+        port.name = p.name;
+        port.componentName = p.componentName;
+        port.fullPath = p.fullPath;
+        port.displayName = p.displayName;
+        port.category = PortCategory::Child;
+        result.append(port);
     }
 
     // Сохраняем в кэш
@@ -1422,14 +1397,15 @@ QVector<Port> UModernDiagramNodeItem::getAliasInputPorts() const
     // Получаем алиасы свойств из UNet (если компонент является UNet)
     try
     {
-        RDK::UEPtr<RDK::UContainer> model = RDK::GetModel();
-        if(model)
+        RDK::UELockPtr<RDK::UContainer> modelLock = RDK::GetModelLock();
+        if(modelLock)
         {
+            RDK::UContainer* model = modelLock.Get();
             RDK::UEPtr<RDK::UContainer> component;
             if(fullName.isEmpty())
                 component = model;
             else
-                component = model->GetComponentL(fullName.toStdString(), true);
+                component = model->GetComponentL(fullName.toUtf8().constData(), true);
 
             if(component)
             {
@@ -1702,13 +1678,8 @@ bool UModernDiagramNodeItem::hasConnectionsToInputCategory(PortCategory category
         return false;
 
     // Получаем все связи компонента
-    const char* xmlRaw = Model_GetComponentInternalLinks(m_owner->m_componentName.toStdString().c_str(), nullptr);
-    if(!xmlRaw)
-        return false;
-
-    std::string raw(xmlRaw ? xmlRaw : "");
-    Engine_FreeBufString(xmlRaw);
-
+    const std::string raw =
+        internalLinksXmlFromModelScope(Core_GetSelectedChannelIndex(), m_owner->m_componentName);
     if(raw.empty())
         return false;
 
@@ -1873,17 +1844,13 @@ bool UModernDiagramNodeItem::hasConnectionsToInputCategory(PortCategory category
                         {
                             // Проверяем, является ли вторая часть дочерним компонентом
                             QString inner_fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
-                            const char* compList = Model_GetComponentsNameList(inner_fullName.toStdString().c_str());
-                            if(compList)
-                            {
-                                QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
-                                Engine_FreeBufString(compList);
+                            const QStringList components =
+                                childComponentShortNamesFromModelScope(Core_GetSelectedChannelIndex(), inner_fullName);
 
-                                // Если вторая часть НЕ является дочерним компонентом, это собственное свойство
-                                if(!components.contains(parts[1]))
-                                {
-                                    return true;
-                                }
+                            // Если вторая часть НЕ является дочерним компонентом, это собственное свойство
+                            if(!components.contains(parts[1]))
+                            {
+                                return true;
                             }
                         }
                     }
@@ -2093,13 +2060,8 @@ bool UModernDiagramNodeItem::hasConnectionsToOutputCategory(PortCategory categor
         return false;
 
     // Получаем все связи компонента
-    const char* xmlRaw = Model_GetComponentInternalLinks(m_owner->m_componentName.toStdString().c_str(), nullptr);
-    if(!xmlRaw)
-        return false;
-
-    std::string raw(xmlRaw ? xmlRaw : "");
-    Engine_FreeBufString(xmlRaw);
-
+    const std::string raw =
+        internalLinksXmlFromModelScope(Core_GetSelectedChannelIndex(), m_owner->m_componentName);
     if(raw.empty())
         return false;
 
@@ -2261,17 +2223,13 @@ bool UModernDiagramNodeItem::hasConnectionsToOutputCategory(PortCategory categor
                         {
                             // Проверяем, является ли вторая часть дочерним компонентом
                             QString inner_fullName = m_owner->m_componentName.isEmpty() ? nodeName : m_owner->m_componentName + "." + nodeName;
-                            const char* compList = Model_GetComponentsNameList(inner_fullName.toStdString().c_str());
-                            if(compList)
-                            {
-                                QStringList components = QString::fromUtf8(compList).split(",", Qt::SkipEmptyParts);
-                                Engine_FreeBufString(compList);
+                            const QStringList components =
+                                childComponentShortNamesFromModelScope(Core_GetSelectedChannelIndex(), inner_fullName);
 
-                                // Если вторая часть НЕ является дочерним компонентом, это собственное свойство
-                                if(!components.contains(parts[1]))
-                                {
-                                    return true;
-                                }
+                            // Если вторая часть НЕ является дочерним компонентом, это собственное свойство
+                            if(!components.contains(parts[1]))
+                            {
+                                return true;
                             }
                         }
                     }

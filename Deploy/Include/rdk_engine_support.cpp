@@ -18,8 +18,19 @@ namespace
 {
 
 std::mutex gChannelConfigMutex;
-RDK::Logging::ChannelRuntimeConfig gDefaultChannelConfig{RDK_EX_WARNING, 0};
-std::unordered_map<int, RDK::Logging::ChannelRuntimeConfig> gChannelConfigs;
+RDK::Logging::ChannelRuntimeConfig gDefaultChannelConfig{RDK_EX_INFO, 0};
+
+// Используем "вечный" heap-объект для карты конфигураций каналов логирования,
+// чтобы избежать проблем с порядком разрушения статиков при завершении процесса.
+std::unordered_map<int, RDK::Logging::ChannelRuntimeConfig>* gChannelConfigsPtr = nullptr;
+
+std::unordered_map<int, RDK::Logging::ChannelRuntimeConfig>& GetChannelConfigs()
+{
+  // Инициализация при первом обращении, объект намеренно не уничтожается.
+  if(!gChannelConfigsPtr)
+    gChannelConfigsPtr = new std::unordered_map<int, RDK::Logging::ChannelRuntimeConfig>();
+  return *gChannelConfigsPtr;
+}
 
 #ifdef RDK_USE_GLOG
 class FanoutSink: public google::LogSink
@@ -143,8 +154,9 @@ int NormalizeSeverityValue(int msg_level)
 RDK::Logging::ChannelRuntimeConfig ResolveChannelConfig(int channel_index)
 {
   std::lock_guard<std::mutex> lock(gChannelConfigMutex);
-  auto it = gChannelConfigs.find(channel_index);
-  if(it != gChannelConfigs.end())
+  auto& cfgs = GetChannelConfigs();
+  auto it = cfgs.find(channel_index);
+  if(it != cfgs.end())
     return it->second;
   return gDefaultChannelConfig;
 }
@@ -158,13 +170,13 @@ void ResetChannelRuntimeConfig(const ChannelRuntimeConfig& default_config)
 {
   std::lock_guard<std::mutex> lock(gChannelConfigMutex);
   gDefaultChannelConfig = default_config;
-  gChannelConfigs.clear();
+  GetChannelConfigs().clear();
 }
 
 void SetChannelRuntimeConfig(int channel_index, const ChannelRuntimeConfig& config)
 {
   std::lock_guard<std::mutex> lock(gChannelConfigMutex);
-  gChannelConfigs[channel_index] = config;
+  GetChannelConfigs()[channel_index] = config;
 }
 
 void RegisterLogSink(const std::shared_ptr<ILogSink>& sink)
@@ -1040,6 +1052,9 @@ int URdkCoreManager::ChannelUnInit(int channel_index)
 void URdkCoreManager::Destroy(void)
 {
  UGenericMutexExclusiveLocker lock(GlobalMutex);
+
+ if(NumChannels <= 0 && EngineList.empty() && StorageList.empty())
+  return;
 
  for(int i=0;i<NumChannels;i++)
  {

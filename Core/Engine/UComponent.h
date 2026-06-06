@@ -334,6 +334,9 @@ T* AccessPropertyData(const NameT &name);
 void SetProperty(const NameT &name, UEPtr<UVariableData> values);
 void SetPropertyValue(const NameT &name, const std::string &values);
 
+/// Пометить свойство как обновлённое после записи через AccessPropertyData/GetMemoryArea
+void NotifyPropertyUpdated(const NameT &name);
+
 // Возвращает строку Id свойства, соответствующего указателю
 // Ищет переменную свойства в таблице по указателю на него
 const UComponent::VariableMapT& GetPropertiesList(void) const;
@@ -495,6 +498,9 @@ virtual ULongTime GetUpdateTime(void) const=0;
 
 // Исключения
 virtual void SetUpdateTime(ULongTime value)=0;
+
+/// Пометить свойство как обновлённое (вызывать после записи через GetMemoryArea/AccessPropertyData)
+virtual void NotifyDataUpdated(void)=0;
 
 /// Возвращает время обновления на ноль
 virtual void ResetUpdateTime(void)=0;

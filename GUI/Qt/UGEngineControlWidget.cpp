@@ -1,6 +1,8 @@
 #include "UGEngineControlWidget.h"
 #include "ui_UGEngineControllWidget.h"
 #include "UStyleManager.h"
+#include "UComponentGuiBootstrap.h"
+#include "UComponentGuiDndPayload.h"
 
 
 #include <rdk_application.h>
@@ -18,16 +20,34 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <QInputDialog>
+#include <QLineEdit>
 #include <QActionGroup>
 #include <QTabBar>
 #include <QKeyEvent>
+#include <QEvent>
+#include <QMenuBar>
+#include <QMenu>
+#include <QProcessEnvironment>
+#include <algorithm>
+#include <QCursor>
+#include <QSet>
+#include <QToolButton>
+#include <QDialog>
+#include <QDrag>
+#include <QMimeData>
+#include <QMouseEvent>
+#include <QDragEnterEvent>
+#include <QDragMoveEvent>
+#include <QDropEvent>
+#include <QDragLeaveEvent>
 
 /*int heheheCounter = 0;
 void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
 
 UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication *app) :
     UVisualControllerMainWidget(parent,app),
-    ui(new Ui::UGEngineControllWidget)
+    ui(new Ui::UGEngineControllWidget),
+    m_componentGuiService(app)
 {
     ui->setupUi(this);
     setAccessibleName("UGEngineControllWidget");
@@ -36,6 +56,13 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 
     if(application == NULL)
       QApplication::exit(-1);
+
+    qApp->installEventFilter(this);
+
+    m_componentGuiService.setHostMainWindow(this);
+    setDockOptions(QMainWindow::AllowNestedDocks |
+                   QMainWindow::AllowTabbedDocks |
+                   QMainWindow::GroupedDragging);
 
     QString caption_line=(application->GetProgramName()+" ").c_str();
     caption_line += QCoreApplication::applicationVersion();
@@ -107,6 +134,64 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
         Q_UNUSED(window);
         QTimer::singleShot(0, updateMdiAreaTabBarStyles);
     });
+    ui->mdiArea->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->mdiArea->setAcceptDrops(false);
+    connect(ui->mdiArea, &QMdiArea::customContextMenuRequested, this, [this](const QPoint& pos) {
+        QMdiSubWindow* sub = nullptr;
+        const QList<QMdiSubWindow*> subwindows = ui->mdiArea->subWindowList(QMdiArea::StackingOrder);
+        for(auto it = subwindows.crbegin(); it != subwindows.crend(); ++it)
+        {
+            if(*it && (*it)->geometry().contains(pos))
+            {
+                sub = *it;
+                break;
+            }
+        }
+        if(!sub)
+            sub = ui->mdiArea->activeSubWindow();
+        if(!sub)
+            return;
+
+        UVisualControllerWidget* widget = qobject_cast<UVisualControllerWidget*>(sub->widget());
+        if(!widget)
+            return;
+
+        showComponentGuiHostMenu(widget, QCursor::pos());
+    });
+    // Discoverable tab-level menu for component GUI tabs in tabbed MDI mode.
+    connect(ui->mdiArea, &QMdiArea::subWindowActivated, this, [this](QMdiSubWindow* window) {
+        Q_UNUSED(window);
+        QTimer::singleShot(0, this, [this]() {
+            const QList<QMdiSubWindow*> subWindows = ui->mdiArea->subWindowList(QMdiArea::CreationOrder);
+            for(QMdiSubWindow* sub : subWindows)
+            {
+                if(!sub)
+                    continue;
+                sub->setProperty("componentGuiDragSource", true);
+                sub->installEventFilter(this);
+                if(QWidget* hosted = sub->widget())
+                    installDragFilterRecursively(hosted);
+            }
+            QTabBar* tabBar = ui->mdiArea->findChild<QTabBar*>();
+            if(!tabBar)
+                return;
+            tabBar->setContextMenuPolicy(Qt::CustomContextMenu);
+            tabBar->setAcceptDrops(true);
+            tabBar->installEventFilter(this);
+            QObject::connect(tabBar, &QTabBar::customContextMenuRequested, this, [this, tabBar](const QPoint& pos) {
+                const int index = tabBar->tabAt(pos);
+                if(index < 0)
+                    return;
+                const QList<QMdiSubWindow*> list = ui->mdiArea->subWindowList(QMdiArea::CreationOrder);
+                if(index >= list.size() || !list[index])
+                    return;
+                UVisualControllerWidget* widget = qobject_cast<UVisualControllerWidget*>(list[index]->widget());
+                if(!widget)
+                    return;
+                showComponentGuiHostMenu(widget, tabBar->mapToGlobal(pos));
+            }, Qt::UniqueConnection);
+        });
+    });
 
     // Создаем breadcrumbs виджет
     breadcrumbsWidget = new UBreadcrumbsWidget(this);
@@ -117,6 +202,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 
     // Создаем современную диаграмму
     modernDiagram = new UModernDiagramContainerWidget(this, application);
+    qRegisterMetaType<UComponentGuiContext>("UComponentGuiContext");
     QMdiSubWindow *modernDiagramSbWindow = new SubWindowCloseIgnore(ui->mdiArea, Qt::SubWindow);
     modernDiagramSbWindow->setWidget(modernDiagram);
     modernDiagramSbWindow->setWindowTitle("Scheme");
@@ -147,6 +233,8 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
             modernDiagram, SLOT(componentSingleClick(QString)));
     connect(propertyChanger->componentsList, SIGNAL(updateScheme(bool)),
             modernDiagram, SLOT(updateScheme(bool)));
+    connect(propertyChanger->componentsList, &UComponentsListWidgetModern::openComponentGuiRequested,
+            this, &UGEngineControlWidget::openComponentGuiFromScheme);
 
     //  список -> схема
     connect(modernDiagram, SIGNAL(componentSelectedFromScheme(QString)),
@@ -171,6 +259,8 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     connect(modernDiagram, SIGNAL(viewLinksFromScheme(QString)), this, SLOT(showLinksForSingleComponent(QString)));
     connect(modernDiagram, SIGNAL(createLinksFromScheme(QString,QString)), this, SLOT(showLinksForTwoComponents(QString,QString)));
     connect(modernDiagram, SIGNAL(switchLinksFromScheme(QString,QString)), this, SLOT(switchLinksForTwoComponents(QString,QString)));
+    connect(modernDiagram, &UModernDiagramContainerWidget::openComponentGuiFromScheme,
+            this, &UGEngineControlWidget::openComponentGuiFromScheme);
     connect(modernDiagram, SIGNAL(openProjectDescriptionRequested()), this, SLOT(actionProjectDescription()));
 
     images = new UImagesWidget(this, application);
@@ -293,6 +383,10 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 
     // Theme switcher menu
     createThemeMenu();
+    QAction* componentGuiHostAction = ui->menuWindow->addAction(tr("Component GUI Tab Host..."));
+    connect(componentGuiHostAction, &QAction::triggered, this, [this]() { promptAndOpenComponentGuiTabHost(); });
+    QAction* componentGuiSecondaryHostAction = ui->menuWindow->addAction(tr("Component GUI Secondary Host..."));
+    connect(componentGuiSecondaryHostAction, &QAction::triggered, this, &UGEngineControlWidget::showComponentGuiSecondaryHostWindow);
 
     updateRecentConfigsMenu();
 
@@ -334,11 +428,21 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     helpWindow = 0;
 }
 
+bool UGEngineControlWidget::eventFilter(QObject* watched, QEvent* event)
+{
+    if(event && event->type() == QEvent::Resize && watched && watched->property("componentGuiQuickActionsHost").toBool())
+    {
+        UVisualControllerWidget* host = qobject_cast<UVisualControllerWidget*>(watched);
+        if(host)
+            positionComponentGuiQuickActions(host);
+    }
+    return UVisualControllerMainWidget::eventFilter(watched, event);
+}
+
 
 
 UGEngineControlWidget::~UGEngineControlWidget()
 {
-    application->UnInit();
     delete ui;
 }
 
@@ -369,6 +473,35 @@ void UGEngineControlWidget::switchLinksForTwoComponents(QString firstComponentNa
 {
     componentLinks->initWidget(firstComponentName, secondComponentName, 3);
     execDialogUVisualControllWidget(componentLinks);
+}
+
+void UGEngineControlWidget::openComponentGuiFromScheme(const UComponentGuiContext& context)
+{
+    if(!m_componentSpecialFormsEnabled)
+    {
+        QMessageBox::information(this, "Component GUI", "Component special forms are disabled by feature flag.");
+        return;
+    }
+
+    UComponentGuiHostMode savedMode = UComponentGuiHostMode::Mdi;
+    QString savedContainerId;
+    const bool hasSavedPlacement = m_componentGuiService.tryGetHostPlacementByContext(context, savedMode, savedContainerId);
+
+    UVisualControllerWidget* widget = m_componentGuiService.createOrActivate(this, context);
+    if(!widget)
+    {
+        QMessageBox::information(this, "Component GUI", "No GUI form is registered for this component class.");
+        return;
+    }
+    ensureComponentGuiQuickActionsInstalled(widget);
+
+    if(hasSavedPlacement)
+    {
+        if(savedMode == UComponentGuiHostMode::SecondaryDock)
+            moveContextToSecondaryHost(context);
+        else if(savedMode == UComponentGuiHostMode::TabHost && !savedContainerId.isEmpty())
+            moveContextToTabHost(context, savedContainerId);
+    }
 }
 
 // file menu actions
@@ -406,8 +539,8 @@ void UGEngineControlWidget::actionLoadConfig()
     }
 
     // Начальная папка диалога: последняя открытая или Configs
-    QSettings settings("NeuroModeler", "NeuroModeler");
-    QString dialog_initial_dir = settings.value("LastConfigDialogDir").toString();
+    QSettings registrySettings("NeuroModeler", "NeuroModeler");
+    QString dialog_initial_dir = registrySettings.value("LastConfigDialogDir").toString();
     if(dialog_initial_dir.isEmpty() || !QDir(dialog_initial_dir).exists())
         dialog_initial_dir = configs_path;
 
@@ -427,7 +560,7 @@ void UGEngineControlWidget::actionLoadConfig()
       application->OpenProject(fileName.toLocal8Bit().constData());
       UpdateInterface();
 
-      settings.setValue("LastConfigDialogDir", QFileInfo(fileName).absolutePath());
+      registrySettings.setValue("LastConfigDialogDir", QFileInfo(fileName).absolutePath());
 
       addToRecentConfigs(fileName);
 
@@ -471,6 +604,124 @@ void UGEngineControlWidget::loadProjectExternal(const QString &config_path)
  {
   QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
  }
+}
+
+void UGEngineControlWidget::refreshLlmPresentationShell()
+{
+    UpdateInterface();
+    RDK::UIVisualControllerStorage::UpdateInterface(true);
+    AUpdateInterface();
+}
+
+void UGEngineControlWidget::refreshLlmPresentationDiagram()
+{
+    if(modernDiagram)
+    {
+        modernDiagram->updateScheme(true);
+        modernDiagram->updateClassesList();
+    }
+}
+
+void UGEngineControlWidget::registerRecentConfigurationPath(const QString& path)
+{
+    addToRecentConfigs(path);
+}
+
+void UGEngineControlWidget::setLlmActiveChannel(int channel_index)
+{
+    if(channels)
+        channels->setLlmActiveChannel(channel_index);
+}
+
+void UGEngineControlWidget::showLlmUiPanel(RDK::LLM::LLMUiPanel panel)
+{
+    // Note: "show_panel_visible=false" is implemented by sink by requesting LLMUiPanel::None.
+    switch(panel)
+    {
+    case RDK::LLM::LLMUiPanel::None:
+        if(ui && ui->dockWidgetComponentsList)
+            ui->dockWidgetComponentsList->hide();
+        if(ui && ui->dockWidgetChannels)
+            ui->dockWidgetChannels->hide();
+        if(ui && ui->dockWidgetLoger)
+            ui->dockWidgetLoger->hide();
+        if(ui && ui->dockWidgetProfiling)
+            ui->dockWidgetProfiling->hide();
+        if(modernDiagram)
+            modernDiagram->hide();
+        if(images)
+            images->hide();
+        if(imagesWindow)
+            imagesWindow->hide();
+        if(watchWindow)
+            watchWindow->hide();
+        if(projectDescriptionWindow)
+            projectDescriptionWindow->hide();
+        break;
+    case RDK::LLM::LLMUiPanel::ComponentsList:
+        actionComponentsControl();
+        break;
+    case RDK::LLM::LLMUiPanel::Channels:
+        actionChannelsControl();
+        break;
+    case RDK::LLM::LLMUiPanel::Logger:
+        actionLogger();
+        break;
+    case RDK::LLM::LLMUiPanel::Watch:
+        actionWatchWindow();
+        break;
+    case RDK::LLM::LLMUiPanel::Images:
+        actionImages();
+        break;
+    case RDK::LLM::LLMUiPanel::ProjectDescription:
+        actionProjectDescription();
+        break;
+    case RDK::LLM::LLMUiPanel::Profiling:
+        actionProfiling();
+        break;
+    case RDK::LLM::LLMUiPanel::Diagram:
+        refreshLlmPresentationDiagram();
+        break;
+    case RDK::LLM::LLMUiPanel::ComponentGuiTabHost:
+        // Host may require user interaction; the sink executes this on GUI thread.
+        promptAndOpenComponentGuiTabHost();
+        break;
+    }
+}
+
+nlohmann::json UGEngineControlWidget::listLlmUiPanelsState() const
+{
+    nlohmann::json out;
+    out["items"] = nlohmann::json::array();
+
+    auto addItem = [&out](const char* id, const char* title, bool visible) {
+        out["items"].push_back(nlohmann::json{{"id", id}, {"title", title}, {"visible", visible}});
+    };
+
+    if(ui)
+    {
+        addItem("components_list", "Components", ui->dockWidgetComponentsList
+                                                   && ui->dockWidgetComponentsList->isVisible());
+        addItem("channels", "Channels", ui->dockWidgetChannels
+                                             && ui->dockWidgetChannels->isVisible());
+        addItem("logger", "Logger", ui->dockWidgetLoger
+                                            && ui->dockWidgetLoger->isVisible());
+        addItem("profiling", "Profiling", ui->dockWidgetProfiling
+                                                && ui->dockWidgetProfiling->isVisible());
+    }
+
+    addItem("watch", "Watch", watchWindow && watchWindow->isVisible());
+    addItem("images", "Images", imagesWindow && imagesWindow->isVisible());
+    addItem("project_description", "Project Description",
+            projectDescriptionWindow && projectDescriptionWindow->isVisible());
+
+    addItem("diagram", "Diagram", modernDiagram && modernDiagram->isVisible());
+
+    const bool tabHostVisible =
+        !m_componentGuiSecondaryTabHost.isNull() && m_componentGuiSecondaryTabHost->isVisible();
+    addItem("component_gui_tab_host", "Component GUI Tab Host", tabHostVisible);
+
+    return out;
 }
 
 void UGEngineControlWidget::actionCreateConfig()
@@ -526,67 +777,51 @@ void UGEngineControlWidget::actionCreateSimple()
         application->CloseProject();
     }
 
-    // Директория проектов: Configs, затем Configs/Users/UserName
-    QString configs_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../Configs/").c_str());
-    QDir path1(configs_path);
-    if(!path1.exists(configs_path))
-    {
-        configs_path=QString::fromLocal8Bit((application->GetWorkDirectory()+"/../../../Configs/").c_str());
-        QDir path2(configs_path);
-        if(!path2.exists(configs_path))
-        {
-            configs_path=QString::fromLocal8Bit(application->GetWorkDirectory().c_str());
-        }
-    }
-
-    QString default_path = configs_path;
-    if(!application->GetUserName().empty())
-    {
-        std::string userPathRel = application->GetUserConfigPath();
-        if(!userPathRel.empty())
-        {
-            QString users_dir = configs_path + "Users";
-            QDir pathUsers(users_dir);
-            if(!pathUsers.exists())
-                RDK::CreateNewDirectory(users_dir.toLocal8Bit());
-            QString default_user_path = configs_path + QString::fromLocal8Bit(userPathRel.c_str());
-            QDir pathUser(default_user_path);
-            if(!pathUser.exists())
-                RDK::CreateNewDirectory(default_user_path.toLocal8Bit());
-            default_path = default_user_path;
-        }
-    }
-
-    std::string path_dialog=default_path.toUtf8().data();
+    const std::string default_path = application->GetDefaultConfigsDirectory();
+    const QString default_path_q = QString::fromLocal8Bit(default_path.c_str());
 
     // Создание папки проекта автоматическое либо выбор существующей
-    // Убеждаемся, что виджет видим и активен перед показом диалога (важно для Windows)
     if (!isVisible() || !isActiveWindow()) {
         raise();
         activateWindow();
     }
 
     QMessageBox::StandardButton reply2 = QMessageBox::question(this, "Info", "Autocreate configuration folder?", QMessageBox::Yes|QMessageBox::No);
+    std::string err;
+    std::string file_name;
     if (reply2 == QMessageBox::Yes)
     {
-        time_t curr_time;
-        time(&curr_time);
-
-        // Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
-        std::string folder=RDK::get_text_time(curr_time, '.', '_');
-        path_dialog+=std::string("/Autocreate")+folder.c_str();
-
-        if(RDK::CreateNewDirectory(std::string(path_dialog).c_str()) != 0)
+        file_name = application->PrepareNewProjectIniPath(true, default_path, &err);
+        if(file_name.empty())
+        {
+            QMessageBox::critical(this, "Error at creatng simple project",
+                                  QString::fromStdString(
+                                      err.empty() ? "Failed to prepare project path" : err),
+                                  QMessageBox::Ok);
             return;
+        }
     }
     else
     {
-        path_dialog = QFileDialog::getExistingDirectory(this, tr("Select project directory"), default_path, QFileDialog::ShowDirsOnly).toUtf8().data();
+        const std::string path_dialog =
+            QFileDialog::getExistingDirectory(this, tr("Select project directory"), default_path_q,
+                                              QFileDialog::ShowDirsOnly)
+                .toUtf8()
+                .data();
+        if(path_dialog.empty())
+            return;
+        file_name = application->PrepareNewProjectIniPath(false, path_dialog, &err);
+        if(file_name.empty())
+        {
+            QMessageBox::critical(this, "Error at creatng simple project",
+                                  QString::fromStdString(
+                                      err.empty() ? "Failed to prepare project path" : err),
+                                  QMessageBox::Ok);
+            return;
+        }
     }
 
-    std::string file_name = path_dialog +"/project.ini";
-    std::string classname="Model";
-
+    const std::string classname = "Model";
     application->CreateProject(file_name, classname);
 
     RDK::UIVisualControllerStorage::UpdateInterface();
@@ -1232,12 +1467,20 @@ void UGEngineControlWidget::writeSettings()
     // Save current theme
     UStyleManager* styleManager = UStyleManager::instance();
     projectSettings.setValue("theme", styleManager->getThemeName());
+    projectSettings.setValue("EnableComponentSpecialFormsQt", m_componentSpecialFormsEnabled);
+    projectSettings.setValue("EnableComponentSpecialFormsQt.MotionControl", m_componentSpecialFormsMotionControlEnabled);
+    projectSettings.setValue("EnableComponentSpecialFormsQt.PulseLib", m_componentSpecialFormsPulseLibEnabled);
+    projectSettings.setValue("EnableComponentSpecialFormsQt.BasicLib", m_componentSpecialFormsBasicLibEnabled);
+    projectSettings.setValue("EnableComponentSpecialFormsQt.CvBasicLib", m_componentSpecialFormsCvBasicLibEnabled);
+    projectSettings.setValue("EnableComponentSpecialFormsQt.HardwareLib", m_componentSpecialFormsHardwareLibEnabled);
 
     if(imagesWindow)
     {
       projectSettings.setValue("ImagesGeometry", imagesWindow->saveGeometry());
       projectSettings.setValue("ImagesState",    imagesWindow->saveState());
     }
+
+    writeComponentGuiSettings(projectSettings);
 
     projectSettings.endGroup();
 }
@@ -1258,6 +1501,44 @@ void UGEngineControlWidget::readSettings()
     QString savedTheme = projectSettings.value("theme", "Modern Light").toString();
     switchToTheme(savedTheme);
 
+    // Feature flags: component special forms
+    // Priority: environment variable > settings value > default(true)
+    const QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
+    auto parseEnabled = [](const QString& value) -> bool
+    {
+        const QString normalized = value.trimmed().toLower();
+        return (normalized == "1" || normalized == "true" || normalized == "yes" || normalized == "on");
+    };
+    auto readFlag = [&](const char* envName, const char* settingsName, bool defaultValue) -> bool
+    {
+        if(env.contains(envName))
+            return parseEnabled(env.value(envName));
+        return projectSettings.value(settingsName, defaultValue).toBool();
+    };
+    m_componentSpecialFormsEnabled =
+        readFlag("NMSDK_ENABLE_COMPONENT_SPECIAL_FORMS_QT", "EnableComponentSpecialFormsQt", true);
+    m_componentSpecialFormsMotionControlEnabled =
+        readFlag("NMSDK_ENABLE_COMPONENT_SPECIAL_FORMS_QT_MOTIONCONTROL", "EnableComponentSpecialFormsQt.MotionControl", true);
+    m_componentSpecialFormsPulseLibEnabled =
+        readFlag("NMSDK_ENABLE_COMPONENT_SPECIAL_FORMS_QT_PULSELIB", "EnableComponentSpecialFormsQt.PulseLib", true);
+    m_componentSpecialFormsBasicLibEnabled =
+        readFlag("NMSDK_ENABLE_COMPONENT_SPECIAL_FORMS_QT_BASICLIB", "EnableComponentSpecialFormsQt.BasicLib", true);
+    m_componentSpecialFormsCvBasicLibEnabled =
+        readFlag("NMSDK_ENABLE_COMPONENT_SPECIAL_FORMS_QT_CVBASICLIB", "EnableComponentSpecialFormsQt.CvBasicLib", true);
+    m_componentSpecialFormsHardwareLibEnabled =
+        readFlag("NMSDK_ENABLE_COMPONENT_SPECIAL_FORMS_QT_HARDWARELIB", "EnableComponentSpecialFormsQt.HardwareLib", true);
+
+    if(m_componentSpecialFormsEnabled)
+    {
+        UComponentGuiRegistrationOptions options;
+        options.enableMotionControl = m_componentSpecialFormsMotionControlEnabled;
+        options.enablePulseLib = m_componentSpecialFormsPulseLibEnabled;
+        options.enableBasicLib = m_componentSpecialFormsBasicLibEnabled;
+        options.enableCvBasicLib = m_componentSpecialFormsCvBasicLibEnabled;
+        options.enableHardwareLib = m_componentSpecialFormsHardwareLibEnabled;
+        RegisterComponentGuiForms(application, options);
+    }
+
     if(!imagesWindow)
     {
         imagesWindow = new QMainWindow(this);
@@ -1266,6 +1547,8 @@ void UGEngineControlWidget::readSettings()
     imagesWindow->resize(images->size());
     imagesWindow->restoreGeometry(projectSettings.value("ImagesGeometry").toByteArray());
     imagesWindow->restoreState(projectSettings.value("ImagesState").toByteArray());
+
+    readComponentGuiSettings(projectSettings);
 
     projectSettings.endGroup();
 }
@@ -1304,11 +1587,219 @@ void UGEngineControlWidget::openHelpWindow()
     on_actionUserGuide_triggered();
 }
 
+void UGEngineControlWidget::showCustomWidgetById(const QString& id)
+{
+    createOrActivateCustomWidget(id);
+}
+
+static QMenu* ensureTopLevelMenu(QMenuBar* menuBar, const QString& title,
+                                 const QString& insertBeforeTitle)
+{
+    for(QAction* action : menuBar->actions())
+    {
+        QMenu* menu = action->menu();
+        if(menu && menu->title() == title)
+            return menu;
+    }
+
+    QMenu* menu = new QMenu(title);
+    if(insertBeforeTitle.isEmpty())
+    {
+        menuBar->addMenu(menu);
+        return menu;
+    }
+
+    QAction* before = nullptr;
+    for(QAction* action : menuBar->actions())
+    {
+        QMenu* existing = action->menu();
+        if(existing && existing->title() == insertBeforeTitle)
+        {
+            before = action;
+            break;
+        }
+    }
+    if(before)
+        menuBar->insertMenu(before, menu);
+    else
+        menuBar->addMenu(menu);
+    return menu;
+}
+
+static QMenu* menuForPath(QMenuBar* menuBar, const QString& menuPath,
+                          const QString& insertBeforeTitle = QString())
+{
+    if(!menuBar || menuPath.isEmpty())
+        return nullptr;
+    QStringList parts = menuPath.split(QLatin1Char('/'), Qt::SkipEmptyParts);
+    if(parts.isEmpty())
+        return nullptr;
+
+    QMenu* currentMenu = nullptr;
+    const QString first = parts.first();
+    const QString before =
+        insertBeforeTitle.isEmpty() && first == QStringLiteral("AI Assistant")
+            ? QStringLiteral("Window")
+            : insertBeforeTitle;
+    for(QAction* action : menuBar->actions())
+    {
+        QMenu* menu = action->menu();
+        if(menu && menu->title() == first)
+        {
+            currentMenu = menu;
+            break;
+        }
+    }
+    if(!currentMenu)
+        currentMenu = ensureTopLevelMenu(menuBar, first, before);
+
+    for(int i = 1; i < parts.size(); ++i)
+    {
+        const QString& segment = parts[i];
+        QMenu* nextMenu = nullptr;
+        for(QAction* action : currentMenu->actions())
+        {
+            QMenu* submenu = action->menu();
+            if(submenu && submenu->title() == segment)
+            {
+                nextMenu = submenu;
+                break;
+            }
+        }
+        if(!nextMenu)
+            nextMenu = currentMenu->addMenu(segment);
+        currentMenu = nextMenu;
+    }
+    return currentMenu;
+}
+
+void UGEngineControlWidget::appendMenuAction(const QString& menuPath, QAction* action)
+{
+    if(!action || !ui || !ui->menuBar)
+        return;
+    QMenu* menu = menuForPath(ui->menuBar, menuPath);
+    if(menu)
+        menu->addAction(action);
+}
+
+void UGEngineControlWidget::appendMenuSeparator(const QString& menuPath)
+{
+    if(!ui || !ui->menuBar)
+        return;
+    QMenu* menu = menuForPath(ui->menuBar, menuPath);
+    if(menu)
+        menu->addSeparator();
+}
+
+void UGEngineControlWidget::registerCustomWidget(const UCustomWidgetDescriptor &descriptor)
+{
+    if (descriptor.id.isEmpty() || !descriptor.factory)
+        return;
+
+    // Сохраняем дескриптор
+    customWidgets.push_back(descriptor);
+
+    // Создаём QAction в меню по menuPath
+    if (ui && ui->menuBar && !descriptor.menuPath.isEmpty())
+    {
+        QMenu* currentMenu = menuForPath(ui->menuBar, descriptor.menuPath);
+        if(currentMenu)
+        {
+            QAction *action = currentMenu->addAction(descriptor.title);
+            if (!descriptor.shortcut.isEmpty())
+            {
+                action->setShortcut(descriptor.shortcut);
+            }
+            action->setData(descriptor.id);
+            QObject::connect(action, &QAction::triggered,
+                             this, &UGEngineControlWidget::handleCustomWidgetActionTriggered);
+        }
+    }
+}
+
+void UGEngineControlWidget::handleCustomWidgetActionTriggered()
+{
+    QAction *action = qobject_cast<QAction *>(sender());
+    if (!action)
+        return;
+    const QString id = action->data().toString();
+    if (id.isEmpty())
+        return;
+    createOrActivateCustomWidget(id);
+}
+
+void UGEngineControlWidget::createOrActivateCustomWidget(const QString &id)
+{
+    // Находим дескриптор
+    const UCustomWidgetDescriptor *found = nullptr;
+    for (const auto &desc : customWidgets)
+    {
+        if (desc.id == id)
+        {
+            found = &desc;
+            break;
+        }
+    }
+    if (!found || !application)
+        return;
+
+    auto &instances = customWidgetInstances[id];
+
+    // Если singleInstance и уже есть живой экземпляр — просто активируем его
+    if (found->singleInstance)
+    {
+        for (auto &ptr : instances)
+        {
+            if (!ptr.isNull())
+            {
+                QWidget *w = ptr.data();
+                w->show();
+                w->raise();
+                w->activateWindow();
+                return;
+            }
+        }
+    }
+
+    // Создаём новый виджет через фабрику
+    UVisualControllerWidget *widget = found->factory(application);
+    if (!widget)
+        return;
+
+    widget->setParent(this);
+
+    if (found->placement == UCustomWidgetPlacement::Dock)
+    {
+        auto *dock = new QDockWidget(found->title, this);
+        dock->setWidget(widget);
+        addDockWidget(found->defaultDockArea, dock);
+        dock->show();
+    }
+    else
+    {
+        if (ui && ui->mdiArea)
+        {
+            QMdiSubWindow *sub = new QMdiSubWindow(ui->mdiArea, Qt::SubWindow);
+            sub->setWidget(widget);
+            sub->setAttribute(Qt::WA_DeleteOnClose);
+            ui->mdiArea->addSubWindow(sub);
+            sub->show();
+            sub->showMaximized();
+        }
+        else
+        {
+            widget->show();
+            widget->raise();
+            widget->activateWindow();
+        }
+    }
+
+    instances.push_back(QPointer<UVisualControllerWidget>(widget));
+}
+
 void UGEngineControlWidget::closeEvent(QCloseEvent *event)
 {
  application->PauseChannel(-1);
- //application->CloseProject();
- application->UnInit();
  event->accept();
  //   if (maybeSave()) {
  //       writeSettings();
@@ -1399,7 +1890,8 @@ void UGEngineControlWidget::AAfterLoadProject(void)
 // Метод, вызываемый перед закрытием проекта
 void UGEngineControlWidget::ABeforeCloseProject(void)
 {
-
+    m_componentGuiService.clearAllInstances();
+    m_componentGuiTabHosts.clear();
 }
 
 // Метод, вызываемый перед сбросом модели
@@ -1448,6 +1940,8 @@ void UGEngineControlWidget::ASaveParameters(RDK::USerStorageXML &xml)
         xml.WriteString("name_"+RDK::sntoa(i+1), images_name.toStdString().c_str());
     }
     xml.SelectUp();
+
+    saveComponentGuiLayoutToXml(xml);
 }
 
 // Загружает параметры интерфейса из xml
@@ -1497,6 +1991,713 @@ void UGEngineControlWidget::ALoadParameters(RDK::USerStorageXML &xml)
         imagesVector.at(i)->setWindowTitle(images_name);
     }
     xml.SelectUp();
+
+    loadComponentGuiLayoutFromXml(xml);
+}
+
+UComponentGuiTabHostWidget* UGEngineControlWidget::ensureComponentGuiTabHost(const QString& hostId)
+{
+    if(hostId == QStringLiteral("Secondary"))
+        return ensureComponentGuiSecondaryTabHost();
+
+    if(m_componentGuiTabHosts.contains(hostId) && !m_componentGuiTabHosts[hostId].isNull())
+        return m_componentGuiTabHosts[hostId].data();
+
+    UComponentGuiTabHostWidget* host = new UComponentGuiTabHostWidget(hostId, &m_componentGuiService, ui->mdiArea, application);
+    QMdiSubWindow* sub = ui->mdiArea->addSubWindow(host, Qt::SubWindow);
+    if(sub)
+    {
+        sub->setAttribute(Qt::WA_DeleteOnClose, true);
+        sub->setWindowTitle(QStringLiteral("Component Tab Host: %1").arg(hostId));
+        sub->show();
+    }
+    m_componentGuiTabHosts[hostId] = host;
+    m_componentGuiService.setTabHostMainWindow(nullptr);
+    wireComponentGuiTabHostPruning(host);
+    return host;
+}
+
+UComponentGuiTabHostWidget* UGEngineControlWidget::findComponentGuiTabHost(const QString& hostId) const
+{
+    if(!m_componentGuiTabHosts.contains(hostId) || m_componentGuiTabHosts.value(hostId).isNull())
+        return nullptr;
+    return m_componentGuiTabHosts.value(hostId).data();
+}
+
+QStringList UGEngineControlWidget::componentGuiTabHostIds() const
+{
+    QStringList ids;
+    for(auto it = m_componentGuiTabHosts.constBegin(); it != m_componentGuiTabHosts.constEnd(); ++it)
+    {
+        if(!it.value().isNull())
+            ids.push_back(it.key());
+    }
+    if(!m_componentGuiSecondaryTabHost.isNull() && !ids.contains(QStringLiteral("Secondary")))
+        ids.push_back(QStringLiteral("Secondary"));
+    ids.sort();
+    return ids;
+}
+
+bool UGEngineControlWidget::moveContextToTabHost(const UComponentGuiContext& context, const QString& hostId)
+{
+    UComponentGuiTabHostWidget* host = findComponentGuiTabHost(hostId);
+    if(!host)
+        return false;
+    wireComponentGuiTabHostPruning(host);
+    return host->assignContext(context);
+}
+
+UComponentGuiTabHostWidget* UGEngineControlWidget::ensureComponentGuiSecondaryTabHost()
+{
+    if(!m_componentGuiSecondaryTabHost.isNull())
+        return m_componentGuiSecondaryTabHost.data();
+
+    if(m_componentGuiSecondaryHostWindow.isNull())
+        showComponentGuiSecondaryHostWindow();
+
+    QMainWindow* secondary = m_componentGuiSecondaryHostWindow.data();
+    if(!secondary)
+        return nullptr;
+
+    auto* host = new UComponentGuiTabHostWidget(QStringLiteral("Secondary"),
+                                                &m_componentGuiService,
+                                                secondary,
+                                                application);
+    secondary->setCentralWidget(host);
+    m_componentGuiSecondaryTabHost = host;
+    m_componentGuiTabHosts[QStringLiteral("Secondary")] = host;
+    m_componentGuiService.setSecondaryTabHostWidget(host);
+    wireComponentGuiTabHostPruning(host);
+    return host;
+}
+
+bool UGEngineControlWidget::moveContextToSecondaryHost(const UComponentGuiContext& context)
+{
+    showComponentGuiSecondaryHostWindow();
+    UComponentGuiTabHostWidget* host = ensureComponentGuiSecondaryTabHost();
+    if(!host)
+        return false;
+    if(!host->assignContext(context))
+        return false;
+    pruneEmptyTabHostSlotsForContext(context);
+    return true;
+}
+
+void UGEngineControlWidget::wireComponentGuiTabHostPruning(UComponentGuiTabHostWidget* host)
+{
+    if(!host)
+        return;
+    const QString hostId = host->hostId();
+    host->setAfterAssignContextHook([this, hostId](const UComponentGuiContext& ctx) {
+        pruneEmptyTabHostSlotsForContext(ctx);
+        if(hostId == QStringLiteral("Secondary"))
+        {
+            m_componentGuiService.assignHostModeForContext(ctx,
+                                                           UComponentGuiHostMode::SecondaryDock,
+                                                           QStringLiteral("Secondary"));
+        }
+    });
+}
+
+void UGEngineControlWidget::pruneEmptyTabHostSlotsForContext(const UComponentGuiContext& context)
+{
+    for(auto it = m_componentGuiTabHosts.begin(); it != m_componentGuiTabHosts.end(); ++it)
+    {
+        if(it.value().isNull())
+            continue;
+        it.value()->pruneStaleTabForContext(context);
+    }
+}
+
+void UGEngineControlWidget::saveComponentGuiLayoutToXml(RDK::USerStorageXML &xml)
+{
+    const QList<UComponentGuiSessionSnapshot> sessions = m_componentGuiService.snapshotOpenSessions();
+
+    xml.SelectNodeForce("ComponentGuiLayout");
+    xml.DelNodeInternalContent();
+    xml.WriteInteger("SchemaVersion", kComponentGuiLayoutSchemaVersion);
+    xml.WriteInteger("SessionCount", sessions.size());
+
+    for(int i = 0; i < sessions.size(); ++i)
+    {
+        const UComponentGuiSessionSnapshot& s = sessions[i];
+        xml.SelectNodeForce("Session_" + RDK::sntoa(i + 1));
+        xml.WriteString("SessionId", s.sessionId.toStdString());
+        xml.WriteString("FormId", s.formId.toStdString());
+        xml.WriteString("ComponentClassName", s.componentClassName.toStdString());
+        xml.WriteString("ComponentLongName", s.componentLongName.toStdString());
+        xml.WriteInteger("ChannelIndex", s.channelIndex);
+        xml.WriteString("HostMode", hostModeToString(s.hostMode).toStdString());
+        xml.WriteString("ContainerId", s.containerId.toStdString());
+        xml.WriteInteger("CellRow", s.cellRow);
+        xml.WriteInteger("CellCol", s.cellCol);
+        xml.WriteInteger("OrderIndex", s.orderIndex);
+        xml.WriteBool("IsActive", s.isActive);
+        xml.SelectUp();
+    }
+
+    const QStringList tabHostIds = componentGuiTabHostIds();
+    xml.WriteInteger("TabHostCount", tabHostIds.size());
+    for(int i = 0; i < tabHostIds.size(); ++i)
+    {
+        xml.SelectNodeForce("TabHost_" + RDK::sntoa(i + 1));
+        xml.WriteString("HostId", tabHostIds[i].toStdString());
+        xml.SelectUp();
+    }
+    xml.SelectUp();
+}
+
+void UGEngineControlWidget::loadComponentGuiLayoutFromXml(RDK::USerStorageXML &xml)
+{
+    if(!xml.SelectNode("ComponentGuiLayout"))
+        return;
+
+    const int hostCount = xml.ReadInteger("TabHostCount", 0);
+    for(int i = 0; i < hostCount; ++i)
+    {
+        if(!xml.SelectNode("TabHost_" + RDK::sntoa(i + 1)))
+            continue;
+        const QString hostId = QString::fromStdString(xml.ReadString("HostId", "MainTabHost"));
+        ensureComponentGuiTabHost(hostId);
+        xml.SelectUp();
+    }
+
+    // Legacy compatibility: old grid layout nodes map to a tab host.
+    const int legacyGridCount = xml.ReadInteger("GridCount", 0);
+    if(legacyGridCount > 0)
+        ensureComponentGuiTabHost(QStringLiteral("MainTabHost"));
+
+    QList<UComponentGuiSessionSnapshot> sessions;
+    const int sessionCount = xml.ReadInteger("SessionCount", 0);
+    sessions.reserve(sessionCount);
+    for(int i = 0; i < sessionCount; ++i)
+    {
+        if(!xml.SelectNode("Session_" + RDK::sntoa(i + 1)))
+            continue;
+        UComponentGuiSessionSnapshot s;
+        s.sessionId = QString::fromStdString(xml.ReadString("SessionId", ""));
+        s.formId = QString::fromStdString(xml.ReadString("FormId", ""));
+        s.componentClassName = QString::fromStdString(xml.ReadString("ComponentClassName", ""));
+        s.componentLongName = QString::fromStdString(xml.ReadString("ComponentLongName", ""));
+        s.channelIndex = xml.ReadInteger("ChannelIndex", -1);
+        s.hostMode = hostModeFromString(QString::fromStdString(xml.ReadString("HostMode", "mdi")));
+        s.containerId = QString::fromStdString(xml.ReadString("ContainerId", ""));
+        s.cellRow = xml.ReadInteger("CellRow", -1);
+        s.cellCol = xml.ReadInteger("CellCol", -1);
+        s.orderIndex = xml.ReadInteger("OrderIndex", i);
+        s.isActive = xml.ReadBool("IsActive", false);
+        sessions.push_back(s);
+        xml.SelectUp();
+    }
+    xml.SelectUp();
+
+    std::sort(sessions.begin(), sessions.end(), [](const UComponentGuiSessionSnapshot& a, const UComponentGuiSessionSnapshot& b) {
+        return a.orderIndex < b.orderIndex;
+    });
+
+    bool hasActive = false;
+    UComponentGuiContext activeContext;
+    for(const UComponentGuiSessionSnapshot& s : sessions)
+    {
+        UComponentGuiContext context;
+        context.componentClassName = s.componentClassName;
+        context.componentLongName = s.componentLongName;
+        context.channelIndex = s.channelIndex;
+
+        UVisualControllerWidget* widget = m_componentGuiService.createOrActivate(this, context);
+        if(!widget)
+            continue;
+        ensureComponentGuiQuickActionsInstalled(widget);
+
+        if(s.hostMode == UComponentGuiHostMode::Floating)
+        {
+            m_componentGuiService.detachToFloating(context);
+            pruneEmptyTabHostSlotsForContext(context);
+        }
+        else if((s.hostMode == UComponentGuiHostMode::TabHost || s.hostMode == UComponentGuiHostMode::Grid) && !s.containerId.isEmpty())
+        {
+            UComponentGuiTabHostWidget* host = ensureComponentGuiTabHost(s.containerId);
+            if(host)
+                host->assignContext(context);
+        }
+        else if(s.hostMode == UComponentGuiHostMode::SecondaryDock)
+        {
+            moveContextToSecondaryHost(context);
+        }
+        if(s.isActive && !hasActive)
+        {
+            hasActive = true;
+            activeContext = context;
+        }
+    }
+
+    if(application)
+    {
+        QSettings projectSettings(QString::fromLocal8Bit(application->GetProjectPath().c_str()) + "settings.qt",
+                                  QSettings::IniFormat);
+        projectSettings.beginGroup(accessibleName());
+        readComponentGuiSettings(projectSettings);
+        projectSettings.endGroup();
+    }
+
+    if(hasActive)
+    {
+        UVisualControllerWidget* widget = m_componentGuiService.createOrActivate(this, activeContext);
+        ensureComponentGuiQuickActionsInstalled(widget);
+    }
+}
+
+void UGEngineControlWidget::writeComponentGuiSettings(QSettings& projectSettings)
+{
+    const QList<UComponentGuiSessionSnapshot> sessions = m_componentGuiService.snapshotOpenSessions();
+    QSet<QString> liveFloatingSessions;
+    QSet<QString> liveTabHostIds;
+
+    projectSettings.beginGroup("ComponentGui");
+    projectSettings.beginGroup("Floating");
+    const QStringList storedFloating = projectSettings.childGroups();
+    projectSettings.endGroup();
+    projectSettings.beginGroup("TabHost");
+    const QStringList storedHosts = projectSettings.childGroups();
+    projectSettings.endGroup();
+    projectSettings.endGroup();
+
+    for(const UComponentGuiSessionSnapshot& s : sessions)
+    {
+        if(s.hostMode != UComponentGuiHostMode::Floating)
+            continue;
+        liveFloatingSessions.insert(s.sessionId);
+        m_componentGuiService.captureFloatingState(s.sessionId);
+        const QString prefix = QStringLiteral("ComponentGui/Floating/%1").arg(s.sessionId);
+        projectSettings.setValue(prefix + "/Geometry", m_componentGuiService.floatingGeometry(s.sessionId));
+        projectSettings.setValue(prefix + "/WindowState", m_componentGuiService.floatingWindowState(s.sessionId));
+    }
+    for(const QString& staleId : storedFloating)
+    {
+        if(!liveFloatingSessions.contains(staleId))
+            projectSettings.remove(QStringLiteral("ComponentGui/Floating/%1").arg(staleId));
+    }
+
+    const QStringList hostIds = componentGuiTabHostIds();
+    for(const QString& hostId : hostIds)
+    {
+        UComponentGuiTabHostWidget* host = findComponentGuiTabHost(hostId);
+        if(!host)
+            continue;
+        liveTabHostIds.insert(hostId);
+        projectSettings.setValue(QStringLiteral("ComponentGui/TabHost/%1/Geometry").arg(hostId),
+                                 host->saveGeometry());
+        projectSettings.setValue(QStringLiteral("ComponentGui/TabHost/%1/State").arg(hostId),
+                                 host->saveState());
+    }
+    for(const QString& staleHost : storedHosts)
+    {
+        if(!liveTabHostIds.contains(staleHost))
+            projectSettings.remove(QStringLiteral("ComponentGui/TabHost/%1").arg(staleHost));
+    }
+
+    if(m_componentGuiSecondaryHostWindow)
+    {
+        projectSettings.setValue("ComponentGui/SecondaryWindow/Geometry", m_componentGuiSecondaryHostWindow->saveGeometry());
+        projectSettings.setValue("ComponentGui/SecondaryWindow/State", m_componentGuiSecondaryHostWindow->saveState());
+    }
+}
+
+void UGEngineControlWidget::readComponentGuiSettings(QSettings& projectSettings)
+{
+    projectSettings.beginGroup("ComponentGui/TabHost");
+    const QStringList hostIds = projectSettings.childGroups();
+    projectSettings.endGroup();
+    for(const QString& hostId : hostIds)
+    {
+        const QByteArray tabHostGeometry = projectSettings.value(QStringLiteral("ComponentGui/TabHost/%1/Geometry").arg(hostId)).toByteArray();
+        const QByteArray tabHostState = projectSettings.value(QStringLiteral("ComponentGui/TabHost/%1/State").arg(hostId)).toByteArray();
+        if(tabHostGeometry.isEmpty() && tabHostState.isEmpty())
+            continue;
+        UComponentGuiTabHostWidget* host = nullptr;
+        if(hostId == QStringLiteral("Secondary"))
+            host = ensureComponentGuiSecondaryTabHost();
+        else
+            host = ensureComponentGuiTabHost(hostId);
+        if(host)
+        {
+            if(!tabHostGeometry.isEmpty())
+                host->restoreGeometry(tabHostGeometry);
+            if(!tabHostState.isEmpty())
+                host->restoreState(tabHostState);
+        }
+    }
+
+    const QList<UComponentGuiSessionSnapshot> sessions = m_componentGuiService.snapshotOpenSessions();
+    for(const UComponentGuiSessionSnapshot& s : sessions)
+    {
+        if(s.hostMode != UComponentGuiHostMode::Floating)
+            continue;
+        const QString prefix = QStringLiteral("ComponentGui/Floating/%1").arg(s.sessionId);
+        const QByteArray geometry = projectSettings.value(prefix + "/Geometry").toByteArray();
+        const QByteArray state = projectSettings.value(prefix + "/WindowState").toByteArray();
+        m_componentGuiService.applyFloatingState(s.sessionId, geometry, state);
+    }
+
+    const QByteArray secondaryGeometry = projectSettings.value("ComponentGui/SecondaryWindow/Geometry").toByteArray();
+    const QByteArray secondaryState = projectSettings.value("ComponentGui/SecondaryWindow/State").toByteArray();
+    if(!secondaryGeometry.isEmpty() || !secondaryState.isEmpty())
+    {
+        showComponentGuiSecondaryHostWindow();
+        if(m_componentGuiSecondaryHostWindow)
+        {
+            if(!secondaryGeometry.isEmpty())
+                m_componentGuiSecondaryHostWindow->restoreGeometry(secondaryGeometry);
+            if(!secondaryState.isEmpty())
+                m_componentGuiSecondaryHostWindow->restoreState(secondaryState);
+        }
+    }
+}
+
+QString UGEngineControlWidget::hostModeToString(UComponentGuiHostMode mode) const
+{
+    switch(mode)
+    {
+    case UComponentGuiHostMode::Mdi:
+        return QStringLiteral("mdi");
+    case UComponentGuiHostMode::Floating:
+        return QStringLiteral("floating");
+    case UComponentGuiHostMode::TabHost:
+        return QStringLiteral("tabhost");
+    case UComponentGuiHostMode::SecondaryDock:
+        return QStringLiteral("secondary_dock");
+    case UComponentGuiHostMode::Grid:
+        return QStringLiteral("grid");
+    }
+    return QStringLiteral("mdi");
+}
+
+UComponentGuiHostMode UGEngineControlWidget::hostModeFromString(const QString& mode) const
+{
+    if(mode == QStringLiteral("floating"))
+        return UComponentGuiHostMode::Floating;
+    if(mode == QStringLiteral("tabhost"))
+        return UComponentGuiHostMode::TabHost;
+    if(mode == QStringLiteral("secondary_dock"))
+        return UComponentGuiHostMode::SecondaryDock;
+    if(mode == QStringLiteral("grid"))
+        return UComponentGuiHostMode::TabHost;
+    return UComponentGuiHostMode::Mdi;
+}
+
+void UGEngineControlWidget::showComponentGuiHostMenu(UVisualControllerWidget* widget, const QPoint& globalPos)
+{
+    UComponentGuiContext context;
+    UComponentGuiHostMode mode = UComponentGuiHostMode::Mdi;
+    if(!resolveComponentGuiWidgetContext(widget, context, &mode))
+        return;
+
+    QMenu menu(this);
+    QAction* detachAction = menu.addAction("Detach");
+    QAction* attachAction = menu.addAction("Attach to MDI");
+    QAction* moveToTabHostAction = menu.addAction("Move to Tab Host...");
+    QAction* moveToSecondaryDockAction = menu.addAction("Move to Secondary Host");
+    detachAction->setEnabled(mode == UComponentGuiHostMode::Mdi ||
+                             mode == UComponentGuiHostMode::TabHost ||
+                             mode == UComponentGuiHostMode::SecondaryDock);
+    attachAction->setEnabled(mode == UComponentGuiHostMode::Floating);
+    moveToTabHostAction->setEnabled(mode != UComponentGuiHostMode::TabHost);
+    moveToSecondaryDockAction->setEnabled(mode != UComponentGuiHostMode::SecondaryDock);
+
+    QAction* chosen = menu.exec(globalPos);
+    if(chosen == detachAction)
+    {
+        m_componentGuiService.detachToFloating(context);
+        pruneEmptyTabHostSlotsForContext(context);
+        return;
+    }
+    if(chosen == attachAction)
+    {
+        m_componentGuiService.attachToMdi(context, ui->mdiArea);
+        pruneEmptyTabHostSlotsForContext(context);
+        return;
+    }
+    if(chosen == moveToSecondaryDockAction)
+    {
+        if(!moveContextToSecondaryHost(context))
+        {
+            QMessageBox::warning(this, tr("Move to Secondary Host"),
+                                 tr("Failed to move GUI to secondary host window."));
+        }
+        return;
+    }
+    if(chosen == moveToTabHostAction)
+    {
+        const QStringList hosts = componentGuiTabHostIds();
+        if(hosts.isEmpty())
+        {
+            ensureComponentGuiTabHost(QStringLiteral("MainTabHost"));
+        }
+
+        bool ok = false;
+        const QString hostId = QInputDialog::getItem(this,
+                                                     tr("Move to Tab Host"),
+                                                     tr("Host ID:"),
+                                                     componentGuiTabHostIds(),
+                                                     0,
+                                                     false,
+                                                     &ok);
+        if(!ok || hostId.trimmed().isEmpty())
+            return;
+
+        if(!moveContextToTabHost(context, hostId))
+        {
+            QMessageBox::warning(this, tr("Move to Tab Host"),
+                                 tr("Failed to move GUI to tab host '%1'.").arg(hostId));
+        }
+    }
+}
+
+bool UGEngineControlWidget::resolveComponentGuiWidgetContext(UVisualControllerWidget* widget,
+                                                             UComponentGuiContext& context,
+                                                             UComponentGuiHostMode* mode) const
+{
+    if(!widget)
+        return false;
+    if(!m_componentGuiService.tryGetContextByWidget(widget, context))
+        return false;
+    if(mode)
+    {
+        UComponentGuiHostMode resolved = UComponentGuiHostMode::Mdi;
+        if(m_componentGuiService.tryGetHostModeByWidget(widget, resolved))
+            *mode = resolved;
+    }
+    return true;
+}
+
+void UGEngineControlWidget::promptAndOpenComponentGuiTabHost()
+{
+    UComponentGuiTabHostWidget* host = ensureComponentGuiTabHost(QStringLiteral("MainTabHost"));
+    if(!host)
+        return;
+    host->show();
+    host->raise();
+    host->activateWindow();
+}
+
+void UGEngineControlWidget::startComponentGuiDrag(const UComponentGuiContext& context, QWidget* dragSource, bool detachOnIgnoredDrop)
+{
+    QDrag* drag = new QDrag(dragSource ? dragSource : this);
+    QMimeData* mime = new QMimeData();
+    mime->setData(UComponentGuiDndPayload::mimeType(), UComponentGuiDndPayload::encode(context));
+    drag->setMimeData(mime);
+    const Qt::DropAction result = drag->exec(Qt::MoveAction);
+    if(detachOnIgnoredDrop && result != Qt::MoveAction)
+    {
+        m_componentGuiService.detachToFloating(context);
+        pruneEmptyTabHostSlotsForContext(context);
+    }
+}
+
+void UGEngineControlWidget::ensureComponentGuiDragSourcesInstalled(UVisualControllerWidget* widget)
+{
+    Q_UNUSED(widget);
+}
+
+void UGEngineControlWidget::installDragFilterRecursively(QWidget* root)
+{
+    Q_UNUSED(root);
+}
+
+void UGEngineControlWidget::ensureComponentGuiQuickActionsInstalled(UVisualControllerWidget* widget)
+{
+    if(!widget)
+        return;
+
+    QWidget* panel = widget->findChild<QWidget*>(QStringLiteral("ComponentGuiQuickActionsPanel"));
+    if(!panel)
+    {
+        panel = new QWidget(widget);
+        panel->setObjectName(QStringLiteral("ComponentGuiQuickActionsPanel"));
+        panel->setStyleSheet(QStringLiteral(
+            "QWidget#ComponentGuiQuickActionsPanel {"
+            " background: rgba(40,40,40,120);"
+            " border-radius: 4px;"
+            "}"
+            "QToolButton {"
+            " color: white;"
+            " padding: 2px 6px;"
+            "}"
+        ));
+        auto* layout = new QHBoxLayout(panel);
+        layout->setContentsMargins(4, 2, 4, 2);
+        layout->setSpacing(4);
+
+        auto makeButton = [panel, layout](const QString& text, const QString& tip) -> QToolButton*
+        {
+            QToolButton* button = new QToolButton(panel);
+            button->setText(text);
+            button->setToolTip(tip);
+            layout->addWidget(button);
+            return button;
+        };
+
+        QToolButton* toMdi = makeButton(QStringLiteral("To MDI"), tr("Move to MDI area"));
+        QToolButton* toTab = makeButton(QStringLiteral("To Tab"), tr("Move to Tab Host"));
+        QToolButton* toSecondary = makeButton(QStringLiteral("To Secondary"), tr("Move to Secondary Host"));
+
+        connect(toMdi, &QToolButton::clicked, this, [this, widget]() {
+            UComponentGuiContext context;
+            if(!m_componentGuiService.tryGetContextByWidget(widget, context))
+                return;
+            m_componentGuiService.attachToMdi(context, ui->mdiArea);
+            pruneEmptyTabHostSlotsForContext(context);
+        });
+        connect(toTab, &QToolButton::clicked, this, [this, widget]() {
+            UComponentGuiContext context;
+            if(!m_componentGuiService.tryGetContextByWidget(widget, context))
+                return;
+            ensureComponentGuiTabHost(QStringLiteral("MainTabHost"));
+            moveContextToTabHost(context, QStringLiteral("MainTabHost"));
+        });
+        connect(toSecondary, &QToolButton::clicked, this, [this, widget]() {
+            UComponentGuiContext context;
+            if(!m_componentGuiService.tryGetContextByWidget(widget, context))
+                return;
+            moveContextToSecondaryHost(context);
+        });
+    }
+
+    widget->setProperty("componentGuiQuickActionsHost", true);
+    widget->installEventFilter(this);
+    positionComponentGuiQuickActions(widget);
+    panel->show();
+    panel->raise();
+}
+
+void UGEngineControlWidget::positionComponentGuiQuickActions(UVisualControllerWidget* widget)
+{
+    if(!widget)
+        return;
+    QWidget* panel = widget->findChild<QWidget*>(QStringLiteral("ComponentGuiQuickActionsPanel"));
+    if(!panel)
+        return;
+    panel->adjustSize();
+    const int margin = 8;
+    const int x = std::max(0, widget->width() - panel->width() - margin);
+    const int y = margin;
+    panel->move(x, y);
+}
+
+void UGEngineControlWidget::showComponentGuiSecondaryHostWindow()
+{
+    if(m_componentGuiSecondaryHostWindow.isNull())
+    {
+        QMainWindow* secondary = new QMainWindow(this);
+        secondary->setObjectName(QStringLiteral("ComponentGuiSecondaryHostWindow"));
+        secondary->setWindowTitle(tr("Component GUI Secondary Host"));
+        secondary->setAttribute(Qt::WA_DeleteOnClose, true);
+        secondary->setAcceptDrops(true);
+        secondary->installEventFilter(this);
+        connect(secondary, &QObject::destroyed, this, [this]() {
+            m_componentGuiSecondaryHostWindow = nullptr;
+            m_componentGuiSecondaryTabHost = nullptr;
+            m_componentGuiTabHosts.remove(QStringLiteral("Secondary"));
+            m_componentGuiService.setSecondaryHostMainWindow(nullptr);
+            m_componentGuiService.setSecondaryTabHostWidget(nullptr);
+        });
+        m_componentGuiSecondaryHostWindow = secondary;
+        m_componentGuiService.setSecondaryHostMainWindow(secondary);
+    }
+    ensureComponentGuiSecondaryTabHost();
+    m_componentGuiSecondaryHostWindow->show();
+    m_componentGuiSecondaryHostWindow->raise();
+    m_componentGuiSecondaryHostWindow->activateWindow();
+}
+
+bool UGEngineControlWidget::handleDropToSecondaryHost(const QMimeData* mimeData)
+{
+    UComponentGuiContext context;
+    QString sourceHostId;
+    int sourceIndex = -1;
+    int sourceCol = -1;
+    if(!UComponentGuiDndPayload::decode(mimeData, context, sourceHostId, sourceIndex, sourceCol))
+        return false;
+    Q_UNUSED(sourceCol);
+
+    if(!moveContextToSecondaryHost(context))
+        return false;
+    Q_UNUSED(sourceHostId);
+    Q_UNUSED(sourceIndex);
+    return true;
+}
+
+bool UGEngineControlWidget::handleDropToTabHost(const QMimeData* mimeData, const QString& hostId)
+{
+    UComponentGuiContext context;
+    QString sourceHostId;
+    int sourceIndex = -1;
+    int sourceCol = -1;
+    if(!UComponentGuiDndPayload::decode(mimeData, context, sourceHostId, sourceIndex, sourceCol))
+        return false;
+    Q_UNUSED(sourceCol);
+
+    if(!moveContextToTabHost(context, hostId))
+        return false;
+    Q_UNUSED(sourceHostId);
+    Q_UNUSED(sourceIndex);
+    return true;
+}
+
+QString UGEngineControlWidget::resolveTabHostDropTargetAtCursor() const
+{
+    const QPoint cursorPos = QCursor::pos();
+    QWidget* const underCursor = QApplication::widgetAt(cursorPos);
+    auto belongsTo = [](QWidget* root, QWidget* candidate) -> bool
+    {
+        QWidget* current = candidate;
+        while(current)
+        {
+            if(current == root)
+                return true;
+            current = current->parentWidget();
+        }
+        return false;
+    };
+
+    for(auto it = m_componentGuiTabHosts.constBegin(); it != m_componentGuiTabHosts.constEnd(); ++it)
+    {
+        if(it.value().isNull())
+            continue;
+        QWidget* hostWidget = it.value().data();
+        if(underCursor && belongsTo(hostWidget, underCursor))
+            return it.key();
+        const QRect globalRect(hostWidget->mapToGlobal(QPoint(0, 0)), hostWidget->size());
+        if(globalRect.contains(cursorPos))
+            return it.key();
+    }
+    return QString();
+}
+
+bool UGEngineControlWidget::isCursorOverSecondaryHost() const
+{
+    if(m_componentGuiSecondaryHostWindow.isNull())
+        return false;
+
+    const QPoint cursorPos = QCursor::pos();
+    QWidget* const underCursor = QApplication::widgetAt(cursorPos);
+    auto belongsTo = [](QWidget* root, QWidget* candidate) -> bool
+    {
+        QWidget* current = candidate;
+        while(current)
+        {
+            if(current == root)
+                return true;
+            current = current->parentWidget();
+        }
+        return false;
+    };
+
+    QWidget* secondary = m_componentGuiSecondaryHostWindow.data();
+    if(underCursor && belongsTo(secondary, underCursor))
+        return true;
+    const QRect secondaryRect(secondary->mapToGlobal(QPoint(0, 0)), secondary->size());
+    return secondaryRect.contains(cursorPos);
 }
 
 void UGEngineControlWidget::on_actionAbout_triggered()
@@ -1625,8 +2826,8 @@ void UGEngineControlWidget::updateRecentConfigsMenu()
 {
     ui->menuRecentConfigs->clear();
 
-    QSettings settings("NeuroModeler", "NeuroModeler");
-    QStringList paths = settings.value("RecentConfigs").toStringList();
+    QSettings registrySettings("NeuroModeler", "NeuroModeler");
+    QStringList paths = registrySettings.value("RecentConfigs").toStringList();
 
     if (paths.isEmpty())
     {
@@ -1653,13 +2854,13 @@ void UGEngineControlWidget::addToRecentConfigs(const QString& path)
     if (canonical.isEmpty())
         return;
 
-    QSettings settings("NeuroModeler", "NeuroModeler");
-    QStringList paths = settings.value("RecentConfigs").toStringList();
+    QSettings registrySettings("NeuroModeler", "NeuroModeler");
+    QStringList paths = registrySettings.value("RecentConfigs").toStringList();
     paths.removeAll(canonical);
     paths.prepend(canonical);
     while (paths.size() > kMaxRecentConfigs)
         paths.removeLast();
-    settings.setValue("RecentConfigs", paths);
+    registrySettings.setValue("RecentConfigs", paths);
     updateRecentConfigsMenu();
 }
 

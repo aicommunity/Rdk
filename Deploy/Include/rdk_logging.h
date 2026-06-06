@@ -170,7 +170,7 @@ inline void EmitToGlog(int msg_level, const std::string& text)
       LOG(INFO) << text;
       break;
     case RDK_EX_DEBUG:
-      VLOG(1) << text;
+      LOG(INFO) << "[DEBUG] " << text;
       break;
     case RDK_EX_APP:
       LOG(INFO) << "[APP] " << text;

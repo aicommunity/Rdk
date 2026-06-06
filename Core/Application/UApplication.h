@@ -4,7 +4,9 @@
 #include "UAppCore.h"
 #include "UProject.h"
 #include <memory>
+#include <string>
 #include <unordered_map>
+#include <vector>
 #include <ctime>
 
 #ifndef __BORLANDC__
@@ -45,6 +47,13 @@ struct StandartXMLInCatalog
 std::string XMLName;
 /// Имя xml файла
 std::string XMLDescription;
+};
+
+/// Read-only snapshot of glog directories for consumers (e.g. LLM log tail).
+struct ApplicationLogReadPaths {
+    std::vector<std::string> directories;
+    std::string base_name;
+    std::time_t session_start_unix = 0;
 };
 
 class RDK_LIB_TYPE UApplication: public UAppController
@@ -341,6 +350,9 @@ bool SetDebugMode(bool value);
 /// Текущий каталог логов (с учетом переопределения в проекте)
 std::string CalcCurrentLogDir(void) const;
 
+/// Directories and session metadata for read-only log tail consumers (does not affect logging).
+ApplicationLogReadPaths GetApplicationLogReadPaths(void) const;
+
 /// Флаг, выставляется если включен режим тестирования
 bool IsTestMode(void) const;
 
@@ -443,6 +455,17 @@ void ProcessCommandLineArgs(int argc, char **argv);
 /// Создает проект (через сохранение и открытие)
 virtual bool CreateProject(const std::string &file_name, RDK::TProjectConfig &project_config);
 virtual bool CreateProject(const std::string &file_name, const std::string &model_classname);
+
+/// Default configs root (Configs/ or per-user subfolder), same rules as File → New simple project.
+std::string GetDefaultConfigsDirectory() const;
+/// Resolves project.ini for a new configuration; optionally creates Autocreate+timestamp under parent.
+std::string PrepareNewProjectIniPath(bool autocreate_subdirectory = true,
+                                    const std::string& parent_directory = "",
+                                    std::string* err_out = nullptr) const;
+/// File-menu style new project: default configs + optional Autocreate subfolder + CreateProject.
+bool CreateAutocreatedProject(const std::string& model_classname = "Model",
+                              bool autocreate_subdirectory = true,
+                              const std::string& parent_directory = "");
 
 /// Обновляет проект по новой конфигурации
 virtual bool UpdateProject(RDK::TProjectConfig &project_config);
@@ -571,7 +594,7 @@ void ApplyCliLogOverrides(const boost::program_options::variables_map& vm);
 #endif
 void RegisterChannelOverrideToken(const std::string& token, LogRoutingOverrides& target);
 int ParseSeverityToken(const std::string& token, int fallback) const;
-int DetermineBaseLogLevel(bool events_log_mode, bool debug_mode) const;
+int DetermineBaseLogLevel(bool debug_mode) const;
 int ResolveChannelLevel(int channel_index, int base_level) const;
 int ResolveVerbosityLevel(int base_level) const;
 

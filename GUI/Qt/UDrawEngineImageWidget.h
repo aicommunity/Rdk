@@ -4,6 +4,7 @@
 #include "rdk_application.h"
 #include "UComponentsListWidget.h"
 #include "UClassDescriptionDisplay.h"
+#include "UComponentGuiContext.h"
 
 #include <QLabel>
 #include <QMouseEvent>
@@ -101,6 +102,7 @@ signals:
     void viewLinks(QString componentName);
     void createLinks(QString firstComponentName, QString secondComponentName);
     void switchLinks(QString firstComponentName, QString secondComponentName);
+    void openComponentGuiRequested(const UComponentGuiContext& context);
 
 private:
     //некоторые события контекстного меню

@@ -24,6 +24,7 @@
 #include <QCursor>
 #include <limits>
 #include "../../Deploy/Include/rdk_init.h"
+#include "../../Deploy/Include/rdk_engine_support.h"
 #include "../Core/Engine/UEngine.h"
 #include "../Core/Engine/UNet.h"
 #include <QMessageBox>
@@ -1170,11 +1171,12 @@ void UModernDiagramScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             {
                 try
                 {
-                    RDK::UEPtr<RDK::UContainer> model = RDK::GetModel();
-                    if(model)
+                    RDK::UELockPtr<RDK::UContainer> modelLock = RDK::GetModelLock();
+                    if(modelLock)
                     {
+                        RDK::UContainer* model = modelLock.Get();
                         RDK::UEPtr<RDK::UNet> srcNet = RDK::dynamic_pointer_cast<RDK::UNet>(
-                            model->GetComponentL(fullSrc.toStdString(), true));
+                            model->GetComponentL(fullSrc.toUtf8().constData(), true));
                         if(srcNet && srcNet->CheckPropertyAlias(m_owner->m_dragSourcePort->name.toStdString()) &&
                            srcNet->CheckPropertyAlias(targetPort->name.toStdString()))
                         {

@@ -1,9 +1,13 @@
 # Tests for the logging system
 add_executable(Test_Logging_Sinks Test_Logging_Sinks.cpp)
 
+target_sources(Test_Logging_Sinks PRIVATE
+    ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/RdkDummyLibraries.cpp
+)
+
 target_include_directories(Test_Logging_Sinks PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../../Deploy/Include
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../../Core
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../../Deploy/Include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../../Core
 )
 
 target_link_libraries(Test_Logging_Sinks PRIVATE
