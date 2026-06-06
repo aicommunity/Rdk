@@ -316,3 +316,154 @@ The `Core/System` module provides cross-platform system abstractions for working
 
 - [Architecture.md](Architecture.md) - general architecture
 - [Threading-Guide.md](Guides/Threading-Guide.md) - threading guide
+
+```mermaid
+classDiagram
+    class UGenericMutex {
+        <<abstract>>
+        +Lock() bool
+        +Unlock() bool
+        +TryLock() bool
+    }
+    
+    class UGenericMutexQt {
+        #QMutex* Mutex
+        +Lock() bool
+        +Unlock() bool
+    }
+    
+    class UGenericMutexWin {
+        #CRITICAL_SECTION* CriticalSection
+        +Lock() bool
+        +Unlock() bool
+    }
+    
+    class UGenericMutexGcc {
+        #pthread_mutex_t* Mutex
+        +Lock() bool
+        +Unlock() bool
+    }
+    
+    class UGenericMutexAnsi {
+        #void* MutexData
+        +Lock() bool
+        +Unlock() bool
+    }
+    
+    class UGenericEvent {
+        <<abstract>>
+        +Wait(timeout) bool
+        +Signal() bool
+        +Reset() bool
+    }
+    
+    class UGenericEventQt {
+        #QWaitCondition* Condition
+        +Wait(timeout) bool
+        +Signal() bool
+    }
+    
+    class UGenericEventWin {
+        #HANDLE Event
+        +Wait(timeout) bool
+        +Signal() bool
+    }
+    
+    class UGenericEventGcc {
+        #pthread_cond_t* Condition
+        +Wait(timeout) bool
+        +Signal() bool
+    }
+    
+    class UGenericMutexExclusiveLocker {
+        #UGenericMutex* Mutex
+        +Lock() void
+        +Unlock() void
+    }
+    
+    class UGenericMutexSharedLocker {
+        #UGenericMutex* Mutex
+        +Lock() void
+        +Unlock() void
+    }
+    
+    class UDllLoader {
+        <<abstract>>
+        +Load(string) bool*
+        +Unload() bool*
+        +GetFunction(string) void*
+    }
+    
+    class UDllLoaderQt {
+        #QLibrary* Library
+        +Load(string) bool
+        +GetFunction(string) void*
+    }
+    
+    class UDllLoaderWin {
+        #HMODULE Module
+        +Load(string) bool
+        +GetFunction(string) void*
+    }
+    
+    class UDllLoaderGcc {
+        #void* Handle
+        +Load(string) bool
+        +GetFunction(string) void*
+    }
+    
+    class USharedMemoryLoader {
+        <<abstract>>
+        +Create(string, size) bool*
+        +Attach(string) bool*
+        +Detach() bool*
+    }
+    
+    UGenericMutex <|-- UGenericMutexQt
+    UGenericMutex <|-- UGenericMutexWin
+    UGenericMutex <|-- UGenericMutexGcc
+    UGenericMutex <|-- UGenericMutexAnsi
+    UGenericEvent <|-- UGenericEventQt
+    UGenericEvent <|-- UGenericEventWin
+    UGenericEvent <|-- UGenericEventGcc
+    UDllLoader <|-- UDllLoaderQt
+    UDllLoader <|-- UDllLoaderWin
+    UDllLoader <|-- UDllLoaderGcc
+```
+
+```mermaid
+sequenceDiagram
+    participant Thread1 as Thread 1
+    participant Mutex as UGenericMutex
+    participant Thread2 as Thread 2
+    
+    Thread1->>Mutex: Lock()
+    Mutex-->>Thread1: Locked
+    
+    Thread2->>Mutex: Lock()
+    Note over Mutex: Blocked
+    
+    Thread1->>Mutex: Critical section
+    Thread1->>Mutex: Unlock()
+    Mutex-->>Thread2: Locked
+    Thread2->>Mutex: Critical section
+    Thread2->>Mutex: Unlock()
+```
+
+```mermaid
+sequenceDiagram
+    participant Loader as UDllLoader
+    participant System as OS
+    participant Library as DLL/SO
+    
+    Loader->>System: LoadLibrary(path)
+    System->>Library: Load DLL/SO
+    Library-->>System: Handle
+    System-->>Loader: Handle
+    
+    Loader->>System: GetProcAddress(handle, "FunctionName")
+    System-->>Loader: Function pointer
+    
+    Loader->>Loader: Store function pointer
+    Loader-->>Loader: Library loaded
+```

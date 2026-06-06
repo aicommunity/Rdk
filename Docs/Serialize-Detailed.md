@@ -250,3 +250,120 @@ The `Core/Serialize` module provides serialization system for data and component
 
 - [Architecture.md](Architecture.md) - general architecture
 - [Engine-Detailed.md](Engine-Detailed.md) - engine detailed documentation
+
+```mermaid
+classDiagram
+    class USerStorage {
+        <<abstract>>
+        +Create(string) bool*
+        +SelectUp() bool*
+        +AddNode(string) bool*
+        +GetNode(string) bool*
+        +Read(string) string*
+        +Write(string, string) bool*
+    }
+    
+    class USerStorageXML {
+        #xmlParser* Parser
+        #xmlNode* CurrentNode
+        +Create(string) bool
+        +SelectUp() bool
+        +AddNode(string) bool
+        +GetNode(string) bool
+        +Read(string) string
+        +Write(string, string) bool
+        +SaveToFile(string) bool
+        +LoadFromFile(string) bool
+    }
+    
+    class USerStorageBinary {
+        #fstream* Stream
+        #bool Writing
+        +Create(string) bool
+        +SelectUp() bool
+        +AddNode(string) bool
+        +GetNode(string) bool
+        +Read(string) string
+        +Write(string, string) bool
+        +SaveToFile(string) bool
+        +LoadFromFile(string) bool
+    }
+    
+    class UXMLStdSerialize {
+        +Serialize(USerStorageXML, T) bool
+        +Deserialize(USerStorageXML, T) bool
+    }
+    
+    class UBinaryStdSerialize {
+        +Serialize(USerStorageBinary, T) bool
+        +Deserialize(USerStorageBinary, T) bool
+    }
+    
+    class UIOStream {
+        +Read(istream, T) bool
+        +Write(ostream, T) bool
+    }
+    
+    USerStorage <|-- USerStorageXML
+    USerStorage <|-- USerStorageBinary
+    USerStorageXML --> UXMLStdSerialize
+    USerStorageBinary --> UBinaryStdSerialize
+    UIOStream --> USerStorage
+```
+
+```mermaid
+sequenceDiagram
+    participant Component as UComponent
+    participant SerStorage as USerStorage
+    participant XMLSer as UXMLStdSerialize
+    participant File as XML File
+    
+    Component->>SerStorage: Save(component)
+    SerStorage->>SerStorage: Create("Component")
+    SerStorage->>SerStorage: AddNode("Name")
+    SerStorage->>XMLSer: Serialize(name)
+    XMLSer->>SerStorage: Write("ComponentName")
+    SerStorage->>SerStorage: AddNode("Properties")
+    
+    loop Для каждого свойства
+        Component->>SerStorage: GetProperty(name)
+        SerStorage->>SerStorage: AddNode(property_name)
+        SerStorage->>XMLSer: Serialize(property_value)
+        XMLSer->>SerStorage: Write(value)
+    end
+    
+    SerStorage->>File: SaveToFile(path)
+    File-->>SerStorage: Success
+    SerStorage-->>Component: Serialization complete
+```
+
+```mermaid
+sequenceDiagram
+    participant File as XML File
+    participant SerStorage as USerStorage
+    participant Factory as UComponentFactory
+    participant Component as UComponent
+    participant XMLSer as UXMLStdSerialize
+    
+    File->>SerStorage: LoadFromFile(path)
+    SerStorage->>SerStorage: Load XML structure
+    SerStorage->>SerStorage: GetNode("Component")
+    SerStorage->>SerStorage: Read("ClassName")
+    SerStorage->>Factory: CreateComponent(className)
+    Factory->>Component: new Component()
+    Component->>Component: ADefault()
+    
+    SerStorage->>SerStorage: GetNode("Properties")
+    
+    loop Для каждого свойства
+        SerStorage->>SerStorage: GetNode(property_name)
+        SerStorage->>XMLSer: Deserialize(value)
+        XMLSer-->>SerStorage: value
+        SerStorage->>Component: SetProperty(name, value)
+    end
+    
+    Component->>Component: ABuild()
+    Component-->>Factory: Component ready
+    Factory-->>SerStorage: Component created
+    SerStorage-->>File: Deserialization complete
+```

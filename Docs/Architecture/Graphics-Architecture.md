@@ -228,4 +228,68 @@ The graphics system integrates with GUI through widgets:
 - [GUI Overview](../../../Docs/GUI/Overview.md)
 - [Style System](../../../Docs/GUI/Style-System.md)
 - [Rdk Core Overview](Overview.md)
-- [Детальная документация Graphics](../Graphics-Detailed.md)
+- [Detailed documentation Graphics](../Graphics-Detailed.md)
+
+```mermaid
+classDiagram
+    class UAGraphics {
+        <<abstract>>
+        +SetPenColor()
+        +SetPenWidth()
+        +Line()
+        +Rect()
+        +Circle()
+        +Text()
+    }
+    
+    class UGraphics {
+        +Canvas
+        +Fonts
+        +SetCanvas()
+    }
+    
+    class UBitmap {
+        +GetWidth()
+        +GetHeight()
+        +GetData()
+    }
+    
+    class UDrawEngine {
+        +GEngine
+        +Descriptions
+        +Links
+        +Draw()
+        +Paint()
+    }
+    
+    UAGraphics <|-- UGraphics
+    UGraphics --> UBitmap
+    UDrawEngine --> UAGraphics
+```
+
+```mermaid
+sequenceDiagram
+    participant Widget as GUI Widget
+    participant DrawEngine as UDrawEngine
+    participant Graphics as UGraphics
+    participant Bitmap as UBitmap
+    
+    Widget->>DrawEngine: Draw()
+    DrawEngine->>DrawEngine: DrawBackground()
+    DrawEngine->>DrawEngine: Для каждого компонента: Paint()
+    DrawEngine->>Graphics: SetPenColor(), SetPenWidth()
+    DrawEngine->>Graphics: Rect(), Circle(), Text()
+    Graphics->>Bitmap: Запись пикселей
+    DrawEngine->>DrawEngine: DrawLinks()
+    DrawEngine->>Graphics: Line() для соединений
+    Graphics-->>Widget: Готовое изображение
+```
+
+```mermaid
+flowchart LR
+    Component["Компонент<br/>UComponent"] --> Description["Description<br/>UGEDescription"]
+    Description --> DrawEngine["UDrawEngine<br/>Paint"]
+    DrawEngine --> Graphics["UGraphics<br/>Примитивы"]
+    Graphics --> Bitmap["UBitmap<br/>Пиксели"]
+    Bitmap --> Display["Отображение<br/>GUI Widget"]
+```

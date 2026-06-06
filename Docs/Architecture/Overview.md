@@ -300,3 +300,44 @@ Rdk Core does not depend on other project libraries but uses:
 
 - [Complete Rdk Documentation Index](../../../Docs/Submodules/Rdk-Index.md) - structured index of all Rdk documentation
 - [Navigation Map](../../../Docs/Submodules/Navigation-Map.md) - visual documentation map
+
+```mermaid
+flowchart TB
+    subgraph "Core/Application"
+        App[UApplication]
+        EngineCtrl[UEngineControl]
+        RPC[URpcDispatcher]
+    end
+    
+    subgraph "Core/Engine"
+        Engine[UEngine]
+        Component[UComponent]
+        Storage[UStorage]
+        Env[UEnvironment]
+    end
+    
+    subgraph "Core/Graphics"
+        Graphics[UGraphics]
+        DrawEngine[UDrawEngine]
+    end
+    
+    subgraph "Core/Serialize"
+        Serialize[USerStorage]
+    end
+    
+    subgraph "Core/System"
+        System[System Abstractions]
+    end
+    
+    App --> EngineCtrl
+    EngineCtrl --> Engine
+    Engine --> Storage
+    Engine --> Env
+    Engine --> Component
+    Component --> Graphics
+    Component --> Serialize
+    App --> RPC
+    RPC --> EngineCtrl
+    Graphics --> DrawEngine
+    Engine --> System
+```

@@ -832,3 +832,134 @@ void SetupLogging(const std::string& log_directory) {
 - [Exception Handling](Utilities-Reference.md#uexception---exception-system) - exception handling
 - [GUI Widgets Reference](../../Docs/GUI/Widgets-Reference.md) - ULoggerWidget
 - [Engine Architecture](../../Docs/Rdk-Core/Engine-Architecture.md) - logging usage in components
+
+```mermaid
+classDiagram
+    class ILogSink {
+        <<interface>>
+        +Consume(LogItem) void
+        +Flush() void
+    }
+    
+    class UExceptionLogger {
+        -bool DebugMode
+        -int ChannelIndex
+        -UEnvironment* Environment
+        -PExceptionHandler ExceptionHandler
+        -PExceptionPreprocessor ExceptionPreprocessor
+        -PExceptionPostprocessor ExceptionPostprocessor
+        +GetDebugMode() bool
+        +SetDebugMode(bool) bool
+        +SetChannelIndex(int) bool
+        +RegisterEnvironment(UEnvironment*) bool
+        +ProcessException(UException) void
+        +LogMessage(int, string) void
+        +LogMessageEx(int, string, string) void
+        +IsInitializationMode() bool
+        +SetInitializationMode(bool) void
+    }
+    
+    class UFileLogSink {
+        -string TargetDirectory
+        -string BaseName
+        -bool Enabled
+        +Instance() UFileLogSink&
+        +Configure(string, string) void
+        +Disable() void
+        +Consume(LogItem) void
+    }
+    
+    class UJsonLogSink {
+        -string TargetPath
+        +Create(string) shared_ptr
+        +Consume(LogItem) void
+    }
+    
+    class UGlogMirrorSink {
+        -string TargetDirectory
+        -string BaseName
+        -map~int,FileHandle~ LevelFiles
+        +Instance() UGlogMirrorSink&
+        +Configure(string, string, time_t) void
+        +Consume(LogItem) void
+    }
+    
+    class UGlogGuiSink {
+        -deque~UGlogGuiMessage~ Messages
+        -size_t MaxMessages
+        +Instance() UGlogGuiSink&
+        +StartSession(string, string, time_t) void
+        +ReadMessages(size_t) vector
+        +Clear() void
+    }
+    
+    ILogSink <|.. UFileLogSink
+    ILogSink <|.. UJsonLogSink
+    ILogSink <|.. UGlogMirrorSink
+    ILogSink <|.. UGlogGuiSink
+    
+    UExceptionLogger --> ILogSink: uses
+    UExceptionLogger --> UEnvironment: регистрация
+```
+
+```mermaid
+flowchart TB
+    Start[LogMessage/ProcessException] --> CheckChannel{Канал}
+    CheckChannel -->|RDK_SYS_MESSAGE| SysChannel[Системный канал]
+    CheckChannel -->|RDK_GLOB_MESSAGE| GlobChannel[Глобальный канал]
+    CheckChannel -->|0..N| UserChannel[Пользовательский канал]
+    
+    SysChannel --> SysLogger[SystemLogger]
+    GlobChannel --> GlobLogger[GlobalLogger]
+    UserChannel --> UserLogger["LoggerList[channel]"]
+    
+    SysLogger --> Preprocessor{ExceptionPreprocessor?}
+    GlobLogger --> Preprocessor
+    UserLogger --> Preprocessor
+    
+    Preprocessor -->|Да| Preprocess[Processing исключения]
+    Preprocessor -->|Нет| CheckInit{IsInitializationMode?}
+    Preprocess --> CheckInit
+    
+    CheckInit -->|Да и FATAL| Downgrade[Понижение до ERROR]
+    CheckInit -->|Нет или не FATAL| WriteLog[WriteLog]
+    
+    Downgrade --> WriteLog
+    WriteLog --> Sinks[Log Sinks]
+    Sinks --> FileSink[UFileLogSink]
+    Sinks --> JsonSink[UJsonLogSink]
+    Sinks --> MirrorSink[UGlogMirrorSink]
+    Sinks --> GuiSink[UGlogGuiSink]
+    
+    WriteLog --> Postprocessor{ExceptionPostprocessor?}
+    Postprocessor -->|Да| Postprocess[Постобработка]
+    Postprocess --> End[Завершение]
+    Postprocessor -->|Нет| End
+```
+
+```mermaid
+sequenceDiagram
+    participant Component as UComponent
+    participant Logger as UExceptionLogger
+    participant Preprocessor as ExceptionPreprocessor
+    participant Sink as Log Sink
+    participant Postprocessor as ExceptionPostprocessor
+    
+    Component->>Component: throw EStringError("Error message")
+    Component->>Logger: ProcessException(exception)
+    Logger->>Logger: Проверка IsInitializationMode()
+    
+    alt Initialization mode и FATAL
+        Logger->>Logger: Понижение до ERROR
+    end
+    
+    Logger->>Preprocessor: ExceptionPreprocessor(exception)
+    Preprocessor-->>Logger: Обработанное исключение
+    
+    Logger->>Logger: WriteLog(severity, message)
+    Logger->>Sink: Consume(LogItem)
+    Sink->>Sink: Запись в файл/GUI/JSON
+    
+    Logger->>Postprocessor: ExceptionPostprocessor(exception)
+    Postprocessor-->>Logger: Processing завершена
+```

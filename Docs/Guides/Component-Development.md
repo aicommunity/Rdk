@@ -1043,3 +1043,61 @@ protected:
 - [Engine Architecture](../../../Docs/Rdk-Core/Engine-Architecture.md) - engine architecture
 - [Property System](../Diagrams/Property-System.md) - property system
 - [Testing Strategy](../../../Docs/Performance-And-Testing/Testing-Strategy.md) - testing strategy
+
+```mermaid
+flowchart TB
+    Start[Start разработки] --> Design[Проектирование]
+    Design --> Create[Creation класса]
+    Create --> Properties[Определение свойств]
+    Properties --> Lifecycle[Реализация жизненного цикла]
+    Lifecycle --> Test[Тестирование]
+    Test --> Register[Регистрация в библиотеке]
+    Register --> Document[Документирование]
+    Document --> End[Завершение]
+    
+    style Start fill:#e1f5ff
+    style End fill:#ffe1f5
+```
+
+```mermaid
+classDiagram
+    class UProperty {
+        <<template T, Owner, Type>>
+        +GetName() string
+        +GetType() PropertyType
+        +operator()() T&
+        +operator=(T) UProperty&
+    }
+    
+    class UIProperty {
+        <<abstract>>
+        +GetMemoryArea() void*
+        +GetLanguageType() type_info
+    }
+    
+    UIProperty <|-- UProperty
+```
+
+```mermaid
+sequenceDiagram
+    participant Parent as CompositeFilter
+    participant LowPass as LowPassFilter
+    participant HighPass as HighPassFilter
+    
+    Parent->>Parent: ABuild()
+    Parent->>LowPass: CreateComponent()
+    Parent->>HighPass: CreateComponent()
+    Parent->>LowPass: Build()
+    Parent->>HighPass: Build()
+    Parent->>Parent: CreateLink()
+    
+    Note over Parent: При вычислении
+    Parent->>Parent: ACalculate()
+    Parent->>LowPass: Calculate()
+    LowPass->>LowPass: Processing данных
+    LowPass-->>Parent: Результат через связь
+    Parent->>HighPass: Calculate()
+    HighPass->>HighPass: Processing данных
+    HighPass-->>Parent: Результат через связь
+    Parent->>Parent: Output обновлен
+```

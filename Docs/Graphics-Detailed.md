@@ -434,3 +434,222 @@ The `Core/Graphics` module provides graphics and visualization system for Rdk Co
 
 - [Architecture.md](Architecture.md) - general architecture
 - [Engine-Detailed.md](Engine-Detailed.md) - engine detailed documentation
+
+```mermaid
+classDiagram
+    class UAGraphics {
+        <<abstract>>
+        #UColorT PenColor
+        #UColorT BrushColor
+        #int PenWidth
+        #int PenX, PenY
+        +SetPenColor(UColorT) void
+        +SetBrushColor(UColorT) void
+        +SetPenWidth(int) void
+        +MoveTo(int, int) void
+        +Pixel(int, int) void*
+        +Line(int, int, int, int) void*
+        +Circle(int, int, int, bool) void*
+        +Rect(int, int, int, int, bool) void*
+    }
+    
+    class UGraphics {
+        #map~string,UBitmapFont~ Fonts
+        #UBitmap* Canvas
+        +GetCanvas() UBitmap*
+        +SetCanvas(UBitmap*) bool
+        +Pixel(int, int, bool) void
+        +Line(int, int, int, int) void
+        +LineTo(int, int) void
+        +Circle(int, int, int, bool) void
+        +Sector(int, int, int, float, float, bool) void
+        +Ellipse(int, int, int, int, bool) void
+        +Rect(int, int, int, int, bool) void
+        +Triangle(int, int, int, int, int, int, bool) void
+        +Fill(int, int, UColorT) void
+        +Text(int, int, string) void
+    }
+    
+    class UDrawEngine {
+        #vector~UGEDescription~ Elements
+        #vector~UGELink~ Links
+        +DrawComponent(UContainer, UGEDescription) void
+        +DrawLink(UGELink) void
+        +UpdateView() void
+        +GetElementAt(int, int) UGEDescription*
+    }
+    
+    class UBitmapParam {
+        +int Width
+        +int Height
+        +UBMColorModel ColorModel
+    }
+    
+    class UBitmap {
+        #UBColor* Data
+        #int Length
+        #int ByteLength
+        #int MemoryLength
+        #int ChannelOffset[4]
+        +GetWidth() int
+        +GetHeight() int
+        +GetColorModel() UBMColorModel
+        +GetData() UBColor*
+        +Resize(int, int) bool
+        +Clear(UColorT) void
+        +Copy(UBitmap, int, int) bool
+        +GetPixel(int, int) UColorT
+        +SetPixel(int, int, UColorT) void
+    }
+    
+    class UBitmapVector {
+        #vector~UBitmap*~ Bitmaps
+        +AddBitmap(UBitmap*) void
+        +GetBitmap(int) UBitmap*
+        +GetCount() int
+        +Clear() void
+    }
+    
+    class UAFont {
+        <<abstract>>
+        +GetHeight() int
+        +GetWidth(string) int
+        +DrawText(UGraphics, int, int, string) void*
+    }
+    
+    class UBitmapFont {
+        #UBitmapFontSymbol* Symbols
+        #int SymbolCount
+        +GetSymbol(char) UBitmapFontSymbol*
+        +DrawText(UGraphics, int, int, string) void
+    }
+    
+    class UVectorFont {
+        #UVectorFontSymbol* Symbols
+        #int SymbolCount
+        +GetSymbol(char) UVectorFontSymbol*
+        +DrawText(UGraphics, int, int, string) void
+    }
+    
+    class UFontCollection {
+        #map~string,UAFont*~ Fonts
+        +AddFont(string, UAFont) bool
+        +GetFont(string) UAFont*
+        +RemoveFont(string) bool
+    }
+    
+    class UGraphicsIO {
+        +LoadFromFile(string) bool
+        +SaveToFile(string) bool
+    }
+    
+    class UGraphicsXMLSerialize {
+        +Serialize(USerStorageXML, UGraphics) bool
+        +Deserialize(USerStorageXML, UGraphics) bool
+    }
+    
+    class UGraphicsBinarySerialize {
+        +Serialize(USerStorageBinary, UGraphics) bool
+        +Deserialize(USerStorageBinary, UGraphics) bool
+    }
+    
+    UAGraphics <|-- UGraphics
+    UBitmapParam <|-- UBitmap
+    UAFont <|-- UBitmapFont
+    UAFont <|-- UVectorFont
+    UFontCollection "1" o-- "*" UAFont
+    UGraphics "1" o-- "1" UBitmap
+    UGraphics "1" o-- "*" UBitmapFont
+    UDrawEngine --> UGraphics
+    UDrawEngine --> UBitmap
+```
+
+```mermaid
+sequenceDiagram
+    participant Component as UContainer
+    participant DrawEngine as UDrawEngine
+    participant Graphics as UGraphics
+    participant Bitmap as UBitmap
+    participant Font as UBitmapFont
+    
+    Component->>DrawEngine: DrawComponent(component)
+    DrawEngine->>Graphics: SetCanvas(bitmap)
+    DrawEngine->>Graphics: SetPenColor(color)
+    DrawEngine->>Graphics: SetBrushColor(color)
+    DrawEngine->>Graphics: Rect(x, y, width, height)
+    Graphics->>Bitmap: SetPixel(x, y, color)
+    Graphics->>Bitmap: DrawLine(x1, y1, x2, y2)
+    DrawEngine->>Graphics: Text(x, y, component->Name)
+    Graphics->>Font: DrawText(graphics, x, y, text)
+    Font->>Graphics: DrawSymbol(symbol)
+    Graphics->>Bitmap: Update pixels
+    Bitmap-->>Graphics: Updated
+    Graphics-->>DrawEngine: Drawing complete
+    DrawEngine-->>Component: Component drawn
+```
+
+```mermaid
+classDiagram
+    class UAFont {
+        <<abstract>>
+        #int FontHeight
+        #string FontName
+        +GetHeight() int
+        +GetWidth(string) int
+        +DrawText(UGraphics, int, int, string) void*
+    }
+    
+    class UBitmapFontSymbol {
+        #UBitmap* SymbolBitmap
+        #int Width
+        #int Height
+        +GetBitmap() UBitmap*
+        +GetWidth() int
+        +GetHeight() int
+    }
+    
+    class UBitmapFont {
+        #UBitmapFontSymbol* Symbols
+        #int SymbolCount
+        #int FirstChar
+        #int LastChar
+        +GetSymbol(char) UBitmapFontSymbol*
+        +DrawText(UGraphics, int, int, string) void
+        +LoadFromFile(string) bool
+    }
+    
+    class UVectorFontSymbol {
+        #vector~Point~ Points
+        #int Width
+        +GetPoints() vector~Point~
+        +GetWidth() int
+    }
+    
+    class UVectorFont {
+        #UVectorFontSymbol* Symbols
+        #int SymbolCount
+        +GetSymbol(char) UVectorFontSymbol*
+        +DrawText(UGraphics, int, int, string) void
+    }
+    
+    class UFontCollection {
+        #map~string,UAFont*~ Fonts
+        +AddFont(string, UAFont) bool
+        +GetFont(string) UAFont*
+        +RemoveFont(string) bool
+        +Clear() void
+    }
+    
+    class UBitmapFontCollection {
+        #map~string,UBitmapFont~ BitmapFonts
+        +AddBitmapFont(string, UBitmapFont) bool
+        +GetBitmapFont(string) UBitmapFont*
+    }
+    
+    UAFont <|-- UBitmapFont
+    UAFont <|-- UVectorFont
+    UBitmapFont "1" o-- "*" UBitmapFontSymbol
+    UVectorFont "1" o-- "*" UVectorFontSymbol
+    UFontCollection "1" o-- "*" UAFont
+    UBitmapFontCollection "1" o-- "*" UBitmapFont
+```

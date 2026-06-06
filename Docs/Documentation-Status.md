@@ -15,12 +15,14 @@
 | Метрика | Значение |
 |---------|----------|
 | Markdown-файлов в `Rdk/Docs/` | **45** |
-| Файлов с секцией `## EN` | **44** (98%) |
+| Файлов с секцией `## EN
+
+` | **44** (98%) |
 | Файлов RU-only | **1** (уточнить при следующем аудите) |
-| Битых исходящих ссылок (зона Rdk/Docs) | **~20** — см. Link-Health-Report |
+| Битых исходящих ссылок (зона Rdk/Docs) | **~20** — see Link-Health-Report |
 | Битых входящих ссылок из `Docs/` | **~50+** — неверные относительные пути к `Rdk/Docs/` |
 
-**Прогресс:** обзорная и детальная документация ядра **создана**; основные пробелы — ссылочная целостность, синхронизация API-справочников с заголовками `Rdk/Core/`, отсутствие единого шаблона обновления при изменении кода.
+**Прогресс:** обзорная и детальная documentation ядра **создана**; основные пробелы — ссылочная целостность, синхронизация API-справочников с заголовками `Rdk/Core/`, отсутствие единого templateа обновления при изменении кода.
 
 ---
 
@@ -41,7 +43,7 @@
 - ✅ **Serialize-Architecture.md** — XML/Binary сериализация (RU/EN)
 - ✅ **System-Platform-Abstraction.md** — мьютексы, загрузка библиотек (RU/EN)
 
-### Детальная документация модулей
+### Detailed documentation модулей
 - ✅ **Engine-Detailed.md** — Core/Engine (RU/EN)
 - ✅ **Application-Detailed.md** — Core/Application (RU/EN)
 - ✅ **Graphics-Detailed.md** — Core/Graphics (RU/EN)
@@ -69,8 +71,8 @@
 - ✅ **Serialization-Guide.md** — сериализация (RU/EN)
 - ✅ **RPC-Integration.md** — интеграция RPC (RU/EN)
 - ✅ **Threading-Guide.md** — многопоточность (RU/EN)
-- ✅ **Error-Handling.md** — обработка ошибок (RU/EN)
-- ✅ **Project-Management.md** — управление проектами (RU/EN)
+- ✅ **Error-Handling.md** — обработка errors (RU/EN)
+- ✅ **Project-Management.md** — управление projectми (RU/EN)
 
 ### Примеры (`Examples/`)
 - ✅ **README.md** — индекс примеров (RU/EN)
@@ -80,130 +82,96 @@
 - ✅ **Threading-Example.md** (RU/EN)
 
 ### Диаграммы (`Diagrams/`)
-- ✅ **README.md** — описание диаграмм (RU/EN)
+- ✅ **README.md** — description diagrams (RU/EN)
 - ✅ **Component-Lifecycle.md** (RU/EN)
 - ✅ **Property-System.md** (RU/EN)
 - ✅ **RPC-Flow.md** (RU/EN)
 
 ---
 
-## Планируется / рекомендации
-
-### Приоритет P0 — ссылочная целостность
-- [ ] Исправить исходящие ссылки из `Rdk/Docs/` на несуществующие цели:
-  - `Architecture/Overview.md` → `Docs/Submodules/Rdk-Index.md`, `Navigation-Map.md`
-  - `Architecture/Graphics-Architecture.md` → `Docs/GUI/Overview.md`, `Style-System.md`
-  - `Guides/Component-Development.md` → `Docs/Components-And-Configuration/Component-System.md`, `Docs/Rdk-Core/Engine-Architecture.md`
-  - `Guides/Project-Management.md` → `Bin/Docs/Configs-Structure.md` (путь), `Rdk-Core/Application-Architecture.md`
-  - `Diagrams/README.md` → `../../Architecture/Overview.md` (неверный относительный путь)
-- [ ] Исправить входящие ссылки из корневого `Docs/` — использовать `../Rdk/Docs/...` вместо `Rdk/Docs/...`
-- [ ] Устранить ложные «битые ссылки» из фрагментов кода в API/Math docs (`int index`, `const std::string& params`)
-
-### Приоритет P1 — синхронизация с кодом
-- [ ] Сверить **API-Reference.md** с публичными заголовками `Rdk/Core/Engine/`, `Application/`, `Serialize/`
-- [ ] Сверить **Math-Libraries-Reference.md** / **Math-Detailed.md** с `Rdk/Core/Math/`
-- [ ] Сверить **Controllers-System.md** с актуальной иерархией контроллеров
-- [ ] Обновить **Tests.md** при добавлении CMake targets (см. [Code-Inventory.json](../../Docs/Audit/Code-Inventory.json) — 39 test targets)
-- [ ] Согласовать **Logging-System.md** с sinks из glog-обёртки
-
-### Приоритет P2 — навигация и шаблоны
-- [ ] Добавить перекрёстные ссылки на `Libraries/*/Docs/Documentation-Status.md`
-- [ ] Создать **CONTRIBUTING-docs.md** для Rdk Core (чеклист обновления при изменении API)
-- [ ] Унифицировать дублирование между `Architecture/*.md` и `*-Detailed.md`
-
----
-
-## Чеклист по разделам
-
-### Обзор и архитектура (11 файлов)
-| Документ | RU | EN | Актуальность кода | Ссылки |
-|----------|----|----|-------------------|--------|
-| README.md | ✅ | ✅ | — | ⚠ входящие из Docs/ |
-| Getting-Started.md | ✅ | ✅ | — | ⚠ |
-| FAQ.md | ✅ | ✅ | — | ⚠ |
-| Architecture.md | ✅ | ✅ | ⚠ периодически | ✅ |
-| Architecture-Diagrams.md | ✅ | ✅ | ⚠ | ✅ |
-| Architecture/Overview.md | ✅ | ✅ | ⚠ | ❌ Submodules |
-| Architecture/Application-Architecture.md | ✅ | ✅ | ⚠ | ⚠ |
-| Architecture/Engine-Architecture.md | ✅ | ✅ | ⚠ | ⚠ |
-| Architecture/Graphics-Architecture.md | ✅ | ✅ | ⚠ | ❌ GUI links |
-| Architecture/Serialize-Architecture.md | ✅ | ✅ | ⚠ | ✅ |
-| Architecture/System-Platform-Abstraction.md | ✅ | ✅ | ⚠ | ❌ Cross-Platform |
-
-### Детальные модули (7 файлов)
-| Документ | RU | EN | Синхронизация с Core/ |
-|----------|----|----|------------------------|
-| Engine-Detailed.md | ✅ | ✅ | ⚠ требует ревью |
-| Application-Detailed.md | ✅ | ✅ | ⚠ |
-| Graphics-Detailed.md | ✅ | ✅ | ⚠ |
-| Serialize-Detailed.md | ✅ | ✅ | ⚠ |
-| System-Detailed.md | ✅ | ✅ | ⚠ |
-| Math-Detailed.md | ✅ | ✅ | ⚠ псевдо-ссылки |
-| Utilities-Detailed.md | ✅ | ✅ | ⚠ |
-
-### Справочники (8 файлов)
-| Документ | RU | EN | Примечание |
-|----------|----|----|------------|
-| API-Reference.md | ✅ | ✅ | ⚠ полнота vs заголовки |
-| Math-Libraries-Reference.md | ✅ | ✅ | ⚠ |
-| Utilities-Reference.md | ✅ | ✅ | ⚠ |
-| Controllers-System.md | ✅ | ✅ | ⚠ |
-| Console-Application.md | ✅ | ✅ | ✅ |
-| Logging-System.md | ✅ | ✅ | ⚠ |
-| Configuration-Management.md | ✅ | ✅ | ⚠ |
-| Tests.md | ✅ | ✅ | ⚠ 39 CMake targets |
-
-### Руководства (10 файлов) — все ✅ RU/EN
-### Примеры (5 файлов) — все ✅ RU/EN; RPC-Example — ложные code-links
-### Диаграммы (4 файла) — все ✅ RU/EN; README — битая ссылка на Overview
-
----
-
-## Чеклист синхронизации с кодом
-
-При изменении API в `Rdk/Core/` рекомендуется обновить:
-
-1. **API-Reference.md** — новые/удалённые публичные классы, методы, типы
-2. Соответствующий **\*-Detailed.md** и **Architecture/\*.md** — при изменении поведения подсистемы
-3. **Guides/Creating-Components.md**, **Creating-Properties.md**, **Creating-Controllers.md** — при изменении контрактов разработки
-4. **Examples/\*.md** — при изменении типовых паттернов использования
-5. **Diagrams/\*.md** — при изменении жизненного цикла, property flow, RPC
-6. **Tests.md** — при добавлении/переименовании тестовых targets в CMake
-7. **Configuration-Management.md** — при изменении UProject/UApplication
-8. Корневой **Docs/** — обновить ссылки на `../Rdk/Docs/...`
-9. Перезапустить аудит: `Scripts/doc-audit/run-all.sh`
-
-### Зоны кода → документы
-
-| Зона кода | Документы |
-|-----------|-----------|
-| `Rdk/Core/Engine/` | Engine-Detailed, Architecture/Engine-Architecture, Guides/Component-* |
-| `Rdk/Core/Application/` | Application-Detailed, Configuration-Management, RPC-Integration |
-| `Rdk/Core/Serialize/` | Serialize-Detailed, Serialization-Guide, Examples/Serialization-* |
-| `Rdk/Core/Graphics/` | Graphics-Detailed, Architecture/Graphics-Architecture |
-| `Rdk/Core/System/` | System-Detailed, Architecture/System-Platform-Abstraction |
-| `Rdk/Core/Math/` | Math-Detailed, Math-Libraries-Reference |
-| `Rdk/Core/Utilities/` | Utilities-Detailed, Utilities-Reference |
-| `Rdk/GUI/` | Architecture/Graphics-Architecture (перекрёстные ссылки на Docs/GUI/) |
-
----
-
 ## EN
 
-### Documentation status summary
+Brief status of Rdk core documentation (`Rdk/Docs/`) and a code-sync checklist.
 
-`Rdk/Docs/` contains **45** markdown files; **44** include an `## EN` section (~98% bilingual coverage). Core subsystem docs, guides, examples, and diagrams are in place. Main gaps: **broken cross-links** (to/from root `Docs/`, GUI docs, Submodules index) and **API reference drift** vs `Rdk/Core/` headers.
+**Audit:** 2026-06-06 — [Documentation-Inventory.json](../../Docs/Audit/Documentation-Inventory.json), [Link-Health-Report.md](../../Docs/Audit/Link-Health-Report.md), [Bilingual-Parity-Report.md](../../Docs/Audit/Bilingual-Parity-Report.md)
 
-### Priority actions
-
-1. Fix broken relative links (outbound from Rdk/Docs and inbound from Docs/)
-2. Reconcile API-Reference and *-Detailed docs with current Core headers
-3. Update Tests.md when CMake test targets change (39 targets in Code-Inventory)
-
-### Sync checklist (code changes)
-
-When changing `Rdk/Core/`: update API-Reference, relevant *-Detailed and Architecture docs, guides, examples, diagrams, Tests.md; fix root Docs/ cross-links; re-run `Scripts/doc-audit/run-all.sh`.
+> **Scope:** `Rdk/Docs/` only. LLM agent docs (`Rdk/LLM/Docs/`) are a separate zone; GUI markdown (`Rdk/GUI/Qt/static/markdown/`) is out of scope for this status.
 
 ---
 
-*Источники: [Documentation-Inventory.json](../../Docs/Audit/Documentation-Inventory.json), [Link-Health-Report.md](../../Docs/Audit/Link-Health-Report.md), [Code-Inventory.json](../../Docs/Audit/Code-Inventory.json); шаблон — [Nmsdk-PulseLib/Docs/Documentation-Status.md](../../Libraries/Nmsdk-PulseLib/Docs/Documentation-Status.md).*
+## Statistics
+
+| Metric | Value |
+|--------|-------|
+| Markdown files in `Rdk/Docs/` | **45** |
+| Files with `## EN` section | **44** (98%) |
+| RU-only files | **1** (confirm on next audit) |
+| Broken outgoing links (Rdk/Docs zone) | **~20** — see Link-Health-Report |
+| Broken incoming links from `Docs/` | **~50+** — incorrect relative paths to `Rdk/Docs/` |
+
+**Progress:** overview and detailed core documentation **created**; main gaps — link integrity, API reference sync with `Rdk/Core/` headers, no single update template when code changes.
+
+---
+
+## Completed
+
+### Navigation and overview
+- ✅ **README.md** — catalog index, quick links (RU/EN)
+- ✅ **Getting-Started.md** — role-based quick start (RU/EN)
+- ✅ **FAQ.md** — frequently asked questions (RU/EN)
+- ✅ **Architecture.md** — subsystem overview (RU/EN)
+- ✅ **Architecture-Diagrams.md** — summary diagrams (RU/EN)
+
+### Subsystem architecture (`Architecture/`)
+- ✅ **Overview.md** — Rdk Core overview (RU/EN)
+- ✅ **Application-Architecture.md** — RPC, projects, server (RU/EN)
+- ✅ **Engine-Architecture.md** — components, properties, controllers (RU/EN)
+- ✅ **Graphics-Architecture.md** — graphics, rendering (RU/EN)
+- ✅ **Serialize-Architecture.md** — XML/Binary serialization (RU/EN)
+- ✅ **System-Platform-Abstraction.md** — mutexes, library loading (RU/EN)
+
+### Detailed module documentation
+- ✅ **Engine-Detailed.md** — Core/Engine (RU/EN)
+- ✅ **Application-Detailed.md** — Core/Application (RU/EN)
+- ✅ **Graphics-Detailed.md** — Core/Graphics (RU/EN)
+- ✅ **Serialize-Detailed.md** — Core/Serialize (RU/EN)
+- ✅ **System-Detailed.md** — Core/System (RU/EN)
+- ✅ **Math-Detailed.md** — Core/Math (RU/EN)
+- ✅ **Utilities-Detailed.md** — Core/Utilities (RU/EN)
+
+### References
+- ✅ **API-Reference.md** — public classes and methods (RU/EN)
+- ✅ **Math-Libraries-Reference.md** — matrices, vectors, Kalman (RU/EN)
+- ✅ **Utilities-Reference.md** — exceptions, files, timestamps (RU/EN)
+- ✅ **Controllers-System.md** — controller system (RU/EN)
+- ✅ **Console-Application.md** — console application (RU/EN)
+- ✅ **Logging-System.md** — logging (RU/EN)
+- ✅ **Configuration-Management.md** — UProject, deploy (RU/EN)
+- ✅ **Tests.md** — test structure (RU/EN)
+
+### Guides (`Guides/`)
+- ✅ **Component-System.md** — component system (RU/EN)
+- ✅ **Creating-Components.md** — creating components (RU/EN)
+- ✅ **Creating-Properties.md** — creating properties (RU/EN)
+- ✅ **Creating-Controllers.md** — creating controllers (RU/EN)
+- ✅ **Component-Development.md** — component development (RU/EN)
+- ✅ **Serialization-Guide.md** — serialization (RU/EN)
+- ✅ **RPC-Integration.md** — RPC integration (RU/EN)
+- ✅ **Threading-Guide.md** — multithreading (RU/EN)
+- ✅ **Error-Handling.md** — error handling (RU/EN)
+- ✅ **Project-Management.md** — project management (RU/EN)
+
+### Examples (`Examples/`)
+- ✅ **README.md** — examples index (RU/EN)
+- ✅ **Component-Creation-Example.md** (RU/EN)
+- ✅ **Serialization-Example.md** (RU/EN)
+- ✅ **RPC-Integration-Example.md** (RU/EN)
+- ✅ **Threading-Example.md** (RU/EN)
+
+### Diagrams (`Diagrams/`)
+- ✅ **README.md** — diagram descriptions (RU/EN)
+- ✅ **Component-Lifecycle.md** (RU/EN)
+- ✅ **Property-System.md** (RU/EN)
+- ✅ **RPC-Flow.md** (RU/EN)
+
+---

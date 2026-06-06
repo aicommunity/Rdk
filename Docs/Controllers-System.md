@@ -758,3 +758,139 @@ Controllers integrate with GUI widgets through `UVisualControllerWidget` - base 
 - [Engine Architecture](../../Docs/Rdk-Core/Engine-Architecture.md) - engine and component architecture
 - [GUI Widgets Reference](../../Docs/GUI/Widgets-Reference.md) - GUI widgets
 - [Property System](Diagrams/Property-System.md) - property system
+
+```mermaid
+classDiagram
+    class UModule {
+        <<abstract>>
+    }
+    
+    class UController {
+        -bool Enabled
+        -UContainer* Component
+        +IsEnabled() bool
+        +IsEnabled(bool) bool
+        +GetComponentName() string
+        +Link(UContainer*) bool
+        +UnLink() bool
+        +Update() bool
+        #ALink(UContainer*) bool
+        #AUnLink() bool
+        #AUpdate() bool*
+    }
+    
+    class UControllerData {
+        -UEPtr~UIProperty~ Property
+        -int NumPoints
+        +GetPropertyName() string
+        +SetNumPoints(int) void
+        +Clear() void*
+        +Configure(UContainer*, UEPtr~UIProperty~) bool*
+        +GetDataType() type_info
+        #AUpdate() bool*
+    }
+    
+    class UControllerDataReader {
+        -double TimeInterval
+        -int PropertyType
+        -int MRow, MCol
+        -list~double~ XData
+        -list~double~ YData
+        +SetTimeInterval(double) void
+        +SetMatrixCoord(int, int) void
+        +AUpdate() bool
+        +Clear() void
+        +Configure(UContainer*, UEPtr~UIProperty~) bool
+    }
+    
+    class UControllerDataReaderTimeEvents {
+        +AUpdate() bool
+    }
+    
+    UModule <|-- UController
+    UController <|-- UControllerData
+    UControllerData <|-- UControllerDataReader
+    UControllerDataReader <|-- UControllerDataReaderTimeEvents
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> Created: Creation
+    Created --> Linked: Link(component)
+    Linked --> Enabled: IsEnabled(true)
+    Enabled --> Updating: Update()
+    Updating --> Enabled: AUpdate() завершен
+    Enabled --> Disabled: IsEnabled(false)
+    Disabled --> Enabled: IsEnabled(true)
+    Enabled --> Unlinked: UnLink()
+    Unlinked --> [*]: Удаление
+    Linked --> Unlinked: UnLink()
+```
+
+```mermaid
+sequenceDiagram
+    participant Component as UContainer
+    participant Property as UIProperty
+    participant Controller as UControllerDataReader
+    participant GUI as GUI Widget
+    
+    Component->>Component: Calculate()
+    Component->>Property: Обновление значения
+    GUI->>Controller: Update()
+    Controller->>Controller: AUpdate()
+    Controller->>Property: GetMemoryArea()
+    Controller->>Controller: Чтение данных по типу
+    Controller->>Controller: Добавление в XData, YData
+    Controller->>Controller: Обрезка старых данных
+    Controller-->>GUI: Данные готовы
+    GUI->>GUI: Обновление отображения
+```
+
+```mermaid
+sequenceDiagram
+    participant Widget as GUI Widget
+    participant Controller as UController
+    participant Container as UContainer
+    
+    Widget->>Controller: Link(container)
+    Controller->>Container: AddController(controller)
+    Container->>Container: Добавление в список контроллеров
+    Controller->>Controller: ALink(container)
+    Controller->>Controller: Initialization
+    Controller-->>Widget: true/false
+    
+    Note over Container: При обновлении компонента
+    Container->>Controller: Update()
+    Controller->>Controller: AUpdate()
+    Controller-->>Widget: Обновление интерфейса
+```
+
+```mermaid
+flowchart TB
+    subgraph "GUI Layer"
+        Widget[UVisualControllerWidget]
+        Chart[UWatchChart]
+        List[UComponentsListWidget]
+    end
+    
+    subgraph "Controller Layer"
+        DataReader[UControllerDataReader]
+        StateController[ComponentStateController]
+    end
+    
+    subgraph "Engine Layer"
+        Container[UContainer]
+        Property[UIProperty]
+    end
+    
+    Widget --> DataReader
+    Widget --> StateController
+    Chart --> DataReader
+    List --> StateController
+    
+    DataReader --> Property
+    StateController --> Container
+    
+    Container -->|Update| DataReader
+    Container -->|Update| StateController
+```

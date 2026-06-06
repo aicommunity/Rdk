@@ -796,3 +796,217 @@ Smart pointer system.
 - [Error-Handling.md](Guides/Error-Handling.md) - error handling guide
 - [Logging-System.md](Logging-System.md) - logging system
 - [System-Detailed.md](System-Detailed.md) - system abstractions
+
+```mermaid
+classDiagram
+    class UException {
+        <<abstract>>
+        #int Number
+        #int Type
+        #time_t Time
+        #string Message
+        #string ObjectName
+        #string ExFileName
+        #int ExLineNumber
+        +GetNumber() int
+        +GetType() int
+        +GetTime() time_t
+        +what() const char*
+        +Wrap(UException, string) void
+        +SetMessage(string) void
+        +GetMessage() string
+    }
+    
+    class EFatal {
+        +EFatal()
+    }
+    
+    class EError {
+        +EError()
+    }
+    
+    class EWarning {
+        +EWarning()
+    }
+    
+    class EInfo {
+        +EInfo()
+    }
+    
+    class EDebug {
+        +EDebug()
+    }
+    
+    class EApp {
+        +EApp()
+    }
+    
+    class EStringError {
+        #string Str
+        +EStringError(string, int)
+        +GetStr() string
+    }
+    
+    class EIdError {
+        #int Id
+        +EIdError(int)
+        +GetId() int
+    }
+    
+    class ENameError {
+        #string Name
+        +ENameError(string)
+        +GetName() string
+    }
+    
+    class EIndexError {
+        #int Index
+        +EIndexError(int)
+        +GetIndex() int
+    }
+    
+    class UTransferPacket {
+        #void* Data
+        #int Size
+        #int CmdId
+        #int NumParams
+        +GetData() void*
+        +GetSize() int
+        +GetCmdId() int
+        +GetNumParams() int
+        +SetCmdId(int) void
+        +SetNumParams(int) void
+        +SetParam(int, UParamT) void
+        +GetParam(int) UParamT&
+        +CalcChecksum() unsigned int
+        +Load(UParamT, int) bool
+        +Save(UParamT&) bool
+    }
+    
+    class UTransferReader {
+        #vector~UTransferPacket~ Packets
+        +ProcessDataPart(UParamT) int
+        +GetNumPackets() int
+        +GetFirstPacket() UTransferPacket&
+        +DelFirstPacket() void
+    }
+    
+    class UIniFile {
+        #map~string,map~string,string~~ Sections
+        +ReadString(string, string, string) string
+        +ReadInteger(string, string, int) int
+        +ReadDouble(string, string, double) double
+        +ReadBool(string, string, bool) bool
+        +WriteString(string, string, string) bool
+        +WriteInteger(string, string, int) bool
+        +WriteDouble(string, string, double) bool
+        +WriteBool(string, string, bool) bool
+        +LoadFromFile(string) bool
+        +SaveToFile(string) bool
+    }
+    
+    class URegistry {
+        +Read(string) string
+        +Write(string, string) bool
+    }
+    
+    class UTimeStamp {
+        #time_t Time
+        #double FPS
+        #int Hours
+        #int Minutes
+        #int Seconds
+        #int Frames
+        +GetTime() time_t
+        +GetFPS() double
+        +operator()() double
+        +operator+(UTimeStamp) UTimeStamp
+        +operator-(UTimeStamp) UTimeStamp
+        +ToString() string
+        +FromString(string) bool
+    }
+    
+    class UTree~T~ {
+        #T Value
+        #vector~UTree*~ Children
+        #UTree* Parent
+        +GetValue() T&
+        +SetValue(T) void
+        +AddChild(UTree) UTree*
+        +GetChildren() vector~UTree*~
+        +GetParent() UTree*
+        +RemoveChild(UTree*) bool
+    }
+    
+    class UQueue~T~ {
+        #vector~T~ Data
+        #int Front
+        #int Back
+        #int Size
+        +push(T) void
+        +pop() void
+        +front() T&
+        +back() T&
+        +empty() bool
+        +size() int
+        +operator[](int) T&
+        +reserve(int) void
+    }
+    
+    class UDoubleBuffer~T~ {
+        #TimedBuffer~T~* Buffer1
+        #TimedBuffer~T~* Buffer2
+        #TimedBuffer~T~* WriteBuffer
+        #TimedBuffer~T~* ReadBuffer
+        #UGenericMutex* Mutex
+        +GetPtrForWrite() TimedBuffer*
+        +GetPtrForRead() TimedBuffer*
+        +MakeWrited(TimedBuffer*) void
+        +MakeReaded(TimedBuffer*) void
+        +Write(T) void
+        +Read(T&) bool
+    }
+    
+    class UPtr~T~ {
+        #T* Ptr
+        +Get() T*
+        +Reset(T*) void
+        +operator*() T&
+        +operator->() T*
+    }
+    
+    UException <|-- EFatal
+    UException <|-- EError
+    UException <|-- EWarning
+    UException <|-- EInfo
+    UException <|-- EDebug
+    UException <|-- EApp
+    EError <|-- EStringError
+    EError <|-- EIdError
+    EError <|-- ENameError
+    EError <|-- EIndexError
+```
+
+```mermaid
+sequenceDiagram
+    participant Component as UComponent
+    participant Exception as UException
+    participant Logger as UExceptionLogger
+    participant Sink as Log Sink
+    
+    Component->>Component: throw EStringError("Error")
+    Component->>Exception: Exception created
+    Exception->>Exception: Set Type, Number, Time
+    Exception->>Exception: Set ExFileName, ExLineNumber
+    Component->>Logger: ProcessException(exception)
+    Logger->>Logger: Check severity level
+    Logger->>Logger: Format log message
+    Logger->>Sink: Consume(LogItem)
+    Sink->>Sink: Write to file/GUI/JSON
+    Sink-->>Logger: Logged
+    Logger-->>Component: Exception processed
+    
+    alt Fatal exception
+        Logger->>Component: Terminate application
+    end
+```

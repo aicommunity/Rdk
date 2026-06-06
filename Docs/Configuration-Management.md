@@ -455,7 +455,7 @@ int result = app_core.Init(
 
 - [Application-Detailed.md](Application-Detailed.md) - detailed Application module documentation
 - [Serialize-Detailed.md](Serialize-Detailed.md) - detailed serialization documentation
-- [Project Management](Guides/Project-Management.md) - детальное руководство по управлению проектами
+- [Project Management](Guides/Project-Management.md) - detailed project management guide
 - [Bin/Docs/Configs-Structure.md](../../Bin/Docs/Configs-Structure.md) - configuration file structure in Bin
 - [Bin/Docs/Examples/Config-Example.md](../../Bin/Docs/Examples/Config-Example.md) - configuration examples
 - [Docs/Components-And-Configuration/Configuration-Files-Overview.md](../../Docs/Components-And-Configuration/Configuration-Files-Overview.md) - configuration overview

@@ -811,3 +811,404 @@ Controllers provide connection between components and GUI:
 - [Controllers-System.md](Controllers-System.md) - controller system details
 - [Diagrams/Component-Lifecycle.md](Diagrams/Component-Lifecycle.md) - component lifecycle
 - [Diagrams/Property-System.md](Diagrams/Property-System.md) - property system
+
+```mermaid
+classDiagram
+    class UModule {
+        <<abstract>>
+        #bool Ready
+        #bool InitFlag
+        +IsReady() bool
+        +IsInit() bool
+        +BeforeDefault() bool
+        +AfterDefault() bool
+        +Default() bool
+        +BeforeBuild() bool
+        +AfterBuild() bool
+        +Build() bool
+        +BeforeReset() bool
+        +AfterReset() bool
+        +Reset() bool
+        +BeforeCalculate() bool
+        +AfterCalculate() bool
+        +Calculate() bool
+    }
+    
+    class UComponent {
+        #bool StaticFlag
+        #UEPtr~UComponent~ Owner
+        #UEPtr~UComponent~ MainOwner
+        #UEPtr~UStorage~ Storage
+        #UEPtr~UEnvironment~ Environment
+        #VariableMapT PropertiesLookupTable
+        #ShareMapT SharesLookupTable
+        +GetName() NameT
+        +GetId() UId
+        +GetProperty(string) UEPtr~UIProperty~
+        +SetProperty(string, T) bool
+        +FindProperty(string) UEPtr~UIProperty~
+        +ADefault() bool*
+        +ABuild() bool*
+        +AReset() bool*
+        +ACalculate() bool*
+    }
+    
+    class UContainer {
+        #UAContainerVector Components
+        #std::unordered_map~NameT,UId~ CompsLookupTable
+        #PointerMapT PointerLookupTable
+        #std::vector~UEPtr~UController~~ Controllers
+        +Name UProperty~NameT~
+        +Id UProperty~UId~
+        +Activity UProperty~bool~
+        +TimeStep UProperty~UTime~
+        +AddComponent(UContainer) bool
+        +DelComponent(UContainer) bool
+        +GetComponent(string) UEPtr~UContainer~
+        +GetComponent~T~(string) UEPtr~T~
+        +UpdateControllers() void
+        +AAddComponent(UContainer) bool*
+        +ADelComponent(UContainer) bool*
+    }
+    
+    class UItem {
+        #UCItemList ItemsList
+        +ConnectToItem(UItem, int, int) bool
+        +DisconnectFromItem(UItem, int) bool
+        +GetOutputsCount() int
+        +GetInputsCount() int
+    }
+    
+    class UNet {
+        #PropertyAliasMapT PropertyAliases
+        +GetLinks(ULinksListT) ULinksListT
+        +GetPersonalLinks(UNet, ULinksListT) ULinksListT
+        +New() UContainer*
+        +Copy(UContainer, UStorage) bool
+        +Free() void
+        +CheckComponentType(UContainer) bool
+    }
+    
+    class UAModel {
+        +ABuild() bool
+    }
+    
+    class UConnector {
+        +ConnectToItem(UItem, int, int) bool
+        +DisconnectFromItem(UItem, int) bool
+    }
+    
+    UModule <|-- UComponent
+    UComponent <|-- UContainer
+    UContainer <|-- UItem
+    UItem <|-- UNet
+    UNet <|-- UAModel
+    UContainer <|-- UConnector
+```
+
+```mermaid
+classDiagram
+    class UIProperty {
+        <<interface>>
+        +GetName() string
+        +GetId() UId
+        +GetMemoryArea() void*
+        +GetLanguageType() type_info
+        +Save(USerStorage) bool
+        +Load(USerStorage) bool
+    }
+    
+    class UIPropertyInput {
+        <<interface>>
+        +IsConnected() bool
+        +SetPointer(UIPropertyOutput) bool
+        +GetData() void*
+    }
+    
+    class UIPropertyOutput {
+        <<interface>>
+        +ConnectTo(UIPropertyInput) bool
+        +DisconnectFrom(UIPropertyInput) bool
+        +SetData(void*) void
+    }
+    
+    class UIPropertyIO {
+        <<interface>>
+    }
+    
+    class UVBaseDataProperty~T~ {
+        #int IoType
+        #UGenericMutex* Mutex
+        #ULongTime UpdateTime
+        +GetData() const T&
+        +SetData(const T&) void
+        +GetLanguageType() type_info
+        +Save(USerStorage) bool
+        +Load(USerStorage) bool
+    }
+    
+    class UProperty~T,Owner,Type~ {
+        #T* Data
+        #Owner* OwnerPtr
+        +GetValue() T&
+        +SetValue(const T&) void
+        +operator T&()
+        +operator=(const T&) UProperty&
+    }
+    
+    class UVProperty~T~ {
+        #T Data
+        +GetValue() T&
+        +SetValue(const T&) void
+    }
+    
+    UIProperty <|.. UIPropertyInput
+    UIProperty <|.. UIPropertyOutput
+    UIPropertyInput <|-- UIPropertyIO
+    UIPropertyOutput <|-- UIPropertyIO
+    UIPropertyOutput <|-- UVBaseDataProperty
+    UVBaseDataProperty <|-- UProperty
+    UVBaseDataProperty <|-- UVProperty
+    UComponent "1" o-- "*" UIProperty
+```
+
+```mermaid
+classDiagram
+    class UStorage {
+        #std::unordered_map~string,UId~ ClassesLookupTable
+        #UClassesStorage ClassesStorage
+        #UClassesDescription ClassesDescription
+        #UClassLibraryList CollectionList
+        #UObjectsStorage ObjectsStorage
+        #UId LastClassId
+        +FindClassId(string) UId
+        +FindClassName(UId) NameT
+        +AddClass(string, UComponentFactory) UId
+        +CreateComponent(string) UEPtr~UComponent~
+        +CreateComponent(UId) UEPtr~UComponent~
+        +AddObject(UContainer) bool
+        +DelObject(UContainer) bool
+        +LoadLibrary(ULibrary) bool
+        +Build() bool
+    }
+    
+    class ULibrary {
+        #string Name
+        #string Version
+        #RDK::UEPtr~UVersion~ CoreVersion
+        #int Type
+        #vector~string~ ClassesList
+        #UStorage* Storage
+        +GetName() string
+        +GetVersion() string
+        +GetClassesList() vector~string~
+        +Load() bool
+        +Unload() bool
+    }
+    
+    class URuntimeLibrary {
+        +Load() bool
+    }
+    
+    class UMockLibrary {
+        +Load() bool
+    }
+    
+    class UComponentAbstractFactory {
+        <<abstract>>
+        #UId ClassId
+        #UStorage* Storage
+        +New() UEPtr~UComponent~
+        +Prototype(UComponent) UEPtr~UComponent~
+        +ResetComponent(UComponent) void
+    }
+    
+    class UVirtualMethodFactory {
+        #UEPtr~UContainer~ Component
+        +New() UEPtr~UComponent~
+        +Prototype(UComponent) UEPtr~UComponent~
+    }
+    
+    class UComponentFactoryMethod {
+        #UComponent* (*Method)(void)
+        #string DefaultComponentName
+        +New() UEPtr~UComponent~
+    }
+    
+    class UComponentDescription {
+        #string ClassName
+        #UId ClassId
+        #map~string,UPropertyDescription~ Properties
+    }
+    
+    class UContainerDescription {
+        #vector~UPropertyAlias~ PropertyAliases
+    }
+    
+    class UInstancesStorageElement {
+        #UEPtr~UContainer~ Object
+        #bool UseFlag
+    }
+    
+    UStorage "1" o-- "*" ULibrary
+    UStorage "1" o-- "*" UComponentAbstractFactory
+    UStorage "1" o-- "*" UInstancesStorageElement
+    ULibrary <|-- URuntimeLibrary
+    ULibrary <|-- UMockLibrary
+    UComponentAbstractFactory <|-- UVirtualMethodFactory
+    UComponentAbstractFactory <|-- UComponentFactoryMethod
+    UComponentDescription <|-- UContainerDescription
+    UStorage --> UComponentDescription
+```
+
+```mermaid
+classDiagram
+    class UController {
+        #bool Enabled
+        #UContainer* Component
+        +IsEnabled() bool
+        +IsEnabled(bool) bool
+        +GetComponentName() string
+        +Link(UContainer) bool
+        +UnLink() bool
+        +Update() bool
+        #ALink(UContainer) bool*
+        #AUnLink() bool*
+        #AUpdate() bool*
+    }
+    
+    class UControllerData {
+        #UEPtr~UIProperty~ Property
+        #int NumPoints
+        +GetPropertyName() string
+        +SetNumPoints(int) void
+        +Clear() void*
+        +Configure(UContainer, UIProperty) bool*
+        +GetDataType() type_info
+    }
+    
+    class UControllerDataReader {
+        #double TimeInterval
+        #int PropertyType
+        #int MRow, MCol
+        #list~double~ XData
+        #list~double~ YData
+        +SetTimeInterval(double) void
+        +SetMatrixCoord(int, int) void
+        +AUpdate() bool
+        +Clear() void
+        +Configure(UContainer, UIProperty) bool
+    }
+    
+    class UControllerDataReaderTimeEvents {
+        +AUpdate() bool
+    }
+    
+    UModule <|-- UController
+    UController <|-- UControllerData
+    UControllerData <|-- UControllerDataReader
+    UControllerDataReader <|-- UControllerDataReaderTimeEvents
+    UContainer "1" o-- "*" UController
+```
+
+```mermaid
+sequenceDiagram
+    participant Storage as UStorage
+    participant Factory as UComponentFactory
+    participant Component as UComponent
+    participant Env as UEnvironment
+    
+    Storage->>Factory: CreateComponent(className)
+    Factory->>Component: new Component()
+    Component->>Component: Constructor initialization
+    Component->>Component: ADefault()
+    Note over Component: Установка значений по умолчанию
+    Component->>Component: ABuild()
+    Note over Component: Build внутренней структуры
+    Component->>Component: Ready = true
+    Component-->>Factory: UEPtr~UComponent~
+    Factory-->>Storage: UEPtr~UComponent~
+    Storage->>Storage: AddObject(component)
+    Storage-->>Storage: Component registered
+```
+
+```mermaid
+sequenceDiagram
+    participant Env as UEnvironment
+    participant Container as UContainer
+    participant Component as UComponent
+    participant Property as UIProperty
+    
+    Env->>Container: Reset()
+    Container->>Container: AReset()
+    Container->>Component: Reset() (для всех дочерних)
+    Component->>Component: AReset()
+    Component->>Property: Reset values
+    
+    loop Каждый шаг времени
+        Env->>Container: Calculate()
+        Container->>Container: ACalculate()
+        Container->>Component: Calculate() (для всех дочерних)
+        Component->>Component: ACalculate()
+        Component->>Property: Read inputs
+        Component->>Property: Process data
+        Component->>Property: Write outputs
+        Component->>Container: UpdateControllers()
+        Container->>Controller: Update()
+    end
+```
+
+```mermaid
+sequenceDiagram
+    participant Connector as UConnector
+    participant SourceComp as Source Component
+    participant PropOut as UIPropertyOutput
+    participant PropIn as UIPropertyInput
+    participant TargetComp as Target Component
+    
+    Connector->>SourceComp: GetOutputProperty(name)
+    SourceComp-->>Connector: UIPropertyOutput*
+    Connector->>TargetComp: GetInputProperty(name)
+    TargetComp-->>Connector: UIPropertyInput*
+    Connector->>PropOut: ConnectTo(PropIn)
+    PropOut->>PropIn: SetPointer(PropOut)
+    PropIn->>PropIn: Store pointer to output
+    PropOut-->>Connector: true
+    
+    Note over SourceComp,TargetComp: При обновлении данных
+    SourceComp->>PropOut: SetData(value)
+    PropOut->>PropIn: UpdateValue(value)
+    PropIn->>TargetComp: Data available
+    TargetComp->>TargetComp: Use data in ACalculate()
+```
+
+```mermaid
+stateDiagram-v2
+    [*] --> Created: Creation компонента
+    Created --> Defaulting: Default()
+    Defaulting --> BeforeDefault: BeforeDefault()
+    BeforeDefault --> ADefault: ADefault()
+    ADefault --> AfterDefault: AfterDefault()
+    AfterDefault --> Building: Build()
+    Building --> BeforeBuild: BeforeBuild()
+    BeforeBuild --> ABuild: ABuild()
+    ABuild --> AfterBuild: AfterBuild()
+    AfterBuild --> Ready: Ready = true
+    
+    Ready --> Resetting: Reset()
+    Resetting --> BeforeReset: BeforeReset()
+    BeforeReset --> AReset: AReset()
+    AReset --> AfterReset: AfterReset()
+    AfterReset --> Ready: Готов к вычислениям
+    
+    Ready --> Calculating: Calculate()
+    Calculating --> BeforeCalculate: BeforeCalculate()
+    BeforeCalculate --> ACalculate: ACalculate()
+    ACalculate --> AfterCalculate: AfterCalculate()
+    AfterCalculate --> Ready: Готов к следующему шагу
+    
+    Building --> Error: Ошибка сборки
+    Calculating --> Error: Ошибка вычисления
+    Error --> [*]: Удаление компонента
+    Ready --> [*]: Удаление компонента
+```

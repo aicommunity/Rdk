@@ -315,3 +315,131 @@ Implementation on Boost (optional).
 - [Detailed Application Documentation](../Application-Detailed.md)
 - [Configuration Management](../Configuration-Management.md)
 - [Project Management](../Guides/Project-Management.md)
+
+```mermaid
+sequenceDiagram
+    participant Main as main()
+    participant App as UApplication
+    participant EngineCtrl as UEngineControl
+    participant Engine as UEngine
+    participant Storage as UStorage
+    participant Env as UEnvironment
+    
+    Main->>App: Creation приложения
+    App->>App: Initialization
+    App->>EngineCtrl: Creation управления движком
+    EngineCtrl->>Engine: Creation движка
+    Engine->>Storage: Initialization хранилища
+    Engine->>Storage: Загрузка библиотек
+    Storage->>Storage: Регистрация компонентов
+    Engine->>Env: Creation окружения
+    App->>EngineCtrl: Готовность к работе
+    EngineCtrl-->>App: Initialization завершена
+    App-->>Main: Приложение готово
+```
+
+```mermaid
+classDiagram
+    class UApplication {
+        +SetEngineControl()
+        +SetServerControl()
+        +SetProject()
+        +SetProjectDeployer()
+    }
+    
+    class UEngineControl {
+        +Start()
+        +Stop()
+        +SetEngine()
+    }
+    
+    class UServerControl {
+        +SetApplication()
+        +SetRpcDispatcher()
+        +SetServerTransport()
+    }
+    
+    class URpcDispatcher {
+        +SetApplication()
+        +SetDecoderPrototype()
+        +SetCommonDecoder()
+    }
+    
+    class UAppCore~template~ {
+        +application
+        +engineControl
+        +serverControl
+        +rpcDispatcher
+        +rpcDecoder
+        +project
+        +projectDeployer
+    }
+    
+    UAppCore --> UApplication
+    UAppCore --> UEngineControl
+    UAppCore --> UServerControl
+    UAppCore --> URpcDispatcher
+    UAppCore --> UProjectDeployer
+    UApplication --> UEngineControl
+    UApplication --> UServerControl
+    UApplication --> URpcDispatcher
+```
+
+```mermaid
+sequenceDiagram
+    participant Client as Клиент
+    participant Transport as UServerTransport
+    participant Dispatcher as URpcDispatcher
+    participant Decoder as URpcDecoder
+    participant App as UApplication
+    
+    Client->>Transport: Отправка команды
+    Transport->>Dispatcher: PushCommand()
+    Dispatcher->>Dispatcher: DispatchCommand()
+    Dispatcher->>Decoder: IsCmdSupported()
+    alt Команда поддерживается
+        Dispatcher->>Decoder: PushCommand()
+        Decoder->>Decoder: ProcessCommand()
+        Decoder->>App: Выполнение команды
+        App-->>Decoder: Результат
+        Decoder-->>Dispatcher: PushToProcessedQueue()
+        Dispatcher-->>Transport: Отправка ответа
+        Transport-->>Client: Ответ клиенту
+    else Команда не поддерживается
+        Dispatcher-->>Transport: Ошибка
+        Transport-->>Client: Ошибка
+    end
+```
+
+```mermaid
+flowchart TB
+    subgraph "Main Thread"
+        App[UApplication]
+        EngineCtrl[UEngineControl]
+    end
+    
+    subgraph "RPC Thread"
+        RpcDispatcher[URpcDispatcher]
+        RpcDecoder[URpcDecoder]
+    end
+    
+    subgraph "Engine Thread"
+        EngineThread[UEngineControlThread]
+        Env[UEnvironment]
+    end
+    
+    subgraph "Server Thread"
+        Server[UServerTransport]
+    end
+    
+    App --> EngineCtrl
+    App --> RpcDispatcher
+    App --> Server
+    
+    EngineCtrl --> EngineThread
+    EngineThread --> Env
+    
+    Server --> RpcDispatcher
+    RpcDispatcher --> RpcDecoder
+    RpcDecoder --> EngineCtrl
+```

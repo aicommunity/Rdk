@@ -739,3 +739,414 @@ Engine control manages calculation execution:
 - [Engine-Detailed.md](Engine-Detailed.md) - engine detailed documentation
 - [Diagrams/RPC-Flow.md](Diagrams/RPC-Flow.md) - RPC command processing flow
 - [Console-Application.md](Console-Application.md) - console application
+
+```mermaid
+classDiagram
+    class UAppController {
+        <<abstract>>
+        #UEPtr~UApplication~ Application
+        +GetApplication() UApplication*
+        +SetApplication(UApplication) bool
+    }
+    
+    class UApplication {
+        #UEPtr~URpcDispatcher~ RpcDispatcher
+        #UEPtr~UProject~ Project
+        #UEPtr~UEngineControl~ EngineControl
+        #UEPtr~UServerControl~ ServerControl
+        #UEPtr~UProjectDeployer~ ProjectDeployer
+        #UEPtr~UTestManager~ TestManager
+        +OpenProject(string) bool
+        +CloseProject() bool
+        +SaveProject() bool
+        +GetProject() UProject*
+        +GetEngineControl() UEngineControl*
+        +GetServerControl() UServerControl*
+    }
+    
+    class URpcDispatcherQueues {
+        #queue~URpcCommand~ CommandQueue
+        #queue~URpcCommand~ ProcessedQueue
+        +PushCommand(URpcCommand) bool
+        +PopCommand() URpcCommand
+        +PushToProcessedQueue(URpcCommand) void
+    }
+    
+    class URpcDispatcher {
+        #vector~UEPtr~URpcDecoder~~ Decoders
+        #UEPtr~URpcDecoder~ CommonDecoder
+        #UEPtr~URpcDecoder~ DecoderPrototype
+        #UEPtr~UApplication~ Application
+        #boost::mutex DispatchMutex
+        #boost::thread DispatcherThread
+        +IsCmdSupported(URpcCommand) bool
+        +SetDecoderPrototype(URpcDecoder) void
+        +SetCommonDecoder(URpcDecoder) bool
+        +Dispatch() void
+        +StopDispatch() void
+        +SyncDispatchCommand(URpcCommand, timeout) bool
+        #DispatchCommand(URpcCommand) void
+    }
+    
+    class URpcDecoder {
+        <<abstract>>
+        #URpcDispatcher* Dispatcher
+        #boost::mutex DispatchMutex
+        #boost::thread DecoderThread
+        +SetDispatcher(URpcDispatcher) void
+        +New() URpcDecoder*
+        +IsCmdSupported(URpcCommand) bool*
+        +Process() void
+        +ProcessCommand(URpcCommand) bool
+        +AProcessCommand(URpcCommand) bool*
+    }
+    
+    class URpcDecoderInternal {
+        +AProcessCommand(URpcCommand) bool
+    }
+    
+    class URpcDecoderCommon {
+        +AProcessCommand(URpcCommand) bool
+    }
+    
+    class URpcCommand {
+        #string CommandName
+        #int ChannelIndex
+        +GetCommandName() string
+        +GetChannelIndex() int
+    }
+    
+    class URpcCommandInternal {
+        +GetCommandName() string
+    }
+    
+    class UServerTransport {
+        #UEPtr~UApplication~ Application
+        #map~string,UTransferReader~ PacketReaders
+        +SetServerBinding(string, int) void
+        +GetServerBindingPort() int
+        +ServerIsActive() bool
+        +ProcessIncomingData() void*
+    }
+    
+    class UServerTransportTcp {
+        +ProcessIncomingData() void
+    }
+    
+    class UServerTransportHttp {
+        +ProcessIncomingData() void
+    }
+    
+    class UServerControl {
+        #UEPtr~UApplication~ Application
+        #UEPtr~UServerTransport~ ServerTransport
+        #UEPtr~UServerTransport~ ServerTransportHttp
+        #UEPtr~URpcDispatcher~ RpcDispatcher
+        +StartServer() bool
+        +StopServer() bool
+        +IsServerActive() bool
+    }
+    
+    UAppController <|-- UApplication
+    UAppController <|-- UServerControl
+    UAppController <|-- UServerTransport
+    URpcDispatcherQueues <|-- URpcDispatcher
+    URpcDispatcherQueues <|-- URpcDecoder
+    URpcDecoder <|-- URpcDecoderInternal
+    URpcDecoder <|-- URpcDecoderCommon
+    URpcDispatcher "1" o-- "*" URpcDecoder
+    UApplication "1" o-- "1" URpcDispatcher
+    UApplication "1" o-- "1" UServerControl
+    UServerControl "1" o-- "1" UServerTransport
+    UServerTransport <|-- UServerTransportTcp
+    UServerTransport <|-- UServerTransportHttp
+```
+
+```mermaid
+classDiagram
+    class UProject {
+        #string ProjectName
+        #string ProjectPath
+        #TProjectConfig Config
+        #vector~TProjectChannelConfig~ ChannelsConfig
+        #vector~UEPtr~UEnvironment~~ Environments
+        +GetProjectName() string
+        +GetProjectPath() string
+        +GetConfig() TProjectConfig&
+        +GetChannelConfig(int) TProjectChannelConfig&
+        +LoadProject(string) bool
+        +SaveProject(string) bool
+        +CreateChannel(int) bool
+        +DeleteChannel(int) bool
+        +GetEnvironment(int) UEnvironment*
+    }
+    
+    class TProjectConfig {
+        +string ProjectName
+        +string ProjectDescription
+        +string UserName
+        +int UserId
+        +int ProjectMode
+        +int ProjectType
+        +int MultiThreadingMode
+        +int NumChannels
+    }
+    
+    class TProjectChannelConfig {
+        +int ModelMode
+        +int PredefinedStructure
+        +string ModelFileName
+        +string ParametersFileName
+        +string StatesFileName
+        +string ClassName
+        +int GlobalTimeStep
+        +int CalculationMode
+        +bool InitAfterLoad
+        +bool ResetAfterLoad
+    }
+    
+    class UProjectDeployer {
+        #UEPtr~UApplication~ Application
+        +DeployProject(UProject, string) bool
+        +UploadResults(string) bool
+        +GetDeploymentStatus() int
+    }
+    
+    class UProjectDeployerQt {
+        +DeployProject(UProject, string) bool
+        +UploadResults(string) bool
+    }
+    
+    class UAppCore~ApplicationT,EngineControlT,ProjectT,ServerControlT,TestManagerT,DispatcherT,DecoderT,DecoderCommonT,ServerTransportT,ProjectDeployerT~ {
+        +DecoderT rpcDecoder
+        +DispatcherT rpcDispatcher
+        +ServerControlT serverControl
+        +ServerTransportT serverTransport
+        +DecoderCommonT rpcDecoderCommon
+        +EngineControlT engineControl
+        +ProjectT project
+        +ApplicationT application
+        +TestManagerT rdkTestManager
+        +UProjectDeployerT projectDeployer
+        +Init(string, string, string, string, int, char**) int
+        +PostInit() int
+    }
+    
+    UApplication "1" o-- "1" UProject
+    UProject "1" o-- "*" TProjectChannelConfig
+    UProject "1" o-- "1" TProjectConfig
+    UProject "1" o-- "*" UEnvironment
+    UApplication "1" o-- "1" UProjectDeployer
+    UProjectDeployer <|-- UProjectDeployerQt
+    UAppCore --> UApplication
+```
+
+```mermaid
+classDiagram
+    class UEngineControl {
+        #UEPtr~UApplication~ Application
+        #vector~UEngineControlThread*~ EngineControlThreads
+        #UEngineStateThread* EngineStateThread
+        #vector~UEPtr~UBroadcasterInterface~~ BroadcastersList
+        #UELockVar~int~ ThreadMode
+        #UELockVar~int~ UpdateInterval
+        #UELockVar~int~ GuiUpdateMode
+        +GetThreadMode() int
+        +SetThreadMode(int) void
+        +GetUpdateInterval() int
+        +SetUpdateInterval(int) void
+        +StartCalculation(int) bool
+        +StopCalculation(int) bool
+        +ResetCalculation(int) bool
+        +GetCalcState(int) UCalcState
+        +UpdateInterface() void
+    }
+    
+    class UEngineControlThread {
+        #int ChannelIndex
+        #UEPtr~UApplication~ Application
+        #UEPtr~UEnvironment~ Environment
+        #boost::thread Thread
+        #bool ThreadRunning
+        +Run() void
+        +Stop() void
+        +GetChannelIndex() int
+    }
+    
+    class UEngineStateThread {
+        #UEPtr~UApplication~ Application
+        #boost::thread Thread
+        #bool ThreadRunning
+        +Run() void
+        +Stop() void
+        +CheckChannelsState() void
+    }
+    
+    class UBroadcasterInterface {
+        <<interface>>
+        +Broadcast(string, data) void
+    }
+    
+    class UChannelProfiler {
+        #int ChannelIndex
+        #double LastDuration
+        #double AverageDuration
+        +GetLastDuration() double
+        +GetAverageDuration() double
+        +ProfileCalculation() void
+    }
+    
+    UAppController <|-- UEngineControl
+    UApplication "1" o-- "1" UEngineControl
+    UEngineControl "1" o-- "*" UEngineControlThread
+    UEngineControl "1" o-- "1" UEngineStateThread
+    UEngineControl "1" o-- "*" UBroadcasterInterface
+    UEngineControl "1" o-- "*" UChannelProfiler
+    UEngineControlThread --> UEnvironment
+```
+
+```mermaid
+classDiagram
+    class UIController {
+        <<abstract>>
+        #string ControllerName
+        +GetControllerName() string
+        +SetControllerName(string) void
+    }
+    
+    class UIControllerStorage {
+        #map~string,UIController*~ Controllers
+        +AddController(string, UIController) bool
+        +GetController(string) UIController*
+        +RemoveController(string) bool
+    }
+    
+    class UIVisualController {
+        #UEPtr~UApplication~ Application
+        #int UpdateInterval
+        +GetApplication() UApplication*
+        +SetApplication(UApplication) bool
+        +GetUpdateInterval() int
+        +SetUpdateInterval(int) void
+        +UpdateInterface() void
+        #AUpdateInterface() void*
+    }
+    
+    class UIVisualControllerStorage {
+        #map~string,UIVisualController*~ VisualControllers
+        +AddVisualController(string, UIVisualController) bool
+        +GetVisualController(string) UIVisualController*
+        +UpdateAllInterfaces() void
+    }
+    
+    class UAppController {
+        #UEPtr~UApplication~ Application
+        +GetApplication() UApplication*
+        +SetApplication(UApplication) bool
+    }
+    
+    UIController <|-- UIVisualController
+    UIController <|-- UAppController
+    UIVisualControllerStorage "1" o-- "*" UIVisualController
+    UIControllerStorage "1" o-- "*" UIController
+    UApplication "1" o-- "*" UAppController
+```
+
+```mermaid
+sequenceDiagram
+    participant Client as Клиент
+    participant Transport as UServerTransport
+    participant Dispatcher as URpcDispatcher
+    participant Decoder as URpcDecoder
+    participant App as UApplication
+    participant Engine as UEngine
+    participant Project as UProject
+    
+    Client->>Transport: Отправка команды (TCP/HTTP)
+    Transport->>Transport: ProcessIncomingData()
+    Transport->>Transport: ParseCommand()
+    Transport->>Dispatcher: PushCommand(command)
+    Dispatcher->>Dispatcher: DispatchCommand()
+    Dispatcher->>Decoder: IsCmdSupported(command)
+    
+    alt Команда поддерживается
+        Decoder->>Decoder: AProcessCommand(command)
+        Decoder->>App: ExecuteCommand(command)
+        
+        alt Внутренняя команда
+            App->>App: ProcessInternalCommand()
+            App->>Project: Project operations
+            Project->>Engine: Engine operations
+        else Общая команда
+            App->>App: ProcessCommonCommand()
+            App->>Engine: Engine operations
+        end
+        
+        Engine-->>App: Результат
+        App-->>Decoder: Результат выполнения
+        Decoder->>Dispatcher: PushToProcessedQueue(result)
+        Dispatcher->>Transport: SendResponse(result)
+        Transport-->>Client: Ответ клиенту
+    else Команда не поддерживается
+        Decoder-->>Dispatcher: false
+        Dispatcher->>Transport: SendError("Command not supported")
+        Transport-->>Client: Ошибка
+    end
+```
+
+```mermaid
+sequenceDiagram
+    participant Main as main()
+    participant AppCore as UAppCore
+    participant App as UApplication
+    participant Storage as UStorage
+    participant Engine as UEngine
+    participant Server as UServerControl
+    participant Dispatcher as URpcDispatcher
+    
+    Main->>AppCore: Init(application_file, ini_file, log_dir, user_name, argc, argv)
+    AppCore->>AppCore: Initialize components
+    AppCore->>App: SetApplicationFileName()
+    AppCore->>App: SetWorkDirectory()
+    AppCore->>App: SetConfigsMainPath()
+    AppCore->>App: SetLibrariesPath()
+    AppCore->>Storage: LoadLibraries()
+    Storage->>Storage: Build()
+    AppCore->>Dispatcher: SetApplication(app)
+    AppCore->>Server: SetApplication(app)
+    AppCore->>Server: SetRpcDispatcher(dispatcher)
+    AppCore->>App: PostInit()
+    App->>App: Initialize logging
+    App->>App: Load configuration
+    App->>App: Initialize GUI controllers
+    App-->>AppCore: Initialization complete
+    AppCore-->>Main: Success
+```
+
+```mermaid
+sequenceDiagram
+    participant App as UApplication
+    participant Project as UProject
+    participant Storage as UStorage
+    participant Engine as UEngine
+    participant Env as UEnvironment
+    
+    App->>Project: LoadProject(project_path)
+    Project->>Project: LoadConfig()
+    Project->>Project: LoadChannelsConfig()
+    
+    loop Для каждого канала
+        Project->>Storage: CreateComponent(channel_class_name)
+        Storage-->>Project: UEPtr~UContainer~
+        Project->>Env: CreateEnvironment()
+        Project->>Env: SetModel(component)
+        Project->>Env: LoadParameters(parameters_file)
+        Project->>Env: LoadStates(states_file)
+        Project->>Env: Build()
+        Project->>Project: AddEnvironment(env)
+    end
+    
+    Project->>Project: ProjectOpenFlag = true
+    Project-->>App: true
+    App->>App: UpdateInterface()
+```

@@ -53,8 +53,8 @@ Patterns are aggregated from `Bin/Configs/**/Model_*.xml` into `Bin/LLM/index/co
 
 ## User phrasing (RU / EN)
 
-- низкопороговая зона, LT zone, LTZone
-- возбуждающий синапс, excitatory synapse, ExcSynapse
+- low-threshold zone, LT zone, LTZone
+- excitatory synapse, ExcSynapse
 
 ## When not to guess
 

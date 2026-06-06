@@ -774,3 +774,168 @@ triangle.Vertex(2) = RDK::MVector<double, 3>(0.5, 1, 0);
 - [Utilities Reference](Utilities-Reference.md) - utility functions
 - [Graphics Architecture](../../Docs/Rdk-Core/Graphics-Architecture.md) - math usage in graphics
 - [Rdk-CvBasicLib](../../Libraries/Rdk-CvBasicLib/Docs/Architecture.md) - usage in computer vision
+
+```mermaid
+classDiagram
+    class MMatrixBase {
+        <<abstract>>
+        +GetDimensions() int
+        +GetSize() int
+        +IsEmpty() bool
+        +GetMatrixSize() MMatrixSize
+        +Resize(MMatrixSize) bool
+    }
+    
+    class MMatrix~T,Rows,Cols~ {
+        +T Data[Rows][Cols]
+        +GetRows() unsigned
+        +GetCols() unsigned
+        +operator()(int, int) T&
+        +Transpose() MMatrix
+        +Inverse() MMatrix
+        +Det() T
+        +operator*(MMatrix) MMatrix
+        +operator+(MMatrix) MMatrix
+        +Eye() MMatrix
+    }
+    
+    class MDMatrix~T~ {
+        +Resize(int, int) bool
+        +GetRows() int
+        +GetCols() int
+        +operator()(int, int) T&
+        +Transpose() MDMatrix
+        +Inverse() MDMatrix
+        +Det() T
+    }
+    
+    class MVector~T~ {
+        +T Data[Size]
+        +GetSize() unsigned
+        +operator[](int) T&
+        +operator*(MVector) T
+        +operator+(MVector) MVector
+        +Norm() T
+    }
+    
+    class MDVector~T~ {
+        +Resize(int) bool
+        +GetSize() int
+        +operator[](int) T&
+    }
+    
+    class MKalmanFilter {
+        #MDMatrix~double~ F
+        #MDMatrix~double~ H
+        #MDMatrix~double~ Q
+        #MDMatrix~double~ R
+        #MDMatrix~double~ P
+        +Predict() void
+        +Update(MDVector~double~) void
+        +GetState() MDVector~double~
+    }
+    
+    class MDKalmanFilter {
+        +Predict() void
+        +Update(MDVector~double~) void
+    }
+    
+    class MCorrelation {
+        +Calculate(MDMatrix~double~, MDMatrix~double~) MDMatrix~double~
+    }
+    
+    class NCC2D {
+        +Calculate(UBitmap, UBitmap) double
+    }
+    
+    class MGeometry {
+        +TransformPoint(MVector~double,3~, MMatrix~double,4,4~) MVector~double,3~
+    }
+    
+    class MCamera {
+        +ProjectPoint(MVector~double,3~) MVector~double,2~
+    }
+    
+    MMatrixBase <|-- MMatrix
+    MMatrixBase <|-- MDMatrix
+    MVector <|-- MDVector
+    UModule <|-- MKalmanFilter
+    MKalmanFilter <|-- MDKalmanFilter
+    UModule <|-- MCorrelation
+    UModule <|-- NCC2D
+    MGeometry --> MMatrix
+    MCamera --> MGeometry
+```
+
+```mermaid
+sequenceDiagram
+    participant System as Динамическая система
+    participant Filter as MKalmanFilter
+    participant Measurement as Измерения
+    
+    System->>Filter: Начальное состояние Xk1, Pk1
+    System->>System: Эволюция состояния (FM, BM, Uk1)
+    Filter->>Filter: Предсказание: XkL = F*Xk1 + B*Uk1
+    Filter->>Filter: Ковариация ошибки: PkL = F*Pk1*F' + Q
+    Measurement->>Filter: Измерение Zk
+    Filter->>Filter: Коэффициент Калмана: Kk = PkL*H'*(H*PkL*H' + R)^-1
+    Filter->>Filter: Обновление оценки: Xk = XkL + Kk*(Zk - H*XkL)
+    Filter->>Filter: Обновление ковариации: Pk = (I - Kk*H)*PkL
+    Filter-->>System: Новая оценка Xk, Pk
+```
+
+```mermaid
+classDiagram
+    class MCamera {
+        <<abstract>>
+        +MMatrix Ecc
+        +MMatrix InvEcc
+        +GetEcc() MMatrix
+        +SetEcc(MMatrix) bool
+        +CalcScreenBySpacePoint(MVector) MVector
+        +CalcSpaceByScreenPoint(MVector, T) MVector
+        +Convert3Dto2DGeometry(MGeometry) void
+    }
+    
+    class MCameraStandard {
+        +MMatrix Icc
+        +MMatrix InvIcc
+        +MDVector DistortionCoeff
+        +int DistortionMode
+        +int CameraMode
+        +CalcDistortPixelPosition(MVector) MVector
+        +CalcUndistortPixelPosition(MVector) MVector
+        +CalcIccByVisualAngle(...) bool
+    }
+    
+    MCamera <|-- MCameraStandard
+```
+
+```mermaid
+flowchart TB
+    subgraph "Матричные операции"
+        MMatrix["MMatrix (Фиксированный размер)"]
+        MDMatrix["MDMatrix (Динамический размер)"]
+    end
+    
+    subgraph "Векторные операции"
+        MVector["MVector (Фиксированный размер)"]
+        MDVector["MDVector (Динамический размер)"]
+    end
+    
+    subgraph "Фильтрация"
+        MKalman["MKalmanFilter (Фиксированный размер)"]
+        MDKalman["MDKalmanFilter (Динамический размер)"]
+    end
+    
+    subgraph "Геометрия и камеры"
+        MCamera["MCamera (Камерные преобразования)"]
+        MGeometry["MGeometry (Геометрические объекты)"]
+    end
+    
+    MMatrix --> MKalman
+    MDMatrix --> MDKalman
+    MVector --> MCamera
+    MVector --> MGeometry
+    MCamera --> MGeometry
+```

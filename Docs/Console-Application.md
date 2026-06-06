@@ -667,3 +667,84 @@ To extend console functionality:
 
 - [Application Architecture](../../Docs/Rdk-Core/Application-Architecture.md) - application architecture
 - [Engine Architecture](../../Docs/Rdk-Core/Engine-Architecture.md) - engine architecture
+
+```mermaid
+classDiagram
+    class UConsoleEngine {
+        -string VersionInfo
+        -bool QueryDateEnable
+        -bool QueryTimeEnable
+        -bool QueryTimeSecondsEnable
+        -bool QueryCommandCaseSensitive
+        -bool QueryParametersCaseSensitive
+        -string ReportPrefix
+        -string ErrorPrefix
+        -string QueryBuffer
+        -string QueryCommand
+        -list~string~ QueryResult
+        -list~string~ ConsoleList
+        -list~string~ ResultBuffer
+        -istream* InputStream
+        -ostream* OutputStream
+        -bool RunningState
+        +GetVersionInfo() string
+        +GetQueryDateEnable() bool
+        +SetParameter(string, string) void
+        +GetParameter(string) string
+        +Run() void
+        #ParseQuery(string, string, list~string~) void
+        #Parser(string, list~string~) void
+        #CalcQueryString() string
+        #Query(list~string~) void
+        #Show(list~string~) void
+        #CRun() void
+        #CWelcome() void
+        #CVersion() void
+        #CExit() void
+        #CSetDefaultOptions() void
+        #CSetOptions(list~string~) void
+        #CUnknownCommand() void
+    }
+```
+
+```mermaid
+flowchart TB
+    Start[Creation UConsoleEngine] --> Init[Initialization параметров]
+    Init --> Run[Run]
+    Run --> Loop{Главный цикл}
+    Loop -->|RunningState = true| Query[Query - ввод команды]
+    Query --> Parse[ParseQuery - разбор команды]
+    Parse --> Parser[Parser - анализ команды]
+    Parser --> Execute[Выполнение команды]
+    Execute --> Show[Show - вывод результата]
+    Show --> Loop
+    Loop -->|RunningState = false| Exit[Выход]
+    Exit --> End[Завершение]
+    
+    style Start fill:#e1f5ff
+    style Exit fill:#ffe1f5
+```
+
+```mermaid
+sequenceDiagram
+    participant User as Пользователь
+    participant Console as UConsoleEngine
+    participant Parser as ParseQuery
+    participant CmdHandler as Command Handler
+    
+    User->>Console: Ввод команды
+    Console->>Console: Query() - чтение из InputStream
+    Console->>Parser: ParseQuery(query, command, params)
+    Parser->>Parser: Разбор строки на команду и параметры
+    Parser-->>Console: command, params
+    Console->>CmdHandler: Parser(command, params)
+    alt Команда найдена
+        CmdHandler->>CmdHandler: Вызов соответствующего метода (CRun, CWelcome, etc.)
+        CmdHandler->>CmdHandler: Запись результата в ResultBuffer
+    else Команда не найдена
+        CmdHandler->>CmdHandler: CUnknownCommand()
+    end
+    CmdHandler-->>Console: Результат в ResultBuffer
+    Console->>Console: Show(ResultBuffer)
+    Console->>User: Вывод результата в OutputStream
+```

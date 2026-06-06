@@ -37,7 +37,7 @@ Compound goals use `goal_success` type `multi_component_count`. See TD-091 for r
 
 ## EN
 
-The assistant resolves a **primary operation count** once per user turn (not per tool). Example: «добавь шесть нейронов» → `primary=6` for the whole turn.
+The assistant resolves a **primary operation count** once per user turn (not per tool). Example: «add six neurons» → `primary=6` for the whole turn.
 
 ## Pipeline
 

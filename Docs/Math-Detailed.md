@@ -742,3 +742,207 @@ Class for geometric objects.
 - [Utilities-Reference.md](Utilities-Reference.md) - utility functions
 - [Graphics-Detailed.md](Graphics-Detailed.md) - math usage in graphics
 - [Engine-Detailed.md](Engine-Detailed.md) - math usage in components
+
+```mermaid
+classDiagram
+    class MMatrixBase {
+        <<abstract>>
+        +GetDimensions() int
+        +GetSize() int
+        +IsEmpty() bool
+        +GetMatrixSize() MMatrixSize
+        +Resize(MMatrixSize) bool
+        +GetByteSize() int
+        +GetElementByteSize() int
+        +GetVoid() void*
+        +CopyTo(MMatrixBase) bool
+    }
+    
+    class MMatrix~T,Rows,Cols~ {
+        +T Data[Rows][Cols]
+        +GetRows() unsigned
+        +GetCols() unsigned
+        +operator()(int, int) T&
+        +operator[](int) T*
+        +Transpose() MMatrix
+        +Inverse() MMatrix
+        +Det() T
+        +Det3x3() T
+        +operator*(MMatrix) MMatrix
+        +operator+(MMatrix) MMatrix
+        +operator-(MMatrix) MMatrix
+        +operator*(T) MMatrix
+        +operator/(T) MMatrix
+        +Eye() MMatrix
+        +Zeros() MMatrix
+        +Ones() MMatrix
+    }
+    
+    class MDMatrix~T~ {
+        +Resize(int, int) bool
+        +GetRows() int
+        +GetCols() int
+        +operator()(int, int) T&
+        +Transpose() MDMatrix
+        +Inverse() MDMatrix
+        +Det() T
+        +operator*(MDMatrix) MDMatrix
+        +operator+(MDMatrix) MDMatrix
+        +operator-(MDMatrix) MDMatrix
+    }
+    
+    class MVector~T,Size~ {
+        +T Data[Size]
+        +GetSize() unsigned
+        +operator[](int) T&
+        +operator()(int) T&
+        +operator&(MVector) T
+        +operator^(MVector) MVector
+        +Norm() T
+        +Norm2() T
+        +Normalize() void
+        +operator*(MVector) T
+        +operator+(MVector) MVector
+        +operator-(MVector) MVector
+    }
+    
+    class MDVector~T~ {
+        +Resize(int) bool
+        +GetSize() int
+        +operator[](int) T&
+        +operator()(int) T&
+        +Norm() T
+        +Normalize() void
+    }
+    
+    class MKalmanFilter~T,Size~ {
+        #MMatrix~T,Size,Size~ FM
+        #MMatrix~T,Size,Size~ BM
+        #MMatrix~T,Size,Size~ QM
+        #MMatrix~T,Size,Size~ HM
+        #MMatrix~T,Size,Size~ RM
+        #MMatrix~T,Size,Size~ Pk1
+        #MMatrix~T,Size,1~ Xk1
+        #MMatrix~T,Size,1~ Uk1
+        #MMatrix~T,Size,1~ Z
+        +StatePrediction() MMatrix
+        +CovariationError() MMatrix
+        +KalmanGain() MMatrix
+        +EstimationUpdate() MMatrix
+    }
+    
+    class MDKalmanFilter~T~ {
+        #int NumStates
+        #int NumMeasurements
+        #MDMatrix~T~ FM
+        #MDMatrix~T~ BM
+        #MDMatrix~T~ QM
+        #MDMatrix~T~ HM
+        #MDMatrix~T~ RM
+        #MDMatrix~T~ Pk1
+        #MDMatrix~T~ Xk1
+        #MDMatrix~T~ Uk1
+        #MDMatrix~T~ Z
+        +SetKalmanSize(int, int) void
+        +KalmanCalculate(int) bool
+        +GetXk1() MDMatrix
+        +GetPk1() MDMatrix
+    }
+    
+    class MCorrelation {
+        +Calculate(MDMatrix, MDMatrix) MDMatrix
+    }
+    
+    class NCC2D {
+        +Calculate(UBitmap, UBitmap) double
+    }
+    
+    class MGeometry~T,Dim~ {
+        +vector~MVector~T,Dim~~ Vertices
+        +vector~vector~int~~ Borders
+        +vector~string~ VertexNames
+        +SetNumVertices(int) void
+        +SetNumBorders(int) void
+        +Vertex(int) MVector&
+        +Border(int) vector~int~&
+    }
+    
+    class MCamera~T~ {
+        <<abstract>>
+        +MMatrix~T,4,4~ Ecc
+        +MMatrix~T,4,4~ InvEcc
+        +GetEcc() MMatrix
+        +SetEcc(MMatrix) bool
+        +CalcScreenBySpacePoint(MVector) MVector
+        +CalcSpaceByScreenPoint(MVector, T) MVector
+    }
+    
+    class MCameraStandard~T~ {
+        +MMatrix~T,3,3~ Icc
+        +MMatrix~T,3,3~ InvIcc
+        +MDVector~T~ DistortionCoeff
+        +int DistortionMode
+        +int CameraMode
+        +CalcDistortPixelPosition(MVector) MVector
+        +CalcUndistortPixelPosition(MVector) MVector
+    }
+    
+    MMatrixBase <|-- MMatrix
+    MMatrixBase <|-- MDMatrix
+    MMatrix <|-- MVector
+    MDMatrix <|-- MDVector
+    MKalmanFilter --> MMatrix
+    MDKalmanFilter --> MDMatrix
+    MCamera <|-- MCameraStandard
+    MCamera --> MGeometry
+    MGeometry --> MVector
+```
+
+```mermaid
+sequenceDiagram
+    participant System as Динамическая система
+    participant Filter as MKalmanFilter
+    participant Measurement as Измерения
+    
+    System->>Filter: Initialization: Xk1, Pk1, F, B, H, Q, R
+    Filter->>Filter: Установка начального состояния
+    
+    loop Каждая итерация
+        System->>System: Эволюция состояния
+        Filter->>Filter: Предсказание: XkL = F*Xk1 + B*Uk1
+        Filter->>Filter: Ковариация ошибки: PkL = F*Pk1*F' + Q
+        Measurement->>Filter: Измерение Zk
+        Filter->>Filter: Коэффициент Калмана: Kk = PkL*H'*(H*PkL*H' + R)^-1
+        Filter->>Filter: Обновление оценки: Xk = XkL + Kk*(Zk - H*XkL)
+        Filter->>Filter: Обновление ковариации: Pk = (I - Kk*H)*PkL
+        Filter->>Filter: Сохранение: Xk1 = Xk, Pk1 = Pk
+        Filter-->>System: Новая оценка Xk, Pk
+    end
+```
+
+```mermaid
+classDiagram
+    class MGeometryDescription {
+        +string Name
+        +MGeometry Geometry
+        +MMatrix Transform
+    }
+    
+    class MGeometry~T,Dim~ {
+        +vector~MVector~T,Dim~~ Vertices
+        +vector~vector~int~~ Borders
+        +vector~string~ VertexNames
+        +SetNumVertices(int) void
+        +SetNumBorders(int) void
+        +Vertex(int) MVector&
+        +Border(int) vector~int~&
+    }
+    
+    class MVector~T,Size~ {
+        +operator()(int) T&
+        +Norm() T
+    }
+    
+    MGeometryDescription --> MGeometry
+    MGeometry --> MVector
+```

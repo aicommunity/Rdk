@@ -943,4 +943,307 @@ ini_file.WriteString("Section", "Key", "Value");
 - [Exception Handling](../../Docs/Rdk-Core/Engine-Architecture.md) - exception handling in components
 - [Logging System](Logging-System.md) - logging system
 - [System Platform Abstraction](../../Docs/Rdk-Core/System-Platform-Abstraction.md) - system abstractions
-- [Error-Handling.md](Guides/Error-Handling.md) - руководство по обработке ошибок
+- [Error-Handling.md](Guides/Error-Handling.md) - guide по processing errors
+
+```mermaid
+classDiagram
+    class UException {
+        <<abstract>>
+        #int Number
+        #int Type
+        #time_t Time
+        #string Message
+        #string ObjectName
+        +GetNumber() int
+        +GetType() int
+        +GetTime() time_t
+        +what() const char*
+        +Wrap(UException, string) UException
+    }
+    
+    class EFatal {
+        +EFatal()
+    }
+    
+    class EError {
+        +EError()
+    }
+    
+    class EWarning {
+        +EWarning()
+    }
+    
+    class EInfo {
+        +EInfo()
+    }
+    
+    class EDebug {
+        +EDebug()
+    }
+    
+    class EApp {
+        +EApp()
+    }
+    
+    class EStringError {
+        #string Str
+        +EStringError(string, int)
+    }
+    
+    class EIdError {
+        #int Id
+        +EIdError(int)
+    }
+    
+    class ENameError {
+        #string Name
+        +ENameError(string)
+    }
+    
+    class EIndexError {
+        #int Index
+        +EIndexError(int)
+    }
+    
+    class UTransferPacket {
+        #void* Data
+        #int Size
+        +GetData() void*
+        +GetSize() int
+    }
+    
+    class UTransferReader {
+        +Read(UTransferPacket) bool
+    }
+    
+    class UIniFile {
+        #map~string,string~ Values
+        +Read(string, string) string
+        +Write(string, string) bool
+        +LoadFromFile(string) bool
+        +SaveToFile(string) bool
+    }
+    
+    class URegistry {
+        +Read(string) string
+        +Write(string, string) bool
+    }
+    
+    class UTimeStamp {
+        #time_t Time
+        +GetTime() time_t
+        +ToString() string
+    }
+    
+    class UTree~T~ {
+        #T Value
+        #vector~UTree*~ Children
+        +GetValue() T&
+        +AddChild(UTree) void
+        +GetChildren() vector~UTree*~
+    }
+    
+    class UQueue~T~ {
+        #queue~T~ Queue
+        +Push(T) void
+        +Pop() T
+        +Empty() bool
+    }
+    
+    class UDoubleBuffer~T~ {
+        #T* Front
+        #T* Back
+        +GetFront() T*
+        +GetBack() T*
+        +Swap() void
+    }
+    
+    class UPtr~T~ {
+        #T* Ptr
+        +Get() T*
+        +Reset(T*) void
+    }
+    
+    UException <|-- EFatal
+    UException <|-- EError
+    UException <|-- EWarning
+    UException <|-- EInfo
+    UException <|-- EDebug
+    UException <|-- EApp
+    EError <|-- EStringError
+    EError <|-- EIdError
+    EError <|-- ENameError
+    EError <|-- EIndexError
+```
+
+```mermaid
+classDiagram
+    class UException {
+        <<abstract>>
+        +int Number
+        +int Type
+        +time_t Time
+        +string Message
+        +string ObjectName
+        +GetNumber() int
+        +GetType() int
+        +GetTime() time_t
+        +what() const char*
+        +Wrap(UException, string)
+    }
+    
+    class EFatal {
+        +EFatal()
+    }
+    
+    class EError {
+        +EError()
+    }
+    
+    class EWarning {
+        +EWarning()
+    }
+    
+    class EInfo {
+        +EInfo()
+    }
+    
+    class EDebug {
+        +EDebug()
+    }
+    
+    class EApp {
+        +EApp()
+    }
+    
+    class EStringError {
+        +string Str
+        +EStringError(string, int)
+    }
+    
+    class EStringWarning {
+        +string Str
+        +EStringWarning(string, int)
+    }
+    
+    class EIdError {
+        +int Id
+        +EIdError(int)
+    }
+    
+    class ENameError {
+        +string Name
+        +ENameError(string)
+    }
+    
+    class EIndexError {
+        +int Index
+        +EIndexError(int)
+    }
+    
+    class EStrToNumber {
+        +string Str
+        +EStrToNumber(string)
+    }
+    
+    class ESystemException {
+        +string Info
+        +ESystemException(string)
+    }
+    
+    UException <|-- EFatal
+    UException <|-- EError
+    UException <|-- EWarning
+    UException <|-- EInfo
+    UException <|-- EDebug
+    UException <|-- EApp
+    EError <|-- EStringError
+    EError <|-- EIdError
+    EError <|-- ENameError
+    EError <|-- EIndexError
+    EError <|-- EStrToNumber
+    EFatal <|-- ESystemException
+    EIdError <|-- EIdNotExist
+    EIdError <|-- EIdAlreadyExist
+    EIdError <|-- EForbiddenId
+    EIdError <|-- EInvalidId
+    ENameError <|-- ENameNotExist
+    ENameError <|-- ENameAlreadyExist
+    EIndexError <|-- EInvalidIndex
+```
+
+```mermaid
+sequenceDiagram
+    participant Component as UComponent
+    participant Exception as UException
+    participant Logger as UExceptionLogger
+    participant Sink as Log Sink
+    
+    Component->>Component: throw EStringError("Error")
+    Component->>Exception: Exception created
+    Exception->>Exception: Set Type, Number, Time
+    Component->>Logger: ProcessException(exception)
+    Logger->>Logger: Check severity level
+    Logger->>Sink: Consume(LogItem)
+    Sink->>Sink: Write to file/GUI/JSON
+    Sink-->>Logger: Logged
+    Logger-->>Component: Exception processed
+```
+
+```mermaid
+sequenceDiagram
+    participant Comp as UComponent
+    participant Logger as UExceptionLogger
+    participant Handler as ExceptionHandler
+    
+    Comp->>Comp: ACalculate()
+    Comp->>Comp: throw EStringError("Calculation failed")
+    Comp->>Logger: ProcessException(exception)
+    Logger->>Logger: Check initialization mode
+    alt Initialization mode
+        Logger->>Logger: Downgrade FATAL to ERROR
+    end
+    Logger->>Handler: ExceptionPreprocessor(exception)
+    Handler-->>Logger: Processed exception
+    Logger->>Logger: WriteLog(severity, message)
+    Logger->>Handler: ExceptionPostprocessor(exception)
+```
+
+```mermaid
+flowchart TB
+    Start[Start пакета] --> Prefix["UPacketPrefix (16 байт)"]
+    Prefix --> Size["PacketSize (4 байта)"]
+    Size --> CmdId["CmdId (4 байта)"]
+    CmdId --> NumParams["NumParams (4 байта)"]
+    NumParams --> Params["Params (массив параметров)"]
+    Params --> Checksum["Checksum (4 байта)"]
+    Checksum --> End[End пакета]
+    
+    style Prefix fill:#e1f5ff
+    style Checksum fill:#ffe1f5
+```
+
+```mermaid
+sequenceDiagram
+    participant Writer as Поток записи
+    participant Buffer as UDoubleBuffer
+    participant Reader as Поток чтения
+    
+    Writer->>Buffer: GetPtrForWrite()
+    Buffer-->>Writer: Указатель на буфер A
+    Writer->>Writer: Запись данных в A
+    Writer->>Buffer: MakeWrited(A)
+    
+    Reader->>Buffer: GetPtrForRead()
+    Buffer-->>Reader: Указатель на буфер B (старый)
+    Reader->>Reader: Чтение данных из B
+    Reader->>Buffer: MakeReaded(B)
+    
+    Writer->>Buffer: GetPtrForWrite()
+    Buffer-->>Writer: Указатель на буфер B (освобожден)
+    Writer->>Writer: Запись данных в B
+    Writer->>Buffer: MakeWrited(B)
+    
+    Reader->>Buffer: GetPtrForRead()
+    Buffer-->>Reader: Указатель на буфер A (новый)
+```

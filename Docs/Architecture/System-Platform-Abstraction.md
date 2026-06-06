@@ -279,3 +279,60 @@ Implementation is selected at build time through CMake.
 - [Cross-Platform Support](../../../Docs/Build-And-Deploy/Cross-Platform.md)
 - [Rdk Core Overview](Overview.md)
 - [Application Architecture](Application-Architecture.md)
+
+```mermaid
+flowchart TB
+    subgraph "Абстрактный интерфейс"
+        Interface["rdk_system.h<br/>UGenericMutex<br/>UGenericEvent"]
+    end
+    
+    subgraph "Платформенные реализации"
+        Qt[Qt Implementation]
+        Win[Windows Implementation]
+        Gcc[GCC/POSIX Implementation]
+        BCB[Borland C++ Builder]
+        ANSI[ANSI Fallback]
+    end
+    
+    Interface --> Qt
+    Interface --> Win
+    Interface --> Gcc
+    Interface --> BCB
+    Interface --> ANSI
+```
+
+```mermaid
+sequenceDiagram
+    participant App as Приложение
+    participant Loader as UDllLoader
+    participant Platform as Платформенный API
+    participant Library as Динамическая библиотека
+    
+    App->>Loader: Load("library.dll")
+    Loader->>Platform: LoadLibrary/dlopen
+    Platform->>Library: Загрузка в память
+    Library-->>Platform: Handle
+    Platform-->>Loader: Успех
+    Loader-->>App: true
+    
+    App->>Loader: Resolve("FunctionName")
+    Loader->>Platform: GetProcAddress/dlsym
+    Platform-->>Loader: Указатель на функцию
+    Loader-->>App: void* functionPtr
+```
+
+```mermaid
+flowchart TB
+    Start[CMake конфигурация] --> CheckQt{QT_FOUND?}
+    CheckQt -->|Да| QtImpl["System/Qt<br/>QLibrary, QReadWriteLock"]
+    CheckQt -->|Нет| CheckWin{WIN32?}
+    CheckWin -->|Да| WinImpl["System/Win<br/>LoadLibrary, CreateMutex"]
+    CheckWin -->|Нет| CheckUnix{UNIX?}
+    CheckUnix -->|Да| GccImpl["System/Gcc<br/>dlopen, pthread"]
+    CheckUnix -->|Нет| ANSIImpl["System/ANSI<br/>Fallback"]
+    
+    QtImpl --> Link[Линковка реализации]
+    WinImpl --> Link
+    GccImpl --> Link
+    ANSIImpl --> Link
+```

@@ -258,3 +258,72 @@ Property serialization occurs through operator overloading in templated classes 
 - [Engine Architecture](Engine-Architecture.md)
 - [Component System](../Guides/Component-System.md)
 - [Rdk Core Overview](Overview.md)
+
+```mermaid
+classDiagram
+    class USerStorage {
+        <<abstract>>
+        +AddNode()
+        +SelectNode()
+        +ReadString()
+        +WriteString()
+    }
+    
+    class USerStorageXML {
+        +XML структура
+        +SelectRoot()
+        +GetNumNodes()
+    }
+    
+    class USerStorageBinary {
+        +Бинарный поток
+        +Оптимизация размера
+    }
+    
+    class UXMLEnvSerialize {
+        +SerializeComponent()
+        +DeserializeComponent()
+    }
+    
+    class UBinaryEnvSerialize {
+        +SerializeComponent()
+        +DeserializeComponent()
+    }
+    
+    USerStorage <|-- USerStorageXML
+    USerStorage <|-- USerStorageBinary
+    UXMLEnvSerialize --> USerStorageXML
+    UBinaryEnvSerialize --> USerStorageBinary
+```
+
+```mermaid
+sequenceDiagram
+    participant Project as UProject
+    participant Serialize as UXMLEnvSerialize
+    participant Storage as USerStorageXML
+    participant Component as UComponent
+    participant Property as UProperty
+    
+    Project->>Serialize: SaveComponent(component)
+    Serialize->>Storage: AddNode("Component")
+    Serialize->>Component: GetName(), GetClass()
+    Serialize->>Storage: WriteString("Name", name)
+    Serialize->>Component: Для каждого свойства
+    Component->>Property: GetValue()
+    Serialize->>Storage: WriteProperty(property)
+    Serialize->>Storage: SelectUp()
+    Storage-->>Project: XML сохранён
+```
+
+```mermaid
+flowchart TB
+    Save[Сохранение проекта] --> Format{Формат?}
+    Format -->|XML| XML["USerStorageXML<br/>UXMLEnvSerialize"]
+    Format -->|Binary| Binary["USerStorageBinary<br/>UBinaryEnvSerialize"]
+    XML --> FileXML[Файл .xml]
+    Binary --> FileBin[Файл .bin]
+    
+    Load[Загрузка проекта] --> Detect{Определение формата}
+    Detect -->|XML| XML
+    Detect -->|Binary| Binary
+```

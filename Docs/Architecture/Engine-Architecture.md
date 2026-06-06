@@ -416,3 +416,145 @@ Factories are created either from prototype instances (`UVirtualMethodFactory`) 
 - [Rdk Core Overview](Overview.md)
 - [Detailed Engine Documentation](../Engine-Detailed.md)
 - [Creating Components](../Guides/Creating-Components.md)
+
+```mermaid
+stateDiagram-v2
+    [*] --> Default: Creation
+    Default --> Build: Настройка параметров
+    Build --> Ready: Ready
+    Ready --> Reset: Перед вычислениями
+    Reset --> Calculate: Calculate
+    Calculate --> Calculate: Повтор
+    Calculate --> Reset: Новый цикл
+    Ready --> [*]: Удаление
+```
+
+```mermaid
+classDiagram
+    class UProperty {
+        <<abstract>>
+        +getValue()
+        +setValue()
+    }
+    
+    class UPropertyInput {
+        +getData()
+    }
+    
+    class UPropertyOutput {
+        +setData()
+    }
+    
+    class UPropertyIO {
+        +getData()
+        +setData()
+    }
+    
+    UProperty <|-- UPropertyInput
+    UProperty <|-- UPropertyOutput
+    UProperty <|-- UPropertyIO
+```
+
+```mermaid
+sequenceDiagram
+    participant Comp1 as Component1
+    participant Connector as UConnector
+    participant Comp2 as Component2
+    
+    Comp1->>Connector: Создать соединение
+    Connector->>Comp1: Получить выходное свойство
+    Connector->>Comp2: Получить входное свойство
+    Connector->>Connector: Связать свойства
+    
+    loop Каждый шаг времени
+        Comp1->>Comp1: ACalculate()
+        Comp1->>Comp2: Передача данных через свойство
+        Comp2->>Comp2: ACalculate()
+    end
+```
+
+```mermaid
+classDiagram
+    class UItem {
+        +GetId()
+        +GetName()
+    }
+    
+    class UModule {
+        +Default()
+        +Build()
+        +Reset()
+        +Calculate()
+    }
+    
+    class UComponent {
+        +ADefault()
+        +ABuild()
+        +AReset()
+        +ACalculate()
+    }
+    
+    class UContainer {
+        +AddComponent()
+        +RemoveComponent()
+    }
+    
+    class UNet {
+        +Connect()
+        +Disconnect()
+    }
+    
+    class UProperty {
+        +getValue()
+        +setValue()
+    }
+    
+    UItem <|-- UModule
+    UModule <|-- UComponent
+    UComponent <|-- UContainer
+    UComponent <|-- UNet
+    UComponent "1" o-- "*" UProperty
+```
+
+```mermaid
+sequenceDiagram
+    participant Engine as UEngine
+    participant Env as UEnvironment
+    participant Container as UContainer
+    participant Comp1 as Component1
+    participant Comp2 as Component2
+    
+    Engine->>Env: Start()
+    Env->>Container: Reset()
+    Container->>Comp1: AReset()
+    Container->>Comp2: AReset()
+    
+    loop Каждый шаг времени
+        Env->>Container: Calculate()
+        Container->>Comp1: ACalculate()
+        Comp1->>Comp1: Processing данных
+        Comp1->>Comp2: Обновление выходных свойств
+        Container->>Comp2: ACalculate()
+        Comp2->>Comp2: Processing данных
+    end
+    
+    Engine->>Env: Stop()
+    Env->>Container: Cleanup()
+```
+
+```mermaid
+flowchart TB
+    App[UApplication] --> EngineCtrl[UEngineControl]
+    EngineCtrl --> Engine[UEngine]
+    Engine --> Env[UEnvironment]
+    Env --> Container[UContainer]
+    Container --> Comp1[Component1]
+    Container --> Comp2[Component2]
+    
+    Comp1 -->|Данные через свойства| Comp2
+    Comp2 -->|Данные через свойства| Output[Выход]
+    
+    Engine --> Storage[UStorage]
+    Storage -->|Фабрики| Comp1
+    Storage -->|Фабрики| Comp2
+```

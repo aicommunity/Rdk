@@ -41,7 +41,7 @@ Aliases: `load_project`, `save_project` (deprecated names, same handlers).
 These tools are registered in `RegisterApplicationTools.cpp`:
 
 - `list_recent_configurations` / `open_recent_configuration` use presentation-sink helper data (`ILLMPresentationSink::recentConfigurationPaths`) and `UApplication::GetLastProjectsList()` to provide a unified deduped recent list.
-- After `list_recent_configurations`, the orchestrator stores `pending_tool_arguments` for `open_recent_configuration`. Follow-up messages such as `10` or `открой` invoke the write tool directly (no spurious LLM `Done.`).
+- After `list_recent_configurations`, the orchestrator stores `pending_tool_arguments` for `open_recent_configuration`. Follow-up messages such as `10` or `open` invoke the write tool directly (no spurious LLM `Done.`).
 - `list_ui_panels` returns `{id,title,visible}` based on the GUI host (`UGEngineControlWidget`).
 - `show_ui_panel` / `open_component_gui_tab` do not call Qt directly from tool handlers; instead they request a GUI action via `LLMPresentationEvent.show_panel`, applied by `ULlmQtPresentationSink` on the GUI thread.
 
@@ -55,7 +55,7 @@ These tools are registered in `RegisterApplicationTools.cpp`:
 
 For natural phrases such as `load config` **without a path**, the orchestrator does **not** call the LLM. It returns `needs_argument_clarification` with a structured prompt (`ULLMLifecycleArgumentGate`). The next user message is merged into pending arguments; when complete, the lifecycle tool runs directly (then Apply in GUI if confirmation is required).
 
-**Create without path:** phrases like `create new config` / `создай новый конфиг` / `создай новый проект` are handled LLM-first: the model calls `create_configuration` with `parent_directory` and/or `autocreate_subdirectory` (same semantics as File → New with “Autocreate configuration folder?” = Yes). Path resolution is centralized in `UApplication::PrepareNewProjectIniPath` / `GetDefaultConfigsDirectory`, shared with GUI and `URdkApplicationCommands::resolveProjectIniPath`.
+**Create without path:** phrases like `create new config` or `create new project` (RU: `создай новый конфиг`, `создай новый проект`) are handled LLM-first: the model calls `create_configuration` with `parent_directory` and/or `autocreate_subdirectory` (same semantics as File → New with “Autocreate configuration folder?” = Yes). Path resolution is centralized in `UApplication::PrepareNewProjectIniPath` / `GetDefaultConfigsDirectory`, shared with GUI and `URdkApplicationCommands::resolveProjectIniPath`.
 
 ## Headless
 
@@ -137,7 +137,7 @@ Aliases: `load_project`, `save_project` (deprecated names, same handlers).
 These tools are registered in `RegisterApplicationTools.cpp`:
 
 - `list_recent_configurations` / `open_recent_configuration` use presentation-sink helper data (`ILLMPresentationSink::recentConfigurationPaths`) and `UApplication::GetLastProjectsList()` to provide a unified deduped recent list.
-- After `list_recent_configurations`, the orchestrator stores `pending_tool_arguments` for `open_recent_configuration`. Follow-up messages such as `10` or `открой` invoke the write tool directly (no spurious LLM `Done.`).
+- After `list_recent_configurations`, the orchestrator stores `pending_tool_arguments` for `open_recent_configuration`. Follow-up messages such as `10` or `open` invoke the write tool directly (no spurious LLM `Done.`).
 - `list_ui_panels` returns `{id,title,visible}` based on the GUI host (`UGEngineControlWidget`).
 - `show_ui_panel` / `open_component_gui_tab` do not call Qt directly from tool handlers; instead they request a GUI action via `LLMPresentationEvent.show_panel`, applied by `ULlmQtPresentationSink` on the GUI thread.
 
@@ -151,7 +151,7 @@ These tools are registered in `RegisterApplicationTools.cpp`:
 
 For natural phrases such as `load config` **without a path**, the orchestrator does **not** call the LLM. It returns `needs_argument_clarification` with a structured prompt (`ULLMLifecycleArgumentGate`). The next user message is merged into pending arguments; when complete, the lifecycle tool runs directly (then Apply in GUI if confirmation is required).
 
-**Create without path:** phrases like `create new config` / `создай новый конфиг` / `создай новый проект` are handled LLM-first: the model calls `create_configuration` with `parent_directory` and/or `autocreate_subdirectory` (same semantics as File → New with “Autocreate configuration folder?” = Yes). Path resolution is centralized in `UApplication::PrepareNewProjectIniPath` / `GetDefaultConfigsDirectory`, shared with GUI and `URdkApplicationCommands::resolveProjectIniPath`.
+**Create without path:** phrases like `create new config` or `create new project` (RU: `create new конфиг`, `create new проект`) are handled LLM-first: the model calls `create_configuration` with `parent_directory` and/or `autocreate_subdirectory` (same semantics as File → New with “Autocreate configuration folder?” = Yes). Path resolution is centralized in `UApplication::PrepareNewProjectIniPath` / `GetDefaultConfigsDirectory`, shared with GUI and `URdkApplicationCommands::resolveProjectIniPath`.
 
 ## Headless
 
@@ -165,9 +165,9 @@ Call `LLMServices::initialize(app, ctx)` without `setPresentationSink` — comma
 | `Test_LLM_PresentationSink` | FullShell vs None, audit field attachment |
 | `Test_LLM_OllamaLabIntegration` | HTTP/chat to `http://10.245.1.12:11434` — **skipped** if host down (`GTEST_SKIP`) |
 | `Test_LLM_E2eLabCommands` | Orchestrator E2E: user → lab Ollama → tool calls (`validate_configuration`, `load_configuration`, …) — **skipped** if Ollama down |
-| `Test_LLM_E2eScenarios` | Parameterized NL E2E: fuzzy RU/EN prompts incl. `создай новый проект` — **skipped** if Ollama down |
+| `Test_LLM_E2eScenarios` | Parameterized NL E2E: fuzzy RU/EN prompts incl. `create new проект` — **skipped** if Ollama down |
 | `Test_LLM_LifecycleArgumentGate` | Path extraction, preflight, merge, prompt formatting |
-| `Test_LLM_OrchestratorLifecycleArgs` | LLM-first lifecycle: `load config` args, `create new config` / `создай новый проект` mock tool_call |
+| `Test_LLM_OrchestratorLifecycleArgs` | LLM-first lifecycle: `load config` args, `create new config` / `create new проект` mock tool_call |
 | `Test_LLM_DocRetrieval` | 16 fixture queries vs builtin index (`llm_retrieval_expectations.json`) |
 | `Test_LLM_KnowledgeIndex` | Catalog build; `UApplication` in `scope=all` |
 
@@ -177,13 +177,13 @@ Automated gate: `Test_LLM_WriteToolsAudit` (mock LLM → `confirmation_requested
 `Test_LLM_OrchestratorLifecycleArgs`. Manual walkthrough in NeuroModeler with Ollama lab
 (`NMSDK_LLM_OLLAMA_*`) and real `Configs/`:
 
-1. RU: «создай новый проект» → first tool_call `create_configuration` (not `add_component`).
+1. RU: «create new project» → first tool_call `create_configuration` (not `add_component`).
 2. Confirm HITL → configuration folder created and shell refreshes.
-3. RU: «загрузи конфигурацию» with path → `load_configuration` or argument clarification.
-4. Query: «что такое HardwareLib» → `search_project_docs` with `scope=docs`, cites path.
-5. Mutate (project open): «добавь MatrixSource» → `add_component` after Confirm; audit has `tool_invoke_start`.
-6. Save: «сохрани конфигурацию» → `save_configuration` or `save_project` after Confirm.
-7. **Auto-apply:** enable **Apply write tools automatically**; «добавь нейрон» / create config runs without per-step Apply (no crash in `UImagesWidget`).
+3. RU: «load configuration» with path → `load_configuration` or argument clarification.
+4. Query: «what such as HardwareLib» → `search_project_docs` with `scope=docs`, cites path.
+5. Mutate (project open): «add MatrixSource» → `add_component` after Confirm; audit has `tool_invoke_start`.
+6. Save: «save configuration» → `save_configuration` or `save_project` after Confirm.
+7. **Auto-apply:** enable **Apply write tools automatically**; «add neuron» / create config runs without per-step Apply (no crash in `UImagesWidget`).
 8. **Reject then retry:** open last config → create new (HITL) → Reject → enable auto-apply → create again succeeds.
 
 Lab Ollama model: env `NMSDK_LLM_OLLAMA_MODEL` (default `qwen2.5:14b`). Presentation timeout: `NMSDK_LLM_PRESENTATION_TIMEOUT_MS` (default 30000).
