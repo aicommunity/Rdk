@@ -179,6 +179,9 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
             tabBar->setContextMenuPolicy(Qt::CustomContextMenu);
             tabBar->setAcceptDrops(true);
             tabBar->installEventFilter(this);
+            if(tabBar->property("nmsdkComponentGuiMenuConnected").toBool())
+                return;
+            tabBar->setProperty("nmsdkComponentGuiMenuConnected", true);
             QObject::connect(tabBar, &QTabBar::customContextMenuRequested, this, [this, tabBar](const QPoint& pos) {
                 const int index = tabBar->tabAt(pos);
                 if(index < 0)
@@ -190,7 +193,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
                 if(!widget)
                     return;
                 showComponentGuiHostMenu(widget, tabBar->mapToGlobal(pos));
-            }, Qt::UniqueConnection);
+            });
         });
     });
 

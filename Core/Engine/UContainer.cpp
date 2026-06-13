@@ -13,6 +13,7 @@ See file license.txt for more information
 #define UAContainerCPP
 
 #include <algorithm>
+#include <locale>
 #include <string.h>
 #include <cstdio>
 #include "UContainer.h"
@@ -578,7 +579,7 @@ bool UContainer::ValidateName(const NameT &name)
   return false;
  if(name.find_first_of(" ") != std::string::npos)
   return false;
- std::locale loc;
+ std::locale loc = std::locale::classic();
  if(!std::isalpha(*name.begin(),loc))
   return false;
  for (std::string::const_iterator it=name.begin(); it!=name.end(); ++it)
