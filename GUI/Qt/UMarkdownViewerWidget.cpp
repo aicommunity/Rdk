@@ -6,6 +6,9 @@
 #include <QFileInfo>
 #include <QTextStream>
 #include <QByteArray>
+#ifndef RDK_USE_QT_WEBENGINE
+#include <QTextEdit>
+#endif
 #ifdef RDK_USE_GLOG
 #include "../../Deploy/Include/rdk_logging.h"
 #endif
