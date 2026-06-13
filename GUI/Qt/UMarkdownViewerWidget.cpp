@@ -7,7 +7,7 @@
 #include <QTextStream>
 #include <QByteArray>
 #ifndef RDK_USE_QT_WEBENGINE
-#include <QTextEdit>
+#include <QTextBrowser>
 #endif
 #ifdef RDK_USE_GLOG
 #include "../../Deploy/Include/rdk_logging.h"
@@ -57,7 +57,7 @@ UMarkdownViewerWidget::UMarkdownViewerWidget(QWidget *parent)
     initializeWebEngine();
     connect(m_webView, &QWebEngineView::loadFinished, this, &UMarkdownViewerWidget::onLoadFinished);
 #else
-    m_textEdit = new QTextEdit(this);
+    m_textEdit = new QTextBrowser(this);
     m_textEdit->setReadOnly(true);
     m_textEdit->setOpenExternalLinks(true);
     layout->addWidget(m_textEdit);

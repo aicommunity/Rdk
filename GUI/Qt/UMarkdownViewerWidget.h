@@ -8,7 +8,7 @@
 #include <QWebEngineView>
 class QWebEnginePage;
 #else
-class QTextEdit;
+class QTextBrowser;
 #endif
 
 /// Виджет для отображения Markdown (с поддержкой mermaid при наличии Qt WebEngine)
@@ -50,7 +50,7 @@ private:
 #ifdef RDK_USE_QT_WEBENGINE
     QWebEngineView* m_webView;
 #else
-    QTextEdit* m_textEdit;
+    QTextBrowser* m_textEdit;
 #endif
     QUrl m_baseUrl;
     QString m_currentMarkdown;
