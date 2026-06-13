@@ -15,6 +15,7 @@
 #include <QString>
 #include <QVector>
 
+#include "NmsdkQtCompat.h"
 #include <QtCharts/QValueAxis>
 #include "UWatchSerie.h"
 #include "UWatchChartView.h"
@@ -25,7 +26,7 @@
 namespace Ui {
 class UWatchChart;
 }
-using namespace QtCharts;
+NMSDK_QT_CHARTS_USE_NS
 
 class UWatchTab;
 //////////////////////////////////////////////////////////////////////////////

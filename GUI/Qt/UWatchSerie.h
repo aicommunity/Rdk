@@ -1,6 +1,7 @@
 #ifndef UWATCHSERIE_H
 #define UWATCHSERIE_H
 
+#include "NmsdkQtCompat.h"
 #include <QtCharts/QLineSeries>
 #include <QString>
 
@@ -9,7 +10,7 @@ namespace RDK
 struct UControllerDataReader;
 }
 
-class UWatchSerie: public QtCharts::QLineSeries
+class UWatchSerie: public NMSDK_QT_CHARTS_BASE(QLineSeries)
 {
 public:
     UWatchSerie();

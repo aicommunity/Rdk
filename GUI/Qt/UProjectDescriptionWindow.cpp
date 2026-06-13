@@ -1,3 +1,4 @@
+#include "NmsdkQtCompat.h"
 #include "UProjectDescriptionWindow.h"
 
 #include <QVBoxLayout>
@@ -204,7 +205,7 @@ void UProjectDescriptionWindow::toggleEditMode()
             if(file.open(QIODevice::ReadOnly | QIODevice::Text))
             {
                 QTextStream in(&file);
-                in.setCodec("UTF-8");
+                NMSDK_QT_TEXT_STREAM_SET_CODEC(in, "UTF-8");
                 QString content = in.readAll();
                 m_markdownEditor->setPlainText(content);
                 m_originalContent = content; // Сохраняем исходное содержимое
@@ -310,7 +311,7 @@ void UProjectDescriptionWindow::saveReadme()
     if(file.open(QIODevice::WriteOnly | QIODevice::Text))
     {
         QTextStream out(&file);
-        out.setCodec("UTF-8");
+        NMSDK_QT_TEXT_STREAM_SET_CODEC(out, "UTF-8");
         out << markdownContent;
         file.close();
 
@@ -417,7 +418,7 @@ void UProjectDescriptionWindow::loadProjectDescription()
             if(file.open(QIODevice::ReadOnly | QIODevice::Text))
             {
                 QTextStream in(&file);
-                in.setCodec("UTF-8");
+                NMSDK_QT_TEXT_STREAM_SET_CODEC(in, "UTF-8");
                 QString content = in.readAll();
                 m_markdownEditor->setPlainText(content);
                 m_originalContent = content; // Сохраняем исходное содержимое
@@ -442,7 +443,7 @@ void UProjectDescriptionWindow::loadProjectDescription()
         if(rtfFile.open(QIODevice::ReadOnly | QIODevice::Text))
         {
             QTextStream in(&rtfFile);
-            in.setCodec("Windows-1251");
+            NMSDK_QT_TEXT_STREAM_SET_CODEC(in, "Windows-1251");
             QString rtfContent = in.readAll();
             rtfFile.close();
             // Отображаем RTF как plain text (упрощенное отображение)

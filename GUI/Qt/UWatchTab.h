@@ -14,8 +14,9 @@
 #include "UComponentPropertySelectionWidget.h"
 #include "UWatchChartOption.h"
 #include "UWatchSeriesOption.h"
+#include "NmsdkQtCompat.h"
 
-using namespace QtCharts;
+NMSDK_QT_CHARTS_USE_NS
 
 namespace Ui {
 class UWatchTab;

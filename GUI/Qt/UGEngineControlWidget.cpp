@@ -1,3 +1,4 @@
+#include "NmsdkQtCompat.h"
 #include "UGEngineControlWidget.h"
 #include "ui_UGEngineControllWidget.h"
 #include "UStyleManager.h"
@@ -1439,7 +1440,7 @@ void UGEngineControlWidget::execDialogUVisualControllWidget(UVisualControllerWid
 
     QDialog dialogWindow(this);
     QHBoxLayout *lay = new QHBoxLayout(&dialogWindow);
-    lay->setMargin(0);
+    NMSDK_QT_LAYOUT_SET_MARGIN(lay, 0);
     lay->addWidget(widget);
     dialogWindow.resize(widget->size());
     dialogWindow.setLayout(lay);

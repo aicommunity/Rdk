@@ -7,6 +7,7 @@
 #include <QDir>
 #include <QDateTime>
 
+#include "NmsdkQtCompat.h"
 #include "UWatchTab.h"
 #include "UVisualControllerMainWidget.h"
 
@@ -15,7 +16,7 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class UWatch; }
 QT_END_NAMESPACE
 
-using namespace QtCharts;
+NMSDK_QT_CHARTS_USE_NS
 
 //////////////////////////////////////////////////////////////////////////////
 // Отдельное окно для отображения графиков по заданному источнику данных

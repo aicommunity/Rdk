@@ -2,11 +2,11 @@
 #define UWATCHCHARTVIEW_H
 
 
+#include "NmsdkQtCompat.h"
 #include <QtCharts/QChartView>
 #include <QRubberBand>
 
-
-using namespace QtCharts;
+NMSDK_QT_CHARTS_USE_NS
 
 
 class UWatchChartView : public QChartView

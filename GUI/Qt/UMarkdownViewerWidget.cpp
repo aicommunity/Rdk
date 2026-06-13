@@ -1,3 +1,4 @@
+#include "NmsdkQtCompat.h"
 #include "UMarkdownViewerWidget.h"
 
 #include <QVBoxLayout>
@@ -97,7 +98,7 @@ bool UMarkdownViewerWidget::loadMarkdownFromFile(const QString& filePath, bool e
     }
 
     QTextStream in(&file);
-    in.setCodec("UTF-8");
+    NMSDK_QT_TEXT_STREAM_SET_CODEC(in, "UTF-8");
     QString markdown = in.readAll();
     file.close();
 

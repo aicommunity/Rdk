@@ -11,13 +11,12 @@
 #include <QLineEdit>
 
 #include "UVisualControllerWidget.h"
-
-
+#include "NmsdkQtCompat.h"
 
 namespace Ui {
 class UWatchSeriesOption;
 }
-using namespace QtCharts;
+NMSDK_QT_CHARTS_USE_NS
 
 class UWatchTab;
 class UWatchChart;

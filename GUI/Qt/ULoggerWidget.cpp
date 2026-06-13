@@ -1,3 +1,4 @@
+#include "NmsdkQtCompat.h"
 #include "ULoggerWidget.h"
 
 #include "../../Core/Engine/UGlogGuiSink.h"
@@ -18,7 +19,7 @@ ULoggerWidget::ULoggerWidget(QWidget *parent, RDK::UApplication *app):
     textEdit = new QPlainTextEdit(this);
     textEdit->clear();
     layout->addWidget(textEdit);
-    layout->setMargin(0);
+    NMSDK_QT_LAYOUT_SET_MARGIN(layout, 0);
 
     // Create timer for independent log updates regardless of calculation mode
     updateTimer = new QTimer(this);
