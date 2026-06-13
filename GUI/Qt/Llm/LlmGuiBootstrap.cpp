@@ -96,10 +96,10 @@ void RegisterLlmUi(UGEngineControlWidget* host, RDK::UApplication* app, ULlmGuiC
         });
     }
 
-    QObject::connect(host, &UGEngineControlWidget::openComponentGuiFromScheme, bridge,
-                     &ULlmGuiContextBridge::onDiagramSelectionChanged);
     if(UModernDiagramContainerWidget* diagram_container = host->modernDiagramContainer())
     {
+        QObject::connect(diagram_container, &UModernDiagramContainerWidget::openComponentGuiFromScheme,
+                         bridge, &ULlmGuiContextBridge::onDiagramSelectionChanged);
         if(UModernDiagramWidget* diagram = diagram_container->modernDiagramWidget())
         {
             QObject::connect(diagram, &UModernDiagramWidget::diagramScopeChanged, bridge,

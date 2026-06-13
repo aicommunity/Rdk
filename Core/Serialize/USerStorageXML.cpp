@@ -13,6 +13,7 @@ See file license.txt for more information
 #define USER_STORAGE_XML_CPP
 
 #include <string.h>
+#include <locale>
 #include <iostream>
 #include <fstream>
 #include "USerStorageXML.h"
@@ -28,7 +29,7 @@ namespace RDK {
 // Создает пустую очередь
 USerStorageXML::USerStorageXML(void)
 #ifdef RDK_UNICODE_RUN
-: Locale(""),
+: Locale(std::locale::classic()),
 #else
 :
 #endif

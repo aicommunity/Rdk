@@ -113,6 +113,10 @@ UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
     // Кнопка «Описание проекта» слева от кнопки сброса масштаба
     m_viewportManager->createProjectDescriptionButton(this);
     m_viewportManager->createResetZoomButton(this);
+
+    const QColor diagramBackground = UStyleManager::instance()->getBackgroundAltColor();
+    m_scene->setBackgroundBrush(diagramBackground);
+    m_mainView->setBackgroundBrush(diagramBackground);
 }
 
 UModernDiagramWidget::~UModernDiagramWidget()
@@ -1466,6 +1470,10 @@ void UModernDiagramWidget::updateTheme()
     // Обновляем всю сцену
     if(m_scene)
     {
+        const QColor diagramBackground = UStyleManager::instance()->getBackgroundAltColor();
+        m_scene->setBackgroundBrush(diagramBackground);
+        if(m_mainView)
+            m_mainView->setBackgroundBrush(diagramBackground);
         m_scene->update();
     }
 
