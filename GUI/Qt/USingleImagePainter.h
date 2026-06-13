@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QPainter>
-#include <QMutex>
+#include <QRecursiveMutex>
 #include <QMutexLocker>
 #include <QMouseEvent>
 #include <QList>
@@ -29,7 +29,7 @@ class USingleImagePainter : public QWidget
 public:
   explicit USingleImagePainter(QWidget *parent = 0);
 
-  void setLoaderMutex(QMutex *mutex);
+  void setLoaderMutex(QRecursiveMutex *mutex);
 
   QPen getPen() const;
   void setPen(const QPen &value);
@@ -64,7 +64,7 @@ private:
   /// Указатель на изображение к отрисовке, поступает от UImageLoader через слот void setImage(QImage* image)
   QImage *dispImage;
   /// Мьютекс копирования изображения, разделен с UImageLoader
-  QMutex *loaderMutex;
+  QRecursiveMutex *loaderMutex;
 
   /// Текущий стиль отрисовки линий
   QPen pen;

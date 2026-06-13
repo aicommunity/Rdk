@@ -4,7 +4,6 @@
 
 UImageLoader::UImageLoader(QObject *parent, int channel, bool showLegend, bool indChannels, int imagesSizeMod) :
   QObject(parent),
-  mutex(QMutex::Recursive),
   connected(false),
   calcChannel(channel),
   showLegend(showLegend),
@@ -196,7 +195,7 @@ QImage UImageLoader::fromUBitmap(RDK::UBitmap *srcBmp)
 
 
 
-QMutex *UImageLoader::getMutex()
+QRecursiveMutex *UImageLoader::getMutex()
 {
     return &mutex;
 }

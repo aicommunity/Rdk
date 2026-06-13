@@ -85,7 +85,7 @@ list(APPEND RDK_STATIC_SOURCES
 )
 # 4) Use the Qt variant of the system module, exclude the gcc variant
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/System/Gcc/rdk_system\\.gcc\\.cpp$")
-# Exclude the GCC version of the mutex and use the Qt version instead (QReadWriteLock::Recursive)
+# Qt6 has no recursive QReadWriteLock; UGenericMutexQt falls back to QRecursiveMutex there.
 list(FILTER RDK_STATIC_SOURCES EXCLUDE REGEX "/Rdk/Core/System/Gcc/UGenericMutex\\.gcc\\.cpp$")
 
 # Add only the necessary deploy files on Unix

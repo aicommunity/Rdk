@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QWaitCondition>
 #include <QImage>
-#include <QMutex>
+#include <QRecursiveMutex>
 
 #include <rdk_application.h>
 
@@ -40,7 +40,7 @@ public:
 
     bool getConnected() const;
 
-    QMutex *getMutex();
+    QRecursiveMutex *getMutex();
 
 signals:
     void imageLoaded(QImage *image);
@@ -54,7 +54,7 @@ private:
 
 
     //data
-    QMutex mutex;
+    QRecursiveMutex mutex;
 
     QString componentName;
     QString componentPropertyName;

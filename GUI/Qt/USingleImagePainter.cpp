@@ -29,7 +29,7 @@ USingleImagePainter::USingleImagePainter(QWidget *parent):QWidget(parent), pen(Q
   pointMenu->addAction(actionDelPoint);
 }
 
-void USingleImagePainter::setLoaderMutex(QMutex *mutex)
+void USingleImagePainter::setLoaderMutex(QRecursiveMutex *mutex)
 {
   loaderMutex = mutex;
 }

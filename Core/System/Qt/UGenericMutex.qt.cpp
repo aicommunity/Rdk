@@ -3,7 +3,12 @@
 // ---------------------------------------------------------------------------
 
 #include "../UGenericMutex.h"
+#include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QRecursiveMutex>
+#else
 #include <QReadWriteLock>
+#endif
 #include <QMutex>
 #include <QWaitCondition>
 #include <QAtomicInt>
@@ -13,7 +18,11 @@
 class RDK_LIB_TYPE UGenericMutexQt: public UGenericMutex
 {
 private:
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+QRecursiveMutex m_mutex;
+#else
 QReadWriteLock m_mutex;
+#endif
 
 public:
 UGenericMutexQt();
@@ -28,32 +37,51 @@ virtual bool exclusive_unlock() noexcept;
 private:
 UGenericMutexQt(const UGenericMutexQt &copy) = delete;
 UGenericMutexQt& operator = (const UGenericMutexQt &copy) = delete;
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+static bool lockRecursive(QRecursiveMutex& mutex, unsigned timeout);
+#endif
 };
 
 
-UGenericMutexQt::UGenericMutexQt() : m_mutex(QReadWriteLock::Recursive)
+UGenericMutexQt::UGenericMutexQt()
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    : m_mutex(QReadWriteLock::Recursive)
+#endif
 {
 }
 
 UGenericMutexQt::~UGenericMutexQt() noexcept
 {
- // QReadWriteLock автоматически разблокируется при уничтожении
- // Не нужно явно разблокировать в деструкторе
+ // Qt mutex types release locks automatically on destruction.
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+bool UGenericMutexQt::lockRecursive(QRecursiveMutex& mutex, unsigned timeout)
+{
+ if(timeout == RDK_MUTEX_TIMEOUT)
+ {
+  mutex.lock();
+  return true;
+ }
+ return mutex.tryLock(static_cast<int>(timeout));
+}
+#endif
 
 bool UGenericMutexQt::shared_lock(unsigned timeout)
 {
  try
  {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  return lockRecursive(m_mutex, timeout);
+#else
   if(timeout == RDK_MUTEX_TIMEOUT)
   {
    m_mutex.lockForRead();
    return true;
   }
-  else
-  {
-   return m_mutex.tryLockForRead(timeout);
-  }
+  return m_mutex.tryLockForRead(timeout);
+#endif
  }
  catch(...)
  {
@@ -81,15 +109,16 @@ bool UGenericMutexQt::exclusive_lock(unsigned timeout)
 {
  try
  {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  return lockRecursive(m_mutex, timeout);
+#else
   if(timeout == RDK_MUTEX_TIMEOUT)
   {
    m_mutex.lockForWrite();
    return true;
   }
-  else
-  {
-   return m_mutex.tryLockForWrite(timeout);
-  }
+  return m_mutex.tryLockForWrite(timeout);
+#endif
  }
  catch(...)
  {
