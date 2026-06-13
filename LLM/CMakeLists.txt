@@ -55,7 +55,7 @@ add_executable(llm_index_pack
   ${CMAKE_SOURCE_DIR}/Rdk/LLM/Tools/IndexPack/main.cpp
   ${CMAKE_SOURCE_DIR}/App/NeuroModeler/NmsdkBuiltinKnowledgeCatalog.cpp
   ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/RdkDummyLibraries.cpp)
-target_link_libraries(llm_index_pack PRIVATE ${TARGET_NAME} rdk.static.qt)
+target_link_libraries(llm_index_pack PRIVATE ${TARGET_NAME} rdk.static.qt Nmsdk::Boost)
 target_compile_definitions(llm_index_pack PRIVATE RDK_LIB_TYPE= RDK_CALL=)
 target_include_directories(llm_index_pack PRIVATE
   ${CMAKE_SOURCE_DIR}/Rdk/LLM/Core

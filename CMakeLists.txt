@@ -124,18 +124,8 @@ target_link_libraries(${TARGET_NAME} PUBLIC
 )
 
 # Boost libraries (required components)
-# Use MODULE mode on all platforms (FindBoost.cmake correctly determines library names)
-find_package(Boost QUIET COMPONENTS program_options thread filesystem system chrono atomic)
-if(Boost_FOUND)
-  target_link_libraries(${TARGET_NAME} PUBLIC
-    Boost::program_options
-    Boost::thread
-    Boost::filesystem
-    Boost::system
-    Boost::chrono
-    Boost::atomic
-  )
-endif()
+include(${CMAKE_SOURCE_DIR}/cmake/NmsdkFindBoost.cmake)
+target_link_libraries(${TARGET_NAME} PUBLIC Nmsdk::Boost)
 
 # rdk_rpc.cpp is added directly to target_sources above
 
