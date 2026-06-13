@@ -7,6 +7,7 @@
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 
 #include <QStringConverter>
+#include <QStringDecoder>
 #include <QLayout>
 
 inline void nmsdkQtTextStreamSetCodec(QTextStream& stream, const char* codecName)
@@ -21,6 +22,22 @@ inline void nmsdkQtTextStreamSetCodec(QTextStream& stream, const char* codecName
 #else
     stream.setEncoding(QStringConverter::encodingForName(codecName));
 #endif
+}
+
+inline QString nmsdkQtDecodeFromCodec(const QByteArray& bytes, const char* codecName)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    const auto encoding = QStringConverter::encodingForName(codecName);
+    if (encoding) {
+        return QStringDecoder(*encoding)(bytes);
+    }
+#else
+    const QStringDecoder decoder(codecName);
+    if (decoder.isValid()) {
+        return decoder(bytes);
+    }
+#endif
+    return QString::fromUtf8(bytes);
 }
 
 inline void nmsdkQtLayoutSetMargin(QLayout* layout, int margin)
@@ -38,6 +55,16 @@ inline void nmsdkQtLayoutSetMargin(QLayout* layout, int margin)
 #else
 
 #include <QLayout>
+#include <QTextCodec>
+
+inline QString nmsdkQtDecodeFromCodec(const QByteArray& bytes, const char* codecName)
+{
+    QTextCodec* codec = QTextCodec::codecForName(codecName);
+    if (codec) {
+        return codec->toUnicode(bytes);
+    }
+    return QString::fromUtf8(bytes);
+}
 
 #define NMSDK_QT_TEXT_STREAM_SET_CODEC(stream, codec) (stream).setCodec(codec)
 #define NMSDK_QT_LAYOUT_SET_MARGIN(layout, margin) (layout)->setMargin(margin)
