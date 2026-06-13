@@ -15,7 +15,12 @@ inline void nmsdkQtTextStreamSetCodec(QTextStream& stream, const char* codecName
         stream.setEncoding(QStringConverter::Utf8);
         return;
     }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    const auto encoding = QStringConverter::encodingForName(codecName);
+    stream.setEncoding(encoding.value_or(QStringConverter::Utf8));
+#else
     stream.setEncoding(QStringConverter::encodingForName(codecName));
+#endif
 }
 
 inline void nmsdkQtLayoutSetMargin(QLayout* layout, int margin)
