@@ -9,6 +9,7 @@
 #include <rdk_application.h>
 #include <QSettings>
 #include <QDebug>
+#include <QDateTime>
 #include <QDialog>
 #include <QHBoxLayout>
 #include <QDockWidget>
@@ -2166,10 +2167,25 @@ void UGEngineControlWidget::loadComponentGuiLayoutFromXml(RDK::USerStorageXML &x
         xml.SelectUp();
     }
 
-    // Legacy compatibility: old grid layout nodes map to a tab host.
+    // Legacy compatibility: old grid layout nodes map to a tab host (TD-011).
     const int legacyGridCount = xml.ReadInteger("GridCount", 0);
+    QStringList migrationWarnings;
     if(legacyGridCount > 0)
+    {
         ensureComponentGuiTabHost(QStringLiteral("MainTabHost"));
+        migrationWarnings << QStringLiteral("GridCount=%1 migrated to MainTabHost").arg(legacyGridCount);
+    }
+
+    // Strict schema audit: unknown/legacy Grid_* child nodes.
+    // (Permissive restore still succeeds; warnings recorded for diagnostics.)
+    for(int i = 0; i < legacyGridCount; ++i)
+    {
+        if(xml.SelectNode("Grid_" + RDK::sntoa(i + 1)))
+        {
+            migrationWarnings << QStringLiteral("legacy Grid_%1 node present; sessions remapped via HostMode").arg(i + 1);
+            xml.SelectUp();
+        }
+    }
 
     QList<UComponentGuiSessionSnapshot> sessions;
     const int sessionCount = xml.ReadInteger("SessionCount", 0);
@@ -2184,7 +2200,16 @@ void UGEngineControlWidget::loadComponentGuiLayoutFromXml(RDK::USerStorageXML &x
         s.componentClassName = QString::fromStdString(xml.ReadString("ComponentClassName", ""));
         s.componentLongName = QString::fromStdString(xml.ReadString("ComponentLongName", ""));
         s.channelIndex = xml.ReadInteger("ChannelIndex", -1);
-        s.hostMode = hostModeFromString(QString::fromStdString(xml.ReadString("HostMode", "mdi")));
+        const QString rawHostMode = QString::fromStdString(xml.ReadString("HostMode", "mdi"));
+        if(rawHostMode == QStringLiteral("grid"))
+            migrationWarnings << QStringLiteral("session %1 HostMode=grid -> tabhost").arg(s.sessionId);
+        else if(rawHostMode != QStringLiteral("mdi") &&
+                rawHostMode != QStringLiteral("floating") &&
+                rawHostMode != QStringLiteral("tabhost") &&
+                rawHostMode != QStringLiteral("secondary_dock"))
+            migrationWarnings << QStringLiteral("session %1 unknown HostMode=%2 -> mdi")
+                                     .arg(s.sessionId, rawHostMode);
+        s.hostMode = hostModeFromString(rawHostMode);
         s.containerId = QString::fromStdString(xml.ReadString("ContainerId", ""));
         s.cellRow = xml.ReadInteger("CellRow", -1);
         s.cellCol = xml.ReadInteger("CellCol", -1);
@@ -2194,6 +2219,9 @@ void UGEngineControlWidget::loadComponentGuiLayoutFromXml(RDK::USerStorageXML &x
         xml.SelectUp();
     }
     xml.SelectUp();
+
+    if(!migrationWarnings.isEmpty())
+        qWarning() << "ComponentGuiLayout migration:" << migrationWarnings.join(QStringLiteral("; "));
 
     std::sort(sessions.begin(), sessions.end(), [](const UComponentGuiSessionSnapshot& a, const UComponentGuiSessionSnapshot& b) {
         return a.orderIndex < b.orderIndex;
@@ -2257,6 +2285,28 @@ void UGEngineControlWidget::writeComponentGuiSettings(QSettings& projectSettings
     QSet<QString> liveFloatingSessions;
     QSet<QString> liveTabHostIds;
 
+    // TD-009: backup + aggressive prune of obsolete ComponentGui/Grid and orphan keys.
+    projectSettings.beginGroup(QStringLiteral("ComponentGui"));
+    const QStringList topGroups = projectSettings.childGroups();
+    projectSettings.endGroup();
+    if(topGroups.contains(QStringLiteral("Grid")))
+    {
+        const QString backupRoot = QStringLiteral("ComponentGuiBackup/%1")
+                                       .arg(QDateTime::currentDateTimeUtc().toString(Qt::ISODate));
+        projectSettings.beginGroup(QStringLiteral("ComponentGui/Grid"));
+        const QStringList gridKeys = projectSettings.allKeys();
+        QVariantMap gridSnapshot;
+        for(const QString& k : gridKeys)
+            gridSnapshot.insert(k, projectSettings.value(k));
+        projectSettings.endGroup();
+        for(auto it = gridSnapshot.constBegin(); it != gridSnapshot.constEnd(); ++it)
+            projectSettings.setValue(backupRoot + QStringLiteral("/Grid/") + it.key(), it.value());
+        projectSettings.beginGroup(QStringLiteral("ComponentGui/Grid"));
+        projectSettings.remove(QString());
+        projectSettings.endGroup();
+        projectSettings.remove(QStringLiteral("ComponentGui/Grid"));
+    }
+
     projectSettings.beginGroup("ComponentGui");
     projectSettings.beginGroup("Floating");
     const QStringList storedFloating = projectSettings.childGroups();
@@ -2279,7 +2329,12 @@ void UGEngineControlWidget::writeComponentGuiSettings(QSettings& projectSettings
     for(const QString& staleId : storedFloating)
     {
         if(!liveFloatingSessions.contains(staleId))
+        {
+            projectSettings.beginGroup(QStringLiteral("ComponentGui/Floating/%1").arg(staleId));
+            projectSettings.remove(QString());
+            projectSettings.endGroup();
             projectSettings.remove(QStringLiteral("ComponentGui/Floating/%1").arg(staleId));
+        }
     }
 
     const QStringList hostIds = componentGuiTabHostIds();
@@ -2297,7 +2352,12 @@ void UGEngineControlWidget::writeComponentGuiSettings(QSettings& projectSettings
     for(const QString& staleHost : storedHosts)
     {
         if(!liveTabHostIds.contains(staleHost))
+        {
+            projectSettings.beginGroup(QStringLiteral("ComponentGui/TabHost/%1").arg(staleHost));
+            projectSettings.remove(QString());
+            projectSettings.endGroup();
             projectSettings.remove(QStringLiteral("ComponentGui/TabHost/%1").arg(staleHost));
+        }
     }
 
     if(m_componentGuiSecondaryHostWindow)

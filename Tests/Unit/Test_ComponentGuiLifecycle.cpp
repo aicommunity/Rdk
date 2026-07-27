@@ -5,6 +5,7 @@
 #include <QMainWindow>
 #include <QMdiArea>
 #include <QString>
+#include <QTabBar>
 
 #include "../../Core/Serialize/USerStorageXML.h"
 #include "../../GUI/Qt/UComponentFormRegistry.h"
@@ -231,5 +232,86 @@ TEST(ComponentGuiLifecycle, LegacyGridHostModeRestoresToTabHost)
     ASSERT_TRUE(service.tryGetHostModeByContext(context, mode));
     EXPECT_EQ(mode, UComponentGuiHostMode::TabHost);
 
+    service.clearAllInstances();
+}
+
+TEST(ComponentGuiLifecycle, TabHostSaveStatePersistsTabOrderV2)
+{
+    static int argc = 1;
+    static char arg0[] = "test";
+    static char* argv[] = {arg0, nullptr};
+    if(!qApp)
+        new QApplication(argc, argv);
+
+    const QString classA = QStringLiteral("TestClass_TabOrder_A");
+    const QString classB = QStringLiteral("TestClass_TabOrder_B");
+    for(const QString& className : {classA, classB})
+    {
+        UComponentFormDescriptor descriptor;
+        descriptor.formId = QStringLiteral("test.taborder.%1").arg(className);
+        descriptor.title = className;
+        descriptor.singleInstance = true;
+        descriptor.factory = [className](RDK::UApplication* app) -> UVisualControllerWidget* {
+            return new UGenericComponentControllerWidget(
+                QStringLiteral("ctrl.%1").arg(className), className, nullptr, app);
+        };
+        UComponentFormRegistry::instance().registerFormFactory(className, descriptor);
+    }
+
+    UComponentGuiService service(reinterpret_cast<RDK::UApplication*>(0x1));
+    QMainWindow window;
+    SecondaryTabHostFixture fixture(service);
+    UComponentGuiTabHostWidget& host = fixture.tabHost;
+
+    const UComponentGuiContext ctxA = MakeContext(classA, QStringLiteral("Model.A"), 0);
+    const UComponentGuiContext ctxB = MakeContext(classB, QStringLiteral("Model.B"), 0);
+    ASSERT_TRUE(host.assignContext(ctxA));
+    ASSERT_TRUE(host.assignContext(ctxB));
+    ASSERT_EQ(host.tabCount(), 2);
+
+    const QByteArray state = host.saveState();
+    ASSERT_TRUE(QString::fromUtf8(state).startsWith(QStringLiteral("v2")));
+
+    // Swap visual order then restore from saved state.
+    if(QTabBar* bar = host.findChild<QTabBar*>())
+        bar->moveTab(0, 1);
+    host.restoreState(state);
+    const QList<UComponentGuiContext> contexts = host.contexts();
+    ASSERT_EQ(contexts.size(), 2);
+    EXPECT_EQ(contexts[0].componentClassName, classA);
+    EXPECT_EQ(contexts[1].componentClassName, classB);
+
+    service.clearAllInstances();
+}
+
+TEST(ComponentGuiLifecycle, NativeDockHostCreateAndClose)
+{
+    static int argc = 1;
+    static char arg0[] = "test";
+    static char* argv[] = {arg0, nullptr};
+    if(!qApp)
+        new QApplication(argc, argv);
+
+    const QString className = QStringLiteral("TestClass_Dock_A");
+    UComponentFormDescriptor descriptor;
+    descriptor.formId = "test.dock.a";
+    descriptor.title = "Dock A";
+    descriptor.singleInstance = true;
+    descriptor.factory = [](RDK::UApplication* app) -> UVisualControllerWidget* {
+        return new UGenericComponentControllerWidget("test.dock.ctrl", "Dock", nullptr, app);
+    };
+    UComponentFormRegistry::instance().registerFormFactory(className, descriptor);
+
+    UComponentGuiService service(reinterpret_cast<RDK::UApplication*>(0x1));
+    QMainWindow mainWindow;
+    mainWindow.resize(800, 600);
+    service.setHostMainWindow(&mainWindow);
+    const UComponentGuiContext context = MakeContext(className, QStringLiteral("Model.Dock"), 0);
+    UVisualControllerWidget* widget = service.createOrActivate(&mainWindow, context);
+    ASSERT_NE(widget, nullptr);
+    ASSERT_TRUE(service.detachToFloating(context));
+    UComponentGuiHostMode mode = UComponentGuiHostMode::Mdi;
+    ASSERT_TRUE(service.tryGetHostModeByContext(context, mode));
+    EXPECT_EQ(mode, UComponentGuiHostMode::Floating);
     service.clearAllInstances();
 }
