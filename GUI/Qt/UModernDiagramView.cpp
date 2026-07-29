@@ -312,6 +312,22 @@ bool UModernDiagramView::viewportEvent(QEvent *event)
     if(event->type() == QEvent::Wheel)
     {
         auto* wheel = static_cast<QWheelEvent*>(event);
+
+        // Над открытым списком портов — прокрутка списка, не zoom схемы
+        if(m_owner)
+        {
+            const QPointF scenePos = mapToScene(wheel->position().toPoint());
+            for(UModernDiagramNodeItem* node : m_owner->m_nodes)
+            {
+                if(!node || !node->m_portListWidgetProxy || !node->m_portListWidgetProxy->isVisible())
+                    continue;
+                const QRectF widgetRect = node->m_portListWidgetProxy->mapToScene(
+                    node->m_portListWidgetProxy->boundingRect()).boundingRect();
+                if(widgetRect.contains(scenePos))
+                    return QGraphicsView::viewportEvent(event);
+            }
+        }
+
         const double factor = wheel->angleDelta().y() > 0 ? 1.15 : 0.87;
 
         // 1. Сохраняем позицию курсора в координатах сцены до масштабирования
