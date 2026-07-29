@@ -31,9 +31,13 @@ struct LLMGuiContext {
 };
 ```
 
-**Selection vs diagram scope:** on component selection, GUI may call `syncEngineCurrentComponent` (`UEngineSelectionSync.cpp`) for legacy C APIs. `diagram_scope_long_name` is updated on schematic drill **without** changing engine `CurrentComponent`. Write tools resolve `parent_long_name` as a **full model path** (`GetComponentL` under model lock); defaults come from pinned `diagram_scope_long_name`, not from `Env_GetCurrentComponentName()`.
+**Selection vs diagram scope (DD-AG-001 / TD-111 reverted):** GUI selection and diagram drill update `focused_*` / `diagram_scope_long_name` only. They must **not** call `Env_SelectCurrentComponent` / `syncEngineCurrentComponent` — that rebases `FindComponent` / all `Model_*` string paths off Model and breaks absolute longName C-API usage (delete, props, links). Engine `CurrentComponent` stays at Model in normal NeuroModeler use (as BCB did for years).
 
-Update: bridge subscribes to signals, **does **not** poll the engine on a timer unless needed.
+`guiSnapshotFromContext` sets `current_component_long_name` from `diagram_scope_long_name`, else `focused_component_long_name` — not from live `Env_GetCurrentComponent*`.
+
+Write tools resolve `parent_long_name` as a **full model path** (`GetComponentL` under model lock); defaults come from pinned `diagram_scope_long_name`.
+
+Update: bridge subscribes to signals, **does not** poll the engine on a timer unless needed.
 
 При Send dock converts `LLMGuiContext` → `LLMGuiContextSnapshot` и fills `LLMRequestEnvelope::gui`. Orchestrator stores snapshot в `ConversationState::last_gui_context`, **freezes** его в `ConversationState::active_turn_pin` (`beginGuiTurnPin`) на entire user turn, и adds ephemeral hint `## GUI focus` via `ULLMContextAssembler`. Write tools и normalizer use pin, not live navigation during a long LLM response.
 

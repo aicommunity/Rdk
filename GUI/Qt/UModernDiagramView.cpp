@@ -582,8 +582,6 @@ void UModernDiagramView::dropEvent(QDropEvent *event)
         return;
     }
 
-    syncEngineCurrentComponentWithEngine(eng.Get(), m_owner->diagramScopeLongName());
-
     const QPointF scenePos = mapToScene(event->pos());
     const QPointF absoluteScenePos = scenePos + m_owner->m_coordinateManager->getNormalizationOffset();
     m_owner->m_coordinateManager->saveCoord(added.long_name, absoluteScenePos);

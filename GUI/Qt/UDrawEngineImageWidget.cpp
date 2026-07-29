@@ -717,10 +717,17 @@ void UDrawEngineImageWidget::componentDelete()
     if(QApplication::keyboardModifiers() != Qt::ShiftModifier)
     {
         QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Are you sure you want to delete component "+selectedComponentLongName+"?", QMessageBox::Yes|QMessageBox::Cancel);
-        if (reply == QMessageBox::Cancel) return;
+        if (reply != QMessageBox::Yes) return;
     }
 
-    Model_DelComponent("", selectedComponentLongName.toLocal8Bit());
+    const int rc = Model_DelComponent("", selectedComponentLongName.toLocal8Bit());
+    if(rc != RDK_SUCCESS)
+    {
+        QMessageBox::warning(this, "Warning",
+            QString("Failed to delete component %1 (code %2).")
+                .arg(selectedComponentLongName).arg(rc));
+        return;
+    }
     RDK::UIVisualControllerStorage::UpdateInterface(true);
     //reDrawScheme(true);
 //    emit updateComponentsList();

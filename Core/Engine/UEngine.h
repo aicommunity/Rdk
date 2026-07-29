@@ -1010,8 +1010,11 @@ int LoadLibraries(void);
 // --------------------------
 public:
 // Осуществляет поиск компонента по длинному строковому id
-// Если строковое id не задано, то возвращает указатель на модель
+// Если строковое id не задано, то возвращает CurrentComponent (обычно Model; DD-AG-001)
 virtual UEPtr<UContainer> FindComponent(const char *stringid) const;
+
+/// Project file IO (Model_*/Parameters_*): empty stringid → GetModel(), not CurrentComponent.
+UEPtr<UContainer> FindComponentForModelFileIo(const char *stringid) const;
 
 // Восстановление настроек по умолчанию и сброс процесса счета
 virtual bool ADefault(void);

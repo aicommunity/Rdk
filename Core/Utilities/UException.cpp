@@ -163,6 +163,17 @@ std::string UException::GenerateLogPrefix(void) const
   result += "> ";
  }
 
+ if(!ExFileName.empty())
+ {
+  result += ExFileName;
+  if(ExLineNumber > 0)
+  {
+   result += ":";
+   result += sntoa(ExLineNumber);
+  }
+  result += " ";
+ }
+
  return result;
 }
 // --------------------------
@@ -374,7 +385,17 @@ ENameError::~ENameError(void) throw()
 // Формирует строку лога об исключении
 std::string ENameError::CreateLogMessage(void) const
 {
- return EError::CreateLogMessage()+string(" Name=")+Name;
+ return EError::CreateLogMessage()+string(" name error: ")+Name;
+}
+
+std::string ENameNotExist::CreateLogMessage(void) const
+{
+ return EError::CreateLogMessage()+string(" name not found: ")+Name;
+}
+
+std::string ENameAlreadyExist::CreateLogMessage(void) const
+{
+ return EError::CreateLogMessage()+string(" name already exists: ")+Name;
 }
 // --------------------------
 

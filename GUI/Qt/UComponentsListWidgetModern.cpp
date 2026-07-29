@@ -481,7 +481,7 @@ void UComponentsListWidgetModern::componentListItemSelectionChanged()
     // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
 
     currentDrawComponentName = selectedComponentLongName;
-    syncEngineCurrentComponent(selectedComponentLongName);
+    // Do not Env_Select on selection (TD-111 reverted): FindComponent stays at Model.
     reloadPropertys();
     emit componentSelected(selectedComponentLongName);
 }
@@ -1171,7 +1171,6 @@ void UComponentsListWidgetModern::componentSelectedFromScheme(QString name)
     m_propertyReloadRetryTarget = resolvedName;
     selectedComponentLongName = resolvedName;
     currentDrawComponentName = resolvedName;
-    syncEngineCurrentComponent(resolvedName);
 
     m_isUpdatingFromScheme = true;
     componentsTree->blockSignals(true);
@@ -1336,12 +1335,19 @@ void UComponentsListWidgetModern::componentDelete()
         if(QApplication::keyboardModifiers() != Qt::ShiftModifier)
         {
             QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Are you sure you want to delete component "+selectedComponentLongName+"?", QMessageBox::Yes|QMessageBox::Cancel);
-            if (reply == QMessageBox::Cancel) return;
+            if (reply != QMessageBox::Yes) return;
         }
 
-        MModel_DelComponent(getWorkChannelIndex(), "", selectedComponentLongName.toLocal8Bit());
+        const int rc = MModel_DelComponent(getWorkChannelIndex(), "", selectedComponentLongName.toLocal8Bit());
+        if(rc != RDK_SUCCESS)
+        {
+            QMessageBox::warning(this, "Warning",
+                QString("Failed to delete component %1 (code %2).")
+                    .arg(selectedComponentLongName).arg(rc));
+            return;
+        }
         RDK::UIVisualControllerStorage::UpdateInterface(true);
-//        emit updateScheme(true);
+        emit updateScheme(true);
     }
 }
 

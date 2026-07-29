@@ -66,11 +66,7 @@ void fillAddComponentDefaults(nlohmann::json& args,
         if(!diagram_scope.empty())
             parent = diagram_scope;
         else
-        {
-            const CurrentComponentScope scope = readCurrentComponentScope(gui_fallback);
-            if(scope.valid && !isModelRootContainerToken(scope.long_name, gui_fallback))
-                parent = scope.long_name;
-        }
+            parent.clear(); // model root; never use focused leaf as add parent (TD-111 revert)
     }
     if(!args.contains("channel_index"))
         args["channel_index"] = 0;

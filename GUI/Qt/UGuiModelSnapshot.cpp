@@ -163,7 +163,14 @@ void UGuiModelSnapshot::RefreshSnapshot()
     if (model) {
         RDK::UEPtr<RDK::UNet> net(model.Get());
         RDK::UEPtr<RDK::UContainer> root(net);
-        CollectComponent(root, root, QString(), *nextSnapshot);
+        // Collect children of model root only. Root itself has empty GetLongName(root)
+        // and would become "UnnamedComponent", causing tree flicker on every rebuild.
+        std::vector<RDK::UId> children;
+        root->GetComponentsList(children);
+        for (const RDK::UId& childId : children) {
+            RDK::UEPtr<RDK::UContainer> child = root->GetComponent(childId, true);
+            CollectComponent(child, root, QString(), *nextSnapshot);
+        }
 
         // Collect property values while we have the lock
         CollectPropertyValues(*nextSnapshot);
@@ -284,8 +291,11 @@ void UGuiModelSnapshot::CollectComponent(const RDK::UEPtr<RDK::UContainer>& comp
 
     std::string buffer;
     QString longName = QString::fromLocal8Bit(component->GetLongName(root, buffer).c_str());
-    if (longName.isEmpty())
-        longName = QStringLiteral("UnnamedComponent");
+    if (longName.isEmpty()) {
+        longName = QString::fromLocal8Bit(component->GetName().c_str());
+        if (longName.isEmpty())
+            longName = QStringLiteral("UnnamedComponent");
+    }
 
     UGuiComponentSummary summary;
     summary.LongName = longName;

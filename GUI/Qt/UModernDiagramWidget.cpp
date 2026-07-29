@@ -201,7 +201,7 @@ void UModernDiagramWidget::SetComponentName(const QString& name)
     if(m_componentName == name)
         return;
     m_componentName = name;
-    syncEngineCurrentComponent(name);
+    // Drill updates GUI diagram_scope only — do not Env_Select (TD-111 reverted).
     emit diagramScopeChanged(name);
 }
 
@@ -1649,7 +1649,7 @@ void UModernDiagramWidget::deleteComponents(const QList<UModernDiagramNodeItem*>
 
         QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", message,
             QMessageBox::Yes|QMessageBox::Cancel);
-        if(reply == QMessageBox::Cancel)
+        if(reply != QMessageBox::Yes)
             return;
     }
 
@@ -1658,7 +1658,14 @@ void UModernDiagramWidget::deleteComponents(const QList<UModernDiagramNodeItem*>
     {
         QString fullName = m_componentName.isEmpty() ? node->nodeName
                                                      : m_componentName + "." + node->nodeName;
-        Model_DelComponent("", fullName.toLocal8Bit().constData());
+        const int rc = Model_DelComponent("", fullName.toLocal8Bit().constData());
+        if(rc != RDK_SUCCESS)
+        {
+            QMessageBox::warning(this, "Warning",
+                QString("Failed to delete component %1 (code %2).")
+                    .arg(fullName).arg(rc));
+            return;
+        }
     }
 
     // Очищаем сохраненные позиции удаленных узлов

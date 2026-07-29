@@ -1055,6 +1055,10 @@ explicit EComponentNameAlreadyExist(const std::string &name) : ENameAlreadyExist
 struct EComponentNameInvalid: public ENameError
 {
 explicit EComponentNameInvalid(const std::string &name) : ENameError(name) {};
+virtual std::string CreateLogMessage(void) const
+{
+ return std::string(" invalid component name: ") + Name;
+}
 };
 
 // Id указателя не найден

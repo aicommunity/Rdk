@@ -1,7 +1,5 @@
 #include "UModernDiagramContainerWidget.h"
 
-#include "UEngineSelectionSync.h"
-
 #include <QHBoxLayout>
 #include <QSettings>
 
@@ -98,7 +96,6 @@ void UModernDiagramContainerWidget::ALoadParameters()
 void UModernDiagramContainerWidget::componentDoubleClick(QString name)
 {
     modernScheme->SetComponentName(name);
-    syncEngineCurrentComponent(name);
     modernScheme->Reload();
 }
 

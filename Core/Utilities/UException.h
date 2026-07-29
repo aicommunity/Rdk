@@ -277,6 +277,7 @@ explicit EIdNotExist(int id) : EIdError(id) {};
 struct RDK_LIB_TYPE ENameNotExist: public ENameError
 {
 explicit ENameNotExist(const std::string &name) : ENameError(name) {};
+virtual std::string CreateLogMessage(void) const;
 };
 
 // Id уже существует
@@ -289,6 +290,7 @@ explicit EIdAlreadyExist(int id) : EIdError(id) {};
 struct RDK_LIB_TYPE ENameAlreadyExist: public ENameError
 {
 explicit ENameAlreadyExist(const std::string &name) : ENameError(name) {};
+virtual std::string CreateLogMessage(void) const;
 };
 
 // Id не определен (forbidden id)

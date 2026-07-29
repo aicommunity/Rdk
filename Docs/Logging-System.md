@@ -169,6 +169,21 @@ sequenceDiagram
     Postprocessor-->>Logger: Обработка завершена
 ```
 
+#### Формат `UException::what()` для name-ошибок
+
+`ProcessException` пишет `exception.what()`. Префикс: `[ObjectName> ][ExFileName:ExLineNumber ]`, затем `CreateLogMessage()`.
+
+Для иерархии `ENameError` сообщения осмысленные (не только `Name=`):
+
+| Тип | Текст |
+|-----|--------|
+| `ENameNotExist` (и `EComponentNameNotExist`, `EPointerNameNotExist`, `EPropertyNameNotExist`, …) | `name not found: X` |
+| `ENameAlreadyExist` (и аналоги) | `name already exists: X` |
+| `EComponentNameInvalid` | `invalid component name: X` |
+| прочий `ENameError` | `name error: X` |
+
+`ExFileName` / `ExLineNumber` выставляет `RDK_THROW` / `RDK_RAW_THROW`.
+
 #### Режим инициализации
 
 Режим инициализации (`IsInitializationMode()`) предотвращает фатальные краши во время инициализации системы, автоматически понижая уровень `RDK_EX_FATAL` до `RDK_EX_ERROR`.

@@ -26,7 +26,8 @@
 #include "../../../LLM/Core/Settings/ULLMProviderAuth.h"
 #include "../UGEngineControlWidget.h"
 
-#include <rdk_init.h>
+#include <functional>
+#include <utility>
 
 #include <cstdlib>
 #include <exception>
@@ -65,12 +66,13 @@ RDK::LLM::LLMGuiContextSnapshot guiSnapshotFromContext(const LLMGuiContext& ctx)
     snap.focused_class_name = ctx.focused_class_name.toStdString();
     snap.diagram_scope_long_name = ctx.diagram_scope_long_name.toStdString();
     snap.snapshot_fingerprint = ctx.snapshot_fingerprint;
-    if(const char* cur = Env_GetCurrentComponentName())
-        snap.current_component_long_name = cur;
-    if(const char* cur_id = Env_GetCurrentComponentId())
-        snap.current_component_id = cur_id;
-    if(snap.current_component_long_name.empty())
+    // TD-111 reverted: do not treat Env CurrentComponent as leaf selection.
+    // current_component_* mirrors diagram drill scope (or focused name if no drill).
+    if(!snap.diagram_scope_long_name.empty())
+        snap.current_component_long_name = snap.diagram_scope_long_name;
+    else
         snap.current_component_long_name = snap.focused_component_long_name;
+    snap.current_component_id.clear();
     return snap;
 }
 

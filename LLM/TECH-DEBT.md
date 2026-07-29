@@ -134,14 +134,14 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-125 | Post-tool verify + bounded repair loop | 2026-05-29 | `runPostToolVerification`, `attemptRepair`, max 2 repairs |
 | TD-126 | Mutate-turn integrity (no fake success prose) | 2026-05-29 | embedded validate, connect recovery partial JSON |
 | TD-127 | HTML tool rows + known_facts on connect | 2026-05-29 | `recordSessionConnect`, known_facts persist load |
-| TD-111 | GUI selection → `Env_SelectCurrentComponent` | 2026-05-29 | `UEngineSelectionSync`, list/diagram/LLM bridge |
-| TD-112 | `LLMGuiContextSnapshot` current_component_* from Env | 2026-05-29 | `guiSnapshotFromContext` + store JSON fields |
-| TD-113 | Write tools default scope = CurrentComponent | 2026-05-29 | `fillAddComponentDefaults` + `ULLMCurrentComponentScope` |
+| TD-111 | GUI selection → `Env_SelectCurrentComponent` | 2026-05-29 | **cancelled/superseded 2026-07-29**: leaf/drill→Env mixed FindComponent cursor with GUI focus; broke Del/props/links. Reverted sync call sites; snapshot uses diagram_scope/focused |
+| TD-112 | `LLMGuiContextSnapshot` current_component_* from Env | 2026-05-29 | **superseded 2026-07-29**: `guiSnapshotFromContext` fills from diagram_scope/focused, not Env |
+| TD-113 | Write tools default scope = CurrentComponent | 2026-05-29 | superseded by TD-122 `diagram_scope_long_name` + `fillAddComponentDefaults` |
 | TD-114 | Entity resolve under current scope; connect vs add class | 2026-05-29 | `snapshotComponentsUnderScope`, `WRONG_TOOL_FOR_CONNECT` |
 | TD-115 | Connect recovery round + narrowed tool filter | 2026-05-29 | orchestrator `connect_recovery_round` |
 | TD-116 | RU connect pair regex (`к`, `→`) | 2026-05-29 | `ULLMConnectPlanParsing` pair_re |
 | TD-117 | Response language in manifest | 2026-05-29 | `buildAgentManifest(..., response_language)` |
-| TD-118 | `FindComponent("")` = CurrentComponent (docs) | 2026-05-29 | `GUI-Integration.md` DD-AG-001 |
+| TD-118 | `FindComponent("")` = CurrentComponent (docs) | 2026-05-29 | DD-AG-001: empty = Current (usually Model in GUI). Do not sync selection→Env |
 | TD-093 | Snapshot link walk + list_model_links | 2026-05-29 | `7e7ac67f`: `ULLMModelLinkWalker`, `list_model_links`, `linkExistsInModel` truncated dedup |
 | TD-096 | Connect semantics index + runtime inference | 2026-05-29 | `8641b0a3`: `connect-semantics.json`, catalog, port inference, context hint |
 | TD-092 | Global remaining + chain/tree pairing | 2026-05-29 | `b41e7082`: `ULLMConnectEndpoints`, `ULLMConnectPairing`, ModelGraph, topologies |
