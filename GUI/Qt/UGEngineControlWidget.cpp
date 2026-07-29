@@ -42,6 +42,8 @@
 #include <QDragMoveEvent>
 #include <QDropEvent>
 #include <QDragLeaveEvent>
+#include <QLabel>
+#include <QStyle>
 
 /*int heheheCounter = 0;
 void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
@@ -292,7 +294,45 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 
     logger = new ULoggerWidget(this, application);
     ui->dockWidgetLoger->setWidget(logger);
+    ui->dockWidgetLoger->setFeatures(
+        QDockWidget::DockWidgetClosable |
+        QDockWidget::DockWidgetMovable |
+        QDockWidget::DockWidgetFloatable);
+    {
+        // Custom title bar so Close/Float stay visible with our QSS (and when floating).
+        QWidget* titleBar = new QWidget(ui->dockWidgetLoger);
+        titleBar->setObjectName(QStringLiteral("loggerDockTitleBar"));
+        auto* titleLayout = new QHBoxLayout(titleBar);
+        titleLayout->setContentsMargins(10, 4, 4, 4);
+        titleLayout->setSpacing(2);
 
+        QLabel* titleLabel = new QLabel(tr("Logger"), titleBar);
+        titleLabel->setObjectName(QStringLiteral("loggerDockTitleLabel"));
+        titleLayout->addWidget(titleLabel, 1);
+
+        QToolButton* floatBtn = new QToolButton(titleBar);
+        floatBtn->setAutoRaise(true);
+        floatBtn->setIcon(style()->standardIcon(QStyle::SP_TitleBarNormalButton));
+        floatBtn->setToolTip(tr("Dock / undock"));
+        connect(floatBtn, &QToolButton::clicked, this, [this]() {
+            ui->dockWidgetLoger->setFloating(!ui->dockWidgetLoger->isFloating());
+        });
+
+        QToolButton* closeBtn = new QToolButton(titleBar);
+        closeBtn->setAutoRaise(true);
+        closeBtn->setIcon(style()->standardIcon(QStyle::SP_TitleBarCloseButton));
+        closeBtn->setToolTip(tr("Close"));
+        connect(closeBtn, &QToolButton::clicked, ui->dockWidgetLoger, &QWidget::close);
+
+        titleLayout->addWidget(floatBtn);
+        titleLayout->addWidget(closeBtn);
+        ui->dockWidgetLoger->setTitleBarWidget(titleBar);
+    }
+    ui->dockWidgetLoger->hide();
+    ui->actionLogger->setCheckable(true);
+    ui->actionLogger->setChecked(false);
+    connect(ui->dockWidgetLoger, &QDockWidget::visibilityChanged,
+            ui->actionLogger, &QAction::setChecked);
     /*
     graphWindowWidget = new UGraphWidget(this, application);
 //    ui->dockWidgetGraph->setWidget(graphWindowWidget);
@@ -1176,7 +1216,20 @@ void UGEngineControlWidget::actionChannelsControl()
 
 void UGEngineControlWidget::actionLogger()
 {
+  // Menu checkbox / toggle: hide if already visible, otherwise open floating.
+  if(ui->dockWidgetLoger->isVisible())
+  {
+    ui->dockWidgetLoger->hide();
+    ui->actionLogger->setChecked(false);
+    return;
+  }
+
+  if(!ui->dockWidgetLoger->isFloating())
+    ui->dockWidgetLoger->setFloating(true);
   ui->dockWidgetLoger->show();
+  ui->dockWidgetLoger->raise();
+  ui->dockWidgetLoger->activateWindow();
+  ui->actionLogger->setChecked(true);
 }
 
 void UGEngineControlWidget::actionTestCreator()
@@ -1507,6 +1560,9 @@ void UGEngineControlWidget::readSettings()
 
     restoreGeometry(projectSettings.value("geometry").toByteArray());
     restoreState(projectSettings.value("state").toByteArray());
+    // Logger starts hidden; open via Window → Logger (floating). Keep geometry in state for show().
+    if(ui && ui->dockWidgetLoger)
+        ui->dockWidgetLoger->hide();
 
     // Load saved theme (defaults to "Modern Light" if not saved)
     QString savedTheme = projectSettings.value("theme", "Modern Light").toString();

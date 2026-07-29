@@ -161,8 +161,6 @@ QToolButton::menu-arrow {
 
 /* ===== Dock Widgets ===== */
 QDockWidget {
-    titlebar-close-icon: url(none);
-    titlebar-normal-icon: url(none);
     font-weight: 600;
     color: #ABB2BF;
 }
@@ -188,6 +186,27 @@ QDockWidget::float-button {
 
 QDockWidget::close-button:hover,
 QDockWidget::float-button:hover {
+    background-color: rgba(97, 175, 239, 0.2);
+}
+
+QWidget#loggerDockTitleBar {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2C313A, stop:1 #282C34);
+    border-bottom: 2px solid #61AFEF;
+}
+
+QLabel#loggerDockTitleLabel {
+    color: #61AFEF;
+    font-weight: 600;
+}
+
+QWidget#loggerDockTitleBar QToolButton {
+    background: transparent;
+    border: none;
+    padding: 2px;
+    border-radius: 4px;
+}
+
+QWidget#loggerDockTitleBar QToolButton:hover {
     background-color: rgba(97, 175, 239, 0.2);
 }
 
