@@ -20,6 +20,7 @@ UModernDiagramViewportManager::UModernDiagramViewportManager(UModernDiagramWidge
     : m_owner(owner)
     , m_projectDescriptionButton(nullptr)
     , m_resetZoomButton(nullptr)
+    , m_classesListButton(nullptr)
 {
 }
 
@@ -258,6 +259,43 @@ QPushButton* UModernDiagramViewportManager::createResetZoomButton(QWidget* paren
     return m_resetZoomButton;
 }
 
+QPushButton* UModernDiagramViewportManager::createClassesListButton(QWidget* parent)
+{
+    if(m_classesListButton)
+        return m_classesListButton;
+
+    m_classesListButton = new QPushButton(parent);
+    QStyle* style = QApplication::style();
+    if(style)
+        m_classesListButton->setIcon(style->standardIcon(QStyle::SP_FileDialogDetailedView));
+    m_classesListButton->setIconSize(QSize(20, 20));
+    m_classesListButton->setToolTip(QCoreApplication::translate("UModernDiagramViewportManager", "Component classes"));
+    m_classesListButton->setFixedSize(32, 32);
+    m_classesListButton->setCheckable(true);
+    m_classesListButton->setChecked(false);
+    m_classesListButton->raise();
+
+    if(m_owner)
+    {
+        QObject::connect(m_classesListButton, &QPushButton::clicked, m_owner, &UModernDiagramWidget::requestToggleClassesList);
+    }
+
+    updateOverlayButtonsStyle();
+
+    QTimer::singleShot(0, parent, [this, parent]() {
+        if(parent)
+            updateOverlayButtonsPosition(parent->width(), parent->height());
+    });
+
+    return m_classesListButton;
+}
+
+void UModernDiagramViewportManager::setClassesListButtonChecked(bool checked)
+{
+    if(m_classesListButton)
+        m_classesListButton->setChecked(checked);
+}
+
 void UModernDiagramViewportManager::updateOverlayButtonsPosition(int width, int height)
 {
     Q_UNUSED(height);
@@ -267,11 +305,20 @@ void UModernDiagramViewportManager::updateOverlayButtonsPosition(int width, int 
     const int gap = 8;
 
     int x = width - margin - buttonWidth;
-    // Кнопка масштаба сверху, описание проекта снизу
+    int y = margin;
+    // Сверху вниз: zoom, project description, classes
     if(m_resetZoomButton)
-        m_resetZoomButton->move(x, margin);
+    {
+        m_resetZoomButton->move(x, y);
+        y += buttonHeight + gap;
+    }
     if(m_projectDescriptionButton)
-        m_projectDescriptionButton->move(x, margin + buttonHeight + gap);
+    {
+        m_projectDescriptionButton->move(x, y);
+        y += buttonHeight + gap;
+    }
+    if(m_classesListButton)
+        m_classesListButton->move(x, y);
 }
 
 void UModernDiagramViewportManager::updateResetZoomButtonPosition(int width, int height)
@@ -331,6 +378,8 @@ void UModernDiagramViewportManager::updateOverlayButtonsStyle()
             m_resetZoomButton->setStyleSheet(darkStyle);
         if(m_projectDescriptionButton)
             m_projectDescriptionButton->setStyleSheet(darkStyle);
+        if(m_classesListButton)
+            m_classesListButton->setStyleSheet(darkStyle);
     }
     else
     {
@@ -338,6 +387,8 @@ void UModernDiagramViewportManager::updateOverlayButtonsStyle()
             m_resetZoomButton->setStyleSheet(lightStyle);
         if(m_projectDescriptionButton)
             m_projectDescriptionButton->setStyleSheet(lightStyle);
+        if(m_classesListButton)
+            m_classesListButton->setStyleSheet(lightStyle);
     }
 }
 

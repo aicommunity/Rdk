@@ -47,6 +47,9 @@ public:
     /// Создает и настраивает кнопку сброса масштаба
     QPushButton* createResetZoomButton(QWidget* parent);
 
+    /// Создает кнопку показа/скрытия палитры классов
+    QPushButton* createClassesListButton(QWidget* parent);
+
     /// Обновляет позиции кнопок поверх диаграммы (Reset Zoom и Project Description)
     void updateOverlayButtonsPosition(int width, int height);
 
@@ -59,11 +62,15 @@ public:
     /// Обновляет стиль кнопки сброса масштаба (устаревшее имя, вызывает updateOverlayButtonsStyle)
     void updateResetZoomButtonStyle();
 
+    /// Подсветить кнопку палитры классов (открыта / закрыта)
+    void setClassesListButtonChecked(bool checked);
+
 private:
     UModernDiagramWidget* m_owner;
     QHash<QString, UModernDiagramViewState> m_viewStates;  // Состояние viewport для каждого компонента
     QPushButton* m_projectDescriptionButton;
     QPushButton* m_resetZoomButton;
+    QPushButton* m_classesListButton;
 
     static constexpr double DEFAULT_SCALE = 1.0;  // Начальный масштаб по умолчанию
 };

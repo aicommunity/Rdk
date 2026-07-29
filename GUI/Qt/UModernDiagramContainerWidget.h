@@ -9,10 +9,17 @@
 #include <rdk_application.h>
 #include <QWidget>
 #include <QSplitter>
+#include <QDialog>
+#include <QToolButton>
+#include <QByteArray>
+
+class QVBoxLayout;
 
 /// UModernDiagramContainerWidget class - виджет-контейнер для современной диаграммы со списком компонентов хранилища.
 ///
-/// Содержит один объект UModernDiagramWidget и один объект UClassesListWidget
+/// Содержит один объект UModernDiagramWidget и один объект UClassesListWidget.
+/// Палитра классов по умолчанию скрыта; открывается кнопкой на диаграмме (float Tool)
+/// и может быть закреплена в правой панели splitter.
 
 class UModernDiagramContainerWidget : public UVisualControllerWidget
 {
@@ -39,6 +46,9 @@ public slots:
 
     void updateScheme(bool reloadXml);
     void updateClassesList();
+    void toggleClassesList();
+    void pinClassesList();
+    void unpinClassesList();
 
 signals:
     void componentSelectedFromScheme(QString name);
@@ -54,11 +64,29 @@ signals:
     void openProjectDescriptionRequested();
 
 private:
+    void setupClassesHosts();
+    void applyClassesPresentation();
+    void collapseClassesSplitterPane();
+    void expandClassesSplitterPane();
+    void ensureClassesListIn(QWidget* host, QVBoxLayout* layout);
+    void syncClassesListButton();
+
     UModernDiagramWidget *modernScheme;
     UClassesListWidget *classesList;
     QSplitter *splitter;
+
+    QWidget *m_pinnedHost;
+    QVBoxLayout *m_pinnedLayout;
+    QToolButton *m_unpinButton;
+
+    QDialog *m_floatDialog;
+    QVBoxLayout *m_floatLayout;
+    QToolButton *m_pinButton;
+
+    bool m_classesPinned;
+    bool m_classesVisible;
+    int m_pinnedPaneWidth;
+    QByteArray m_floatGeometry;
 };
 
 #endif // UMODERNDIAGRAMCONTAINERWIDGET_H
-
-

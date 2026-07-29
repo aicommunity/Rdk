@@ -102,9 +102,10 @@ public slots:
     void updateTheme();
     /// Вызвать открытие окна описания проекта (используется кнопкой на диаграмме)
     void requestOpenProjectDescription();
-    /// Обновление стилей кнопки сброса масштаба в соответствии с текущей темой
-    // updateResetZoomButtonStyle теперь в UModernDiagramViewportManager
-
+    /// Показать/скрыть палитру классов (кнопка на диаграмме)
+    void requestToggleClassesList();
+    /// Синхронизировать checked-состояние кнопки палитры классов
+    void setClassesListButtonChecked(bool checked);
 signals:
     /// Компонент выбран (одиночный клик)
     void componentSelected(QString name);
@@ -122,6 +123,8 @@ signals:
     void switchLinks(QString firstComponentName, QString secondComponentName);
     /// Запрос на открытие окна описания проекта (кнопка на диаграмме)
     void openProjectDescriptionRequested();
+    /// Запрос показать/скрыть палитру классов
+    void classesListToggleRequested();
     /// Запрос на открытие специализированной GUI-формы компонента.
     void openComponentGuiRequested(const UComponentGuiContext& context);
     /// Emitted when the schematic drill level changes (SetComponentName).
