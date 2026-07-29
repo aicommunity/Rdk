@@ -207,6 +207,45 @@ po::options_description CmdLineDescription("Allowed options");
 po::variables_map CmdVariablesMap;
 #endif
 
+namespace {
+
+std::string joinProjectPath(const std::string& dir, const std::string& file)
+{
+ if(dir.empty())
+  return file;
+ std::string d = dir;
+ if(d.back() != '/' && d.back() != '\\')
+  d.push_back('/');
+ return d + file;
+}
+
+std::string canonicalFilesystemPath(const std::string& path)
+{
+ if(path.empty())
+  return path;
+ std::error_code ec;
+ const std::filesystem::path canon = std::filesystem::weakly_canonical(std::filesystem::path(path), ec);
+ if(ec)
+  return path;
+ return canon.generic_string();
+}
+
+/// Absolute path with trailing '/', suitable for ProjectPath and configs dirs.
+std::string normalizeProjectDirPath(const std::string& path)
+{
+ if(path.empty())
+  return path;
+ std::string normalized = canonicalFilesystemPath(path);
+ if(normalized.empty())
+  normalized = path;
+ std::replace(normalized.begin(), normalized.end(), '\\', '/');
+ if(!normalized.empty() && normalized.back() != '/')
+  normalized.push_back('/');
+ return normalized;
+}
+
+} // namespace
+
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -438,9 +477,10 @@ const std::string& UApplication::GetProjectPath(void) const
 
 bool UApplication::SetProjectPath(const std::string& value)
 {
- if(ProjectPath == value)
+ const std::string normalized = normalizeProjectDirPath(value);
+ if(ProjectPath == normalized)
   return true;
- ProjectPath=value;
+ ProjectPath=normalized;
  UpdateLoggers();
 // EngineControl->GetEngineStateThread()->CloseEventsLogFile();
  CalcAppCaption();
@@ -1505,31 +1545,6 @@ void UApplication::ProcessCommandLineArgs(int argc, char **argv)
 // Методы управления проектом
 // --------------------------
 
-namespace {
-
-std::string joinProjectPath(const std::string& dir, const std::string& file)
-{
- if(dir.empty())
-  return file;
- std::string d = dir;
- if(d.back() != '/' && d.back() != '\\')
-  d.push_back('/');
- return d + file;
-}
-
-std::string canonicalFilesystemPath(const std::string& path)
-{
- if(path.empty())
-  return path;
- std::error_code ec;
- const std::filesystem::path canon = std::filesystem::weakly_canonical(std::filesystem::path(path), ec);
- if(ec)
-  return path;
- return canon.generic_string();
-}
-
-} // namespace
-
 std::string UApplication::GetDefaultConfigsDirectory() const
 {
  std::string configs_path = GetWorkDirectory() + "/../../Configs/";
@@ -1552,7 +1567,7 @@ std::string UApplication::GetDefaultConfigsDirectory() const
    configs_path = user_path;
   }
  }
- return configs_path;
+ return normalizeProjectDirPath(configs_path);
 }
 
 std::string UApplication::PrepareNewProjectIniPath(bool autocreate_subdirectory,
@@ -2717,9 +2732,11 @@ bool UApplication::RenameProject(const std::string &filename)
  if(res == 0)
  {
   SetProjectPath(resfilename);
+  Project->SetProjectPath(ProjectPath);
+  Env_SetCurrentDataDir(ProjectPath.c_str());
 
   std::list<std::string> last_list=LastProjectsList;
-  last_list.push_front(resfilename+ProjectFileName);
+  last_list.push_front(ProjectPath+ProjectFileName);
   while(int(last_list.size())>LastProjectsListMaxSize
    && !LastProjectsList.empty())
   {

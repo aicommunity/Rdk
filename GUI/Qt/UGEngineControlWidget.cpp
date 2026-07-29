@@ -1013,6 +1013,12 @@ void UGEngineControlWidget::actionRenameConfig()
             }
             QMessageBox::question(this, "Error", "Falied to rename configuration!", QMessageBox::Ok);
         }
+        else
+        {
+            AUpdateInterface();
+            addToRecentConfigs(QString::fromLocal8Bit(
+                (application->GetProjectPath()+application->GetProjectFileName()).c_str()));
+        }
     }
   }
   catch(RDK::UException& e)
