@@ -7,6 +7,47 @@
 #include <QDebug>
 #include <QDir>
 #include <QCoreApplication>
+#include <QFontDatabase>
+#include <QDockWidget>
+#include <QMdiSubWindow>
+#include <QEvent>
+#include <QWidget>
+
+namespace {
+
+class UTitleFontPolisher : public QObject
+{
+public:
+    explicit UTitleFontPolisher(UStyleManager* styles, QObject* parent = nullptr)
+        : QObject(parent)
+        , m_styles(styles)
+    {
+    }
+
+    bool eventFilter(QObject* watched, QEvent* event) override
+    {
+        if(!m_styles)
+            return QObject::eventFilter(watched, event);
+
+        const QEvent::Type type = event->type();
+        if(type != QEvent::Polish && type != QEvent::Show)
+            return QObject::eventFilter(watched, event);
+        if(!watched->isWidgetType())
+            return QObject::eventFilter(watched, event);
+
+        if(auto* dock = qobject_cast<QDockWidget*>(watched))
+            m_styles->applyTitleBarFont(dock);
+        else if(auto* mdi = qobject_cast<QMdiSubWindow*>(watched))
+            m_styles->applyTitleBarFont(mdi);
+
+        return QObject::eventFilter(watched, event);
+    }
+
+private:
+    UStyleManager* m_styles;
+};
+
+} // namespace
 
 UStyleManager* UStyleManager::s_instance = nullptr;
 
@@ -280,6 +321,62 @@ void UStyleManager::applyGlobalStyleSheet(QApplication* app)
         app->setStyleSheet(m_styleSheet);
         qDebug() << "UStyleManager: Global stylesheet applied";
     }
+    applySystemUiFonts(app);
+}
+
+void UStyleManager::applySystemUiFonts(QApplication* app)
+{
+    if(!app)
+        return;
+
+    QFont uiFont = QFontDatabase::systemFont(QFontDatabase::GeneralFont);
+    if(uiFont.pointSizeF() <= 0 && uiFont.pixelSize() <= 0)
+        uiFont = app->font();
+    app->setFont(uiFont);
+
+    if(!m_titleFontPolisher)
+    {
+        auto* polisher = new UTitleFontPolisher(this, app);
+        app->installEventFilter(polisher);
+        m_titleFontPolisher = polisher;
+    }
+
+    const auto widgets = app->allWidgets();
+    for(QWidget* widget : widgets)
+    {
+        if(qobject_cast<QDockWidget*>(widget) || qobject_cast<QMdiSubWindow*>(widget))
+            applyTitleBarFont(widget);
+    }
+}
+
+QFont UStyleManager::titleBarFont() const
+{
+    // Use the desktop UI font (not GNOME titlebar-font): users typically enlarge
+    // Interface Text, while Window Title stays at the default 11pt.
+    QFont font = QApplication::font();
+    if(font.pointSizeF() <= 0 && font.pixelSize() <= 0)
+        font = QFontDatabase::systemFont(QFontDatabase::GeneralFont);
+    font.setWeight(QFont::DemiBold);
+    return font;
+}
+
+void UStyleManager::applyTitleBarFont(QWidget* titleHost) const
+{
+    if(!titleHost)
+        return;
+
+    titleHost->setFont(titleBarFont());
+
+    if(auto* dock = qobject_cast<QDockWidget*>(titleHost))
+    {
+        if(QWidget* content = dock->widget())
+            content->setFont(QApplication::font());
+    }
+    else if(auto* mdi = qobject_cast<QMdiSubWindow*>(titleHost))
+    {
+        if(QWidget* content = mdi->widget())
+            content->setFont(QApplication::font());
+    }
 }
 
 QString UStyleManager::getTreeWidgetStyleSheet() const
@@ -287,7 +384,6 @@ QString UStyleManager::getTreeWidgetStyleSheet() const
     // Stylesheet for QTreeWidget used in port list popup
     return QString(
         "QTreeWidget {"
-        "  font-size: 10pt;"
         "  background-color: %1;"
         "  border: 1px solid %2;"
         "  border-radius: 4px;"

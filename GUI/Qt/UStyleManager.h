@@ -4,9 +4,13 @@
 #include <QColor>
 #include <QString>
 #include <QApplication>
+#include <QFont>
 #include <QJsonObject>
 #include <QVector>
 #include <QLinearGradient>
+#include <QPointer>
+
+class QWidget;
 
 /**
  * @brief Синглтон для централизованного управления стилями приложения.
@@ -23,6 +27,11 @@ public:
     bool loadTheme(const QString& themeJsonPath);
     bool loadStyleSheet(const QString& qssPath);
     void applyGlobalStyleSheet(QApplication* app);
+
+    /// Sync QApplication font with the desktop UI font and polish dock/MDI titles.
+    void applySystemUiFonts(QApplication* app);
+    QFont titleBarFont() const;
+    void applyTitleBarFont(QWidget* titleHost) const;
     
     // Переключение темы
     bool switchTheme(const QString& themeName, QApplication* app);
@@ -197,6 +206,8 @@ private:
     // Theme name and paths
     QString m_themeName;
     QString m_stylesPath;
+
+    QPointer<QObject> m_titleFontPolisher;
 };
 
 #endif // USTYLEMANAGER_H

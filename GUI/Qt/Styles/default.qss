@@ -7,9 +7,8 @@
  */
 
 /* ===== Global Styles ===== */
+/* No font-size/font-family here: inherit desktop UI font (Ubuntu Tweaks / GNOME). */
 QWidget {
-    font-family: "Segoe UI", "SF Pro Display", "Ubuntu", "Noto Sans", -apple-system, sans-serif;
-    font-size: 10pt;
     color: #1F2937;
 }
 
@@ -842,7 +841,6 @@ QToolTip {
     border: none;
     padding: 8px 12px;
     border-radius: 6px;
-    font-size: 9pt;
 }
 
 /* ===== Splitter ===== */
@@ -880,7 +878,6 @@ QMessageBox {
 
 QMessageBox QLabel {
     color: #374151;
-    font-size: 10pt;
 }
 
 /* ===== Input Dialog ===== */
