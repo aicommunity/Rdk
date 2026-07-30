@@ -20,7 +20,7 @@ std::string labOllamaModelName();
 /// Thinking-capable model: env `NMSDK_LLM_OLLAMA_THINKING_MODEL` or default `qwen3`.
 std::string labOllamaThinkingModelName();
 
-/// True when thinking model (or qwen3*) appears in /api/tags.
+/// True when thinking model appears in /api/tags AND Ollama accepts think:true for it.
 bool labHasThinkingModel();
 
 /// Prefer these macros from TEST bodies — GTEST_SKIP must return from the test function.

@@ -2,6 +2,8 @@
 
 #include <cstdlib>
 
+#include <nlohmann/json.hpp>
+
 #include "Http/ULLMHttpClient.h"
 
 namespace RDK::LLM::Test {
@@ -40,14 +42,27 @@ bool labHasThinkingModel()
     if(resp.status_code < 200 || resp.status_code >= 300 || !resp.error.empty())
         return false;
     const std::string model = labOllamaThinkingModelName();
-    if(resp.body.find("\"" + model + "\"") != std::string::npos)
-        return true;
-    if(resp.body.find("\"" + model + ":") != std::string::npos)
-        return true;
-    // Common family default for thinking profile.
-    if(model == "qwen3" && resp.body.find("qwen3") != std::string::npos)
-        return true;
-    return false;
+    const bool listed = resp.body.find("\"" + model + "\"") != std::string::npos
+                        || resp.body.find("\"" + model + ":") != std::string::npos
+                        || (model.find("qwen3") != std::string::npos && resp.body.find("qwen3") != std::string::npos);
+    if(!listed)
+        return false;
+
+    // Probe think support: Ollama returns 400 "does not support thinking" for broken templates.
+    const nlohmann::json body = {{"model", model},
+                                 {"messages", nlohmann::json::array({{{"role", "user"},
+                                                                      {"content", "ping"}}})},
+                                 {"think", true},
+                                 {"stream", false},
+                                 {"options", {{"num_predict", 8}}}};
+    const auto chat = http.postJson(std::string(kLabOllamaHost) + "/api/chat", body.dump(), "", 60000);
+    if(!chat.error.empty())
+        return false;
+    if(chat.status_code < 200 || chat.status_code >= 300)
+        return false;
+    if(chat.body.find("does not support thinking") != std::string::npos)
+        return false;
+    return true;
 }
 
 } // namespace RDK::LLM::Test
