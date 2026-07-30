@@ -266,7 +266,9 @@ void RegisterApplicationTools(ULLMToolRegistry& registry)
 
     registry.registerTool(
         makeAppDef("validate_configuration", LLMToolKind::Read,
-                   "Validate a configuration file on disk without opening it in the UI",
+                   "Use when validating a configuration directory/file on disk without opening it. "
+                   "Requires configuration_path (or resolvable path args). "
+                   "Do not use for the already-open project — use validate_project.",
                    {{"type", "object"},
                     {"required", nlohmann::json::array({"configuration_path"})},
                     {"properties",

@@ -63,6 +63,31 @@ inline void finalizeThinkingResult(LLMCompletionResult& result)
         splitThinkTagsFromContent(result.text, result.thinking);
 }
 
+/// Ollama may return tool `arguments` as a JSON object; OpenAI-compat often uses a string.
+inline nlohmann::json parseToolCallArgumentsJson(const nlohmann::json& function_obj)
+{
+    if(!function_obj.contains("arguments"))
+        return nlohmann::json::object();
+    const auto& args = function_obj["arguments"];
+    if(args.is_object() || args.is_array())
+        return args;
+    if(args.is_string())
+    {
+        const std::string s = args.get<std::string>();
+        if(s.empty())
+            return nlohmann::json::object();
+        try
+        {
+            return nlohmann::json::parse(s);
+        }
+        catch(...)
+        {
+            return nlohmann::json::object();
+        }
+    }
+    return nlohmann::json::object();
+}
+
 } // namespace RDK::LLM
 
 #endif

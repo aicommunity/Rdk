@@ -165,7 +165,12 @@ LLMCompletionResult UOpenAICompatProvider::parseResponse(const std::string& body
         const auto& choice = j["choices"][0];
         const auto& message = choice["message"];
         if(message.contains("content") && !message["content"].is_null())
-            result.text = message["content"].get<std::string>();
+        {
+            if(message["content"].is_string())
+                result.text = message["content"].get<std::string>();
+            else
+                result.text = message["content"].dump();
+        }
         extractThinkingFields(message, result.thinking);
         if(message.contains("tool_calls"))
         {
@@ -174,8 +179,7 @@ LLMCompletionResult UOpenAICompatProvider::parseResponse(const std::string& body
                 LLMToolCall call;
                 call.id = tc.value("id", "");
                 call.name = tc["function"].value("name", "");
-                const std::string args_str = tc["function"].value("arguments", "{}");
-                call.arguments = nlohmann::json::parse(args_str);
+                call.arguments = parseToolCallArgumentsJson(tc["function"]);
                 result.tool_calls.push_back(call);
             }
         }

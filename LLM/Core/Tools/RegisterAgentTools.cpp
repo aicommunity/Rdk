@@ -27,7 +27,9 @@ void RegisterAgentTools(ULLMToolRegistry& registry)
     ULLMToolRegistry* registry_ptr = &registry;
     registry.registerTool(
         agentToolDef("ask_user",
-                     "Ask the user a clarifying question. Orchestrator pauses until the user replies.",
+                     "Use when required arguments or user intent are ambiguous and you cannot "
+                     "safely proceed. Pauses the turn until the user replies. "
+                     "Do not use for ordinary status answers — reply in text instead.",
                      {{"type", "object"},
                       {"required", {"question"}},
                       {"properties",
@@ -44,7 +46,8 @@ void RegisterAgentTools(ULLMToolRegistry& registry)
 
     registry.registerTool(
         agentToolDef("propose_plan",
-                     "Propose a multi-step plan for user review (does not execute writes).",
+                     "Use when the user needs a multi-step write plan for review before execution. "
+                     "Does not execute writes. Do not use for single-tool read queries.",
                      {{"type", "object"},
                       {"required", {"goal", "steps"}},
                       {"properties",

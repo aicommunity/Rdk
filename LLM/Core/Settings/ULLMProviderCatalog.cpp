@@ -47,7 +47,7 @@ std::vector<LLMProviderProfile> ULLMProviderCatalog::builtInProfiles()
     {
         const char* thinking_model = std::getenv("NMSDK_LLM_OLLAMA_THINKING_MODEL");
         ollama_thinking.model =
-            (thinking_model && thinking_model[0] != '\0') ? thinking_model : "qwen3";
+            (thinking_model && thinking_model[0] != '\0') ? thinking_model : "qwen3:14b";
     }
     ollama_thinking.chat_template = OllamaChatTemplateFamily::Auto;
     ollama_thinking.is_cloud = false;

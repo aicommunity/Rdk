@@ -287,7 +287,8 @@ std::string formatPromptWithTemplate(OllamaChatTemplateFamily family,
     return prompt;
 }
 
-nlohmann::json buildOpenAiChatMessagesJson(const std::vector<LLMMessage>& messages)
+nlohmann::json buildOpenAiChatMessagesJson(const std::vector<LLMMessage>& messages,
+                                           bool tool_arguments_as_object)
 {
     nlohmann::json msgs = nlohmann::json::array();
     for(const LLMMessage& m : messages)
@@ -320,11 +321,13 @@ nlohmann::json buildOpenAiChatMessagesJson(const std::vector<LLMMessage>& messag
             nlohmann::json tool_calls = nlohmann::json::array();
             for(const LLMToolCall& call : *m.assistant_tool_calls)
             {
+                nlohmann::json args =
+                    tool_arguments_as_object ? call.arguments
+                                             : nlohmann::json(call.arguments.dump());
                 tool_calls.push_back({{"id", call.id},
                                       {"type", "function"},
                                       {"function",
-                                       {{"name", call.name},
-                                        {"arguments", call.arguments.dump()}}}});
+                                       {{"name", call.name}, {"arguments", std::move(args)}}}});
             }
             item["tool_calls"] = tool_calls;
         }

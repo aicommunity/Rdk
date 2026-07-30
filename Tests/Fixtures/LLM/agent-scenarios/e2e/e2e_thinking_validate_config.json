@@ -9,10 +9,11 @@
     "llm_write_enabled": true
   },
   "env": {
-    "NMSDK_LLM_OLLAMA_THINKING_MODEL": "qwen3"
+    "NMSDK_LLM_OLLAMA_THINKING_MODEL": "qwen3:14b"
   },
   "e2e": {
     "goal": "ValidateConfiguration",
+    "use_thinking_profile": true,
     "expected_tools_any": ["validate_configuration", "validate_project", "search_project_docs", "get_net_snapshot"],
     "forbidden_tools": [],
     "require_orchestrator_ok": true,

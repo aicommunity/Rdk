@@ -5,15 +5,16 @@
 | Tier | Role | Default profile | Notes |
 |------|------|-----------------|-------|
 | Router | intent / tool routing | `ollama-lite` | Fast 7B; **think OFF** |
-| Cortex | main ReAct loop | `ollama-thinking` | **qwen3** + `think:true` by default |
+| Cortex | main ReAct loop | `ollama-thinking` | **qwen3:14b** + `think:true` by default |
 | Utility | summarize / JSON | active / lite | **think OFF** |
 
 ## Ollama thinking
 
 - Cortex sends `think: true` when `LLM/enable_ollama_thinking` is true and provider `supports_thinking`.
-- Env: `NMSDK_LLM_OLLAMA_THINKING_MODEL` (default `qwen3`), lab host via `NMSDK_LLM_OLLAMA_BASE_URL` / settings.
+- Env: `NMSDK_LLM_OLLAMA_THINKING_MODEL` (default `qwen3:14b`), lab host via `NMSDK_LLM_OLLAMA_BASE_URL` / settings.
 - Preserve `message.thinking` on assistant tool-call turns for multi-step tool loops.
 - Set `OLLAMA_NUM_CTX` ≥ 8192 for tool-calling + thinking runs.
+- GUI: collapsible Reasoning bubble (TD-143).
 
 ## Feature flags
 
@@ -28,15 +29,16 @@
 | Tier | Role | Default profile | Notes |
 |------|------|-----------------|-------|
 | Router | intent / tool routing | `ollama-lite` | Fast 7B; **think OFF** |
-| Cortex | main ReAct loop | `ollama-thinking` | **qwen3** + `think:true` by default |
+| Cortex | main ReAct loop | `ollama-thinking` | **qwen3:14b** + `think:true` by default |
 | Utility | summarize / JSON | active / lite | **think OFF** |
 
 ## Ollama thinking
 
 - Cortex sends `think: true` when `LLM/enable_ollama_thinking` is true and provider `supports_thinking`.
-- Env: `NMSDK_LLM_OLLAMA_THINKING_MODEL` (default `qwen3`), lab host via `NMSDK_LLM_OLLAMA_BASE_URL` / settings.
+- Env: `NMSDK_LLM_OLLAMA_THINKING_MODEL` (default `qwen3:14b`), lab host via `NMSDK_LLM_OLLAMA_BASE_URL` / settings.
 - Preserve `message.thinking` on assistant tool-call turns for multi-step tool loops.
 - Set `OLLAMA_NUM_CTX` ≥ 8192 for tool-calling + thinking runs.
+- GUI: collapsible Reasoning bubble (TD-143).
 
 ## Feature flags
 

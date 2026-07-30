@@ -62,7 +62,12 @@ LLMCompletionResult UOllamaNativeProvider::parseResponse(const std::string& body
         {
             const auto& message = j["message"];
             if(message.contains("content") && !message["content"].is_null())
-                result.text = message["content"].get<std::string>();
+            {
+                if(message["content"].is_string())
+                    result.text = message["content"].get<std::string>();
+                else
+                    result.text = message["content"].dump();
+            }
             extractThinkingFields(message, result.thinking);
             if(message.contains("tool_calls"))
             {
@@ -73,8 +78,7 @@ LLMCompletionResult UOllamaNativeProvider::parseResponse(const std::string& body
                     if(tc.contains("function"))
                     {
                         call.name = tc["function"].value("name", "");
-                        const std::string args_str = tc["function"].value("arguments", "{}");
-                        call.arguments = nlohmann::json::parse(args_str);
+                        call.arguments = parseToolCallArgumentsJson(tc["function"]);
                     }
                     result.tool_calls.push_back(call);
                 }
@@ -104,7 +108,7 @@ LLMCompletionResult UOllamaNativeProvider::chat(const std::vector<LLMMessage>& m
     body["model"] =
         opts.model_override && !opts.model_override->empty() ? *opts.model_override : m_profile.model;
     body["stream"] = false;
-    body["messages"] = buildOpenAiChatMessagesJson(prepared);
+    body["messages"] = buildOpenAiChatMessagesJson(prepared, /*tool_arguments_as_object=*/true);
     if(shouldSendThinkTrue(opts, capabilities()))
         body["think"] = true;
     if(opts.max_tokens > 0)

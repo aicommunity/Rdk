@@ -57,6 +57,29 @@ void appendToolTraceToHistory(QTextEdit* history,
         archive_fn(qhtml);
 }
 
+QString escapeHtmlLite(const QString& s)
+{
+    QString out = s;
+    out.replace(QLatin1Char('&'), QStringLiteral("&amp;"));
+    out.replace(QLatin1Char('<'), QStringLiteral("&lt;"));
+    out.replace(QLatin1Char('>'), QStringLiteral("&gt;"));
+    out.replace(QLatin1Char('"'), QStringLiteral("&quot;"));
+    return out;
+}
+
+/// Collapsible Reasoning block (same details/summary pattern as tool traces). Truncate ~8KB.
+QString formatThinkingDetailsHtml(QString thinking)
+{
+    thinking = thinking.trimmed();
+    if(thinking.isEmpty())
+        return {};
+    constexpr int kMaxChars = 8192;
+    if(thinking.size() > kMaxChars)
+        thinking = thinking.left(kMaxChars) + QStringLiteral("\n…");
+    return QStringLiteral("<details><summary>%1</summary><pre>%2</pre></details>")
+        .arg(QObject::tr("Reasoning"), escapeHtmlLite(thinking));
+}
+
 RDK::LLM::LLMGuiContextSnapshot guiSnapshotFromContext(const LLMGuiContext& ctx)
 {
     RDK::LLM::LLMGuiContextSnapshot snap;
@@ -606,9 +629,23 @@ void ULlmAssistantDockWidget::beginAssistantStream()
 {
     m_streaming_reply = true;
     m_stream_tokens_received = false;
+    m_stream_thinking.clear();
+    m_thinking_details_appended = false;
     const QString header = QString("<b>%1:</b> ").arg(tr("Assistant"));
     m_history->append(header);
     m_pending_assistant_archive = header;
+}
+
+void ULlmAssistantDockWidget::appendThinkingDetails(const QString& thinking)
+{
+    if(m_thinking_details_appended)
+        return;
+    const QString html = formatThinkingDetailsHtml(thinking);
+    if(html.isEmpty())
+        return;
+    m_history->append(html);
+    archiveHtmlFragment(html);
+    m_thinking_details_appended = true;
 }
 
 void ULlmAssistantDockWidget::endAssistantStream()
@@ -710,11 +747,29 @@ void ULlmAssistantDockWidget::onStreamToken(const QString& token)
     m_history->ensureCursorVisible();
 }
 
+void ULlmAssistantDockWidget::onThinkingToken(const QString& token)
+{
+    if(token.isEmpty())
+        return;
+    m_stream_thinking += token;
+    if(m_request_status && m_request_status->isVisible())
+        m_request_status->setText(tr("Model is reasoning…"));
+}
+
 void ULlmAssistantDockWidget::onStreamFinished(const RDK::LLM::LLMFinalResponse& resp)
 {
     setRequestInProgress(false);
     if(m_context_budget)
         m_context_budget->setText(formatContextBudgetLabel(resp));
+
+    QString thinking = m_stream_thinking;
+    if(thinking.trimmed().isEmpty() && !resp.thinking.empty())
+        thinking = QString::fromStdString(resp.thinking);
+    if(!thinking.trimmed().isEmpty()
+       && RDK::LLM::LLMServices::instance().settings().runtime().enable_ollama_thinking)
+        appendThinkingDetails(thinking);
+    m_stream_thinking.clear();
+
     if(m_streaming_reply)
     {
         if(!m_pending_assistant_archive.isEmpty())
@@ -1082,6 +1137,13 @@ void ULlmAssistantDockWidget::runUserMessage(const QString& text)
                     return;
                 const QString qtok = QString::fromStdString(token);
                 QMetaObject::invokeMethod(self, "onStreamToken", Qt::QueuedConnection,
+                                        Q_ARG(QString, qtok));
+            };
+            stream.on_thinking_token = [self](const std::string& token) {
+                if(!self)
+                    return;
+                const QString qtok = QString::fromStdString(token);
+                QMetaObject::invokeMethod(self, "onThinkingToken", Qt::QueuedConnection,
                                         Q_ARG(QString, qtok));
             };
         }

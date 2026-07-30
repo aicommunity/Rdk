@@ -32,7 +32,7 @@ std::string labOllamaThinkingModelName()
         if(env[0] != '\0')
             return env;
     }
-    return "qwen3";
+    return "qwen3:14b";
 }
 
 bool labHasThinkingModel()

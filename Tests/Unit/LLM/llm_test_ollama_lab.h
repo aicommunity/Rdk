@@ -17,7 +17,7 @@ bool isLabOllamaReachable(int timeout_ms = 5000);
 /// Model for chat tests: env `NMSDK_LLM_OLLAMA_MODEL` or default `qwen2.5:14b`.
 std::string labOllamaModelName();
 
-/// Thinking-capable model: env `NMSDK_LLM_OLLAMA_THINKING_MODEL` or default `qwen3`.
+/// Thinking-capable model: env `NMSDK_LLM_OLLAMA_THINKING_MODEL` or default `qwen3:14b`.
 std::string labOllamaThinkingModelName();
 
 /// True when thinking model appears in /api/tags AND Ollama accepts think:true for it.

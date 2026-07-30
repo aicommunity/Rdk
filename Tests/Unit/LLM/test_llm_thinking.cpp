@@ -60,6 +60,15 @@ TEST(LLMThinkingParse, MessageJsonPreservesThinking)
     EXPECT_TRUE(msgs[0].contains("tool_calls"));
 }
 
+TEST(LLMThinkingParse, ToolArgumentsObjectOrString)
+{
+    nlohmann::json fn_obj = {{"name", "x"}, {"arguments", {{"path", "/tmp"}}}};
+    EXPECT_EQ(parseToolCallArgumentsJson(fn_obj)["path"], "/tmp");
+
+    nlohmann::json fn_str = {{"name", "x"}, {"arguments", "{\"a\":1}"}};
+    EXPECT_EQ(parseToolCallArgumentsJson(fn_str)["a"], 1);
+}
+
 TEST(LLMToolFilterExpand, SearchToolsExpandsAllowlist)
 {
     ULLMToolRegistry registry;

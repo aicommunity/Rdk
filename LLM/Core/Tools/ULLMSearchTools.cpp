@@ -1,7 +1,5 @@
 #include "ULLMSearchTools.h"
 
-#include "../Orchestrator/ULLMConfigurationLifecycle.h"
-#include "../Orchestrator/ULLMToolFilterBuilder.h"
 #include "ULLMToolRegistry.h"
 
 #include <algorithm>
@@ -53,10 +51,13 @@ SearchToolsResult searchToolsByQuery(ULLMToolRegistry& registry, const std::stri
     out.query = query;
     out.index_version = 1;
 
+    // Search the full registry (not only the Mutate allowlist) so progressive disclosure
+    // can discover long-tail tools such as list_model_links / spawn_explore_subagent.
     std::unordered_set<std::string> all;
-    const ToolFilter mutate =
-        buildToolFilter(LLMIntentKind::Mutate, true, ConfigurationLifecycleAction::None);
-    for(const LLMToolDefinition& def : registry.listForLlmApi(mutate))
+    ToolFilter open;
+    open.include_write = true;
+    open.intent = LLMIntentKind::Auto;
+    for(const LLMToolDefinition& def : registry.listForLlmApi(open))
         all.insert(def.name);
 
     const std::vector<std::string> q = tokenize(query);

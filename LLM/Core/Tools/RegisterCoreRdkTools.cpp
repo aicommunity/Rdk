@@ -55,7 +55,9 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
     ILLMProjectContextProvider* const project_ctx = project_context;
 
     registry.registerTool(
-        makeDef("get_net_snapshot", LLMToolKind::Read, "Returns component graph for active channel",
+        makeDef("get_net_snapshot", LLMToolKind::Read,
+                "Use when you need the component graph / topology of the active channel. "
+                "Requires an open project/channel. Do not use for docs or class metadata.",
                 {{"type", "object"},
                  {"properties",
                   {{"channel_index", {{"type", "integer"}, {"minimum", 0}}},
@@ -115,7 +117,9 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
 
     registry.registerTool(
         makeDef("list_registered_classes", LLMToolKind::Read,
-                "Lists registered component class names",
+                "Use when discovering which component classes exist (optionally by library). "
+                "Do not use to inspect an instance already on the net — use find_component / "
+                "get_component_properties instead.",
                 {{"type", "object"},
                  {"properties", {{"library_filter", {{"type", "string"}}}}},
                  {"additionalProperties", false}},
@@ -138,7 +142,9 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
         });
 
     registry.registerTool(
-        makeDef("describe_class", LLMToolKind::Read, "Returns ClDesc fragment for a class",
+        makeDef("describe_class", LLMToolKind::Read,
+                "Use when you need ClDesc / property schema for a registered class name. "
+                "Requires a concrete class_name. Do not use for live instance property values.",
                 {{"type", "object"},
                  {"required", {"class_name"}},
                  {"properties", {{"class_name", {{"type", "string"}}}}},
@@ -175,7 +181,9 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
         });
 
     registry.registerTool(
-        makeDef("find_component", LLMToolKind::Read, "Find components by query string",
+        makeDef("find_component", LLMToolKind::Read,
+                "Use when locating components on the net by name/query. "
+                "Do not use for class catalog listing — use list_registered_classes.",
                 {{"type", "object"},
                  {"required", {"query"}},
                  {"properties",
@@ -195,7 +203,9 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
         });
 
     registry.registerTool(
-        makeDef("get_component_properties", LLMToolKind::Read, "Get component metadata",
+        makeDef("get_component_properties", LLMToolKind::Read,
+                "Use when reading property values/metadata of an existing component instance. "
+                "Requires a resolved component identity. Do not use for class-level ClDesc.",
                 {{"type", "object"},
                  {"required", {"long_name"}},
                  {"properties",
@@ -229,7 +239,9 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
         });
 
     registry.registerTool(
-        makeDef("search_project_docs", LLMToolKind::Read, "Search NMSDK documentation",
+        makeDef("search_project_docs", LLMToolKind::Read,
+                "Use when answering how-to / conceptual questions from NMSDK docs. "
+                "Prefer over guessing. Do not use for live model graph — use get_net_snapshot.",
                 {{"type", "object"},
                  {"required", {"query"}},
                  {"properties",
@@ -277,7 +289,9 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
         });
 
     registry.registerTool(
-        makeDef("validate_project", LLMToolKind::Read, "Dry-run project validation",
+        makeDef("validate_project", LLMToolKind::Read,
+                "Use when dry-running validation of the currently loaded project. "
+                "Do not use for a configuration path on disk — use validate_configuration.",
                 {{"type", "object"}, {"additionalProperties", false}},
                 {{"type", "object"}}),
         [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {

@@ -34,7 +34,7 @@ struct LLMCompletionOptions {
 };
 ```
 
-**Thinking-first (Ollama):** Cortex enables `think: true` when `enable_ollama_thinking` and the provider sets `supports_thinking`. Prefer profile `ollama-thinking` (native `/api/chat`, model `qwen3` / `NMSDK_LLM_OLLAMA_THINKING_MODEL`). Reasoning is returned in `message.thinking` (and preserved on assistant tool-call turns). Never force `tool_choice` while thinking is on.
+**Thinking-first (Ollama):** Cortex enables `think: true` when `enable_ollama_thinking` and the provider sets `supports_thinking`. Prefer profile `ollama-thinking` (native `/api/chat`, model `qwen3:14b` / `NMSDK_LLM_OLLAMA_THINKING_MODEL`). Reasoning is returned in `message.thinking` (and preserved on assistant tool-call turns). Never force `tool_choice` while thinking is on. GUI shows a collapsible Reasoning block (not the answer bubble).
 
 ---
 
@@ -54,7 +54,7 @@ struct LLMCompletionOptions {
 |------------|----------|---------------|
 | `ollama-local` | `http://127.0.0.1:11434/v1` | `qwen2.5:14b` |
 | `ollama-native` | `http://127.0.0.1:11434` | `qwen2.5:14b` |
-| `ollama-thinking` | `http://127.0.0.1:11434` | `qwen3` (env override) |
+| `ollama-thinking` | `http://127.0.0.1:11434` | `qwen3:14b` (env override) |
 | `ollama-lite` | `http://127.0.0.1:11434/v1` | `qwen2.5:7b` |
 | `deepseek` | `https://api.deepseek.com/v1` | `deepseek-chat` |
 | `openai` | `https://api.openai.com/v1` | `gpt-4o-mini` |
