@@ -25,6 +25,158 @@
 #include "UComponentGuiService.h"
 #include "UComponentFormRegistry.h"
 
+#include <QApplication>
+#include <QPainter>
+#include <QStyledItemDelegate>
+#include <QTreeWidget>
+
+namespace {
+
+constexpr int kFavRoleProp = Qt::UserRole;
+constexpr int kFavRoleDisplayPath = Qt::UserRole + 1;
+constexpr int kFavRoleComponent = Qt::UserRole + 2;
+
+class FavoritesPathSubtitleDelegate : public QStyledItemDelegate
+{
+public:
+    explicit FavoritesPathSubtitleDelegate(QTreeWidget* tree)
+        : QStyledItemDelegate(tree)
+        , m_tree(tree)
+    {
+    }
+
+    QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override
+    {
+        QSize sz = QStyledItemDelegate::sizeHint(option, index);
+        const QString path = displayPathFor(index);
+        if(path.isEmpty())
+            return sz;
+
+        QFont pathFont = option.font;
+        pathFont.setPointSizeF(qMax(8.0, pathFont.pointSizeF() * 0.85));
+        const int pathH = QFontMetrics(pathFont).height();
+        sz.setHeight(qMax(sz.height(), option.fontMetrics.height() + 4) + pathH + 2);
+        return sz;
+    }
+
+    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+    {
+        const QString path = displayPathFor(index);
+        if(path.isEmpty())
+        {
+            QStyledItemDelegate::paint(painter, option, index);
+            return;
+        }
+
+        QStyleOptionViewItem topOpt(option);
+        initStyleOption(&topOpt, index);
+
+        const int topH = option.fontMetrics.height() + 4;
+        topOpt.rect = QRect(option.rect.left(), option.rect.top(),
+                            option.rect.width(), qMin(topH, option.rect.height()));
+
+        // Фон на всю высоту ячейки (включая subtitle)
+        {
+            QStyleOptionViewItem bgOpt(option);
+            initStyleOption(&bgOpt, index);
+            bgOpt.text.clear();
+            bgOpt.icon = QIcon();
+            bgOpt.features &= ~QStyleOptionViewItem::HasDisplay;
+            bgOpt.features &= ~QStyleOptionViewItem::HasCheckIndicator;
+            bgOpt.checkState = Qt::Unchecked;
+            const QWidget* widget = option.widget;
+            QStyle* style = widget ? widget->style() : QApplication::style();
+            style->drawPrimitive(QStyle::PE_PanelItemViewItem, &bgOpt, painter, widget);
+        }
+
+        if(index.column() == 0)
+        {
+            const QColor textColor = (option.state & QStyle::State_Selected)
+                ? option.palette.color(QPalette::HighlightedText)
+                : option.palette.color(QPalette::Text);
+
+            painter->save();
+            painter->setPen(textColor);
+            painter->setFont(option.font);
+            const QRect nameRect = topOpt.rect.adjusted(3, 0, -3, 0);
+            const QString name = option.fontMetrics.elidedText(
+                topOpt.text, Qt::ElideRight, nameRect.width());
+            painter->drawText(nameRect, Qt::AlignVCenter | Qt::AlignLeft, name);
+            painter->restore();
+        }
+        else
+        {
+            // Value / checkbox только в верхней половине (без повторного фона)
+            QStyleOptionViewItem valueOpt(topOpt);
+            valueOpt.state &= ~QStyle::State_Selected;
+            valueOpt.state &= ~QStyle::State_MouseOver;
+            valueOpt.state &= ~QStyle::State_HasFocus;
+            QStyledItemDelegate::paint(painter, valueOpt, index);
+        }
+
+        // Path — единая строка под Name|Value: общий origin, clip по текущей ячейке
+        drawPathSubtitle(painter, option, index, path, topH);
+    }
+
+private:
+    static QString displayPathFor(const QModelIndex& index)
+    {
+        const QModelIndex nameIndex = index.sibling(index.row(), 0);
+        return nameIndex.data(kFavRoleDisplayPath).toString();
+    }
+
+    void drawPathSubtitle(QPainter* painter,
+                          const QStyleOptionViewItem& option,
+                          const QModelIndex& index,
+                          const QString& path,
+                          int topH) const
+    {
+        const QColor textColor = (option.state & QStyle::State_Selected)
+            ? option.palette.color(QPalette::HighlightedText)
+            : option.palette.color(QPalette::Text);
+
+        QFont pathFont = option.font;
+        pathFont.setPointSizeF(qMax(8.0, pathFont.pointSizeF() * 0.85));
+        QFontMetrics pathFm(pathFont);
+        QColor pathColor = textColor;
+        pathColor.setAlpha(option.state & QStyle::State_Selected ? 200 : 150);
+
+        int pathLeft = option.rect.left() + 3;
+        const QModelIndex nameIndex = index.sibling(index.row(), 0);
+        if(m_tree)
+        {
+            const QRect nameVisual = m_tree->visualRect(nameIndex);
+            if(nameVisual.isValid())
+                pathLeft = nameVisual.left() + 3;
+        }
+
+        int pathRight = option.rect.right() - 3;
+        if(m_tree && m_tree->viewport())
+            pathRight = m_tree->viewport()->width() - 4;
+
+        const QRect pathRect(pathLeft,
+                             option.rect.top() + topH,
+                             qMax(0, pathRight - pathLeft),
+                             qMax(0, option.rect.height() - topH));
+        const QRect clipRect(option.rect.left(),
+                             option.rect.top() + topH,
+                             option.rect.width(),
+                             qMax(0, option.rect.height() - topH));
+
+        painter->save();
+        painter->setClipRect(clipRect);
+        painter->setPen(pathColor);
+        painter->setFont(pathFont);
+        const QString elidedPath = pathFm.elidedText(path, Qt::ElideMiddle, pathRect.width());
+        painter->drawText(pathRect, Qt::AlignVCenter | Qt::AlignLeft, elidedPath);
+        painter->restore();
+    }
+
+    QTreeWidget* m_tree = nullptr;
+};
+
+} // namespace
+
 UComponentsListWidgetModern::UComponentsListWidgetModern(QWidget *parent, RDK::UApplication *app, int channel_mode) :
     UVisualControllerWidget(parent, app),
     ui(new Ui::UComponentsListWidgetModern)
@@ -217,6 +369,9 @@ UComponentsListWidgetModern::UComponentsListWidgetModern(QWidget *parent, RDK::U
     ui->treeWidgetOutputs->addAction(ui->actionPastePropertyValueFromClipboard);
     connect(ui->actionPastePropertyValueFromClipboard, SIGNAL(triggered()), this, SLOT(propertyPasteValueFromClipboard()));
 
+    ui->treeWidgetFavorites->setItemDelegate(
+        new FavoritesPathSubtitleDelegate(ui->treeWidgetFavorites));
+
     // Favorites показываем только при наличии избранных свойств
     updateFavoritesTabVisibility(false, false);
 }
@@ -359,7 +514,7 @@ QString UComponentsListWidgetModern::getSelectedComponentLongName()
       {
         QTreeWidgetItem* item = ui->treeWidgetFavorites->currentItem();
         if(item && item->childCount() == 0)
-            return item->data(2, Qt::UserRole).toString();
+            return item->data(0, kFavRoleComponent).toString();
         return "";
       }
       else
@@ -417,7 +572,7 @@ QString UComponentsListWidgetModern::getSelectedPropertyName()
       QTreeWidgetItem* item = ui->treeWidgetFavorites->currentItem();
       if(!item || item->childCount() > 0)
         return "";
-      return item->data(0, Qt::UserRole).toString();
+      return item->data(0, kFavRoleProp).toString();
   }
   return "";
 }
@@ -814,13 +969,12 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
             else
                 favoriteItem->setText(0, favoriteName);
 
-            favoriteItem->setText(2, favoritePath);
             favoriteItem->setToolTip(0, favoritePath);
             favoriteItem->setToolTip(1, favoritePath);
-            favoriteItem->setToolTip(2, favoritePath);
 
-            favoriteItem->setData(0, Qt::UserRole, prop_name);
-            favoriteItem->setData(2, Qt::UserRole, component_long_name);
+            favoriteItem->setData(0, kFavRoleProp, prop_name);
+            favoriteItem->setData(0, kFavRoleDisplayPath, favoritePath);
+            favoriteItem->setData(0, kFavRoleComponent, component_long_name);
 
             if(child_cont)
             {
@@ -1011,7 +1165,7 @@ void UComponentsListWidgetModern::favoritesListSelectionChanged()
     if(!item || item->childCount() > 0)
       return;
 
-    if(item->data(0, Qt::UserRole).toString().isEmpty())
+    if(item->data(0, kFavRoleProp).toString().isEmpty())
       return;
 
     QString changedFavName = item->data(0, Qt::DisplayRole).toString();
@@ -1034,8 +1188,8 @@ try
      if(!item || item->childCount() > 0)
         return;
 
-     QString prop_name = item->data(0, Qt::UserRole).toString();
-     QString component_long_name = item->data(2, Qt::UserRole).toString();
+     QString prop_name = item->data(0, kFavRoleProp).toString();
+     QString component_long_name = item->data(0, kFavRoleComponent).toString();
      if(prop_name.isEmpty() || component_long_name.isEmpty())
         return;
 
@@ -1593,7 +1747,7 @@ void UComponentsListWidgetModern::propertyCopyNameToClipboard()
  {
      QTreeWidgetItem* item = ui->treeWidgetFavorites->currentItem();
      if(item && item->childCount() == 0)
-       value=item->data(0, Qt::UserRole).toString();
+       value=item->data(0, kFavRoleProp).toString();
  }
 
  clipboard->setText(value);

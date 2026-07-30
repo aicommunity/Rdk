@@ -319,7 +319,7 @@
            <item>
             <widget class="QTreeWidget" name="treeWidgetFavorites">
              <property name="columnCount">
-              <number>3</number>
+              <number>2</number>
              </property>
              <attribute name="headerStretchLastSection">
               <bool>true</bool>
@@ -332,11 +332,6 @@
              <column>
               <property name="text">
                <string>Value</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>Path</string>
               </property>
              </column>
             </widget>
