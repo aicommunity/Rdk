@@ -331,12 +331,12 @@
              </column>
              <column>
               <property name="text">
-               <string>Path</string>
+               <string>Value</string>
               </property>
              </column>
              <column>
               <property name="text">
-               <string>Value</string>
+               <string>Path</string>
               </property>
              </column>
             </widget>

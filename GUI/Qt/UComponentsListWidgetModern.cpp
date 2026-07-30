@@ -18,6 +18,7 @@
 #include <QKeyEvent>
 #include <QGuiApplication>
 #include <QScreen>
+#include <QTabBar>
 
 #include "UGuiTelemetry.h"
 #include "UEngineSelectionSync.h"
@@ -215,6 +216,9 @@ UComponentsListWidgetModern::UComponentsListWidgetModern(QWidget *parent, RDK::U
     ui->treeWidgetInputs->addAction(ui->actionPastePropertyValueFromClipboard);
     ui->treeWidgetOutputs->addAction(ui->actionPastePropertyValueFromClipboard);
     connect(ui->actionPastePropertyValueFromClipboard, SIGNAL(triggered()), this, SLOT(propertyPasteValueFromClipboard()));
+
+    // Favorites показываем только при наличии избранных свойств
+    updateFavoritesTabVisibility(false, false);
 }
 
 UComponentsListWidgetModern::~UComponentsListWidgetModern()
@@ -353,10 +357,10 @@ QString UComponentsListWidgetModern::getSelectedComponentLongName()
     {
       if(ui->tabWidgetComponentInfo->currentWidget() == ui->tabFavorites)
       {
-        if(ui->treeWidgetFavorites->currentItem())
-            return ui->treeWidgetFavorites->currentItem()->data(1, Qt::UserRole).toString();
-        else
-            return "";
+        QTreeWidgetItem* item = ui->treeWidgetFavorites->currentItem();
+        if(item && item->childCount() == 0)
+            return item->data(2, Qt::UserRole).toString();
+        return "";
       }
       else
       {
@@ -368,50 +372,54 @@ QString UComponentsListWidgetModern::getSelectedComponentLongName()
 
 void UComponentsListWidgetModern::openTabN(int n)
 {
-    if(n > 0 && n < 4)
-      ui->tabWidgetComponentInfo->setCurrentIndex(n);
+    QWidget* tab = widgetFromLogicalTabIndex(n);
+    if(!tab)
+        return;
+    if(ui->tabWidgetComponentInfo->indexOf(tab) < 0)
+        return;
+    ui->tabWidgetComponentInfo->setCurrentWidget(tab);
 }
 
 int UComponentsListWidgetModern::currentTabIndex()
 {
-    return ui->tabWidgetComponentInfo->currentIndex();
+    return logicalTabIndexFromWidget(ui->tabWidgetComponentInfo->currentWidget());
 }
 
 QString UComponentsListWidgetModern::getSelectedPropertyName()
 {
-  switch(ui->tabWidgetComponentInfo->currentIndex())
+  QWidget* tab = ui->tabWidgetComponentInfo->currentWidget();
+  if(tab == ui->tabParameters)
   {
-    case 0:
       if(!ui->treeWidgetParameters->currentItem())
         return "";
-      else
-        return ui->treeWidgetParameters->currentItem()->data(0, Qt::DisplayRole).toString();
-
-    case 1:
+      return ui->treeWidgetParameters->currentItem()->data(0, Qt::DisplayRole).toString();
+  }
+  if(tab == ui->tabState)
+  {
       if(!ui->treeWidgetState->currentItem())
         return "";
-      else
-        return ui->treeWidgetState->currentItem()->data(0, Qt::DisplayRole).toString();
-
-    case 2:
+      return ui->treeWidgetState->currentItem()->data(0, Qt::DisplayRole).toString();
+  }
+  if(tab == ui->tabInputs)
+  {
       if(!ui->treeWidgetInputs->currentItem())
         return "";
-      else
-        return ui->treeWidgetInputs->currentItem()->data(0, Qt::DisplayRole).toString();
-
-    case 3:
+      return ui->treeWidgetInputs->currentItem()->data(0, Qt::DisplayRole).toString();
+  }
+  if(tab == ui->tabOutputs)
+  {
       if(!ui->treeWidgetOutputs->currentItem())
         return "";
-      else
-        return ui->treeWidgetOutputs->currentItem()->data(0, Qt::DisplayRole).toString();
-    case 4:
-      if(!ui->treeWidgetFavorites->currentItem())
-        return "";
-      else
-        return ui->treeWidgetFavorites->currentItem()->data(0, Qt::UserRole).toString();
-    default:
-      return "";
+      return ui->treeWidgetOutputs->currentItem()->data(0, Qt::DisplayRole).toString();
   }
+  if(tab == ui->tabFavorites)
+  {
+      QTreeWidgetItem* item = ui->treeWidgetFavorites->currentItem();
+      if(!item || item->childCount() > 0)
+        return "";
+      return item->data(0, Qt::UserRole).toString();
+  }
+  return "";
 }
 
 int UComponentsListWidgetModern::getSelectedChannelIndex()
@@ -437,8 +445,12 @@ int UComponentsListWidgetModern::getWorkChannelIndex()
 
 void UComponentsListWidgetModern::setEnableTabN(int n, bool enable)
 {
-    if(n >= 0 && n < 4)
-      ui->tabWidgetComponentInfo->setTabEnabled(n, enable);
+    QWidget* tab = widgetFromLogicalTabIndex(n);
+    if(!tab)
+      return;
+    const int index = ui->tabWidgetComponentInfo->indexOf(tab);
+    if(index >= 0)
+      ui->tabWidgetComponentInfo->setTabEnabled(index, enable);
 }
 
 void UComponentsListWidgetModern::setChannelsListVisible(bool value)
@@ -660,7 +672,7 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
 
         for(RDK::UComponent::VariableMapIteratorT i = varMap.begin(); i != varMap.end(); ++i)
         {
-            if (i->second.CheckMask(ptPubParameter) && ui->tabWidgetComponentInfo->currentIndex() == 0)
+            if (i->second.CheckMask(ptPubParameter) && ui->tabWidgetComponentInfo->currentWidget() == ui->tabParameters)
             {
                 QTreeWidgetItem* parametersItem = new QTreeWidgetItem(ui->treeWidgetParameters);
                 QString parameterName = QString::fromLocal8Bit(i->first.c_str());
@@ -681,7 +693,7 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
                   parametersItem->setCheckState(1,Qt::Unchecked);
                 }
             }
-            if (i->second.CheckMask(ptPubState) && ui->tabWidgetComponentInfo->currentIndex() == 1)
+            if (i->second.CheckMask(ptPubState) && ui->tabWidgetComponentInfo->currentWidget() == ui->tabState)
             {
                 QTreeWidgetItem* stateItem = new QTreeWidgetItem(ui->treeWidgetState);
                 QString stateName = QString::fromLocal8Bit(i->first.c_str());
@@ -692,7 +704,7 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
                 if(stateName == selectedStateName)
                     ui->treeWidgetState->setCurrentItem(stateItem);
             }
-            if (i->second.CheckMask(ptPubInput) && ui->tabWidgetComponentInfo->currentIndex() == 2)
+            if (i->second.CheckMask(ptPubInput) && ui->tabWidgetComponentInfo->currentWidget() == ui->tabInputs)
             {
                 QTreeWidgetItem* inputItem = new QTreeWidgetItem(ui->treeWidgetInputs);
                 QString inputName = QString::fromLocal8Bit(i->first.c_str());
@@ -705,7 +717,7 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
                 if(inputName == selectedInputName)
                     ui->treeWidgetInputs->setCurrentItem(inputItem);
             }
-            if (i->second.CheckMask(ptPubOutput) && ui->tabWidgetComponentInfo->currentIndex() == 3)
+            if (i->second.CheckMask(ptPubOutput) && ui->tabWidgetComponentInfo->currentWidget() == ui->tabOutputs)
             {
                 QTreeWidgetItem* outputItem = new QTreeWidgetItem(ui->treeWidgetOutputs);
                 QString outputName = QString::fromLocal8Bit(i->first.c_str());
@@ -720,30 +732,28 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
         }
 
 
+        const bool favoritesTabWasPresent =
+            ui->tabWidgetComponentInfo->indexOf(ui->tabFavorites) >= 0;
+        const bool componentChangedForFavorites =
+            (currentDrawPropertyComponentName != targetComponent);
+
+        QTreeWidgetItem* groupParameters = new QTreeWidgetItem(ui->treeWidgetFavorites);
+        groupParameters->setText(0, tr("Parameters"));
+        QTreeWidgetItem* groupOutputs = new QTreeWidgetItem(ui->treeWidgetFavorites);
+        groupOutputs->setText(0, tr("Outputs"));
+        QTreeWidgetItem* groupInputs = new QTreeWidgetItem(ui->treeWidgetFavorites);
+        groupInputs->setText(0, tr("Inputs"));
+        QTreeWidgetItem* groupStates = new QTreeWidgetItem(ui->treeWidgetFavorites);
+        groupStates->setText(0, tr("States"));
+
         for(std::map<std::string, std::string>::iterator i = Favorites.begin(); i != Favorites.end(); ++i)
         {
-            QTreeWidgetItem* favoriteItem = new QTreeWidgetItem(ui->treeWidgetFavorites);
-
             QString favoriteName = QString::fromLocal8Bit(i->first.c_str());
             QString favoritePath = QString::fromLocal8Bit(i->second.c_str());
             favoritePath.replace("{CompName}", targetComponent);
 
             // Проверяем, является ли это алиасом
             bool isAlias = class_desc && class_desc->IsFavoriteAlias(i->first);
-            if (isAlias)
-            {
-                // Добавляем пометку "[Alias]" к имени
-                favoriteItem->setText(0, favoriteName + " [Alias]");
-            }
-            else
-            {
-                favoriteItem->setText(0, favoriteName);
-            }
-
-            favoriteItem->setText(1, favoritePath);
-
-            favoriteItem->setToolTip(0, favoritePath);
-            favoriteItem->setToolTip(1, favoritePath);
 
             // Parse path - для алиасов путь может быть в формате "ComponentPath.PropertyName"
             QString component_long_name;
@@ -778,33 +788,79 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
             RDK::UEPtr<RDK::UContainer> child_cont;
             child_cont = model->GetComponentL(component_long_name.toLocal8Bit().constData(), true);
 
-            favoriteItem->setData(1, Qt::UserRole, component_long_name);
+            QTreeWidgetItem* groupParent = groupParameters;
+            if(child_cont)
+            {
+                RDK::UComponent::VariableMapT childVars = child_cont->GetPropertiesList();
+                RDK::UComponent::VariableMapIteratorT propIt = childVars.find(prop_name.toStdString());
+                if(propIt != childVars.end())
+                {
+                    // Приоритет роли: Parameter > Output > Input > State
+                    if(propIt->second.CheckMask(ptPubParameter))
+                        groupParent = groupParameters;
+                    else if(propIt->second.CheckMask(ptPubOutput))
+                        groupParent = groupOutputs;
+                    else if(propIt->second.CheckMask(ptPubInput))
+                        groupParent = groupInputs;
+                    else if(propIt->second.CheckMask(ptPubState))
+                        groupParent = groupStates;
+                }
+            }
+
+            QTreeWidgetItem* favoriteItem = new QTreeWidgetItem(groupParent);
+
+            if (isAlias)
+                favoriteItem->setText(0, favoriteName + " [Alias]");
+            else
+                favoriteItem->setText(0, favoriteName);
+
+            favoriteItem->setText(2, favoritePath);
+            favoriteItem->setToolTip(0, favoritePath);
+            favoriteItem->setToolTip(1, favoritePath);
+            favoriteItem->setToolTip(2, favoritePath);
+
             favoriteItem->setData(0, Qt::UserRole, prop_name);
+            favoriteItem->setData(2, Qt::UserRole, component_long_name);
 
             if(child_cont)
             {
                 child_cont->GetPropertyValue(prop_name.toStdString(), buffer);
                 auto prop = child_cont->FindProperty(prop_name.toStdString());
 
-                favoriteItem->setData(2, Qt::UserRole, QString::fromLocal8Bit(buffer.c_str()));
-                favoriteItem->setText(2, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
+                favoriteItem->setData(1, Qt::UserRole, QString::fromLocal8Bit(buffer.c_str()));
+                favoriteItem->setText(1, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
 
-                if(favoriteName == selectedFavName)
+                if(favoriteItem->text(0) == selectedFavName)
                     ui->treeWidgetFavorites->setCurrentItem(favoriteItem);
 
-                if(prop->GetLanguageType() == typeid(bool))
+                if(prop && prop->GetLanguageType() == typeid(bool))
                 {
                  favoriteItem->setFlags(favoriteItem->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
 
                  const bool* val=reinterpret_cast<const bool*>(prop->GetMemoryArea());
                  if(*val)
-                  favoriteItem->setCheckState(2,Qt::Checked);
+                  favoriteItem->setCheckState(1,Qt::Checked);
                  else
-                  favoriteItem->setCheckState(2,Qt::Unchecked);
+                  favoriteItem->setCheckState(1,Qt::Unchecked);
                 }
             }
 
         }
+
+        // Удаляем пустые группы, оставшиеся разворачиваем
+        QList<QTreeWidgetItem*> groups;
+        groups << groupParameters << groupOutputs << groupInputs << groupStates;
+        for(QTreeWidgetItem* group : groups)
+        {
+            if(group->childCount() == 0)
+                delete group;
+            else
+                group->setExpanded(true);
+        }
+
+        const bool hasFavorites = !Favorites.empty();
+        const bool selectFavorites =
+            hasFavorites && (componentChangedForFavorites || !favoritesTabWasPresent);
 
         // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ treeWidget'пїЅпїЅ
         ui->treeWidgetParameters->verticalScrollBar()->setMaximum(paramScrollPosition);
@@ -820,6 +876,8 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
         currentDrawPropertyComponentName = targetComponent;
         m_propertyReloadRetryCount = 0;
         UpdateInterfaceFlag=false;
+
+        updateFavoritesTabVisibility(hasFavorites, selectFavorites);
     }
     catch (RDK::UException &exception)
     {
@@ -950,7 +1008,10 @@ void UComponentsListWidgetModern::outputsListSelectionChanged()
 void UComponentsListWidgetModern::favoritesListSelectionChanged()
 {
     QTreeWidgetItem * item = ui->treeWidgetFavorites->currentItem();
-    if(!item)
+    if(!item || item->childCount() > 0)
+      return;
+
+    if(item->data(0, Qt::UserRole).toString().isEmpty())
       return;
 
     QString changedFavName = item->data(0, Qt::DisplayRole).toString();
@@ -959,7 +1020,7 @@ void UComponentsListWidgetModern::favoritesListSelectionChanged()
 
     selectedFavName = changedFavName;
 
-    emit selectedPropertyValue(item->data(2, Qt::UserRole).toString());
+    emit selectedPropertyValue(item->data(1, Qt::UserRole).toString());
 }
 
 void UComponentsListWidgetModern::favoritesListItemChanged(QTreeWidgetItem *item, int column)
@@ -970,52 +1031,13 @@ try
     if(UpdateInterfaceFlag)
         return;
 
-     if(!item)
+     if(!item || item->childCount() > 0)
         return;
 
-     const QString classNameStr =
-         componentClassNameFromModelScope(getWorkChannelIndex(), currentDrawPropertyComponentName);
-     RDK::UEPtr<RDK::UContainerDescription> class_desc;
-     if(!classNameStr.isEmpty())
-         class_desc = RDK::GetStorageLock()->GetClassDescription(classNameStr.toLocal8Bit().constData(), true);
-
-     QString favoritePath = item->text(1);
-     QString favoriteName = item->text(0);
-     // Убираем пометку [Alias] если есть
-     favoriteName = favoriteName.replace(" [Alias]", "");
-
-     // Parse path
-     QString component_long_name;
-     QString prop_name;
-
-     bool isAlias = class_desc && class_desc->IsFavoriteAlias(favoriteName.toStdString());
-     if (isAlias && class_desc)
-     {
-         // Для алиаса разбираем путь через ParseFavoritePath
-         std::string componentPath, propertyName;
-         std::string pathStd = favoritePath.toStdString();
-         if (class_desc->ParseFavoritePath(pathStd, componentPath, propertyName))
-         {
-             // Формируем полный путь: текущий компонент + путь к вложенному компоненту
-             component_long_name = currentDrawPropertyComponentName;
-             if (!componentPath.empty())
-             {
-                 component_long_name += "." + QString::fromStdString(componentPath);
-             }
-             prop_name = QString::fromStdString(propertyName);
-         }
-     }
-     else
-     {
-         // Старый формат: "ComponentName:PropertyName"
-         QStringList vals = favoritePath.split(":");
-         if(vals.size()==2)
-         {
-             component_long_name = vals[0];
-             prop_name = vals[1];
-         }
-     }
-
+     QString prop_name = item->data(0, Qt::UserRole).toString();
+     QString component_long_name = item->data(2, Qt::UserRole).toString();
+     if(prop_name.isEmpty() || component_long_name.isEmpty())
+        return;
 
      // Use timeout to avoid blocking UI during calculation
      RDK::UELockPtr<RDK::UContainer> model =
@@ -1030,8 +1052,6 @@ try
      if(!cont)
       return;
 
-     std::string buffer;
-
      RDK::UEPtr<RDK::UIProperty> property;
 
      property=cont->FindProperty(prop_name.toLocal8Bit().constData());
@@ -1039,15 +1059,8 @@ try
      if(!property)
       return;
 
-   //  parametersItem->setData(1, Qt::UserRole, QString::fromLocal8Bit(buffer.c_str()));
-   //  parametersItem->setText(1, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
-   //  if(parameterName == selectedParameterName)
-   //   ui->treeWidgetParameters->setCurrentItem(parametersItem);
      if(property->GetLanguageType() == typeid(bool))
      {
-   //   parametersItem->setFlags(parametersItem->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable);
-
-   //   const bool* val=reinterpret_cast<const bool*>(i->second.Property->GetMemoryArea());
       bool value(false);
       if(item->checkState(1) == Qt::Checked)
        value=true;
@@ -1555,27 +1568,32 @@ void UComponentsListWidgetModern::propertyCopyNameToClipboard()
  QClipboard *clipboard = QApplication::clipboard();
 
  QString value;
- switch(ui->tabWidgetComponentInfo->currentIndex())
+ QWidget* tab = ui->tabWidgetComponentInfo->currentWidget();
+ if(tab == ui->tabParameters)
  {
-   case 0:
      if(ui->treeWidgetParameters->currentItem())
        value=ui->treeWidgetParameters->currentItem()->data(0, Qt::DisplayRole).toString();
-   break;
-
-   case 1:
+ }
+ else if(tab == ui->tabState)
+ {
      if(ui->treeWidgetState->currentItem())
        value=ui->treeWidgetState->currentItem()->data(0, Qt::DisplayRole).toString();
-   break;
-
-   case 2:
+ }
+ else if(tab == ui->tabInputs)
+ {
      if(ui->treeWidgetInputs->currentItem())
        value=ui->treeWidgetInputs->currentItem()->data(0, Qt::DisplayRole).toString();
-   break;
-
-   case 3:
+ }
+ else if(tab == ui->tabOutputs)
+ {
      if(ui->treeWidgetOutputs->currentItem())
        value=ui->treeWidgetOutputs->currentItem()->data(0, Qt::DisplayRole).toString();
-   break;
+ }
+ else if(tab == ui->tabFavorites)
+ {
+     QTreeWidgetItem* item = ui->treeWidgetFavorites->currentItem();
+     if(item && item->childCount() == 0)
+       value=item->data(0, Qt::UserRole).toString();
  }
 
  clipboard->setText(value);
@@ -1586,27 +1604,32 @@ void UComponentsListWidgetModern::propertyCopyValueToClipboard()
  QClipboard *clipboard = QApplication::clipboard();
 
  QString value;
- switch(ui->tabWidgetComponentInfo->currentIndex())
+ QWidget* tab = ui->tabWidgetComponentInfo->currentWidget();
+ if(tab == ui->tabParameters)
  {
-   case 0:
      if(ui->treeWidgetParameters->currentItem())
        value=ui->treeWidgetParameters->currentItem()->data(1, Qt::DisplayRole).toString();
-   break;
-
-   case 1:
+ }
+ else if(tab == ui->tabState)
+ {
      if(ui->treeWidgetState->currentItem())
        value=ui->treeWidgetState->currentItem()->data(1, Qt::DisplayRole).toString();
-   break;
-
-   case 2:
+ }
+ else if(tab == ui->tabInputs)
+ {
      if(ui->treeWidgetInputs->currentItem())
        value=ui->treeWidgetInputs->currentItem()->data(1, Qt::DisplayRole).toString();
-   break;
-
-   case 3:
+ }
+ else if(tab == ui->tabOutputs)
+ {
      if(ui->treeWidgetOutputs->currentItem())
        value=ui->treeWidgetOutputs->currentItem()->data(1, Qt::DisplayRole).toString();
-   break;
+ }
+ else if(tab == ui->tabFavorites)
+ {
+     QTreeWidgetItem* item = ui->treeWidgetFavorites->currentItem();
+     if(item && item->childCount() == 0)
+       value=item->data(1, Qt::DisplayRole).toString();
  }
 
  clipboard->setText(value);
@@ -1617,43 +1640,52 @@ void UComponentsListWidgetModern::propertyPasteValueFromClipboard()
  QClipboard *clipboard = QApplication::clipboard();
 
  QString value=clipboard->text();
- switch(ui->tabWidgetComponentInfo->currentIndex())
+ QWidget* tab = ui->tabWidgetComponentInfo->currentWidget();
+ if(tab == ui->tabParameters)
  {
-   case 0:
      if(ui->treeWidgetParameters->currentItem())
      {
       ui->treeWidgetParameters->currentItem()->setData(1, Qt::UserRole, value);
       std::string temp=value.toLocal8Bit().constData();
       ui->treeWidgetParameters->currentItem()->setText(1, QString::fromLocal8Bit(PreparePropertyValueToListView(temp).c_str()));
      }
-   break;
-
-   case 1:
+ }
+ else if(tab == ui->tabState)
+ {
      if(ui->treeWidgetState->currentItem())
      {
       ui->treeWidgetState->currentItem()->setData(1, Qt::UserRole, value);
       std::string temp=value.toLocal8Bit().constData();
       ui->treeWidgetState->currentItem()->setText(1, QString::fromLocal8Bit(PreparePropertyValueToListView(temp).c_str()));
      }
-   break;
-
-   case 2:
+ }
+ else if(tab == ui->tabInputs)
+ {
      if(ui->treeWidgetInputs->currentItem())
      {
       ui->treeWidgetInputs->currentItem()->setData(1, Qt::UserRole, value);
       std::string temp=value.toLocal8Bit().constData();
       ui->treeWidgetInputs->currentItem()->setText(1, QString::fromLocal8Bit(PreparePropertyValueToListView(temp).c_str()));
      }
-   break;
-
-   case 3:
+ }
+ else if(tab == ui->tabOutputs)
+ {
      if(ui->treeWidgetOutputs->currentItem())
      {
       ui->treeWidgetOutputs->currentItem()->setData(1, Qt::UserRole, value);
       std::string temp=value.toLocal8Bit().constData();
       ui->treeWidgetOutputs->currentItem()->setText(1, QString::fromLocal8Bit(PreparePropertyValueToListView(temp).c_str()));
      }
-   break;
+ }
+ else if(tab == ui->tabFavorites)
+ {
+     QTreeWidgetItem* item = ui->treeWidgetFavorites->currentItem();
+     if(item && item->childCount() == 0)
+     {
+      item->setData(1, Qt::UserRole, value);
+      std::string temp=value.toLocal8Bit().constData();
+      item->setText(1, QString::fromLocal8Bit(PreparePropertyValueToListView(temp).c_str()));
+     }
  }
 }
 
@@ -1819,5 +1851,57 @@ bool UComponentsListWidgetModern::eventFilter(QObject *obj, QEvent *event)
     }
 
     return UVisualControllerWidget::eventFilter(obj, event);
+}
+
+void UComponentsListWidgetModern::updateFavoritesTabVisibility(bool hasFavorites, bool selectFavorites)
+{
+    QTabWidget* tabs = ui->tabWidgetComponentInfo;
+    const int favIndex = tabs->indexOf(ui->tabFavorites);
+
+    if(!hasFavorites)
+    {
+        if(favIndex >= 0)
+            tabs->removeTab(favIndex);
+        return;
+    }
+
+    {
+        const QSignalBlocker blocker(tabs);
+        if(favIndex < 0)
+            tabs->insertTab(0, ui->tabFavorites, tr("Favorites"));
+        else if(favIndex != 0)
+            tabs->tabBar()->moveTab(favIndex, 0);
+
+        if(selectFavorites)
+            tabs->setCurrentWidget(ui->tabFavorites);
+    }
+}
+
+int UComponentsListWidgetModern::logicalTabIndexFromWidget(QWidget* tab) const
+{
+    if(tab == ui->tabParameters)
+        return 0;
+    if(tab == ui->tabState)
+        return 1;
+    if(tab == ui->tabInputs)
+        return 2;
+    if(tab == ui->tabOutputs)
+        return 3;
+    if(tab == ui->tabFavorites)
+        return 4;
+    return -1;
+}
+
+QWidget* UComponentsListWidgetModern::widgetFromLogicalTabIndex(int logicalIndex) const
+{
+    switch(logicalIndex)
+    {
+    case 0: return ui->tabParameters;
+    case 1: return ui->tabState;
+    case 2: return ui->tabInputs;
+    case 3: return ui->tabOutputs;
+    case 4: return ui->tabFavorites;
+    default: return nullptr;
+    }
 }
 

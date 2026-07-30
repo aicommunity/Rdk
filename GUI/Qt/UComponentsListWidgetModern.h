@@ -281,6 +281,13 @@ private:
     void showTreePopup();
     void hideTreePopup();
 
+    /// Показать/скрыть вкладку Favorites и при необходимости сделать её первой и активной
+    void updateFavoritesTabVisibility(bool hasFavorites, bool selectFavorites);
+
+    /// Логический индекс вкладки свойств (0 Parameters .. 3 Outputs, 4 Favorites), независимо от порядка вкладок
+    int logicalTabIndexFromWidget(QWidget* tab) const;
+    QWidget* widgetFromLogicalTabIndex(int logicalIndex) const;
+
 protected:
     /// Обработка клавиши Esc для закрытия popup
     bool eventFilter(QObject *obj, QEvent *event) override;
