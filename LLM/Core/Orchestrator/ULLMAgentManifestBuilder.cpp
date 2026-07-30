@@ -55,6 +55,8 @@ std::string buildAgentManifest(const ULLMToolRegistry& registry, const ToolFilte
     }
 
     oss << "## Tools (" << tools.size() << " available)\n";
+    oss << "- Prefer tools that match the user goal; call search_tools when a needed capability "
+           "is missing from this list (it unlocks additional tools for later rounds).\n";
     for(const LLMToolDefinition& tool : tools)
     {
         oss << "- " << tool.name << " [" << (tool.kind == LLMToolKind::Write ? "write" : "read");

@@ -70,6 +70,7 @@
 #include "../Tools/ULLMToolArgumentValidator.h"
 #include "ULLMModelRouter.h"
 #include "ULLMTurnTerminalHelpers.h"
+#include "ULLMToolFilterExpand.h"
 
 namespace RDK::LLM {
 
@@ -1254,7 +1255,21 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
         opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
     else
         opts.tools_for_api.clear();
-    if(provider_tools && lifecycle_action != ConfigurationLifecycleAction::None
+
+    const bool thinking_enabled =
+        m_provider.capabilities().supports_thinking
+        && (!LLMServices::instance().isInitialized()
+            || LLMServices::instance().settings().runtime().enable_ollama_thinking);
+    if(thinking_enabled)
+    {
+        opts.think_mode = LLMThinkMode::On;
+        if(opts.max_tokens < 8192)
+            opts.max_tokens = 8192;
+    }
+
+    // DD-THINK-003: never force tool_choice while thinking is on.
+    if(provider_tools && !thinking_enabled
+       && lifecycle_action != ConfigurationLifecycleAction::None
        && shouldForceLifecycleToolChoice(intent_result.confidence))
     {
         if(lifecycle_action == ConfigurationLifecycleAction::Load
@@ -1268,6 +1283,17 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
         opts.response_format = executionPlanOpenAiResponseFormat();
     const std::string user_lang = opts.response_language;
     ctx_input.response_language = opts.response_language;
+
+    auto maybeExpandFromSearchTools = [&](const LLMToolCall& call, const ToolGatewayResult& tr) {
+        if(call.name != "search_tools" || !tr.ok)
+            return;
+        expandToolFilterFromSearchResult(filter, tr.result, m_registry);
+        ctx_input.tool_filter = filter;
+        GetAuditLog().append("tool_filter_expanded",
+                             {{"via", "search_tools"},
+                              {"tools", tr.result.value("tools", nlohmann::json::array())}},
+                             req.trace_id, req.session_id);
+    };
 
     int tool_invocations = 0;
     const int max_tool_invocations = defaultPolicyLimits().max_tool_invocations_per_message;
@@ -1333,6 +1359,13 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
             stream && stream->on_token && m_provider.capabilities().supports_streaming;
         if(use_stream)
         {
+            if(stream->on_thinking_token)
+                opts.on_thinking_chunk = [&](const std::string& token) {
+                    if(!session_cancelled() && stream->on_thinking_token)
+                        stream->on_thinking_token(token);
+                };
+            else
+                opts.on_thinking_chunk = nullptr;
             m_provider.chatStream(
                 provider_messages, opts,
                 [&](const std::string& token) {
@@ -1343,6 +1376,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
         }
         else
         {
+            opts.on_thinking_chunk = nullptr;
             completion = m_provider.chat(provider_messages, opts);
         }
         if(!completion.ok)
@@ -1494,8 +1528,16 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
             LLMMessage assistant;
             assistant.role = LLMMessage::Role::Assistant;
             assistant.content = completion.text;
+            if(!completion.thinking.empty())
+                assistant.thinking = completion.thinking;
             m_store.appendMessage(req.session_id, assistant);
             final.text = completion.text;
+            if(!completion.thinking.empty())
+            {
+                final.thinking = completion.thinking;
+                if(final.thinking.size() > 8192)
+                    final.thinking.resize(8192);
+            }
             if(final.text.empty() && lifecycle_action != ConfigurationLifecycleAction::None)
             {
                 if(const std::optional<ToolGatewayResult> open_tr = tryAutoOpenRecentAfterList(
@@ -1596,8 +1638,16 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
         LLMMessage assistant_tools;
         assistant_tools.role = LLMMessage::Role::Assistant;
         assistant_tools.content = completion.text;
+        if(!completion.thinking.empty())
+            assistant_tools.thinking = completion.thinking;
         assistant_tools.assistant_tool_calls = completion.tool_calls;
         m_store.appendMessage(req.session_id, assistant_tools);
+        if(!completion.thinking.empty())
+        {
+            final.thinking = completion.thinking;
+            if(final.thinking.size() > 8192)
+                final.thinking.resize(8192);
+        }
 
         const IntentAmbiguityDecision ambiguity =
             evaluateIntentAmbiguity(state, intent_result, completion.tool_calls, m_registry);
@@ -1837,6 +1887,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                     buildToolMessageContent(tr, m_system_log_reader.get(), session.active_channel_index);
                 m_store.appendMessage(req.session_id, tool_msg);
                 capturePendingOpenRecentAfterList(m_store, req.session_id, call.name, tr);
+                maybeExpandFromSearchTools(call, tr);
                 if(call.name == "ask_user" && state.pending_user_question)
                 {
                     final.ok = true;
@@ -2048,6 +2099,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 tool_msg.content =
                     buildToolMessageContent(tr, m_system_log_reader.get(), session.active_channel_index);
                 m_store.appendMessage(req.session_id, tool_msg);
+                maybeExpandFromSearchTools(call_copy, tr);
                 if(call_copy.name == "ask_user" && state.pending_user_question)
                 {
                     final.ok = true;
@@ -2145,7 +2197,10 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
         }
 
         if(provider_tools)
+        {
+            ctx_input.tool_filter = filter;
             opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
+        }
     }
 
     setWorkflowPhase(state, LLMWorkflowPhase::Failed, req.trace_id);

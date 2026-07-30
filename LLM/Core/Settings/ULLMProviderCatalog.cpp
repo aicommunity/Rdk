@@ -2,6 +2,8 @@
 
 #include "../Providers/UOllamaModelInfo.h"
 
+#include <cstdlib>
+
 namespace RDK::LLM {
 
 std::vector<LLMProviderProfile> ULLMProviderCatalog::builtInProfiles()
@@ -37,6 +39,20 @@ std::vector<LLMProviderProfile> ULLMProviderCatalog::builtInProfiles()
     ollama_lite.is_cloud = false;
     ollama_lite.prefer_local = true;
     profiles.push_back(ollama_lite);
+
+    LLMProviderProfile ollama_thinking;
+    ollama_thinking.profile_id = "ollama-thinking";
+    ollama_thinking.kind = LLMProviderKind::OllamaNative;
+    ollama_thinking.base_url = "http://127.0.0.1:11434";
+    {
+        const char* thinking_model = std::getenv("NMSDK_LLM_OLLAMA_THINKING_MODEL");
+        ollama_thinking.model =
+            (thinking_model && thinking_model[0] != '\0') ? thinking_model : "qwen3";
+    }
+    ollama_thinking.chat_template = OllamaChatTemplateFamily::Auto;
+    ollama_thinking.is_cloud = false;
+    ollama_thinking.prefer_local = true;
+    profiles.push_back(ollama_thinking);
 
     LLMProviderProfile embedded;
     embedded.profile_id = "embedded-offline";

@@ -1,6 +1,7 @@
 #include "UOllamaNativeProvider.h"
 
 #include "../Http/ULLMHttpRetry.h"
+#include "ULLMThinkingParse.h"
 #include "UOllamaChatTemplate.h"
 
 #include <chrono>
@@ -28,6 +29,7 @@ LLMProviderCapabilities UOllamaNativeProvider::capabilities() const
     c.supports_tool_calling = true;
     c.supports_streaming = false;
     c.requires_network = true;
+    c.supports_thinking = true;
     return c;
 }
 
@@ -61,6 +63,7 @@ LLMCompletionResult UOllamaNativeProvider::parseResponse(const std::string& body
             const auto& message = j["message"];
             if(message.contains("content") && !message["content"].is_null())
                 result.text = message["content"].get<std::string>();
+            extractThinkingFields(message, result.thinking);
             if(message.contains("tool_calls"))
             {
                 for(const auto& tc : message["tool_calls"])
@@ -77,6 +80,7 @@ LLMCompletionResult UOllamaNativeProvider::parseResponse(const std::string& body
                 }
             }
         }
+        finalizeThinkingResult(result);
         result.ok = true;
     }
     catch(const std::exception& ex)
@@ -97,9 +101,12 @@ LLMCompletionResult UOllamaNativeProvider::chat(const std::vector<LLMMessage>& m
         prepareMessagesForOllama(m_profile, messages, lang);
 
     nlohmann::json body;
-    body["model"] = m_profile.model;
+    body["model"] =
+        opts.model_override && !opts.model_override->empty() ? *opts.model_override : m_profile.model;
     body["stream"] = false;
     body["messages"] = buildOpenAiChatMessagesJson(prepared);
+    if(shouldSendThinkTrue(opts, capabilities()))
+        body["think"] = true;
     if(opts.max_tokens > 0)
         body["options"] = {{"num_predict", opts.max_tokens}};
     if(!opts.tools_for_api.empty())

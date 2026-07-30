@@ -18,6 +18,10 @@ struct SearchToolsResult {
 
 SearchToolsResult searchToolsByQuery(ULLMToolRegistry& registry, const std::string& query, int top_k);
 
+/// Enrich search result with name/description/kind for progressive disclosure.
+nlohmann::json enrichSearchToolsPayload(const SearchToolsResult& found,
+                                        const ULLMToolRegistry& registry);
+
 } // namespace RDK::LLM
 
 #endif

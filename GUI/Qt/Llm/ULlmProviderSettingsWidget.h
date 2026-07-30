@@ -45,6 +45,7 @@ private:
     QComboBox* m_autonomous_mode = nullptr;
     QSpinBox* m_max_autonomous_steps = nullptr;
     QCheckBox* m_translate_queries_to_en = nullptr;
+    QCheckBox* m_enable_ollama_thinking = nullptr;
     QComboBox* m_response_language = nullptr;
     QComboBox* m_send_shortcut = nullptr;
     QComboBox* m_task_path_mode = nullptr;

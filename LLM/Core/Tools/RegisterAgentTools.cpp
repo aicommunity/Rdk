@@ -1,6 +1,7 @@
 #include "RegisterAgentTools.h"
 
 #include "ULLMEmbeddingToolRouter.h"
+#include "ULLMSearchTools.h"
 #include "ULLMToolRegistry.h"
 
 namespace RDK::LLM {
@@ -59,7 +60,9 @@ void RegisterAgentTools(ULLMToolRegistry& registry)
 
     registry.registerTool(
         agentToolDef("search_tools",
-                     "Search deferred/long-tail tools by keyword (embedding router).",
+                     "Search deferred/long-tail tools by keyword. Returned tools are added to the "
+                     "available tool set for subsequent reasoning rounds (progressive disclosure). "
+                     "Use when the needed capability is not in the current tool list.",
                      {{"type", "object"},
                       {"required", {"query"}},
                       {"properties", {{"query", {{"type", "string"}}}, {"top_k", {{"type", "integer"}}}}},
@@ -70,9 +73,7 @@ void RegisterAgentTools(ULLMToolRegistry& registry)
             const int top_k = args.value("top_k", 12);
             const SearchToolsResult found = searchToolsHybrid(*registry_ptr, query, top_k);
             r.ok = true;
-            r.result = {{"query", found.query},
-                        {"index_version", found.index_version},
-                        {"tools", found.tools}};
+            r.result = enrichSearchToolsPayload(found, *registry_ptr);
             return r;
         });
 

@@ -1,6 +1,7 @@
 #include "UOpenAICompatProvider.h"
 
 #include "../Http/ULLMHttpRetry.h"
+#include "ULLMThinkingParse.h"
 #include "UOllamaChatTemplate.h"
 #include "UOllamaModelInfo.h"
 
@@ -26,8 +27,24 @@ struct StreamToolPart {
 };
 
 void applyStreamDelta(const nlohmann::json& delta, std::string& text_out,
-                      std::map<int, StreamToolPart>& tools_out, LLMStreamCallback& on_chunk)
+                      std::string& thinking_out, std::map<int, StreamToolPart>& tools_out,
+                      LLMStreamCallback& on_chunk,
+                      const std::function<void(const std::string&)>& on_thinking)
 {
+    extractThinkingFields(delta, thinking_out);
+    if(delta.contains("thinking") && delta["thinking"].is_string() && on_thinking)
+    {
+        const std::string piece = delta["thinking"].get<std::string>();
+        if(!piece.empty())
+            on_thinking(piece);
+    }
+    else if(delta.contains("reasoning_content") && delta["reasoning_content"].is_string()
+            && on_thinking)
+    {
+        const std::string piece = delta["reasoning_content"].get<std::string>();
+        if(!piece.empty())
+            on_thinking(piece);
+    }
     if(delta.contains("content") && delta["content"].is_string())
     {
         const std::string piece = delta["content"].get<std::string>();
@@ -57,12 +74,13 @@ void applyStreamDelta(const nlohmann::json& delta, std::string& text_out,
     }
 }
 
-LLMCompletionResult buildStreamResult(const std::string& text,
+LLMCompletionResult buildStreamResult(const std::string& text, const std::string& thinking,
                                       const std::map<int, StreamToolPart>& tools)
 {
     LLMCompletionResult result;
     result.ok = true;
     result.text = text;
+    result.thinking = thinking;
     for(const auto& kv : tools)
     {
         if(kv.second.name.empty())
@@ -80,6 +98,7 @@ LLMCompletionResult buildStreamResult(const std::string& text,
         }
         result.tool_calls.push_back(std::move(call));
     }
+    finalizeThinkingResult(result);
     return result;
 }
 
@@ -97,6 +116,7 @@ LLMProviderCapabilities UOpenAICompatProvider::capabilities() const
     c.supports_streaming = true;
     c.supports_strict_json_schema = !isOllamaProvider(m_profile);
     c.requires_network = true;
+    c.supports_thinking = isOllamaProvider(m_profile);
     return c;
 }
 
@@ -114,6 +134,8 @@ nlohmann::json UOpenAICompatProvider::buildRequestBody(const std::vector<LLMMess
     body["temperature"] = opts.temperature;
     body["max_tokens"] = opts.max_tokens;
     body["messages"] = buildOpenAiChatMessagesJson(prepared);
+    if(shouldSendThinkTrue(opts, capabilities()))
+        body["think"] = true;
     if(!opts.tools_for_api.empty())
     {
         body["tools"] = opts.tools_for_api;
@@ -144,6 +166,7 @@ LLMCompletionResult UOpenAICompatProvider::parseResponse(const std::string& body
         const auto& message = choice["message"];
         if(message.contains("content") && !message["content"].is_null())
             result.text = message["content"].get<std::string>();
+        extractThinkingFields(message, result.thinking);
         if(message.contains("tool_calls"))
         {
             for(const auto& tc : message["tool_calls"])
@@ -156,6 +179,7 @@ LLMCompletionResult UOpenAICompatProvider::parseResponse(const std::string& body
                 result.tool_calls.push_back(call);
             }
         }
+        finalizeThinkingResult(result);
         result.ok = true;
     }
     catch(const std::exception& ex)
@@ -228,14 +252,17 @@ void UOpenAICompatProvider::chatStream(const std::vector<LLMMessage>& messages,
     body["stream"] = true;
 
     std::string accumulated_text;
+    std::string accumulated_thinking;
     std::map<int, StreamToolPart> tool_parts;
     std::string last_retry_after;
     LLMStreamCallback chunk_cb = on_chunk;
     if(!opts.tools_for_api.empty())
         chunk_cb = nullptr;
+    const auto thinking_cb = opts.on_thinking_chunk;
 
     auto run_once = [&]() -> LLMCompletionResult {
         accumulated_text.clear();
+        accumulated_thinking.clear();
         tool_parts.clear();
         const auto resp = m_http.postJsonStream(
             url, body.dump(), m_profile.api_key,
@@ -248,7 +275,8 @@ void UOpenAICompatProvider::chatStream(const std::vector<LLMMessage>& messages,
                     if(!j.contains("choices") || j["choices"].empty())
                         return true;
                     const auto& delta = j["choices"][0].value("delta", nlohmann::json::object());
-                    applyStreamDelta(delta, accumulated_text, tool_parts, chunk_cb);
+                    applyStreamDelta(delta, accumulated_text, accumulated_thinking, tool_parts,
+                                    chunk_cb, thinking_cb);
                 }
                 catch(...)
                 {
@@ -279,7 +307,7 @@ void UOpenAICompatProvider::chatStream(const std::vector<LLMMessage>& messages,
                 err.error_message += ": " + resp.body;
             return err;
         }
-        return buildStreamResult(accumulated_text, tool_parts);
+        return buildStreamResult(accumulated_text, accumulated_thinking, tool_parts);
     };
 
     LLMCompletionResult result;

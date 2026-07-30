@@ -126,6 +126,13 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-137 | Post-verify add uses gateway long_name only | 2026-05-30 | `verifyAddComponentEffect` early return on `long_name` |
 | TD-138 | Migrate `set_property` / `remove_component` / link writes off `MModel_*` to engine-lock + `GetComponentL` | post-model-firmata | P2 | deferred | Indefinite (2026-07-27): umbrella Track 1 shelved. `add_component` done; remaining tools pass full `long_name` to `MModel_*`. Revisit triggers: write/lock/diagram bug, product demand to drop `MModel_*`, or dedicated sprint after GUI Track 2. |
 | TD-139 | Never call `refreshDiagramPresentation` while holding engine/model lock | post-model-firmata | P1 | done | Scoped lock in `addComponent`; `DiagramRefresh` uses `QueuedConnection`; diagram list via `childComponentShortNamesFromModelScope` |
+| TD-140 | Thinking-first: Ollama `think` + `message.thinking` in providers/types | thinking-A | P0 | done | Types, native/compat parse, history preserve, Test_LLM_Thinking |
+| TD-141 | Progressive disclosure: `search_tools` expands allowlist for next rounds | thinking-B | P0 | done | enrichSearchToolsPayload + expandToolFilterFromSearchResult |
+| TD-142 | Wire Cortex thinking profile + no forced tool_choice when think ON | thinking-C | P0 | done | ollama-thinking default, enable_ollama_thinking, orchestrator wiring |
+| TD-143 | Collapsible GUI thinking bubble / on_thinking_token UI | thinking-post | P2 | deferred | Hooks only in MVP; revisit when product wants visible CoT |
+| TD-144 | Parallel independent tool fan-out in one assistant turn | thinking-post | P3 | deferred | Sequential tools OK for local ReAct MVP |
+| TD-145 | Ollama think levels (`low`/`medium`/`high`) / gpt-oss | thinking-post | P3 | deferred | Boolean `think` sufficient for qwen3/deepseek-r1 |
+| TD-146 | Embed-index quality for `search_tools` hybrid ranking | thinking-post | P2 | deferred | Lexical+existing embeddings; revisit if discovery miss-rate high |
 | TD-120 | Remove hardcoded connect paths in Core ephemeral/heuristics | 2026-05-29 | `f3f4cc0b`: KnowledgeBlocks, acquisition policy, no LTZone in Core |
 | TD-121 | Context acquisition policy + catalog blocks in ephemeral | 2026-05-29 | `f3f4cc0b`: `computeContextAcquisitionPlan`, retriever diagram scope |
 | TD-122 | diagram_scope_long_name GUI + add parent parity | 2026-05-29 | `3c5b615f`: diagramScopeChanged, normalizer parent |
@@ -226,3 +233,8 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | 2026-05-29 | DD-UT-002: `ask_user` vs legacy disambiguation coexist | Gradual GUI migration | phase-C | TD-093 |
 | 2026-05-29 | DD-UT-003: Subagent runner stub until budget policy | Phase H scope | phase-H | TD-096 |
 | 2026-07-27 | Shelve umbrella Track 1 (LLM production hardening) indefinitely | MVP+ write-tools/agent v2/post-audit complete; TD-138 not MVP-blocking; prioritize GUI/docs | — | TD-138: reproducible write/lock/diagram bug; product demand to drop `MModel_*`; dedicated sprint after GUI Track 2 |
+| 2026-07-30 | DD-THINK-001: Cortex thinking-first via Ollama native `/api/chat` (`think:true`) | `/v1` historically drops `think` on some Ollama builds; native is source of truth | thinking-C | Lab /v1 parity verified |
+| 2026-07-30 | DD-THINK-002: Preserve unmodified `thinking` on assistant tool_call turns | Anthropic/Qwen/DeepSeek tool+thinking contract; mid-loop rewrite degrades multi-step | — | — |
+| 2026-07-30 | DD-THINK-003: `tool_choice=auto` only when think ON (no lifecycle force) | Forced tool_choice conflicts with thinking models | — | — |
+| 2026-07-30 | DD-THINK-004: Default Cortex profile `ollama-thinking` (qwen3); Utility/Router think OFF | Thinking reserved for ReAct cortex; short structured calls stay cheap | thinking-C | — |
+| 2026-07-30 | DD-THINK-005: Progressive disclosure via `search_tools` expand allowlist | Full registry every round hurts local tool selection; discovery must open schemas | thinking-B | TD-141 |

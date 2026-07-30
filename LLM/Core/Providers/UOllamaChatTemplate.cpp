@@ -333,6 +333,10 @@ nlohmann::json buildOpenAiChatMessagesJson(const std::vector<LLMMessage>& messag
             item["content"] = m.content;
         }
 
+        // Preserve thinking on assistant turns for multi-step tool loops (DD-THINK-002).
+        if(m.role == LLMMessage::Role::Assistant && m.thinking && !m.thinking->empty())
+            item["thinking"] = *m.thinking;
+
         if(m.tool_call_id)
             item["tool_call_id"] = *m.tool_call_id;
         if(m.tool_name && m.role == LLMMessage::Role::Tool)

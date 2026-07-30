@@ -105,6 +105,13 @@ ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UAp
         new QCheckBox(tr("Translate non-English requests to English (planning only)"), this);
     layout->addWidget(m_translate_queries_to_en);
 
+    m_enable_ollama_thinking = new QCheckBox(
+        tr("Enable Ollama thinking mode (Cortex reasons before tool calls)"), this);
+    m_enable_ollama_thinking->setToolTip(
+        tr("When on, Cortex sends think=true to Ollama thinking models (e.g. qwen3) and keeps "
+           "reasoning separate from the answer. Forced tool_choice is disabled while thinking."));
+    layout->addWidget(m_enable_ollama_thinking);
+
     auto* lang_form = new QFormLayout();
     m_response_language = new QComboBox(this);
     m_response_language->addItem(tr("Auto (system)"), QString());
@@ -176,6 +183,7 @@ void ULlmProviderSettingsWidget::loadFromStore()
     }
     m_max_autonomous_steps->setValue(store.runtime().max_autonomous_steps);
     m_translate_queries_to_en->setChecked(store.runtime().translate_queries_to_en);
+    m_enable_ollama_thinking->setChecked(store.runtime().enable_ollama_thinking);
 
     const QString lang =
         QString::fromStdString(store.runtime().preferred_response_language);
@@ -376,6 +384,7 @@ void ULlmProviderSettingsWidget::saveToStore()
         store.setAutonomousMode(RDK::LLM::LLMAutonomousMode::Off);
     store.setMaxAutonomousSteps(m_max_autonomous_steps->value());
     store.setTranslateQueriesToEn(m_translate_queries_to_en->isChecked());
+    store.setEnableOllamaThinking(m_enable_ollama_thinking->isChecked());
     store.setPreferredResponseLanguage(m_response_language->currentData().toString().toStdString());
     store.setSendShortcut(m_send_shortcut->currentData().toString() == QStringLiteral("enter")
                               ? RDK::LLM::LLMSendShortcutMode::Enter

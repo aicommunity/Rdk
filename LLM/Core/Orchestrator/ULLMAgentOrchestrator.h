@@ -35,11 +35,15 @@ struct LLMRequestEnvelope {
 /// Optional GUI streaming (TD-024). Called from worker thread; marshal to UI thread in callbacks.
 struct LLMStreamHandlers {
     std::function<void(const std::string& token)> on_token;
+    /// Optional thinking-token stream (not shown in answer bubble by default).
+    std::function<void(const std::string& token)> on_thinking_token;
 };
 
 struct LLMFinalResponse {
     bool ok = true;
     std::string text;
+    /// Last-round model thinking (truncated for UI/audit; not concatenated into text).
+    std::string thinking;
     std::string error;
     bool pending_confirmation = false;
     std::string pending_confirmation_id;

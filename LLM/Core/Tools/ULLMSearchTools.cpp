@@ -82,4 +82,24 @@ SearchToolsResult searchToolsByQuery(ULLMToolRegistry& registry, const std::stri
     return out;
 }
 
+nlohmann::json enrichSearchToolsPayload(const SearchToolsResult& found,
+                                        const ULLMToolRegistry& registry)
+{
+    nlohmann::json tools = nlohmann::json::array();
+    for(const std::string& name : found.tools)
+    {
+        nlohmann::json entry = {{"name", name}};
+        if(const LLMToolDefinition* def = registry.find(name))
+        {
+            entry["description"] = def->description;
+            entry["kind"] = def->kind == LLMToolKind::Write ? "write" : "read";
+            entry["requires_confirmation"] = def->requires_confirmation;
+        }
+        tools.push_back(std::move(entry));
+    }
+    return {{"query", found.query},
+            {"index_version", found.index_version},
+            {"tools", std::move(tools)}};
+}
+
 } // namespace RDK::LLM

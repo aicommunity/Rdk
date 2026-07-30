@@ -391,6 +391,8 @@ nlohmann::json ULLMConversationStore::messageToJson(const LLMMessage& msg)
         break;
     }
     j["content"] = redactSensitiveText(msg.content);
+    if(msg.thinking && !msg.thinking->empty())
+        j["thinking"] = redactSensitiveText(*msg.thinking);
     if(msg.tool_call_id)
         j["tool_call_id"] = *msg.tool_call_id;
     if(msg.tool_name)
@@ -421,6 +423,8 @@ LLMMessage ULLMConversationStore::messageFromJson(const nlohmann::json& j)
     else
         msg.role = LLMMessage::Role::User;
     msg.content = j.value("content", "");
+    if(j.contains("thinking") && j["thinking"].is_string() && !j["thinking"].get<std::string>().empty())
+        msg.thinking = j["thinking"].get<std::string>();
     if(j.contains("tool_call_id"))
         msg.tool_call_id = j["tool_call_id"].get<std::string>();
     if(j.contains("tool_name"))

@@ -138,6 +138,15 @@ struct LLMProviderCapabilities {
     bool supports_strict_json_schema = false;
     bool runs_in_process = false;
     bool requires_network = true;
+    /// Ollama thinking models (qwen3, deepseek-r1, …): `think` request + `message.thinking`.
+    bool supports_thinking = false;
+};
+
+/// Model-native thinking for Cortex ReAct rounds (Ollama `think`).
+enum class LLMThinkMode {
+    Off,
+    On,
+    Auto
 };
 
 enum class OllamaChatTemplateFamily {
@@ -176,7 +185,7 @@ enum class LLMSendShortcutMode {
 enum class LLMContextAcquisitionMode { Auto, Minimal };
 
 struct LLMRuntimeProviderSettings {
-    std::string active_profile_id = "ollama-local";
+    std::string active_profile_id = "ollama-thinking";
     bool allow_cloud_providers = false;
     bool llm_write_enabled = true;
     /// When true, write tools run immediately without per-step Apply confirmation.
@@ -199,6 +208,8 @@ struct LLMRuntimeProviderSettings {
     LLMContextAcquisitionMode context_acquisition_mode = LLMContextAcquisitionMode::Auto;
     /// When true (GUI default), temporarily navigate diagram to pinned scope before write tools.
     bool pin_diagram_for_writes = true;
+    /// Thinking-first Cortex: send Ollama `think` and separate reasoning from answer/tools.
+    bool enable_ollama_thinking = true;
 };
 
 struct LLMGuiContextSnapshot {
@@ -238,6 +249,8 @@ struct LLMMessage {
     enum class Role { System, User, Assistant, Tool };
     Role role = Role::User;
     std::string content;
+    /// Model-native reasoning trace; preserve unmodified on assistant tool_call turns.
+    std::optional<std::string> thinking;
     std::optional<std::string> tool_call_id;
     std::optional<std::string> tool_name;
     std::optional<nlohmann::json> tool_arguments;
@@ -249,6 +262,8 @@ struct LLMMessage {
 struct LLMCompletionResult {
     bool ok = true;
     std::string text;
+    /// Separated reasoning (Ollama `message.thinking` / `reasoning_content`).
+    std::string thinking;
     std::vector<LLMToolCall> tool_calls;
     std::string error_message;
     int prompt_tokens = 0;
@@ -268,6 +283,10 @@ struct LLMCompletionOptions {
     std::string response_language;
     /// When set, overrides provider profile model for this completion only.
     std::optional<std::string> model_override;
+    /// Ollama thinking / reasoning mode for this completion.
+    LLMThinkMode think_mode = LLMThinkMode::Off;
+    /// Optional stream of thinking tokens (content still goes to chatStream on_chunk).
+    std::function<void(const std::string& chunk)> on_thinking_chunk;
 };
 
 using LLMStreamCallback = std::function<void(const std::string& chunk)>;
