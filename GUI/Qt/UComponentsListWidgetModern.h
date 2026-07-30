@@ -129,6 +129,9 @@ public:
     /// Устанавливает режим видимости для виджета выбора канала расчёта
     void setChannelsListVisible(bool value);
 
+    /// Применить значение из inline-редактора (вызывается delegate)
+    void applyPropertyValueFromEditor(QTreeWidgetItem* item, const QString& value);
+
 signals:
     void componentSelected(QString name); //single click
     void componentDoubleClick(QString name);
@@ -188,6 +191,7 @@ public slots:
     void propertyCopyNameToClipboard();
     void propertyCopyValueToClipboard();
     void propertyPasteValueFromClipboard();
+    void propertyEditValue();
 
 private slots:
     void on_actionReloadTree_triggered();
@@ -195,6 +199,10 @@ private slots:
     void on_tabWidgetComponentInfo_currentChanged(int index);
 
     void on_actionDefaultAllParameters_triggered();
+
+    void onPropertyItemDoubleClicked(QTreeWidgetItem* item, int column);
+    void onPropertyHeaderSectionResized(int logicalIndex, int oldSize, int newSize);
+    void onFavoritesShowInAllSectionsToggled(bool checked);
 
 private:
     /// Удаляет из переданных данных лидирующие переводы строк
@@ -206,6 +214,22 @@ private:
     /// Если в переданных данных есть хотя бы один перевод строки, то заменяет текст
     /// на "[SEE BELOW]"
     std::string& PreparePropertyValueToListView(std::string &value);
+
+    void setupPropertyEditing();
+    void setupColumnWidthSync();
+    void syncPropertyColumnWidths(QTreeWidget* sourceTree, int logicalIndex, int newSize);
+    void applySharedColumnWidths(int nameWidth, int valueWidth, int typeWidth);
+
+    bool isMultilinePropertyValue(const QString& rawValue, const QString& displayValue) const;
+    bool beginPropertyValueEdit(QTreeWidgetItem* item);
+    bool commitPropertyValue(const QString& componentLongName, const QString& propertyName, const QString& value);
+    QString propertyComponentForItem(QTreeWidgetItem* item) const;
+    QString propertyNameForItem(QTreeWidgetItem* item) const;
+    QTreeWidget* currentPropertyTree() const;
+    QTreeWidgetItem* currentPropertyItem() const;
+
+    void updatePropertyItemDisplay(QTreeWidgetItem* item, const QString& rawValue);
+
 private:
 
     /// Имя компонента, чьи проперти отображены
@@ -225,6 +249,14 @@ private:
     QString selectedInputName;
     QString selectedOutputName;
     QString selectedFavName;
+
+    /// Показывать favorite сразу в нескольких группах ролей (default true)
+    bool m_favoritesShowInAllSections = true;
+
+    bool m_syncingColumnWidths = false;
+
+    QAction* m_actionEditProperty = nullptr;
+    QAction* m_actionFavoritesShowInAllSections = nullptr;
 
     /// Текущий канал для виджета
     int currentChannel;

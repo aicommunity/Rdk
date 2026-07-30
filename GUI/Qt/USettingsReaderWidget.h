@@ -21,15 +21,27 @@ public:
 
   }
 
-  /// запись файла настроек
+  /// запись файла настроек (вызывается из SaveProject через ASaveParameters(xml))
   virtual void ASaveParameters()
   {
     emit writeSetting();
   }
 
-  /// считывание файла настроек
+  virtual void ASaveParameters(RDK::USerStorageXML &xml) override
+  {
+    Q_UNUSED(xml);
+    emit writeSetting();
+  }
+
+  /// считывание файла настроек (вызывается из OpenProject через ALoadParameters(xml))
   virtual void ALoadParameters()
   {
+    emit readSetting();
+  }
+
+  virtual void ALoadParameters(RDK::USerStorageXML &xml) override
+  {
+    Q_UNUSED(xml);
     emit readSetting();
   }
 

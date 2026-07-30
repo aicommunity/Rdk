@@ -1546,6 +1546,9 @@ void UGEngineControlWidget::writeSettings()
 
     writeComponentGuiSettings(projectSettings);
 
+    if(propertyChanger)
+        propertyChanger->ASaveParameters();
+
     projectSettings.endGroup();
 }
 
@@ -1616,6 +1619,9 @@ void UGEngineControlWidget::readSettings()
     imagesWindow->restoreState(projectSettings.value("ImagesState").toByteArray());
 
     readComponentGuiSettings(projectSettings);
+
+    if(propertyChanger)
+        propertyChanger->ALoadParameters();
 
     projectSettings.endGroup();
 }
@@ -1867,13 +1873,8 @@ void UGEngineControlWidget::createOrActivateCustomWidget(const QString &id)
 void UGEngineControlWidget::closeEvent(QCloseEvent *event)
 {
  application->PauseChannel(-1);
+ writeSettings();
  event->accept();
- //   if (maybeSave()) {
- //       writeSettings();
- //       event->accept();
- //   } else {
- //       event->ignore();
- //   }
 }
 
 void UGEngineControlWidget::updateChannelsVisibility()
@@ -1948,6 +1949,15 @@ void UGEngineControlWidget::AClearInterface(void)
 void UGEngineControlWidget::AAfterLoadProject(void)
 {
  UpdateInterface();
+ if(propertyChanger)
+ {
+   propertyChanger->ALoadParameters();
+   // После раскладки доков из restoreState — ещё раз
+   QTimer::singleShot(0, this, [this]() {
+     if(propertyChanger)
+       propertyChanger->ALoadParameters();
+   });
+ }
  if(propertyChanger->componentsList->GetUpdateInterval()>0)
   statusPanel->ChangeAutoupdateProperties(true);
  else
@@ -1957,6 +1967,7 @@ void UGEngineControlWidget::AAfterLoadProject(void)
 // Метод, вызываемый перед закрытием проекта
 void UGEngineControlWidget::ABeforeCloseProject(void)
 {
+    writeSettings();
     m_componentGuiService.clearAllInstances();
     m_componentGuiTabHosts.clear();
 }

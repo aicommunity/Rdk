@@ -23,7 +23,6 @@ public:
   virtual void ALoadParameters();
 
 public slots:
-  void actionSet();
   void actionSetGlobal();
   void actionSetGlobalOwner();
   void actionShowXML();
@@ -46,6 +45,7 @@ private:
   // buffers
   QString componentName;
   QString propertyName;
+  QString m_currentPropertyValue;
 };
 
 #endif // UCOMPONENTPROPERTYCHANGER_H

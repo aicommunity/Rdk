@@ -2,9 +2,6 @@
 #include "UComponentPropertySelectionWidget.h"
 #include "ui_UComponentPropertyChanger.h"
 
-#include <QMenu>
-#include <QToolButton>
-
 UComponentPropertyChanger::UComponentPropertyChanger(QWidget *parent, RDK::UApplication *app) :
   UVisualControllerWidget(parent, app),
   ui(new Ui::UComponentPropertyChanger)
@@ -19,30 +16,19 @@ UComponentPropertyChanger::UComponentPropertyChanger(QWidget *parent, RDK::UAppl
   componentsList->setAccessibleName(accessibleName() + "_componentsList");
   ui->verticalLayoutComponentsList->addWidget(componentsList);
 
-  ui->splitter->setStretchFactor(0, 10);
-  ui->splitter->setStretchFactor(1, 1);
-
-  //кнопки управления для фиксации Property компонента
-  //Property tab
-  QMenu *setPropertyMenu = new QMenu(this);
-  setPropertyMenu->addAction(ui->actionSetGlobal);
-  setPropertyMenu->addAction(ui->actionSetGlobalOwner);
-  QToolButton *setProperty = new QToolButton(this);
-  setProperty->setText("Set");
-  setProperty->setMenu(setPropertyMenu);
-  setProperty->setPopupMode(QToolButton::MenuButtonPopup);
-  // Увеличиваем ширину кнопки в 2 раза
-  setProperty->setMinimumWidth(setProperty->sizeHint().width() * 1.5);
-  ui->toolBarControll->addWidget(setProperty);
+  // Тулбар внизу: отдельные действия без кнопки Set (значение правится в дереве)
+  ui->toolBarControll->addAction(ui->actionSetGlobal);
+  ui->toolBarControll->addAction(ui->actionSetGlobalOwner);
   ui->toolBarControll->addAction(ui->actionReload);
   ui->toolBarControll->addAction(ui->actionShowXML);
-  connect(setProperty, SIGNAL(clicked()), this, SLOT(actionSet()));
   connect(ui->actionReload, SIGNAL(triggered()), componentsList, SLOT(reloadPropertys()));
   connect(ui->actionSetGlobal, SIGNAL(triggered()), this, SLOT(actionSetGlobal()));
   connect(ui->actionSetGlobalOwner, SIGNAL(triggered()), this, SLOT(actionSetGlobalOwner()));
   connect(ui->actionShowXML, SIGNAL(triggered()), this, SLOT(actionShowXML()));
 
   connect(componentsList, SIGNAL(selectedPropertyValue(QString)), this, SLOT(updateCurrentPropertyValue(QString)));
+
+  ALoadParameters();
 }
 
 UComponentPropertyChanger::~UComponentPropertyChanger()
@@ -54,14 +40,6 @@ void UComponentPropertyChanger::ASaveParameters()
 {
   if(!application) return;
 
-  QSettings settings(QString::fromLocal8Bit(
-                       application->GetProjectPath().c_str())+"settings.qt",
-                     QSettings::IniFormat);
-  settings.beginGroup(accessibleName());
-  settings.setValue("splitterState", ui->splitter->saveState());
-  settings.endGroup();
-  
-  // Сохраняем настройки componentsList (включая режим отображения)
   if(componentsList)
     componentsList->ASaveParameters();
 }
@@ -70,28 +48,8 @@ void UComponentPropertyChanger::ALoadParameters()
 {
   if(!application) return;
 
-  QSettings settings(QString::fromLocal8Bit(
-                       application->GetProjectPath().c_str())+"settings.qt",
-                     QSettings::IniFormat);
-  settings.beginGroup(accessibleName());
-  ui->splitter->restoreState(settings.value("splitterState").toByteArray());
-  settings.endGroup();
-  
-  // Загружаем настройки componentsList (включая режим отображения)
   if(componentsList)
     componentsList->ALoadParameters();
-}
-
-void UComponentPropertyChanger::actionSet()
-{
-  if(emptySeletion())
-    return;
-
-  Model_SetComponentPropertyValue(
-              componentName.toLocal8Bit(),
-              propertyName.toLocal8Bit(),
-              ui->plainTextEditValue->toPlainText().toLocal8Bit());
-  componentsList->reloadPropertys();
 }
 
 void UComponentPropertyChanger::actionSetGlobal()
@@ -99,7 +57,6 @@ void UComponentPropertyChanger::actionSetGlobal()
   if(emptySeletion())
     return;
 
-  //создаем окно для выбора источника данных
   UComponentPropertySelectionWidget dialog(this, 3, application);
   QString selected_component_name;
   dialog.setModal(true);
@@ -116,7 +73,7 @@ void UComponentPropertyChanger::actionSetGlobal()
               selected_component_name.toLocal8Bit(),
               className,
               propertyName.toLocal8Bit(),
-              ui->plainTextEditValue->toPlainText().toLocal8Bit());
+              m_currentPropertyValue.toLocal8Bit());
 
   Engine_FreeBufString(className);
 
@@ -128,7 +85,6 @@ void UComponentPropertyChanger::actionSetGlobalOwner()
   if(emptySeletion())
     return;
 
-  //создаем окно для выбора источника данных
   UComponentPropertySelectionWidget dialog(this, 3, application);
   QString selected_component_name;
   dialog.setModal(true);
@@ -156,9 +112,9 @@ void UComponentPropertyChanger::actionSetGlobalOwner()
   Model_SetGlobalOwnerComponentPropertyValue(
               selected_component_name.toLocal8Bit(),
               className.c_str(),
-              ownerClassName.c_str(), //тут вопрос о владельце
+              ownerClassName.c_str(),
               propertyName.toLocal8Bit(),
-              ui->plainTextEditValue->toPlainText().toLocal8Bit());
+              m_currentPropertyValue.toLocal8Bit());
 
 
 
@@ -198,8 +154,7 @@ void UComponentPropertyChanger::actionShowXML()
 
 void UComponentPropertyChanger::updateCurrentPropertyValue(QString value)
 {
-//  ui->plainTextEditValue->clear();
-  ui->plainTextEditValue->setPlainText(value);
+  m_currentPropertyValue = value;
 }
 
 bool UComponentPropertyChanger::emptySeletion()
