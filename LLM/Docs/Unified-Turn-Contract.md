@@ -30,7 +30,7 @@ Any tool invoke that skips the LLM tool-loop must use `recordedToolInvoke` (`ULL
 
 | Path | When |
 |------|------|
-| `add_component` | Explicit registered class in user text, **or** repeat-cue («ещё/таких же») with valid `session_graph.last_add` |
+| `add_component` | Explicit registered class in user text, **or** continuity cue (ещё/таких же/continuer noun нейрон|компонент|блок|модуль) with valid `session_graph.last_add` (DD-MEM-003) |
 | `open_recent_configuration` | Index / pending open_recent (TD-132) |
 | Pending-arg resume | Clarification / lifecycle args complete |
 | `load_configuration` | Only if `NMSDK_LLM_LIFECYCLE_DIRECT=1` (TD-102) |

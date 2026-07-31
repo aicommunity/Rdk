@@ -202,34 +202,42 @@ bool normalizeAddComponentArguments(nlohmann::json& args, URdkDomainAccess& doma
         }
 
         const std::string class_name = args.value("class_name", "");
-        const std::string query = extractClassNameQuery(class_name, user_text);
-        if(!query.empty())
+        // Continuity: a resolved registered class must not be overwritten by fuzzy nouns
+        // from user_text ("нейрона", "компонент"). Only an explicit class token may override
+        // (handled above).
+        if(isRegisteredClassName(registered, class_name))
         {
-            const RegisteredClassResolution resolved = resolveRegisteredClassName(query, registered);
-            if(resolved.status == RegisteredClassResolution::Status::Resolved)
+            args["class_name"] = canonicalRegisteredClassName(registered, class_name);
+        }
+        else
+        {
+            const std::string query = extractClassNameQuery(class_name, user_text);
+            if(!query.empty())
             {
-                args["class_name"] = resolved.class_name;
+                const RegisteredClassResolution resolved =
+                    resolveRegisteredClassName(query, registered);
+                if(resolved.status == RegisteredClassResolution::Status::Resolved)
+                {
+                    args["class_name"] = resolved.class_name;
+                }
+                else if(resolved.status == RegisteredClassResolution::Status::Ambiguous)
+                {
+                    std::vector<ClassCandidate> candidates;
+                    candidates.reserve(resolved.candidates.size());
+                    for(const auto& [name, score] : resolved.candidates)
+                        candidates.push_back({name, score});
+                    return fillClassDisambiguationOut(out, query, candidates);
+                }
+                else
+                {
+                    return fillClassDisambiguationOut(out, query, {});
+                }
             }
-            else if(resolved.status == RegisteredClassResolution::Status::Ambiguous)
+            else if(!class_name.empty())
             {
-                std::vector<ClassCandidate> candidates;
-                candidates.reserve(resolved.candidates.size());
-                for(const auto& [name, score] : resolved.candidates)
-                    candidates.push_back({name, score});
-                return fillClassDisambiguationOut(out, query, candidates);
-            }
-            else if(!isRegisteredClassName(registered, class_name))
-            {
-                return fillClassDisambiguationOut(out, query, {});
+                return fillClassDisambiguationOut(out, class_name, {});
             }
         }
-        else if(!isRegisteredClassName(registered, class_name))
-        {
-            return fillClassDisambiguationOut(out, class_name, {});
-        }
-        if(isRegisteredClassName(registered, args.value("class_name", "")))
-            args["class_name"] =
-                canonicalRegisteredClassName(registered, args["class_name"].get<std::string>());
     }
     else if(!user_text.empty())
     {
@@ -636,11 +644,34 @@ bool isRepeatSameAddCue(const std::string& user_text)
            || lc.find("again") != std::string::npos;
 }
 
+/// Generic / type continuer nouns: not a new class query when last_add is set.
+bool looksLikeContinuerNoun(const std::string& user_text)
+{
+    std::string lc;
+    lc.reserve(user_text.size());
+    for(char c : user_text)
+        lc += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return lc.find("нейрон") != std::string::npos || lc.find("neuron") != std::string::npos
+           || lc.find("компонент") != std::string::npos || lc.find("component") != std::string::npos
+           || lc.find("блок") != std::string::npos || lc.find("block") != std::string::npos
+           || lc.find("модул") != std::string::npos || lc.find("module") != std::string::npos;
+}
+
+bool looksLikeAddContinuityCueLocal(const std::string& user_text)
+{
+    return isRepeatSameAddCue(user_text) || looksLikeContinuerNoun(user_text);
+}
+
 } // namespace
 
 bool looksLikeRepeatSameAddCue(const std::string& user_text)
 {
     return isRepeatSameAddCue(user_text);
+}
+
+bool looksLikeAddContinuityCue(const std::string& user_text)
+{
+    return looksLikeAddContinuityCueLocal(user_text);
 }
 
 std::optional<PreparedAddComponentInvoke> tryPrepareAddComponentDirect(
@@ -661,7 +692,8 @@ std::optional<PreparedAddComponentInvoke> tryPrepareAddComponentDirect(
     std::string parent_from_last;
     std::string short_from_last;
     if(!explicit_class && session_graph && session_graph->last_add
-       && !session_graph->last_add->class_name.empty() && isRepeatSameAddCue(user_text))
+       && !session_graph->last_add->class_name.empty()
+       && looksLikeAddContinuityCueLocal(user_text))
     {
         class_from_last = session_graph->last_add->class_name;
         parent_from_last = session_graph->last_add->parent_long_name;

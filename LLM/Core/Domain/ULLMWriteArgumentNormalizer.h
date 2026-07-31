@@ -50,7 +50,10 @@ struct SessionGraphMemory;
 /// True when user asks to add more of the same (ещё/таких же/same/more).
 bool looksLikeRepeatSameAddCue(const std::string& user_text);
 
-/// When user names a registered class (or repeat-cue «таких же» with last_add) and asks to add.
+/// Continuity follow-up: repeat-cue or continuer noun (нейрон/компонент/блок/модуль).
+bool looksLikeAddContinuityCue(const std::string& user_text);
+
+/// When user names a registered class (or continuity cue with last_add) and asks to add.
 std::optional<PreparedAddComponentInvoke> tryPrepareAddComponentDirect(
     const std::string& user_text, const LLMGuiContextSnapshot& gui, URdkDomainAccess& domain,
     int channel_index, int repeat_count, const SessionGraphMemory* session_graph = nullptr);

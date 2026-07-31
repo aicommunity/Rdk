@@ -182,6 +182,11 @@ void prependEphemeralSystemMessages(std::vector<LLMMessage>& provider_messages,
             if(!input.state.session_graph.last_add->short_name_base.empty())
                 sg << "- last_added_short_name: "
                    << input.state.session_graph.last_add->short_name_base << "\n";
+            sg << "- continuity_rule: If the user asks for more of the same "
+                  "(ещё/таких же/same/another/more) or uses a continuer noun "
+                  "(нейрон/neuron/компонент/component/блок/block/модуль/module) and "
+                  "last_added_class is set, use that class_name for add_component; "
+                  "do not ask which class.\n";
         }
         const auto& added = input.state.session_graph.added_long_names;
         if(!added.empty())

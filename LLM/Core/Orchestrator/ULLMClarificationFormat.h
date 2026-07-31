@@ -12,6 +12,10 @@ namespace RDK::LLM {
 std::string formatClarificationMessage(const nlohmann::json& payload,
                                        bool include_candidate_list = true);
 
+/// Prepend session last_add class as candidate #1 (same-as-last). No-op if empty/duplicate.
+void enrichClassDisambiguationWithLastAdd(nlohmann::json& disambiguation,
+                                          const std::string& last_added_class);
+
 } // namespace RDK::LLM
 
 #endif

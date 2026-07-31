@@ -19,7 +19,7 @@ Normative overview for **ephemeral context**, **session store v2**, and **long-t
 | Session metadata v2/v3 | Same JSON file | `last_gui_context`, `resolved_entities`, `agent_notes`, `session_summary`, `last_session_context`, **`session_graph`** (`last_add`, links, …) |
 | Long-term | `LLM/memory/` | User preferences, project `rules.md` |
 
-**Follow-up truth order:** transcript tool history → `session_graph.last_add` / counts → live net snapshot. Direct add/open_recent must leave transcript via RecordedToolInvoke (TD-150).
+**Follow-up truth order:** transcript tool history → `session_graph.last_add` / counts → live net snapshot. Direct add/open_recent must leave transcript via RecordedToolInvoke (TD-150). Continuer nouns (нейрон/компонент/блок/модуль) are **not** class queries when `last_add` is set (DD-MEM-003); resolved `class_name` is not overwritten by fuzzy type words.
 
 ### Query / Explain inspect hints
 

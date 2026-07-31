@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "Domain/ULLMAddParentResolution.h"
+#include "Domain/ULLMNameResolution.h"
 #include "Domain/ULLMWriteArgumentNormalizer.h"
 #include "Domain/URdkDomainAccess.h"
 #include "Orchestrator/ULLMTurnTerminalHelpers.h"
@@ -60,6 +61,16 @@ TEST(LLMWriteArgumentNormalizer, RepeatSameAddCueDetection)
     EXPECT_FALSE(looksLikeRepeatSameAddCue("добавь компонент NSPNeuronGen"));
 }
 
+TEST(LLMWriteArgumentNormalizer, ContinuityCueDetection)
+{
+    EXPECT_TRUE(looksLikeAddContinuityCue("добавь еще два таких же нейрона"));
+    EXPECT_TRUE(looksLikeAddContinuityCue("добавь еще три нейрона"));
+    EXPECT_TRUE(looksLikeAddContinuityCue("добавь еще два компонента"));
+    EXPECT_TRUE(looksLikeAddContinuityCue("add another module"));
+    EXPECT_TRUE(looksLikeAddContinuityCue("добавь блок"));
+    EXPECT_FALSE(looksLikeAddContinuityCue("открой последнюю конфигурацию"));
+}
+
 TEST(LLMWriteArgumentNormalizer, RepeatCueAtRootKeepsEmptyParentNotModel)
 {
     URdkDomainAccess domain(nullptr);
@@ -73,11 +84,20 @@ TEST(LLMWriteArgumentNormalizer, RepeatCueAtRootKeepsEmptyParentNotModel)
     last.short_name_base = "PNeuronGen";
     graph.last_add = last;
 
-    // Without registered classes domain returns empty — prepare is nullopt.
-    // Still assert resolveValidAddParent empty at root (covered above) and that
-    // fill path would not prefer Model when last_add parent is empty:
     AddParentResolution res = resolveValidAddParent(domain, "", "NSPNeuronGen", 0, gui);
     EXPECT_EQ(res.parent_long_name, "");
     EXPECT_NE(res.parent_long_name, "Model");
     (void)graph;
+}
+
+TEST(LLMWriteArgumentNormalizer, NeuronNounIsFuzzyNotExactClass)
+{
+    // User-text continuer becomes a class query token; Latin "neuron" fuzzy-matches many
+    // *Neuron* classes (Ambiguous) — trust-registered-class skips this when last_add set class.
+    EXPECT_EQ(extractClassNameTokenFromUserText("добавь еще два таких же нейрона"), "нейрона");
+    const std::vector<std::string> registered = {"NNeuron", "NSPNeuron", "NSPNeuronGen",
+                                                 "NPNeuron", "NLPNeuron"};
+    const RegisteredClassResolution resolved = resolveRegisteredClassName("neuron", registered);
+    EXPECT_EQ(resolved.status, RegisteredClassResolution::Status::Ambiguous);
+    EXPECT_GE(resolved.candidates.size(), 2u);
 }

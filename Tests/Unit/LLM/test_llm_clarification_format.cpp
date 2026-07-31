@@ -54,6 +54,34 @@ TEST(LLMClarificationFormat, ClassShortOmitsNumberedDump)
     EXPECT_NE(with_list.find("NSPNeuron"), std::string::npos);
 }
 
+TEST(LLMClarificationFormat, EnrichPrependsLastAdd)
+{
+    nlohmann::json payload = {
+        {"kind", "class"},
+        {"candidates",
+         nlohmann::json::array({{{"class_name", "NNeuron"}}, {{"class_name", "NSPNeuron"}}})}};
+    enrichClassDisambiguationWithLastAdd(payload, "NSPNeuronGen");
+    ASSERT_TRUE(payload["candidates"].is_array());
+    ASSERT_GE(payload["candidates"].size(), 1u);
+    EXPECT_EQ(payload["candidates"][0].value("class_name", ""), "NSPNeuronGen");
+    EXPECT_EQ(payload["candidates"][0].value("label", ""), "same as last");
+    EXPECT_EQ(payload.value("last_added_class", ""), "NSPNeuronGen");
+
+    const std::string msg = formatClarificationMessage(payload, true);
+    EXPECT_NE(msg.find("Same as last time"), std::string::npos);
+    EXPECT_NE(msg.find("NSPNeuronGen"), std::string::npos);
+    EXPECT_NE(msg.find("same as last"), std::string::npos);
+}
+
+TEST(LLMClarificationFormat, EnrichDoesNotDuplicateLastAdd)
+{
+    nlohmann::json payload = {
+        {"kind", "class"},
+        {"candidates", nlohmann::json::array({{{"class_name", "NSPNeuronGen"}}})}};
+    enrichClassDisambiguationWithLastAdd(payload, "NSPNeuronGen");
+    EXPECT_EQ(payload["candidates"].size(), 1u);
+}
+
 TEST(LLMClarificationFormat, NullPayloadDoesNotThrow)
 {
     nlohmann::json null_payload;

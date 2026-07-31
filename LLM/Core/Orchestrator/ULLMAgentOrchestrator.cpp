@@ -2594,10 +2594,17 @@ LLMFinalResponse ULLMAgentOrchestrator::routeClarificationOrDisambiguation(
     PendingDisambiguationKind kind, const std::string& field_name,
     const nlohmann::json& disambiguation)
 {
+    nlohmann::json enriched =
+        disambiguation.is_object() ? disambiguation : nlohmann::json::object();
+    if(kind == PendingDisambiguationKind::Class && state.session_graph.last_add
+       && !state.session_graph.last_add->class_name.empty())
+    {
+        enrichClassDisambiguationWithLastAdd(enriched,
+                                             state.session_graph.last_add->class_name);
+    }
     if(clarifyInLoopEnabled())
-        return returnClarificationViaAskUser(state, trace_id, call, kind, field_name,
-                                             disambiguation);
-    return returnDisambiguationRequest(state, trace_id, call, kind, field_name, disambiguation);
+        return returnClarificationViaAskUser(state, trace_id, call, kind, field_name, enriched);
+    return returnDisambiguationRequest(state, trace_id, call, kind, field_name, enriched);
 }
 
 LLMFinalResponse ULLMAgentOrchestrator::returnArgumentRequest(ConversationState& state,
