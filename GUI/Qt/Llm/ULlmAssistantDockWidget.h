@@ -12,10 +12,10 @@
 #include <QProgressBar>
 #include <QPushButton>
 #include <QShortcut>
-#include <QTextEdit>
 
 #include "../../../LLM/Core/LlmTypes.h"
 #include "../UVisualControllerWidget.h"
+#include "ULlmChatHistoryPanel.h"
 #include "ULlmGuiContextBridge.h"
 
 class ULlmChatHistoryArchive;
@@ -111,7 +111,7 @@ private:
     QLabel* m_request_status = nullptr;
     QProgressBar* m_request_progress = nullptr;
     QPlainTextEdit* m_input = nullptr;
-    QTextEdit* m_history = nullptr;
+    ULlmChatHistoryPanel* m_history = nullptr;
     QPushButton* m_send = nullptr;
     QPushButton* m_history_btn = nullptr;
     QPushButton* m_cancel = nullptr;
@@ -125,7 +125,6 @@ private:
     bool m_plan_paused = false;
     bool m_streaming_reply = false;
     bool m_stream_tokens_received = false;
-    int m_stream_body_start = -1;
     QString m_pending_assistant_archive;
     QString m_stream_thinking;
     bool m_thinking_details_appended = false;

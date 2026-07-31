@@ -32,21 +32,21 @@ TEST(LLMAddParentResolution, DrilledContainerNamedModelIsNotRoot)
     EXPECT_EQ(res.parent_long_name, "Model");
 }
 
-TEST(LLMAddParentResolution, EmptyParentAtRootDefaultsToModelWithoutClarification)
+TEST(LLMAddParentResolution, EmptyParentAtRootDefaultsToEmptyWithoutClarification)
 {
     URdkDomainAccess domain(nullptr);
     LLMGuiContextSnapshot pin;
-    // Root view: empty diagram scope; many components may exist in a live net — still Model.
+    // Root view: empty diagram scope → engine root (empty parent_long_name).
     pin.current_component_long_name = "Model";
 
     const AddParentResolution res = resolveValidAddParent(domain, "", "NSPNeuronGen", 0, pin);
     EXPECT_TRUE(res.ok);
     EXPECT_FALSE(res.needs_clarification);
     EXPECT_TRUE(res.candidates.empty());
-    EXPECT_EQ(res.parent_long_name, "Model");
+    EXPECT_EQ(res.parent_long_name, "");
 }
 
-TEST(LLMAddParentResolution, ModelHintAtRootDefaultsToModelWithoutClarification)
+TEST(LLMAddParentResolution, ModelHintAtRootDefaultsToEmptyWithoutClarification)
 {
     URdkDomainAccess domain(nullptr);
     LLMGuiContextSnapshot pin;
@@ -55,7 +55,7 @@ TEST(LLMAddParentResolution, ModelHintAtRootDefaultsToModelWithoutClarification)
         resolveValidAddParent(domain, "Model", "NSPNeuronGen", 0, pin);
     EXPECT_TRUE(res.ok);
     EXPECT_FALSE(res.needs_clarification);
-    EXPECT_EQ(res.parent_long_name, "Model");
+    EXPECT_EQ(res.parent_long_name, "");
 }
 
 TEST(LLMAddParentResolution, EmptyParentUsesCurrentNonRootComponent)

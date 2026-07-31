@@ -329,6 +329,19 @@ bool resolveField(const std::string& tool_name, const std::string& field,
     if(value.empty())
         return true;
 
+    // Soft root sentinel "Model" is not a component long_name at root view.
+    if(field == "parent_long_name")
+    {
+        const LLMGuiContextSnapshot* gui = resolveGuiForWrite(conversation);
+        if(!gui && conversation && conversation->last_gui_context)
+            gui = &*conversation->last_gui_context;
+        if(isModelRootContainerToken(value, gui) || (value == "Model" && isAtRootDiagramView(gui)))
+        {
+            arguments[field] = "";
+            return true;
+        }
+    }
+
     if(conversation)
     {
         if(const auto cached =

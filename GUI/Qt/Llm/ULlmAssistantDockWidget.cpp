@@ -3,7 +3,9 @@
 #include "LlmGuiBootstrap.h"
 #include "ULlmChatHistoryArchive.h"
 #include "ULlmChatHistoryDialog.h"
+#include "ULlmChatHistoryPanel.h"
 #include "ULlmChatMarkdown.h"
+#include "ULlmDetailsHtml.h"
 
 #include <QDateTime>
 #include <QFutureWatcher>
@@ -16,7 +18,6 @@
 #include <QHBoxLayout>
 #include <QMetaObject>
 #include <QProgressBar>
-#include <QTextCursor>
 #include <QVBoxLayout>
 
 #include "../../../LLM/Core/LlmPublicApi.h"
@@ -69,7 +70,7 @@ fs::path toArchivePath(const QString& path)
     return fs::path(path.toStdString());
 }
 
-void appendToolTraceToHistory(QTextEdit* history,
+void appendToolTraceToHistory(ULlmChatHistoryPanel* history,
                               const std::function<void(const QString&)>& archive_fn,
                               const RDK::LLM::LLMFinalResponse& resp)
 {
@@ -79,7 +80,7 @@ void appendToolTraceToHistory(QTextEdit* history,
     if(html.empty())
         return;
     const QString qhtml = QString::fromStdString(html);
-    history->append(qhtml);
+    history->appendHtml(qhtml, /*details_expanded_default=*/true);
     if(archive_fn)
         archive_fn(qhtml);
 }
@@ -231,8 +232,7 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     layout->addWidget(m_context_budget);
     layout->addWidget(m_archive_banner);
 
-    m_history = new QTextEdit(this);
-    m_history->setReadOnly(true);
+    m_history = new ULlmChatHistoryPanel(this);
     layout->addWidget(m_history, 1);
 
     m_request_status = new QLabel(this);
@@ -367,8 +367,8 @@ void ULlmAssistantDockWidget::onProviderChanged(int index)
 
 void ULlmAssistantDockWidget::appendAssistantText(const QString& text)
 {
-    const QString html = llmMarkdownToHtmlFragment(text);
-    m_history->append(html);
+    const QString html = llmLooksLikeUiHtml(text) ? text : llmMarkdownToHtmlFragment(text);
+    m_history->appendHtml(html, /*details_expanded_default=*/true);
     if(!m_streaming_reply)
         archiveHtmlFragment(html);
 }
@@ -497,7 +497,7 @@ void ULlmAssistantDockWidget::startNewChat(const QString& system_note)
 
     if(!system_note.isEmpty())
     {
-        m_history->append(system_note);
+        m_history->appendHtml(system_note, true);
         // System banner is not persisted until the first user message opens a file.
     }
 
@@ -656,7 +656,7 @@ void ULlmAssistantDockWidget::onSendClicked()
         return;
     m_input->clear();
     const QString user_html = QString("<b>You:</b> %1").arg(text.toHtmlEscaped());
-    m_history->append(user_html);
+    m_history->appendHtml(user_html, true);
     maybeStartArchiveFile();
     archiveHtmlFragment(user_html);
     runUserMessage(text);
@@ -669,10 +669,8 @@ void ULlmAssistantDockWidget::beginAssistantStream()
     m_stream_thinking.clear();
     m_thinking_details_appended = false;
     const QString header = QString("<b>%1:</b> ").arg(tr("Assistant"));
-    m_history->append(header);
+    m_history->beginAssistantStream(header);
     m_pending_assistant_archive = header;
-    // Character position after header — streamed plain body starts here.
-    m_stream_body_start = m_history->document()->characterCount() - 1;
 }
 
 void ULlmAssistantDockWidget::appendThinkingDetails(const QString& thinking)
@@ -682,7 +680,7 @@ void ULlmAssistantDockWidget::appendThinkingDetails(const QString& thinking)
     const QString html = formatThinkingDetailsHtml(thinking);
     if(html.isEmpty())
         return;
-    m_history->append(html);
+    m_history->appendHtml(html, /*details_expanded_default=*/false);
     archiveHtmlFragment(html);
     m_thinking_details_appended = true;
 }
@@ -690,8 +688,7 @@ void ULlmAssistantDockWidget::appendThinkingDetails(const QString& thinking)
 void ULlmAssistantDockWidget::endAssistantStream()
 {
     m_streaming_reply = false;
-    m_stream_body_start = -1;
-    m_history->append(QString());
+    m_history->cancelStream();
 }
 
 void ULlmAssistantDockWidget::setRequestInProgress(bool busy)
@@ -780,11 +777,7 @@ void ULlmAssistantDockWidget::onStreamToken(const QString& token)
         return;
     m_stream_tokens_received = true;
     m_pending_assistant_archive += token;
-    QTextCursor cursor = m_history->textCursor();
-    cursor.movePosition(QTextCursor::End);
-    cursor.insertText(token);
-    m_history->setTextCursor(cursor);
-    m_history->ensureCursorVisible();
+    m_history->appendStreamText(token);
 }
 
 void ULlmAssistantDockWidget::onThinkingToken(const QString& token)
@@ -812,30 +805,17 @@ void ULlmAssistantDockWidget::onStreamFinished(const RDK::LLM::LLMFinalResponse&
         else if(!resp.text.empty() && body.isEmpty())
             body = QString::fromStdString(resp.text);
 
-        if(m_stream_tokens_received && m_stream_body_start >= 0 && !body.isEmpty())
+        if(m_stream_tokens_received && !body.isEmpty())
         {
-            QTextCursor cursor(m_history->document());
-            const int end_pos = m_history->document()->characterCount() - 1;
-            if(end_pos > m_stream_body_start)
-            {
-                cursor.setPosition(m_stream_body_start);
-                cursor.setPosition(end_pos, QTextCursor::KeepAnchor);
-                cursor.removeSelectedText();
-                const QString html = llmMarkdownToHtmlFragment(body);
-                cursor.insertHtml(html);
-                archiveHtmlFragment(header + html);
-            }
-            else if(!m_pending_assistant_archive.isEmpty())
-            {
-                archiveHtmlFragment(m_pending_assistant_archive);
-            }
+            m_history->finalizeStreamMarkdown(body);
+            archiveHtmlFragment(header + llmMarkdownToHtmlFragment(body));
         }
-        else if(!m_pending_assistant_archive.isEmpty())
+        else
         {
-            archiveHtmlFragment(m_pending_assistant_archive);
+            m_history->cancelStream();
         }
         m_pending_assistant_archive.clear();
-        endAssistantStream();
+        m_streaming_reply = false;
     }
 
     QString thinking = m_stream_thinking;
@@ -1069,7 +1049,7 @@ void ULlmAssistantDockWidget::openArchivedChatNow(const QString& chat_file_path,
 
     const std::string body = m_chat_archive->loadChatBodyHtml(toArchivePath(chat_file_path));
     if(!body.empty())
-        m_history->setHtml(QString::fromStdString(body));
+        m_history->appendHtml(QString::fromStdString(body), true);
     setArchiveViewMode(true);
 }
 
@@ -1126,17 +1106,13 @@ void ULlmAssistantDockWidget::rebuildHistoryFromSession(const std::string& sessi
         return;
     }
 
-    QString html;
+    m_history->clear();
     for(const RDK::LLM::LLMMessage& msg : state->messages)
     {
         const QString block = formatMessageForHistory(msg);
         if(!block.isEmpty())
-            html += block;
+            m_history->appendHtml(block, true);
     }
-    m_history->clear();
-    if(html.isEmpty())
-        return;
-    m_history->setHtml(html);
 }
 
 void ULlmAssistantDockWidget::restoreHitlFromSession(const std::string& session_id)
@@ -1178,8 +1154,9 @@ void ULlmAssistantDockWidget::restoreHitlFromSession(const std::string& session_
 
     if(state->pending_tool_arguments)
     {
-        m_history->append(
-            tr("<p><i>More information is required to continue the pending tool action.</i></p>"));
+        m_history->appendHtml(
+            tr("<p><i>More information is required to continue the pending tool action.</i></p>"),
+            true);
     }
 }
 

@@ -98,10 +98,10 @@ RecordedToolInvokeResult recordedToolInvoke(ConversationState& state,
         WriteToolExecutionResult wres = deps.write_exec(state, wreq);
         out.gateway = std::move(wres.gateway);
         out.preview_text = std::move(wres.preview_text);
-        out.outcome_text = combinePreviewAndOutcome(out.preview_text, wres.outcome_text);
         if(out.gateway.pending_confirmation || wres.needs_hitl)
         {
             out.needs_hitl = true;
+            out.outcome_text = combinePreviewAndOutcome(out.preview_text, wres.outcome_text);
             appendAssistantToolCallsOnly(deps.store, req.session_id, out.tool_call_id, req.tool_name,
                                          args);
             out.wrote_assistant_tool_calls = true;
@@ -109,6 +109,8 @@ RecordedToolInvokeResult recordedToolInvoke(ConversationState& state,
                 out.outcome_text = wres.outcome_text;
             return out;
         }
+        // Successful auto-apply: show outcome only (Tools block already has args).
+        out.outcome_text = wres.outcome_text;
     }
     else
     {

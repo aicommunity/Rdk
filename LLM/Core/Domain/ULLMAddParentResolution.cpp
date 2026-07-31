@@ -43,9 +43,8 @@ AddParentResolution resolveValidAddParent(URdkDomainAccess& domain, const std::s
             parent = diagram_scope;
         else
         {
+            // Engine root is empty parent_long_name; never emit soft sentinel "Model".
             parent = preferredScopeParent(pin);
-            if(parent.empty())
-                parent = "Model";
         }
         res.ok = true;
         res.parent_long_name = parent;
