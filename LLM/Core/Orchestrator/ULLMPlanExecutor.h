@@ -8,6 +8,9 @@
 
 namespace RDK::LLM {
 
+struct ConversationState;
+class ULLMConversationStore;
+
 struct PlanExecutionResult {
     bool ok = true;
     std::string summary;
@@ -23,6 +26,8 @@ struct PlanExecuteOptions {
     bool resume = false;
     /// When false, failed runs keep a checkpoint instead of auto-compensating (TD-023).
     bool compensate_on_failure = true;
+    ConversationState* conversation_state = nullptr;
+    ULLMConversationStore* conversation_store = nullptr;
 };
 
 inline PlanExecuteOptions planExecuteWithCheckpointOnFailure()
@@ -49,7 +54,9 @@ public:
                                 PlanExecuteOptions options = {});
 
     int compensateCompletedWrites(const ULLMExecutionPlan& plan, const LLMSessionContext& session,
-                                  const std::string& trace_id, std::string& note_out);
+                                  const std::string& trace_id, std::string& note_out,
+                                  ConversationState* conversation_state = nullptr,
+                                  ULLMConversationStore* conversation_store = nullptr);
 
 private:
     ULLMToolRegistry& m_registry;

@@ -19,6 +19,8 @@ struct PendingConfirmation {
     ToolInvokeRequest request;
     /// UTC unix seconds when confirmation was requested (TD-025).
     int64_t created_at_unix_sec = 0;
+    /// Stable id for Tool message pairing after Apply (TD-150).
+    std::string tool_call_id;
 };
 
 struct ResolvedEntityRecord {

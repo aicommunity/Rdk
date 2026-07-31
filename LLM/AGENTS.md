@@ -9,7 +9,7 @@
 - Единый контракт хода: [Docs/Unified-Turn-Contract.md](Docs/Unified-Turn-Contract.md) (`TurnTerminal`, workflow phases).
 - Взаимодействие и HITL: [Docs/Agent-Interaction.md](Docs/Agent-Interaction.md) (`ask_user`, `propose_plan`, task path `HintOnly` по умолчанию).
 - Миграция с v1: [Docs/Migration-Agent-V2.md](Docs/Migration-Agent-V2.md).
-- Lifecycle: подсказки в ephemeral context; прямой вызов до LLM — `NMSDK_LLM_LIFECYCLE_DIRECT=1`; принудительный `tool_choice` — `NMSDK_LLM_LIFECYCLE_FORCE_TOOL_CHOICE=1`.
+- Lifecycle: подсказки в ephemeral context; прямой `load` до LLM — `NMSDK_LLM_LIFECYCLE_DIRECT=1`; принудительный `tool_choice` — `NMSDK_LLM_LIFECYCLE_FORCE_TOOL_CHOICE=1`. Always-on direct allowlist (add explicit class / open_recent / pending resume) — через `RecordedToolInvoke` ([Docs/Unified-Turn-Contract.md](Docs/Unified-Turn-Contract.md), TD-150).
 
 ## Workflow (обязательно)
 
@@ -48,7 +48,7 @@ When working with the LLM subsystem, **first** open [Docs/README.md](Docs/README
 - Unified turn contract: [Docs/Unified-Turn-Contract.md](Docs/Unified-Turn-Contract.md) (`TurnTerminal`, workflow phases).
 - Interaction and HITL: [Docs/Agent-Interaction.md](Docs/Agent-Interaction.md) (`ask_user`, `propose_plan`, task path `HintOnly` by default).
 - Migration from v1: [Docs/Migration-Agent-V2.md](Docs/Migration-Agent-V2.md).
-- Lifecycle: hints in ephemeral context; direct call before LLM — `NMSDK_LLM_LIFECYCLE_DIRECT=1`; forced `tool_choice` — `NMSDK_LLM_LIFECYCLE_FORCE_TOOL_CHOICE=1`.
+- Lifecycle: hints in ephemeral context; direct `load` before LLM — `NMSDK_LLM_LIFECYCLE_DIRECT=1`; forced `tool_choice` — `NMSDK_LLM_LIFECYCLE_FORCE_TOOL_CHOICE=1`. Always-on direct allowlist (explicit-class add / open_recent / pending resume) via `RecordedToolInvoke` ([Docs/Unified-Turn-Contract.md](Docs/Unified-Turn-Contract.md), TD-150).
 
 ## Workflow (required)
 

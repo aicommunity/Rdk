@@ -15,7 +15,11 @@ See [Unified-Turn-Contract.md](Unified-Turn-Contract.md).
 ## Plans
 
 - `propose_plan` tool → preview in assistant panel → user **Run plan** (HITL).
-- Task executor fast-path only when `NMSDK_LLM_TASK_PATH_STRICT=1`.
+- Task executor fast-path only when `NMSDK_LLM_TASK_PATH_STRICT=1` (or settings); each executed step uses **RecordedToolInvoke** (paired tool messages + session_graph).
+
+## Direct tool allowlist (no LLM)
+
+See [Unified-Turn-Contract.md](Unified-Turn-Contract.md) § Recorded bypass: explicit-class add, open_recent index, pending-arg resume; lifecycle load only with `NMSDK_LLM_LIFECYCLE_DIRECT=1`. Repeat «ещё таких же» may reuse `session_graph.last_add` via direct path; do not expand cue-direct without ADR.
 
 ## Thinking / Reasoning (Cortex)
 
@@ -51,7 +55,11 @@ See [Unified-Turn-Contract.md](Unified-Turn-Contract.md).
 ## Plans
 
 - `propose_plan` tool → preview in assistant panel → user **Run plan** (HITL).
-- Task executor fast-path only when `NMSDK_LLM_TASK_PATH_STRICT=1`.
+- Task executor fast-path only when `NMSDK_LLM_TASK_PATH_STRICT=1` (or settings); each executed step uses **RecordedToolInvoke**.
+
+## Direct tool allowlist (no LLM)
+
+See Unified-Turn-Contract § Recorded bypass (same as RU).
 
 ## Thinking / Reasoning (Cortex)
 

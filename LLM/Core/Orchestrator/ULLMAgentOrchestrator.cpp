@@ -70,6 +70,7 @@
 #include "../Tools/ULLMToolArgumentValidator.h"
 #include "ULLMModelRouter.h"
 #include "ULLMClarificationFormat.h"
+#include "ULLMRecordedToolInvoke.h"
 #include "ULLMTurnTerminalHelpers.h"
 #include "ULLMToolFilterExpand.h"
 
@@ -115,22 +116,6 @@ nlohmann::json addComponentArgsForRepeat(const nlohmann::json& base_args, int re
         args["short_name"] = uniqueShortNameForAddRepeat(short_base, repeat_index);
     }
     return args;
-}
-
-/// Persist assistant tool_calls + tool result (+ outcome) so follow-up turns see direct writes.
-void appendDirectToolTranscriptLocal(ULLMConversationStore& store, const std::string& session_id,
-                                     const std::string& trace_id, const std::string& tool_name,
-                                     const nlohmann::json& arguments, const ToolGatewayResult& tr,
-                                     ULLMSystemLogReader* reader, int channel_index,
-                                     const std::string& outcome_text)
-{
-    const std::string call_id =
-        "direct-"
-        + pseudoSha256(trace_id + "|" + tool_name + "|"
-                       + (arguments.is_null() ? "{}" : arguments.dump()))
-              .substr(0, 20);
-    appendDirectToolTranscript(store, session_id, call_id, tool_name, arguments,
-                               buildToolMessageContent(tr, reader, channel_index), outcome_text);
 }
 
 void appendAgentNote(ConversationState& state, const std::string& line)
@@ -689,6 +674,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
             ULLMTaskExecutor task_executor(m_registry, m_gateway);
             TaskExecuteOptions task_opts;
             task_opts.conversation_state = &state;
+            task_opts.conversation_store = &m_store;
             TaskExecuteResult exec = task_executor.execute(tp.plan, session, req.trace_id, task_opts);
             final.ok = exec.ok;
             final.text = exec.summary;
@@ -1567,8 +1553,11 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                         setWorkflowPhase(state, LLMWorkflowPhase::Executing, req.trace_id);
                         ULLMPlanExecutor executor(m_registry, m_gateway);
                         ULLMExecutionPlan run_plan = *plan;
-                        const PlanExecutionResult exec = executor.execute(
-                            run_plan, session, req.trace_id, planExecuteWithCheckpointOnFailure());
+                        PlanExecuteOptions plan_opts = planExecuteWithCheckpointOnFailure();
+                        plan_opts.conversation_state = &state;
+                        plan_opts.conversation_store = &m_store;
+                        const PlanExecutionResult exec =
+                            executor.execute(run_plan, session, req.trace_id, plan_opts);
                         final.ok = exec.ok;
                         final.text = exec.summary;
                         final.error = exec.ok ? "" : exec.summary;
@@ -2255,6 +2244,7 @@ LLMFinalResponse ULLMAgentOrchestrator::confirmPending(const std::string& sessio
     const WriteToolExecutionResult wres =
         executeWriteWithPreviewAndVerify(*this, state, wreq);
     const ToolGatewayResult& tr = wres.gateway;
+    const std::string pending_tool_call_id = state.pending->tool_call_id;
 
     m_store.clearPending(session_id);
     final.ok = tr.ok;
@@ -2263,28 +2253,36 @@ LLMFinalResponse ULLMAgentOrchestrator::confirmPending(const std::string& sessio
         final.error = tr.message;
     if(tr.ok)
     {
-        std::string tool_call_id = confirmation_id;
-        for(auto it = state.messages.rbegin(); it != state.messages.rend(); ++it)
+        std::string tool_call_id = pending_tool_call_id;
+        if(tool_call_id.empty())
         {
-            if(it->role != LLMMessage::Role::Assistant || !it->assistant_tool_calls)
-                continue;
-            for(const LLMToolCall& tc : *it->assistant_tool_calls)
+            tool_call_id = confirmation_id;
+            for(auto it = state.messages.rbegin(); it != state.messages.rend(); ++it)
             {
-                if(tc.name == pending_req.tool_name)
+                if(it->role != LLMMessage::Role::Assistant || !it->assistant_tool_calls)
+                    continue;
+                for(const LLMToolCall& tc : *it->assistant_tool_calls)
                 {
-                    tool_call_id = tc.id;
-                    break;
+                    if(tc.name == pending_req.tool_name)
+                    {
+                        tool_call_id = tc.id;
+                        break;
+                    }
                 }
+                break;
             }
-            break;
         }
-        LLMMessage tool_msg;
-        tool_msg.role = LLMMessage::Role::Tool;
-        tool_msg.tool_call_id = tool_call_id;
-        tool_msg.tool_name = pending_req.tool_name;
-        tool_msg.content = buildToolMessageContent(
-            tr, m_system_log_reader.get(), pending_req.session.active_channel_index);
-        m_store.appendMessage(session_id, tool_msg);
+        appendToolResultOnly(
+            m_store, session_id, tool_call_id, pending_req.tool_name,
+            buildToolMessageContent(tr, m_system_log_reader.get(),
+                                    pending_req.session.active_channel_index));
+        if(!final.text.empty())
+        {
+            LLMMessage outcome;
+            outcome.role = LLMMessage::Role::Assistant;
+            outcome.content = final.text;
+            m_store.appendMessage(session_id, outcome);
+        }
     }
     m_store.persistToDisk(session_id);
     final.tool_trace = state.current_turn_tool_trace;
@@ -2326,8 +2324,10 @@ LLMFinalResponse ULLMAgentOrchestrator::confirmPlanExecution(const std::string& 
     const std::optional<int> session_qty =
         state.last_quantity.valid ? std::optional<int>(state.last_quantity.primary) : std::nullopt;
     applyGoalQuantityToExecutionPlan(plan, session_qty);
-    const PlanExecutionResult exec =
-        executor.execute(plan, session, trace_id, planExecuteWithCheckpointOnFailure());
+    PlanExecuteOptions plan_opts = planExecuteWithCheckpointOnFailure();
+    plan_opts.conversation_state = &state;
+    plan_opts.conversation_store = &m_store;
+    const PlanExecutionResult exec = executor.execute(plan, session, trace_id, plan_opts);
 
     if(exec.ok)
     {
@@ -2394,7 +2394,10 @@ LLMFinalResponse ULLMAgentOrchestrator::resumePlanExecution(const std::string& s
     setWorkflowPhase(state, LLMWorkflowPhase::Executing, trace_id);
     ULLMPlanExecutor executor(m_registry, m_gateway);
     ULLMExecutionPlan plan = *state.pending_plan;
-    const PlanExecutionResult exec = executor.execute(plan, session, trace_id, planExecuteResume());
+    PlanExecuteOptions plan_opts = planExecuteResume();
+    plan_opts.conversation_state = &state;
+    plan_opts.conversation_store = &m_store;
+    const PlanExecutionResult exec = executor.execute(plan, session, trace_id, plan_opts);
 
     if(exec.ok)
     {
@@ -2451,7 +2454,8 @@ LLMFinalResponse ULLMAgentOrchestrator::rollbackPlanExecution(const std::string&
     std::string note;
     const int expected = rollbackEligibleWriteCount(*state.pending_plan);
     const int applied =
-        executor.compensateCompletedWrites(*state.pending_plan, session, trace_id, note);
+        executor.compensateCompletedWrites(*state.pending_plan, session, trace_id, note, &state,
+                                           &m_store);
     std::string rollback_status = "rollback_failed";
     if(expected == 0)
         rollback_status = "rolled_back_nothing_to_compensate";
@@ -2642,71 +2646,65 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
             LLMServices::instance().settings().runtime().preferred_response_language, "en");
     }
 
+    const LLMGuiContextSnapshot gui = guiSnapshotForWrite(state, LLMGuiContextSnapshot{});
+    RecordedToolInvokeDeps deps{m_registry, m_gateway, m_store, {}, m_system_log_reader.get()};
+    deps.write_exec = [this](ConversationState& st, WriteToolExecutionRequest& wreq) {
+        return executeWriteWithPreviewAndVerify(*this, st, wreq);
+    };
+
+    RecordedToolInvokeRequest rreq;
+    rreq.session_id = session_id;
+    rreq.trace_id = trace_id;
+    rreq.tool_name = tool_name;
+    rreq.arguments = arguments.is_object() ? arguments : nlohmann::json::object();
+    rreq.session = session;
+    rreq.session.session_id = session_id;
+    rreq.gui = gui;
+    rreq.user_text_hint = user_text_hint;
+    rreq.user_lang = user_lang;
+    rreq.idempotency_action_id = "lifecycle_direct";
+
+    RecordedToolInvokeResult recorded = recordedToolInvoke(state, deps, rreq);
+    const ToolGatewayResult& tr = recorded.gateway;
+
     ToolInvokeRequest invoke;
     invoke.trace_id = trace_id;
     invoke.tool_name = tool_name;
-    invoke.arguments = arguments;
-    invoke.idempotency_key = makeIdempotencyKey(session_id, trace_id, tool_name, arguments);
-    invoke.session = session;
-    invoke.session.session_id = session_id;
+    invoke.arguments = rreq.arguments;
+    invoke.session = rreq.session;
     invoke.user_text_hint = user_text_hint;
 
-    WriteToolExecutionRequest wreq;
-    wreq.session_id = session_id;
-    wreq.trace_id = trace_id;
-    wreq.tool_name = tool_name;
-    wreq.arguments = arguments;
-    wreq.session = session;
-    wreq.gui = guiSnapshotForWrite(state, LLMGuiContextSnapshot{});
-    wreq.user_lang = user_lang;
-    wreq.user_text_hint = user_text_hint;
-    wreq.idempotency_action_id = "lifecycle_direct";
-    const LLMToolDefinition* direct_def = m_registry.find(tool_name);
-    ToolGatewayResult tr;
-    if(direct_def && direct_def->kind == LLMToolKind::Write)
+    if(recorded.needs_hitl)
     {
-        const WriteToolExecutionResult wres =
-            executeWriteWithPreviewAndVerify(*this, state, wreq);
-        tr = wres.gateway;
-        if(tr.pending_confirmation)
-        {
-            setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation, trace_id);
-            PendingConfirmation pending;
-            pending.confirmation_id = tr.confirmation_id;
-            pending.created_at_unix_sec = confirmationNowUnixSec();
-            pending.request = invoke;
-            pending.request.confirmed = true;
-            m_store.setPending(session_id, pending);
-            final.ok = true;
-            final.pending_confirmation = true;
-            final.pending_confirmation_id = tr.confirmation_id;
-            final.action_preview_text = wres.preview_text;
-            final.text = wres.outcome_text;
-            GetAuditLog().append("escalation_to_hitl",
-                                 {{"tool_name", tool_name},
-                                  {"confirmation_id", tr.confirmation_id}},
-                                 trace_id, session_id);
-            m_store.persistToDisk(session_id);
-            return final;
-        }
-        final.ok = tr.ok;
-        final.text = combinePreviewAndOutcome(wres.preview_text, wres.outcome_text);
-        if(!tr.ok && !tr.message.empty())
-            final.error = tr.message;
-        if(!tr.pending_confirmation)
-        {
-            appendDirectToolTranscriptLocal(m_store, session_id, trace_id, tool_name, arguments, tr,
-                                       m_system_log_reader.get(), session.active_channel_index,
-                                       final.text);
-        }
-        setWorkflowPhase(state, LLMWorkflowPhase::Completed, trace_id);
-        setWorkflowPhase(state, LLMWorkflowPhase::Idle, trace_id);
+        setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation, trace_id);
+        PendingConfirmation pending;
+        pending.confirmation_id = tr.confirmation_id;
+        pending.created_at_unix_sec = confirmationNowUnixSec();
+        pending.request = invoke;
+        pending.request.confirmed = true;
+        pending.tool_call_id = recorded.tool_call_id;
+        m_store.setPending(session_id, pending);
+        final.ok = true;
+        final.pending_confirmation = true;
+        final.pending_confirmation_id = tr.confirmation_id;
+        final.action_preview_text = recorded.preview_text.empty()
+                                        ? formatActionIntentPreview(tool_name, rreq.arguments, gui,
+                                                                    session, user_lang)
+                                        : recorded.preview_text;
+        final.text = recorded.outcome_text.empty()
+                         ? formatHitlConfirmationText(final.action_preview_text, user_lang)
+                         : recorded.outcome_text;
+        GetAuditLog().append("escalation_to_hitl",
+                             {{"tool_name", tool_name},
+                              {"confirmation_id", tr.confirmation_id},
+                              {"tool_call_id", recorded.tool_call_id}},
+                             trace_id, session_id);
         m_store.persistToDisk(session_id);
         return final;
     }
-    tr = m_gateway.invoke(invoke);
-    if(tr.ok && tool_name == "set_active_channel" && arguments.contains("channel_index"))
-        invoke.session.active_channel_index = arguments["channel_index"].get<int>();
+
+    if(tr.ok && tool_name == "set_active_channel" && rreq.arguments.contains("channel_index"))
+        invoke.session.active_channel_index = rreq.arguments["channel_index"].get<int>();
 
     nlohmann::json disambiguation;
     if(extractToolDisambiguationPayload(tr, disambiguation)
@@ -2714,7 +2712,7 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
     {
         LLMToolCall call;
         call.name = tool_name;
-        call.arguments = arguments.is_object() ? arguments : nlohmann::json::object();
+        call.arguments = rreq.arguments;
         return routeClarificationOrDisambiguation(state, trace_id, call,
                                                 PendingDisambiguationKind::Class, "class_name",
                                                 disambiguation);
@@ -2724,7 +2722,7 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
     {
         LLMToolCall call;
         call.name = tool_name;
-        call.arguments = arguments.is_object() ? arguments : nlohmann::json::object();
+        call.arguments = rreq.arguments;
         return routeClarificationOrDisambiguation(
             state, trace_id, call, PendingDisambiguationKind::Component,
             disambiguation.value("field", "long_name"), disambiguation);
@@ -2754,13 +2752,13 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
     }
 
     const std::vector<ToolArgumentFieldSpec> direct_missing =
-        findMissingArgumentsForTool(tool_name, arguments, app, m_registry);
+        findMissingArgumentsForTool(tool_name, rreq.arguments, app, m_registry);
     if(shouldPromptForMissingToolArguments(tool_name, tr, direct_missing))
     {
         PendingToolArguments pending;
         pending.tool_name = tool_name;
         pending.action = lifecycleActionFromToolName(tool_name);
-        pending.partial_arguments = arguments;
+        pending.partial_arguments = rreq.arguments;
         pending.missing_fields = direct_missing;
         if(pending.missing_fields.empty() && pending.action != ConfigurationLifecycleAction::None)
             pending.missing_fields = argumentFieldsForLifecycle(pending.action);
@@ -2778,38 +2776,17 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
         return final;
     }
 
-    if(tr.pending_confirmation)
-    {
-        setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation, trace_id);
-        PendingConfirmation pending;
-        pending.confirmation_id = tr.confirmation_id;
-        pending.created_at_unix_sec = confirmationNowUnixSec();
-        pending.request = invoke;
-        pending.request.confirmed = true;
-        m_store.setPending(session_id, pending);
-        final.ok = true;
-        final.pending_confirmation = true;
-        final.pending_confirmation_id = tr.confirmation_id;
-        final.action_preview_text =
-            formatActionIntentPreview(tool_name, arguments, wreq.gui, session, user_lang);
-        final.text = formatHitlConfirmationText(final.action_preview_text, user_lang);
-        GetAuditLog().append("escalation_to_hitl",
-                             {{"tool_name", tool_name}, {"confirmation_id", tr.confirmation_id}},
-                             trace_id, session_id);
-        m_store.persistToDisk(session_id);
-        return final;
-    }
-
     final.ok = tr.ok;
-    if(tool_name == "add_component" || isNetGraphWriteTool(tool_name))
-        final.text = formatWriteToolUserMessage(tool_name, tr);
-    else
-        final.text = formatLifecycleToolUserMessage(tool_name, tr);
+    final.text = recorded.outcome_text;
+    if(final.text.empty())
+    {
+        if(tool_name == "add_component" || isNetGraphWriteTool(tool_name))
+            final.text = formatWriteToolUserMessage(tool_name, tr);
+        else
+            final.text = formatLifecycleToolUserMessage(tool_name, tr);
+    }
     if(!tr.ok && !tr.message.empty())
         final.error = tr.message;
-    appendDirectToolTranscriptLocal(m_store, session_id, trace_id, tool_name, arguments, tr,
-                                    m_system_log_reader.get(), session.active_channel_index,
-                                    final.text);
     setWorkflowPhase(state, LLMWorkflowPhase::Completed, trace_id);
     setWorkflowPhase(state, LLMWorkflowPhase::Idle, trace_id);
     m_store.persistToDisk(session_id);

@@ -79,6 +79,8 @@ nlohmann::json pendingConfirmationToJson(const PendingConfirmation& pending)
     j["tool_name"] = pending.request.tool_name;
     j["arguments"] = pending.request.arguments;
     j["session"] = sessionContextToJson(pending.request.session);
+    if(!pending.tool_call_id.empty())
+        j["tool_call_id"] = pending.tool_call_id;
     return j;
 }
 
@@ -92,6 +94,7 @@ std::optional<PendingConfirmation> pendingConfirmationFromJson(const nlohmann::j
     pending.request.trace_id = j.value("trace_id", "");
     pending.request.tool_name = j.value("tool_name", "");
     pending.request.arguments = j.value("arguments", nlohmann::json::object());
+    pending.tool_call_id = j.value("tool_call_id", "");
     if(j.contains("session"))
         pending.request.session = sessionContextFromJson(j["session"]);
     return pending;
@@ -636,7 +639,10 @@ ConversationState& ULLMConversationStore::getOrCreate(const std::string& session
 {
     if(m_sessions.find(session_id) == m_sessions.end())
         loadFromDisk(session_id);
-    return m_sessions[session_id];
+    ConversationState& state = m_sessions[session_id];
+    if(state.session_id.empty())
+        state.session_id = session_id;
+    return state;
 }
 
 void ULLMConversationStore::appendMessage(const std::string& session_id, const LLMMessage& msg)

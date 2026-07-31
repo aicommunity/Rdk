@@ -47,4 +47,31 @@ void appendDirectToolTranscript(ULLMConversationStore& store, const std::string&
     }
 }
 
+void appendAssistantToolCallsOnly(ULLMConversationStore& store, const std::string& session_id,
+                                  const std::string& tool_call_id, const std::string& tool_name,
+                                  const nlohmann::json& arguments)
+{
+    LLMToolCall call;
+    call.id = tool_call_id.empty() ? ("direct-" + tool_name) : tool_call_id;
+    call.name = tool_name;
+    call.arguments = arguments.is_object() ? arguments : nlohmann::json::object();
+
+    LLMMessage assistant_tools;
+    assistant_tools.role = LLMMessage::Role::Assistant;
+    assistant_tools.assistant_tool_calls = std::vector<LLMToolCall>{call};
+    store.appendMessage(session_id, assistant_tools);
+}
+
+void appendToolResultOnly(ULLMConversationStore& store, const std::string& session_id,
+                          const std::string& tool_call_id, const std::string& tool_name,
+                          const std::string& tool_content)
+{
+    LLMMessage tool_msg;
+    tool_msg.role = LLMMessage::Role::Tool;
+    tool_msg.tool_call_id = tool_call_id;
+    tool_msg.tool_name = tool_name;
+    tool_msg.content = tool_content;
+    store.appendMessage(session_id, tool_msg);
+}
+
 } // namespace RDK::LLM

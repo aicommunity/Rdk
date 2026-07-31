@@ -133,6 +133,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-147 | Defer LLM doc-index rebuild off UI-thread startup (progress ~20% hang) | startup | P1 | done | Gate on `ShowLlmAssistantMenu` / `NMSDK_LLM_*`; async `initialize`; stale prebuilt; sync via `NMSDK_LLM_INDEX_SYNC_ON_START=1` |
 | TD-148 | Opaque GUI `Error: std::exception` on query (Qt5 Concurrent + qwen3 `reasoning`) | thinking-fix | P0 | done | Worker/orchestrator catch + audit `turn_exception`; JSON dump `error_handler_t::replace`; parse OpenAI-compat `reasoning` |
 | TD-149 | Query context for current model + chat markdown render | context-chat-md | P1 | done | Query/Explain decision tree; live net snapshot when project_loaded; router prefer snapshot; `ULlmChatMarkdown` via QTextDocument |
+| TD-150 | RecordedToolInvoke: memory parity for pre-LLM / FastPath / Plan / direct-HITL | memory-parity | P1 | done | `ULLMRecordedToolInvoke`; HITL `tool_call_id`; Task/Plan options; docs DD-MEM-001/002 |
 | TD-144 | Parallel independent tool fan-out in one assistant turn | thinking-post | P3 | deferred | Sequential tools OK for local ReAct MVP |
 | TD-145 | Ollama think levels (`low`/`medium`/`high`) / gpt-oss | thinking-post | P3 | deferred | Boolean `think` sufficient for qwen3:14b/deepseek-r1 |
 | TD-146 | Embed-index quality for `search_tools` hybrid ranking | thinking-post | P2 | deferred | Lexical+existing embeddings; revisit if discovery miss-rate high |
@@ -241,3 +242,5 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | 2026-07-30 | DD-THINK-003: `tool_choice=auto` only when think ON (no lifecycle force) | Forced tool_choice conflicts with thinking models | — | — |
 | 2026-07-30 | DD-THINK-004: Default Cortex profile `ollama-thinking` (**qwen3:14b**); Utility/Router think OFF | Thinking reserved for ReAct cortex; short structured calls stay cheap | thinking-C | Pin updated 2026-07-30 tails |
 | 2026-07-30 | DD-THINK-005: Progressive disclosure via `search_tools` expand allowlist | Full registry every round hurts local tool selection; discovery must open schemas | thinking-B | TD-141 |
+| 2026-07-31 | DD-MEM-001: Pre-LLM and plan/task invokes must use `RecordedToolInvoke` | Same memory contract as ReAct (paired tool_calls/results + session_graph); closes follow-up blindness | memory-parity | TD-150 |
+| 2026-07-31 | DD-MEM-002: Always-on direct allowlist: explicit-class add, open_recent index, pending-arg resume; lifecycle **load** remains env-gated (TD-102) | Deterministic UX when args fully specified; load stays opt-in | — | Unified-Turn § Recorded bypass |
