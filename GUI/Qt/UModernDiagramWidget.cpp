@@ -227,7 +227,10 @@ void UModernDiagramWidget::Reload()
     RDK::UELockPtr<RDK::UContainer> modelLock =
         RDK::GetModelLock<RDK::UContainer>(Core_GetSelectedChannelIndex());
     if(!modelLock)
+    {
+        clearDiagram();
         return;
+    }
 
     // Профилирование: начало операции Reload
     // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
@@ -369,6 +372,20 @@ QPointF UModernDiagramWidget::testGetNormalizationOffset() const
 const QSet<UModernDiagramNodeItem*>& UModernDiagramWidget::testGetComponentsWithNegativePos() const
 {
     return m_componentsWithNegativePos;
+}
+
+void UModernDiagramWidget::clearDiagram()
+{
+    const bool scopeChanged = !m_componentName.isEmpty();
+    clearScene();
+    m_componentName.clear();
+    if(m_cacheManager)
+    {
+        m_cacheManager->invalidateLevelCache();
+        m_cacheManager->invalidateComponentCache();
+    }
+    if(scopeChanged)
+        emit diagramScopeChanged(QString());
 }
 
 void UModernDiagramWidget::clearScene()

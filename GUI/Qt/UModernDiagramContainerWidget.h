@@ -30,6 +30,7 @@ public:
     virtual ~UModernDiagramContainerWidget();
 
     void AUpdateInterface();
+    virtual void AClearInterface() override;
 
     /// запись файла настроек
     virtual void ASaveParameters();
