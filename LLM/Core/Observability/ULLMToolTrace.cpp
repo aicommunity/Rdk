@@ -22,9 +22,12 @@ bool isSensitiveFieldName(const std::string& key)
 
 bool schemaMarksSensitive(const nlohmann::json& input_schema, const std::string& key)
 {
-    if(!input_schema.contains("properties") || !input_schema["properties"].is_object())
+    if(!input_schema.is_object() || !input_schema.contains("properties")
+       || !input_schema["properties"].is_object())
         return false;
     const nlohmann::json& prop = input_schema["properties"].value(key, nlohmann::json{});
+    if(!prop.is_object())
+        return false;
     if(prop.value("x-llm-sensitive", false))
         return true;
     const std::string format = prop.value("format", "");

@@ -605,7 +605,7 @@ bool ULLMConversationStore::persistToDisk(const std::string& session_id)
     std::ofstream out(file);
     if(!out)
         return false;
-    out << j.dump(2);
+    out << j.dump(2, ' ', false, nlohmann::json::error_handler_t::replace);
     return true;
 }
 

@@ -242,7 +242,7 @@ struct LLMSessionContext {
 struct LLMToolCall {
     std::string id;
     std::string name;
-    nlohmann::json arguments;
+    nlohmann::json arguments = nlohmann::json::object();
 };
 
 struct LLMMessage {

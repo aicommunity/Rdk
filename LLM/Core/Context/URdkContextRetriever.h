@@ -12,7 +12,8 @@ class URdkContextRetriever {
 public:
     URdkContextRetriever(URdkDomainAccess& domain, ILLMProjectContextProvider* project);
 
-    nlohmann::json buildSummary(int channel_index, const std::string& focus_class = "") const;
+    nlohmann::json buildSummary(int channel_index, const std::string& focus_class = "",
+                                const std::string& root_long_name = "") const;
 
 private:
     URdkDomainAccess& m_domain;

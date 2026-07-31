@@ -4,6 +4,7 @@
 #include "ULLMAgentManifestBuilder.h"
 #include "ULLMConnectPlanParsing.h"
 
+#include <algorithm>
 #include <filesystem>
 #include <sstream>
 
@@ -104,20 +105,19 @@ static std::string buildRetrieverSummaryBlock(const EphemeralContextInput& input
 {
     if(!input.context_retriever || !input.session.project_loaded)
         return {};
-    const bool has_focus = !input.gui.focused_class_name.empty()
-                           || !input.gui.focused_component_long_name.empty();
-    const bool has_diagram_scope = !input.gui.diagram_scope_long_name.empty();
-    if(!has_focus && !has_diagram_scope && !input.allow_retriever_without_list_focus)
-        return {};
-
-    const nlohmann::json summary =
-        input.context_retriever->buildSummary(input.session.active_channel_index,
-                                              input.gui.focused_class_name);
+    // Open project is enough: inject a live net snapshot so Query about "current model"
+    // does not require the model to guess get_net_snapshot.
+    const std::string& root_scope = input.gui.diagram_scope_long_name;
+    const nlohmann::json summary = input.context_retriever->buildSummary(
+        input.session.active_channel_index, input.gui.focused_class_name, root_scope);
     if(summary.empty())
         return {};
 
-    std::string block = "## Project context snapshot\n";
-    block += summary.dump(2);
+    std::string block =
+        "## Project context snapshot (live net; prefer this over guessing tools)\n";
+    if(!root_scope.empty())
+        block += "- root_long_name (diagram drill): " + root_scope + "\n";
+    block += summary.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace);
     truncateInPlace(block, kRetrieverSummaryMaxChars);
     return block;
 }
@@ -166,12 +166,32 @@ void prependEphemeralSystemMessages(std::vector<LLMMessage>& provider_messages,
         prependSystem(provider_messages,
                       "## Resolved quantity (this turn)\nprimary=" + std::to_string(input.state.last_quantity.primary));
     }
-    if(!input.state.session_graph.added_long_names.empty())
+    if(!input.state.session_graph.added_long_names.empty() || input.state.session_graph.last_add)
     {
         std::ostringstream sg;
         sg << "## Session graph memory\n"
            << "- added_count: " << input.state.session_graph.added_long_names.size() << "\n"
            << "- linked_count: " << input.state.session_graph.linked_records.size() << "\n";
+        if(input.state.session_graph.last_add
+           && !input.state.session_graph.last_add->class_name.empty())
+        {
+            sg << "- last_added_class: " << input.state.session_graph.last_add->class_name << "\n";
+            if(!input.state.session_graph.last_add->parent_long_name.empty())
+                sg << "- last_added_parent: " << input.state.session_graph.last_add->parent_long_name
+                   << "\n";
+            if(!input.state.session_graph.last_add->short_name_base.empty())
+                sg << "- last_added_short_name: "
+                   << input.state.session_graph.last_add->short_name_base << "\n";
+        }
+        const auto& added = input.state.session_graph.added_long_names;
+        if(!added.empty())
+        {
+            sg << "- recent_added:";
+            const std::size_t n = std::min<std::size_t>(added.size(), 5);
+            for(std::size_t i = added.size() - n; i < added.size(); ++i)
+                sg << " `" << added[i] << "`";
+            sg << "\n";
+        }
         prependSystem(provider_messages, sg.str());
     }
 
@@ -203,15 +223,23 @@ void prependEphemeralSystemMessages(std::vector<LLMMessage>& provider_messages,
                                                        input.session.project_loaded));
     }
 
-    if(input.intent == LLMIntentKind::Query)
+    if(input.intent == LLMIntentKind::Query || input.intent == LLMIntentKind::Explain)
     {
         std::string query_hint =
-            "Use search_project_docs(scope=docs) and describe_class. Cite source_id and path. "
-            "Do not call write tools.";
+            "## Inspect live project vs docs\n"
+            "- Live graph / current model / components / diagram / схема: use "
+            "get_net_snapshot (channel_index from GUI focus; if diagram_scope_long_name is set, "
+            "pass root_long_name=that scope). Prefer the Project context snapshot block when "
+            "present instead of re-calling the tool.\n"
+            "- Selected component: find_component / get_component_properties.\n"
+            "- Class metadata / ClDesc: describe_class / list_registered_classes.\n"
+            "- How-to / product docs: search_project_docs(scope=docs). Cite source_id and path.\n"
+            "- Recent or disk configurations: list_recent_configurations — not for live graph.\n"
+            "- Do not confuse \"model\" (net graph) with a configuration file or channel.\n"
+            "- Do not call write tools.";
         if(!input.prefetched_docs_block.empty())
             query_hint +=
-                " Prefetched excerpts may appear below; you may still call search_project_docs for "
-                "more.";
+                " Prefetched doc excerpts may appear below; call search_project_docs for more.";
         prependSystem(provider_messages, std::move(query_hint));
     }
 

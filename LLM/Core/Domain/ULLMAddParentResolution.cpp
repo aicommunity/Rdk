@@ -17,36 +17,6 @@ std::string preferredScopeParent(const LLMGuiContextSnapshot& pin)
     return {};
 }
 
-std::vector<AddParentCandidate> listContainerCandidatesUnderScope(URdkDomainAccess& domain,
-                                                                  int channel_index,
-                                                                  const std::string& scope)
-{
-    std::vector<AddParentCandidate> out;
-    nlohmann::json snap;
-    const DomainStatus st = domain.listNetSnapshot(snap, channel_index, 5000, scope);
-    if(!st.ok() || !snap.contains("components"))
-        return out;
-
-    const std::string prefix =
-        scope.empty() || isModelRootContainerToken(scope, nullptr) ? std::string() : scope + ".";
-    for(const auto& c : snap["components"])
-    {
-        const std::string ln = c.value("long_name", "");
-        if(ln.empty())
-            continue;
-        if(!scope.empty() && !isModelRootContainerToken(scope, nullptr))
-        {
-            if(ln != scope && ln.rfind(prefix, 0) != 0)
-                continue;
-        }
-        const std::string cls = c.value("class_name", "");
-        if(cls.empty())
-            continue;
-        out.push_back({ln, cls});
-    }
-    return out;
-}
-
 } // namespace
 
 std::string engineContainerStringId(const std::string& parent_long_name,
@@ -62,48 +32,38 @@ AddParentResolution resolveValidAddParent(URdkDomainAccess& domain, const std::s
     AddParentResolution res;
     (void)class_name;
 
-    std::string parent = parent_hint;
     const std::string diagram_scope = readDiagramScopeLongName(&pin);
-    if(!diagram_scope.empty() && (parent.empty() || parent == "Model"))
-        parent = diagram_scope;
-    else if(parent.empty() || isModelRootContainerToken(parent, &pin))
-        parent = preferredScopeParent(pin);
+    const bool no_explicit_parent = parent_hint.empty() || parent_hint == "Model"
+                                    || isModelRootContainerToken(parent_hint, &pin);
 
-    if(!parent.empty() && !isModelRootContainerToken(parent, &pin))
+    if(no_explicit_parent)
     {
-        std::string resolved;
-        const std::string scope = readDiagramScopeLongName(&pin);
-        if(domain.resolveComponentLongName(parent, channel_index, resolved, scope).ok()
-           || domain.resolveComponentLongName(parent, channel_index, resolved, "").ok())
+        std::string parent;
+        if(!diagram_scope.empty())
+            parent = diagram_scope;
+        else
         {
-            res.ok = true;
-            res.parent_long_name = resolved;
-            return res;
+            parent = preferredScopeParent(pin);
+            if(parent.empty())
+                parent = "Model";
         }
+        res.ok = true;
+        res.parent_long_name = parent;
+        return res;
     }
 
-    if(parent.empty() || isModelRootContainerToken(parent, &pin))
+    std::string resolved;
+    if(domain.resolveComponentLongName(parent_hint, channel_index, resolved, diagram_scope).ok()
+       || domain.resolveComponentLongName(parent_hint, channel_index, resolved, "").ok())
     {
-        const std::string scope = readDiagramScopeLongName(&pin);
-        const std::vector<AddParentCandidate> candidates =
-            listContainerCandidatesUnderScope(domain, channel_index, scope);
-        if(candidates.size() == 1)
-        {
-            res.ok = true;
-            res.parent_long_name = candidates.front().long_name;
-            return res;
-        }
-        if(candidates.size() > 1)
-        {
-            res.needs_clarification = true;
-            res.message = "Which container should the new component be added under?";
-            res.candidates = candidates;
-            return res;
-        }
+        res.ok = true;
+        res.parent_long_name = resolved;
+        return res;
     }
 
+    // Explicit unresolved hint: keep as-is (tool/engine or further clarify).
     res.ok = true;
-    res.parent_long_name = parent;
+    res.parent_long_name = parent_hint;
     return res;
 }
 

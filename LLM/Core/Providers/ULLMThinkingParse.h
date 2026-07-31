@@ -9,20 +9,21 @@
 namespace RDK::LLM {
 
 /// Extract Ollama/OpenAI thinking fields from a message or delta object.
+/// qwen3 via `/v1/chat/completions` uses `reasoning`; native/OpenAI-style may use
+/// `thinking` or `reasoning_content`.
 inline void extractThinkingFields(const nlohmann::json& obj, std::string& thinking_out)
 {
-    if(obj.contains("thinking") && obj["thinking"].is_string())
-    {
-        const std::string piece = obj["thinking"].get<std::string>();
-        if(!piece.empty())
-            thinking_out += piece;
-    }
-    if(obj.contains("reasoning_content") && obj["reasoning_content"].is_string())
-    {
-        const std::string piece = obj["reasoning_content"].get<std::string>();
-        if(!piece.empty())
-            thinking_out += piece;
-    }
+    auto append_if_string = [&](const char* key) {
+        if(obj.contains(key) && obj[key].is_string())
+        {
+            const std::string piece = obj[key].get<std::string>();
+            if(!piece.empty())
+                thinking_out += piece;
+        }
+    };
+    append_if_string("thinking");
+    append_if_string("reasoning_content");
+    append_if_string("reasoning");
 }
 
 /// If the model leaked `<think>...</think>` into content, split into thinking + answer.

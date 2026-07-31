@@ -15,6 +15,16 @@ TEST(LLMAgentManifest, ResponseLanguageSection)
     EXPECT_NE(manifest.find("Russian"), std::string::npos);
 }
 
+TEST(LLMAgentManifest, KnowledgeMentionsLiveGraphTools)
+{
+    ULLMToolRegistry registry;
+    ToolFilter filter;
+    const std::string manifest = buildAgentManifest(registry, filter, 8000, {}, {}, "en");
+    EXPECT_NE(manifest.find("## Knowledge"), std::string::npos);
+    EXPECT_NE(manifest.find("get_net_snapshot"), std::string::npos);
+    EXPECT_NE(manifest.find("search_project_docs"), std::string::npos);
+}
+
 TEST(LLMAgentManifest, ConnectVsAddSection)
 {
     ULLMToolRegistry registry;

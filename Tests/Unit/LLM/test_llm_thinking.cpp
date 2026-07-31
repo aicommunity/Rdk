@@ -31,6 +31,12 @@ TEST(LLMThinkingParse, ExtractThinkingAndReasoningContent)
     thinking.clear();
     extractThinkingFields(msg2, thinking);
     EXPECT_EQ(thinking, "r2");
+
+    // qwen3 via OpenAI-compat /v1 emits "reasoning"
+    nlohmann::json msg3 = {{"reasoning", "r3"}, {"content", ""}};
+    thinking.clear();
+    extractThinkingFields(msg3, thinking);
+    EXPECT_EQ(thinking, "r3");
 }
 
 TEST(LLMThinkingParse, FinalizeThinkingFromTags)

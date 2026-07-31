@@ -45,10 +45,15 @@ struct PreparedAddComponentInvoke {
     nlohmann::json clarification = nlohmann::json::object();
 };
 
-/// When user names a registered class and asks to add/create (quantity from caller), build normalized args.
+struct SessionGraphMemory;
+
+/// True when user asks to add more of the same (ещё/таких же/same/more).
+bool looksLikeRepeatSameAddCue(const std::string& user_text);
+
+/// When user names a registered class (or repeat-cue «таких же» with last_add) and asks to add.
 std::optional<PreparedAddComponentInvoke> tryPrepareAddComponentDirect(
     const std::string& user_text, const LLMGuiContextSnapshot& gui, URdkDomainAccess& domain,
-    int channel_index, int repeat_count);
+    int channel_index, int repeat_count, const SessionGraphMemory* session_graph = nullptr);
 
 } // namespace RDK::LLM
 

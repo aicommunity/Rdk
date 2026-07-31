@@ -115,6 +115,17 @@ std::optional<std::unordered_set<std::string>> preferredToolsForText(const std::
                                                "find_component",         "get_component_properties",
                                                "get_net_snapshot",       "list_channels"};
 
+    // Live graph / current model inspection (RU+EN) — prefer snapshot tools over recent configs.
+    if(containsAny(lower, {"get_net_snapshot", "net snapshot", "net_snapshot", "diagram", "схема",
+                           "компонент", "текущ", "текущая модель", "current model", "components",
+                           "snapshot", "топологи"})
+       || (containsAny(lower, {"model", "модел"})
+           && !containsAny(lower, {"llm", "ollama", "provider", "qwen", "gpt"})))
+        return std::unordered_set<std::string>{"get_net_snapshot", "find_component",
+                                               "get_component_properties", "describe_class",
+                                               "list_registered_classes", "list_channels",
+                                               "search_project_docs"};
+
     return std::nullopt;
 }
 

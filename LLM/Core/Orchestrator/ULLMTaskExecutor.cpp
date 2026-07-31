@@ -116,7 +116,8 @@ TaskExecuteResult ULLMTaskExecutor::execute(ULLMExecutionPlan& plan,
                     if(options.conversation_state && tr.ok && tr.result.is_object())
                     {
                         recordWriteToolOutcome(*options.conversation_state, domain, step.tool_name,
-                                               tr.result, session.active_channel_index);
+                                               tr.result, session.active_channel_index,
+                                               &step.arguments);
                     }
                 }
 

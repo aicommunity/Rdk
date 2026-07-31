@@ -69,6 +69,7 @@
 #include "ULLMConnectPlanLlmFallback.h"
 #include "../Tools/ULLMToolArgumentValidator.h"
 #include "ULLMModelRouter.h"
+#include "ULLMClarificationFormat.h"
 #include "ULLMTurnTerminalHelpers.h"
 #include "ULLMToolFilterExpand.h"
 
@@ -114,6 +115,22 @@ nlohmann::json addComponentArgsForRepeat(const nlohmann::json& base_args, int re
         args["short_name"] = uniqueShortNameForAddRepeat(short_base, repeat_index);
     }
     return args;
+}
+
+/// Persist assistant tool_calls + tool result (+ outcome) so follow-up turns see direct writes.
+void appendDirectToolTranscriptLocal(ULLMConversationStore& store, const std::string& session_id,
+                                     const std::string& trace_id, const std::string& tool_name,
+                                     const nlohmann::json& arguments, const ToolGatewayResult& tr,
+                                     ULLMSystemLogReader* reader, int channel_index,
+                                     const std::string& outcome_text)
+{
+    const std::string call_id =
+        "direct-"
+        + pseudoSha256(trace_id + "|" + tool_name + "|"
+                       + (arguments.is_null() ? "{}" : arguments.dump()))
+              .substr(0, 20);
+    appendDirectToolTranscript(store, session_id, call_id, tool_name, arguments,
+                               buildToolMessageContent(tr, reader, channel_index), outcome_text);
 }
 
 void appendAgentNote(ConversationState& state, const std::string& line)
@@ -277,56 +294,6 @@ int rollbackEligibleWriteCount(const ULLMExecutionPlan& plan)
             ++count;
     }
     return count;
-}
-
-std::string formatClarificationMessage(const nlohmann::json& payload)
-{
-    std::ostringstream oss;
-    const std::string kind = payload.value("kind", "component");
-    const nlohmann::json candidates = payload.value("candidates", nlohmann::json::array());
-
-    if(kind == "property")
-    {
-        const std::string field = payload.value("field", "property");
-        const std::string component = payload.value("component_long_name", "");
-        oss << "I need the exact link port for **" << field << "**";
-        if(!component.empty())
-            oss << " on `" << component << "`";
-        oss << ". Choose one:\n";
-        int index = 1;
-        for(const auto& c : candidates)
-        {
-            oss << index++ << ". " << c.value("port_name", c.value("name", "")) << "\n";
-        }
-        oss << "\nReply with the exact port name (e.g. `PortName`).";
-        return oss.str();
-    }
-
-    if(kind == "class")
-    {
-        oss << "I couldn't determine the exact component class. Please choose one and reply with "
-               "the exact class name:\n";
-        int index = 1;
-        for(const auto& c : candidates)
-        {
-            oss << index++ << ". " << c.value("class_name", "") << "\n";
-        }
-        const size_t n = candidates.size();
-        oss << "\nReply with a number (1";
-        if(n > 1)
-            oss << "-" << n;
-        oss << ") or the exact class name (e.g. `NLPNeuron`).";
-        return oss.str();
-    }
-
-    oss << "Multiple components match. Please specify which one:\n";
-    int index = 1;
-    for(const auto& c : candidates)
-    {
-        oss << index++ << ". " << c.value("long_name", "") << " ("
-            << c.value("class_name", "") << " / " << c.value("short_name", "") << ")\n";
-    }
-    return oss.str();
 }
 
 bool extractAmbiguousFindComponent(const ToolGatewayResult& tr, nlohmann::json& candidates_out)
@@ -871,7 +838,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                             : 1;
         if(const std::optional<PreparedAddComponentInvoke> add_prep = tryPrepareAddComponentDirect(
                entity_user_text_hint, guiSnapshotForWrite(state, req.gui), domain,
-               session.active_channel_index, qty))
+               session.active_channel_index, qty, &state.session_graph))
         {
             if(add_prep->needs_clarification)
             {
@@ -879,7 +846,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 call.name = "add_component";
                 call.arguments = add_prep->arguments;
                 const nlohmann::json& disambiguation = add_prep->clarification;
-                if(disambiguation.value("kind", "") == "component")
+                if(disambiguation.is_object() && disambiguation.value("kind", "") == "component")
                 {
                     return routeClarificationOrDisambiguation(
                         state, req.trace_id, call, PendingDisambiguationKind::Component,
@@ -887,7 +854,10 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 }
                 return routeClarificationOrDisambiguation(state, req.trace_id, call,
                                                             PendingDisambiguationKind::Class,
-                                                            "class_name", disambiguation);
+                                                            "class_name",
+                                                            disambiguation.is_object()
+                                                                ? disambiguation
+                                                                : nlohmann::json::object());
             }
 
             const int add_count = std::max(1, add_prep->repeat_count);
@@ -1265,6 +1235,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
         opts.think_mode = LLMThinkMode::On;
         if(opts.max_tokens < 8192)
             opts.max_tokens = 8192;
+        if(const std::optional<std::string> model = modelOverrideForRoute(cortex_route))
+            opts.model_override = *model;
     }
 
     // DD-THINK-003: never force tool_choice while thinking is on.
@@ -2521,7 +2493,7 @@ LLMFinalResponse ULLMAgentOrchestrator::rollbackPlanExecution(const std::string&
 LLMFinalResponse ULLMAgentOrchestrator::returnDisambiguationRequest(
     ConversationState& state, const std::string& trace_id, const LLMToolCall& call,
     PendingDisambiguationKind kind, const std::string& field_name,
-    const nlohmann::json& disambiguation)
+    const nlohmann::json& disambiguation, bool include_candidate_list)
 {
     LLMFinalResponse final;
     PendingToolArguments pending;
@@ -2540,7 +2512,9 @@ LLMFinalResponse ULLMAgentOrchestrator::returnDisambiguationRequest(
     pending.missing_fields = {missing_field};
     pending.disambiguation_kind = kind;
     pending.disambiguation_field = missing_field.name;
-    pending.disambiguation_candidates = disambiguation.value("candidates", nlohmann::json::array());
+    pending.disambiguation_candidates =
+        disambiguation.is_object() ? disambiguation.value("candidates", nlohmann::json::array())
+                                   : nlohmann::json::array();
     pending.class_disambiguation_candidates =
         kind == PendingDisambiguationKind::Class ? pending.disambiguation_candidates
                                                  : nlohmann::json::array();
@@ -2548,7 +2522,9 @@ LLMFinalResponse ULLMAgentOrchestrator::returnDisambiguationRequest(
         pending.requested_repeat_count = primaryQuantityOr(state);
     m_store.setPendingToolArguments(state.session_id, pending);
 
-    const std::string prompt = formatClarificationMessage(disambiguation);
+    const std::string prompt = formatClarificationMessage(
+        disambiguation.is_object() ? disambiguation : nlohmann::json::object(),
+        include_candidate_list);
     LLMMessage assistant_msg;
     assistant_msg.role = LLMMessage::Role::Assistant;
     assistant_msg.content = prompt;
@@ -2570,13 +2546,14 @@ LLMFinalResponse ULLMAgentOrchestrator::returnClarificationViaAskUser(
     PendingDisambiguationKind kind, const std::string& field_name,
     const nlohmann::json& disambiguation)
 {
+    // Short prompt: dock renders user_choice_options once (no duplicate numbered dump).
     LLMFinalResponse final = returnDisambiguationRequest(state, trace_id, call, kind, field_name,
-                                                         disambiguation);
+                                                         disambiguation, false);
     final.needs_argument_clarification = false;
     final.needs_tool_disambiguation = false;
     final.needs_entity_clarification = false;
 
-    const std::string prompt = formatClarificationMessage(disambiguation);
+    const std::string prompt = final.text;
     PendingUserQuestion pq;
     pq.question_id = call.id.empty() ? trace_id : call.id;
     pq.prompt = prompt;
@@ -2716,6 +2693,12 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
         final.text = combinePreviewAndOutcome(wres.preview_text, wres.outcome_text);
         if(!tr.ok && !tr.message.empty())
             final.error = tr.message;
+        if(!tr.pending_confirmation)
+        {
+            appendDirectToolTranscriptLocal(m_store, session_id, trace_id, tool_name, arguments, tr,
+                                       m_system_log_reader.get(), session.active_channel_index,
+                                       final.text);
+        }
         setWorkflowPhase(state, LLMWorkflowPhase::Completed, trace_id);
         setWorkflowPhase(state, LLMWorkflowPhase::Idle, trace_id);
         m_store.persistToDisk(session_id);
@@ -2727,21 +2710,21 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
 
     nlohmann::json disambiguation;
     if(extractToolDisambiguationPayload(tr, disambiguation)
-       && disambiguation.value("kind", "") == "class")
+       && disambiguation.is_object() && disambiguation.value("kind", "") == "class")
     {
         LLMToolCall call;
         call.name = tool_name;
-        call.arguments = arguments;
+        call.arguments = arguments.is_object() ? arguments : nlohmann::json::object();
         return routeClarificationOrDisambiguation(state, trace_id, call,
                                                 PendingDisambiguationKind::Class, "class_name",
                                                 disambiguation);
     }
     if(extractToolDisambiguationPayload(tr, disambiguation)
-       && disambiguation.value("kind", "") == "component")
+       && disambiguation.is_object() && disambiguation.value("kind", "") == "component")
     {
         LLMToolCall call;
         call.name = tool_name;
-        call.arguments = arguments;
+        call.arguments = arguments.is_object() ? arguments : nlohmann::json::object();
         return routeClarificationOrDisambiguation(
             state, trace_id, call, PendingDisambiguationKind::Component,
             disambiguation.value("field", "long_name"), disambiguation);
@@ -2824,6 +2807,9 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
         final.text = formatLifecycleToolUserMessage(tool_name, tr);
     if(!tr.ok && !tr.message.empty())
         final.error = tr.message;
+    appendDirectToolTranscriptLocal(m_store, session_id, trace_id, tool_name, arguments, tr,
+                                    m_system_log_reader.get(), session.active_channel_index,
+                                    final.text);
     setWorkflowPhase(state, LLMWorkflowPhase::Completed, trace_id);
     setWorkflowPhase(state, LLMWorkflowPhase::Idle, trace_id);
     m_store.persistToDisk(session_id);

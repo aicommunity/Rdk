@@ -66,7 +66,10 @@ std::string buildAgentManifest(const ULLMToolRegistry& registry, const ToolFilte
     }
 
     oss << "## Knowledge\n";
-    oss << "- search_project_docs(scope=docs|sources|all) for product docs and implementation.\n";
+    oss << "- Live project graph (components/links on the open configuration): get_net_snapshot, "
+           "find_component, get_component_properties — not search_project_docs.\n";
+    oss << "- Product docs / how-to / class ClDesc: search_project_docs(scope=docs|sources|all), "
+           "describe_class.\n";
     oss << "## Rules\n";
     oss << "- Use write tools only for explicit mutate requests.\n";
     oss << "- Graph mutations: add_component, set_property, connect_components (and disconnect_components) as requested.\n";

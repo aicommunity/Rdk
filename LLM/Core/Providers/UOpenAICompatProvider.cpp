@@ -31,20 +31,10 @@ void applyStreamDelta(const nlohmann::json& delta, std::string& text_out,
                       LLMStreamCallback& on_chunk,
                       const std::function<void(const std::string&)>& on_thinking)
 {
+    const std::size_t thinking_before = thinking_out.size();
     extractThinkingFields(delta, thinking_out);
-    if(delta.contains("thinking") && delta["thinking"].is_string() && on_thinking)
-    {
-        const std::string piece = delta["thinking"].get<std::string>();
-        if(!piece.empty())
-            on_thinking(piece);
-    }
-    else if(delta.contains("reasoning_content") && delta["reasoning_content"].is_string()
-            && on_thinking)
-    {
-        const std::string piece = delta["reasoning_content"].get<std::string>();
-        if(!piece.empty())
-            on_thinking(piece);
-    }
+    if(on_thinking && thinking_out.size() > thinking_before)
+        on_thinking(thinking_out.substr(thinking_before));
     if(delta.contains("content") && delta["content"].is_string())
     {
         const std::string piece = delta["content"].get<std::string>();
@@ -201,15 +191,25 @@ LLMCompletionResult UOpenAICompatProvider::chat(const std::vector<LLMMessage>& m
     m_cancelled = false;
     LLMCompletionResult result;
     std::string url = m_profile.base_url;
+    if(url.empty())
+    {
+        result.ok = false;
+        result.error_message = "Provider base_url is empty";
+        return result;
+    }
     if(url.back() == '/')
         url.pop_back();
     url += "/chat/completions";
 
+    try
+    {
     const nlohmann::json body = buildRequestBody(messages, opts);
+    const std::string body_str =
+        body.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace);
     constexpr int kMaxAttempts = 3;
     for(int attempt = 0; attempt < kMaxAttempts; ++attempt)
     {
-        auto resp = m_http.postJson(url, body.dump(), m_profile.api_key);
+        auto resp = m_http.postJson(url, body_str, m_profile.api_key);
         if(!resp.error.empty())
         {
             result.ok = false;
@@ -240,20 +240,46 @@ LLMCompletionResult UOpenAICompatProvider::chat(const std::vector<LLMMessage>& m
     result.ok = false;
     result.error_message = "Provider request failed after retry";
     return result;
+    }
+    catch(const std::exception& ex)
+    {
+        result.ok = false;
+        result.error_message = std::string("chat exception: ") + ex.what();
+        return result;
+    }
+    catch(...)
+    {
+        result.ok = false;
+        result.error_message = "chat exception: unknown";
+        return result;
+    }
 }
 
 void UOpenAICompatProvider::chatStream(const std::vector<LLMMessage>& messages,
                                        const LLMCompletionOptions& opts, LLMStreamCallback on_chunk,
                                        std::function<void(LLMCompletionResult)> on_done)
 {
-    m_cancelled = false;
-    std::string url = m_profile.base_url;
-    if(url.back() == '/')
-        url.pop_back();
-    url += "/chat/completions";
+    try
+    {
+        m_cancelled = false;
+        std::string url = m_profile.base_url;
+        if(url.empty())
+        {
+            LLMCompletionResult err;
+            err.ok = false;
+            err.error_message = "Provider base_url is empty";
+            if(on_done)
+                on_done(err);
+            return;
+        }
+        if(url.back() == '/')
+            url.pop_back();
+        url += "/chat/completions";
 
     nlohmann::json body = buildRequestBody(messages, opts);
     body["stream"] = true;
+    const std::string body_str =
+        body.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace);
 
     std::string accumulated_text;
     std::string accumulated_thinking;
@@ -269,7 +295,7 @@ void UOpenAICompatProvider::chatStream(const std::vector<LLMMessage>& messages,
         accumulated_thinking.clear();
         tool_parts.clear();
         const auto resp = m_http.postJsonStream(
-            url, body.dump(), m_profile.api_key,
+            url, body_str, m_profile.api_key,
             [&](const std::string& payload) -> bool {
                 if(m_cancelled.load())
                     return false;
@@ -336,6 +362,23 @@ void UOpenAICompatProvider::chatStream(const std::vector<LLMMessage>& messages,
 
     if(on_done)
         on_done(result);
+    }
+    catch(const std::exception& ex)
+    {
+        LLMCompletionResult err;
+        err.ok = false;
+        err.error_message = std::string("chatStream exception: ") + ex.what();
+        if(on_done)
+            on_done(err);
+    }
+    catch(...)
+    {
+        LLMCompletionResult err;
+        err.ok = false;
+        err.error_message = "chatStream exception: unknown";
+        if(on_done)
+            on_done(err);
+    }
 }
 
 bool UOpenAICompatProvider::healthCheck(std::string& error_out)

@@ -149,7 +149,8 @@ private:
                                                  const LLMToolCall& call,
                                                  PendingDisambiguationKind kind,
                                                  const std::string& field,
-                                                 const nlohmann::json& disambiguation);
+                                                 const nlohmann::json& disambiguation,
+                                                 bool include_candidate_list = true);
 
     LLMFinalResponse returnClarificationViaAskUser(ConversationState& state,
                                                  const std::string& trace_id,

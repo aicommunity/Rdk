@@ -123,10 +123,12 @@ LLMCompletionResult UOllamaNativeProvider::chat(const std::vector<LLMMessage>& m
     }
 
     const std::string url = ollamaHost() + "/api/chat";
+    const std::string body_str =
+        body.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace);
     constexpr int kMaxAttempts = 3;
     for(int attempt = 0; attempt < kMaxAttempts; ++attempt)
     {
-        auto resp = m_http.postJson(url, body.dump(), m_profile.api_key);
+        auto resp = m_http.postJson(url, body_str, m_profile.api_key);
         if(!resp.error.empty())
         {
             result.ok = false;

@@ -7,6 +7,7 @@
 #include "../Orchestrator/ULLMLibraryScopeHint.h"
 #include "../Orchestrator/ULLMLifecycleArgumentGate.h"
 #include "../Session/ULLMConversationStore.h"
+#include "../Session/ULLMSessionGraphMemory.h"
 #include "ULLMConnectPortHeuristics.h"
 #include "ULLMConnectPortInference.h"
 #include "ULLMAddParentResolution.h"
@@ -609,11 +610,29 @@ bool isAddComponentGoalUserText(const std::string& user_text)
            || lc.find("созда") != std::string::npos || lc.find("create ") != std::string::npos;
 }
 
+bool isRepeatSameAddCue(const std::string& user_text)
+{
+    std::string lc;
+    lc.reserve(user_text.size());
+    for(char c : user_text)
+        lc += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return lc.find("таких") != std::string::npos || lc.find("такой же") != std::string::npos
+           || lc.find("такое же") != std::string::npos || lc.find("same") != std::string::npos
+           || lc.find("another") != std::string::npos || lc.find("еще") != std::string::npos
+           || lc.find("ещё") != std::string::npos || lc.find("more") != std::string::npos
+           || lc.find("again") != std::string::npos;
+}
+
 } // namespace
+
+bool looksLikeRepeatSameAddCue(const std::string& user_text)
+{
+    return isRepeatSameAddCue(user_text);
+}
 
 std::optional<PreparedAddComponentInvoke> tryPrepareAddComponentDirect(
     const std::string& user_text, const LLMGuiContextSnapshot& gui, URdkDomainAccess& domain,
-    int channel_index, int repeat_count)
+    int channel_index, int repeat_count, const SessionGraphMemory* session_graph)
 {
     if(!isAddComponentGoalUserText(user_text))
         return std::nullopt;
@@ -623,13 +642,28 @@ std::optional<PreparedAddComponentInvoke> tryPrepareAddComponentDirect(
     if(!list_st.ok() || registered.empty())
         return std::nullopt;
 
-    const std::optional<std::string> explicit_class =
+    std::optional<std::string> explicit_class =
         findExplicitRegisteredClassInUserText(user_text, registered);
+    std::string class_from_last;
+    std::string parent_from_last;
+    std::string short_from_last;
+    if(!explicit_class && session_graph && session_graph->last_add
+       && !session_graph->last_add->class_name.empty() && isRepeatSameAddCue(user_text))
+    {
+        class_from_last = session_graph->last_add->class_name;
+        parent_from_last = session_graph->last_add->parent_long_name;
+        short_from_last = session_graph->last_add->short_name_base;
+        explicit_class = class_from_last;
+    }
     if(!explicit_class)
         return std::nullopt;
 
     nlohmann::json args = nlohmann::json::object();
     args["class_name"] = *explicit_class;
+    if(!parent_from_last.empty())
+        args["parent_long_name"] = parent_from_last;
+    if(!short_from_last.empty())
+        args["short_name"] = short_from_last;
 
     WriteArgumentNormalizeResult norm =
         normalizeWriteToolArguments("add_component", args, domain, channel_index, user_text, nullptr);
@@ -651,6 +685,16 @@ std::optional<PreparedAddComponentInvoke> tryPrepareAddComponentDirect(
         return std::nullopt;
 
     fillAddComponentDefaults(prepared.arguments, &gui);
+    if(!parent_from_last.empty()
+       && (!prepared.arguments.contains("parent_long_name")
+           || prepared.arguments.value("parent_long_name", "").empty()
+           || prepared.arguments.value("parent_long_name", "") == "Model"))
+        prepared.arguments["parent_long_name"] = parent_from_last;
+    if(!short_from_last.empty()
+       && (!prepared.arguments.contains("short_name")
+           || prepared.arguments.value("short_name", "").empty()))
+        prepared.arguments["short_name"] = short_from_last;
+
     const AddParentResolution parent_res = resolveValidAddParent(
         domain, prepared.arguments.value("parent_long_name", ""), *explicit_class, channel_index,
         gui);

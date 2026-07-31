@@ -29,10 +29,18 @@ struct ConnectRecord {
     int64_t created_at_unix_sec = 0;
 };
 
+struct LastAddComponentMemory {
+    std::string class_name;
+    std::string parent_long_name;
+    std::string short_name_base;
+};
+
 struct SessionGraphMemory {
     std::vector<std::string> added_long_names;
     std::vector<ConnectRecord> linked_records;
     std::optional<ConnectTemplate> last_template;
+    /// Last successful add_component args (for «ещё таких же» follow-ups).
+    std::optional<LastAddComponentMemory> last_add;
 };
 
 nlohmann::json sessionGraphMemoryToJson(const SessionGraphMemory& graph);
@@ -49,7 +57,8 @@ void recordSessionConnect(ConversationState& state, URdkDomainAccess& domain,
                           const nlohmann::json& connect_result, int channel_index);
 void recordWriteToolOutcome(ConversationState& state, URdkDomainAccess& domain,
                           const std::string& tool_name, const nlohmann::json& result,
-                          int channel_index);
+                          int channel_index,
+                          const nlohmann::json* arguments = nullptr);
 std::vector<std::string> sessionRemainingLongNames(const ConversationState& state);
 bool isEndpointLinkedInSession(const SessionGraphMemory& mem, const std::string& long_name);
 

@@ -73,6 +73,8 @@ _add_llm_unit_test(Test_LLM_ToolGateway test_llm_tool_gateway.cpp)
 _add_llm_unit_test(Test_LLM_ToolTrace test_llm_tool_trace.cpp)
 _add_llm_unit_test(Test_LLM_GuiTurnPin test_llm_gui_turn_pin.cpp)
 _add_llm_unit_test(Test_LLM_AddParentResolution test_llm_add_parent_resolution.cpp)
+_add_llm_unit_test(Test_LLM_ClarificationFormat test_llm_clarification_format.cpp)
+_add_llm_unit_test(Test_LLM_DirectAddFollowup test_llm_direct_add_followup.cpp)
 _add_llm_unit_test(Test_LLM_EntityPathCanonicalizer test_llm_entity_path_canonicalizer.cpp)
 _add_llm_unit_test(Test_LLM_Orchestrator test_llm_orchestrator.cpp)
 _add_llm_unit_test(Test_LLM_OrchestratorThinking test_llm_orchestrator_thinking.cpp
@@ -99,6 +101,13 @@ _add_llm_unit_test(Test_LLM_ChatHistoryArchive
   ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt/Llm/ULlmChatHistoryArchive.cpp)
 target_include_directories(Test_LLM_ChatHistoryArchive PRIVATE
   ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt/Llm)
+_add_llm_unit_test(Test_LLM_ChatMarkdown
+  test_llm_chat_markdown.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt/Llm/ULlmChatMarkdown.cpp)
+target_include_directories(Test_LLM_ChatMarkdown PRIVATE
+  ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt/Llm)
+find_package(Qt5 COMPONENTS Gui REQUIRED)
+target_link_libraries(Test_LLM_ChatMarkdown PRIVATE Qt5::Gui)
 _add_llm_unit_test(Test_LLM_DocSearch test_llm_doc_search.cpp)
 _add_llm_unit_test(Test_LLM_Workflow test_llm_workflow.cpp)
 _add_llm_unit_test(Test_LLM_UnifiedTurnContract test_llm_unified_turn_contract.cpp)

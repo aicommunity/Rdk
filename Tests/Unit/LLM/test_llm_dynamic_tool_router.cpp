@@ -73,6 +73,25 @@ TEST(LLMDynamicToolRouter, EnabledConnectRouteRussianK)
     EXPECT_FALSE(out.allowed_tool_names->count("add_component"));
 }
 
+TEST(LLMDynamicToolRouter, EnabledCurrentModelRoutePrefersSnapshot)
+{
+    ::setenv("NMSDK_LLM_DYNAMIC_TOOL_ROUTING", "1", 1);
+    ToolFilter base;
+    base.intent = LLMIntentKind::Query;
+    base.include_write = false;
+    base.allowed_tool_names = std::unordered_set<std::string>{
+        "get_net_snapshot", "find_component", "get_component_properties", "search_project_docs",
+        "list_recent_configurations", "describe_class", "list_channels"};
+    const ToolFilter out =
+        ULLMDynamicToolRouter::apply(base, "дай информацию о текущей модели");
+    ::unsetenv("NMSDK_LLM_DYNAMIC_TOOL_ROUTING");
+
+    ASSERT_TRUE(out.allowed_tool_names.has_value());
+    EXPECT_TRUE(out.allowed_tool_names->count("get_net_snapshot"));
+    EXPECT_TRUE(out.allowed_tool_names->count("find_component"));
+    EXPECT_FALSE(out.allowed_tool_names->count("list_recent_configurations"));
+}
+
 TEST(LLMDynamicToolRouter, EnabledScoreSubsetLimitsToolCount)
 {
     ::setenv("NMSDK_LLM_DYNAMIC_TOOL_ROUTING", "1", 1);
