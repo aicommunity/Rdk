@@ -30,6 +30,7 @@ public:
     void buildFromCatalog(const ILLMKnowledgeCatalog& catalog,
                           const std::filesystem::path& repository_root,
                           int max_files = kIndexMaxFiles);
+    /// Empty `expected_fingerprint` skips fingerprint match (accept stale index for fast startup).
     bool loadPrebuilt(const std::filesystem::path& dir, const std::string& expected_fingerprint);
     void savePrebuilt(const std::filesystem::path& dir, const std::string& fingerprint) const;
     std::vector<DocSnippet> search(const std::string& query, int top_k,

@@ -130,6 +130,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-141 | Progressive disclosure: `search_tools` expands allowlist for next rounds | thinking-B | P0 | done | enrichSearchToolsPayload + expandToolFilterFromSearchResult |
 | TD-142 | Wire Cortex thinking profile + no forced tool_choice when think ON | thinking-C | P0 | done | ollama-thinking default, enable_ollama_thinking, orchestrator wiring |
 | TD-143 | Collapsible GUI thinking bubble / on_thinking_token UI | thinking-post | P2 | done | `757efc80`: Dock `onThinkingToken` + `<details>Reasoning</details>`; status “Model is reasoning…” |
+| TD-147 | Defer LLM doc-index rebuild off UI-thread startup (progress ~20% hang) | startup | P1 | done | Gate on `ShowLlmAssistantMenu` / `NMSDK_LLM_*`; async `initialize`; stale prebuilt; sync via `NMSDK_LLM_INDEX_SYNC_ON_START=1` |
 | TD-144 | Parallel independent tool fan-out in one assistant turn | thinking-post | P3 | deferred | Sequential tools OK for local ReAct MVP |
 | TD-145 | Ollama think levels (`low`/`medium`/`high`) / gpt-oss | thinking-post | P3 | deferred | Boolean `think` sufficient for qwen3:14b/deepseek-r1 |
 | TD-146 | Embed-index quality for `search_tools` hybrid ranking | thinking-post | P2 | deferred | Lexical+existing embeddings; revisit if discovery miss-rate high |

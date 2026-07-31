@@ -334,7 +334,8 @@ bool UDocSearchIndex::loadPrebuilt(const fs::path& dir, const std::string& expec
     nlohmann::json manifest = nlohmann::json::parse(manifest_in, nullptr, false);
     if(manifest.is_discarded())
         return false;
-    if(manifest.value("catalog_fingerprint", std::string()) != expected_fingerprint)
+    if(!expected_fingerprint.empty()
+       && manifest.value("catalog_fingerprint", std::string()) != expected_fingerprint)
         return false;
 
     m_docs.clear();

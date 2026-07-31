@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 #include <filesystem>
+#include <thread>
 
 #include "Context/ILLMProjectContextProvider.h"
 #include "Session/ULLMConversationStore.h"
@@ -65,13 +66,27 @@ void LLMServices::initialize(RDK::UApplication* app, ILLMProjectContextProvider*
     const std::filesystem::path dev_cache = repository_root / "LLM/index";
 
     auto ensure_index = [&]() {
-        bool loaded = false;
-        if(!prebuilt.empty())
-            loaded = m_search_index->loadPrebuilt(prebuilt, fingerprint);
-        if(!loaded && !dev_cache.empty())
-            loaded = m_search_index->loadPrebuilt(dev_cache, fingerprint);
+        // Startup must stay off the UI-thread rebuild path: full catalog build/sync can take
+        // minutes and freezes the launch progress bar at ~20% (NmsdkRegisterLlm).
+        // Prefer an exact fingerprint match; otherwise accept a stale prebuilt. Rebuild async.
+        const char* sync_env = std::getenv("NMSDK_LLM_INDEX_SYNC_ON_START");
+        const bool sync_on_start = sync_env && sync_env[0] == '1';
 
-        if(loaded)
+        bool exact = false;
+        auto try_load = [&](const std::filesystem::path& dir, const std::string& fp) -> bool {
+            if(dir.empty())
+                return false;
+            return m_search_index->loadPrebuilt(dir, fp);
+        };
+
+        exact = try_load(prebuilt, fingerprint) || try_load(dev_cache, fingerprint);
+        if(!exact)
+        {
+            // Empty fingerprint = ignore manifest match (stale index is fine for first paint).
+            (void)(try_load(prebuilt, "") || try_load(dev_cache, ""));
+        }
+
+        if(sync_on_start && !m_search_index->empty())
         {
             const IndexSyncResult sync =
                 m_search_index->syncFromCatalog(*m_catalog, repository_root);
@@ -85,9 +100,24 @@ void LLMServices::initialize(RDK::UApplication* app, ILLMProjectContextProvider*
             return;
         }
 
-        m_search_index->buildFromCatalog(*m_catalog, repository_root);
-        if(!dev_cache.empty())
-            m_search_index->savePrebuilt(dev_cache, fingerprint);
+        if(exact)
+            return;
+
+        // Refresh cache in the background for the next launch (and eventual warm search).
+        ILLMKnowledgeCatalog* catalog = m_catalog.get();
+        if(!catalog || dev_cache.empty())
+            return;
+        std::thread([catalog, repository_root, dev_cache, fingerprint]() {
+            try
+            {
+                UDocSearchIndex idx;
+                idx.buildFromCatalog(*catalog, repository_root);
+                idx.savePrebuilt(dev_cache, fingerprint);
+            }
+            catch(...)
+            {
+            }
+        }).detach();
     };
     ensure_index();
 
