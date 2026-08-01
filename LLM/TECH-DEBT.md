@@ -138,6 +138,8 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-152 | Connect funnel: intent `подключ`, autonomous inspect, session peers, HintOnly FastPath | connect-inspect | P1 | done | Intent force Mutate; whitelist; `wants_session_peers`; live-analogous execute under HintOnly |
 | TD-153 | Act-or-Clarify post-think contract (no free essay on actionable goals) | act-or-clarify | P0 | done | `ULLMActOrClarifyGate`; recovery independent of misclassified Query; DD-ACT-001 |
 | TD-154 | Channel calc FastPath + autonomous whitelist (`ask_user`, calc tools) | calc-route | P0 | done | `ULLMChannelCalcCommand`; DD-CALC-001; Act-or-Clarify calc recovery |
+| TD-155 | Component structure gate + dendrite FastPath + fuzzy property | structure | P0 | done | `ULLMComponentStructureGoal`; DD-STRUCT-001 |
+| TD-156 | Watch series/MDI tools + plot FastPath + autonomous UI whitelist | watch | P0 | done | `llmWatch*`; DD-WATCH-001 |
 | TD-144 | Parallel independent tool fan-out in one assistant turn | thinking-post | P3 | deferred | Sequential tools OK for local ReAct MVP |
 | TD-145 | Ollama think levels (`low`/`medium`/`high`) / gpt-oss | thinking-post | P3 | deferred | Boolean `think` sufficient for qwen3:14b/deepseek-r1 |
 | TD-146 | Embed-index quality for `search_tools` hybrid ranking | thinking-post | P2 | deferred | Lexical+existing embeddings; revisit if discovery miss-rate high |
@@ -253,3 +255,5 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | 2026-08-01 | DD-ACT-001: After think, actionable goals with tools offered must end in tool / ask_user / NO_SUITABLE_TOOL — not free prose | Log 10-35-14: think→essay when Query + empty tools; DD-THINK-003 keeps API tool_choice=auto | act-or-clarify | TD-153 |
 | 2026-08-01 | DD-CONN-002: `подключ*` is Mutate; live-analogous ConnectPlan FastPath even under HintOnly; session «этим» peers | Closes funnel after TD-151 tools existed but intent/HintOnly blocked execute | connect-inspect | TD-152 |
 | 2026-08-01 | DD-CALC-001: «запусти расчет» / start|pause|reset|step calculation → deterministic `*_channel_calculation` FastPath before TaskPath; autonomous allows calc tools + `ask_user` | Log 16-31-41: thinking essay after ask_user autonomous deny; tools already existed | calc-route | TD-154 |
+| 2026-08-01 | DD-STRUCT-001: structure Mutate gate + docs prefetch + dendrite FastPath (mode2/NumSoma/Vec/calculate); fuzzy `property_name` | Log 17-45: add_component Dendrite hallucination; typo set_property fail | structure | TD-155 |
+| 2026-08-01 | DD-WATCH-001: Watch series + MDI tools via presentation sink; plot FastPath; autonomous UI/watch whitelist | Log 17-45: open_component_gui_tab AUTONOMOUS deny; no series tools | watch | TD-156 |

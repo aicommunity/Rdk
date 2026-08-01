@@ -31,6 +31,8 @@ public:
     UWatch(QWidget *parent = nullptr, RDK::UApplication* app = NULL);
     ~UWatch();
     UWatchTab *getCurrentTab();
+    /// Create first tab if empty (LLM / host helpers).
+    UWatchTab *ensureCurrentTab();
 
     // Обновление интерфейса
     virtual void AUpdateInterface(void);

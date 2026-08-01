@@ -57,3 +57,21 @@ TEST(LLMWriteArgumentNormalizer, ResolveFuzzyShowsListWhenSeveralClose)
     ASSERT_EQ(r.status, RegisteredClassResolution::Status::Ambiguous);
     ASSERT_GE(r.candidates.size(), 2u);
 }
+
+TEST(LLMWriteArgumentNormalizer, FuzzyPropertyTypoToCanonical)
+{
+    const std::vector<std::string> catalog = {
+        "StructureBuildMode", "NumSomaMembraneParts", "NumDendriteMembranePartsVec", "Output"};
+    const auto r =
+        resolvePropertyNameFromCatalog("numDendridetMembranePartsVec", catalog);
+    ASSERT_EQ(r.status, RegisteredClassResolution::Status::Resolved);
+    EXPECT_EQ(r.class_name, "NumDendriteMembranePartsVec");
+}
+
+TEST(LLMWriteArgumentNormalizer, FuzzyPropertyCaseInsensitive)
+{
+    const std::vector<std::string> catalog = {"NumSomaMembraneParts", "Output"};
+    const auto r = resolvePropertyNameFromCatalog("numsomaMembraneParts", catalog);
+    ASSERT_EQ(r.status, RegisteredClassResolution::Status::Resolved);
+    EXPECT_EQ(r.class_name, "NumSomaMembraneParts");
+}

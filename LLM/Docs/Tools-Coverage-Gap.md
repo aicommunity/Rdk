@@ -19,6 +19,7 @@ Sources: Qt main menu (`UGEngineControllWidget`), C-API (`rdk_init.h` / `nmsdk.h
 | Channel calc | `start/pause/reset/step_channel_calculation`, `run_n_steps`, `list_channels`, `set_active_channel` |
 | Channel CRUD | `add_channel`, `delete_channel`, `clone_channel` |
 | UI | `list_ui_panels`, `show_ui_panel`, `open_component_gui_tab` |
+| Watch | `add/list/remove/clear_watch_series`, `list/create/focus/close_watch_mdi` |
 
 ## Gaps (priority)
 
@@ -30,6 +31,7 @@ Sources: Qt main menu (`UGEngineControllWidget`), C-API (`rdk_init.h` / `nmsdk.h
 | ~~Med~~ | ~~Export / import component~~ | `Model_Save/LoadComponent(To/From)File` | **closed** |
 | ~~Med~~ | ~~Per-component Env_*~~ | UEnvironment | **closed** |
 | ~~Med~~ | ~~Select / navigate~~ | diagram scope | **closed** via `select_component` (not `Env_Select`; DD-AG-001) |
+| ~~Med~~ | ~~Watch series + MDI~~ | Watch window / Watches_N | **closed** — DD-WATCH-001 |
 | Low | Storage build / class-library ops | `Storage_BuildStorage`, load/save collections | Build Storage Mode menu — deferred (risky) |
 | ~~Filter~~ | ~~`save_configuration_as` in `kMutateTools`~~ | allowlist | **closed** |
 

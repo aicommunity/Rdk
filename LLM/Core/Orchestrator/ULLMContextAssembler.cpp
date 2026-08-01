@@ -2,7 +2,10 @@
 
 #include "../Context/URdkContextRetriever.h"
 #include "ULLMAgentManifestBuilder.h"
+#include "ULLMComponentStructureGoal.h"
+#include "ULLMConfigurationLifecycle.h"
 #include "ULLMConnectPlanParsing.h"
+#include "ULLMWatchPlotGoal.h"
 
 #include <algorithm>
 #include <filesystem>
@@ -227,6 +230,11 @@ void prependEphemeralSystemMessages(std::vector<LLMMessage>& provider_messages,
                       configurationLifecycleSystemHint(input.lifecycle_action,
                                                        input.session.project_loaded));
     }
+
+    if(isComponentStructureGoal(input.planning_text))
+        prependSystem(provider_messages, "## Component structure\n" + componentStructureEphemeralHint());
+    if(isWatchPlotGoal(input.planning_text))
+        prependSystem(provider_messages, "## Watch plot\n" + watchPlotEphemeralHint());
 
     if(input.intent == LLMIntentKind::Query || input.intent == LLMIntentKind::Explain)
     {

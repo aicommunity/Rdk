@@ -173,6 +173,24 @@ public slots:
     nlohmann::json listLlmUiPanelsState() const;
     void setLlmActiveChannel(int channel_index);
 
+    /// LLM Watch series / MDI (GUI thread only).
+    nlohmann::json llmWatchAddSeries(const std::string& surface, int mdi_id, int tab_index,
+                                     int chart_index, int channel_index, const QString& longName,
+                                     const QString& propertyName, int jx, int jy);
+    nlohmann::json llmWatchListSeries(const std::string& surface, int mdi_id, int tab_index,
+                                      int chart_index);
+    nlohmann::json llmWatchRemoveSeries(const std::string& surface, int mdi_id, int tab_index,
+                                        int chart_index, int serie_index, const QString& longName,
+                                        const QString& propertyName);
+    nlohmann::json llmWatchClearSeries(const std::string& surface, int mdi_id, int tab_index,
+                                       int chart_index);
+    nlohmann::json llmWatchMdiList();
+    nlohmann::json llmWatchMdiCreate(int grid_rows = 1, int grid_cols = 1,
+                                     const QString& title = QString());
+    bool llmWatchMdiFocus(int mdi_id);
+    bool llmWatchMdiClose(int mdi_id);
+    UWatchTab* llmWatchResolveTab(const std::string& surface, int mdi_id, int tab_index);
+
     // actions:
 
     // file menu

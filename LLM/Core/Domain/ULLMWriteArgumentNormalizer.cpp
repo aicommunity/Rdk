@@ -606,6 +606,48 @@ WriteArgumentNormalizeResult normalizeWriteToolArguments(const std::string& tool
             return out;
     }
 
+    if(tool_name == "set_property")
+    {
+        const std::string long_name = out.normalized_arguments.value("long_name", std::string());
+        std::string property_name = out.normalized_arguments.value("property_name", std::string());
+        if(!long_name.empty() && !property_name.empty())
+        {
+            nlohmann::json props_out;
+            const DomainStatus pst = domain.getComponentProperties(long_name, props_out, ch);
+            if(pst.ok() && props_out.contains("properties") && props_out["properties"].is_array())
+            {
+                std::vector<std::string> catalog;
+                catalog.reserve(props_out["properties"].size());
+                for(const nlohmann::json& item : props_out["properties"])
+                {
+                    if(item.is_object() && item.contains("name") && item["name"].is_string())
+                        catalog.push_back(item["name"].get<std::string>());
+                }
+                const RegisteredClassResolution prop_res =
+                    resolvePropertyNameFromCatalog(property_name, catalog);
+                if(prop_res.status == RegisteredClassResolution::Status::Resolved)
+                {
+                    out.normalized_arguments["property_name"] = prop_res.class_name;
+                }
+                else if(prop_res.status == RegisteredClassResolution::Status::Ambiguous)
+                {
+                    out.ok = false;
+                    out.needs_clarification = true;
+                    out.error_code = "PROPERTY_AMBIGUOUS";
+                    out.message = "Ambiguous property_name for set_property";
+                    nlohmann::json candidates = nlohmann::json::array();
+                    for(const auto& [name, score] : prop_res.candidates)
+                        candidates.push_back({{"name", name}, {"score", score}});
+                    out.clarification = {{"kind", "property"},
+                                         {"field", "property_name"},
+                                         {"query", property_name},
+                                         {"candidates", candidates}};
+                    return out;
+                }
+            }
+        }
+    }
+
     if(tool_name == "connect_components")
     {
         if(!normalizeConnectComponentsArguments(out.normalized_arguments, domain, ch, out))

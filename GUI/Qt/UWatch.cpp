@@ -29,6 +29,14 @@ UWatchTab *UWatch::getCurrentTab()
  return tab[ui->tabWidget->currentIndex()];
 }
 
+UWatchTab *UWatch::ensureCurrentTab()
+{
+    if(UWatchTab* cur = getCurrentTab())
+        return cur;
+    createTab();
+    return getCurrentTab();
+}
+
 
 void UWatch::on_actionCreate_tab_triggered()
 {

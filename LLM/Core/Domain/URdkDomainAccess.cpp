@@ -23,8 +23,11 @@
 #include "../../Core/Engine/UContainer.h"
 #include "../../Core/Engine/UNet.h"
 #include "../../Core/Engine/UEnvSupport.h"
+#include "../../Core/Math/MDMatrix.h"
+#include "../../Core/Math/MDVector.h"
 
 #include <regex>
+#include <typeinfo>
 
 namespace RDK::LLM {
 
@@ -1111,6 +1114,91 @@ DomainStatus URdkDomainAccess::getComponentClassName(const std::string& long_nam
     if(out_class_name.empty())
         return {DomainStatusCode::ClassNotFound,
                 "Class name is not available for component " + long_name};
+    return {};
+}
+
+namespace {
+
+bool isWatchableLanguageType(const std::type_info& ti)
+{
+    // Mirrors UWatchTab::createSelectionDialog / UMatrixFormDialog type gate.
+    return ti == typeid(double) || ti == typeid(int) || ti == typeid(RDK::MDMatrix<double>)
+           || ti == typeid(RDK::MDMatrix<int>) || ti == typeid(RDK::MDVector<double>)
+           || ti == typeid(RDK::MDVector<int>);
+}
+
+bool isScalarWatchableLanguageType(const std::type_info& ti)
+{
+    return ti == typeid(double) || ti == typeid(int);
+}
+
+} // namespace
+
+DomainStatus URdkDomainAccess::validateWatchProperty(const std::string& long_name,
+                                                     const std::string& property_name,
+                                                     int channel_index, int jx, int jy) const
+{
+    if(long_name.empty())
+        return {DomainStatusCode::ComponentNotFound, "add_watch_series: long_name is required"};
+    if(property_name.empty())
+        return {DomainStatusCode::PropertyNotFound, "add_watch_series: property_name is required"};
+    if(jx < 0 || jy < 0)
+    {
+        return {DomainStatusCode::InvalidPropertyValue,
+                "add_watch_series: jx/jy must be >= 0 (matrix/vector cell indices)"};
+    }
+
+    const DomainSessionInfo session = sessionInfo();
+    if(!session.engine_ready)
+        return {DomainStatusCode::NotInitialized, "Engine not ready"};
+    if(m_app && !session.project_loaded)
+        return {DomainStatusCode::ProjectNotLoaded, "No configuration is open"};
+
+    RDK::UELockPtr<RDK::UEngine> eng = RDK::GetEngineLockTimeout(channel_index, 500);
+    if(!eng)
+        return {DomainStatusCode::NotInitialized, "Engine lock unavailable"};
+
+    RDK::UEnvironment* env = eng->GetEnvironment();
+    if(!env)
+        return {DomainStatusCode::NotInitialized, "Environment not available"};
+    RDK::UEPtr<RDK::UContainer> model = env->GetModel();
+    if(!model)
+        return {DomainStatusCode::ProjectNotLoaded, "Model not loaded on channel"};
+
+    RDK::UEPtr<RDK::UContainer> cont = model->GetComponentL(long_name.c_str(), true);
+    if(!cont)
+        return {DomainStatusCode::ComponentNotFound, "Component not found: " + long_name};
+
+    RDK::UEPtr<RDK::UIProperty> prop = cont->FindProperty(property_name);
+    if(!prop)
+    {
+        // Fallback: published lookup lists (same catalog as set_property).
+        if(!componentHasProperty(eng.Get(), long_name, property_name))
+        {
+            return {DomainStatusCode::PropertyNotFound,
+                    "Unknown property_name \"" + property_name + "\" for component " + long_name
+                        + ". Use get_component_properties / get_component_ports."};
+        }
+        // Property is published but FindProperty failed — still reject for Watch (need type).
+        return {DomainStatusCode::InvalidPropertyValue,
+                "Property \"" + property_name + "\" on " + long_name
+                    + " is not accessible for Watch series (FindProperty failed)."};
+    }
+
+    const std::type_info& ti = prop->GetLanguageType();
+    if(!isWatchableLanguageType(ti))
+    {
+        return {DomainStatusCode::InvalidPropertyValue,
+                "Property \"" + property_name + "\" on " + long_name
+                    + " is not numeric/matrix Watch-compatible (need int, double, "
+                      "MDMatrix/MDVector of int|double)."};
+    }
+    if(isScalarWatchableLanguageType(ti) && (jx != 0 || jy != 0))
+    {
+        return {DomainStatusCode::InvalidPropertyValue,
+                "Property \"" + property_name + "\" is scalar; use jx=0, jy=0"};
+    }
+    (void)jy;
     return {};
 }
 

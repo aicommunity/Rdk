@@ -1,8 +1,10 @@
 #include "ULLMActOrClarifyGate.h"
 
 #include "ULLMChannelCalcCommand.h"
+#include "ULLMComponentStructureGoal.h"
 #include "ULLMConnectPlanParsing.h"
 #include "ULLMTaskPlanParsing.h"
+#include "ULLMWatchPlotGoal.h"
 
 namespace RDK::LLM {
 
@@ -21,6 +23,10 @@ bool isActionableGoalForActOrClarify(const std::string& planning_text, LLMIntent
     if(isAddComponentGoal(planning_text))
         return true;
     if(isChannelCalcGoalText(planning_text))
+        return true;
+    if(isComponentStructureGoal(planning_text))
+        return true;
+    if(isWatchPlotGoal(planning_text))
         return true;
     return false;
 }

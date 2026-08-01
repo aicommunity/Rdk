@@ -768,6 +768,307 @@ nlohmann::json UGEngineControlWidget::listLlmUiPanelsState() const
     return out;
 }
 
+UWatchTab* UGEngineControlWidget::llmWatchResolveTab(const std::string& surface, int mdi_id,
+                                                     int tab_index)
+{
+    (void)tab_index;
+    if(surface == "mdi")
+    {
+        if(mdi_id < 0)
+            return nullptr;
+        const QString want = QString("Watches_%1").arg(mdi_id);
+        for(UWatchTab* tab : watchesVector)
+        {
+            if(tab && tab->accessibleName() == want)
+                return tab;
+        }
+        return nullptr;
+    }
+
+    // surface == window (standalone Watch)
+    actionWatchWindow();
+    if(!watchWindow)
+        return nullptr;
+    return watchWindow->ensureCurrentTab();
+}
+
+nlohmann::json UGEngineControlWidget::llmWatchAddSeries(const std::string& surface, int mdi_id,
+                                                        int tab_index, int chart_index,
+                                                        int channel_index, const QString& longName,
+                                                        const QString& propertyName, int jx, int jy)
+{
+    nlohmann::json out;
+    if(surface == "mdi" && mdi_id < 0)
+    {
+        out["ok"] = false;
+        out["error"] = "mdi_id required for surface=mdi; call list_watch_mdi or create_watch_mdi";
+        return out;
+    }
+
+    UWatchTab* tab = llmWatchResolveTab(surface, mdi_id, tab_index);
+    if(!tab)
+    {
+        out["ok"] = false;
+        out["error"] = surface == "mdi" ? "Watch MDI not found for mdi_id"
+                                        : "Watch window tab unavailable";
+        return out;
+    }
+
+    if(tab->countGraphs() <= 0)
+        tab->createGridLayout(1, 1);
+    if(chart_index < 0 || chart_index >= tab->countGraphs())
+    {
+        out["ok"] = false;
+        out["error"] = "chart_index out of range";
+        return out;
+    }
+
+    UWatchChart* chart = tab->getChart(chart_index);
+    if(!chart)
+    {
+        out["ok"] = false;
+        out["error"] = "chart unavailable";
+        return out;
+    }
+
+    double time_interval = chart->getAxisXmax() - chart->getAxisXmin();
+    if(time_interval <= 0.0)
+        time_interval = 1.0;
+    const int before = chart->countSeries();
+    chart->createSerie(channel_index, longName, propertyName, QStringLiteral("type"), jx, jy,
+                       time_interval, 0.0);
+    const int after = chart->countSeries();
+    if(after <= before)
+    {
+        out["ok"] = false;
+        out["error"] = "Failed to create watch series (component/property may be invalid)";
+        return out;
+    }
+
+    out["ok"] = true;
+    out["surface"] = surface;
+    out["mdi_id"] = mdi_id;
+    out["chart_index"] = chart_index;
+    out["serie_index"] = after - 1;
+    out["long_name"] = longName.toUtf8().toStdString();
+    out["property_name"] = propertyName.toUtf8().toStdString();
+    return out;
+}
+
+nlohmann::json UGEngineControlWidget::llmWatchListSeries(const std::string& surface, int mdi_id,
+                                                         int tab_index, int chart_index)
+{
+    nlohmann::json out;
+    out["items"] = nlohmann::json::array();
+    UWatchTab* tab = llmWatchResolveTab(surface, mdi_id, tab_index);
+    if(!tab)
+    {
+        out["ok"] = false;
+        out["error"] = "Watch tab not found";
+        return out;
+    }
+    out["ok"] = true;
+    const int chart_count = tab->countGraphs();
+    const int from = chart_index < 0 ? 0 : chart_index;
+    const int to = chart_index < 0 ? chart_count : std::min(chart_count, chart_index + 1);
+    for(int ci = from; ci < to; ++ci)
+    {
+        UWatchChart* chart = tab->getChart(ci);
+        if(!chart)
+            continue;
+        for(int si = 0; si < chart->countSeries(); ++si)
+        {
+            UWatchSerie* serie = chart->getSerie(si);
+            if(!serie)
+                continue;
+            out["items"].push_back(
+                nlohmann::json{{"chart_index", ci},
+                               {"serie_index", si},
+                               {"long_name", serie->nameComponent.toUtf8().toStdString()},
+                               {"property_name", serie->nameProperty.toUtf8().toStdString()},
+                               {"channel_index", serie->indexChannel},
+                               {"jx", serie->Jx},
+                               {"jy", serie->Jy}});
+        }
+    }
+    return out;
+}
+
+nlohmann::json UGEngineControlWidget::llmWatchRemoveSeries(const std::string& surface, int mdi_id,
+                                                           int tab_index, int chart_index,
+                                                           int serie_index, const QString& longName,
+                                                           const QString& propertyName)
+{
+    nlohmann::json out;
+    UWatchTab* tab = llmWatchResolveTab(surface, mdi_id, tab_index);
+    if(!tab || chart_index < 0 || chart_index >= tab->countGraphs())
+    {
+        out["ok"] = false;
+        out["error"] = "Watch chart not found";
+        return out;
+    }
+    UWatchChart* chart = tab->getChart(chart_index);
+    if(!chart)
+    {
+        out["ok"] = false;
+        out["error"] = "chart unavailable";
+        return out;
+    }
+
+    int target = serie_index;
+    if(target < 0 && !longName.isEmpty() && !propertyName.isEmpty())
+    {
+        for(int si = 0; si < chart->countSeries(); ++si)
+        {
+            UWatchSerie* serie = chart->getSerie(si);
+            if(serie && serie->nameComponent == longName && serie->nameProperty == propertyName)
+            {
+                target = si;
+                break;
+            }
+        }
+    }
+    if(target < 0 || target >= chart->countSeries())
+    {
+        out["ok"] = false;
+        out["error"] = "serie not found";
+        return out;
+    }
+    chart->deleteSerie(target);
+    out["ok"] = true;
+    out["removed_serie_index"] = target;
+    return out;
+}
+
+nlohmann::json UGEngineControlWidget::llmWatchClearSeries(const std::string& surface, int mdi_id,
+                                                          int tab_index, int chart_index)
+{
+    nlohmann::json out;
+    UWatchTab* tab = llmWatchResolveTab(surface, mdi_id, tab_index);
+    if(!tab)
+    {
+        out["ok"] = false;
+        out["error"] = "Watch tab not found";
+        return out;
+    }
+    int removed = 0;
+    const int chart_count = tab->countGraphs();
+    const int from = chart_index < 0 ? 0 : chart_index;
+    const int to = chart_index < 0 ? chart_count : std::min(chart_count, chart_index + 1);
+    for(int ci = from; ci < to; ++ci)
+    {
+        UWatchChart* chart = tab->getChart(ci);
+        if(!chart)
+            continue;
+        while(chart->countSeries() > 0)
+        {
+            chart->deleteSerie(0);
+            ++removed;
+        }
+    }
+    out["ok"] = true;
+    out["removed_count"] = removed;
+    return out;
+}
+
+nlohmann::json UGEngineControlWidget::llmWatchMdiList()
+{
+    nlohmann::json out;
+    out["ok"] = true;
+    out["items"] = nlohmann::json::array();
+    for(UWatchTab* tab : watchesVector)
+    {
+        if(!tab)
+            continue;
+        const QString name = tab->accessibleName();
+        int mdi_id = -1;
+        if(name.startsWith(QStringLiteral("Watches_")))
+            mdi_id = name.mid(8).toInt();
+        int series_count = 0;
+        for(int ci = 0; ci < tab->countGraphs(); ++ci)
+        {
+            if(UWatchChart* chart = tab->getChart(ci))
+                series_count += chart->countSeries();
+        }
+        out["items"].push_back(nlohmann::json{{"mdi_id", mdi_id},
+                                              {"title", tab->windowTitle().toUtf8().toStdString()},
+                                              {"visible", tab->isVisible()},
+                                              {"chart_count", tab->countGraphs()},
+                                              {"series_count", series_count}});
+    }
+    return out;
+}
+
+nlohmann::json UGEngineControlWidget::llmWatchMdiCreate(int grid_rows, int grid_cols,
+                                                        const QString& title)
+{
+    const int rows = grid_rows > 0 ? grid_rows : 1;
+    const int cols = grid_cols > 0 ? grid_cols : 1;
+    addWatchesWidged();
+    if(watchesVector.empty() || !watchesVector.back())
+        return {{"ok", false}, {"error", "Failed to create Watches MDI"}};
+
+    UWatchTab* tab = watchesVector.back();
+    tab->createGridLayout(rows, cols);
+    if(!title.isEmpty())
+        tab->setWindowTitle(title);
+
+    int mdi_id = -1;
+    const QString name = tab->accessibleName();
+    if(name.startsWith(QStringLiteral("Watches_")))
+        mdi_id = name.mid(8).toInt();
+
+    return {{"ok", true},
+            {"mdi_id", mdi_id},
+            {"title", tab->windowTitle().toUtf8().toStdString()},
+            {"grid_rows", rows},
+            {"grid_cols", cols}};
+}
+
+bool UGEngineControlWidget::llmWatchMdiFocus(int mdi_id)
+{
+    UWatchTab* tab = llmWatchResolveTab("mdi", mdi_id, 0);
+    if(!tab)
+        return false;
+    QWidget* parent = tab->parentWidget();
+    if(auto* sub = qobject_cast<QMdiSubWindow*>(parent))
+    {
+        sub->show();
+        sub->showMaximized();
+        sub->raise();
+        sub->setFocus();
+    }
+    else
+    {
+        tab->show();
+        tab->raise();
+        tab->setFocus();
+    }
+    return true;
+}
+
+bool UGEngineControlWidget::llmWatchMdiClose(int mdi_id)
+{
+    UWatchTab* tab = llmWatchResolveTab("mdi", mdi_id, 0);
+    if(!tab)
+        return false;
+    QWidget* parent = tab->parentWidget();
+    if(auto* sub = qobject_cast<QMdiSubWindow*>(parent))
+    {
+        sub->close();
+        return true;
+    }
+    for(size_t i = 0; i < watchesVector.size(); ++i)
+    {
+        if(watchesVector[i] == tab)
+        {
+            delWatchesWidged(i);
+            return true;
+        }
+    }
+    return false;
+}
+
 void UGEngineControlWidget::actionCreateConfig()
 {
  if(application->GetProjectOpenFlag())

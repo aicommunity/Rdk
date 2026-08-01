@@ -71,3 +71,39 @@ TEST(LLMAutonomousPolicy, InspectLinkToolsWhitelisted)
         "list_model_links", LLMAutonomousMode::Strict, 99, 3);
     EXPECT_TRUE(d.allowed);
 }
+
+TEST(LLMAutonomousPolicy, UiWatchAndProposePlanWhitelistedWithoutStepBurn)
+{
+    EXPECT_TRUE(
+        ULLMAutonomousPolicy::isToolWhitelisted("show_ui_panel", LLMAutonomousMode::SemiAuto));
+    EXPECT_TRUE(ULLMAutonomousPolicy::isToolWhitelisted("open_component_gui_tab",
+                                                          LLMAutonomousMode::Strict));
+    EXPECT_TRUE(
+        ULLMAutonomousPolicy::isToolWhitelisted("list_ui_panels", LLMAutonomousMode::SemiAuto));
+    EXPECT_TRUE(
+        ULLMAutonomousPolicy::isToolWhitelisted("propose_plan", LLMAutonomousMode::Strict));
+    EXPECT_TRUE(
+        ULLMAutonomousPolicy::isToolWhitelisted("add_watch_series", LLMAutonomousMode::SemiAuto));
+    EXPECT_TRUE(
+        ULLMAutonomousPolicy::isToolWhitelisted("list_watch_series", LLMAutonomousMode::Strict));
+    EXPECT_TRUE(
+        ULLMAutonomousPolicy::isToolWhitelisted("create_watch_mdi", LLMAutonomousMode::SemiAuto));
+    EXPECT_TRUE(
+        ULLMAutonomousPolicy::isToolWhitelisted("list_watch_mdi", LLMAutonomousMode::Strict));
+    EXPECT_TRUE(
+        ULLMAutonomousPolicy::isToolWhitelisted("focus_watch_mdi", LLMAutonomousMode::SemiAuto));
+    EXPECT_TRUE(
+        ULLMAutonomousPolicy::isToolWhitelisted("close_watch_mdi", LLMAutonomousMode::Strict));
+
+    AutonomousStepDecision ui = ULLMAutonomousPolicy::checkStep(
+        "show_ui_panel", LLMAutonomousMode::Strict, 99, 3);
+    EXPECT_TRUE(ui.allowed);
+
+    AutonomousStepDecision watch = ULLMAutonomousPolicy::checkStep(
+        "add_watch_series", LLMAutonomousMode::Strict, 99, 3);
+    EXPECT_TRUE(watch.allowed);
+
+    AutonomousStepDecision plan = ULLMAutonomousPolicy::checkStep(
+        "propose_plan", LLMAutonomousMode::Strict, 99, 3);
+    EXPECT_TRUE(plan.allowed);
+}

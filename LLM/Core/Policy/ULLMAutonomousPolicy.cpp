@@ -74,7 +74,17 @@ const std::unordered_set<std::string>& autonomousLifecycleTools()
 bool isAutonomousMetaTool(const std::string& tool_name)
 {
     // Clarification protocol must work under SemiAuto/Strict (Act-or-Clarify).
-    return tool_name == "ask_user";
+    return tool_name == "ask_user" || tool_name == "propose_plan";
+}
+
+bool isAutonomousUiOrWatchTool(const std::string& tool_name)
+{
+    return tool_name == "show_ui_panel" || tool_name == "open_component_gui_tab"
+           || tool_name == "list_ui_panels" || tool_name == "add_watch_series"
+           || tool_name == "list_watch_series" || tool_name == "remove_watch_series"
+           || tool_name == "clear_watch_series" || tool_name == "list_watch_mdi"
+           || tool_name == "create_watch_mdi" || tool_name == "focus_watch_mdi"
+           || tool_name == "close_watch_mdi";
 }
 
 bool isChannelCalcWriteTool(const std::string& tool_name)
@@ -107,7 +117,8 @@ bool ULLMAutonomousPolicy::isToolWhitelisted(const std::string& tool_name, LLMAu
     if(mode == LLMAutonomousMode::Off)
         return true;
     return isAutonomousReadTool(tool_name) || isAutonomousWriteTool(tool_name)
-           || isAutonomousLifecycleTool(tool_name) || isAutonomousMetaTool(tool_name);
+           || isAutonomousLifecycleTool(tool_name) || isAutonomousMetaTool(tool_name)
+           || isAutonomousUiOrWatchTool(tool_name);
 }
 
 AutonomousStepDecision ULLMAutonomousPolicy::checkStep(const std::string& tool_name,
@@ -127,7 +138,7 @@ AutonomousStepDecision ULLMAutonomousPolicy::checkStep(const std::string& tool_n
     }
 
     if(isAutonomousReadTool(tool_name) || isAutonomousLifecycleTool(tool_name)
-       || isAutonomousMetaTool(tool_name))
+       || isAutonomousMetaTool(tool_name) || isAutonomousUiOrWatchTool(tool_name))
         return out;
 
     // Channel calc is a single control action — do not burn the write step budget.

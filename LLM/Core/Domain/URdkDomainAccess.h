@@ -72,6 +72,12 @@ public:
     DomainStatus getComponentClassName(const std::string& long_name,
                                        int channel_index,
                                        std::string& out_class_name) const;
+    /// Property exists and is numeric / matrix-or-vector cell suitable for Watch series
+    /// (mirrors UWatchTab::createSelectionDialog type gate; no Qt).
+    DomainStatus validateWatchProperty(const std::string& long_name,
+                                       const std::string& property_name,
+                                       int channel_index = 0, int jx = 0,
+                                       int jy = 0) const;
 
     DomainStatus addComponent(const std::string& class_name,
                               const std::string& parent_long_name,

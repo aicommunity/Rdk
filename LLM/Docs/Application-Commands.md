@@ -63,6 +63,21 @@ These tools are registered in `RegisterApplicationTools.cpp`:
 - `list_ui_panels` returns `{id,title,visible}` based on the GUI host (`UGEngineControlWidget`).
 - `show_ui_panel` / `open_component_gui_tab` do not call Qt directly from tool handlers; instead they request a GUI action via `LLMPresentationEvent.show_panel`, applied by `ULlmQtPresentationSink` on the GUI thread.
 
+### Watch series and MDI (DD-WATCH-001)
+
+Registered in `RegisterApplicationTools.cpp` via `invokeApplicationTool` → `ILLMPresentationSink::watch*` → `UGEngineControlWidget::llmWatch*` (GUI thread only; no Qt in `URdkApplicationCommands`).
+
+| Tool | Kind | Host |
+|------|------|------|
+| `add_watch_series` | Write | `llmWatchAddSeries` (`surface=window\|mdi`) |
+| `list_watch_series` | Read | `llmWatchListSeries` |
+| `remove_watch_series` / `clear_watch_series` | Write | remove/clear |
+| `list_watch_mdi` / `create_watch_mdi` / `focus_watch_mdi` / `close_watch_mdi` | Read/Write | MDI `Watches_N` |
+
+`add_watch_series` calls `URdkDomainAccess::validateWatchProperty` (exists + int/double/MDMatrix|MDVector) before host `createSerie` — DomainError path, no Qt.
+
+FastPath: «на график выход X и Y» → `add_watch_series`×N (`ULLMWatchPlotGoal`). Autonomous whitelist treats UI/watch tools like `ask_user` (no write-step burn).
+
 ## Policy
 
 - **P01:** write tools need open project except `create_configuration` / `load_configuration` / `validate_configuration` and GUI/UX helpers (`open_recent_configuration`, `show_ui_panel`, `open_component_gui_tab`).
@@ -85,6 +100,7 @@ Call `LLMServices::initialize(app, ctx)` without `setPresentationSink` — comma
 |--------|---------|
 | `Test_LLM_ApplicationFixtures` | JSON fixtures, policy path deny, registry tools |
 | `Test_LLM_PresentationSink` | FullShell vs None, audit field attachment |
+| `Test_LLM_WatchTools` | Watch/MDI schema registration + sink mock |
 | `Test_LLM_OllamaLabIntegration` | HTTP/chat to `http://10.245.1.12:11434` — **skipped** if host down (`GTEST_SKIP`) |
 | `Test_LLM_E2eLabCommands` | Orchestrator E2E: user → lab Ollama → tool calls (`validate_configuration`, `load_configuration`, …) — **skipped** if Ollama down |
 | `Test_LLM_E2eScenarios` | Parameterized NL E2E: fuzzy RU/EN prompts incl. `создай новый проект` — **skipped** if Ollama down |
@@ -177,6 +193,10 @@ These tools are registered in `RegisterApplicationTools.cpp`:
 - `list_ui_panels` returns `{id,title,visible}` based on the GUI host (`UGEngineControlWidget`).
 - `show_ui_panel` / `open_component_gui_tab` do not call Qt directly from tool handlers; instead they request a GUI action via `LLMPresentationEvent.show_panel`, applied by `ULlmQtPresentationSink` on the GUI thread.
 
+### Watch series and MDI (DD-WATCH-001)
+
+Same as RU section: `add/list/remove/clear_watch_series`, `list/create/focus/close_watch_mdi` via presentation sink → `UGEngineControlWidget::llmWatch*` (GUI thread).
+
 ## Policy
 
 - **P01:** write tools need open project except `create_configuration` / `load_configuration` / `validate_configuration` and GUI/UX helpers (`open_recent_configuration`, `show_ui_panel`, `open_component_gui_tab`).
@@ -199,6 +219,7 @@ Call `LLMServices::initialize(app, ctx)` without `setPresentationSink` — comma
 |--------|---------|
 | `Test_LLM_ApplicationFixtures` | JSON fixtures, policy path deny, registry tools |
 | `Test_LLM_PresentationSink` | FullShell vs None, audit field attachment |
+| `Test_LLM_WatchTools` | Watch/MDI schema registration + sink mock |
 | `Test_LLM_OllamaLabIntegration` | HTTP/chat to `http://10.245.1.12:11434` — **skipped** if host down (`GTEST_SKIP`) |
 | `Test_LLM_E2eLabCommands` | Orchestrator E2E: user → lab Ollama → tool calls (`validate_configuration`, `load_configuration`, …) — **skipped** if Ollama down |
 | `Test_LLM_E2eScenarios` | Parameterized NL E2E: fuzzy RU/EN prompts incl. `create new проект` — **skipped** if Ollama down |

@@ -1,7 +1,9 @@
 #include "ULLMContextAcquisitionPolicy.h"
 
 #include "../Domain/URdkDomainAccess.h"
+#include "ULLMComponentStructureGoal.h"
 #include "ULLMConnectPlanParsing.h"
+#include "ULLMWatchPlotGoal.h"
 
 #include <cstdlib>
 #include <sstream>
@@ -102,6 +104,16 @@ std::string buildRetrievalQuery(const std::string& planning_text, const Conversa
             q << ' ';
         q << state.last_user_text_en;
     }
+    if(isComponentStructureGoal(planning_text)
+       || (!state.last_user_text_en.empty() && isComponentStructureGoal(state.last_user_text_en)))
+    {
+        if(!q.str().empty())
+            q << ' ';
+        q << "NumDendriteMembranePartsVec NPulseNeuron StructureBuildMode NumSomaMembraneParts";
+        const ParsedDendriteStructureGoal dendrite = parseDendriteStructureGoal(planning_text);
+        if(!dendrite.component_token.empty())
+            q << ' ' << dendrite.component_token;
+    }
     return q.str();
 }
 
@@ -143,9 +155,13 @@ ContextAcquisitionPlan computeContextAcquisitionPlan(const ConversationState& st
     const bool mutate_prefetch_env = envFlagEnabled("NMSDK_LLM_CONTEXT_PREFETCH_DOCS");
     const bool mutate_prefetch_auto =
         mode == LLMContextAcquisitionMode::Auto && acq_signals.intent == LLMIntentKind::Mutate;
+    const bool structure_mutate =
+        acq_signals.intent == LLMIntentKind::Mutate
+        && (isComponentStructureGoal(acq_signals.retrieval_query));
     plan.prefetch_docs =
         !acq_signals.retrieval_query.empty()
         && (acq_signals.intent == LLMIntentKind::Query
+            || structure_mutate
             || (acq_signals.intent == LLMIntentKind::Mutate
                 && (mutate_prefetch_auto || mutate_prefetch_env)));
 

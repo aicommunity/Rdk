@@ -326,6 +326,80 @@ RegisteredClassResolution resolveRegisteredClassName(const std::string& query,
     return result;
 }
 
+RegisteredClassResolution resolvePropertyNameFromCatalog(const std::string& query,
+                                                         const std::vector<std::string>& catalog)
+{
+    RegisteredClassResolution result;
+    const std::string trimmed = trimCopy(query);
+    if(trimmed.empty() || catalog.empty())
+        return result;
+
+    for(const std::string& name : catalog)
+    {
+        if(name == trimmed)
+        {
+            result.status = RegisteredClassResolution::Status::Resolved;
+            result.class_name = name;
+            return result;
+        }
+    }
+
+    const std::string qlower = toLowerAscii(trimmed);
+    std::vector<std::string> case_insensitive;
+    for(const std::string& name : catalog)
+    {
+        if(toLowerAscii(name) == qlower)
+            case_insensitive.push_back(name);
+    }
+    if(case_insensitive.size() == 1)
+    {
+        result.status = RegisteredClassResolution::Status::Resolved;
+        result.class_name = case_insensitive.front();
+        return result;
+    }
+    if(case_insensitive.size() > 1)
+    {
+        result.status = RegisteredClassResolution::Status::Ambiguous;
+        for(const std::string& c : case_insensitive)
+            result.candidates.push_back({c, 1.0});
+        return result;
+    }
+
+    // Strip underscores / common typo noise for soft match (numDendridet… → NumDendrite…)
+    auto stripNoise = [](std::string s) {
+        s = toLowerAscii(std::move(s));
+        s.erase(std::remove(s.begin(), s.end(), '_'), s.end());
+        return s;
+    };
+    const std::string qstripped = stripNoise(trimmed);
+    std::vector<std::string> stripped_hits;
+    for(const std::string& name : catalog)
+    {
+        if(stripNoise(name) == qstripped)
+            stripped_hits.push_back(name);
+    }
+    if(stripped_hits.size() == 1)
+    {
+        result.status = RegisteredClassResolution::Status::Resolved;
+        result.class_name = stripped_hits.front();
+        return result;
+    }
+
+    const std::vector<ClassCandidate> fuzzy = findSimilarRegisteredClasses(trimmed, catalog, 8);
+    if(fuzzy.empty())
+        return result;
+    if(fuzzy.size() == 1 || (fuzzy.size() >= 2 && fuzzy[0].score - fuzzy[1].score > 0.08))
+    {
+        result.status = RegisteredClassResolution::Status::Resolved;
+        result.class_name = fuzzy.front().class_name;
+        return result;
+    }
+    result.status = RegisteredClassResolution::Status::Ambiguous;
+    for(const ClassCandidate& c : fuzzy)
+        result.candidates.push_back({c.class_name, c.score});
+    return result;
+}
+
 ComponentEntityResolution resolveComponentEntity(
     const std::string& query, const nlohmann::json& snapshot_components,
     const std::optional<std::string>& class_filter)

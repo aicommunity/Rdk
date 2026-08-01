@@ -29,6 +29,8 @@
 #include "../Intent/ULLMIntentAmbiguityGate.h"
 #include "ULLMConfigurationLifecycle.h"
 #include "ULLMChannelCalcCommand.h"
+#include "ULLMComponentStructureGoal.h"
+#include "ULLMWatchPlotGoal.h"
 #include "ULLMActOrClarifyGate.h"
 #include "ULLMDialogSlotMerge.h"
 #include "ULLMLifecycleArgumentGate.h"
@@ -574,10 +576,12 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
         intent_result.confidence = understanding.confidence;
         if(understanding.needs_clarification)
             setWorkflowPhase(state, LLMWorkflowPhase::Understanding, req.trace_id);
-        // Channel calc / connect must stay Mutate even if Router labels Query.
+        // Channel calc / connect / structure / watch must stay Mutate even if Router labels Query.
         if(isChannelCalcGoalText(planning_text) || isChannelCalcGoalText(req.user_text)
            || isConnectGoalText(planning_text) || isConnectGoalText(req.user_text)
-           || isDisconnectGoalText(planning_text))
+           || isDisconnectGoalText(planning_text)
+           || isComponentStructureGoal(planning_text) || isComponentStructureGoal(req.user_text)
+           || isWatchPlotGoal(planning_text) || isWatchPlotGoal(req.user_text))
         {
             intent = LLMIntentKind::Mutate;
             intent_result.kind = LLMIntentKind::Mutate;
@@ -643,6 +647,278 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
             attachTurnToolTrace(state, calc_final);
             m_store.persistToDisk(req.session_id);
             return calc_final;
+        }
+    }
+
+    // DD-STRUCT-001: dendrite structure FastPath (mode2 + NumSoma + Vec + calculate).
+    if(!skip_pre_llm_funnel && session.llm_write_enabled
+       && LLMServices::instance().isInitialized()
+       && LLMServices::instance().domain().application())
+    {
+        ParsedDendriteStructureGoal dendrite = parseDendriteStructureGoal(req.user_text);
+        if(!dendrite.ok)
+            dendrite = parseDendriteStructureGoal(planning_text);
+        if(dendrite.ok && dendrite.dendrite_count > 0
+           && static_cast<int>(dendrite.lengths.size()) == dendrite.dendrite_count)
+        {
+            URdkDomainAccess& domain = LLMServices::instance().domain();
+            const int channel = session.active_channel_index;
+            std::string long_name;
+            auto tryResolve = [&](const std::string& hint) {
+                if(hint.empty() || !long_name.empty())
+                    return;
+                std::string resolved;
+                if(domain.resolveComponentLongName(hint, channel, resolved).ok() && !resolved.empty())
+                    long_name = resolved;
+            };
+            tryResolve(dendrite.component_token);
+            tryResolve(req.gui.focused_component_long_name);
+            if(long_name.empty() && !state.session_graph.added_long_names.empty())
+                long_name = state.session_graph.added_long_names.back();
+            // Soft fallback when user said «дендрит» without CapWord / focus.
+            if(long_name.empty())
+                tryResolve("PNeuron");
+
+            if(!long_name.empty())
+            {
+                std::ostringstream vec_ss;
+                for(size_t i = 0; i < dendrite.lengths.size(); ++i)
+                {
+                    if(i)
+                        vec_ss << ' ';
+                    vec_ss << dendrite.lengths[i];
+                }
+                const std::string vec_value = vec_ss.str();
+                const std::string soma_value = std::to_string(dendrite.dendrite_count);
+
+                RecordedToolInvokeDeps deps{m_registry, m_gateway, m_store, {},
+                                            m_system_log_reader.get()};
+                auto invokeSet = [&](const std::string& prop, const std::string& value,
+                                     const char* idem) -> ToolGatewayResult {
+                    nlohmann::json args = {{"long_name", long_name},
+                                           {"property_name", prop},
+                                           {"value", value},
+                                           {"channel_index", channel}};
+                    RecordedToolInvokeRequest rreq;
+                    rreq.session_id = req.session_id;
+                    rreq.trace_id = req.trace_id;
+                    rreq.tool_name = "set_property";
+                    rreq.arguments = args;
+                    rreq.session = session;
+                    rreq.session.session_id = req.session_id;
+                    rreq.user_text_hint = entity_user_text_hint;
+                    rreq.idempotency_action_id = idem;
+                    rreq.force_confirmed = true;
+                    rreq.confirmed = true;
+                    rreq.skip_preview = true;
+                    rreq.append_outcome_assistant = false;
+                    rreq.skip_turn_tool_trace = true;
+                    RecordedToolInvokeResult recorded = recordedToolInvoke(state, deps, rreq);
+                    const LLMToolDefinition* def = m_registry.find("set_property");
+                    recordTurnToolInvocation(state, "set_property", args, recorded.gateway, 0,
+                                             def ? def->input_schema : nlohmann::json::object());
+                    return recorded.gateway;
+                };
+
+                ToolGatewayResult t1 = invokeSet("StructureBuildMode", "2", "dendrite_fp_mode");
+                ToolGatewayResult t2 =
+                    t1.ok ? invokeSet("NumSomaMembraneParts", soma_value, "dendrite_fp_soma") : t1;
+                ToolGatewayResult t3 =
+                    t2.ok ? invokeSet("NumDendriteMembranePartsVec", vec_value, "dendrite_fp_vec")
+                          : t2;
+                ToolGatewayResult t4 = t3;
+                if(t3.ok)
+                {
+                    nlohmann::json args = {{"long_name", long_name}, {"channel_index", channel}};
+                    RecordedToolInvokeRequest rreq;
+                    rreq.session_id = req.session_id;
+                    rreq.trace_id = req.trace_id;
+                    rreq.tool_name = "calculate_component";
+                    rreq.arguments = args;
+                    rreq.session = session;
+                    rreq.session.session_id = req.session_id;
+                    rreq.user_text_hint = entity_user_text_hint;
+                    rreq.idempotency_action_id = "dendrite_fp_calc";
+                    rreq.force_confirmed = true;
+                    rreq.confirmed = true;
+                    rreq.skip_preview = true;
+                    rreq.append_outcome_assistant = false;
+                    rreq.skip_turn_tool_trace = true;
+                    RecordedToolInvokeResult recorded = recordedToolInvoke(state, deps, rreq);
+                    t4 = recorded.gateway;
+                    const LLMToolDefinition* def = m_registry.find("calculate_component");
+                    recordTurnToolInvocation(state, "calculate_component", args, t4, 0,
+                                             def ? def->input_schema : nlohmann::json::object());
+                }
+
+                LLMFinalResponse dendrite_final;
+                dendrite_final.ok = t4.ok;
+                if(t4.ok)
+                {
+                    dendrite_final.text =
+                        "Configured " + long_name + " dendrites: StructureBuildMode=2, "
+                        "NumSomaMembraneParts=" + soma_value + ", NumDendriteMembranePartsVec=\""
+                        + vec_value + "\", then calculate_component.";
+                }
+                else
+                {
+                    dendrite_final.text =
+                        !t4.message.empty() ? t4.message : "Dendrite structure FastPath failed";
+                    dendrite_final.error = t4.message;
+                }
+                GetAuditLog().append(t4.ok ? "dendrite_structure_fastpath"
+                                           : "dendrite_structure_fastpath_failed",
+                                     {{"long_name", long_name},
+                                      {"dendrite_count", dendrite.dendrite_count},
+                                      {"ok", t4.ok},
+                                      {"error_code", t4.error_code}},
+                                     req.trace_id, req.session_id);
+                setWorkflowPhase(state,
+                                 t4.ok ? LLMWorkflowPhase::Completed : LLMWorkflowPhase::Failed,
+                                 req.trace_id);
+                setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
+                assignTurnTerminal(dendrite_final, TurnTerminal::Completed);
+                attachTurnToolTrace(state, dendrite_final);
+                m_store.persistToDisk(req.session_id);
+                return dendrite_final;
+            }
+        }
+    }
+
+    // DD-WATCH-001: plot FastPath — add_watch_series for named components (prefer Output).
+    if(!skip_pre_llm_funnel && session.llm_write_enabled
+       && LLMServices::instance().isInitialized()
+       && LLMServices::instance().domain().application())
+    {
+        ParsedWatchPlotGoal watch_goal = parseWatchPlotGoal(req.user_text);
+        if(!watch_goal.ok)
+            watch_goal = parseWatchPlotGoal(planning_text);
+        if(watch_goal.ok)
+        {
+            URdkDomainAccess& domain = LLMServices::instance().domain();
+            const int channel = session.active_channel_index;
+            std::vector<std::string> resolved_names;
+            for(const std::string& token : watch_goal.component_tokens)
+            {
+                std::string ln;
+                if(domain.resolveComponentLongName(token, channel, ln).ok() && !ln.empty())
+                    resolved_names.push_back(ln);
+            }
+            if(resolved_names.empty() && !req.gui.focused_component_long_name.empty())
+                resolved_names.push_back(req.gui.focused_component_long_name);
+
+            if(!resolved_names.empty() || watch_goal.want_new_mdi)
+            {
+                RecordedToolInvokeDeps deps{m_registry, m_gateway, m_store, {},
+                                            m_system_log_reader.get()};
+                int mdi_id = -1;
+                std::string surface = "window";
+                if(watch_goal.want_new_mdi)
+                {
+                    nlohmann::json args = {{"grid_rows", 1}, {"grid_cols", 1}};
+                    RecordedToolInvokeRequest rreq;
+                    rreq.session_id = req.session_id;
+                    rreq.trace_id = req.trace_id;
+                    rreq.tool_name = "create_watch_mdi";
+                    rreq.arguments = args;
+                    rreq.session = session;
+                    rreq.session.session_id = req.session_id;
+                    rreq.user_text_hint = entity_user_text_hint;
+                    rreq.idempotency_action_id = "watch_fp_create_mdi";
+                    rreq.force_confirmed = true;
+                    rreq.confirmed = true;
+                    rreq.skip_preview = true;
+                    rreq.append_outcome_assistant = false;
+                    rreq.skip_turn_tool_trace = true;
+                    RecordedToolInvokeResult recorded = recordedToolInvoke(state, deps, rreq);
+                    const LLMToolDefinition* def = m_registry.find("create_watch_mdi");
+                    recordTurnToolInvocation(state, "create_watch_mdi", args, recorded.gateway, 0,
+                                             def ? def->input_schema : nlohmann::json::object());
+                    if(recorded.gateway.ok)
+                    {
+                        mdi_id = recorded.gateway.result.value("mdi_id", -1);
+                        surface = "mdi";
+                    }
+                }
+
+                bool all_ok = true;
+                std::ostringstream summary;
+                if(watch_goal.want_new_mdi && surface == "mdi")
+                    summary << "Created Watches MDI mdi_id=" << mdi_id << ".";
+                else
+                    summary << "Added watch series:";
+
+                if(resolved_names.empty())
+                {
+                    // MDI-only request without resolvable components — done after create.
+                    if(!(watch_goal.want_new_mdi && surface == "mdi"))
+                    {
+                        all_ok = false;
+                        summary.str("");
+                        summary << "Watch FastPath: no component resolved for series";
+                    }
+                }
+
+                for(size_t i = 0; i < resolved_names.size(); ++i)
+                {
+                    nlohmann::json args = {{"long_name", resolved_names[i]},
+                                           {"property_name", watch_goal.property_name},
+                                           {"channel_index", channel},
+                                           {"surface", surface},
+                                           {"mdi_id", mdi_id},
+                                           {"chart_index", 0}};
+                    RecordedToolInvokeRequest rreq;
+                    rreq.session_id = req.session_id;
+                    rreq.trace_id = req.trace_id;
+                    rreq.tool_name = "add_watch_series";
+                    rreq.arguments = args;
+                    rreq.session = session;
+                    rreq.session.session_id = req.session_id;
+                    rreq.user_text_hint = entity_user_text_hint;
+                    rreq.idempotency_action_id =
+                        "watch_fp_add_" + std::to_string(i);
+                    rreq.force_confirmed = true;
+                    rreq.confirmed = true;
+                    rreq.skip_preview = true;
+                    rreq.append_outcome_assistant = false;
+                    rreq.skip_turn_tool_trace = true;
+                    RecordedToolInvokeResult recorded = recordedToolInvoke(state, deps, rreq);
+                    const LLMToolDefinition* def = m_registry.find("add_watch_series");
+                    recordTurnToolInvocation(state, "add_watch_series", args, recorded.gateway, 0,
+                                             def ? def->input_schema : nlohmann::json::object());
+                    if(!recorded.gateway.ok)
+                    {
+                        all_ok = false;
+                        summary.str("");
+                        summary << (!recorded.gateway.message.empty()
+                                        ? recorded.gateway.message
+                                        : "add_watch_series failed");
+                        break;
+                    }
+                    if(i == 0 && watch_goal.want_new_mdi)
+                        summary << " Added:";
+                    summary << " " << resolved_names[i] << "." << watch_goal.property_name;
+                }
+
+                LLMFinalResponse watch_final;
+                watch_final.ok = all_ok;
+                watch_final.text = summary.str();
+                if(!all_ok)
+                    watch_final.error = watch_final.text;
+                GetAuditLog().append(all_ok ? "watch_plot_fastpath" : "watch_plot_fastpath_failed",
+                                     {{"count", static_cast<int>(resolved_names.size())},
+                                      {"surface", surface},
+                                      {"ok", all_ok}},
+                                     req.trace_id, req.session_id);
+                setWorkflowPhase(state,
+                                 all_ok ? LLMWorkflowPhase::Completed : LLMWorkflowPhase::Failed,
+                                 req.trace_id);
+                setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
+                assignTurnTerminal(watch_final, TurnTerminal::Completed);
+                attachTurnToolTrace(state, watch_final);
+                m_store.persistToDisk(req.session_id);
+                return watch_final;
+            }
         }
     }
 
@@ -1398,6 +1674,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
     bool recovery_used = false;
     bool connect_recovery_used = false;
     bool calc_recovery_used = false;
+    bool structure_recovery_used = false;
+    bool watch_recovery_used = false;
     std::optional<std::pair<std::string, ToolGatewayResult>> last_graph_write;
 
     const bool is_cloud_profile = req.provider_profile.is_cloud;
@@ -1565,6 +1843,25 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                             "for all channels. Do not call ask_user unless arguments are missing. "
                             "If no tool can satisfy the request, reply exactly: NO_SUITABLE_TOOL.";
                     }
+                    else if(isComponentStructureGoal(planning_text)
+                            || isComponentStructureGoal(req.user_text))
+                    {
+                        recovery.content =
+                            "Component structure goal: use describe_class / get_component_properties, "
+                            "then set_property StructureBuildMode=2, NumSomaMembraneParts, "
+                            "NumDendriteMembranePartsVec (space-separated), then calculate_component. "
+                            "Do not add_component Dendrite classes. If no tool fits, reply exactly: "
+                            "NO_SUITABLE_TOOL.";
+                    }
+                    else if(isWatchPlotGoal(planning_text) || isWatchPlotGoal(req.user_text))
+                    {
+                        recovery.content =
+                            "Watch plot goal: call add_watch_series (surface=window) for each "
+                            "component Output (or named property). Prefer create_watch_mdi only when "
+                            "user asks for a separate Watches window. Do not use "
+                            "open_component_gui_tab for plotting. If no tool fits, reply exactly: "
+                            "NO_SUITABLE_TOOL.";
+                    }
                     else
                     {
                         recovery.content =
@@ -1602,6 +1899,63 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                         "now (start/pause/reset/step). Do not invent status without a tool call.";
                     m_store.appendMessage(req.session_id, recovery);
                     GetAuditLog().append("channel_calc_recovery_round",
+                                         {{"session_id", req.session_id}},
+                                         req.trace_id, req.session_id);
+                    continue;
+                }
+                if((isComponentStructureGoal(planning_text) || isComponentStructureGoal(req.user_text))
+                   && !structure_recovery_used)
+                {
+                    structure_recovery_used = true;
+                    filter.include_write = true;
+                    filter.allowed_tool_names = std::unordered_set<std::string>{
+                        "describe_class",
+                        "get_component_properties",
+                        "set_property",
+                        "calculate_component",
+                        "find_component",
+                        "search_project_docs",
+                        "ask_user",
+                    };
+                    opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
+                    ctx_input.tool_filter = filter;
+                    LLMMessage recovery;
+                    recovery.role = LLMMessage::Role::System;
+                    recovery.content =
+                        "Structure recovery: set_property StructureBuildMode=2, "
+                        "NumSomaMembraneParts=<N>, NumDendriteMembranePartsVec=\"L1 L2 …\", then "
+                        "calculate_component. Do not add_component dendrites.";
+                    m_store.appendMessage(req.session_id, recovery);
+                    GetAuditLog().append("structure_recovery_round",
+                                         {{"session_id", req.session_id}},
+                                         req.trace_id, req.session_id);
+                    continue;
+                }
+                if((isWatchPlotGoal(planning_text) || isWatchPlotGoal(req.user_text))
+                   && !watch_recovery_used)
+                {
+                    watch_recovery_used = true;
+                    filter.include_write = true;
+                    filter.allowed_tool_names = std::unordered_set<std::string>{
+                        "add_watch_series",
+                        "list_watch_series",
+                        "create_watch_mdi",
+                        "list_watch_mdi",
+                        "focus_watch_mdi",
+                        "show_ui_panel",
+                        "find_component",
+                        "get_component_ports",
+                        "ask_user",
+                    };
+                    opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
+                    ctx_input.tool_filter = filter;
+                    LLMMessage recovery;
+                    recovery.role = LLMMessage::Role::System;
+                    recovery.content =
+                        "Watch recovery: call add_watch_series for each signal (surface=window). "
+                        "Do not open_component_gui_tab.";
+                    m_store.appendMessage(req.session_id, recovery);
+                    GetAuditLog().append("watch_plot_recovery_round",
                                          {{"session_id", req.session_id}},
                                          req.trace_id, req.session_id);
                     continue;

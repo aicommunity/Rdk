@@ -26,6 +26,15 @@ public:
     RDK::LLM::ApplicationCommandResult invokeHostSynchronized(
         const std::function<RDK::LLM::ApplicationCommandResult()>& run) override;
 
+    nlohmann::json watchAddSeries(const RDK::LLM::LLMWatchSeriesArgs& args) override;
+    nlohmann::json watchListSeries(const RDK::LLM::LLMWatchSeriesArgs& args) override;
+    nlohmann::json watchRemoveSeries(const RDK::LLM::LLMWatchSeriesArgs& args) override;
+    nlohmann::json watchClearSeries(const RDK::LLM::LLMWatchSeriesArgs& args) override;
+    nlohmann::json watchMdiList() override;
+    nlohmann::json watchMdiCreate(int grid_rows, int grid_cols, const std::string& title) override;
+    nlohmann::json watchMdiFocus(int mdi_id) override;
+    nlohmann::json watchMdiClose(int mdi_id) override;
+
     std::string captureNavigationToken() const override;
     void restoreNavigationToken(const std::string& token) override;
     void navigateToDiagramScope(const std::string& scope_long_name, int channel_index) override;

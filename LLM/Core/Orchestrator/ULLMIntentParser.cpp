@@ -1,7 +1,9 @@
 #include "ULLMIntentParser.h"
 
 #include "ULLMChannelCalcCommand.h"
+#include "ULLMComponentStructureGoal.h"
 #include "ULLMConnectPlanParsing.h"
+#include "ULLMWatchPlotGoal.h"
 
 #include <cctype>
 #include <cstdlib>
@@ -38,6 +40,8 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
                        "переимен", "запусти расч", "останови расч", "расчёт", "расчет",
                        "start calc", "run calculation", "pause calculation", "reset calculation",
                        "start calculation", "stop calculation",
+                       "дендрит", "numsoma", "numdendrite", "membrane parts",
+                       "график", "watch", "plot",
                        "add ", "create ", "create config", "new config", "new configuration", "remove ", "delete ",
                        "save ", "load ", "set ", "connect ", "open config", "close config", "copy config",
                        "rename config", "создай конфиг", "новый конфиг", "новая конфигурация"},
@@ -91,6 +95,12 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
 
     // Channel calc verbs (запусти расчет / start calculation) — always Mutate.
     if(isChannelCalcGoalText(user_text))
+    {
+        result.kind = LLMIntentKind::Mutate;
+        best = std::max(best, 1.0f);
+    }
+
+    if(isComponentStructureGoal(user_text) || isWatchPlotGoal(user_text))
     {
         result.kind = LLMIntentKind::Mutate;
         best = std::max(best, 1.0f);
