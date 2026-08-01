@@ -42,7 +42,7 @@ Use when you need a tool without a domain scenario pack yet.
 
 ### 2.2 Library tools (remain valid)
 
-`Libraries/*/Llm/Register*LibLlmTools` stay the registration path for **tools**. Packs wrap **domain scenarios** (match/hints/Recorded/recovery) and may list those tool names in `extra_tool_names` / recovery lists. Thin pack adapters around library tools are optional — document the scenario in a pack when the agent needs FastPath or Act-or-Clarify recovery for that domain.
+`Register*LibLlmTools` remains valid for tools. Packs wrap **domain scenarios** (match/hints/Recorded/recovery) and may list those tool names in `extra_tool_names` / recovery lists. Example library adapter: `Libraries/Nmsdk-PulseLib/Llm/UPackPulseDocs` (registered from `RegisterPulseLibLlmTools` when LLMServices is ready).
 
 Examples: [`Libraries/Rdk-HardwareLib/Llm/`](../../../Libraries/Rdk-HardwareLib/Llm/), PulseLib / MotionControlLib similarly.
 

@@ -11,7 +11,7 @@ namespace RDK::LLM {
 
 struct SubagentRunRequest {
     std::string task;
-    /// Profile name (`explore` default). Reserved for future profiles.
+    /// Profile: `explore` (default), `inspect_graph`, `search_docs`.
     std::string profile = "explore";
     int max_rounds = 4;
 };

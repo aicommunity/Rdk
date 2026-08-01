@@ -118,8 +118,8 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-167 | Wire pack hints into assembler/filter | pack-tails | P1 | done | `pack_hints_block` + `collectPackHintsMarkdown` / `collectPackExtraToolNames` on ReAct path |
 | TD-168 | Sync Developer-Architecture + Unified-Turn-Contract | pack-tails | P1 | done | TurnPipeline/packs/multi-goal/`working_goals`; Capability-Packs §7 |
 | TD-169 | Migrate live-analogous connect into UPackConnect | pack-tails | P2 | done | `UPackConnect::tryRecorded`; orch FastPath removed |
-| TD-170 | Multi-phase TurnPipeline extract | pack-tails | P2 | open | Replace Legacy body |
-| TD-171 | Library pack adapter + subagent profiles + goals hooks | pack-tails | P3 | open | Pulse/Hardware pack; inspect_graph/search_docs |
+| TD-170 | Multi-phase TurnPipeline extract | pack-tails | P2 | done | SessionGuard, Prepare, GoalRouter, LegacyRest; shared turn state in `TurnContext` |
+| TD-171 | Library pack adapter + subagent profiles + goals hooks | pack-tails | P3 | done | Pulse `UPackPulseDocs`; inspect_graph/search_docs; TaskExecutor evidence; compactor preserves goals |
 
 ---
 

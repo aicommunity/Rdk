@@ -8,8 +8,10 @@
 #include "../LlmModuleInit.h"
 #include "../LlmPublicApi.h"
 #include "../Observability/ULLMToolTrace.h"
+#include "../Packs/ULLMCompoundGoal.h"
 #include "../Session/ULLMConversationStore.h"
 #include "../Session/ULLMSessionGraphMemory.h"
+#include "../Session/ULLMWorkingGoals.h"
 #include "ULLMPlanExecutor.h"
 #include "ULLMStepVerifier.h"
 
@@ -269,6 +271,17 @@ TaskExecuteResult ULLMTaskExecutor::execute(ULLMExecutionPlan& plan,
             completed.insert(step.step_id);
             out.completed_step_ids.push_back(step.step_id);
             plan.checkpoint_after_step_id = step.step_id;
+            if(options.conversation_state)
+            {
+                const std::string goal_id = workingGoalIdForToolName(step.tool_name);
+                if(!goal_id.empty())
+                {
+                    appendWorkingGoalEvidence(*options.conversation_state, goal_id,
+                                              step.tool_name + ":ok");
+                    markWorkingGoalStatus(*options.conversation_state, goal_id,
+                                          WorkingGoalStatus::Done);
+                }
+            }
         }
 
         if(failed)

@@ -164,12 +164,17 @@ void RegisterAgentTools(ULLMToolRegistry& registry)
 
     registry.registerTool(
         agentToolDef("spawn_explore_subagent",
-                     "Spawn a read-only explore subagent with isolated tool budget.",
+                     "Spawn a read-only subagent with isolated tool budget. "
+                     "Profiles: explore (general read), inspect_graph (topology tools), "
+                     "search_docs (documentation search).",
                      {{"type", "object"},
                       {"required", {"task"}},
                       {"properties",
                        {{"task", {{"type", "string"}}},
-                        {"profile", {{"type", "string"}}},
+                        {"profile",
+                         {{"type", "string"},
+                          {"enum", nlohmann::json::array({"explore", "inspect_graph",
+                                                          "search_docs"})}}},
                         {"max_rounds", {{"type", "integer"}}}}},
                       {"additionalProperties", false}}),
         [](const nlohmann::json& args) -> ToolGatewayResult {
