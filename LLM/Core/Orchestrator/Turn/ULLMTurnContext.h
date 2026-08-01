@@ -6,6 +6,7 @@
 
 #include "../ULLMAgentOrchestrator.h"
 #include "../ULLMConfigurationLifecycle.h"
+#include "../ULLMTaskPathRouting.h"
 #include "../../Packs/ILLMCapabilityPack.h"
 #include "../../Session/ULLMConversationStore.h"
 
@@ -29,14 +30,19 @@ struct TurnContext {
     LLMSessionContext session;
     LLMGuiContextSnapshot gui;
     LLMIntentKind intent = LLMIntentKind::Auto;
+    IntentParseResult intent_result{};
     ConfigurationLifecycleAction lifecycle = ConfigurationLifecycleAction::None;
+    TaskPathDecision task_path_decision{};
     ToolFilter tool_filter{};
     std::string planning_text;
     std::string entity_user_text_hint;
     std::vector<std::string> matched_pack_ids;
+    std::string pack_hints_block;
+    std::vector<std::string> pack_extra_tool_names;
     float top_pack_score = 0.f;
     LLMFinalResponse final{};
     bool skip_pre_llm_funnel = false;
+    bool busy_held = false;
 };
 
 } // namespace RDK::LLM

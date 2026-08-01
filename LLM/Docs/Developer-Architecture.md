@@ -39,7 +39,7 @@ The model must **never**:
 
 ## 2. TurnPipeline + Capability Packs
 
-Turn entry is `ULLMTurnPipeline` (`Core/Orchestrator/Turn/`) with `ITurnPhase` phases; the current body is still largely `ULLMTurnPhaseLegacy` (strangler toward thinner phases — TD-170). Domain scenarios live in **Capability Packs** (`Core/Packs/`), not in orchestrator if-ladders (DD-PACK-001).
+Turn entry is `ULLMTurnPipeline` (`Core/Orchestrator/Turn/`) with `SessionGuard`, `Prepare`, `GoalRouter`, and `LegacyRest` phases; `LegacyRest` retains TaskPath/ReAct/finalization while the preceding phases own shared setup and pack routing. Domain scenarios live in **Capability Packs** (`Core/Packs/`), not in orchestrator if-ladders (DD-PACK-001).
 
 **Per-turn shape:**
 

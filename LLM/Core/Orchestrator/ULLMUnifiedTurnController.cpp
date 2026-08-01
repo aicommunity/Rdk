@@ -4,7 +4,10 @@
 #include "../LlmPublicApi.h"
 #include "../Observability/ULLMAuditLog.h"
 #include "../Packs/ULLMCapabilityPackRegistry.h"
+#include "Turn/ULLMTurnPhaseGoalRouter.h"
 #include "Turn/ULLMTurnPhaseLegacy.h"
+#include "Turn/ULLMTurnPhasePrepare.h"
+#include "Turn/ULLMTurnPhaseSessionGuard.h"
 #include "Turn/ULLMTurnPipeline.h"
 
 #include <exception>
@@ -32,11 +35,12 @@ LLMFinalResponse ULLMUnifiedTurnController::handleTurn(ULLMAgentOrchestrator& or
 {
     try
     {
+        // TD-170: SessionGuard → Prepare → GoalRouter → LegacyRest (TaskPath/ReAct).
         std::vector<std::unique_ptr<ITurnPhase>> phases;
-        phases.push_back(std::make_unique<ULLMTurnPhaseLegacy>(
-            [](ULLMAgentOrchestrator& o, const LLMRequestEnvelope& r, const LLMStreamHandlers* s) {
-                return o.handleUserMessageImpl(r, s);
-            }));
+        phases.push_back(std::make_unique<ULLMTurnPhaseSessionGuard>());
+        phases.push_back(std::make_unique<ULLMTurnPhasePrepare>());
+        phases.push_back(std::make_unique<ULLMTurnPhaseGoalRouter>());
+        phases.push_back(std::make_unique<ULLMTurnPhaseLegacy>());
         ULLMTurnPipeline pipeline(std::move(phases));
 
         TurnContext ctx;

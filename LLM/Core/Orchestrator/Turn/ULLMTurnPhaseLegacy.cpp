@@ -4,14 +4,9 @@
 
 namespace RDK::LLM {
 
-ULLMTurnPhaseLegacy::ULLMTurnPhaseLegacy(BodyFn body)
-    : m_body(std::move(body))
-{
-}
-
 TurnPhaseResult ULLMTurnPhaseLegacy::run(TurnContext& ctx, TurnServices& svc)
 {
-    ctx.final = m_body(svc.orch, ctx.req, ctx.stream);
+    ctx.final = svc.orch.handleUserMessageAfterPacks(ctx, svc);
     return TurnPhaseResult::ShortCircuit;
 }
 

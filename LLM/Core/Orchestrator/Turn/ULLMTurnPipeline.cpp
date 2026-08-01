@@ -12,15 +12,33 @@ ULLMTurnPipeline::ULLMTurnPipeline(std::vector<std::unique_ptr<ITurnPhase>> phas
 
 LLMFinalResponse ULLMTurnPipeline::run(TurnContext& ctx, TurnServices& svc)
 {
-    for(std::unique_ptr<ITurnPhase>& phase : m_phases)
+    try
     {
-        if(!phase)
-            continue;
-        GetAuditLog().append("turn_phase_entered", {{"phase", phase->name()}}, ctx.req.trace_id,
-                             ctx.req.session_id);
-        const TurnPhaseResult result = phase->run(ctx, svc);
-        if(result == TurnPhaseResult::ShortCircuit)
-            return ctx.final;
+        for(std::unique_ptr<ITurnPhase>& phase : m_phases)
+        {
+            if(!phase)
+                continue;
+            GetAuditLog().append("turn_phase_entered", {{"phase", phase->name()}}, ctx.req.trace_id,
+                                 ctx.req.session_id);
+            const TurnPhaseResult result = phase->run(ctx, svc);
+            if(result == TurnPhaseResult::ShortCircuit)
+                break;
+        }
+    }
+    catch(...)
+    {
+        if(ctx.busy_held)
+        {
+            svc.orch.releaseSessionBusy(ctx.req.session_id);
+            ctx.busy_held = false;
+        }
+        throw;
+    }
+    svc.orch.finalizeTurnContext(ctx);
+    if(ctx.busy_held)
+    {
+        svc.orch.releaseSessionBusy(ctx.req.session_id);
+        ctx.busy_held = false;
     }
     return ctx.final;
 }

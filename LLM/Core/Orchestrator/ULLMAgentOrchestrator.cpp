@@ -17,6 +17,7 @@
 #include "../Session/ULLMConfirmationExpiry.h"
 #include "../LlmPublicApi.h"
 #include "../Packs/ILLMCapabilityPack.h"
+#include "../Packs/ULLMCapabilityPackRegistry.h"
 #include "../Packs/ULLMCompoundGoal.h"
 #include "../Policy/ULLMPolicyEngine.h"
 #include "../Providers/UOllamaChatTemplate.h"
@@ -65,6 +66,8 @@
 #include "ULLMTaskPathRouting.h"
 #include "ULLMTaskPathMode.h"
 #include "ULLMUnifiedTurnController.h"
+#include "Turn/ITurnPhase.h"
+#include "Turn/ULLMTurnContext.h"
 #include "ULLMInputUnderstanding.h"
 #include "ULLMToolExposurePolicy.h"
 #include "ULLMContextAcquisitionPolicy.h"
@@ -83,6 +86,14 @@
 namespace RDK::LLM {
 
 namespace {
+
+ILLMCapabilityPackRegistry& packsForCompatTurn()
+{
+    if(LLMServices::instance().isInitialized())
+        return LLMServices::instance().packs();
+    static ULLMCapabilityPackRegistry empty;
+    return empty;
+}
 
 std::string pseudoSha256(const std::string& text)
 {
@@ -452,32 +463,19 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessage(const LLMRequestEnvelo
     return ULLMUnifiedTurnController::handleTurn(*this, req, stream);
 }
 
-LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEnvelope& req,
-                                                              const LLMStreamHandlers* stream)
+TurnPhaseResult ULLMAgentOrchestrator::prepareTurnContext(TurnContext& ctx, TurnServices&)
 {
+    const LLMRequestEnvelope& req = ctx.req;
     m_cancelled = false;
     {
         std::lock_guard<std::mutex> lock(m_cancel_mu);
         m_cancelled_sessions.erase(req.session_id);
     }
-    LLMFinalResponse final;
-    SessionBusyScope busy(*this, req.session_id, final);
-    if(!busy)
-        return final;
 
     ConversationState& state = m_store.getOrCreate(req.session_id);
+    ctx.state = &state;
     state.session_id = req.session_id;
     state.current_turn_tool_trace.clear();
-    struct TurnToolTraceAttacher {
-        ConversationState& turn_state;
-        LLMFinalResponse& response;
-        ~TurnToolTraceAttacher()
-        {
-            syncWorkingGoalEvidenceFromTrace(turn_state);
-            response.tool_trace = turn_state.current_turn_tool_trace;
-            response.working_goals = turn_state.working_goals;
-        }
-    } turn_tool_trace_attach{state, final};
     snapshotLastSessionContext(state, req.session);
 
     beginGuiTurnPin(state, req.gui);
@@ -496,8 +494,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
     if(m_store.expirePendingIfStale(req.session_id, confirmation_ttl))
     {
         GetAuditLog().append("confirmation_expired",
-                             {{"reason", "ttl"},
-                              {"ttl_seconds", confirmation_ttl}},
+                             {{"reason", "ttl"}, {"ttl_seconds", confirmation_ttl}},
                              req.trace_id, req.session_id);
     }
 
@@ -505,27 +502,25 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
     user_msg.role = LLMMessage::Role::User;
     user_msg.content = req.user_text;
     m_store.appendMessage(req.session_id, user_msg);
-
     GetAuditLog().append("user_message", {{"length", req.user_text.size()}}, req.trace_id,
                          req.session_id);
     GetAuditLog().append("unified_turn_started", {{"session_id", req.session_id}}, req.trace_id,
                          req.session_id);
-
     ensureTurnWorkingGoal(state, req.user_text);
 
-    LLMSessionContext session = req.session;
+    ctx.session = req.session;
     bool translate_queries_to_en = LLMServices::instance().isInitialized();
     if(LLMServices::instance().isInitialized())
     {
         const LLMRuntimeProviderSettings& runtime_settings =
             LLMServices::instance().settings().runtime();
         translate_queries_to_en = runtime_settings.translate_queries_to_en;
-        session.llm_write_enabled = runtime_settings.llm_write_enabled;
-        session.auto_apply_writes =
+        ctx.session.llm_write_enabled = runtime_settings.llm_write_enabled;
+        ctx.session.auto_apply_writes =
             runtime_settings.llm_write_enabled && runtime_settings.llm_auto_apply_writes;
-        session.autonomous_mode = runtime_settings.autonomous_mode;
-        session.autonomous_steps_taken = 0;
-        session.allow_cloud_llm = runtime_settings.allow_cloud_providers;
+        ctx.session.autonomous_mode = runtime_settings.autonomous_mode;
+        ctx.session.autonomous_steps_taken = 0;
+        ctx.session.allow_cloud_llm = runtime_settings.allow_cloud_providers;
     }
     if(const char* tr_env = std::getenv("NMSDK_LLM_TRANSLATE_QUERIES"))
     {
@@ -534,50 +529,43 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
     }
     if(LLMServices::instance().isInitialized())
     {
-        ProviderAccessCheck access = LLMServices::instance().checkActiveProviderAccess(session);
+        ProviderAccessCheck access = LLMServices::instance().checkActiveProviderAccess(ctx.session);
         if(!access.allowed)
         {
-            final.ok = false;
-            final.error = access.deny_message;
-            GetAuditLog().append(
-                "provider_access_denied",
-                {{"code", access.deny_code},
-                 {"profile", LLMServices::instance().activeProviderProfile().profile_id}},
-                req.trace_id, req.session_id);
-            return final;
+            ctx.final.ok = false;
+            ctx.final.error = access.deny_message;
+            GetAuditLog().append("provider_access_denied",
+                                 {{"code", access.deny_code},
+                                  {"profile", LLMServices::instance().activeProviderProfile().profile_id}},
+                                 req.trace_id, req.session_id);
+            return TurnPhaseResult::ShortCircuit;
         }
-
         GetAuditLog().append(
             "provider_invoke",
             {{"profile_id", LLMServices::instance().activeProviderProfile().profile_id},
-             {"api_key_present",
-              ULLMProviderAuth::hasApiKey(LLMServices::instance().activeProviderProfile(),
-                                          LLMServices::instance().settings().runtime())}},
+             {"api_key_present", ULLMProviderAuth::hasApiKey(
+                                     LLMServices::instance().activeProviderProfile(),
+                                     LLMServices::instance().settings().runtime())}},
             req.trace_id, req.session_id);
     }
 
     setWorkflowPhase(state, LLMWorkflowPhase::Running, req.trace_id);
-
-    const bool skip_pre_llm_funnel =
-        (state.pending_tool_arguments || state.pending_user_question)
-        && isDisambiguationOnlyFollowUp(req.user_text, state);
-
+    ctx.skip_pre_llm_funnel = (state.pending_tool_arguments || state.pending_user_question)
+                              && isDisambiguationOnlyFollowUp(req.user_text, state);
     const QueryNormalizeResult qnorm =
         normalizeUserQueryForPlanning(m_provider, req.user_text, translate_queries_to_en);
-    const std::string planning_text =
-        (!qnorm.text_en.empty() ? qnorm.text_en : req.user_text);
+    ctx.planning_text = !qnorm.text_en.empty() ? qnorm.text_en : req.user_text;
     state.last_user_text_original = req.user_text;
-    state.last_user_text_en = planning_text;
-    const std::string entity_user_text_hint = combinedUserTextHint(state, planning_text);
+    state.last_user_text_en = ctx.planning_text;
+    ctx.entity_user_text_hint = combinedUserTextHint(state, ctx.planning_text);
     if(qnorm.used_llm_translate)
     {
-        GetAuditLog().append(
-            "query_translated",
-            {{"detected_lang", qnorm.detected_lang},
-             {"used_llm_translate", qnorm.used_llm_translate},
-             {"normalized_length", static_cast<int>(planning_text.size())},
-             {"text_en_sha256", pseudoSha256(planning_text)}},
-            req.trace_id, req.session_id);
+        GetAuditLog().append("query_translated",
+                             {{"detected_lang", qnorm.detected_lang},
+                              {"used_llm_translate", qnorm.used_llm_translate},
+                              {"normalized_length", static_cast<int>(ctx.planning_text.size())},
+                              {"text_en_sha256", pseudoSha256(ctx.planning_text)}},
+                             req.trace_id, req.session_id);
     }
     else if(!qnorm.ok)
     {
@@ -587,76 +575,71 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                              req.trace_id, req.session_id);
     }
 
-    if(!skip_pre_llm_funnel && !isDisambiguationOnlyFollowUp(req.user_text, state))
+    if(!ctx.skip_pre_llm_funnel && !isDisambiguationOnlyFollowUp(req.user_text, state))
     {
         QuantityResolveRequest qreq;
         qreq.text_original = req.user_text;
-        qreq.text_en = planning_text;
+        qreq.text_en = ctx.planning_text;
         qreq.allow_llm_fallback = true;
         const QuantityResolveResult qres = resolveUserQuantity(qreq, &m_provider);
         state.last_quantity = qres.quantity;
         if(qres.quantity.valid)
-        {
             GetAuditLog().append("quantity_resolved",
                                  {{"primary", qres.quantity.primary},
                                   {"source", quantitySourceName(qres.quantity.source)}},
                                  req.trace_id, req.session_id);
-        }
     }
 
-    const ConfigurationLifecycleAction lifecycle_action =
-        skip_pre_llm_funnel ? ConfigurationLifecycleAction::None
-                            : detectConfigurationLifecycleAction(req.user_text);
-
-    LLMIntentKind intent = LLMIntentKind::Query;
-    IntentParseResult intent_result;
-    TaskPathDecision task_path_decision;
-    if(skip_pre_llm_funnel)
+    ctx.lifecycle = ctx.skip_pre_llm_funnel ? ConfigurationLifecycleAction::None
+                                            : detectConfigurationLifecycleAction(req.user_text);
+    ctx.intent = LLMIntentKind::Query;
+    if(ctx.skip_pre_llm_funnel)
     {
-        intent = state.intent_contract_kind;
-        intent_result.kind = intent;
-        intent_result.confidence = state.intent_contract_confidence;
-        intent_result.method = "resume";
+        ctx.intent = state.intent_contract_kind;
+        ctx.intent_result.kind = ctx.intent;
+        ctx.intent_result.confidence = state.intent_contract_confidence;
+        ctx.intent_result.method = "resume";
     }
     else
     {
-        intent_result = m_intent.parseWithOptionalLlm(&m_provider, planning_text);
-        intent = intent_result.kind;
+        ctx.intent_result = m_intent.parseWithOptionalLlm(&m_provider, ctx.planning_text);
+        ctx.intent = ctx.intent_result.kind;
         const InputUnderstandingResult understanding = understandUserInput(
-            &m_provider, planning_text, intent_result, &req.provider_profile, req.trace_id,
+            &m_provider, ctx.planning_text, ctx.intent_result, &req.provider_profile, req.trace_id,
             req.session_id);
-        intent = understanding.intent;
-        intent_result.confidence = understanding.confidence;
+        ctx.intent = understanding.intent;
+        ctx.intent_result.confidence = understanding.confidence;
         if(understanding.needs_clarification)
             setWorkflowPhase(state, LLMWorkflowPhase::Understanding, req.trace_id);
-        // Channel calc / connect / structure / watch must stay Mutate even if Router labels Query.
-        if(isChannelCalcGoalText(planning_text) || isChannelCalcGoalText(req.user_text)
-           || isConnectGoalText(planning_text) || isConnectGoalText(req.user_text)
-           || isDisconnectGoalText(planning_text)
-           || isComponentStructureGoal(planning_text) || isComponentStructureGoal(req.user_text)
-           || isWatchPlotGoal(planning_text) || isWatchPlotGoal(req.user_text))
+        if(isChannelCalcGoalText(ctx.planning_text) || isChannelCalcGoalText(req.user_text)
+           || isConnectGoalText(ctx.planning_text) || isConnectGoalText(req.user_text)
+           || isDisconnectGoalText(ctx.planning_text)
+           || isComponentStructureGoal(ctx.planning_text) || isComponentStructureGoal(req.user_text)
+           || isWatchPlotGoal(ctx.planning_text) || isWatchPlotGoal(req.user_text))
         {
-            intent = LLMIntentKind::Mutate;
-            intent_result.kind = LLMIntentKind::Mutate;
-            intent_result.confidence = std::max(intent_result.confidence, 1.f);
+            ctx.intent = LLMIntentKind::Mutate;
+            ctx.intent_result.kind = LLMIntentKind::Mutate;
+            ctx.intent_result.confidence = std::max(ctx.intent_result.confidence, 1.f);
         }
-        task_path_decision =
-            decideTaskPath(planning_text, intent, session.autonomous_mode, &state);
+        ctx.task_path_decision =
+            decideTaskPath(ctx.planning_text, ctx.intent, ctx.session.autonomous_mode, &state);
     }
+    return TurnPhaseResult::Continue;
+}
 
-    // DD-PACK-001: capability pack Recorded strategies (channel_calc, …) before TaskPath.
-    std::vector<std::string> matched_pack_ids;
-    std::string pack_hints_block;
-    std::vector<std::string> pack_extra_tool_names;
-    if(!skip_pre_llm_funnel && LLMServices::instance().isInitialized())
+TurnPhaseResult ULLMAgentOrchestrator::runPackGoalRouter(TurnContext& ctx, TurnServices&)
+{
+    const LLMRequestEnvelope& req = ctx.req;
+    ConversationState& state = *ctx.state;
+    if(!ctx.skip_pre_llm_funnel && LLMServices::instance().isInitialized())
     {
         PackTurnSnapshot snap;
         snap.req = &req;
         snap.state = &state;
-        snap.session = &session;
-        snap.planning_text = planning_text;
-        snap.entity_user_text_hint = entity_user_text_hint;
-        snap.skip_pre_llm_funnel = skip_pre_llm_funnel;
+        snap.session = &ctx.session;
+        snap.planning_text = ctx.planning_text;
+        snap.entity_user_text_hint = ctx.entity_user_text_hint;
+        snap.skip_pre_llm_funnel = ctx.skip_pre_llm_funnel;
         snap.registry = &m_registry;
         snap.gateway = &m_gateway;
         snap.provider = &m_provider;
@@ -665,36 +648,80 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
         snap.set_phase = [this, &state, &req](LLMWorkflowPhase phase) {
             setWorkflowPhase(state, phase, req.trace_id);
         };
-        snap.invoke_tool_direct =
-            [this, &session, &entity_user_text_hint, &req](const std::string& tool_name,
-                                                           const nlohmann::json& arguments) {
-                LLMFinalResponse direct = invokeLifecycleToolDirect(
-                    req.session_id, req.trace_id, tool_name, arguments, session,
-                    entity_user_text_hint);
-                ConversationState& st = m_store.getOrCreate(req.session_id);
-                attachTurnToolTrace(st, direct);
-                return direct;
-            };
-        snap.route_clarification =
-            [this, &state, &req](const LLMToolCall& call, const std::string& kind,
-                                 const std::string& field, const nlohmann::json& disambiguation) {
-                const PendingDisambiguationKind dkind =
-                    kind == "component" ? PendingDisambiguationKind::Component
-                                        : PendingDisambiguationKind::Class;
-                return routeClarificationOrDisambiguation(state, req.trace_id, call, dkind, field,
-                                                          disambiguation);
-            };
+        snap.invoke_tool_direct = [this, &ctx, &req](const std::string& tool_name,
+                                                      const nlohmann::json& arguments) {
+            LLMFinalResponse direct = invokeLifecycleToolDirect(
+                req.session_id, req.trace_id, tool_name, arguments, ctx.session,
+                ctx.entity_user_text_hint);
+            ConversationState& st = m_store.getOrCreate(req.session_id);
+            attachTurnToolTrace(st, direct);
+            return direct;
+        };
+        snap.route_clarification = [this, &state, &req](const LLMToolCall& call,
+                                                         const std::string& kind,
+                                                         const std::string& field,
+                                                         const nlohmann::json& disambiguation) {
+            const PendingDisambiguationKind dkind =
+                kind == "component" ? PendingDisambiguationKind::Component
+                                    : PendingDisambiguationKind::Class;
+            return routeClarificationOrDisambiguation(state, req.trace_id, call, dkind, field,
+                                                       disambiguation);
+        };
         RecordedStrategyResult pack_hit =
             tryRecordedCapabilityPacks(LLMServices::instance().packs(), snap, 0.85f,
-                                       &matched_pack_ids);
+                                       &ctx.matched_pack_ids);
         if(pack_hit.handled)
-            return pack_hit.response;
-        // TD-167: continuing to ReAct — inject pack hints + expand tool allowlist.
-        pack_hints_block = collectPackHintsMarkdown(LLMServices::instance().packs(), snap);
-        pack_extra_tool_names = collectPackExtraToolNames(LLMServices::instance().packs(), snap);
+        {
+            ctx.final = std::move(pack_hit.response);
+            return TurnPhaseResult::ShortCircuit;
+        }
+        ctx.pack_hints_block = collectPackHintsMarkdown(LLMServices::instance().packs(), snap);
+        ctx.pack_extra_tool_names = collectPackExtraToolNames(LLMServices::instance().packs(), snap);
     }
+    return TurnPhaseResult::Continue;
+}
 
-    // DD-STRUCT-001 / DD-WATCH-001 FastPaths: UPackComponentStructure / UPackWatchPlot via packs.
+void ULLMAgentOrchestrator::finalizeTurnContext(TurnContext& ctx)
+{
+    if(ctx.state)
+        attachTurnToolTrace(*ctx.state, ctx.final);
+}
+
+LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEnvelope& req,
+                                                              const LLMStreamHandlers* stream)
+{
+    TurnContext ctx;
+    ctx.req = req;
+    ctx.stream = stream;
+    SessionBusyScope busy(*this, req.session_id, ctx.final);
+    if(!busy)
+        return ctx.final;
+    ctx.busy_held = true;
+    TurnServices svc{m_provider, m_registry, m_gateway, m_store, packsForCompatTurn(), *this};
+    if(prepareTurnContext(ctx, svc) == TurnPhaseResult::Continue
+       && runPackGoalRouter(ctx, svc) == TurnPhaseResult::Continue)
+        ctx.final = handleUserMessageAfterPacks(ctx, svc);
+    finalizeTurnContext(ctx);
+    return ctx.final;
+}
+
+LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext& ctx, TurnServices&)
+{
+    const LLMRequestEnvelope& req = ctx.req;
+    const LLMStreamHandlers* stream = ctx.stream;
+    ConversationState& state = *ctx.state;
+    LLMSessionContext& session = ctx.session;
+    LLMFinalResponse& final = ctx.final;
+    const bool skip_pre_llm_funnel = ctx.skip_pre_llm_funnel;
+    const std::string& planning_text = ctx.planning_text;
+    const std::string& entity_user_text_hint = ctx.entity_user_text_hint;
+    const LLMIntentKind intent = ctx.intent;
+    const IntentParseResult& intent_result = ctx.intent_result;
+    const ConfigurationLifecycleAction lifecycle_action = ctx.lifecycle;
+    const TaskPathDecision& task_path_decision = ctx.task_path_decision;
+    const std::vector<std::string>& matched_pack_ids = ctx.matched_pack_ids;
+    std::string& pack_hints_block = ctx.pack_hints_block;
+    const std::vector<std::string>& pack_extra_tool_names = ctx.pack_extra_tool_names;
 
     const LLMTaskPathMode task_path_mode = resolveTaskPathMode();
     const bool task_path_fast = task_path_mode == LLMTaskPathMode::FastPath;

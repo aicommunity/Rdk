@@ -22,6 +22,9 @@ namespace RDK::LLM {
 
 struct WriteToolExecutionRequest;
 struct WriteToolExecutionResult;
+struct TurnContext;
+struct TurnServices;
+enum class TurnPhaseResult;
 
 struct LLMRequestEnvelope {
     std::string session_id;
@@ -84,9 +87,11 @@ inline void assignTurnTerminal(LLMFinalResponse& response, TurnTerminal terminal
 }
 
 class ULLMUnifiedTurnController;
+class ULLMTurnPipeline;
 
 class ULLMAgentOrchestrator {
     friend class ULLMUnifiedTurnController;
+    friend class ULLMTurnPipeline;
     friend WriteToolExecutionResult executeWriteWithPreviewAndVerify(ULLMAgentOrchestrator& orch,
                                                                      ConversationState& state,
                                                                      const WriteToolExecutionRequest& req);
@@ -116,6 +121,12 @@ public:
     bool tryAcquireSessionBusy(const std::string& session_id);
     void releaseSessionBusy(const std::string& session_id);
     static const char* sessionBusyErrorMessage();
+
+    /// Phase implementation entry points; the pipeline owns turn ordering and busy lifetime.
+    TurnPhaseResult prepareTurnContext(TurnContext& ctx, TurnServices& svc);
+    TurnPhaseResult runPackGoalRouter(TurnContext& ctx, TurnServices& svc);
+    LLMFinalResponse handleUserMessageAfterPacks(TurnContext& ctx, TurnServices& svc);
+    void finalizeTurnContext(TurnContext& ctx);
 
     void seedSessionContext(const std::string& session_id, const LLMSessionContext& session,
                             const LLMGuiContextSnapshot& gui);
