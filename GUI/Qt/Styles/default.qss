@@ -474,6 +474,21 @@ QPushButton {
     min-width: 70px;
 }
 
+QPushButton#breadcrumbButton {
+    min-width: 0;
+    padding: 0px 4px;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    font-weight: 500;
+}
+
+QPushButton#breadcrumbButton:hover {
+    background-color: #EEF2FF;
+    color: #4338CA;
+    border: none;
+}
+
 QPushButton:hover {
     background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #F8FAFC, stop:1 #F1F5F9);
     border-color: #5B8DEF;
