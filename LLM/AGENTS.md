@@ -31,6 +31,7 @@
 | Policy / HITL | [Policy-and-Safety.md](Docs/Policy-and-Safety.md) |
 | Qt dock | [GUI-Integration.md](Docs/GUI-Integration.md) |
 | Orchestrator / turn loop | [Orchestrator.md](Docs/Orchestrator.md), [Unified-Turn-Contract.md](Docs/Unified-Turn-Contract.md) |
+| Capability packs / spine | [Capability-Packs.md](Docs/Capability-Packs.md) |
 | NMSDK paths | [Project-Context-NMSDK.md](Docs/Project-Context-NMSDK.md) |
 | CMake | [Build.md](Docs/Build.md) |
 | Сборка OFF | [Build.md](Docs/Build.md) §5 |
@@ -70,6 +71,7 @@ After **each phase** 0–4: [Development-Workflow.md](Docs/Development-Workflow.
 | Policy / HITL | [Policy-and-Safety.md](Docs/Policy-and-Safety.md) |
 | Qt dock | [GUI-Integration.md](Docs/GUI-Integration.md) |
 | Orchestrator / turn loop | [Orchestrator.md](Docs/Orchestrator.md), [Unified-Turn-Contract.md](Docs/Unified-Turn-Contract.md) |
+| Capability packs / spine | [Capability-Packs.md](Docs/Capability-Packs.md) |
 | NMSDK paths | [Project-Context-NMSDK.md](Docs/Project-Context-NMSDK.md) |
 | CMake | [Build.md](Docs/Build.md) |
 | OFF build | [Build.md](Docs/Build.md) §5 |

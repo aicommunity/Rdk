@@ -106,6 +106,14 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-108 | E2E `e2e_no_tool_email` flaky on live Ollama phrasing | post-M | P2 | done | Relaxed `NoSuitableToolOrRefusal` analyzer + headless/no-project acceptance |
 | TD-109 | `Test_LLM_WriteToolsEngine` SIGSEGV on `UAppCore` exit | post-M | P2 | done | `ShutdownLlmWriteToolsEngine()` + gtest global env teardown |
 | TD-110 | Symbol search (`UApplication`) rank below generic hits | post-M | P2 | done | Path/title boost in `UDocSearchIndex::searchInternal` |
+| TD-158 | ADR DD-PACK-001 Agent Spine + Capability Packs | pack-phase-0 | P0 | done | ADR in Deferred decisions; [Capability-Packs.md](Docs/Capability-Packs.md) |
+| TD-159 | `TurnPipeline` / `ITurnPhase` extract from `handleUserMessageImpl` | pack-phase-A | P0 | open | Strangler: LegacyImpl then multi-phase |
+| TD-160 | `ILLMCapabilityPack` + registry + filter merge | pack-phase-A | P0 | open | Proof: `channel_calc` pack (DD-CALC-001) |
+| TD-161 | Migrate FastPath detectors → packs (STRUCT/WATCH/CONN/add/lifecycle) | pack-phase-B | P0 | open | One pack per commit |
+| TD-162 | `working_goals` ConversationState + assembler + GUI | pack-phase-C | P1 | open | Store schema v3→v4; DD-WM-001 |
+| TD-163 | `search_tools` quality gate / close or re-scope TD-146 | pack-phase-D | P1 | open | Miss-rate fixture; pack ActOrClarify recovery |
+| TD-164 | Unify `spawn_explore_subagent` stub → gateway + budgets | pack-phase-E | P2 | open | Remove orchestrator special-case |
+| TD-165 | Extension-Guide packs-first + library pack adapters | pack-phase-F | P2 | open | Template under `Core/Packs/Template/` |
 
 ---
 
@@ -259,3 +267,6 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | 2026-08-01 | DD-STRUCT-001: structure Mutate gate + docs prefetch + dendrite FastPath (mode2/NumSoma/Vec/calculate); fuzzy `property_name` | Log 17-45: add_component Dendrite hallucination; typo set_property fail | structure | TD-155 |
 | 2026-08-01 | DD-WATCH-001: Watch series + MDI tools via presentation sink; plot FastPath; autonomous UI/watch whitelist | Log 17-45: open_component_gui_tab AUTONOMOUS deny; no series tools | watch | TD-156 |
 | 2026-08-01 | DD-WATCH-002: Nested watch Parent.Child + role labels; Tab name autocomplete in chat | Log 19-53-51: ltzone/низкопороговая → parent Output; no chat completer | watch-chat | TD-157 |
+| 2026-08-01 | DD-PACK-001: Capability Packs = unit of extensibility; FastPath only via pack tryRecorded + score threshold (gte 0.85 recorded; 0.4-0.85 hints; below 0.4 ignore) | God-orchestrator FastPath ladder; SOTA spine+skills | pack-phase-A..B | TD-158..161 |
+| 2026-08-01 | DD-PACK-002: MCP out of scope for desktop Ollama agent | Prefer pack/tool registry API; no external MCP host yet | — | Product request for out-of-process tools |
+| 2026-08-01 | DD-WM-001: `working_goals` in session JSON; `store_schema_version` 3→4 with backward load | Structured reasoning memory (Cursor-like todos) | pack-phase-C | TD-162 |
