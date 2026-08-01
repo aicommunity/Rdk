@@ -798,16 +798,63 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
             URdkDomainAccess& domain = LLMServices::instance().domain();
             const int channel = session.active_channel_index;
             std::vector<std::string> resolved_names;
-            for(const std::string& token : watch_goal.component_tokens)
-            {
-                std::string ln;
-                if(domain.resolveComponentLongName(token, channel, ln).ok() && !ln.empty())
-                    resolved_names.push_back(ln);
-            }
-            if(resolved_names.empty() && !req.gui.focused_component_long_name.empty())
-                resolved_names.push_back(req.gui.focused_component_long_name);
+            bool nested_required = !watch_goal.nested_hint.empty();
+            bool nested_resolved = false;
 
-            if(!resolved_names.empty() || watch_goal.want_new_mdi)
+            if(nested_required)
+            {
+                const std::vector<std::string>& anchors =
+                    !watch_goal.anchor_tokens.empty() ? watch_goal.anchor_tokens
+                                                     : watch_goal.component_tokens;
+                for(const std::string& parent_tok : anchors)
+                {
+                    std::string ln;
+                    if(domain
+                           .resolveNestedWatchTarget(parent_tok, watch_goal.nested_hint, channel,
+                                                     ln)
+                           .ok()
+                       && !ln.empty())
+                    {
+                        resolved_names.push_back(ln);
+                        nested_resolved = true;
+                    }
+                }
+                if(!nested_resolved && !req.gui.focused_component_long_name.empty())
+                {
+                    std::string ln;
+                    if(domain
+                           .resolveNestedWatchTarget(req.gui.focused_component_long_name,
+                                                     watch_goal.nested_hint, channel, ln)
+                           .ok()
+                       && !ln.empty())
+                    {
+                        resolved_names.push_back(ln);
+                        nested_resolved = true;
+                    }
+                }
+                // Nested requested but unresolved → fall through to ReAct (do not plot parent).
+                if(!nested_resolved)
+                {
+                    // leave resolved_names empty; skip FastPath success path below
+                }
+            }
+            else
+            {
+                for(const std::string& token : watch_goal.component_tokens)
+                {
+                    std::string ln;
+                    if(domain.resolveComponentLongName(token, channel, ln).ok() && !ln.empty())
+                        resolved_names.push_back(ln);
+                }
+                if(resolved_names.empty() && !req.gui.focused_component_long_name.empty())
+                    resolved_names.push_back(req.gui.focused_component_long_name);
+            }
+
+            if(nested_required && !nested_resolved)
+            {
+                // Do not FastPath-plot parent.Output when nested role was requested.
+            }
+            else if(!resolved_names.empty() || watch_goal.want_new_mdi)
             {
                 RecordedToolInvokeDeps deps{m_registry, m_gateway, m_store, {},
                                             m_system_log_reader.get()};
@@ -1857,10 +1904,12 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                     {
                         recovery.content =
                             "Watch plot goal: call add_watch_series (surface=window) for each "
-                            "component Output (or named property). Prefer create_watch_mdi only when "
-                            "user asks for a separate Watches window. Do not use "
-                            "open_component_gui_tab for plotting. If no tool fits, reply exactly: "
-                            "NO_SUITABLE_TOOL.";
+                            "signal. Nested roles (e.g. LT zone) use dotted long_name "
+                            "Parent.Child with property on the child. Prefer create_watch_mdi only "
+                            "when user asks for a separate Watches window. On ComponentNotFound "
+                            "use find_component / get_net_snapshot — not search_project_docs. "
+                            "Do not use open_component_gui_tab for plotting. If no tool fits, "
+                            "reply exactly: NO_SUITABLE_TOOL.";
                     }
                     else
                     {
@@ -1944,7 +1993,9 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                         "focus_watch_mdi",
                         "show_ui_panel",
                         "find_component",
+                        "get_net_snapshot",
                         "get_component_ports",
+                        "get_component_properties",
                         "ask_user",
                     };
                     opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
@@ -1953,7 +2004,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                     recovery.role = LLMMessage::Role::System;
                     recovery.content =
                         "Watch recovery: call add_watch_series for each signal (surface=window). "
-                        "Do not open_component_gui_tab.";
+                        "Nested: long_name=Parent.Child, property_name on child. On miss use "
+                        "find_component / get_net_snapshot (not docs). Do not open_component_gui_tab.";
                     m_store.appendMessage(req.session_id, recovery);
                     GetAuditLog().append("watch_plot_recovery_round",
                                          {{"session_id", req.session_id}},

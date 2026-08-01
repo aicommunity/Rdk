@@ -76,6 +76,32 @@ TEST(LLMWatchPlotGoal, SoftTokensMergeWithCapWords)
     EXPECT_TRUE(g.want_new_mdi == false);
 }
 
+TEST(LLMWatchPlotGoal, NestedLtzonePneuron)
+{
+    const ParsedWatchPlotGoal g = parseWatchPlotGoal("Добавь на графки выход ltzone pneuron");
+    EXPECT_TRUE(g.ok);
+    EXPECT_EQ(g.nested_hint, "LTZone");
+    EXPECT_EQ(g.property_name, "Output");
+    EXPECT_NE(std::find(g.component_tokens.begin(), g.component_tokens.end(), "PNeuron"),
+              g.component_tokens.end());
+    EXPECT_EQ(std::find(g.component_tokens.begin(), g.component_tokens.end(), "LTZone"),
+              g.component_tokens.end());
+    EXPECT_FALSE(g.anchor_tokens.empty());
+}
+
+TEST(LLMWatchPlotGoal, NestedLowThresholdZoneRu)
+{
+    const ParsedWatchPlotGoal g =
+        parseWatchPlotGoal("добавь на график выход низкопороговой зоны компонента PNeuron");
+    EXPECT_TRUE(g.ok);
+    EXPECT_EQ(g.nested_hint, "LTZone");
+    EXPECT_EQ(g.property_name, "Output");
+    EXPECT_NE(std::find(g.component_tokens.begin(), g.component_tokens.end(), "PNeuron"),
+              g.component_tokens.end());
+    EXPECT_NE(watchPlotEphemeralHint().find("Parent.Child"), std::string::npos);
+    EXPECT_NE(watchPlotEphemeralHint().find("get_net_snapshot"), std::string::npos);
+}
+
 TEST(LLMWatchPlotGoal, SeparateWatchesMdi)
 {
     const ParsedWatchPlotGoal g =

@@ -51,6 +51,7 @@ const std::unordered_map<std::string, std::vector<std::string>>& entityFieldsByT
         {"connect_components", {"from_long_name", "to_long_name"}},
         {"disconnect_components", {"from_long_name", "to_long_name"}},
         {"add_component", {"parent_long_name"}},
+        {"add_watch_series", {"long_name"}},
     };
     return kMap;
 }
@@ -590,6 +591,78 @@ WriteArgumentNormalizeResult normalizeWriteToolArguments(const std::string& tool
     {
         if(!normalizeAddComponentArguments(out.normalized_arguments, domain, user_text, out, gui))
             return out;
+    }
+
+    // Pre-resolve watch nested / spaced long_name before entity resolveField (which fails on spaces).
+    if(tool_name == "add_watch_series")
+    {
+        const int ch_pre = out.normalized_arguments.value("channel_index", channel_index);
+        std::string long_name = out.normalized_arguments.value("long_name", std::string());
+        std::string property_name = out.normalized_arguments.value("property_name", std::string());
+
+        if(!property_name.empty())
+        {
+            const auto try_split = [&](char sep) -> bool {
+                const size_t pos = property_name.find(sep);
+                if(pos == std::string::npos || pos == 0 || pos + 1 >= property_name.size())
+                    return false;
+                const std::string child = property_name.substr(0, pos);
+                const std::string prop = property_name.substr(pos + 1);
+                if(child.empty() || prop.empty())
+                    return false;
+                std::string nested_ln;
+                if(!long_name.empty()
+                   && domain.resolveNestedWatchTarget(long_name, child, ch_pre, nested_ln).ok()
+                   && !nested_ln.empty())
+                {
+                    out.normalized_arguments["long_name"] = nested_ln;
+                    out.normalized_arguments["property_name"] = prop;
+                    long_name = nested_ln;
+                    property_name = prop;
+                    return true;
+                }
+                std::string child_ln;
+                if(domain.resolveComponentLongName(child, ch_pre, child_ln).ok()
+                   && !child_ln.empty())
+                {
+                    out.normalized_arguments["long_name"] = child_ln;
+                    out.normalized_arguments["property_name"] = prop;
+                    long_name = child_ln;
+                    property_name = prop;
+                    return true;
+                }
+                return false;
+            };
+            (void)(try_split('.') || try_split(':'));
+        }
+
+        if(long_name.find(' ') != std::string::npos || long_name.find('\t') != std::string::npos)
+        {
+            std::istringstream iss(long_name);
+            std::vector<std::string> parts;
+            std::string part;
+            while(iss >> part)
+                parts.push_back(part);
+            if(parts.size() >= 2)
+            {
+                std::string nested_ln;
+                if(domain.resolveNestedWatchTarget(parts[1], parts[0], ch_pre, nested_ln).ok()
+                   && !nested_ln.empty())
+                {
+                    out.normalized_arguments["long_name"] = nested_ln;
+                    long_name = nested_ln;
+                }
+                else if(domain.resolveNestedWatchTarget(parts[0], parts[1], ch_pre, nested_ln).ok()
+                        && !nested_ln.empty())
+                {
+                    out.normalized_arguments["long_name"] = nested_ln;
+                    long_name = nested_ln;
+                }
+            }
+        }
+
+        if(out.normalized_arguments.value("property_name", std::string()).empty())
+            out.normalized_arguments["property_name"] = "Output";
     }
 
     const auto it = entityFieldsByTool().find(tool_name);

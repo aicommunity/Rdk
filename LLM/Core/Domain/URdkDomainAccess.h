@@ -60,6 +60,11 @@ public:
                                           int channel_index,
                                           std::string& out_long_name,
                                           const std::string& parent_scope = "") const;
+    /// Resolve nested watch target Parent.Child (short/role nested_hint under parent_hint).
+    DomainStatus resolveNestedWatchTarget(const std::string& parent_hint,
+                                          const std::string& nested_hint,
+                                          int channel_index,
+                                          std::string& out_long_name) const;
     DomainStatus getComponentProperties(const std::string& long_name,
                                         nlohmann::json& out,
                                         int channel_index = 0,

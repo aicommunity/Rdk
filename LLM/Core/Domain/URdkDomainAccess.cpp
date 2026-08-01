@@ -7,6 +7,7 @@
 #include "../Tools/ApplicationToolHelpers.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cstdlib>
 #include <sstream>
 #include <unordered_map>
@@ -407,17 +408,41 @@ DomainStatus URdkDomainAccess::findComponentByLongName(const std::string& long_n
 
 namespace {
 
+bool equalsCiAscii(const std::string& a, const std::string& b)
+{
+    if(a.size() != b.size())
+        return false;
+    for(size_t i = 0; i < a.size(); ++i)
+    {
+        const char ca = static_cast<char>(std::tolower(static_cast<unsigned char>(a[i])));
+        const char cb = static_cast<char>(std::tolower(static_cast<unsigned char>(b[i])));
+        if(ca != cb)
+            return false;
+    }
+    return true;
+}
+
+bool endsWithCi(const std::string& s, const std::string& suffix)
+{
+    if(suffix.empty() || s.size() < suffix.size())
+        return false;
+    return equalsCiAscii(s.substr(s.size() - suffix.size()), suffix);
+}
+
 bool componentMatchesHint(const nlohmann::json& component, const std::string& hint)
 {
     if(!component.is_object() || hint.empty())
         return false;
     const std::string ln = component.value("long_name", "");
     const std::string sn = component.value("short_name", "");
-    if(sn == hint || ln == hint)
+    if(sn == hint || ln == hint || equalsCiAscii(sn, hint) || equalsCiAscii(ln, hint))
         return true;
-    const std::string suffix = "/" + hint;
-    return !ln.empty() && ln.size() >= suffix.size()
-           && ln.compare(ln.size() - suffix.size(), suffix.size(), suffix) == 0;
+    const std::string slash_suffix = "/" + hint;
+    const std::string dot_suffix = "." + hint;
+    if(!ln.empty() && ln.size() >= slash_suffix.size()
+       && ln.compare(ln.size() - slash_suffix.size(), slash_suffix.size(), slash_suffix) == 0)
+        return true;
+    return endsWithCi(ln, dot_suffix);
 }
 
 } // namespace
@@ -465,6 +490,68 @@ DomainStatus URdkDomainAccess::resolveComponentLongName(const std::string& hint,
     }
     out_long_name = (*best)["long_name"].get<std::string>();
     return {};
+}
+
+DomainStatus URdkDomainAccess::resolveNestedWatchTarget(const std::string& parent_hint,
+                                                        const std::string& nested_hint,
+                                                        int channel_index,
+                                                        std::string& out_long_name) const
+{
+    out_long_name.clear();
+    if(parent_hint.empty() || nested_hint.empty())
+    {
+        return {DomainStatusCode::ComponentNotFound,
+                "resolveNestedWatchTarget requires parent_hint and nested_hint"};
+    }
+
+    std::string parent_ln;
+    const DomainStatus pst =
+        resolveComponentLongName(parent_hint, channel_index, parent_ln);
+    if(!pst.ok() || parent_ln.empty())
+        return pst;
+
+    const std::string dotted = parent_ln + "." + nested_hint;
+    nlohmann::json direct;
+    if(findComponentByLongName(dotted, direct, channel_index).ok()
+       && direct.contains("long_name"))
+    {
+        out_long_name = direct["long_name"].get<std::string>();
+        return {};
+    }
+
+    nlohmann::json snap;
+    const DomainStatus st = listNetSnapshot(snap, channel_index, 5000, parent_ln);
+    if(!st.ok())
+        return st;
+
+    const nlohmann::json* best = nullptr;
+    for(const auto& component : snap.value("components", nlohmann::json::array()))
+    {
+        if(!componentMatchesHint(component, nested_hint))
+            continue;
+        if(!best)
+            best = &component;
+        else
+        {
+            const std::string ln = component.value("long_name", "");
+            if(ln.size() < best->value("long_name", "").size())
+                best = &component; // prefer closer / shorter path under parent
+        }
+    }
+    if(best && best->contains("long_name"))
+    {
+        out_long_name = (*best)["long_name"].get<std::string>();
+        return {};
+    }
+
+    // Last resort: accept dotted path even if not yet built (caller may fail validate later).
+    out_long_name = dotted;
+    nlohmann::json check;
+    if(findComponentByLongName(out_long_name, check, channel_index).ok())
+        return {};
+    out_long_name.clear();
+    return {DomainStatusCode::ComponentNotFound,
+            "Nested component not found under \"" + parent_ln + "\": " + nested_hint};
 }
 
 DomainStatus URdkDomainAccess::getComponentProperties(const std::string& long_name,

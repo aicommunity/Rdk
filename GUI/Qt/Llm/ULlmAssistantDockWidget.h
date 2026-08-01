@@ -17,6 +17,7 @@
 #include "../UVisualControllerWidget.h"
 #include "ULlmChatHistoryPanel.h"
 #include "ULlmGuiContextBridge.h"
+#include "ULlmChatInputCompleter.h"
 
 class ULlmChatHistoryArchive;
 
@@ -111,6 +112,7 @@ private:
     QLabel* m_request_status = nullptr;
     QProgressBar* m_request_progress = nullptr;
     QPlainTextEdit* m_input = nullptr;
+    ULlmChatInputCompleter* m_name_completer = nullptr;
     ULlmChatHistoryPanel* m_history = nullptr;
     QPushButton* m_send = nullptr;
     QPushButton* m_history_btn = nullptr;

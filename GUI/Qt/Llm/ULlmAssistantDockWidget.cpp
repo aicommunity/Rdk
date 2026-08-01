@@ -4,6 +4,7 @@
 #include "ULlmChatHistoryArchive.h"
 #include "ULlmChatHistoryDialog.h"
 #include "ULlmChatHistoryPanel.h"
+#include "ULlmChatInputCompleter.h"
 #include "ULlmChatMarkdown.h"
 #include "ULlmDetailsHtml.h"
 
@@ -252,6 +253,8 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
 
     m_input = new QPlainTextEdit(this);
     layout->addWidget(m_input);
+    m_name_completer = new ULlmChatInputCompleter(m_input, app, this);
+    m_input->installEventFilter(this);
 
     auto* row = new QHBoxLayout();
     m_send = new QPushButton(tr("Send"), this);
@@ -517,11 +520,15 @@ void ULlmAssistantDockWidget::startNewChat(const QString& system_note)
 void ULlmAssistantDockWidget::onProjectOpened(const QString& configuration_ini_path)
 {
     (void)configuration_ini_path;
+    if(m_name_completer)
+        m_name_completer->refreshDictionary(m_last_ctx.channel_index);
     scheduleDeferredNewChat(tr("<i>New chat — project was loaded.</i>"));
 }
 
 void ULlmAssistantDockWidget::onProjectClosed()
 {
+    if(m_name_completer)
+        m_name_completer->refreshDictionary(m_last_ctx.channel_index);
     scheduleDeferredNewChat(tr("<i>New chat — project was closed.</i>"));
 }
 
@@ -649,6 +656,8 @@ RDK::LLM::LLMSessionContext ULlmAssistantDockWidget::buildSession(const LLMGuiCo
 void ULlmAssistantDockWidget::onContextChanged(const LLMGuiContext& ctx)
 {
     m_last_ctx = ctx;
+    if(m_name_completer)
+        m_name_completer->refreshDictionary(ctx.channel_index);
 }
 
 void ULlmAssistantDockWidget::onSendClicked()
@@ -733,46 +742,47 @@ void ULlmAssistantDockWidget::applyGuiPreferences()
     if(mode == RDK::LLM::LLMSendShortcutMode::Enter)
     {
         m_input->setPlaceholderText(
-            tr("Ask about the model or configuration… (Enter to send, Shift+Enter for new line)"));
+            tr("Ask about the model or configuration… (Enter to send, Shift+Enter for new line; Tab completes names)"));
         if(m_shortcut_ctrl_return)
             m_shortcut_ctrl_return->setEnabled(false);
         if(m_shortcut_ctrl_enter)
             m_shortcut_ctrl_enter->setEnabled(false);
-        if(!m_enter_send_filter_active)
-        {
-            m_input->installEventFilter(this);
-            m_enter_send_filter_active = true;
-        }
+        m_enter_send_filter_active = true;
     }
     else
     {
         m_input->setPlaceholderText(
-            tr("Ask about the model or configuration… (Ctrl+Enter to send)"));
+            tr("Ask about the model or configuration… (Ctrl+Enter to send; Tab completes names)"));
         if(m_shortcut_ctrl_return)
             m_shortcut_ctrl_return->setEnabled(true);
         if(m_shortcut_ctrl_enter)
             m_shortcut_ctrl_enter->setEnabled(true);
-        if(m_enter_send_filter_active)
-        {
-            m_input->removeEventFilter(this);
-            m_enter_send_filter_active = false;
-        }
+        m_enter_send_filter_active = false;
     }
 }
 
 bool ULlmAssistantDockWidget::eventFilter(QObject* watched, QEvent* event)
 {
-    if(watched != m_input || event->type() != QEvent::KeyPress)
-        return UVisualControllerWidget::eventFilter(watched, event);
-
-    auto* key_event = static_cast<QKeyEvent*>(event);
-    if(key_event->key() != Qt::Key_Return && key_event->key() != Qt::Key_Enter)
-        return UVisualControllerWidget::eventFilter(watched, event);
-    if(key_event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier))
-        return UVisualControllerWidget::eventFilter(watched, event);
-
-    trySendFromShortcut();
-    return true;
+    if(watched == m_input && event->type() == QEvent::KeyPress)
+    {
+        auto* key_event = static_cast<QKeyEvent*>(event);
+        if(key_event->key() == Qt::Key_Tab || key_event->key() == Qt::Key_Backtab)
+        {
+            if(m_name_completer
+               && m_name_completer->handleTab(key_event->key() != Qt::Key_Backtab
+                                              && !(key_event->modifiers() & Qt::ShiftModifier)))
+                return true;
+            return UVisualControllerWidget::eventFilter(watched, event);
+        }
+        if(m_enter_send_filter_active
+           && (key_event->key() == Qt::Key_Return || key_event->key() == Qt::Key_Enter)
+           && !(key_event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier)))
+        {
+            trySendFromShortcut();
+            return true;
+        }
+    }
+    return UVisualControllerWidget::eventFilter(watched, event);
 }
 
 void ULlmAssistantDockWidget::onStreamToken(const QString& token)
