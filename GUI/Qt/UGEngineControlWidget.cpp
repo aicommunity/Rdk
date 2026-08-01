@@ -202,8 +202,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 
     // Создаем breadcrumbs виджет
     breadcrumbsWidget = new UBreadcrumbsWidget(this);
-    breadcrumbsWidget->setMinimumHeight(30);
-    breadcrumbsWidget->setMaximumHeight(35);
+    // Высота задаётся в UBreadcrumbsWidget (compact density)
     // Добавляем breadcrumbsWidget в layout перед mdiArea
     ui->verticalLayout->insertWidget(0, breadcrumbsWidget);
 
@@ -303,7 +302,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
         QWidget* titleBar = new QWidget(ui->dockWidgetLoger);
         titleBar->setObjectName(QStringLiteral("loggerDockTitleBar"));
         auto* titleLayout = new QHBoxLayout(titleBar);
-        titleLayout->setContentsMargins(10, 4, 4, 4);
+        titleLayout->setContentsMargins(4, 2, 4, 2);
         titleLayout->setSpacing(2);
 
         QLabel* titleLabel = new QLabel(tr("Logger"), titleBar);

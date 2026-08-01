@@ -9,13 +9,13 @@ UBreadcrumbsWidget::UBreadcrumbsWidget(QWidget *parent)
 {
     // Настройка layout - выравнивание по левому краю
     breadcrumbsLayout = new QHBoxLayout(this);
-    breadcrumbsLayout->setContentsMargins(4, 2, 4, 2);
+    breadcrumbsLayout->setContentsMargins(2, 1, 2, 1);
     breadcrumbsLayout->setSpacing(4);
     breadcrumbsLayout->setAlignment(Qt::AlignLeft); // Выравнивание по левому краю
 
     // Устанавливаем минимальную высоту
-    setMinimumHeight(30);
-    setMaximumHeight(35);
+    setMinimumHeight(22);
+    setMaximumHeight(26);
 
     // Инициализация breadcrumbs (пустой путь = Model)
     updateBreadcrumbs("");
