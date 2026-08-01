@@ -220,7 +220,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     connect(breadcrumbsWidget, SIGNAL(componentPathSelected(QString)),
             propertyChanger->componentsList, SLOT(componentSelectedFromScheme(QString)));
     connect(breadcrumbsWidget, SIGNAL(componentPathSelected(QString)),
-            modernDiagram, SLOT(componentSingleClick(QString)));
+            modernDiagram, SLOT(componentDoubleClick(QString)));
 
     // ComponentsList -> Breadcrumbs + Diagram
     connect(propertyChanger->componentsList, SIGNAL(componentSelected(QString)),

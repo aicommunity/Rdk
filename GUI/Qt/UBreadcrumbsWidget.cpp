@@ -106,4 +106,5 @@ void UBreadcrumbsWidget::updateBreadcrumbs(const QString &componentPath)
 void UBreadcrumbsWidget::onBreadcrumbClicked(const QString &componentPath)
 {
     emit componentPathSelected(componentPath);
+    updateBreadcrumbs(componentPath);
 }
