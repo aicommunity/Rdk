@@ -109,11 +109,11 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-158 | ADR DD-PACK-001 Agent Spine + Capability Packs | pack-phase-0 | P0 | done | ADR in Deferred decisions; [Capability-Packs.md](Docs/Capability-Packs.md) |
 | TD-159 | `TurnPipeline` / `ITurnPhase` extract from `handleUserMessageImpl` | pack-phase-A | P0 | done | `ULLMTurnPipeline` + `ULLMTurnPhaseLegacy` strangler via UnifiedTurnController |
 | TD-160 | `ILLMCapabilityPack` + registry + filter merge | pack-phase-A | P0 | done | Registry + `UPackChannelCalc` (DD-CALC-001); GoalRouter via `tryRecordedCapabilityPacks` |
-| TD-161 | Migrate FastPath detectors → packs (STRUCT/WATCH/CONN/add/lifecycle) | pack-phase-B | P0 | partial | STRUCT/WATCH/add recorded; connect+lifecycle hints-only; live-analogous connect execute still in orchestrator |
-| TD-162 | `working_goals` ConversationState + assembler + GUI | pack-phase-C | P1 | open | Store schema v3→v4; DD-WM-001 |
-| TD-163 | `search_tools` quality gate / close or re-scope TD-146 | pack-phase-D | P1 | open | Miss-rate fixture; pack ActOrClarify recovery |
-| TD-164 | Unify `spawn_explore_subagent` stub → gateway + budgets | pack-phase-E | P2 | open | Remove orchestrator special-case |
-| TD-165 | Extension-Guide packs-first + library pack adapters | pack-phase-F | P2 | open | Template under `Core/Packs/Template/` |
+| TD-161 | Migrate FastPath detectors → packs (STRUCT/WATCH/CONN/add/lifecycle) | pack-phase-B | P0 | done | STRUCT/WATCH/add recorded; connect+lifecycle hints-only (execute remains orchestrator by design until dedicated sprint) |
+| TD-162 | `working_goals` ConversationState + assembler + GUI | pack-phase-C | P1 | done | Store v4, ephemeral block, dock Goals details, evidence from tool_trace |
+| TD-163 | `search_tools` quality gate / close or re-scope TD-146 | pack-phase-D | P1 | done | Pack ActOrClarify recovery merge; parallel-read order invariant; hybrid long-tail fixture |
+| TD-164 | Unify `spawn_explore_subagent` stub → gateway + budgets | pack-phase-E | P2 | done | Gateway handler + `bindSpawnExploreSubagent`; session `subagent_rounds_used`; nested deny in runner |
+| TD-165 | Extension-Guide packs-first + library pack adapters | pack-phase-F | P2 | done | Packs-first Extension-Guide; `Core/Packs/Template/README.md`; lib tools remain valid |
 
 ---
 
@@ -151,7 +151,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-157 | Nested watch roles + chat Tab name autocomplete | watch-chat | P0 | done | `resolveNestedWatchTarget`; DD-WATCH-002; `ULlmChatInputCompleter` |
 | TD-144 | Parallel independent tool fan-out in one assistant turn | thinking-post | P3 | deferred | Sequential tools OK for local ReAct MVP |
 | TD-145 | Ollama think levels (`low`/`medium`/`high`) / gpt-oss | thinking-post | P3 | deferred | Boolean `think` sufficient for qwen3:14b/deepseek-r1 |
-| TD-146 | Embed-index quality for `search_tools` hybrid ranking | thinking-post | P2 | deferred | Lexical+existing embeddings; revisit if discovery miss-rate high |
+| TD-146 | Embed-index quality for `search_tools` hybrid ranking | thinking-post | P2 | done | Underscore-aware tokenize + hybrid long-tail fixture (`list_model_links`, `spawn_explore_subagent`); further embed tuning optional |
 | TD-120 | Remove hardcoded connect paths in Core ephemeral/heuristics | 2026-05-29 | `f3f4cc0b`: KnowledgeBlocks, acquisition policy, no LTZone in Core |
 | TD-121 | Context acquisition policy + catalog blocks in ephemeral | 2026-05-29 | `f3f4cc0b`: `computeContextAcquisitionPlan`, retriever diagram scope |
 | TD-122 | diagram_scope_long_name GUI + add parent parity | 2026-05-29 | `3c5b615f`: diagramScopeChanged, normalizer parent |
@@ -250,7 +250,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | 2026-05-28 | DD-CTX-005: Single `TECH-DEBT.md` for all context work (no second file) | Repo convention since 2026-05-25 | — | — |
 | 2026-05-29 | DD-UT-001: Task path default HintOnly; FastPath CI-only | Agent-first; avoid hard planner fail | — | `NMSDK_LLM_TASK_PATH_STRICT` |
 | 2026-05-29 | DD-UT-002: `ask_user` vs legacy disambiguation coexist | Gradual GUI migration | phase-C | TD-093 |
-| 2026-05-29 | DD-UT-003: Subagent runner stub until budget policy | Phase H scope | phase-H | TD-096 |
+| 2026-05-29 | DD-UT-003: Subagent explore via gateway + session round budget | Phase E (TD-164): `spawn_explore_subagent` bound after provider/gateway; nested deny in runner; default max 4 rounds / session budget 12 | phase-H→E | TD-096, TD-164 |
 | 2026-07-27 | Shelve umbrella Track 1 (LLM production hardening) indefinitely | MVP+ write-tools/agent v2/post-audit complete; TD-138 not MVP-blocking; prioritize GUI/docs | — | TD-138: reproducible write/lock/diagram bug; product demand to drop `MModel_*`; dedicated sprint after GUI Track 2 |
 | 2026-07-30 | DD-THINK-001: Cortex thinking-first via Ollama native `/api/chat` (`think:true`) | `/v1` historically drops `think` on some Ollama builds; native is source of truth | thinking-C | Lab /v1 parity verified |
 | 2026-07-30 | DD-THINK-002: Preserve unmodified `thinking` on assistant tool_call turns | Anthropic/Qwen/DeepSeek tool+thinking contract; mid-loop rewrite degrades multi-step | — | — |

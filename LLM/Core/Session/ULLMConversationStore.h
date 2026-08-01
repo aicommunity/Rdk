@@ -63,9 +63,13 @@ struct ConversationState {
     /// Last `LLMSessionContext` from an orchestrator entry (resume parity, TD-088).
     std::optional<LLMSessionContext> last_session_context;
     SessionGraphMemory session_graph;
+    /// Structured turn/session goals (DD-WM-001 / TD-162).
+    std::vector<WorkingGoal> working_goals;
     /// Tool invocations for the current user turn (cleared at turn start; copied to response).
     std::vector<TurnToolInvocationView> current_turn_tool_trace;
-    int store_schema_version = 3;
+    /// Cumulative explore-subagent provider rounds used in this session (TD-164).
+    int subagent_rounds_used = 0;
+    int store_schema_version = 4;
 };
 
 class ULLMConversationStore {

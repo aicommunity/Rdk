@@ -15,19 +15,20 @@ std::vector<std::string> tokenize(const std::string& text)
 {
     std::vector<std::string> out;
     std::string cur;
+    auto flush = [&]() {
+        if(!cur.empty() && cur.size() >= 2)
+            out.push_back(cur);
+        cur.clear();
+    };
     for(unsigned char c : text)
     {
-        if(std::isalnum(c) || c == '_' || c >= 0x80)
+        // Split on '_' so tool names like list_model_links match query tokens.
+        if(std::isalnum(c) || c >= 0x80)
             cur.push_back(static_cast<char>(std::tolower(c)));
-        else if(!cur.empty())
-        {
-            if(cur.size() >= 2)
-                out.push_back(cur);
-            cur.clear();
-        }
+        else
+            flush();
     }
-    if(!cur.empty() && cur.size() >= 2)
-        out.push_back(cur);
+    flush();
     return out;
 }
 

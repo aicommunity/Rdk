@@ -26,6 +26,14 @@ SubagentRunResult ULLMSubagentRunner::runExplore(const SubagentRunRequest& req,
         return out;
     }
 
+    const std::string profile = req.profile.empty() ? "explore" : req.profile;
+    if(profile != "explore")
+    {
+        out.ok = false;
+        out.summary = "Unsupported subagent profile: " + profile;
+        return out;
+    }
+
     ToolFilter filter =
         buildToolFilter(LLMIntentKind::Query, false, ConfigurationLifecycleAction::None);
     filter.include_write = false;
@@ -44,6 +52,7 @@ SubagentRunResult ULLMSubagentRunner::runExplore(const SubagentRunRequest& req,
     const int max_rounds = req.max_rounds > 0 ? req.max_rounds : 4;
     for(int round = 0; round < max_rounds; ++round)
     {
+        ++out.rounds_used;
         LLMCompletionOptions opts;
         opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
         opts.max_tokens = 1024;
@@ -120,7 +129,9 @@ SubagentRunResult ULLMSubagentRunner::runExplore(const SubagentRunRequest& req,
 
     GetAuditLog().append("subagent_explore_completed",
                          {{"task_len", static_cast<int>(req.task.size())},
+                          {"profile", profile},
                           {"max_rounds", max_rounds},
+                          {"rounds_used", out.rounds_used},
                           {"ok", out.ok}},
                          trace_id, session_id);
     return out;

@@ -14,7 +14,7 @@
 namespace RDK::LLM {
 
 constexpr const char* TOOL_REGISTRY_VERSION = "1.0.0";
-constexpr const char* PROMPT_BUNDLE_ID = "rdk-llm-prompts-1.0.0";
+constexpr const char* PROMPT_BUNDLE_ID = "rdk-llm-prompts-1.1.0";
 
 enum class LLMProviderKind {
     OllamaOpenAICompat,
@@ -336,6 +336,53 @@ struct TurnToolInvocationView {
     std::string message;
     int duration_ms = 0;
     bool pending_confirmation = false;
+};
+
+enum class WorkingGoalStatus {
+    Pending,
+    InProgress,
+    Done,
+    Blocked,
+    Cancelled,
+};
+
+inline const char* workingGoalStatusName(WorkingGoalStatus s)
+{
+    switch(s)
+    {
+    case WorkingGoalStatus::Pending:
+        return "pending";
+    case WorkingGoalStatus::InProgress:
+        return "in_progress";
+    case WorkingGoalStatus::Done:
+        return "done";
+    case WorkingGoalStatus::Blocked:
+        return "blocked";
+    case WorkingGoalStatus::Cancelled:
+        return "cancelled";
+    }
+    return "pending";
+}
+
+inline WorkingGoalStatus workingGoalStatusFromName(const std::string& name)
+{
+    if(name == "in_progress")
+        return WorkingGoalStatus::InProgress;
+    if(name == "done")
+        return WorkingGoalStatus::Done;
+    if(name == "blocked")
+        return WorkingGoalStatus::Blocked;
+    if(name == "cancelled")
+        return WorkingGoalStatus::Cancelled;
+    return WorkingGoalStatus::Pending;
+}
+
+struct WorkingGoal {
+    std::string id;
+    std::string title;
+    WorkingGoalStatus status = WorkingGoalStatus::Pending;
+    std::string success_criteria;
+    std::vector<std::string> evidence;
 };
 
 struct PolicyDecision {

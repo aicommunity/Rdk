@@ -1,6 +1,7 @@
 #include "ULLMContextAssembler.h"
 
 #include "../Context/URdkContextRetriever.h"
+#include "../Session/ULLMWorkingGoals.h"
 #include "ULLMAgentManifestBuilder.h"
 #include "ULLMComponentStructureGoal.h"
 #include "ULLMConfigurationLifecycle.h"
@@ -162,6 +163,12 @@ void prependEphemeralSystemMessages(std::vector<LLMMessage>& provider_messages,
         notes += input.state.agent_notes;
         truncateInPlace(notes, kAgentNotesMaxChars);
         prependSystem(provider_messages, std::move(notes));
+    }
+
+    {
+        const std::string goals = formatWorkingGoalsEphemeral(input.state.working_goals);
+        if(!goals.empty())
+            prependSystem(provider_messages, goals);
     }
 
     if(input.state.last_quantity.valid)

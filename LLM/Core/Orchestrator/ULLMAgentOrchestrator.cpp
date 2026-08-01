@@ -49,6 +49,7 @@
 #include "../Context/URdkContextRetriever.h"
 #include "../Domain/ULLMResolvedEntityStore.h"
 #include "../Session/ULLMContextCompactor.h"
+#include "../Session/ULLMWorkingGoals.h"
 #include "../Session/ULLMGuiTurnPin.h"
 #include "../Session/ULLMSessionGraphMemory.h"
 #include "ULLMPlanConfidence.h"
@@ -69,7 +70,6 @@
 #include "ULLMContextKnowledgeBlocks.h"
 #include "../Context/ULLMIndexCatalogs.h"
 #include "../Context/ULLMConnectSemanticsCatalog.h"
-#include "ULLMSubagentRunner.h"
 #include "ULLMConnectPlanParsing.h"
 #include "ULLMConnectPlanLlmFallback.h"
 #include "../Tools/ULLMToolArgumentValidator.h"
@@ -135,9 +135,35 @@ void appendAgentNote(ConversationState& state, const std::string& line)
 
 const char* kSessionBusyError = "Session busy: wait for the current request to finish.";
 
-void attachTurnToolTrace(const ConversationState& state, LLMFinalResponse& response)
+void syncWorkingGoalEvidenceFromTrace(ConversationState& state)
 {
+    if(state.working_goals.empty())
+        return;
+    const std::string& goal_id = state.working_goals.front().id;
+    for(const TurnToolInvocationView& inv : state.current_turn_tool_trace)
+    {
+        if(!inv.ok)
+            continue;
+        appendWorkingGoalEvidence(state, goal_id, inv.tool_name + (inv.ok ? ":ok" : ":fail"));
+    }
+    bool any_fail = false;
+    bool any_ok = false;
+    for(const TurnToolInvocationView& inv : state.current_turn_tool_trace)
+    {
+        any_ok = any_ok || inv.ok;
+        any_fail = any_fail || !inv.ok;
+    }
+    if(any_ok && !any_fail)
+        markWorkingGoalStatus(state, goal_id, WorkingGoalStatus::Done);
+    else if(any_fail)
+        markWorkingGoalStatus(state, goal_id, WorkingGoalStatus::Blocked);
+}
+
+void attachTurnToolTrace(ConversationState& state, LLMFinalResponse& response)
+{
+    syncWorkingGoalEvidenceFromTrace(state);
     response.tool_trace = state.current_turn_tool_trace;
+    response.working_goals = state.working_goals;
 }
 
 LLMGuiContextSnapshot guiSnapshotForWrite(const ConversationState& state,
@@ -426,7 +452,12 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
     struct TurnToolTraceAttacher {
         ConversationState& turn_state;
         LLMFinalResponse& response;
-        ~TurnToolTraceAttacher() { response.tool_trace = turn_state.current_turn_tool_trace; }
+        ~TurnToolTraceAttacher()
+        {
+            syncWorkingGoalEvidenceFromTrace(turn_state);
+            response.tool_trace = turn_state.current_turn_tool_trace;
+            response.working_goals = turn_state.working_goals;
+        }
     } turn_tool_trace_attach{state, final};
     snapshotLastSessionContext(state, req.session);
 
@@ -460,6 +491,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                          req.session_id);
     GetAuditLog().append("unified_turn_started", {{"session_id", req.session_id}}, req.trace_id,
                          req.session_id);
+
+    ensureTurnWorkingGoal(state, req.user_text);
 
     LLMSessionContext session = req.session;
     bool translate_queries_to_en = LLMServices::instance().isInitialized();
@@ -593,6 +626,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
     }
 
     // DD-PACK-001: capability pack Recorded strategies (channel_calc, …) before TaskPath.
+    std::vector<std::string> matched_pack_ids;
     if(!skip_pre_llm_funnel && LLMServices::instance().isInitialized())
     {
         PackTurnSnapshot snap;
@@ -629,7 +663,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                                                           disambiguation);
             };
         RecordedStrategyResult pack_hit =
-            tryRecordedCapabilityPacks(LLMServices::instance().packs(), snap);
+            tryRecordedCapabilityPacks(LLMServices::instance().packs(), snap, 0.85f,
+                                       &matched_pack_ids);
         if(pack_hit.handled)
             return pack_hit.response;
     }
@@ -1481,6 +1516,22 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 if(!recovery_used)
                 {
                     recovery_used = true;
+                    // TD-163: merge pack-scoped Act-or-Clarify recovery tools into allowlist.
+                    // Empty matched_pack_ids → collectPackRecoveryTools returns tools from all packs.
+                    nlohmann::json pack_recovery_json = nlohmann::json::array();
+                    if(LLMServices::instance().isInitialized())
+                    {
+                        const std::vector<std::string> pack_recovery =
+                            collectPackRecoveryTools(LLMServices::instance().packs(),
+                                                     matched_pack_ids);
+                        pack_recovery_json = pack_recovery;
+                        if(!pack_recovery.empty())
+                        {
+                            mergePackToolNames(filter, pack_recovery);
+                            opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
+                            ctx_input.tool_filter = filter;
+                        }
+                    }
                     LLMMessage recovery;
                     recovery.role = LLMMessage::Role::System;
                     if(isChannelCalcGoalText(planning_text) || isChannelCalcGoalText(req.user_text))
@@ -1522,7 +1573,10 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                     }
                     m_store.appendMessage(req.session_id, recovery);
                     GetAuditLog().append("act_or_clarify_recovery",
-                                         {{"round", 1}, {"intent", intent_name}},
+                                         {{"round", 1},
+                                          {"intent", intent_name},
+                                          {"matched_packs", matched_pack_ids},
+                                          {"pack_recovery_tools", pack_recovery_json}},
                                          req.trace_id, req.session_id);
                     continue;
                 }
@@ -1936,18 +1990,6 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                                      req.session_id);
                 return {call, tr};
             }
-            if(call.name == "spawn_explore_subagent")
-            {
-                ULLMSubagentRunner runner(m_provider, m_registry, m_gateway);
-                SubagentRunRequest sreq;
-                sreq.task = call.arguments.value("task", std::string());
-                const SubagentRunResult sres =
-                    runner.runExplore(sreq, req.trace_id, req.session_id, session);
-                ToolGatewayResult tr;
-                tr.ok = sres.ok;
-                tr.result = {{"summary", sres.summary}};
-                return {call, tr};
-            }
             ToolInvokeRequest invoke;
             invoke.trace_id = req.trace_id;
             invoke.tool_name = call.name;
@@ -2032,6 +2074,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
             futures.reserve(completion.tool_calls.size());
             for(const LLMToolCall& call : completion.tool_calls)
                 futures.push_back(std::async(std::launch::async, invokeOne, call));
+            // Invariant (TD-163): append tool results in original tool_calls order.
+            // futures[i] was pushed for tool_calls[i]; sequential fut.get() preserves that index order.
             for(auto& fut : futures)
             {
                 auto [call, tr] = fut.get();

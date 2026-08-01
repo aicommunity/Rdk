@@ -22,12 +22,14 @@
 3. Действия — только `ULLMToolGateway`, не прямой engine.
 4. `RDK_USE_LLM=OFF` — не компилировать `Rdk/LLM` и `Rdk/GUI/Qt/Llm`.
 5. MVP: read tools (фаза 1) → write + HITL (фаза 2).
+6. Расширение сценариев — **packs-first** ([Docs/Extension-Guide.md](Docs/Extension-Guide.md), [Docs/Capability-Packs.md](Docs/Capability-Packs.md)); сырой `registerTool` — вторичный путь.
 
 ## Карта задач → документ
 
 | Задача | Документ |
 |--------|----------|
 | Новый tool | [Tools-Contracts.md](Docs/Tools-Contracts.md) + [Tool-Gateway-and-Registry.md](Docs/Tool-Gateway-and-Registry.md) |
+| Новый capability pack | [Extension-Guide.md](Docs/Extension-Guide.md) + [Capability-Packs.md](Docs/Capability-Packs.md) + `Core/Packs/Template/` |
 | Policy / HITL | [Policy-and-Safety.md](Docs/Policy-and-Safety.md) |
 | Qt dock | [GUI-Integration.md](Docs/GUI-Integration.md) |
 | Orchestrator / turn loop | [Orchestrator.md](Docs/Orchestrator.md), [Unified-Turn-Contract.md](Docs/Unified-Turn-Contract.md) |
@@ -62,12 +64,14 @@ After **each phase** 0–4: [Development-Workflow.md](Docs/Development-Workflow.
 3. Actions — only `ULLMToolGateway`, not direct engine access.
 4. `RDK_USE_LLM=OFF` — do not compile `Rdk/LLM` and `Rdk/GUI/Qt/Llm`.
 5. MVP: read tools (phase 1) → write + HITL (phase 2).
+6. Extend scenarios **packs-first** ([Docs/Extension-Guide.md](Docs/Extension-Guide.md), [Docs/Capability-Packs.md](Docs/Capability-Packs.md)); raw `registerTool` is secondary.
 
 ## Task map → document
 
 | Task | Document |
 |--------|----------|
 | New tool | [Tools-Contracts.md](Docs/Tools-Contracts.md) + [Tool-Gateway-and-Registry.md](Docs/Tool-Gateway-and-Registry.md) |
+| New capability pack | [Extension-Guide.md](Docs/Extension-Guide.md) + [Capability-Packs.md](Docs/Capability-Packs.md) + `Core/Packs/Template/` |
 | Policy / HITL | [Policy-and-Safety.md](Docs/Policy-and-Safety.md) |
 | Qt dock | [GUI-Integration.md](Docs/GUI-Integration.md) |
 | Orchestrator / turn loop | [Orchestrator.md](Docs/Orchestrator.md), [Unified-Turn-Contract.md](Docs/Unified-Turn-Contract.md) |

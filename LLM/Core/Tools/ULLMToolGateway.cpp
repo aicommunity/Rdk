@@ -29,6 +29,18 @@ std::string makeConfirmationId()
     return id;
 }
 
+thread_local const ToolInvokeRequest* g_active_tool_invoke = nullptr;
+
+struct ActiveToolInvokeGuard {
+    explicit ActiveToolInvokeGuard(const ToolInvokeRequest* req)
+    {
+        g_active_tool_invoke = req;
+    }
+    ~ActiveToolInvokeGuard() { g_active_tool_invoke = nullptr; }
+    ActiveToolInvokeGuard(const ActiveToolInvokeGuard&) = delete;
+    ActiveToolInvokeGuard& operator=(const ActiveToolInvokeGuard&) = delete;
+};
+
 void maybeRecordTurnToolTrace(const ToolInvokeRequest& req, const LLMToolDefinition* def,
                               const nlohmann::json& display_arguments,
                               const ToolGatewayResult& result, int duration_ms = 0)
@@ -49,6 +61,10 @@ void maybeRecordTurnToolTrace(const ToolInvokeRequest& req, const LLMToolDefinit
 
 } // namespace
 
+const ToolInvokeRequest* activeToolInvokeRequest()
+{
+    return g_active_tool_invoke;
+}
 ULLMToolGateway::ULLMToolGateway(ULLMToolRegistry& registry, ULLMPolicyEngine& policy,
                                  URdkDomainAccess& domain, ULLMAuditLog& audit,
                                  ULLMIdempotencyStore& idempotency,
@@ -261,6 +277,7 @@ ToolGatewayResult ULLMToolGateway::invoke(const ToolInvokeRequest& req)
     const auto started = std::chrono::steady_clock::now();
     try
     {
+        ActiveToolInvokeGuard guard(&invoke_req);
         result = m_registry.invokeHandler(invoke_req.tool_name, invoke_req.arguments);
     }
     catch(const std::exception& ex)

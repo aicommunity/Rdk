@@ -152,6 +152,7 @@ void LLMServices::rebuildProvider()
 
     m_orchestrator =
         std::make_unique<ULLMAgentOrchestrator>(*m_provider, GetToolRegistry(), *m_gateway, *m_store);
+    bindSpawnExploreSubagent(*m_provider, GetToolRegistry(), *m_gateway);
 }
 
 void LLMServices::applyActiveProvider()

@@ -3,6 +3,7 @@
 #include "../Orchestrator/ULLMExecutionPlan.h"
 #include "ULLMConfirmationExpiry.h"
 #include "ULLMSessionGraphMemory.h"
+#include "ULLMWorkingGoals.h"
 
 #include <fstream>
 
@@ -542,6 +543,9 @@ bool ULLMConversationStore::loadFromDisk(const std::string& session_id)
         state.last_session_context = sessionContextFromJson(j["last_session_context"]);
     if(j.contains("session_graph"))
         state.session_graph = sessionGraphMemoryFromJson(j["session_graph"]);
+    if(j.contains("working_goals"))
+        state.working_goals = workingGoalsFromJson(j["working_goals"]);
+    state.subagent_rounds_used = j.value("subagent_rounds_used", 0);
     m_sessions[session_id] = std::move(state);
     return true;
 }
@@ -555,6 +559,8 @@ bool ULLMConversationStore::persistToDisk(const std::string& session_id)
         return false;
     fs::create_directories(m_storage_dir);
     nlohmann::json j;
+    if(it->second.store_schema_version < 4)
+        it->second.store_schema_version = 4;
     j["store_schema_version"] = it->second.store_schema_version;
     j["session_id"] = it->second.session_id;
     j["workflow_phase"] = workflowPhaseName(it->second.workflow_phase);
@@ -604,6 +610,10 @@ bool ULLMConversationStore::persistToDisk(const std::string& session_id)
        || !it->second.session_graph.linked_records.empty()
        || it->second.session_graph.last_template.has_value())
         j["session_graph"] = sessionGraphMemoryToJson(it->second.session_graph);
+    if(!it->second.working_goals.empty())
+        j["working_goals"] = workingGoalsToJson(it->second.working_goals);
+    if(it->second.subagent_rounds_used > 0)
+        j["subagent_rounds_used"] = it->second.subagent_rounds_used;
     const fs::path file = fs::path(m_storage_dir) / (session_id + ".json");
     std::ofstream out(file);
     if(!out)

@@ -74,6 +74,8 @@ struct LLMFinalResponse {
     std::string action_preview_text;
     /// Sanitized tool invocations for this user turn (GUI chat / archive).
     std::vector<TurnToolInvocationView> tool_trace;
+    /// Working goals snapshot for GUI checklist (DD-WM-001).
+    std::vector<WorkingGoal> working_goals;
 };
 
 inline void assignTurnTerminal(LLMFinalResponse& response, TurnTerminal terminal)

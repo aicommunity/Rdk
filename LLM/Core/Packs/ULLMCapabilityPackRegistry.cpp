@@ -39,10 +39,22 @@ ULLMCapabilityPackRegistry::rank(const PackTurnSnapshot& snap) const
 }
 
 RecordedStrategyResult tryRecordedCapabilityPacks(ILLMCapabilityPackRegistry& packs,
-                                                  PackTurnSnapshot& snap, float score_threshold)
+                                                  PackTurnSnapshot& snap, float score_threshold,
+                                                  std::vector<std::string>* matched_ids_out,
+                                                  float hint_min_score)
 {
     RecordedStrategyResult out;
     const auto ranked = packs.rank(snap);
+    if(matched_ids_out)
+    {
+        matched_ids_out->clear();
+        for(const auto& entry : ranked)
+        {
+            if(entry.second.score < hint_min_score)
+                break;
+            matched_ids_out->push_back(entry.first->id());
+        }
+    }
     for(const auto& entry : ranked)
     {
         ILLMCapabilityPack* pack = entry.first;

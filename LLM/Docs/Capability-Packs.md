@@ -45,7 +45,7 @@ Audit events: `pack_matched`, `pack_recorded_fired` (`pack_id`, `score`).
 RegisterBuiltinCapabilityPacks(packs); // channel_calc, component_structure, watch_plot, …
 ```
 
-Libraries may register packs from `Libraries/*/Llm/` (phase F).
+Libraries may register packs from `Libraries/*/Llm/` (see [Extension-Guide.md](Extension-Guide.md) + `Core/Packs/Template/`). `Register*LibLlmTools` remain valid for tools; packs wrap domain scenarios.
 
 ## 5. MCP
 

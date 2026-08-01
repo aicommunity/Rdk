@@ -81,9 +81,13 @@ public:
     rank(const PackTurnSnapshot& snap) const = 0;
 };
 
+/// Runs Recorded strategies for packs at/above `score_threshold`. When `matched_ids_out` is set,
+/// fills pack ids with match score >= `hint_min_score` (default 0.4, DD-PACK-001 hints band).
 RecordedStrategyResult tryRecordedCapabilityPacks(ILLMCapabilityPackRegistry& packs,
                                                     PackTurnSnapshot& snap,
-                                                    float score_threshold = 0.85f);
+                                                    float score_threshold = 0.85f,
+                                                    std::vector<std::string>* matched_ids_out = nullptr,
+                                                    float hint_min_score = 0.4f);
 
 inline void mergePackToolNames(ToolFilter& filter, const std::vector<std::string>& names)
 {

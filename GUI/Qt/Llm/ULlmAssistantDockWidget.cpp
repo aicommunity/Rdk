@@ -96,6 +96,35 @@ QString escapeHtmlLite(const QString& s)
     return out;
 }
 
+QString formatWorkingGoalsDetailsHtml(const std::vector<RDK::LLM::WorkingGoal>& goals)
+{
+    if(goals.empty())
+        return {};
+    QString body;
+    for(const RDK::LLM::WorkingGoal& g : goals)
+    {
+        body += QStringLiteral("<li><b>[%1]</b> %2")
+                    .arg(QString::fromUtf8(RDK::LLM::workingGoalStatusName(g.status)),
+                         escapeHtmlLite(QString::fromStdString(g.title)));
+        if(!g.evidence.empty())
+            body += QStringLiteral(" <i>(%1 evidence)</i>").arg(g.evidence.size());
+        body += QStringLiteral("</li>");
+    }
+    return QStringLiteral("<details><summary>Goals</summary><ul>%1</ul></details>").arg(body);
+}
+
+void appendWorkingGoalsToHistory(ULlmChatHistoryPanel* history,
+                                 const std::function<void(const QString&)>& archive_fn,
+                                 const RDK::LLM::LLMFinalResponse& resp)
+{
+    const QString html = formatWorkingGoalsDetailsHtml(resp.working_goals);
+    if(html.isEmpty())
+        return;
+    history->appendHtml(html, /*details_expanded_default=*/false);
+    if(archive_fn)
+        archive_fn(html);
+}
+
 /// Collapsible Reasoning block (same details/summary pattern as tool traces).
 /// Soft safety cap only (~256KB) so AiChats archive keeps full LLM thinking.
 QString formatThinkingDetailsHtml(QString thinking)
@@ -845,6 +874,9 @@ void ULlmAssistantDockWidget::onStreamFinished(const RDK::LLM::LLMFinalResponse&
     appendToolTraceToHistory(m_history,
                              [this](const QString& fragment) { archiveHtmlFragment(fragment); },
                              resp);
+    appendWorkingGoalsToHistory(m_history,
+                                [this](const QString& fragment) { archiveHtmlFragment(fragment); },
+                                resp);
 
     if(!resp.ok)
     {
@@ -1241,6 +1273,9 @@ void ULlmAssistantDockWidget::onConfirmClicked()
     appendToolTraceToHistory(m_history,
                              [this](const QString& fragment) { archiveHtmlFragment(fragment); },
                              resp);
+    appendWorkingGoalsToHistory(m_history,
+                                [this](const QString& fragment) { archiveHtmlFragment(fragment); },
+                                resp);
     appendAssistantText(resp.ok ? QString::fromStdString(resp.text)
                                 : QString::fromStdString("Error: " + resp.error));
 }
