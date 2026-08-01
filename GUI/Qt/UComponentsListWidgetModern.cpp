@@ -52,9 +52,23 @@ QTreeWidgetItem* propertyItemFromIndex(QTreeWidget* tree, const QModelIndex& ind
 {
     if(!tree || !index.isValid())
         return nullptr;
-    if(QTreeWidgetItem* item = tree->itemFromIndex(index))
+    // QTreeWidget::itemFromIndex is protected in Qt5 — use the model index pointer instead.
+    if(auto* item = static_cast<QTreeWidgetItem*>(index.internalPointer()))
         return item;
     return tree->currentItem();
+}
+
+/// True when a temporary item-delegate editor (QLineEdit) still has focus under the tree.
+bool treeHasOpenPropertyEditor(QTreeWidget* tree)
+{
+    if(!tree)
+        return false;
+    QWidget* fw = QApplication::focusWidget();
+    if(!fw)
+        return false;
+    if(!qobject_cast<QLineEdit*>(fw))
+        return false;
+    return tree->viewport()->isAncestorOf(fw) || fw->parentWidget() == tree->viewport();
 }
 
 void wirePropertyValueEditor(QLineEdit* edit, const QStyledItemDelegate* delegate)
@@ -2596,8 +2610,9 @@ bool UComponentsListWidgetModern::eventFilter(QObject *obj, QEvent *event)
             else if(obj == ui->treeWidgetFavorites || obj == ui->treeWidgetFavorites->viewport())
                 tree = ui->treeWidgetFavorites;
 
-            // Не переоткрывать редактор, пока уже идёт edit (Enter = commit)
-            if(tree && tree->state() == QAbstractItemView::EditingState)
+            // Не переоткрывать редактор, пока уже идёт edit (Enter = commit).
+            // QAbstractItemView::state() is protected in Qt5 — detect via focused QLineEdit.
+            if(treeHasOpenPropertyEditor(tree))
                 return false;
 
             if(beginPropertyValueEdit(currentPropertyItem()))
