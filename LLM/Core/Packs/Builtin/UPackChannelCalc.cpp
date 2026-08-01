@@ -1,9 +1,9 @@
 #include "UPackChannelCalc.h"
 
+#include "../../LlmModuleInit.h"
 #include "../../LlmPublicApi.h"
 #include "../../Observability/ULLMAuditLog.h"
 #include "../../Observability/ULLMToolTrace.h"
-#include "../../Orchestrator/ULLMAgentOrchestrator.h"
 #include "../../Orchestrator/ULLMChannelCalcCommand.h"
 #include "../../Orchestrator/ULLMRecordedToolInvoke.h"
 #include "../../Tools/ULLMToolRegistry.h"

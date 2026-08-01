@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "../LlmTypes.h"
+#include "../Orchestrator/ULLMAgentOrchestrator.h"
 #include "../Orchestrator/ULLMWorkflowState.h"
 #include "../Session/ULLMConversationStore.h"
 
@@ -16,7 +17,6 @@ namespace RDK::LLM {
 class ULLMToolRegistry;
 class ULLMToolGateway;
 class ULLMSystemLogReader;
-struct LLMRequestEnvelope;
 
 struct PackMatch {
     float score = 0.f;
@@ -41,6 +41,13 @@ struct PackTurnSnapshot {
     ULLMConversationStore* store = nullptr;
     ULLMSystemLogReader* log_reader = nullptr;
     std::function<void(LLMWorkflowPhase)> set_phase;
+    /// Optional: orchestrator write path with preview/HITL (add_component_direct).
+    std::function<LLMFinalResponse(const std::string& tool_name, const nlohmann::json& arguments)>
+        invoke_tool_direct;
+    /// Optional: class/component disambiguation ("class" | "component").
+    std::function<LLMFinalResponse(const LLMToolCall& call, const std::string& kind,
+                                   const std::string& field, const nlohmann::json& disambiguation)>
+        route_clarification;
 };
 
 struct RecordedStrategyResult {

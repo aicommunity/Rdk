@@ -31,18 +31,18 @@ Audit events: `pack_matched`, `pack_recorded_fired` (`pack_id`, `score`).
 
 | Pack id | Source DD | Status |
 |---------|-----------|--------|
-| `channel_calc` | DD-CALC-001 | Phase A proof |
-| `component_structure` | DD-STRUCT-001 | Phase B |
-| `watch_plot` | DD-WATCH-001/002 | Phase B |
-| `connect` | DD-CONN-001/002 | Phase B |
-| `add_component_direct` | DD-MEM-002/003 | Phase B |
-| `lifecycle_soft` | TD-102 | Phase B |
+| `channel_calc` | DD-CALC-001 | Migrated (Phase A) |
+| `component_structure` | DD-STRUCT-001 | Migrated (Phase B) |
+| `watch_plot` | DD-WATCH-001/002 | Migrated (Phase B) |
+| `connect` | DD-CONN-001/002 | Hints only (Phase B); live-analogous execute still in orchestrator |
+| `add_component_direct` | DD-MEM-002/003 | Migrated (Phase B) |
+| `lifecycle_soft` | TD-102 | Hints only (Phase B); env-gated load direct stays in orchestrator |
 
 ## 4. Registration
 
 ```cpp
 // LLMServices::initialize — after Register*Tools
-packs.registerPack(std::make_unique<UPackChannelCalc>());
+RegisterBuiltinCapabilityPacks(packs); // channel_calc, component_structure, watch_plot, …
 ```
 
 Libraries may register packs from `Libraries/*/Llm/` (phase F).

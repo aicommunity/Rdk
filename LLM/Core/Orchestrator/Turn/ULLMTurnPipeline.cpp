@@ -1,5 +1,6 @@
 #include "ULLMTurnPipeline.h"
 
+#include "../../LlmModuleInit.h"
 #include "../../Observability/ULLMAuditLog.h"
 
 namespace RDK::LLM {
