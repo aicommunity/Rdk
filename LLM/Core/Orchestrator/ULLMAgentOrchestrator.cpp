@@ -17,6 +17,7 @@
 #include "../Session/ULLMConfirmationExpiry.h"
 #include "../LlmPublicApi.h"
 #include "../Packs/ILLMCapabilityPack.h"
+#include "../Packs/ULLMCompoundGoal.h"
 #include "../Policy/ULLMPolicyEngine.h"
 #include "../Providers/UOllamaChatTemplate.h"
 #include "../Providers/UOllamaModelInfo.h"
@@ -139,24 +140,42 @@ void syncWorkingGoalEvidenceFromTrace(ConversationState& state)
 {
     if(state.working_goals.empty())
         return;
-    const std::string& goal_id = state.working_goals.front().id;
+
+    // Per-tool → goal mapping (DD-PACK-003); fall back to front goal for unknown tools.
     for(const TurnToolInvocationView& inv : state.current_turn_tool_trace)
     {
-        if(!inv.ok)
+        std::string goal_id = workingGoalIdForToolName(inv.tool_name);
+        if(goal_id.empty())
+            goal_id = state.working_goals.front().id;
+        appendWorkingGoalEvidence(state, goal_id,
+                                  inv.tool_name + (inv.ok ? ":ok" : ":fail"));
+    }
+
+    for(WorkingGoal& g : state.working_goals)
+    {
+        bool any_ok = false;
+        bool any_fail = false;
+        bool any_evidence = false;
+        for(const TurnToolInvocationView& inv : state.current_turn_tool_trace)
+        {
+            std::string gid = workingGoalIdForToolName(inv.tool_name);
+            if(gid.empty())
+                gid = state.working_goals.front().id;
+            if(gid != g.id)
+                continue;
+            any_evidence = true;
+            any_ok = any_ok || inv.ok;
+            any_fail = any_fail || !inv.ok;
+        }
+        if(!any_evidence)
             continue;
-        appendWorkingGoalEvidence(state, goal_id, inv.tool_name + (inv.ok ? ":ok" : ":fail"));
+        if(any_ok && !any_fail)
+            g.status = WorkingGoalStatus::Done;
+        else if(any_fail)
+            g.status = WorkingGoalStatus::Blocked;
+        else if(g.status == WorkingGoalStatus::Pending)
+            g.status = WorkingGoalStatus::InProgress;
     }
-    bool any_fail = false;
-    bool any_ok = false;
-    for(const TurnToolInvocationView& inv : state.current_turn_tool_trace)
-    {
-        any_ok = any_ok || inv.ok;
-        any_fail = any_fail || !inv.ok;
-    }
-    if(any_ok && !any_fail)
-        markWorkingGoalStatus(state, goal_id, WorkingGoalStatus::Done);
-    else if(any_fail)
-        markWorkingGoalStatus(state, goal_id, WorkingGoalStatus::Blocked);
 }
 
 void attachTurnToolTrace(ConversationState& state, LLMFinalResponse& response)
@@ -627,6 +646,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
 
     // DD-PACK-001: capability pack Recorded strategies (channel_calc, …) before TaskPath.
     std::vector<std::string> matched_pack_ids;
+    std::string pack_hints_block;
+    std::vector<std::string> pack_extra_tool_names;
     if(!skip_pre_llm_funnel && LLMServices::instance().isInitialized())
     {
         PackTurnSnapshot snap;
@@ -667,6 +688,9 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                                        &matched_pack_ids);
         if(pack_hit.handled)
             return pack_hit.response;
+        // TD-167: continuing to ReAct — inject pack hints + expand tool allowlist.
+        pack_hints_block = collectPackHintsMarkdown(LLMServices::instance().packs(), snap);
+        pack_extra_tool_names = collectPackExtraToolNames(LLMServices::instance().packs(), snap);
     }
 
     // DD-STRUCT-001 / DD-WATCH-001 FastPaths: UPackComponentStructure / UPackWatchPlot via packs.
@@ -1184,6 +1208,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
     ToolFilter filter = buildToolExposureFilter(intent, session.llm_write_enabled, lifecycle_action,
                                                 state.intent_contract_confidence);
     filter = ULLMDynamicToolRouter::apply(filter, planning_text);
+    mergePackToolNames(filter, pack_extra_tool_names);
 
     bool context_compacted = false;
     {
@@ -1297,6 +1322,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
             LLMServices::instance().projectContext()->paths().repository_root, session.user_id,
             req.gui.project_xml_path);
     }
+
+    ctx_input.pack_hints_block = std::move(pack_hints_block);
 
     LLMCompletionOptions opts;
     if(LLMServices::instance().isInitialized())

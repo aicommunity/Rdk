@@ -4,7 +4,7 @@
 
 Нормативный контракт единицы расширяемости LLM-агента. Реализация: `Rdk/LLM/Core/Packs/`, turn pipeline: `Rdk/LLM/Core/Orchestrator/Turn/`.
 
-См. также: [Developer-Architecture.md](Developer-Architecture.md), [Unified-Turn-Contract.md](Unified-Turn-Contract.md), [Extension-Guide.md](Extension-Guide.md), [TECH-DEBT.md](../TECH-DEBT.md) (DD-PACK-001, TD-158+).
+См. также: [Developer-Architecture.md](Developer-Architecture.md), [Unified-Turn-Contract.md](Unified-Turn-Contract.md), [Extension-Guide.md](Extension-Guide.md), [TECH-DEBT.md](../TECH-DEBT.md) (DD-PACK-001, DD-PACK-003, TD-158+).
 
 ---
 
@@ -21,22 +21,24 @@
 
 | Score | Behavior |
 |-------|----------|
-| `>= 0.85` | If pack implements `tryRecorded` → Recorded short-circuit |
+| `>= 0.85` | If pack implements `tryRecorded` → Recorded (single-goal short-circuit; multi-goal → §7) |
 | `0.4 .. 0.85` | Hints + tool allowlist merge only |
 | `< 0.4` | Ignore |
 
-Audit events: `pack_matched`, `pack_recorded_fired` (`pack_id`, `score`).
+On ReAct continuation, orchestrator injects `## Capability pack hints` from `collectPackHintsMarkdown` and merges `collectPackExtraToolNames` into the tool filter (TD-167).
+
+Audit events: `pack_matched`, `pack_recorded_fired` (`pack_id`, `score`; multi-goal adds `"multi": true`).
 
 ## 3. Builtin packs (migration)
 
 | Pack id | Source DD | Status |
 |---------|-----------|--------|
-| `channel_calc` | DD-CALC-001 | Migrated (Phase A) |
-| `component_structure` | DD-STRUCT-001 | Migrated (Phase B) |
-| `watch_plot` | DD-WATCH-001/002 | Migrated (Phase B) |
-| `connect` | DD-CONN-001/002 | Hints only (Phase B); live-analogous execute still in orchestrator |
-| `add_component_direct` | DD-MEM-002/003 | Migrated (Phase B) |
-| `lifecycle_soft` | TD-102 | Hints only (Phase B); env-gated load direct stays in orchestrator |
+| `channel_calc` | DD-CALC-001 | Migrated (Recorded + hints) |
+| `component_structure` | DD-STRUCT-001 | Migrated (Recorded + hints) |
+| `watch_plot` | DD-WATCH-001/002 | Migrated (Recorded + hints) |
+| `connect` | DD-CONN-001/002 | Hints only; live-analogous execute still in orchestrator (TD-169) |
+| `add_component_direct` | DD-MEM-002/003 | Migrated (Recorded + hints) |
+| `lifecycle_soft` | TD-102 | Hints only; env-gated load direct stays in orchestrator (not migrating) |
 
 ## 4. Registration
 
@@ -53,4 +55,14 @@ Out of scope (DD-PACK-002). Revisit on product request for out-of-process tools.
 
 ## 6. Working goals
 
-See DD-WM-001 / TD-162: structured `working_goals` on `ConversationState` (store v4), injected as ephemeral each provider round.
+See DD-WM-001 / TD-162: structured `working_goals` on `ConversationState` (store v4), injected as ephemeral each provider round. High-score packs seed goals; tool outcomes update status via `workingGoalIdForToolName`.
+
+## 7. Multi-goal Recorded (DD-PACK-003)
+
+When **≥2 packs** score ≥0.85 **or** `isCompoundActionableGoal` (conjunction + multiple actionable families, e.g. «добавь … и запусти расчет»), Recorded does **not** exclusive-short-circuit on the first handled pack.
+
+1. Sort high packs by fixed dependency order: mutate/structure/watch/connect before `channel_calc` side-effect.
+2. Run each pack's `tryRecorded` sequentially; merge successful parts into one response.
+3. Clarification / HITL / pending confirmation **pauses** the chain; remaining packs resume after the user answers.
+
+Single high match without compound → unchanged first-pack short-circuit.

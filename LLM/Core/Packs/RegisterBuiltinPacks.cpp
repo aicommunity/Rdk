@@ -12,11 +12,12 @@ namespace RDK::LLM {
 
 void RegisterBuiltinCapabilityPacks(ILLMCapabilityPackRegistry& registry)
 {
-    registry.registerPack(std::make_unique<UPackChannelCalc>());
-    registry.registerPack(std::make_unique<UPackComponentStructure>());
-    registry.registerPack(std::make_unique<UPackWatchPlot>());
+    // DD-PACK-003 dependency order: mutate packs before channel_calc side-effect.
     registry.registerPack(std::make_unique<UPackAddComponentDirect>());
+    registry.registerPack(std::make_unique<UPackComponentStructure>());
     registry.registerPack(std::make_unique<UPackConnect>());
+    registry.registerPack(std::make_unique<UPackWatchPlot>());
+    registry.registerPack(std::make_unique<UPackChannelCalc>());
     registry.registerPack(std::make_unique<UPackLifecycleSoft>());
 }
 

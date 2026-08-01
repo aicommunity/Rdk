@@ -105,6 +105,10 @@ std::vector<std::string> collectPackRecoveryTools(ILLMCapabilityPackRegistry& pa
 std::string collectPackHintsMarkdown(ILLMCapabilityPackRegistry& packs,
                                      const PackTurnSnapshot& snap, float min_score = 0.4f);
 
+std::vector<std::string> collectPackExtraToolNames(ILLMCapabilityPackRegistry& packs,
+                                                   const PackTurnSnapshot& snap,
+                                                   float min_score = 0.4f);
+
 } // namespace RDK::LLM
 
 #endif

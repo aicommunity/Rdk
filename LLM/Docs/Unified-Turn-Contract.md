@@ -48,3 +48,15 @@ Task FastPath / PlanExecutor: HintOnly default; when FastPath or plan Run execut
 **Structure knowledge gate + dendrite FastPath (DD-STRUCT-001):** structure goals (`дендрит` / `NumSoma` / …) force Mutate, prefetch docs, ephemeral Pulse canon hint, and Act-or-Clarify recovery (`set_property` + `calculate_component`, no `add_component` Dendrite). Parsed «N дендритов длинами …» runs FastPath: `StructureBuildMode=2`, `NumSomaMembraneParts`, `NumDendriteMembranePartsVec` (space-separated), `calculate_component`. Fuzzy `property_name` covers typos like `numDendridetMembranePartsVec`.
 
 **Watch plot FastPath (DD-WATCH-001 / DD-WATCH-002):** «на график …» → `add_watch_series` (optional `create_watch_mdi`). Nested roles («ltzone», «низкопороговая зона») resolve to dotted `Parent.Child` via `resolveNestedWatchTarget` — never parent-only `Output` when nested_hint is set. Autonomous allows UI/watch tools without burning write-step budget. Chat input Tab-completes model long_names / ClassesList / properties.
+
+### Recorded via Capability Packs (DD-PACK-001 / DD-PACK-003)
+
+Primary Recorded routing is **pack-owned**: `tryRecordedCapabilityPacks` ranks packs, then:
+
+| Case | Behavior |
+|------|----------|
+| Single high match (`>= 0.85`) | That pack's `tryRecorded` may short-circuit the turn |
+| Multi-goal: ≥2 high matches **or** compound conjunction (DD-PACK-003) | Run high packs **sequentially** in dependency order (`add_component_direct` → structure/watch/connect → `channel_calc`); no exclusive first-hit abort. Clarification/HITL pauses remaining packs |
+| Score `0.4 .. 0.85` (or high match that did not Record) | Continue to ReAct with pack ephemeral hints + `extra_tool_names` allowlist merge |
+
+`working_goals` (DD-WM-001) are seeded for high packs and updated from tool evidence. Lifecycle **load** remains orchestrator env-gated (`NMSDK_LLM_LIFECYCLE_DIRECT=1`); not pack-migrated.

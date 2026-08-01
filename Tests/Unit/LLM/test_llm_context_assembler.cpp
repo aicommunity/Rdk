@@ -222,3 +222,29 @@ TEST(LLMContextAssembler, SessionGraphIncludesLastAddedClass)
     }
     EXPECT_TRUE(found);
 }
+
+TEST(LLMContextAssembler, PackHintsBlockPrepended)
+{
+    std::vector<LLMMessage> messages;
+    messages.push_back({LLMMessage::Role::User, "start calc"});
+
+    ConversationState conv;
+    EphemeralContextInput input{conv,
+                                LLMSessionContext{},
+                                LLMGuiContextSnapshot{},
+                                LLMIntentKind::Mutate,
+                                ConfigurationLifecycleAction::None,
+                                true};
+    input.pack_hints_block = "- Prefer start_channel_calculation for channel calc goals.\n";
+
+    prependEphemeralSystemMessages(messages, input);
+    bool found = false;
+    for(const LLMMessage& m : messages)
+    {
+        if(m.role == LLMMessage::Role::System
+           && m.content.find("## Capability pack hints") != std::string::npos
+           && m.content.find("start_channel_calculation") != std::string::npos)
+            found = true;
+    }
+    EXPECT_TRUE(found);
+}

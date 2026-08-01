@@ -20,6 +20,7 @@ constexpr std::size_t kGuiFocusMaxChars = 1200;
 constexpr std::size_t kRetrieverSummaryMaxChars = 4096;
 constexpr std::size_t kAgentNotesMaxChars = 4096;
 constexpr std::size_t kLongTermMemoryMaxChars = 2048;
+constexpr std::size_t kPackHintsMaxChars = 2000;
 
 void truncateInPlace(std::string& s, const std::size_t max_chars)
 {
@@ -214,6 +215,14 @@ void prependEphemeralSystemMessages(std::vector<LLMMessage>& provider_messages,
         prependSystem(provider_messages, input.connect_semantics_block);
     if(!input.link_patterns_block.empty())
         prependSystem(provider_messages, input.link_patterns_block);
+
+    if(!input.pack_hints_block.empty())
+    {
+        std::string pack_hints = "## Capability pack hints\n";
+        pack_hints += input.pack_hints_block;
+        truncateInPlace(pack_hints, kPackHintsMaxChars);
+        prependSystem(provider_messages, std::move(pack_hints));
+    }
 
     prependSystem(provider_messages, buildRetrieverSummaryBlock(input));
     prependSystem(provider_messages, buildGuiFocusSystemHint(input.gui, input.session));

@@ -114,6 +114,12 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-163 | `search_tools` quality gate / close or re-scope TD-146 | pack-phase-D | P1 | done | Pack ActOrClarify recovery merge; parallel-read order invariant; hybrid long-tail fixture |
 | TD-164 | Unify `spawn_explore_subagent` stub → gateway + budgets | pack-phase-E | P2 | done | Gateway handler + `bindSpawnExploreSubagent`; session `subagent_rounds_used`; nested deny in runner |
 | TD-165 | Extension-Guide packs-first + library pack adapters | pack-phase-F | P2 | done | Packs-first Extension-Guide; `Core/Packs/Template/README.md`; lib tools remain valid |
+| TD-166 | Multi-goal Recorded routing (DD-PACK-003) | pack-tails | P0 | done | Sequential packs; compound add+calc |
+| TD-167 | Wire pack hints into assembler/filter | pack-tails | P1 | done | `pack_hints_block` + `collectPackHintsMarkdown` / `collectPackExtraToolNames` on ReAct path |
+| TD-168 | Sync Developer-Architecture + Unified-Turn-Contract | pack-tails | P1 | done | TurnPipeline/packs/multi-goal/`working_goals`; Capability-Packs §7 |
+| TD-169 | Migrate live-analogous connect into UPackConnect | pack-tails | P2 | open | Remove orch TODO |
+| TD-170 | Multi-phase TurnPipeline extract | pack-tails | P2 | open | Replace Legacy body |
+| TD-171 | Library pack adapter + subagent profiles + goals hooks | pack-tails | P3 | open | Pulse/Hardware pack; inspect_graph/search_docs |
 
 ---
 
@@ -270,3 +276,4 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | 2026-08-01 | DD-PACK-001: Capability Packs = unit of extensibility; FastPath only via pack tryRecorded + score threshold (gte 0.85 recorded; 0.4-0.85 hints; below 0.4 ignore) | God-orchestrator FastPath ladder; SOTA spine+skills | pack-phase-A..B | TD-158..161 |
 | 2026-08-01 | DD-PACK-002: MCP out of scope for desktop Ollama agent | Prefer pack/tool registry API; no external MCP host yet | — | Product request for out-of-process tools |
 | 2026-08-01 | DD-WM-001: `working_goals` in session JSON; `store_schema_version` 3→4 with backward load | Structured reasoning memory (Cursor-like todos) | pack-phase-C | TD-162 |
+| 2026-08-01 | DD-PACK-003: Multi-goal Recorded — no exclusive short-circuit when ≥2 high matches or compound conjunction; sequential dependency order (add→…→calc) | Chat log 22-06-32: add+calc only ran calc | pack-tails | TD-166 |
