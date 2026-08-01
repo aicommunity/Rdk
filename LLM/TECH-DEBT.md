@@ -107,8 +107,8 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-109 | `Test_LLM_WriteToolsEngine` SIGSEGV on `UAppCore` exit | post-M | P2 | done | `ShutdownLlmWriteToolsEngine()` + gtest global env teardown |
 | TD-110 | Symbol search (`UApplication`) rank below generic hits | post-M | P2 | done | Path/title boost in `UDocSearchIndex::searchInternal` |
 | TD-158 | ADR DD-PACK-001 Agent Spine + Capability Packs | pack-phase-0 | P0 | done | ADR in Deferred decisions; [Capability-Packs.md](Docs/Capability-Packs.md) |
-| TD-159 | `TurnPipeline` / `ITurnPhase` extract from `handleUserMessageImpl` | pack-phase-A | P0 | open | Strangler: LegacyImpl then multi-phase |
-| TD-160 | `ILLMCapabilityPack` + registry + filter merge | pack-phase-A | P0 | open | Proof: `channel_calc` pack (DD-CALC-001) |
+| TD-159 | `TurnPipeline` / `ITurnPhase` extract from `handleUserMessageImpl` | pack-phase-A | P0 | done | `ULLMTurnPipeline` + `ULLMTurnPhaseLegacy` strangler via UnifiedTurnController |
+| TD-160 | `ILLMCapabilityPack` + registry + filter merge | pack-phase-A | P0 | done | Registry + `UPackChannelCalc` (DD-CALC-001); GoalRouter via `tryRecordedCapabilityPacks` |
 | TD-161 | Migrate FastPath detectors → packs (STRUCT/WATCH/CONN/add/lifecycle) | pack-phase-B | P0 | open | One pack per commit |
 | TD-162 | `working_goals` ConversationState + assembler + GUI | pack-phase-C | P1 | open | Store schema v3→v4; DD-WM-001 |
 | TD-163 | `search_tools` quality gate / close or re-scope TD-146 | pack-phase-D | P1 | open | Miss-rate fixture; pack ActOrClarify recovery |

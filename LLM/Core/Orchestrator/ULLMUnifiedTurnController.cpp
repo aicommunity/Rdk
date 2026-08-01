@@ -1,12 +1,30 @@
 #include "ULLMUnifiedTurnController.h"
 
 #include "../LlmModuleInit.h"
+#include "../LlmPublicApi.h"
 #include "../Observability/ULLMAuditLog.h"
+#include "../Packs/ULLMCapabilityPackRegistry.h"
+#include "Turn/ULLMTurnPhaseLegacy.h"
+#include "Turn/ULLMTurnPipeline.h"
 
 #include <exception>
+#include <memory>
 #include <typeinfo>
+#include <vector>
 
 namespace RDK::LLM {
+
+namespace {
+
+ILLMCapabilityPackRegistry& packsForTurn()
+{
+    if(LLMServices::instance().isInitialized())
+        return LLMServices::instance().packs();
+    static ULLMCapabilityPackRegistry empty;
+    return empty;
+}
+
+} // namespace
 
 LLMFinalResponse ULLMUnifiedTurnController::handleTurn(ULLMAgentOrchestrator& orch,
                                                        const LLMRequestEnvelope& req,
@@ -14,7 +32,20 @@ LLMFinalResponse ULLMUnifiedTurnController::handleTurn(ULLMAgentOrchestrator& or
 {
     try
     {
-        return orch.handleUserMessageImpl(req, stream);
+        std::vector<std::unique_ptr<ITurnPhase>> phases;
+        phases.push_back(std::make_unique<ULLMTurnPhaseLegacy>(
+            [](ULLMAgentOrchestrator& o, const LLMRequestEnvelope& r, const LLMStreamHandlers* s) {
+                return o.handleUserMessageImpl(r, s);
+            }));
+        ULLMTurnPipeline pipeline(std::move(phases));
+
+        TurnContext ctx;
+        ctx.req = req;
+        ctx.stream = stream;
+
+        TurnServices svc{orch.m_provider, orch.m_registry, orch.m_gateway, orch.m_store,
+                         packsForTurn(), orch};
+        return pipeline.run(ctx, svc);
     }
     catch(const std::exception& ex)
     {

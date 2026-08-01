@@ -8,6 +8,8 @@
 #include "Session/ULLMConversationStore.h"
 #include "LlmModuleInit.h"
 #include "Observability/ULLMIdempotencyStore.h"
+#include "Packs/RegisterBuiltinPacks.h"
+#include "Packs/ULLMCapabilityPackRegistry.h"
 #include "Policy/ULLMPolicyEngine.h"
 #include "Providers/ULLMProviderFactory.h"
 #include "Settings/ULLMProviderAuth.h"
@@ -58,6 +60,9 @@ void LLMServices::initialize(RDK::UApplication* app, ILLMProjectContextProvider*
                                                   GetAuditLog(), *m_idempotency, *m_validator);
     m_context_retriever =
         std::make_unique<URdkContextRetriever>(*m_domain, project_context);
+
+    m_packs = std::make_unique<ULLMCapabilityPackRegistry>();
+    RegisterBuiltinCapabilityPacks(*m_packs);
 
     const std::filesystem::path repository_root =
         project_context ? project_context->paths().repository_root : std::filesystem::path(".");
@@ -214,6 +219,12 @@ UDocSearchIndex& LLMServices::searchIndex()
 URdkContextRetriever* LLMServices::contextRetriever()
 {
     return m_context_retriever.get();
+}
+
+ILLMCapabilityPackRegistry& LLMServices::packs()
+{
+    static ULLMCapabilityPackRegistry s_fallback;
+    return m_packs ? *m_packs : s_fallback;
 }
 
 bool LLMServices::loadConversationSession(const std::string& session_id)

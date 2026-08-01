@@ -16,6 +16,7 @@
 #include "../LlmModuleInit.h"
 #include "../Session/ULLMConfirmationExpiry.h"
 #include "../LlmPublicApi.h"
+#include "../Packs/ILLMCapabilityPack.h"
 #include "../Policy/ULLMPolicyEngine.h"
 #include "../Providers/UOllamaChatTemplate.h"
 #include "../Providers/UOllamaModelInfo.h"
@@ -591,63 +592,27 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
             decideTaskPath(planning_text, intent, session.autonomous_mode, &state);
     }
 
-    // DD-CALC-001: channel calc FastPath before TaskPath (autonomous always sets use_task_path).
-    if(!skip_pre_llm_funnel && session.llm_write_enabled
-       && LLMServices::instance().isInitialized()
-       && LLMServices::instance().domain().application())
+    // DD-PACK-001: capability pack Recorded strategies (channel_calc, …) before TaskPath.
+    if(!skip_pre_llm_funnel && LLMServices::instance().isInitialized())
     {
-        ChannelCalcAction calc_action = detectChannelCalcAction(req.user_text);
-        if(calc_action == ChannelCalcAction::None)
-            calc_action = detectChannelCalcAction(planning_text);
-        if(calc_action != ChannelCalcAction::None)
-        {
-            const char* tool_name = toolNameForChannelCalcAction(calc_action);
-            const int channel_index =
-                channelIndexForCalcRequest(req.user_text, session.active_channel_index);
-            nlohmann::json args = {{"channel_index", channel_index}};
-
-            RecordedToolInvokeDeps deps{m_registry, m_gateway, m_store, {}, m_system_log_reader.get()};
-            RecordedToolInvokeRequest rreq;
-            rreq.session_id = req.session_id;
-            rreq.trace_id = req.trace_id;
-            rreq.tool_name = tool_name;
-            rreq.arguments = args;
-            rreq.session = session;
-            rreq.session.session_id = req.session_id;
-            rreq.user_text_hint = entity_user_text_hint;
-            rreq.idempotency_action_id = "channel_calc_fastpath";
-            rreq.force_confirmed = true;
-            rreq.confirmed = true;
-            rreq.skip_preview = true;
-            rreq.append_outcome_assistant = false;
-            rreq.skip_turn_tool_trace = true;
-
-            RecordedToolInvokeResult recorded = recordedToolInvoke(state, deps, rreq);
-            const ToolGatewayResult& tr = recorded.gateway;
-            const LLMToolDefinition* calc_def = m_registry.find(tool_name);
-            recordTurnToolInvocation(state, tool_name, args, tr, 0,
-                                     calc_def ? calc_def->input_schema : nlohmann::json::object());
-
-            LLMFinalResponse calc_final;
-            calc_final.ok = tr.ok;
-            calc_final.text = formatChannelCalcUserMessage(calc_action, tr, channel_index);
-            if(!tr.ok && !tr.message.empty())
-                calc_final.error = tr.message;
-            GetAuditLog().append(tr.ok ? "channel_calc_fastpath" : "channel_calc_fastpath_failed",
-                                 {{"tool_name", tool_name},
-                                  {"channel_index", channel_index},
-                                  {"ok", tr.ok},
-                                  {"error_code", tr.error_code}},
-                                 req.trace_id, req.session_id);
-            setWorkflowPhase(state,
-                             tr.ok ? LLMWorkflowPhase::Completed : LLMWorkflowPhase::Failed,
-                             req.trace_id);
-            setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
-            assignTurnTerminal(calc_final, TurnTerminal::Completed);
-            attachTurnToolTrace(state, calc_final);
-            m_store.persistToDisk(req.session_id);
-            return calc_final;
-        }
+        PackTurnSnapshot snap;
+        snap.req = &req;
+        snap.state = &state;
+        snap.session = &session;
+        snap.planning_text = planning_text;
+        snap.entity_user_text_hint = entity_user_text_hint;
+        snap.skip_pre_llm_funnel = skip_pre_llm_funnel;
+        snap.registry = &m_registry;
+        snap.gateway = &m_gateway;
+        snap.store = &m_store;
+        snap.log_reader = m_system_log_reader.get();
+        snap.set_phase = [this, &state, &req](LLMWorkflowPhase phase) {
+            setWorkflowPhase(state, phase, req.trace_id);
+        };
+        RecordedStrategyResult pack_hit =
+            tryRecordedCapabilityPacks(LLMServices::instance().packs(), snap);
+        if(pack_hit.handled)
+            return pack_hit.response;
     }
 
     // DD-STRUCT-001: dendrite structure FastPath (mode2 + NumSoma + Vec + calculate).
