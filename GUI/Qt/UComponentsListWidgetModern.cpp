@@ -33,24 +33,64 @@
 #include <QPlainTextEdit>
 #include <QDialogButtonBox>
 #include <QShortcut>
+#include <QLineEdit>
+#include <QToolTip>
+#include <QCursor>
+#include <QAbstractItemView>
+
+#include "../../Deploy/Include/rdk_error_codes.h"
 
 namespace {
 
 constexpr int kFavRoleProp = Qt::UserRole;
 constexpr int kFavRoleDisplayPath = Qt::UserRole + 1;
 constexpr int kFavRoleComponent = Qt::UserRole + 2;
+constexpr int kMinValueColumnWidth = 100;
+constexpr int kMinEditorWidth = 120;
 
 QTreeWidgetItem* propertyItemFromIndex(QTreeWidget* tree, const QModelIndex& index)
 {
     if(!tree || !index.isValid())
         return nullptr;
-    const QRect rect = tree->visualRect(index);
-    if(rect.isValid())
-    {
-        if(QTreeWidgetItem* item = tree->itemAt(rect.center()))
-            return item;
-    }
+    if(QTreeWidgetItem* item = tree->itemFromIndex(index))
+        return item;
     return tree->currentItem();
+}
+
+void wirePropertyValueEditor(QLineEdit* edit, const QStyledItemDelegate* delegate)
+{
+    if(!edit || !delegate)
+        return;
+    edit->setFrame(false);
+    edit->setToolTip(QObject::tr("Enter — apply, Esc — cancel"));
+    // createEditor is const; signals must be emitted from the delegate instance.
+    auto* mutableDelegate = const_cast<QStyledItemDelegate*>(delegate);
+    QObject::connect(edit, &QLineEdit::returnPressed, edit, [mutableDelegate, edit]() {
+        Q_EMIT mutableDelegate->commitData(edit);
+        Q_EMIT mutableDelegate->closeEditor(edit, QAbstractItemDelegate::SubmitModelCache);
+    });
+}
+
+void updatePropertyEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, QTreeWidget* tree)
+{
+    if(!editor)
+        return;
+    QRect r = option.rect;
+    if(r.width() < kMinEditorWidth)
+        r.setWidth(kMinEditorWidth);
+    if(tree && tree->viewport())
+    {
+        const int vpRight = tree->viewport()->width() - 2;
+        if(r.right() > vpRight)
+        {
+            r.moveRight(vpRight);
+            if(r.width() < kMinEditorWidth)
+                r.setLeft(qMax(0, vpRight - kMinEditorWidth + 1));
+            if(r.left() < 0)
+                r.setLeft(0);
+        }
+    }
+    editor->setGeometry(r);
 }
 
 bool editMultilineValueDialog(QWidget* parent, QString& value)
@@ -163,6 +203,7 @@ public:
             return nullptr;
         auto* edit = new QLineEdit(parent);
         edit->setText(index.data(Qt::UserRole).toString());
+        wirePropertyValueEditor(edit, this);
         return edit;
     }
 
@@ -174,12 +215,23 @@ public:
 
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override
     {
-        Q_UNUSED(model);
         auto* lineEdit = qobject_cast<QLineEdit*>(editor);
         if(!lineEdit || !m_tree || !m_owner)
             return;
-        if(QTreeWidgetItem* item = propertyItemFromIndex(m_tree, index))
-            m_owner->applyPropertyValueFromEditor(item, lineEdit->text());
+        QTreeWidgetItem* item = propertyItemFromIndex(m_tree, index);
+        if(!item)
+            return;
+        if(!m_owner->applyPropertyValueFromEditor(item, lineEdit->text()))
+            return;
+        if(model)
+            model->setData(index, item->text(1), Qt::DisplayRole);
+    }
+
+    void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option,
+                              const QModelIndex& index) const override
+    {
+        Q_UNUSED(index);
+        updatePropertyEditorGeometry(editor, option, m_tree);
     }
 
 private:
@@ -257,6 +309,7 @@ public:
             return nullptr;
         auto* edit = new QLineEdit(parent);
         edit->setText(index.data(Qt::UserRole).toString());
+        wirePropertyValueEditor(edit, this);
         return edit;
     }
 
@@ -268,12 +321,23 @@ public:
 
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override
     {
-        Q_UNUSED(model);
         auto* lineEdit = qobject_cast<QLineEdit*>(editor);
         if(!lineEdit || !m_tree || !m_owner)
             return;
-        if(QTreeWidgetItem* item = propertyItemFromIndex(m_tree, index))
-            m_owner->applyPropertyValueFromEditor(item, lineEdit->text());
+        QTreeWidgetItem* item = propertyItemFromIndex(m_tree, index);
+        if(!item)
+            return;
+        if(!m_owner->applyPropertyValueFromEditor(item, lineEdit->text()))
+            return;
+        if(model)
+            model->setData(index, item->text(1), Qt::DisplayRole);
+    }
+
+    void updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option,
+                              const QModelIndex& index) const override
+    {
+        Q_UNUSED(index);
+        updatePropertyEditorGeometry(editor, option, m_tree);
     }
 
 private:
@@ -2239,8 +2303,17 @@ void UComponentsListWidgetModern::setupColumnWidthSync()
         QHeaderView* header = tree->header();
         // Иначе last section всегда «съедает» сохранённую ширину Value/Type при layout
         header->setStretchLastSection(false);
-        for(int col = 0; col < tree->columnCount(); ++col)
-            header->setSectionResizeMode(col, QHeaderView::Interactive);
+        tree->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        if(tree->columnCount() > 0)
+            header->setSectionResizeMode(0, QHeaderView::Stretch);
+        if(tree->columnCount() > 1)
+        {
+            header->setSectionResizeMode(1, QHeaderView::Interactive);
+            if(header->sectionSize(1) < kMinValueColumnWidth)
+                header->resizeSection(1, kMinValueColumnWidth);
+        }
+        if(tree->columnCount() > 2)
+            header->setSectionResizeMode(2, QHeaderView::ResizeToContents);
         connect(header, &QHeaderView::sectionResized,
                 this, &UComponentsListWidgetModern::onPropertyHeaderSectionResized);
     }
@@ -2278,8 +2351,9 @@ void UComponentsListWidgetModern::syncPropertyColumnWidths(QTreeWidget* sourceTr
     if(m_syncingColumnWidths || !sourceTree)
         return;
 
+    // Name (0) — Stretch: не синхронизируем абсолютную ширину
     QList<QTreeWidget*> targets;
-    if(logicalIndex == 0 || logicalIndex == 1)
+    if(logicalIndex == 1)
     {
         targets << ui->treeWidgetParameters << ui->treeWidgetState
                 << ui->treeWidgetInputs << ui->treeWidgetOutputs << ui->treeWidgetFavorites;
@@ -2312,6 +2386,7 @@ void UComponentsListWidgetModern::syncPropertyColumnWidths(QTreeWidget* sourceTr
 
 void UComponentsListWidgetModern::applySharedColumnWidths(int nameWidth, int valueWidth, int typeWidth)
 {
+    Q_UNUSED(nameWidth);
     m_syncingColumnWidths = true;
     for(QTreeWidget* tree : {ui->treeWidgetParameters, ui->treeWidgetState, ui->treeWidgetInputs,
                              ui->treeWidgetOutputs, ui->treeWidgetFavorites})
@@ -2319,20 +2394,20 @@ void UComponentsListWidgetModern::applySharedColumnWidths(int nameWidth, int val
         QHeaderView* header = tree->header();
         const QSignalBlocker blocker(header);
         header->setStretchLastSection(false);
-        if(tree->columnCount() > 0 && nameWidth > 0)
-        {
-            header->setSectionResizeMode(0, QHeaderView::Interactive);
-            header->resizeSection(0, nameWidth);
-        }
-        if(tree->columnCount() > 1 && valueWidth > 0)
+        tree->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        if(tree->columnCount() > 0)
+            header->setSectionResizeMode(0, QHeaderView::Stretch);
+        if(tree->columnCount() > 1)
         {
             header->setSectionResizeMode(1, QHeaderView::Interactive);
-            header->resizeSection(1, valueWidth);
+            const int vw = valueWidth > 0 ? qMax(valueWidth, kMinValueColumnWidth) : kMinValueColumnWidth;
+            header->resizeSection(1, vw);
         }
-        if(tree->columnCount() > 2 && typeWidth > 0)
+        if(tree->columnCount() > 2)
         {
-            header->setSectionResizeMode(2, QHeaderView::Interactive);
-            header->resizeSection(2, typeWidth);
+            header->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+            if(typeWidth > 0)
+                header->resizeSection(2, typeWidth);
         }
     }
     m_syncingColumnWidths = false;
@@ -2413,32 +2488,41 @@ bool UComponentsListWidgetModern::commitPropertyValue(const QString& componentLo
 {
     if(propertyName.isEmpty())
         return false;
-    Model_SetComponentPropertyValue(
+    const int rc = MModel_SetComponentPropertyValue(
+        getWorkChannelIndex(),
         componentLongName.toLocal8Bit().constData(),
         propertyName.toLocal8Bit().constData(),
         value.toLocal8Bit().constData());
+    if(rc != RDK_SUCCESS)
+        return false;
     emit selectedPropertyValue(value);
     return true;
 }
 
-void UComponentsListWidgetModern::applyPropertyValueFromEditor(QTreeWidgetItem* item, const QString& value)
+bool UComponentsListWidgetModern::applyPropertyValueFromEditor(QTreeWidgetItem* item, const QString& value)
 {
     if(!item || UpdateInterfaceFlag)
-        return;
+        return false;
     if(item->data(1, Qt::CheckStateRole).isValid())
-        return;
+        return false;
 
     const QString comp = propertyComponentForItem(item);
     const QString prop = propertyNameForItem(item);
     if(prop.isEmpty())
-        return;
+        return false;
 
     if(!commitPropertyValue(comp, prop, value))
-        return;
+    {
+        QToolTip::showText(QCursor::pos(),
+                           tr("Failed to apply property value"),
+                           this);
+        return false;
+    }
 
     UpdateInterfaceFlag = true;
     updatePropertyItemDisplay(item, value);
     UpdateInterfaceFlag = false;
+    return true;
 }
 
 bool UComponentsListWidgetModern::beginPropertyValueEdit(QTreeWidgetItem* item)
@@ -2447,6 +2531,10 @@ bool UComponentsListWidgetModern::beginPropertyValueEdit(QTreeWidgetItem* item)
         return false;
     // У QTreeWidgetItem ItemIsUserCheckable включён по умолчанию — смотрим реальный checkbox
     if(item->data(1, Qt::CheckStateRole).isValid())
+        return false;
+
+    const QString prop = propertyNameForItem(item);
+    if(prop.isEmpty())
         return false;
 
     const QString raw = item->data(1, Qt::UserRole).toString();
@@ -2460,8 +2548,7 @@ bool UComponentsListWidgetModern::beginPropertyValueEdit(QTreeWidgetItem* item)
         QString edited = raw;
         if(!editMultilineValueDialog(this, edited))
             return false;
-        applyPropertyValueFromEditor(item, edited);
-        return true;
+        return applyPropertyValueFromEditor(item, edited);
     }
 
     // Гарантируем editable на Value-колонке перед открытием редактора
@@ -2497,6 +2584,22 @@ bool UComponentsListWidgetModern::eventFilter(QObject *obj, QEvent *event)
         if(isPropertyTree &&
            (keyEvent->key() == Qt::Key_F2 || keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter))
         {
+            QTreeWidget* tree = nullptr;
+            if(obj == ui->treeWidgetParameters || obj == ui->treeWidgetParameters->viewport())
+                tree = ui->treeWidgetParameters;
+            else if(obj == ui->treeWidgetState || obj == ui->treeWidgetState->viewport())
+                tree = ui->treeWidgetState;
+            else if(obj == ui->treeWidgetInputs || obj == ui->treeWidgetInputs->viewport())
+                tree = ui->treeWidgetInputs;
+            else if(obj == ui->treeWidgetOutputs || obj == ui->treeWidgetOutputs->viewport())
+                tree = ui->treeWidgetOutputs;
+            else if(obj == ui->treeWidgetFavorites || obj == ui->treeWidgetFavorites->viewport())
+                tree = ui->treeWidgetFavorites;
+
+            // Не переоткрывать редактор, пока уже идёт edit (Enter = commit)
+            if(tree && tree->state() == QAbstractItemView::EditingState)
+                return false;
+
             if(beginPropertyValueEdit(currentPropertyItem()))
                 return true;
         }

@@ -130,7 +130,7 @@ public:
     void setChannelsListVisible(bool value);
 
     /// Применить значение из inline-редактора (вызывается delegate)
-    void applyPropertyValueFromEditor(QTreeWidgetItem* item, const QString& value);
+    bool applyPropertyValueFromEditor(QTreeWidgetItem* item, const QString& value);
 
 signals:
     void componentSelected(QString name); //single click
