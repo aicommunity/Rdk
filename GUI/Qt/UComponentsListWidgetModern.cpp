@@ -45,7 +45,7 @@ namespace {
 constexpr int kFavRoleProp = Qt::UserRole;
 constexpr int kFavRoleDisplayPath = Qt::UserRole + 1;
 constexpr int kFavRoleComponent = Qt::UserRole + 2;
-constexpr int kMinValueColumnWidth = 100;
+constexpr int kMinNameColumnWidth = 120;
 constexpr int kMinEditorWidth = 120;
 
 QTreeWidgetItem* propertyItemFromIndex(QTreeWidget* tree, const QModelIndex& index)
@@ -71,18 +71,26 @@ bool treeHasOpenPropertyEditor(QTreeWidget* tree)
     return tree->viewport()->isAncestorOf(fw) || fw->parentWidget() == tree->viewport();
 }
 
+void commitAndClosePropertyEditor(QStyledItemDelegate* delegate, QWidget* editor)
+{
+    if(!delegate || !editor)
+        return;
+    Q_EMIT delegate->commitData(editor);
+    Q_EMIT delegate->closeEditor(editor, QAbstractItemDelegate::SubmitModelCache);
+}
+
 void wirePropertyValueEditor(QLineEdit* edit, const QStyledItemDelegate* delegate)
 {
     if(!edit || !delegate)
         return;
+    Q_UNUSED(delegate);
     edit->setFrame(false);
     edit->setToolTip(QObject::tr("Enter — apply, Esc — cancel"));
-    // createEditor is const; signals must be emitted from the delegate instance.
-    auto* mutableDelegate = const_cast<QStyledItemDelegate*>(delegate);
-    QObject::connect(edit, &QLineEdit::returnPressed, edit, [mutableDelegate, edit]() {
-        Q_EMIT mutableDelegate->commitData(edit);
-        Q_EMIT mutableDelegate->closeEditor(edit, QAbstractItemDelegate::SubmitModelCache);
-    });
+    // Global QLineEdit QSS uses 8px padding — too tall for compact property rows.
+    // Favorites rows are taller (subtitle), so the same padding looked fine there.
+    edit->setStyleSheet(QStringLiteral(
+        "QLineEdit { padding: 1px 4px; border-radius: 2px; min-height: 0px; }"
+        "QLineEdit:focus { padding: 1px 4px; border-width: 1px; }"));
 }
 
 void updatePropertyEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, QTreeWidget* tree)
@@ -92,6 +100,17 @@ void updatePropertyEditorGeometry(QWidget* editor, const QStyleOptionViewItem& o
     QRect r = option.rect;
     if(r.width() < kMinEditorWidth)
         r.setWidth(kMinEditorWidth);
+
+    // Compact property rows are shorter than Favorites (no subtitle). Ensure
+    // the line edit is at least one text line tall even if the cell is tight.
+    const int minH = qMax(option.fontMetrics.height() + 6, 22);
+    if(r.height() < minH)
+    {
+        const int delta = minH - r.height();
+        r.setTop(r.top() - delta / 2);
+        r.setHeight(minH);
+    }
+
     if(tree && tree->viewport())
     {
         const int vpRight = tree->viewport()->width() - 2;
@@ -103,6 +122,11 @@ void updatePropertyEditorGeometry(QWidget* editor, const QStyleOptionViewItem& o
             if(r.left() < 0)
                 r.setLeft(0);
         }
+        const QRect vp = tree->viewport()->rect();
+        if(r.top() < vp.top())
+            r.moveTop(vp.top());
+        if(r.bottom() > vp.bottom())
+            r.moveBottom(vp.bottom());
     }
     editor->setGeometry(r);
 }
@@ -248,6 +272,23 @@ public:
         updatePropertyEditorGeometry(editor, option, m_tree);
     }
 
+    bool eventFilter(QObject* watched, QEvent* event) override
+    {
+        if(event->type() == QEvent::KeyPress)
+        {
+            const int key = static_cast<QKeyEvent*>(event)->key();
+            if(key == Qt::Key_Return || key == Qt::Key_Enter)
+            {
+                if(auto* editor = qobject_cast<QWidget*>(watched))
+                {
+                    commitAndClosePropertyEditor(this, editor);
+                    return true;
+                }
+            }
+        }
+        return QStyledItemDelegate::eventFilter(watched, event);
+    }
+
 private:
     static QString displayPathFor(const QModelIndex& index)
     {
@@ -352,6 +393,23 @@ public:
     {
         Q_UNUSED(index);
         updatePropertyEditorGeometry(editor, option, m_tree);
+    }
+
+    bool eventFilter(QObject* watched, QEvent* event) override
+    {
+        if(event->type() == QEvent::KeyPress)
+        {
+            const int key = static_cast<QKeyEvent*>(event)->key();
+            if(key == Qt::Key_Return || key == Qt::Key_Enter)
+            {
+                if(auto* editor = qobject_cast<QWidget*>(watched))
+                {
+                    commitAndClosePropertyEditor(this, editor);
+                    return true;
+                }
+            }
+        }
+        return QStyledItemDelegate::eventFilter(watched, event);
     }
 
 private:
@@ -2318,14 +2376,15 @@ void UComponentsListWidgetModern::setupColumnWidthSync()
         // Иначе last section всегда «съедает» сохранённую ширину Value/Type при layout
         header->setStretchLastSection(false);
         tree->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        // Name — Interactive (пользователь меняет ширину); Value — Stretch (остаток)
         if(tree->columnCount() > 0)
-            header->setSectionResizeMode(0, QHeaderView::Stretch);
-        if(tree->columnCount() > 1)
         {
-            header->setSectionResizeMode(1, QHeaderView::Interactive);
-            if(header->sectionSize(1) < kMinValueColumnWidth)
-                header->resizeSection(1, kMinValueColumnWidth);
+            header->setSectionResizeMode(0, QHeaderView::Interactive);
+            if(header->sectionSize(0) < kMinNameColumnWidth)
+                header->resizeSection(0, kMinNameColumnWidth);
         }
+        if(tree->columnCount() > 1)
+            header->setSectionResizeMode(1, QHeaderView::Stretch);
         if(tree->columnCount() > 2)
             header->setSectionResizeMode(2, QHeaderView::ResizeToContents);
         connect(header, &QHeaderView::sectionResized,
@@ -2365,9 +2424,9 @@ void UComponentsListWidgetModern::syncPropertyColumnWidths(QTreeWidget* sourceTr
     if(m_syncingColumnWidths || !sourceTree)
         return;
 
-    // Name (0) — Stretch: не синхронизируем абсолютную ширину
+    // Value (1) — Stretch: абсолютную ширину не синхронизируем
     QList<QTreeWidget*> targets;
-    if(logicalIndex == 1)
+    if(logicalIndex == 0)
     {
         targets << ui->treeWidgetParameters << ui->treeWidgetState
                 << ui->treeWidgetInputs << ui->treeWidgetOutputs << ui->treeWidgetFavorites;
@@ -2400,7 +2459,7 @@ void UComponentsListWidgetModern::syncPropertyColumnWidths(QTreeWidget* sourceTr
 
 void UComponentsListWidgetModern::applySharedColumnWidths(int nameWidth, int valueWidth, int typeWidth)
 {
-    Q_UNUSED(nameWidth);
+    Q_UNUSED(valueWidth);
     m_syncingColumnWidths = true;
     for(QTreeWidget* tree : {ui->treeWidgetParameters, ui->treeWidgetState, ui->treeWidgetInputs,
                              ui->treeWidgetOutputs, ui->treeWidgetFavorites})
@@ -2410,13 +2469,13 @@ void UComponentsListWidgetModern::applySharedColumnWidths(int nameWidth, int val
         header->setStretchLastSection(false);
         tree->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         if(tree->columnCount() > 0)
-            header->setSectionResizeMode(0, QHeaderView::Stretch);
-        if(tree->columnCount() > 1)
         {
-            header->setSectionResizeMode(1, QHeaderView::Interactive);
-            const int vw = valueWidth > 0 ? qMax(valueWidth, kMinValueColumnWidth) : kMinValueColumnWidth;
-            header->resizeSection(1, vw);
+            header->setSectionResizeMode(0, QHeaderView::Interactive);
+            const int nw = nameWidth > 0 ? qMax(nameWidth, kMinNameColumnWidth) : kMinNameColumnWidth;
+            header->resizeSection(0, nw);
         }
+        if(tree->columnCount() > 1)
+            header->setSectionResizeMode(1, QHeaderView::Stretch);
         if(tree->columnCount() > 2)
         {
             header->setSectionResizeMode(2, QHeaderView::ResizeToContents);
@@ -2612,8 +2671,9 @@ bool UComponentsListWidgetModern::eventFilter(QObject *obj, QEvent *event)
 
             // Не переоткрывать редактор, пока уже идёт edit (Enter = commit).
             // QAbstractItemView::state() is protected in Qt5 — detect via focused QLineEdit.
+            // Consume the key so the tree does not reopen edit after commit.
             if(treeHasOpenPropertyEditor(tree))
-                return false;
+                return true;
 
             if(beginPropertyValueEdit(currentPropertyItem()))
                 return true;
