@@ -84,6 +84,16 @@ TEST(LLMAutonomousPolicy, ChannelCalcAndAskUserWhitelisted)
                                                           LLMAutonomousMode::SemiAuto));
     EXPECT_TRUE(ULLMAutonomousPolicy::isToolWhitelisted("set_active_channel",
                                                           LLMAutonomousMode::SemiAuto));
+    EXPECT_TRUE(ULLMAutonomousPolicy::isToolWhitelisted("run_n_steps",
+                                                          LLMAutonomousMode::SemiAuto));
+    EXPECT_TRUE(ULLMAutonomousPolicy::isToolWhitelisted("select_component",
+                                                          LLMAutonomousMode::Strict));
+    EXPECT_TRUE(ULLMAutonomousPolicy::isToolWhitelisted("clone_component",
+                                                          LLMAutonomousMode::SemiAuto));
+    EXPECT_FALSE(ULLMAutonomousPolicy::isToolWhitelisted("delete_channel",
+                                                           LLMAutonomousMode::SemiAuto));
+    EXPECT_FALSE(ULLMAutonomousPolicy::isToolWhitelisted("export_component",
+                                                           LLMAutonomousMode::Strict));
     EXPECT_TRUE(ULLMAutonomousPolicy::isToolWhitelisted("ask_user", LLMAutonomousMode::Strict));
 
     AutonomousStepDecision d = ULLMAutonomousPolicy::checkStep(
@@ -93,4 +103,8 @@ TEST(LLMAutonomousPolicy, ChannelCalcAndAskUserWhitelisted)
     AutonomousStepDecision calc = ULLMAutonomousPolicy::checkStep(
         "start_channel_calculation", LLMAutonomousMode::Strict, 99, 3);
     EXPECT_TRUE(calc.allowed) << "calc must not consume write step budget";
+
+    AutonomousStepDecision run_n = ULLMAutonomousPolicy::checkStep(
+        "run_n_steps", LLMAutonomousMode::Strict, 99, 3);
+    EXPECT_TRUE(run_n.allowed);
 }

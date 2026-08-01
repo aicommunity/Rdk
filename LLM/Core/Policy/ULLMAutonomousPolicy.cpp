@@ -32,11 +32,22 @@ const std::unordered_set<std::string>& autonomousWriteTools()
         "disconnect_components",
         "set_property",
         "remove_component",
+        "clone_component",
+        "move_component",
+        "rename_component",
+        "reorder_component",
+        "calculate_component",
+        "reset_component",
+        "default_component",
+        "select_component",
         "start_channel_calculation",
         "pause_channel_calculation",
         "reset_channel_calculation",
         "step_channel_calculation",
+        "run_n_steps",
         "set_active_channel",
+        "add_channel",
+        "clone_channel",
     };
     return k;
 }
@@ -70,7 +81,8 @@ bool isChannelCalcWriteTool(const std::string& tool_name)
 {
     return tool_name == "start_channel_calculation" || tool_name == "pause_channel_calculation"
            || tool_name == "reset_channel_calculation" || tool_name == "step_channel_calculation"
-           || tool_name == "set_active_channel";
+           || tool_name == "run_n_steps" || tool_name == "set_active_channel"
+           || tool_name == "select_component";
 }
 
 } // namespace

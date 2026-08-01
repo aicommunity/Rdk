@@ -19,6 +19,8 @@ bool isPathPolicyTool(const std::string& name)
                                    "copy_configuration",
                                    "rename_configuration",
                                    "validate_configuration",
+                                   "export_component",
+                                   "import_component",
                                    nullptr};
     for(const char** p = kTools; *p; ++p)
     {
@@ -41,6 +43,12 @@ std::string extractPathArg(const std::string& tool_name, const nlohmann::json& a
         return args.at("new_directory_path").get<std::string>();
     if(tool_name == "copy_configuration" && args.contains("destination_directory"))
         return args.at("destination_directory").get<std::string>();
+    if(tool_name == "export_component" || tool_name == "import_component")
+    {
+        if(args.contains("file_path") && args.at("file_path").is_string())
+            return args.at("file_path").get<std::string>();
+        return {};
+    }
     if(tool_name == "create_configuration")
     {
         std::string err;

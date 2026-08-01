@@ -42,12 +42,23 @@ std::unordered_set<std::string> kMutateTools()
             "remove_component",
             "connect_components",
             "disconnect_components",
+            "clone_component",
+            "move_component",
+            "rename_component",
+            "reorder_component",
+            "export_component",
+            "import_component",
+            "calculate_component",
+            "reset_component",
+            "default_component",
+            "select_component",
             "create_configuration",
             "load_configuration",
             "load_project",
             "open_recent_configuration",
             "set_active_channel",
             "save_configuration",
+            "save_configuration_as",
             "save_project",
             "close_configuration",
             "update_configuration",
@@ -60,7 +71,11 @@ std::unordered_set<std::string> kMutateTools()
             "start_channel_calculation",
             "pause_channel_calculation",
             "reset_channel_calculation",
-            "step_channel_calculation"};
+            "step_channel_calculation",
+            "run_n_steps",
+            "add_channel",
+            "delete_channel",
+            "clone_channel"};
 }
 
 } // namespace

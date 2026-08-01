@@ -102,6 +102,31 @@ public:
                              const std::string& value,
                              int channel_index,
                              std::string* previous_value_out = nullptr);
+    DomainStatus cloneComponent(const std::string& long_name,
+                                const std::string& new_short_name,
+                                int channel_index,
+                                std::string& out_long_name);
+    DomainStatus moveComponent(const std::string& long_name,
+                               const std::string& target_parent_long_name,
+                               int channel_index);
+    DomainStatus renameComponent(const std::string& long_name,
+                                 const std::string& new_short_name,
+                                 int channel_index,
+                                 std::string& out_long_name);
+    DomainStatus reorderComponent(const std::string& long_name, int step, int channel_index);
+    DomainStatus exportComponentToFile(const std::string& long_name,
+                                       const std::string& file_path,
+                                       int channel_index);
+    DomainStatus importComponentFromFile(const std::string& parent_long_name,
+                                         const std::string& file_path,
+                                         int channel_index);
+    DomainStatus calculateComponent(const std::string& long_name, int channel_index);
+    DomainStatus resetComponent(const std::string& long_name, int channel_index);
+    DomainStatus defaultComponent(const std::string& long_name, bool include_subcomponents,
+                                  int channel_index);
+    /// Navigate diagram scope to component (GUI focus; does not Env_Select — DD-AG-001).
+    DomainStatus selectComponent(const std::string& long_name, int channel_index,
+                                 bool navigate_parent = false);
     DomainStatus validateProjectDryRun(std::vector<std::string>& warnings) const;
 
 private:

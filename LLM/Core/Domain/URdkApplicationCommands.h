@@ -34,6 +34,12 @@ public:
     ApplicationCommandResult pauseChannelCalculation(int channel_index);
     ApplicationCommandResult resetChannelCalculation(int channel_index);
     ApplicationCommandResult stepChannelCalculation(int channel_index);
+    /// Run N single steps (Calculate → Run N Steps). channel_index: -1 = all channels.
+    ApplicationCommandResult runNStepsChannelCalculation(int channel_index, int steps);
+
+    ApplicationCommandResult addChannel();
+    ApplicationCommandResult deleteChannel(int channel_index);
+    ApplicationCommandResult cloneChannel(int source_channel_index);
 
     ApplicationCommandResult setActiveChannel(int channel_index);
 

@@ -34,9 +34,25 @@ Aliases: `load_project`, `save_project` (deprecated names, same handlers).
 
 ## Phase 2b (channels)
 
-`start_channel_calculation`, `pause_channel_calculation`, `reset_channel_calculation`, `step_channel_calculation` — `channel_index: -1` = all channels.
+`start_channel_calculation`, `pause_channel_calculation`, `reset_channel_calculation`, `step_channel_calculation`, `run_n_steps` — `channel_index: -1` = all channels (`run_n_steps` also requires `steps` in `[1, 10000]`).
+
+Channel CRUD: `add_channel`, `delete_channel` (not channel 0), `clone_channel`.
 
 **DD-CALC-001 FastPath:** user phrases «запусти расчет» / `start calculation` (also pause/reset/step + RU/EN synonyms) are handled **before** TaskPath/ReAct via `recordedToolInvoke` (`ULLMChannelCalcCommand`). Reply and Tools block show the outcome; if no configuration is open, the tool error is shown (not an LLM essay). Autonomous whitelist includes these tools and `ask_user`.
+
+### Graph / component tools (domain)
+
+Registered in `RegisterCoreRdkTools.cpp` via `URdkDomainAccess`:
+
+| Tool | Domain / C-API |
+|------|----------------|
+| `clone_component` | clone under same parent |
+| `move_component` | `Model_MoveComponent` |
+| `rename_component` | `UContainer::SetName` |
+| `reorder_component` | `Model_ChangeComponentPosition` (`step` ±1) |
+| `export_component` / `import_component` | `Model_Save/LoadComponentTo/FromFile` + path policy |
+| `calculate_component` / `reset_component` / `default_component` | `Env_Calculate` / `Env_Reset` / `Env_Default` |
+| `select_component` | `ILLMPresentationSink::navigateToDiagramScope` (not `Env_Select`) |
 
 ## Recent configurations and UI panels (phases D/E)
 
@@ -132,9 +148,25 @@ Aliases: `load_project`, `save_project` (deprecated names, same handlers).
 
 ## Phase 2b (channels)
 
-`start_channel_calculation`, `pause_channel_calculation`, `reset_channel_calculation`, `step_channel_calculation` — `channel_index: -1` = all channels.
+`start_channel_calculation`, `pause_channel_calculation`, `reset_channel_calculation`, `step_channel_calculation`, `run_n_steps` — `channel_index: -1` = all channels (`run_n_steps` also requires `steps` in `[1, 10000]`).
+
+Channel CRUD: `add_channel`, `delete_channel` (not channel 0), `clone_channel`.
 
 **DD-CALC-001 FastPath:** user phrases «запусти расчет» / `start calculation` (also pause/reset/step + RU/EN synonyms) are handled **before** TaskPath/ReAct via `recordedToolInvoke` (`ULLMChannelCalcCommand`). Reply and Tools block show the outcome; if no configuration is open, the tool error is shown (not an LLM essay). Autonomous whitelist includes these tools and `ask_user`.
+
+### Graph / component tools (domain)
+
+Registered in `RegisterCoreRdkTools.cpp` via `URdkDomainAccess`:
+
+| Tool | Domain / C-API |
+|------|----------------|
+| `clone_component` | clone under same parent |
+| `move_component` | `Model_MoveComponent` |
+| `rename_component` | `UContainer::SetName` |
+| `reorder_component` | `Model_ChangeComponentPosition` (`step` ±1) |
+| `export_component` / `import_component` | `Model_Save/LoadComponentTo/FromFile` + path policy |
+| `calculate_component` / `reset_component` / `default_component` | `Env_Calculate` / `Env_Reset` / `Env_Default` |
+| `select_component` | `ILLMPresentationSink::navigateToDiagramScope` (not `Env_Select`) |
 
 ## Recent configurations and UI panels (phases D/E)
 

@@ -73,7 +73,22 @@ TEST(LLMWriteToolsP1, MutateFilterIncludesCoreWriteTools)
     EXPECT_TRUE(filterAllows(filter, "list_model_links"));
     EXPECT_TRUE(filterAllows(filter, "get_component_ports"));
     EXPECT_TRUE(filterAllows(filter, "start_channel_calculation"));
+    EXPECT_TRUE(filterAllows(filter, "run_n_steps"));
+    EXPECT_TRUE(filterAllows(filter, "add_channel"));
+    EXPECT_TRUE(filterAllows(filter, "delete_channel"));
+    EXPECT_TRUE(filterAllows(filter, "clone_channel"));
+    EXPECT_TRUE(filterAllows(filter, "clone_component"));
+    EXPECT_TRUE(filterAllows(filter, "move_component"));
+    EXPECT_TRUE(filterAllows(filter, "rename_component"));
+    EXPECT_TRUE(filterAllows(filter, "reorder_component"));
+    EXPECT_TRUE(filterAllows(filter, "export_component"));
+    EXPECT_TRUE(filterAllows(filter, "import_component"));
+    EXPECT_TRUE(filterAllows(filter, "calculate_component"));
+    EXPECT_TRUE(filterAllows(filter, "reset_component"));
+    EXPECT_TRUE(filterAllows(filter, "default_component"));
+    EXPECT_TRUE(filterAllows(filter, "select_component"));
     EXPECT_TRUE(filterAllows(filter, "save_configuration"));
+    EXPECT_TRUE(filterAllows(filter, "save_configuration_as"));
     EXPECT_TRUE(filterAllows(filter, "validate_configuration"));
 }
 
@@ -256,11 +271,34 @@ TEST(LLMWriteToolsP1, ChannelCalcRegisteredWithSchema)
     GatewayHarness h;
     for(const char* name :
         {"start_channel_calculation", "pause_channel_calculation", "reset_channel_calculation",
-         "step_channel_calculation"})
+         "step_channel_calculation", "run_n_steps", "add_channel", "delete_channel",
+         "clone_channel"})
     {
         const LLMToolDefinition* def = h.registry.find(name);
         ASSERT_NE(def, nullptr) << name;
         EXPECT_TRUE(def->requires_confirmation);
         EXPECT_TRUE(def->requires_project_loaded);
     }
+}
+
+TEST(LLMWriteToolsP1, GraphEditAndComponentEnvToolsRegistered)
+{
+    GatewayHarness h;
+    for(const char* name : {"clone_component", "move_component", "rename_component",
+                            "reorder_component", "export_component", "import_component",
+                            "calculate_component", "reset_component", "default_component",
+                            "select_component"})
+    {
+        const LLMToolDefinition* def = h.registry.find(name);
+        ASSERT_NE(def, nullptr) << name;
+        EXPECT_EQ(def->kind, LLMToolKind::Write) << name;
+    }
+    const LLMToolDefinition* select = h.registry.find("select_component");
+    ASSERT_NE(select, nullptr);
+    EXPECT_FALSE(select->requires_confirmation);
+
+    const LLMToolDefinition* run_n = h.registry.find("run_n_steps");
+    ASSERT_NE(run_n, nullptr);
+    EXPECT_TRUE(run_n->input_schema.contains("required"));
+    EXPECT_TRUE(run_n->input_schema["properties"].contains("steps"));
 }

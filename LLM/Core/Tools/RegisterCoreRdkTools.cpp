@@ -586,6 +586,237 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
             return r;
         });
 
+    auto domainWriteResult = [](DomainStatus st, ToolGatewayResult& r) {
+        r.ok = st.ok();
+        if(!r.ok)
+        {
+            r.error_code = st.code == DomainStatusCode::PolicyDenied ? "PolicyDenied" : "DomainError";
+            r.message = st.message;
+        }
+    };
+
+    registry.registerTool(
+        makeDef("clone_component", LLMToolKind::Write,
+                "Clone a component under the same parent (optional new short name)",
+                {{"type", "object"},
+                 {"required", {"long_name"}},
+                 {"properties",
+                  {{"long_name", {{"type", "string"}, {"x-llm-semantic", "entity_long_name"}}},
+                   {"new_short_name", {{"type", "string"}}},
+                   {"channel_index", {{"type", "integer"}, {"minimum", 0}, {"default", 0}}}}},
+                 {"additionalProperties", false}},
+                {{"type", "object"}}, true),
+        [domain_access, domainWriteResult](const nlohmann::json& args) -> ToolGatewayResult {
+            ToolGatewayResult r;
+            std::string out_name;
+            DomainStatus st = domain_access->cloneComponent(
+                args.at("long_name").get<std::string>(), args.value("new_short_name", ""),
+                args.value("channel_index", 0), out_name);
+            domainWriteResult(st, r);
+            r.result["long_name"] = out_name;
+            r.result["source_long_name"] = args.at("long_name");
+            return r;
+        });
+
+    registry.registerTool(
+        makeDef("move_component", LLMToolKind::Write,
+                "Move a component under another parent container",
+                {{"type", "object"},
+                 {"required", {"long_name", "target_parent_long_name"}},
+                 {"properties",
+                  {{"long_name", {{"type", "string"}, {"x-llm-semantic", "entity_long_name"}}},
+                   {"target_parent_long_name",
+                    {{"type", "string"}, {"x-llm-semantic", "entity_long_name"}}},
+                   {"channel_index", {{"type", "integer"}, {"minimum", 0}, {"default", 0}}}}},
+                 {"additionalProperties", false}},
+                {{"type", "object"}}, true),
+        [domain_access, domainWriteResult](const nlohmann::json& args) -> ToolGatewayResult {
+            ToolGatewayResult r;
+            DomainStatus st = domain_access->moveComponent(
+                args.at("long_name").get<std::string>(),
+                args.at("target_parent_long_name").get<std::string>(),
+                args.value("channel_index", 0));
+            domainWriteResult(st, r);
+            r.result["long_name"] = args.at("long_name");
+            r.result["target_parent_long_name"] = args.at("target_parent_long_name");
+            return r;
+        });
+
+    registry.registerTool(
+        makeDef("rename_component", LLMToolKind::Write, "Rename a component (short name)",
+                {{"type", "object"},
+                 {"required", {"long_name", "new_short_name"}},
+                 {"properties",
+                  {{"long_name", {{"type", "string"}, {"x-llm-semantic", "entity_long_name"}}},
+                   {"new_short_name", {{"type", "string"}}},
+                   {"channel_index", {{"type", "integer"}, {"minimum", 0}, {"default", 0}}}}},
+                 {"additionalProperties", false}},
+                {{"type", "object"}}, true),
+        [domain_access, domainWriteResult](const nlohmann::json& args) -> ToolGatewayResult {
+            ToolGatewayResult r;
+            std::string out_name;
+            DomainStatus st = domain_access->renameComponent(
+                args.at("long_name").get<std::string>(),
+                args.at("new_short_name").get<std::string>(), args.value("channel_index", 0),
+                out_name);
+            domainWriteResult(st, r);
+            r.result["long_name"] = out_name;
+            r.result["previous_long_name"] = args.at("long_name");
+            return r;
+        });
+
+    registry.registerTool(
+        makeDef("reorder_component", LLMToolKind::Write,
+                "Change sibling order of a component (step: -1 up, +1 down)",
+                {{"type", "object"},
+                 {"required", {"long_name", "step"}},
+                 {"properties",
+                  {{"long_name", {{"type", "string"}, {"x-llm-semantic", "entity_long_name"}}},
+                   {"step", {{"type", "integer"}}},
+                   {"channel_index", {{"type", "integer"}, {"minimum", 0}, {"default", 0}}}}},
+                 {"additionalProperties", false}},
+                {{"type", "object"}}, true),
+        [domain_access, domainWriteResult](const nlohmann::json& args) -> ToolGatewayResult {
+            ToolGatewayResult r;
+            DomainStatus st = domain_access->reorderComponent(
+                args.at("long_name").get<std::string>(), args.at("step").get<int>(),
+                args.value("channel_index", 0));
+            domainWriteResult(st, r);
+            r.result["long_name"] = args.at("long_name");
+            r.result["step"] = args.at("step");
+            return r;
+        });
+
+    registry.registerTool(
+        makeDef("export_component", LLMToolKind::Write,
+                "Export a component subtree to an XML file",
+                {{"type", "object"},
+                 {"required", {"long_name", "file_path"}},
+                 {"properties",
+                  {{"long_name", {{"type", "string"}, {"x-llm-semantic", "entity_long_name"}}},
+                   {"file_path", {{"type", "string"}}},
+                   {"channel_index", {{"type", "integer"}, {"minimum", 0}, {"default", 0}}}}},
+                 {"additionalProperties", false}},
+                {{"type", "object"}}, true),
+        [domain_access, domainWriteResult](const nlohmann::json& args) -> ToolGatewayResult {
+            ToolGatewayResult r;
+            DomainStatus st = domain_access->exportComponentToFile(
+                args.at("long_name").get<std::string>(), args.at("file_path").get<std::string>(),
+                args.value("channel_index", 0));
+            domainWriteResult(st, r);
+            r.result["long_name"] = args.at("long_name");
+            r.result["file_path"] = args.at("file_path");
+            return r;
+        });
+
+    registry.registerTool(
+        makeDef("import_component", LLMToolKind::Write,
+                "Import a component subtree from an XML file under a parent",
+                {{"type", "object"},
+                 {"required", {"file_path"}},
+                 {"properties",
+                  {{"parent_long_name",
+                    {{"type", "string"}, {"x-llm-semantic", "entity_long_name"}, {"default", ""}}},
+                   {"file_path", {{"type", "string"}}},
+                   {"channel_index", {{"type", "integer"}, {"minimum", 0}, {"default", 0}}}}},
+                 {"additionalProperties", false}},
+                {{"type", "object"}}, true),
+        [domain_access, domainWriteResult](const nlohmann::json& args) -> ToolGatewayResult {
+            ToolGatewayResult r;
+            DomainStatus st = domain_access->importComponentFromFile(
+                args.value("parent_long_name", ""), args.at("file_path").get<std::string>(),
+                args.value("channel_index", 0));
+            domainWriteResult(st, r);
+            r.result["parent_long_name"] = args.value("parent_long_name", "");
+            r.result["file_path"] = args.at("file_path");
+            return r;
+        });
+
+    registry.registerTool(
+        makeDef("calculate_component", LLMToolKind::Write,
+                "Run Env_Calculate for a single component (not full channel calc)",
+                {{"type", "object"},
+                 {"required", {"long_name"}},
+                 {"properties",
+                  {{"long_name", {{"type", "string"}, {"x-llm-semantic", "entity_long_name"}}},
+                   {"channel_index", {{"type", "integer"}, {"minimum", 0}, {"default", 0}}}}},
+                 {"additionalProperties", false}},
+                {{"type", "object"}}, true),
+        [domain_access, domainWriteResult](const nlohmann::json& args) -> ToolGatewayResult {
+            ToolGatewayResult r;
+            DomainStatus st = domain_access->calculateComponent(
+                args.at("long_name").get<std::string>(), args.value("channel_index", 0));
+            domainWriteResult(st, r);
+            r.result["long_name"] = args.at("long_name");
+            r.result["calculated"] = r.ok;
+            return r;
+        });
+
+    registry.registerTool(
+        makeDef("reset_component", LLMToolKind::Write,
+                "Run Env_Reset for a single component",
+                {{"type", "object"},
+                 {"required", {"long_name"}},
+                 {"properties",
+                  {{"long_name", {{"type", "string"}, {"x-llm-semantic", "entity_long_name"}}},
+                   {"channel_index", {{"type", "integer"}, {"minimum", 0}, {"default", 0}}}}},
+                 {"additionalProperties", false}},
+                {{"type", "object"}}, true),
+        [domain_access, domainWriteResult](const nlohmann::json& args) -> ToolGatewayResult {
+            ToolGatewayResult r;
+            DomainStatus st = domain_access->resetComponent(
+                args.at("long_name").get<std::string>(), args.value("channel_index", 0));
+            domainWriteResult(st, r);
+            r.result["long_name"] = args.at("long_name");
+            r.result["reset"] = r.ok;
+            return r;
+        });
+
+    registry.registerTool(
+        makeDef("default_component", LLMToolKind::Write,
+                "Reset component parameters to defaults (Env_Default)",
+                {{"type", "object"},
+                 {"required", {"long_name"}},
+                 {"properties",
+                  {{"long_name", {{"type", "string"}, {"x-llm-semantic", "entity_long_name"}}},
+                   {"include_subcomponents", {{"type", "boolean"}, {"default", false}}},
+                   {"channel_index", {{"type", "integer"}, {"minimum", 0}, {"default", 0}}}}},
+                 {"additionalProperties", false}},
+                {{"type", "object"}}, true),
+        [domain_access, domainWriteResult](const nlohmann::json& args) -> ToolGatewayResult {
+            ToolGatewayResult r;
+            DomainStatus st = domain_access->defaultComponent(
+                args.at("long_name").get<std::string>(),
+                args.value("include_subcomponents", false), args.value("channel_index", 0));
+            domainWriteResult(st, r);
+            r.result["long_name"] = args.at("long_name");
+            r.result["defaulted"] = r.ok;
+            return r;
+        });
+
+    registry.registerTool(
+        makeDef("select_component", LLMToolKind::Write,
+                "Navigate diagram focus to a component (or its parent). Does not call "
+                "Env_SelectCurrentComponent (keeps Model_* absolute paths stable).",
+                {{"type", "object"},
+                 {"required", {"long_name"}},
+                 {"properties",
+                  {{"long_name", {{"type", "string"}, {"x-llm-semantic", "entity_long_name"}}},
+                   {"navigate_parent", {{"type", "boolean"}, {"default", false}}},
+                   {"channel_index", {{"type", "integer"}, {"minimum", 0}, {"default", 0}}}}},
+                 {"additionalProperties", false}},
+                {{"type", "object"}}, false),
+        [domain_access, domainWriteResult](const nlohmann::json& args) -> ToolGatewayResult {
+            ToolGatewayResult r;
+            DomainStatus st = domain_access->selectComponent(
+                args.at("long_name").get<std::string>(), args.value("channel_index", 0),
+                args.value("navigate_parent", false));
+            domainWriteResult(st, r);
+            r.result["long_name"] = args.at("long_name");
+            r.result["navigate_parent"] = args.value("navigate_parent", false);
+            return r;
+        });
+
     RegisterApplicationTools(registry);
     RegisterObservabilityTools(registry, domain);
 }

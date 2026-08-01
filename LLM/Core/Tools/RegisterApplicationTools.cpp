@@ -509,6 +509,63 @@ void RegisterApplicationTools(ULLMToolRegistry& registry)
                     [](int ch) { return commands().stepChannelCalculation(ch); });
 
     registry.registerTool(
+        makeAppDef("run_n_steps", LLMToolKind::Write,
+                   "Run N calculation steps (Calculate → Run N Steps). channel_index=-1 means all",
+                   {{"type", "object"},
+                    {"required", nlohmann::json::array({"steps"})},
+                    {"properties",
+                     {{"steps", {{"type", "integer"}, {"minimum", 1}, {"maximum", 10000}}},
+                      {"channel_index",
+                       {{"type", "integer"}, {"minimum", -1}, {"default", -1}}}}},
+                    {"additionalProperties", false}},
+                   true, true),
+        [](const nlohmann::json& args) -> ToolGatewayResult {
+            const int steps = args.at("steps").get<int>();
+            const int ch = args.value("channel_index", -1);
+            return invokeApplicationTool(activeSink(), [&]() {
+                return commands().runNStepsChannelCalculation(ch, steps);
+            });
+        });
+
+    registry.registerTool(
+        makeAppDef("add_channel", LLMToolKind::Write, "Append a new calculation channel",
+                   {{"type", "object"}, {"additionalProperties", false}}, true, true),
+        [](const nlohmann::json& args) -> ToolGatewayResult {
+            (void)args;
+            return invokeApplicationTool(activeSink(), [&]() { return commands().addChannel(); });
+        });
+
+    registry.registerTool(
+        makeAppDef("delete_channel", LLMToolKind::Write,
+                   "Delete a calculation channel (channel 0 cannot be deleted)",
+                   {{"type", "object"},
+                    {"required", nlohmann::json::array({"channel_index"})},
+                    {"properties",
+                     {{"channel_index", {{"type", "integer"}, {"minimum", 1}}}}},
+                    {"additionalProperties", false}},
+                   true, true),
+        [](const nlohmann::json& args) -> ToolGatewayResult {
+            return invokeApplicationTool(activeSink(), [&]() {
+                return commands().deleteChannel(args.at("channel_index").get<int>());
+            });
+        });
+
+    registry.registerTool(
+        makeAppDef("clone_channel", LLMToolKind::Write,
+                   "Clone a calculation channel into a new channel at the end",
+                   {{"type", "object"},
+                    {"properties",
+                     {{"source_channel_index",
+                       {{"type", "integer"}, {"minimum", 0}, {"default", 0}}}}},
+                    {"additionalProperties", false}},
+                   true, true),
+        [](const nlohmann::json& args) -> ToolGatewayResult {
+            const int src = args.value("source_channel_index", 0);
+            return invokeApplicationTool(activeSink(),
+                                         [&]() { return commands().cloneChannel(src); });
+        });
+
+    registry.registerTool(
         makeAppDef("list_channels", LLMToolKind::Read, "List calculation channels and selected index",
                    {{"type", "object"}, {"additionalProperties", false}}, false, false),
         [](const nlohmann::json& args) -> ToolGatewayResult {
