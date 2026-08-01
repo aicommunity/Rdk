@@ -1,5 +1,7 @@
 #include "ULLMIntentParser.h"
 
+#include "ULLMConnectPlanParsing.h"
+
 #include <cctype>
 #include <cstdlib>
 #include <algorithm>
@@ -38,9 +40,9 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
                        "rename config", "создай конфиг", "новый конфиг", "новая конфигурация"},
                       1.0f);
 
-    // Russian graph-mutation verbs: "соедини", "соединить", "связать", etc.
-    // The intent parser relies on keyword substring scoring; add broad stems to avoid missing tool-calls.
-    const float connect_kw_s = scoreKeywords(lower, {"соедин", "связ"}, 1.0f);
+    // Russian graph-mutation verbs: "соедини", "подключи", "связать", etc.
+    const float connect_kw_s =
+        scoreKeywords(lower, {"соедин", "связ", "подключ", "линк", "link "}, 1.0f);
     const float mutate_s_with_connect = std::max(mutate_s, connect_kw_s);
     const float explain_s =
         scoreKeywords(lower, {"почему", "объясни", "explain", "why ", "как работает", "how does"}, 1.0f);
@@ -77,7 +79,14 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
         result.kind = LLMIntentKind::Query;
     }
 
-    const float total = plan_s + mutate_s + explain_s + query_s + 0.01f;
+    // Connect/link phrasing must mutate even when stem scoring missed (e.g. past tense).
+    if(isConnectGoalText(user_text) || isDisconnectGoalText(user_text))
+    {
+        result.kind = LLMIntentKind::Mutate;
+        best = std::max(best, 1.0f);
+    }
+
+    const float total = plan_s + mutate_s + explain_s + query_s + connect_kw_s + 0.01f;
     result.confidence = std::min(1.f, best / total);
     return result;
 }

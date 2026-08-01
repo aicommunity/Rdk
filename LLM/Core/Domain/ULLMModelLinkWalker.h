@@ -28,11 +28,14 @@ struct ModelLinkWalkOptions {
     bool count_all = false;
     bool stop_on_first_match = false;
     std::optional<LinkQuad> match_quad;
+    /// When set, only matching quads count toward offset/limit / result page.
+    std::optional<ModelLinkListFilters> subtree_filters;
 };
 
 struct ModelLinkWalkResult {
     std::vector<LinkQuad> links;
     int total_quads_seen = 0;
+    int total_matching = 0;
     bool truncated = false;
     int next_offset = 0;
     bool found_match = false;

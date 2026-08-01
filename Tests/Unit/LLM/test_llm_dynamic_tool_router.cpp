@@ -61,15 +61,23 @@ TEST(LLMDynamicToolRouter, EnabledConnectRouteNarrowsToLinkTools)
     EXPECT_FALSE(out.allowed_tool_names->count("create_configuration"));
 }
 
-TEST(LLMDynamicToolRouter, EnabledConnectRouteRussianK)
+TEST(LLMDynamicToolRouter, EnabledConnectRouteIncludesInspectTools)
 {
     ::setenv("NMSDK_LLM_DYNAMIC_TOOL_ROUTING", "1", 1);
-    const ToolFilter base = makeBaseMutateFilter();
-    const ToolFilter out = ULLMDynamicToolRouter::apply(base, "подключи PNeuron2 к PNeuron3");
+    ToolFilter base = makeBaseMutateFilter();
+    base.allowed_tool_names->insert("list_model_links");
+    base.allowed_tool_names->insert("get_component_ports");
+    base.allowed_tool_names->insert("get_component_properties");
+    base.allowed_tool_names->insert("find_component");
+    base.allowed_tool_names->insert("get_net_snapshot");
+    const ToolFilter out =
+        ULLMDynamicToolRouter::apply(base, "подключи PGenerator ко всем нейронам");
     ::unsetenv("NMSDK_LLM_DYNAMIC_TOOL_ROUTING");
 
     ASSERT_TRUE(out.allowed_tool_names.has_value());
     EXPECT_TRUE(out.allowed_tool_names->count("connect_components"));
+    EXPECT_TRUE(out.allowed_tool_names->count("list_model_links"));
+    EXPECT_TRUE(out.allowed_tool_names->count("get_component_ports"));
     EXPECT_FALSE(out.allowed_tool_names->count("add_component"));
 }
 

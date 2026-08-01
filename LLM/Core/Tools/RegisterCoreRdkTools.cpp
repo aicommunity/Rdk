@@ -85,11 +85,18 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
 
     registry.registerTool(
         makeDef("list_model_links", LLMToolKind::Read,
-                "Lists model links with pagination (strict 4-tuple identity)",
+                "Lists model links with pagination (strict 4-tuple identity). "
+                "Named filters are subtree anchors: an endpoint matches if it equals the name "
+                "or is nested under it (Name.Child…). Use component_long_name for incident "
+                "links, or from_long_name/to_long_name for directed ends. Inspect existing "
+                "wiring before connect_components when the user says “same as connected to X”.",
                 {{"type", "object"},
                  {"properties",
                   {{"channel_index", {{"type", "integer"}, {"minimum", 0}}},
                    {"root_long_name", {{"type", "string"}}},
+                   {"component_long_name", {{"type", "string"}}},
+                   {"from_long_name", {{"type", "string"}}},
+                   {"to_long_name", {{"type", "string"}}},
                    {"offset", {{"type", "integer"}, {"minimum", 0}, {"default", 0}}},
                    {"limit",
                     {{"type", "integer"}, {"minimum", 1}, {"maximum", 2000}, {"default", 500}}}}},
@@ -104,14 +111,109 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                 args.contains("root_long_name") && args["root_long_name"].is_string()
                     ? args["root_long_name"].get<std::string>()
                     : std::string();
+            ModelLinkListFilters filters;
+            if(args.contains("component_long_name") && args["component_long_name"].is_string())
+                filters.component_long_name = args["component_long_name"].get<std::string>();
+            if(args.contains("from_long_name") && args["from_long_name"].is_string())
+                filters.from_long_name = args["from_long_name"].get<std::string>();
+            if(args.contains("to_long_name") && args["to_long_name"].is_string())
+                filters.to_long_name = args["to_long_name"].get<std::string>();
             const DomainStatus st =
-                domain_access->listModelLinks(r.result, ch, root, offset, limit);
+                domain_access->listModelLinks(r.result, ch, root, offset, limit, filters);
             r.ok = st.ok();
             if(!r.ok)
             {
                 r.error_code = "DomainError";
                 r.message = st.message;
             }
+            return r;
+        });
+
+    registry.registerTool(
+        makeDef("get_component_ports", LLMToolKind::Read,
+                "Lists published input/output ports for a component. With include_nested=true "
+                "(default), also lists ports on descendants — connect requests often wire nested "
+                "ports under a named container, not only the container root.",
+                {{"type", "object"},
+                 {"required", nlohmann::json::array({"long_name"})},
+                 {"properties",
+                  {{"long_name", {{"type", "string"}, {"minLength", 1}}},
+                   {"channel_index", {{"type", "integer"}, {"minimum", 0}}},
+                   {"include_nested", {{"type", "boolean"}, {"default", true}}}}},
+                 {"additionalProperties", false}},
+                {{"type", "object"}}),
+        [domain_access](const nlohmann::json& args) -> ToolGatewayResult {
+            ToolGatewayResult r;
+            const std::string long_name = args.value("long_name", "");
+            const int ch = args.value("channel_index", 0);
+            const bool include_nested = args.value("include_nested", true);
+            nlohmann::json ports = nlohmann::json::array();
+            auto append_ports = [&](const std::string& owner) -> DomainStatus {
+                std::vector<std::string> outputs;
+                std::vector<std::string> inputs;
+                const DomainStatus st =
+                    domain_access->listComponentPubPorts(owner, ch, outputs, inputs);
+                if(!st.ok())
+                    return st;
+                for(const std::string& name : outputs)
+                {
+                    ports.push_back({{"owner_long_name", owner},
+                                     {"port_name", name},
+                                     {"direction", "output"}});
+                }
+                for(const std::string& name : inputs)
+                {
+                    ports.push_back({{"owner_long_name", owner},
+                                     {"port_name", name},
+                                     {"direction", "input"}});
+                }
+                return {};
+            };
+
+            DomainStatus st = append_ports(long_name);
+            if(!st.ok())
+            {
+                r.ok = false;
+                r.error_code = "DomainError";
+                r.message = st.message;
+                return r;
+            }
+
+            if(include_nested)
+            {
+                nlohmann::json snap;
+                st = domain_access->listNetSnapshot(snap, ch, 500, long_name);
+                if(st.ok() && snap.contains("components") && snap["components"].is_array())
+                {
+                    for(const auto& comp : snap["components"])
+                    {
+                        const std::string owner = comp.value("long_name", "");
+                        if(owner.empty() || owner == long_name)
+                            continue;
+                        (void)append_ports(owner);
+                    }
+                }
+            }
+
+            std::vector<std::string> root_outputs;
+            std::vector<std::string> root_inputs;
+            for(const auto& p : ports)
+            {
+                if(p.value("owner_long_name", "") != long_name)
+                    continue;
+                if(p.value("direction", "") == "output")
+                    root_outputs.push_back(p.value("port_name", ""));
+                else if(p.value("direction", "") == "input")
+                    root_inputs.push_back(p.value("port_name", ""));
+            }
+
+            r.result = {{"long_name", long_name},
+                        {"channel_index", ch},
+                        {"include_nested", include_nested},
+                        {"outputs", root_outputs},
+                        {"inputs", root_inputs},
+                        {"ports", std::move(ports)}};
+            r.ok = true;
             return r;
         });
 

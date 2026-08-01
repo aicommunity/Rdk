@@ -12,6 +12,8 @@ const std::unordered_set<std::string>& autonomousReadTools()
 {
     static const std::unordered_set<std::string> k = {
         "get_net_snapshot",
+        "list_model_links",
+        "get_component_ports",
         "find_component",
         "get_component_properties",
         "list_registered_classes",

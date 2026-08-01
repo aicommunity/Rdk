@@ -249,7 +249,7 @@ DomainStatus URdkDomainAccess::listNetSnapshot(nlohmann::json& out, int channel_
 
 DomainStatus URdkDomainAccess::listModelLinks(nlohmann::json& out, int channel_index,
                                               const std::string& root_long_name, int offset,
-                                              int limit) const
+                                              int limit, const ModelLinkListFilters& filters) const
 {
     out = nlohmann::json::object();
     URdkDomainAccess* self = const_cast<URdkDomainAccess*>(this);
@@ -271,6 +271,9 @@ DomainStatus URdkDomainAccess::listModelLinks(nlohmann::json& out, int channel_i
     opts.offset = std::max(0, offset);
     opts.limit = effective_limit;
     opts.count_all = true;
+    if(!filters.component_long_name.empty() || !filters.from_long_name.empty()
+       || !filters.to_long_name.empty())
+        opts.subtree_filters = filters;
     const ModelLinkWalkResult walk = walkModelLinks(walk_root, model_root, opts);
 
     nlohmann::json links = nlohmann::json::array();
@@ -280,10 +283,18 @@ DomainStatus URdkDomainAccess::listModelLinks(nlohmann::json& out, int channel_i
     out["channel_index"] = channel_index;
     if(!root_long_name.empty())
         out["root_long_name"] = root_long_name;
+    if(!filters.component_long_name.empty())
+        out["component_long_name"] = filters.component_long_name;
+    if(!filters.from_long_name.empty())
+        out["from_long_name"] = filters.from_long_name;
+    if(!filters.to_long_name.empty())
+        out["to_long_name"] = filters.to_long_name;
     out["offset"] = opts.offset;
     out["limit"] = effective_limit;
     out["returned_count"] = static_cast<int>(walk.links.size());
     out["total_links_seen"] = walk.total_quads_seen;
+    out["total_matching"] = walk.total_matching;
+    out["no_matching_links"] = walk.total_matching == 0;
     out["truncated"] = walk.truncated;
     out["next_offset"] = walk.next_offset;
     out["links"] = std::move(links);

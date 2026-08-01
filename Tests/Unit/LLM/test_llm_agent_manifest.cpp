@@ -33,5 +33,7 @@ TEST(LLMAgentManifest, ConnectVsAddSection)
         buildAgentManifest(registry, filter, 8000, "подключи PNeuron2 к PNeuron3", {}, "en");
     EXPECT_NE(manifest.find("Connect vs Add"), std::string::npos);
     EXPECT_NE(manifest.find("connect_components"), std::string::npos);
+    EXPECT_NE(manifest.find("list_model_links"), std::string::npos);
+    EXPECT_NE(manifest.find("subtree anchors"), std::string::npos);
     EXPECT_TRUE(isConnectGoalText("подключи PNeuron2 к PNeuron3"));
 }

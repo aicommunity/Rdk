@@ -28,6 +28,7 @@
 #include "../TrustBoundary/ULLMTrustBoundary.h"
 #include "../Intent/ULLMIntentAmbiguityGate.h"
 #include "ULLMConfigurationLifecycle.h"
+#include "ULLMActOrClarifyGate.h"
 #include "ULLMDialogSlotMerge.h"
 #include "ULLMLifecycleArgumentGate.h"
 #include "../Domain/URdkApplicationCommands.h"
@@ -692,6 +693,67 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
             m_store.persistToDisk(req.session_id);
             return final;
         }
+        // DD-ACT / TD-152: live analogous connect plans execute even under HintOnly.
+        const ParsedConnectGoal parsed_live = parseConnectGoal(planning_text);
+        bool plan_has_connect = false;
+        for(const ExecutionPlanStep& s : tp.plan.steps)
+        {
+            if(s.tool_name == "connect_components")
+            {
+                plan_has_connect = true;
+                break;
+            }
+        }
+        if(tp.ok && parsed_live.analogous_ref_token && plan_has_connect)
+        {
+            const std::optional<int> session_qty =
+                state.last_quantity.valid
+                    ? std::optional<int>(state.last_quantity.primary)
+                    : std::nullopt;
+            applyGoalQuantityToExecutionPlan(tp.plan, session_qty);
+            const PlanConfirmDecision confirm_decision = decidePlanConfirmation(
+                tp.plan, session.autonomous_mode, session.auto_apply_writes, !tp.issues.empty());
+            GetAuditLog().append("live_analogous_fastpath",
+                                 {{"plan_id", tp.plan.plan_id},
+                                  {"step_count", static_cast<int>(tp.plan.steps.size())},
+                                  {"needs_confirm", confirm_decision.needs_user_confirmation}},
+                                 req.trace_id, req.session_id);
+            if(confirm_decision.needs_user_confirmation)
+            {
+                state.pending_plan = tp.plan;
+                final.pending_plan_execution = true;
+                final.pending_plan_id = tp.plan.plan_id;
+                final.text = formatExecutionPlanPreview(tp.plan)
+                             + "\n\n[Task plan ready — confirm execution in the assistant panel.]";
+                setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation, req.trace_id);
+                assignTurnTerminal(final, TurnTerminal::AwaitingConfirm);
+                m_store.persistToDisk(req.session_id);
+                return final;
+            }
+
+            setWorkflowPhase(state, LLMWorkflowPhase::TaskExecuting, req.trace_id);
+            ULLMTaskExecutor task_executor(m_registry, m_gateway);
+            TaskExecuteOptions task_opts;
+            task_opts.conversation_state = &state;
+            task_opts.conversation_store = &m_store;
+            TaskExecuteResult exec = task_executor.execute(tp.plan, session, req.trace_id, task_opts);
+            final.ok = exec.ok;
+            final.text = exec.summary;
+            if(!exec.ok)
+                final.error = exec.summary;
+            GetAuditLog().append(exec.ok ? "task_completed" : "task_failed",
+                                 {{"summary", exec.summary}, {"live_analogous", true}},
+                                 req.trace_id, req.session_id);
+            if(exec.ok)
+                appendAgentNote(state, "Live analogous connect completed: " + exec.summary.substr(0, 200));
+            setWorkflowPhase(
+                state, exec.ok ? LLMWorkflowPhase::Completed : LLMWorkflowPhase::Failed, req.trace_id);
+            setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
+            assignTurnTerminal(final,
+                               exec.ok ? TurnTerminal::TaskFastPathCompleted : TurnTerminal::Completed);
+            m_store.persistToDisk(req.session_id);
+            return final;
+        }
         if(tp.ok)
         {
             appendAgentNote(state,
@@ -1172,6 +1234,15 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                                            ctx_plan.link_pattern_top_k);
     }
 
+    if(isConnectGoalText(planning_text))
+    {
+        const std::string inspect = buildConnectInspectHintBlock();
+        if(ctx_input.connect_semantics_block.empty())
+            ctx_input.connect_semantics_block = inspect;
+        else
+            ctx_input.connect_semantics_block += "\n" + inspect;
+    }
+
     ctx_input.allow_retriever_without_list_focus =
         ctx_plan.prefetch_snapshot && !req.gui.diagram_scope_long_name.empty();
 
@@ -1406,9 +1477,10 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 return final;
             }
 
-            if(intent == LLMIntentKind::Mutate && filter.include_write && provider_tools
-               && !state.pending_tool_arguments
-               && state.workflow_phase != LLMWorkflowPhase::Understanding)
+            if(shouldRequireActOrClarify(
+                   provider_tools, true, planning_text, intent, lifecycle_action,
+                   filter.include_write, static_cast<bool>(state.pending_tool_arguments),
+                   state.workflow_phase == LLMWorkflowPhase::Understanding))
             {
                 if(!recovery_used)
                 {
@@ -1416,25 +1488,38 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                     LLMMessage recovery;
                     recovery.role = LLMMessage::Role::System;
                     recovery.content =
-                        "Mutate request detected. Call exactly one suitable tool. "
-                        "If no tool can satisfy the request, reply exactly: NO_SUITABLE_TOOL.";
+                        "Actionable request detected. Call exactly one suitable tool, or "
+                        "ask_user if arguments are missing. "
+                        "If no tool can satisfy the request, reply exactly: NO_SUITABLE_TOOL. "
+                        "Do not narrate topology or invent link results without tools.";
                     m_store.appendMessage(req.session_id, recovery);
+                    GetAuditLog().append("act_or_clarify_recovery",
+                                         {{"round", 1}, {"intent", intent_name}},
+                                         req.trace_id, req.session_id);
                     continue;
                 }
                 if(isConnectGoalText(planning_text) && !connect_recovery_used)
                 {
                     connect_recovery_used = true;
+                    // Ensure write tools are visible even if intent was misclassified earlier.
+                    filter.include_write = true;
                     filter.allowed_tool_names = std::unordered_set<std::string>{
                         "connect_components",
                         "get_component_properties",
+                        "get_component_ports",
+                        "list_model_links",
                         "disconnect_components",
                         "ask_user",
                         "find_component",
                         "get_net_snapshot",
                         "search_project_docs",
                     };
-                    std::string hint = "Connect/link goal: call connect_components only. Do not "
-                                       "add components. Use get_component_properties for port names.";
+                    opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
+                    ctx_input.tool_filter = filter;
+                    std::string hint =
+                        "Connect/link goal: call list_model_links / get_component_ports to "
+                        "inspect nested wiring, then connect_components. Do not add components. "
+                        "Named components are subtree anchors.";
                     const ParsedConnectGoal parsed = parseConnectGoal(planning_text);
                     if(!parsed.explicit_links.empty())
                     {
@@ -1477,6 +1562,9 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                 final.no_suitable_tool = true;
                 final.text = formatUserMessage("error.no_suitable_tool", user_lang);
                 assignTurnTerminal(final, TurnTerminal::Completed);
+                GetAuditLog().append("act_or_clarify_exhausted",
+                                     {{"intent", intent_name}},
+                                     req.trace_id, req.session_id);
                 setWorkflowPhase(state, LLMWorkflowPhase::Completed, req.trace_id);
                 setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
                 m_store.persistToDisk(req.session_id);

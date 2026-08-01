@@ -103,6 +103,8 @@ std::optional<std::unordered_set<std::string>> preferredToolsForText(const std::
        && !containsAny(lower, {"добав", "add component", "add "}))
         return std::unordered_set<std::string>{"connect_components",
                                                "get_component_properties",
+                                               "get_component_ports",
+                                               "list_model_links",
                                                "disconnect_components",
                                                "find_component",
                                                "get_net_snapshot",
@@ -157,6 +159,8 @@ std::unordered_set<std::string> alwaysKeepTools(const ToolFilter& base)
                               "list_registered_classes",
                               "describe_class",
                               "get_net_snapshot",
+                              "list_model_links",
+                              "get_component_ports",
                               "find_component",
                               "get_component_properties",
                               "list_recent_configurations",

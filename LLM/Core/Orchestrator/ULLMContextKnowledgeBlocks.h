@@ -17,6 +17,9 @@ std::string buildConnectSemanticsHintBlock(const ULLMConnectSemanticsCatalog& se
                                            const std::string& from_class,
                                            const std::string& to_class, int top_k);
 
+/// Ephemeral rules for inspect-then-connect (nested subtree anchors).
+std::string buildConnectInspectHintBlock();
+
 std::string buildDocsPrefetchBlock(UDocSearchIndex& index, const std::string& query,
                                    const std::string& scope, int top_k, std::size_t max_chars);
 

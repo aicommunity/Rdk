@@ -70,9 +70,20 @@ TEST(LLMWriteToolsP1, MutateFilterIncludesCoreWriteTools)
     EXPECT_TRUE(filterAllows(filter, "remove_component"));
     EXPECT_TRUE(filterAllows(filter, "connect_components"));
     EXPECT_TRUE(filterAllows(filter, "disconnect_components"));
+    EXPECT_TRUE(filterAllows(filter, "list_model_links"));
+    EXPECT_TRUE(filterAllows(filter, "get_component_ports"));
     EXPECT_TRUE(filterAllows(filter, "start_channel_calculation"));
     EXPECT_TRUE(filterAllows(filter, "save_configuration"));
     EXPECT_TRUE(filterAllows(filter, "validate_configuration"));
+}
+
+TEST(LLMWriteToolsP1, QueryFilterIncludesLinkInspectTools)
+{
+    const ToolFilter filter =
+        buildToolFilter(LLMIntentKind::Query, false, ConfigurationLifecycleAction::None);
+    EXPECT_TRUE(filterAllows(filter, "list_model_links"));
+    EXPECT_TRUE(filterAllows(filter, "get_component_ports"));
+    EXPECT_TRUE(filterAllows(filter, "get_net_snapshot"));
 }
 
 TEST(LLMWriteToolsP1, LowRiskPropertySkipsConfirmation)

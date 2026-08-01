@@ -31,10 +31,15 @@ std::string buildAgentManifest(const ULLMToolRegistry& registry, const ToolFilte
         oss << "## Connect vs Add\n"
             << "- User wants a **link** (connect, link, подключи, связь, соедини): use "
                "connect_components only — never add_component.\n"
+            << "- Named names are **subtree anchors**: wiring often uses nested published "
+               "ports under those components.\n"
+            << "- Inspect first: list_model_links (component/from/to filters) and "
+               "get_component_ports (include_nested) before guessing topology.\n"
             << "- connect_components needs from_long_name, from_property (published output), "
                "to_long_name, to_property (published input). Same API as GUI "
                "Model_CreateLinkByName.\n"
-            << "- Use get_component_properties when port names are unknown.\n";
+            << "- For “same as connected to X”, list links involving X, then replicate ports "
+               "onto peer targets with nested long_name prefix rewrite.\n";
     }
     else if(!user_text.empty())
     {

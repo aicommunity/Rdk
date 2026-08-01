@@ -16,6 +16,8 @@ Normative contract for the LLM assistant turn pipeline. Implementation: `ULLMUni
 2. **Deterministic planners are hints**, not hard bypasses (task/connect planners → ephemeral blocks; fast-path opt-in **and** must use RecordedToolInvoke).
 3. **Clarification is a protocol** (`ask_user`, `AwaitingUserInput`, pending merge without full re-parse).
 4. **Intent is a soft prior**; writes gated by policy, not by hiding tools from the API.
+5. **Act-or-Clarify (DD-ACT-001 / TD-153):** when tools were offered and the goal is actionable (Mutate/Plan writes, connect/add/lifecycle detectors), an empty `tool_calls` round must not finalize as free prose — recovery → tool / `ask_user` / `NO_SUITABLE_TOOL`. Does not force API `tool_choice` under thinking (DD-THINK-003); enforcement is post-completion in the orchestrator loop.
+6. **Live analogous connect (DD-CONN-002 / TD-152):** when ConnectPlan builds with `analogous_ref_token`, execute (or confirm) even under HintOnly — ReAct essay is not the primary path.
 
 ## 2. Recorded bypass (DD-MEM-001 / TD-150)
 

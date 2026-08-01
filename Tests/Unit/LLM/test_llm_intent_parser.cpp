@@ -34,3 +34,12 @@ TEST(LLMIntentParser, MutateIntent)
     EXPECT_EQ(parser.parse("create new config"), LLMIntentKind::Mutate);
     EXPECT_EQ(parser.parse("create config"), LLMIntentKind::Mutate);
 }
+
+TEST(LLMIntentParser, ConnectPodkluchIsMutate)
+{
+    ULLMIntentParser parser;
+    EXPECT_EQ(parser.parse("подключи PNeuron2 к PNeuron3"), LLMIntentKind::Mutate);
+    EXPECT_EQ(parser.parse("подключил PGenerator к этим нейронам также как к PNeuron"),
+              LLMIntentKind::Mutate);
+    EXPECT_EQ(parser.parse("connect A to B"), LLMIntentKind::Mutate);
+}

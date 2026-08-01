@@ -44,7 +44,8 @@ public:
                                 const std::string& root_long_name = "") const;
     DomainStatus listModelLinks(nlohmann::json& out, int channel_index = 0,
                                 const std::string& root_long_name = "",
-                                int offset = 0, int limit = -1) const;
+                                int offset = 0, int limit = -1,
+                                const ModelLinkListFilters& filters = {}) const;
     DomainStatus linkExistsInModel(const LinkQuad& quad, int channel_index,
                                    const std::string& root_long_name,
                                    bool& out_exists) const;

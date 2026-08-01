@@ -116,7 +116,7 @@ public:
 
 Обход: DFS от `rootNet`, без сериализации значений матриц целиком (только scalar/meta в `get_component_properties`).
 
-**Пагинация связей:** для полного обхода без snapshot cap используйте read-tool `list_model_links` (`offset`, `limit`, optional `root_long_name`). Реализация: `ULLMModelLinkWalker` + `URdkDomainAccess::listModelLinks`.
+**Пагинация связей:** для полного обхода без snapshot cap используйте read-tool `list_model_links` (`offset`, `limit`, optional `root_long_name`, subtree filters `component_long_name` / `from_long_name` / `to_long_name`). Реализация: `ULLMModelLinkWalker` + `URdkDomainAccess::listModelLinks`.
 
 ### 2.5 Write-операции и `rdk_init`
 
@@ -135,7 +135,8 @@ public:
 | Tool | Domain метод |
 |------|----------------|
 | `get_net_snapshot` | `listComponents` + links (capped) |
-| `list_model_links` | `listModelLinks` (paginated strict quads) |
+| `list_model_links` | `listModelLinks` (paginated strict quads + subtree filters) |
+| `get_component_ports` | `listComponentPubPorts` (+ nested via snapshot) |
 | `find_component` | обход + fuzzy match (см. Entity-Resolution) |
 | `get_component_properties` | `getComponentDetail` |
 | `list_registered_classes` | `listRegisteredClassNames` + ClDesc provider |
@@ -326,7 +327,7 @@ public:
 
 Traversal: DFS from `rootNet`, without serializing full matrix values (only scalar/meta in `get_component_properties`).
 
-**Link pagination:** for full traversal without snapshot cap use read-tool `list_model_links` (`offset`, `limit`, optional `root_long_name`). Implementation: `ULLMModelLinkWalker` + `URdkDomainAccess::listModelLinks`.
+**Link pagination:** for full traversal without snapshot cap use read-tool `list_model_links` (`offset`, `limit`, optional `root_long_name`, subtree filters `component_long_name` / `from_long_name` / `to_long_name`). Implementation: `ULLMModelLinkWalker` + `URdkDomainAccess::listModelLinks`.
 
 ### 2.5 Write operations and `rdk_init`
 
@@ -345,7 +346,8 @@ Traversal: DFS from `rootNet`, without serializing full matrix values (only scal
 | Tool | Domain method |
 |------|---------------|
 | `get_net_snapshot` | `listComponents` + links (capped) |
-| `list_model_links` | `listModelLinks` (paginated strict quads) |
+| `list_model_links` | `listModelLinks` (paginated strict quads + subtree filters) |
+| `get_component_ports` | `listComponentPubPorts` (+ nested via snapshot) |
 | `find_component` | traversal + fuzzy match (see Entity-Resolution) |
 | `get_component_properties` | `getComponentDetail` |
 | `list_registered_classes` | `listRegisteredClassNames` + ClDesc provider |

@@ -18,6 +18,8 @@ std::unordered_set<std::string> kQueryTools()
 {
     auto tools = kLibraryAssistTools();
     tools.insert({"get_net_snapshot",
+                  "list_model_links",
+                  "get_component_ports",
                   "list_registered_classes",
                   "describe_class",
                   "find_component",

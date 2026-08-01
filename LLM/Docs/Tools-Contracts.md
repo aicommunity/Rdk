@@ -98,6 +98,9 @@
   "properties": {
     "channel_index": { "type": "integer", "minimum": 0, "default": 0 },
     "root_long_name": { "type": "string" },
+    "component_long_name": { "type": "string" },
+    "from_long_name": { "type": "string" },
+    "to_long_name": { "type": "string" },
     "offset": { "type": "integer", "minimum": 0, "default": 0 },
     "limit": { "type": "integer", "minimum": 1, "maximum": 2000, "default": 500 }
   },
@@ -105,7 +108,29 @@
 }
 ```
 
-**output:** `links[]` (strict 4-tuple), `offset`, `limit`, `returned_count`, `total_links_seen`, `truncated`, `next_offset`.
+**Subtree filters:** `component_long_name` / `from_long_name` / `to_long_name` are **anchors**. An endpoint matches if it equals the anchor or is nested under it (`Anchor.Child…`). `component_long_name` matches incident links (either end). Combine filters with AND.
+
+**output:** `links[]` (strict 4-tuple), `offset`, `limit`, `returned_count`, `total_links_seen`, `total_matching`, `no_matching_links`, `truncated`, `next_offset`.
+
+---
+
+### `get_component_ports`
+
+**input:**
+```json
+{
+  "type": "object",
+  "required": ["long_name"],
+  "properties": {
+    "long_name": { "type": "string", "minLength": 1 },
+    "channel_index": { "type": "integer", "minimum": 0, "default": 0 },
+    "include_nested": { "type": "boolean", "default": true }
+  },
+  "additionalProperties": false
+}
+```
+
+**output:** `outputs[]` / `inputs[]` for the named component; `ports[]` entries `{ owner_long_name, port_name, direction }` including descendants when `include_nested` is true.
 
 ---
 

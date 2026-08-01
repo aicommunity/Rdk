@@ -60,3 +60,14 @@ TEST(LLMAutonomousPolicy, LifecycleCreateAllowedInAutonomous)
         "create_configuration", LLMAutonomousMode::SemiAuto, 0, 3);
     EXPECT_TRUE(d.allowed);
 }
+
+TEST(LLMAutonomousPolicy, InspectLinkToolsWhitelisted)
+{
+    EXPECT_TRUE(
+        ULLMAutonomousPolicy::isToolWhitelisted("list_model_links", LLMAutonomousMode::SemiAuto));
+    EXPECT_TRUE(
+        ULLMAutonomousPolicy::isToolWhitelisted("get_component_ports", LLMAutonomousMode::Strict));
+    AutonomousStepDecision d = ULLMAutonomousPolicy::checkStep(
+        "list_model_links", LLMAutonomousMode::Strict, 99, 3);
+    EXPECT_TRUE(d.allowed);
+}
