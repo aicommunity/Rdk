@@ -33,6 +33,8 @@ void maybeRecordTurnToolTrace(const ToolInvokeRequest& req, const LLMToolDefinit
                               const nlohmann::json& display_arguments,
                               const ToolGatewayResult& result, int duration_ms = 0)
 {
+    if(req.skip_turn_tool_trace)
+        return;
     if(!LLMServices::instance().isInitialized())
         return;
     const std::string session_id = req.session.session_id;

@@ -32,6 +32,8 @@ struct RecordedToolInvokeRequest {
     bool append_outcome_assistant = true;
     /// When true (Task/Plan), force confirmed gateway invoke even if write_exec is unset.
     bool force_confirmed = false;
+    /// Caller will record turn tool_trace on ConversationState (avoid gateway double-append).
+    bool skip_turn_tool_trace = false;
 };
 
 struct RecordedToolInvokeResult {

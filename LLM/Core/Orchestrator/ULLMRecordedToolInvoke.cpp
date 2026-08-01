@@ -125,6 +125,7 @@ RecordedToolInvokeResult recordedToolInvoke(ConversationState& state,
                            || (def && def->requires_confirmation && (req.confirmed || req.force_confirmed));
         if(def && def->requires_confirmation && (req.confirmed || req.force_confirmed || req.skip_preview))
             invoke.confirmed = true;
+        invoke.skip_turn_tool_trace = req.skip_turn_tool_trace;
         invoke.idempotency_key =
             makeIdempotencyKeyLocal(req.session_id, req.trace_id, req.tool_name, args,
                                     req.idempotency_action_id.empty() ? out.tool_call_id

@@ -40,3 +40,5 @@ Any tool invoke that skips the LLM tool-loop must use `recordedToolInvoke` (`ULL
 Do **not** expand cue-direct to delete/connect without a new ADR. `last_add` is a session side-channel (ephemeral inject), not a substitute for transcript.
 
 Task FastPath / PlanExecutor: HintOnly default; when FastPath or plan Run executes steps, each step goes through RecordedToolInvoke.
+
+**FastPath success must be user-visible:** `ULLMTaskExecutor` summary lists created links/adds (not only a step count); each successful step is recorded on `ConversationState::current_turn_tool_trace` so chat/AiChats HTML get a Tools `<details>` block with 4-tuple args (parity with direct `add_component`). Do not invent LLM Reasoning for pure FastPath turns — archive full thinking only when the model actually produced it (soft ~256KB safety cap, not 8KB).

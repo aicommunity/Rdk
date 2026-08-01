@@ -3,9 +3,11 @@
 #include "ULLMPlanQuantity.h"
 #include "ULLMPlanRepeatPolicy.h"
 #include "ULLMRecordedToolInvoke.h"
+#include "ULLMTaskOutcomeSummary.h"
 
 #include "../LlmModuleInit.h"
 #include "../LlmPublicApi.h"
+#include "../Observability/ULLMToolTrace.h"
 #include "../Session/ULLMConversationStore.h"
 #include "../Session/ULLMSessionGraphMemory.h"
 #include "ULLMPlanExecutor.h"
@@ -14,6 +16,7 @@
 #include <algorithm>
 #include <sstream>
 #include <unordered_set>
+#include <vector>
 
 namespace RDK::LLM {
 
@@ -48,6 +51,8 @@ TaskExecuteResult ULLMTaskExecutor::execute(ULLMExecutionPlan& plan,
     int replan_attempts = 0;
     bool failed = false;
     std::string fail_reason;
+    std::vector<std::string> connect_outcome_lines;
+    std::vector<std::string> add_outcome_lines;
 
     int guard = 0;
     while(guard++ < static_cast<int>(plan.steps.size()) * 4)
@@ -87,6 +92,8 @@ TaskExecuteResult ULLMTaskExecutor::execute(ULLMExecutionPlan& plan,
             while(retries <= std::max(0, options.max_step_retries))
             {
                 bool repeat_failed = false;
+                std::vector<std::string> pending_connect;
+                std::vector<std::string> pending_add;
                 for(int rep = 0; rep < repeat_total; ++rep)
                 {
                     nlohmann::json rep_args = step.arguments;
@@ -119,6 +126,7 @@ TaskExecuteResult ULLMTaskExecutor::execute(ULLMExecutionPlan& plan,
                         rreq.confirmed = true;
                         rreq.skip_preview = true;
                         rreq.append_outcome_assistant = false;
+                        rreq.skip_turn_tool_trace = true;
                         RecordedToolInvokeResult recorded =
                             recordedToolInvoke(*options.conversation_state, deps, rreq);
                         tr = std::move(recorded.gateway);
@@ -131,6 +139,7 @@ TaskExecuteResult ULLMTaskExecutor::execute(ULLMExecutionPlan& plan,
                         invoke.arguments = rep_args;
                         invoke.session = session;
                         invoke.confirmed = def->requires_confirmation;
+                        invoke.skip_turn_tool_trace = options.conversation_state != nullptr;
                         if(!plan.goal_en.empty())
                             invoke.user_text_hint = plan.goal_en;
                         tr = m_gateway.invoke(invoke);
@@ -141,6 +150,11 @@ TaskExecuteResult ULLMTaskExecutor::execute(ULLMExecutionPlan& plan,
                                                    session.active_channel_index, &rep_args);
                         }
                     }
+                    if(options.conversation_state)
+                    {
+                        recordTurnToolInvocation(*options.conversation_state, step.tool_name,
+                                                 rep_args, tr, 0, def->input_schema);
+                    }
                     if(!tr.ok)
                     {
                         step_fail = tr.message.empty() ? tr.error_code : tr.message;
@@ -148,6 +162,19 @@ TaskExecuteResult ULLMTaskExecutor::execute(ULLMExecutionPlan& plan,
                         break;
                     }
                     step.last_result = tr.result;
+                    if(step.tool_name == "connect_components")
+                    {
+                        const std::string line = formatConnectLinkOutcomeLine(rep_args);
+                        if(!line.empty())
+                            pending_connect.push_back(line);
+                    }
+                    else if(step.tool_name == "add_component")
+                    {
+                        const std::string line =
+                            formatAddComponentOutcomeLine(rep_args, tr.result);
+                        if(!line.empty())
+                            pending_add.push_back(line);
+                    }
                 }
 
                 if(repeat_failed)
@@ -182,6 +209,10 @@ TaskExecuteResult ULLMTaskExecutor::execute(ULLMExecutionPlan& plan,
 
                 if(vr.satisfied)
                 {
+                    for(const std::string& line : pending_connect)
+                        connect_outcome_lines.push_back(line);
+                    for(const std::string& line : pending_add)
+                        add_outcome_lines.push_back(line);
                     step_ok = true;
                     break;
                 }
@@ -287,12 +318,8 @@ TaskExecuteResult ULLMTaskExecutor::execute(ULLMExecutionPlan& plan,
 
     out.goal_satisfied = goal_ok;
     out.ok = !failed && goal_ok;
-    std::ostringstream summary;
-    summary << "Task plan " << plan.plan_id << ": " << out.completed_step_ids.size()
-            << " steps completed.";
-    if(!out.ok && !fail_reason.empty())
-        summary << " " << fail_reason;
-    out.summary = summary.str();
+    out.summary = buildTaskExecuteSummary(connect_outcome_lines, add_outcome_lines, plan.plan_id,
+                                          out.completed_step_ids.size(), out.ok, fail_reason);
     GetAuditLog().append(out.ok ? "task_completed" : "task_failed",
                          {{"plan_id", plan.plan_id},
                           {"completed_steps", static_cast<int>(out.completed_step_ids.size())}},

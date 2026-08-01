@@ -73,6 +73,10 @@ The snapshot may set `links_truncated: true` when the max link limit is reached.
 
 `connect_components` is idempotent with respect to the strict 4-tuple. If the link already exists, it returns `ok=true` and adds `already_existed: true`.
 
+## FastPath UX (visible success)
+
+When ConnectPlan executes via Task FastPath, the assistant reply must list created links (`From.Port → To.Port`) and the turn Tools block must include each `connect_components` 4-tuple — same observability as direct `add_component`. See [Unified-Turn-Contract.md](Unified-Turn-Contract.md) § Recorded bypass.
+
 ## Remaining scope (TD-092)
 
 `parseConnectGoal` sets `remaining_scope`:
@@ -188,6 +192,10 @@ The snapshot may set `links_truncated: true` when the max link limit is reached.
 ## Idempotent connect tool behavior
 
 `connect_components` is idempotent with respect to the strict 4-tuple. If the link already exists, it returns `ok=true` and adds `already_existed: true`.
+
+## FastPath UX (visible success)
+
+When ConnectPlan executes via Task FastPath, the assistant reply must list created links (`From.Port → To.Port`) and the turn Tools block must include each `connect_components` 4-tuple — same observability as direct `add_component`. See [Unified-Turn-Contract.md](Unified-Turn-Contract.md) § Recorded bypass.
 
 ## Remaining scope (TD-092)
 

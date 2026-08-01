@@ -1581,8 +1581,10 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
             if(!completion.thinking.empty())
             {
                 final.thinking = completion.thinking;
-                if(final.thinking.size() > 8192)
-                    final.thinking.resize(8192);
+                // Soft safety cap only (~256KB); keep full thinking for AiChats / UI.
+                constexpr std::size_t kMaxThinkingChars = 256u * 1024u;
+                if(final.thinking.size() > kMaxThinkingChars)
+                    final.thinking.resize(kMaxThinkingChars);
             }
             if(final.text.empty() && lifecycle_action != ConfigurationLifecycleAction::None)
             {
@@ -1694,8 +1696,9 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
         if(!completion.thinking.empty())
         {
             final.thinking = completion.thinking;
-            if(final.thinking.size() > 8192)
-                final.thinking.resize(8192);
+            constexpr std::size_t kMaxThinkingChars = 256u * 1024u;
+            if(final.thinking.size() > kMaxThinkingChars)
+                final.thinking.resize(kMaxThinkingChars);
         }
 
         const IntentAmbiguityDecision ambiguity =

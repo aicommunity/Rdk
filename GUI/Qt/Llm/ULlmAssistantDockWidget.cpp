@@ -95,13 +95,14 @@ QString escapeHtmlLite(const QString& s)
     return out;
 }
 
-/// Collapsible Reasoning block (same details/summary pattern as tool traces). Truncate ~8KB.
+/// Collapsible Reasoning block (same details/summary pattern as tool traces).
+/// Soft safety cap only (~256KB) so AiChats archive keeps full LLM thinking.
 QString formatThinkingDetailsHtml(QString thinking)
 {
     thinking = thinking.trimmed();
     if(thinking.isEmpty())
         return {};
-    constexpr int kMaxChars = 8192;
+    constexpr int kMaxChars = 256 * 1024;
     if(thinking.size() > kMaxChars)
         thinking = thinking.left(kMaxChars) + QStringLiteral("\n…");
     return QStringLiteral("<details><summary>%1</summary><pre>%2</pre></details>")

@@ -314,6 +314,9 @@ struct ToolInvokeRequest {
     bool confirmed = false;
     /// Current user turn text (for add_component class inference when the model picks a wrong class).
     std::string user_text_hint;
+    /// When true, gateway skips appending to ConversationState::current_turn_tool_trace
+    /// (caller records against the turn-attacher state explicitly — TaskExecutor FastPath).
+    bool skip_turn_tool_trace = false;
 };
 
 struct ToolGatewayResult {
