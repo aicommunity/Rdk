@@ -659,6 +659,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
         snap.skip_pre_llm_funnel = skip_pre_llm_funnel;
         snap.registry = &m_registry;
         snap.gateway = &m_gateway;
+        snap.provider = &m_provider;
         snap.store = &m_store;
         snap.log_reader = m_system_log_reader.get();
         snap.set_phase = [this, &state, &req](LLMWorkflowPhase phase) {
@@ -811,69 +812,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
             m_store.persistToDisk(req.session_id);
             return final;
         }
-        // DD-ACT / TD-152: live analogous connect plans execute even under HintOnly.
-        // TODO(pack-phase-B+): migrate this TaskPlan-coupled execute into UPackConnect::tryRecorded
-        // when ConnectPlan build can run without the surrounding task-path ladder.
-        const ParsedConnectGoal parsed_live = parseConnectGoal(planning_text);
-        bool plan_has_connect = false;
-        for(const ExecutionPlanStep& s : tp.plan.steps)
-        {
-            if(s.tool_name == "connect_components")
-            {
-                plan_has_connect = true;
-                break;
-            }
-        }
-        if(tp.ok && parsed_live.analogous_ref_token && plan_has_connect)
-        {
-            const std::optional<int> session_qty =
-                state.last_quantity.valid
-                    ? std::optional<int>(state.last_quantity.primary)
-                    : std::nullopt;
-            applyGoalQuantityToExecutionPlan(tp.plan, session_qty);
-            const PlanConfirmDecision confirm_decision = decidePlanConfirmation(
-                tp.plan, session.autonomous_mode, session.auto_apply_writes, !tp.issues.empty());
-            GetAuditLog().append("live_analogous_fastpath",
-                                 {{"plan_id", tp.plan.plan_id},
-                                  {"step_count", static_cast<int>(tp.plan.steps.size())},
-                                  {"needs_confirm", confirm_decision.needs_user_confirmation}},
-                                 req.trace_id, req.session_id);
-            if(confirm_decision.needs_user_confirmation)
-            {
-                state.pending_plan = tp.plan;
-                final.pending_plan_execution = true;
-                final.pending_plan_id = tp.plan.plan_id;
-                final.text = formatExecutionPlanPreview(tp.plan)
-                             + "\n\n[Task plan ready — confirm execution in the assistant panel.]";
-                setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation, req.trace_id);
-                assignTurnTerminal(final, TurnTerminal::AwaitingConfirm);
-                m_store.persistToDisk(req.session_id);
-                return final;
-            }
-
-            setWorkflowPhase(state, LLMWorkflowPhase::TaskExecuting, req.trace_id);
-            ULLMTaskExecutor task_executor(m_registry, m_gateway);
-            TaskExecuteOptions task_opts;
-            task_opts.conversation_state = &state;
-            task_opts.conversation_store = &m_store;
-            TaskExecuteResult exec = task_executor.execute(tp.plan, session, req.trace_id, task_opts);
-            final.ok = exec.ok;
-            final.text = exec.summary;
-            if(!exec.ok)
-                final.error = exec.summary;
-            GetAuditLog().append(exec.ok ? "task_completed" : "task_failed",
-                                 {{"summary", exec.summary}, {"live_analogous", true}},
-                                 req.trace_id, req.session_id);
-            if(exec.ok)
-                appendAgentNote(state, "Live analogous connect completed: " + exec.summary.substr(0, 200));
-            setWorkflowPhase(
-                state, exec.ok ? LLMWorkflowPhase::Completed : LLMWorkflowPhase::Failed, req.trace_id);
-            setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
-            assignTurnTerminal(final,
-                               exec.ok ? TurnTerminal::TaskFastPathCompleted : TurnTerminal::Completed);
-            m_store.persistToDisk(req.session_id);
-            return final;
-        }
+        // Live-analogous connect Recorded: UPackConnect::tryRecorded (TD-169 / DD-CONN-002).
         if(tp.ok)
         {
             appendAgentNote(state,

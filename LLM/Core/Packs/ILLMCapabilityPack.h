@@ -17,6 +17,7 @@ namespace RDK::LLM {
 class ULLMToolRegistry;
 class ULLMToolGateway;
 class ULLMSystemLogReader;
+class ILLMProvider;
 
 struct PackMatch {
     float score = 0.f;
@@ -38,6 +39,7 @@ struct PackTurnSnapshot {
     bool skip_pre_llm_funnel = false;
     ULLMToolRegistry* registry = nullptr;
     ULLMToolGateway* gateway = nullptr;
+    ILLMProvider* provider = nullptr;
     ULLMConversationStore* store = nullptr;
     ULLMSystemLogReader* log_reader = nullptr;
     std::function<void(LLMWorkflowPhase)> set_phase;
