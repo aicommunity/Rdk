@@ -5,6 +5,7 @@
 #include <QToolBar>
 #include <QMenu>
 #include <QToolButton>
+#include <QSizePolicy>
 #include <QList>
 #include <QInputDialog>
 #include <QMessageBox>
@@ -290,15 +291,29 @@ UComponentsListWidgetModern::UComponentsListWidgetModern(QWidget *parent, RDK::U
     CheckModelFlag=false;
     ui->setupUi(this);
 
-    // Создание кнопки переключения режимов
+    // Создание кнопки переключения режимов (одна строка с классом компонента)
     toggleModeButton = new QToolButton(this);
     toggleModeButton->setText(tr("☰"));
     toggleModeButton->setToolTip(tr("Показать/скрыть дерево компонентов"));
     toggleModeButton->setCheckable(true);
     toggleModeButton->setChecked(false); // false = компактный режим
-    toggleModeButton->setMaximumWidth(30);
+    toggleModeButton->setFixedSize(24, 24);
+    toggleModeButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    ui->horizontalLayoutTreeWidget->setAlignment(Qt::AlignVCenter);
+    // Порядок: [channels?] [☰] [className…]
     ui->horizontalLayoutTreeWidget->insertWidget(1, toggleModeButton);
     connect(toggleModeButton, &QToolButton::clicked, this, &UComponentsListWidgetModern::toggleTreeViewMode);
+
+    ui->labelComponentClassName->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    ui->labelComponentClassName->setMaximumHeight(24);
+    ui->labelComponentClassName->setMinimumHeight(20);
+    ui->labelComponentClassName->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+
+    // Шапка не должна раздуваться за счёт splitter — место уходит вкладкам свойств
+    if(QWidget* headerPane = ui->splitter->widget(0))
+        headerPane->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+    ui->splitter->setStretchFactor(0, 0);
+    ui->splitter->setStretchFactor(1, 1);
 
     // Создание дерева компонентов
     componentsTree = new UComponentListTreeWidgetModern(this);
@@ -884,6 +899,12 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
             Favorites = class_desc->GetFavorites();
 
         ui->labelComponentClassName->setText(classNameStr);
+        ui->labelComponentClassName->setToolTip(classNameStr);
+    }
+    else
+    {
+        ui->labelComponentClassName->clear();
+        ui->labelComponentClassName->setToolTip(QString());
     }
 
     // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ treeWidget'пїЅпїЅ
