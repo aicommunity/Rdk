@@ -93,7 +93,7 @@ public:
         QFont pathFont = option.font;
         pathFont.setPointSizeF(qMax(8.0, pathFont.pointSizeF() * 0.85));
         const int pathH = QFontMetrics(pathFont).height();
-        sz.setHeight(qMax(sz.height(), option.fontMetrics.height() + 4) + pathH + 2);
+        sz.setHeight(qMax(sz.height(), option.fontMetrics.height() + 1) + pathH + 1);
         return sz;
     }
 
@@ -109,7 +109,7 @@ public:
         QStyleOptionViewItem topOpt(option);
         initStyleOption(&topOpt, index);
 
-        const int topH = option.fontMetrics.height() + 4;
+        const int topH = option.fontMetrics.height() + 1;
         topOpt.rect = QRect(option.rect.left(), option.rect.top(),
                             option.rect.width(), qMin(topH, option.rect.height()));
 
