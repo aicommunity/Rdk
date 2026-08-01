@@ -22,12 +22,17 @@ ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UAp
     setMinimumWidth(480);
 
     auto* layout = new QVBoxLayout(this);
+    layout->setContentsMargins(4, 4, 4, 4);
+    layout->setSpacing(4);
 
     layout->addWidget(new QLabel(tr("Provider profile:"), this));
     m_profiles = new QComboBox(this);
     layout->addWidget(m_profiles);
 
     auto* endpoint_form = new QFormLayout();
+    endpoint_form->setContentsMargins(0, 0, 0, 0);
+    endpoint_form->setHorizontalSpacing(8);
+    endpoint_form->setVerticalSpacing(4);
     m_base_url = new QLineEdit(this);
     m_base_url->setPlaceholderText(tr("e.g. http://127.0.0.1:11434/v1"));
     m_model = new QComboBox(this);
@@ -62,6 +67,9 @@ ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UAp
     connect(m_allow_write, &QCheckBox::toggled, m_auto_apply_writes, &QWidget::setEnabled);
 
     auto* autonomous_form = new QFormLayout();
+    autonomous_form->setContentsMargins(0, 0, 0, 0);
+    autonomous_form->setHorizontalSpacing(8);
+    autonomous_form->setVerticalSpacing(4);
     m_autonomous_mode = new QComboBox(this);
     m_autonomous_mode->addItem(tr("Off"), QStringLiteral("off"));
     m_autonomous_mode->addItem(tr("Strict (confirm each step)"), QStringLiteral("strict"));
@@ -113,6 +121,9 @@ ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UAp
     layout->addWidget(m_enable_ollama_thinking);
 
     auto* lang_form = new QFormLayout();
+    lang_form->setContentsMargins(0, 0, 0, 0);
+    lang_form->setHorizontalSpacing(8);
+    lang_form->setVerticalSpacing(4);
     m_response_language = new QComboBox(this);
     m_response_language->addItem(tr("Auto (system)"), QString());
     m_response_language->addItem(tr("English"), QStringLiteral("en"));

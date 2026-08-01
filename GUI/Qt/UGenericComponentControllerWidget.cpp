@@ -13,6 +13,8 @@ UGenericComponentControllerWidget::UGenericComponentControllerWidget(const QStri
     setAccessibleName(controllerTitle);
 
     QVBoxLayout* layout = new QVBoxLayout(this);
+    layout->setContentsMargins(4, 4, 4, 4);
+    layout->setSpacing(4);
     layout->addWidget(m_titleLabel);
     layout->addWidget(m_details);
 

@@ -209,8 +209,11 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     ClassName = "ULlmAssistantDockWidget";
 
     auto* layout = new QVBoxLayout(this);
+    layout->setContentsMargins(4, 4, 4, 4);
+    layout->setSpacing(4);
 
     auto* top_row = new QHBoxLayout();
+    top_row->setSpacing(4);
     m_provider_combo = new QComboBox(this);
     auto* settings_btn = new QPushButton(tr("Settings..."), this);
     auto* new_chat_btn = new QPushButton(tr("New chat"), this);

@@ -32,7 +32,7 @@ ULlmChatHistoryPanel::ULlmChatHistoryPanel(QWidget* parent)
     m_container = new QWidget(this);
     m_layout = new QVBoxLayout(m_container);
     m_layout->setContentsMargins(4, 4, 4, 4);
-    m_layout->setSpacing(6);
+    m_layout->setSpacing(4);
     m_layout->addStretch(1);
     setWidget(m_container);
 }
