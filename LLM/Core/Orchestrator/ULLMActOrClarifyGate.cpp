@@ -1,5 +1,6 @@
 #include "ULLMActOrClarifyGate.h"
 
+#include "ULLMChannelCalcCommand.h"
 #include "ULLMConnectPlanParsing.h"
 #include "ULLMTaskPlanParsing.h"
 
@@ -18,6 +19,8 @@ bool isActionableGoalForActOrClarify(const std::string& planning_text, LLMIntent
     if(isConnectGoalText(planning_text) || isDisconnectGoalText(planning_text))
         return true;
     if(isAddComponentGoal(planning_text))
+        return true;
+    if(isChannelCalcGoalText(planning_text))
         return true;
     return false;
 }

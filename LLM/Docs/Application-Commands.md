@@ -36,6 +36,8 @@ Aliases: `load_project`, `save_project` (deprecated names, same handlers).
 
 `start_channel_calculation`, `pause_channel_calculation`, `reset_channel_calculation`, `step_channel_calculation` — `channel_index: -1` = all channels.
 
+**DD-CALC-001 FastPath:** user phrases «запусти расчет» / `start calculation` (also pause/reset/step + RU/EN synonyms) are handled **before** TaskPath/ReAct via `recordedToolInvoke` (`ULLMChannelCalcCommand`). Reply and Tools block show the outcome; if no configuration is open, the tool error is shown (not an LLM essay). Autonomous whitelist includes these tools and `ask_user`.
+
 ## Recent configurations and UI panels (phases D/E)
 
 These tools are registered in `RegisterApplicationTools.cpp`:
@@ -131,6 +133,8 @@ Aliases: `load_project`, `save_project` (deprecated names, same handlers).
 ## Phase 2b (channels)
 
 `start_channel_calculation`, `pause_channel_calculation`, `reset_channel_calculation`, `step_channel_calculation` — `channel_index: -1` = all channels.
+
+**DD-CALC-001 FastPath:** user phrases «запусти расчет» / `start calculation` (also pause/reset/step + RU/EN synonyms) are handled **before** TaskPath/ReAct via `recordedToolInvoke` (`ULLMChannelCalcCommand`). Reply and Tools block show the outcome; if no configuration is open, the tool error is shown (not an LLM essay). Autonomous whitelist includes these tools and `ask_user`.
 
 ## Recent configurations and UI panels (phases D/E)
 

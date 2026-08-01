@@ -19,6 +19,7 @@ const std::unordered_set<std::string>& autonomousReadTools()
         "list_registered_classes",
         "describe_class",
         "validate_project",
+        "list_channels",
     };
     return k;
 }
@@ -31,6 +32,11 @@ const std::unordered_set<std::string>& autonomousWriteTools()
         "disconnect_components",
         "set_property",
         "remove_component",
+        "start_channel_calculation",
+        "pause_channel_calculation",
+        "reset_channel_calculation",
+        "step_channel_calculation",
+        "set_active_channel",
     };
     return k;
 }
@@ -52,6 +58,19 @@ const std::unordered_set<std::string>& autonomousLifecycleTools()
         "reload_configuration_parameters",
     };
     return k;
+}
+
+bool isAutonomousMetaTool(const std::string& tool_name)
+{
+    // Clarification protocol must work under SemiAuto/Strict (Act-or-Clarify).
+    return tool_name == "ask_user";
+}
+
+bool isChannelCalcWriteTool(const std::string& tool_name)
+{
+    return tool_name == "start_channel_calculation" || tool_name == "pause_channel_calculation"
+           || tool_name == "reset_channel_calculation" || tool_name == "step_channel_calculation"
+           || tool_name == "set_active_channel";
 }
 
 } // namespace
@@ -76,7 +95,7 @@ bool ULLMAutonomousPolicy::isToolWhitelisted(const std::string& tool_name, LLMAu
     if(mode == LLMAutonomousMode::Off)
         return true;
     return isAutonomousReadTool(tool_name) || isAutonomousWriteTool(tool_name)
-           || isAutonomousLifecycleTool(tool_name);
+           || isAutonomousLifecycleTool(tool_name) || isAutonomousMetaTool(tool_name);
 }
 
 AutonomousStepDecision ULLMAutonomousPolicy::checkStep(const std::string& tool_name,
@@ -95,7 +114,12 @@ AutonomousStepDecision ULLMAutonomousPolicy::checkStep(const std::string& tool_n
         return out;
     }
 
-    if(isAutonomousReadTool(tool_name) || isAutonomousLifecycleTool(tool_name))
+    if(isAutonomousReadTool(tool_name) || isAutonomousLifecycleTool(tool_name)
+       || isAutonomousMetaTool(tool_name))
+        return out;
+
+    // Channel calc is a single control action — do not burn the write step budget.
+    if(isChannelCalcWriteTool(tool_name))
         return out;
 
     if(steps_taken >= max_steps)

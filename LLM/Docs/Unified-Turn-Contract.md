@@ -42,3 +42,5 @@ Do **not** expand cue-direct to delete/connect without a new ADR. `last_add` is 
 Task FastPath / PlanExecutor: HintOnly default; when FastPath or plan Run executes steps, each step goes through RecordedToolInvoke.
 
 **FastPath success must be user-visible:** `ULLMTaskExecutor` summary lists created links/adds (not only a step count); each successful step is recorded on `ConversationState::current_turn_tool_trace` so chat/AiChats HTML get a Tools `<details>` block with 4-tuple args (parity with direct `add_component`). Do not invent LLM Reasoning for pure FastPath turns — archive full thinking only when the model actually produced it (soft ~256KB safety cap, not 8KB).
+
+**Channel calc FastPath (DD-CALC-001):** phrases like «запусти расчет» / `start calculation` (also pause/reset/step) invoke `*_channel_calculation` via `recordedToolInvoke` **before** TaskPath/ReAct. Autonomous whitelist includes these tools plus `ask_user` (Act-or-Clarify clarification must not be denied). Outcome and Tools block are user-visible; missing open config returns the tool error, not an essay.

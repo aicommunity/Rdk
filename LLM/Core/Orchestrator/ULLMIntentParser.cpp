@@ -1,5 +1,6 @@
 #include "ULLMIntentParser.h"
 
+#include "ULLMChannelCalcCommand.h"
 #include "ULLMConnectPlanParsing.h"
 
 #include <cctype>
@@ -34,7 +35,9 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
         scoreKeywords(lower,
                       {"добав", "создай", "удали", "измени", "сохран", "загруз", "открой", "закрой", "конфиг",
                        "конфигурац", "проект", "configuration", "project", "project.ini", "скопируй",
-                       "переимен", "запусти расч", "останови расч",
+                       "переимен", "запусти расч", "останови расч", "расчёт", "расчет",
+                       "start calc", "run calculation", "pause calculation", "reset calculation",
+                       "start calculation", "stop calculation",
                        "add ", "create ", "create config", "new config", "new configuration", "remove ", "delete ",
                        "save ", "load ", "set ", "connect ", "open config", "close config", "copy config",
                        "rename config", "создай конфиг", "новый конфиг", "новая конфигурация"},
@@ -81,6 +84,13 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
 
     // Connect/link phrasing must mutate even when stem scoring missed (e.g. past tense).
     if(isConnectGoalText(user_text) || isDisconnectGoalText(user_text))
+    {
+        result.kind = LLMIntentKind::Mutate;
+        best = std::max(best, 1.0f);
+    }
+
+    // Channel calc verbs (запусти расчет / start calculation) — always Mutate.
+    if(isChannelCalcGoalText(user_text))
     {
         result.kind = LLMIntentKind::Mutate;
         best = std::max(best, 1.0f);

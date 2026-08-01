@@ -28,6 +28,7 @@
 #include "../TrustBoundary/ULLMTrustBoundary.h"
 #include "../Intent/ULLMIntentAmbiguityGate.h"
 #include "ULLMConfigurationLifecycle.h"
+#include "ULLMChannelCalcCommand.h"
 #include "ULLMActOrClarifyGate.h"
 #include "ULLMDialogSlotMerge.h"
 #include "ULLMLifecycleArgumentGate.h"
@@ -573,8 +574,76 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
         intent_result.confidence = understanding.confidence;
         if(understanding.needs_clarification)
             setWorkflowPhase(state, LLMWorkflowPhase::Understanding, req.trace_id);
+        // Channel calc / connect must stay Mutate even if Router labels Query.
+        if(isChannelCalcGoalText(planning_text) || isChannelCalcGoalText(req.user_text)
+           || isConnectGoalText(planning_text) || isConnectGoalText(req.user_text)
+           || isDisconnectGoalText(planning_text))
+        {
+            intent = LLMIntentKind::Mutate;
+            intent_result.kind = LLMIntentKind::Mutate;
+            intent_result.confidence = std::max(intent_result.confidence, 1.f);
+        }
         task_path_decision =
             decideTaskPath(planning_text, intent, session.autonomous_mode, &state);
+    }
+
+    // DD-CALC-001: channel calc FastPath before TaskPath (autonomous always sets use_task_path).
+    if(!skip_pre_llm_funnel && session.llm_write_enabled
+       && LLMServices::instance().isInitialized()
+       && LLMServices::instance().domain().application())
+    {
+        ChannelCalcAction calc_action = detectChannelCalcAction(req.user_text);
+        if(calc_action == ChannelCalcAction::None)
+            calc_action = detectChannelCalcAction(planning_text);
+        if(calc_action != ChannelCalcAction::None)
+        {
+            const char* tool_name = toolNameForChannelCalcAction(calc_action);
+            const int channel_index =
+                channelIndexForCalcRequest(req.user_text, session.active_channel_index);
+            nlohmann::json args = {{"channel_index", channel_index}};
+
+            RecordedToolInvokeDeps deps{m_registry, m_gateway, m_store, {}, m_system_log_reader.get()};
+            RecordedToolInvokeRequest rreq;
+            rreq.session_id = req.session_id;
+            rreq.trace_id = req.trace_id;
+            rreq.tool_name = tool_name;
+            rreq.arguments = args;
+            rreq.session = session;
+            rreq.session.session_id = req.session_id;
+            rreq.user_text_hint = entity_user_text_hint;
+            rreq.idempotency_action_id = "channel_calc_fastpath";
+            rreq.force_confirmed = true;
+            rreq.confirmed = true;
+            rreq.skip_preview = true;
+            rreq.append_outcome_assistant = false;
+            rreq.skip_turn_tool_trace = true;
+
+            RecordedToolInvokeResult recorded = recordedToolInvoke(state, deps, rreq);
+            const ToolGatewayResult& tr = recorded.gateway;
+            const LLMToolDefinition* calc_def = m_registry.find(tool_name);
+            recordTurnToolInvocation(state, tool_name, args, tr, 0,
+                                     calc_def ? calc_def->input_schema : nlohmann::json::object());
+
+            LLMFinalResponse calc_final;
+            calc_final.ok = tr.ok;
+            calc_final.text = formatChannelCalcUserMessage(calc_action, tr, channel_index);
+            if(!tr.ok && !tr.message.empty())
+                calc_final.error = tr.message;
+            GetAuditLog().append(tr.ok ? "channel_calc_fastpath" : "channel_calc_fastpath_failed",
+                                 {{"tool_name", tool_name},
+                                  {"channel_index", channel_index},
+                                  {"ok", tr.ok},
+                                  {"error_code", tr.error_code}},
+                                 req.trace_id, req.session_id);
+            setWorkflowPhase(state,
+                             tr.ok ? LLMWorkflowPhase::Completed : LLMWorkflowPhase::Failed,
+                             req.trace_id);
+            setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
+            assignTurnTerminal(calc_final, TurnTerminal::Completed);
+            attachTurnToolTrace(state, calc_final);
+            m_store.persistToDisk(req.session_id);
+            return calc_final;
+        }
     }
 
     const LLMTaskPathMode task_path_mode = resolveTaskPathMode();
@@ -1328,6 +1397,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
     const int max_tool_invocations = defaultPolicyLimits().max_tool_invocations_per_message;
     bool recovery_used = false;
     bool connect_recovery_used = false;
+    bool calc_recovery_used = false;
     std::optional<std::pair<std::string, ToolGatewayResult>> last_graph_write;
 
     const bool is_cloud_profile = req.provider_profile.is_cloud;
@@ -1487,14 +1557,52 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEn
                     recovery_used = true;
                     LLMMessage recovery;
                     recovery.role = LLMMessage::Role::System;
-                    recovery.content =
-                        "Actionable request detected. Call exactly one suitable tool, or "
-                        "ask_user if arguments are missing. "
-                        "If no tool can satisfy the request, reply exactly: NO_SUITABLE_TOOL. "
-                        "Do not narrate topology or invent link results without tools.";
+                    if(isChannelCalcGoalText(planning_text) || isChannelCalcGoalText(req.user_text))
+                    {
+                        recovery.content =
+                            "Channel calculation goal: call start_channel_calculation "
+                            "(or pause/reset/step_channel_calculation). Prefer channel_index=-1 "
+                            "for all channels. Do not call ask_user unless arguments are missing. "
+                            "If no tool can satisfy the request, reply exactly: NO_SUITABLE_TOOL.";
+                    }
+                    else
+                    {
+                        recovery.content =
+                            "Actionable request detected. Call exactly one suitable tool, or "
+                            "ask_user if arguments are missing. "
+                            "If no tool can satisfy the request, reply exactly: NO_SUITABLE_TOOL. "
+                            "Do not narrate topology or invent link results without tools.";
+                    }
                     m_store.appendMessage(req.session_id, recovery);
                     GetAuditLog().append("act_or_clarify_recovery",
                                          {{"round", 1}, {"intent", intent_name}},
+                                         req.trace_id, req.session_id);
+                    continue;
+                }
+                if((isChannelCalcGoalText(planning_text) || isChannelCalcGoalText(req.user_text))
+                   && !calc_recovery_used)
+                {
+                    calc_recovery_used = true;
+                    filter.include_write = true;
+                    filter.allowed_tool_names = std::unordered_set<std::string>{
+                        "start_channel_calculation",
+                        "pause_channel_calculation",
+                        "reset_channel_calculation",
+                        "step_channel_calculation",
+                        "list_channels",
+                        "set_active_channel",
+                        "ask_user",
+                    };
+                    opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
+                    ctx_input.tool_filter = filter;
+                    LLMMessage recovery;
+                    recovery.role = LLMMessage::Role::System;
+                    recovery.content =
+                        "Calculation control only: call the matching *_channel_calculation tool "
+                        "now (start/pause/reset/step). Do not invent status without a tool call.";
+                    m_store.appendMessage(req.session_id, recovery);
+                    GetAuditLog().append("channel_calc_recovery_round",
+                                         {{"session_id", req.session_id}},
                                          req.trace_id, req.session_id);
                     continue;
                 }

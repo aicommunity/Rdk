@@ -4,6 +4,8 @@
 
 MVP/post-MVP план закрыт. Дальше: **довести write-tools до production** в NeuroModeler.
 
+Пробелы покрытия (меню / C-API / domain), не закрытые этим backlog: [Tools-Coverage-Gap.md](Tools-Coverage-Gap.md).
+
 ## Приоритет P1 (функционал) ✅
 
 | Tool | Статус | Реализация / тесты |
