@@ -249,7 +249,9 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     auto* settings_btn = new QPushButton(tr("Settings..."), this);
     auto* new_chat_btn = new QPushButton(tr("New chat"), this);
     m_history_btn = new QPushButton(tr("History..."), this);
+    // Provider/model details live in Settings — no status line under the combo.
     m_provider_status = new QLabel(this);
+    m_provider_status->hide();
     m_context_budget = new QLabel(this);
     m_context_budget->setObjectName(QStringLiteral("llmContextBudget"));
     m_context_budget->setStyleSheet(QStringLiteral("color: palette(mid); font-size: 11px;"));
@@ -262,7 +264,6 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     top_row->addWidget(m_history_btn);
     top_row->addWidget(settings_btn);
     layout->addLayout(top_row);
-    layout->addWidget(m_provider_status);
     layout->addWidget(m_context_budget);
     layout->addWidget(m_archive_banner);
 
@@ -365,18 +366,6 @@ void ULlmAssistantDockWidget::refreshProviderBar()
     }
     m_provider_combo->setCurrentIndex(select);
     m_provider_combo->blockSignals(false);
-
-    const auto active = store.activeProfile();
-    const bool has_key = RDK::LLM::ULLMProviderAuth::hasApiKey(active, store.runtime());
-    QString status;
-    if(active.is_cloud)
-        status = has_key ? tr("Cloud · key set") : tr("Cloud · key missing");
-    else
-        status = tr("Local");
-    const QString model = QString::fromStdString(active.model).trimmed();
-    if(!model.isEmpty())
-        status += tr(" · %1").arg(model);
-    m_provider_status->setText(status);
 }
 
 void ULlmAssistantDockWidget::onOpenSettings()
