@@ -11,7 +11,11 @@ std::unordered_set<std::string> kLibraryAssistTools()
             "search_motion_control_docs",
             "list_motion_control_component_classes",
             "search_hardware_docs",
-            "list_hardware_component_classes"};
+            "list_hardware_component_classes",
+            "search_basic_docs",
+            "list_basic_component_classes",
+            "search_cvbasic_docs",
+            "list_cvbasic_component_classes"};
 }
 
 std::unordered_set<std::string> kQueryTools()
@@ -30,6 +34,11 @@ std::unordered_set<std::string> kQueryTools()
                   "list_watch_series",
                   "list_watch_mdi",
                   "search_project_docs",
+                  "inspect_configuration",
+                  "search_configuration_links",
+                  "list_project_files",
+                  "read_text_artifact",
+                  "stat_project_file",
                   "validate_project",
                   "validate_configuration",
                   "get_system_log_policy",

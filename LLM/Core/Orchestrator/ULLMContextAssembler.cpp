@@ -239,6 +239,8 @@ void prependEphemeralSystemMessages(std::vector<LLMMessage>& provider_messages,
 
     if(!input.prefetched_docs_block.empty())
         prependSystem(provider_messages, input.prefetched_docs_block);
+    if(!input.prefetched_class_schema_block.empty())
+        prependSystem(provider_messages, input.prefetched_class_schema_block);
 
     if(input.lifecycle_action != ConfigurationLifecycleAction::None)
     {
@@ -247,10 +249,7 @@ void prependEphemeralSystemMessages(std::vector<LLMMessage>& provider_messages,
                                                        input.session.project_loaded));
     }
 
-    if(isComponentStructureGoal(input.planning_text))
-        prependSystem(provider_messages, "## Component structure\n" + componentStructureEphemeralHint());
-    if(isWatchPlotGoal(input.planning_text))
-        prependSystem(provider_messages, "## Watch plot\n" + watchPlotEphemeralHint());
+    // Structure/watch/connect ephemeral hints come from Capability Packs only (avoid dual inject).
 
     if(input.intent == LLMIntentKind::Query || input.intent == LLMIntentKind::Explain)
     {
@@ -263,6 +262,10 @@ void prependEphemeralSystemMessages(std::vector<LLMMessage>& provider_messages,
             "- Selected component: find_component / get_component_properties.\n"
             "- Class metadata / ClDesc: describe_class / list_registered_classes.\n"
             "- How-to / product docs: search_project_docs(scope=docs). Cite source_id and path.\n"
+            "- Discovery: search_tools; for multi-step inspect use spawn_explore_subagent "
+            "(inspect_graph / search_docs).\n"
+            "- Project folder artifacts (csv/txt/json): list_project_files / read_text_artifact "
+            "when available.\n"
             "- Recent or disk configurations: list_recent_configurations — not for live graph.\n"
             "- Do not confuse \"model\" (net graph) with a configuration file or channel.\n"
             "- Do not call write tools.";

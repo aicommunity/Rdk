@@ -32,12 +32,25 @@ Sources: Qt main menu (`UGEngineControllWidget`), C-API (`rdk_init.h` / `nmsdk.h
 | ~~Med~~ | ~~Per-component Env_*~~ | UEnvironment | **closed** |
 | ~~Med~~ | ~~Select / navigate~~ | diagram scope | **closed** via `select_component` (not `Env_Select`; DD-AG-001) |
 | ~~Med~~ | ~~Watch series + MDI~~ | Watch window / Watches_N | **closed** — DD-WATCH-001 |
-| Low | Storage build / class-library ops | `Storage_BuildStorage`, load/save collections | Build Storage Mode menu — deferred (risky) |
+| Low | Storage build / class-library ops | `Storage_BuildStorage`, load/save collections | **ADR wontfix (for now):** Build Storage Mode is a host/devtools operation (rebuild class catalogs, risky side effects on live Storage). Not exposed as an LLM tool; use GUI / engineer workflows. Revisit only behind HITL + feature-flag if product requires it. |
+| ~~Med~~ | ~~Project folder artifacts (read-only)~~ | path policy + open project | **closed** — `list_project_files` / `read_text_artifact` / `stat_project_file` |
+| ~~Med~~ | ~~Inspect sample/config XML structure~~ | Configs + link-patterns | **closed** — `inspect_configuration` / `search_configuration_links` |
 | ~~Filter~~ | ~~`save_configuration_as` in `kMutateTools`~~ | allowlist | **closed** |
 
 ## Out of scope for LLM (for now)
 
 Broadcasters, video, FTP, Help, theme/skin — low agent value.
+
+### ADR: no raw shell / filesystem / git (domain agent)
+
+NeuroModeler LLM is a **domain** agent (graph / configs / docs), not a coding harness. Therefore:
+
+- **No** unrestricted `read_file` / `list_dir` / shell / git.
+- **Yes** path-policy tools: lifecycle, export/import component, `inspect_configuration`,
+  `list_project_files` / `read_text_artifact` / `stat_project_file` (read-only, capped).
+- Docs retrieval stays indexed (`search_project_docs`, including `match=literal`); offline
+  `link-patterns.json` covers cross-sample connect semantics.
+- Vision / multimodal image understanding is a separate provider track (not these tools).
 
 ## Implementation policy
 

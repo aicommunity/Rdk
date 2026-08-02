@@ -37,6 +37,9 @@ public:
                                    LLMContentKind kind_filter = LLMContentKind::Doc) const;
     std::vector<DocSnippet> searchWithScope(const std::string& query, int top_k,
                                             const std::string& scope) const;
+    /// Substring match on path/title/excerpt (exact identifier lookup); bypasses TF-IDF threshold.
+    std::vector<DocSnippet> searchLiteral(const std::string& query, int top_k,
+                                          const std::string& scope = "docs") const;
     bool empty() const { return m_docs.empty(); }
     /// Compare on-disk mtimes to manifest; patch changed/removed files (TD-033).
     IndexSyncResult syncFromCatalog(const ILLMKnowledgeCatalog& catalog,

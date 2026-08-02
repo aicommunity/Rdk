@@ -185,7 +185,11 @@ set(_LLM_AGENT_SCENARIO_SOURCES
   llm_test_ollama_lab.cpp
   ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-PulseLib/Llm/RegisterPulseLibLlmTools.cpp
   ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-MotionControlLib/Llm/RegisterMotionControlLibLlmTools.cpp
-  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-HardwareLib/Llm/RegisterHardwareLibLlmTools.cpp)
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-HardwareLib/Llm/RegisterHardwareLibLlmTools.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-BasicLib/Llm/RegisterBasicLibLlmTools.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-BasicLib/Llm/UPackBasicDocs.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-CvBasicLib/Llm/RegisterCvBasicLibLlmTools.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-CvBasicLib/Llm/UPackCvBasicDocs.cpp)
 _add_llm_unit_test(Test_LLM_AgentScenarios ${_LLM_AGENT_SCENARIO_SOURCES})
 target_compile_definitions(Test_LLM_AgentScenarios PRIVATE
   RDK_LLM_AGENT_SCENARIOS_DIR="${RDK_LLM_AGENT_SCENARIOS_DIR}"
@@ -193,7 +197,9 @@ target_compile_definitions(Test_LLM_AgentScenarios PRIVATE
 target_include_directories(Test_LLM_AgentScenarios PRIVATE
   ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-PulseLib/Llm
   ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-MotionControlLib/Llm
-  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-HardwareLib/Llm)
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-HardwareLib/Llm
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-BasicLib/Llm
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-CvBasicLib/Llm)
 
 set(_LLM_AGENT_SCENARIO_RUNNER_SOURCES
   llm_agent_scenario_loader.cpp
@@ -204,7 +210,11 @@ set(_LLM_AGENT_SCENARIO_RUNNER_SOURCES
   llm_test_ollama_lab.cpp
   ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-PulseLib/Llm/RegisterPulseLibLlmTools.cpp
   ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-MotionControlLib/Llm/RegisterMotionControlLibLlmTools.cpp
-  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-HardwareLib/Llm/RegisterHardwareLibLlmTools.cpp)
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-HardwareLib/Llm/RegisterHardwareLibLlmTools.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-BasicLib/Llm/RegisterBasicLibLlmTools.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-BasicLib/Llm/UPackBasicDocs.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-CvBasicLib/Llm/RegisterCvBasicLibLlmTools.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-CvBasicLib/Llm/UPackCvBasicDocs.cpp)
 add_executable(llm_scenario_runner
   llm_scenario_runner_main.cpp
   ${_LLM_AGENT_SCENARIO_RUNNER_SOURCES}
@@ -216,7 +226,9 @@ target_include_directories(llm_scenario_runner PRIVATE
   ${CMAKE_SOURCE_DIR}/Rdk/Core
   ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-PulseLib/Llm
   ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-MotionControlLib/Llm
-  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-HardwareLib/Llm)
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-HardwareLib/Llm
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-BasicLib/Llm
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-CvBasicLib/Llm)
 target_compile_definitions(llm_scenario_runner PRIVATE
   RDK_LLM_AGENT_SCENARIOS_DIR="${RDK_LLM_AGENT_SCENARIOS_DIR}"
   CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}"

@@ -38,7 +38,7 @@ Aliases: `load_project`, `save_project` (deprecated names, same handlers).
 
 Channel CRUD: `add_channel`, `delete_channel` (not channel 0), `clone_channel`.
 
-**DD-CALC-001 FastPath:** user phrases «запусти расчет» / `start calculation` (also pause/reset/step + RU/EN synonyms) are handled **before** TaskPath/ReAct via `recordedToolInvoke` (`ULLMChannelCalcCommand`). Reply and Tools block show the outcome; if no configuration is open, the tool error is shown (not an LLM essay). Autonomous whitelist includes these tools and `ask_user`.
+**DD-CALC-001 FastPath (packs):** user phrases «запусти расчет» / `start calculation` (also pause/reset/step + RU/EN synonyms) are handled via Capability Pack `channel_calc` `tryRecorded` → `recordedToolInvoke` (`ULLMChannelCalcCommand`), before TaskPath/ReAct. Reply and Tools block show the outcome; if no configuration is open, the tool error is shown (not an LLM essay). Autonomous whitelist includes these tools and `ask_user`.
 
 ### Graph / component tools (domain)
 
@@ -170,7 +170,7 @@ Aliases: `load_project`, `save_project` (deprecated names, same handlers).
 
 Channel CRUD: `add_channel`, `delete_channel` (not channel 0), `clone_channel`.
 
-**DD-CALC-001 FastPath:** user phrases «запусти расчет» / `start calculation` (also pause/reset/step + RU/EN synonyms) are handled **before** TaskPath/ReAct via `recordedToolInvoke` (`ULLMChannelCalcCommand`). Reply and Tools block show the outcome; if no configuration is open, the tool error is shown (not an LLM essay). Autonomous whitelist includes these tools and `ask_user`.
+**DD-CALC-001 FastPath (packs):** user phrases «запусти расчет» / `start calculation` (also pause/reset/step + RU/EN synonyms) are handled via Capability Pack `channel_calc` `tryRecorded` → `recordedToolInvoke` (`ULLMChannelCalcCommand`), before TaskPath/ReAct. Reply and Tools block show the outcome; if no configuration is open, the tool error is shown (not an LLM essay). Autonomous whitelist includes these tools and `ask_user`.
 
 ### Graph / component tools (domain)
 

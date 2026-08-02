@@ -1,5 +1,6 @@
 #include "ULLMNameResolution.h"
 
+#include "ULLMFuzzyMatch.h"
 #include "../Orchestrator/ULLMLibraryScopeHint.h"
 
 #include <algorithm>
@@ -76,31 +77,6 @@ bool isUnsignedListIndex(const std::string& s)
     return true;
 }
 
-int levenshteinDistance(const std::string& a, const std::string& b)
-{
-    const size_t n = a.size();
-    const size_t m = b.size();
-    if(n == 0)
-        return static_cast<int>(m);
-    if(m == 0)
-        return static_cast<int>(n);
-    std::vector<int> prev(m + 1);
-    std::vector<int> cur(m + 1);
-    for(size_t j = 0; j <= m; ++j)
-        prev[j] = static_cast<int>(j);
-    for(size_t i = 1; i <= n; ++i)
-    {
-        cur[0] = static_cast<int>(i);
-        for(size_t j = 1; j <= m; ++j)
-        {
-            const int cost = (a[i - 1] == b[j - 1]) ? 0 : 1;
-            cur[j] = std::min({cur[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost});
-        }
-        prev.swap(cur);
-    }
-    return prev[m];
-}
-
 struct ClassCandidate {
     std::string class_name;
     double score = 0.0;
@@ -126,36 +102,11 @@ std::vector<ClassCandidate> findSimilarRegisteredClasses(const std::string& quer
                                                          const std::vector<std::string>& registered,
                                                          size_t max_candidates = 8)
 {
+    const std::vector<FuzzyHit> ranked = fuzzyRank(query, registered, max_candidates, 0.35);
     std::vector<ClassCandidate> out;
-    if(query.empty() || registered.empty())
-        return out;
-
-    const std::string q = toLowerAscii(query);
-    out.reserve(std::min(max_candidates, registered.size()));
-    for(const std::string& c : registered)
-    {
-        const std::string cl = toLowerAscii(c);
-        const int dist = levenshteinDistance(q, cl);
-        const int maxlen = static_cast<int>(std::max(q.size(), cl.size()));
-        const double norm = maxlen > 0 ? (static_cast<double>(dist) / static_cast<double>(maxlen)) : 1.0;
-        double score = 1.0 - norm;
-        if(!q.empty() && cl.find(q) != std::string::npos)
-            score += 0.15;
-        if(!q.empty() && cl.rfind(q, 0) == 0)
-            score += 0.1;
-        score = std::min(1.0, score);
-        if(score < 0.35)
-            continue;
-        out.push_back({c, score});
-    }
-
-    std::sort(out.begin(), out.end(), [](const ClassCandidate& a, const ClassCandidate& b) {
-        if(std::fabs(a.score - b.score) > 1e-9)
-            return a.score > b.score;
-        return a.class_name < b.class_name;
-    });
-    if(out.size() > max_candidates)
-        out.resize(max_candidates);
+    out.reserve(ranked.size());
+    for(const FuzzyHit& h : ranked)
+        out.push_back({h.name, h.score});
     return out;
 }
 
@@ -443,6 +394,19 @@ ComponentEntityResolution resolveComponentEntity(
             score = 0.90;
         else if(sn_lower.find(qlower) != std::string::npos || ln_lower.find(qlower) != std::string::npos)
             score = 0.65;
+        else
+        {
+            // Edit-distance on short_name / last path segment (shared ULLMFuzzyMatch).
+            const double sn_score = fuzzyScore(qlower, sn_lower);
+            std::string leaf = sn_lower;
+            const size_t dot = ln_lower.find_last_of('.');
+            if(dot != std::string::npos && dot + 1 < ln_lower.size())
+                leaf = ln_lower.substr(dot + 1);
+            const double leaf_score = fuzzyScore(qlower, leaf);
+            const double edit = std::max(sn_score, leaf_score);
+            if(edit >= 0.55)
+                score = 0.50 + 0.35 * edit;
+        }
 
         if(score > 0.0)
             result.candidates.push_back({ln, score});

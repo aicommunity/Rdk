@@ -211,13 +211,27 @@ If `candidates.length > 1` && score close → `resolved: false`; write-tools **m
   "required": ["query"],
   "properties": {
     "query": { "type": "string", "minLength": 2 },
-    "top_k": { "type": "integer", "minimum": 1, "maximum": 10, "default": 5 }
+    "top_k": { "type": "integer", "minimum": 1, "maximum": 10, "default": 5 },
+    "scope": { "type": "string", "enum": ["docs", "sources", "all"], "default": "docs" },
+    "match": { "type": "string", "enum": ["tfidf", "literal"], "default": "tfidf" }
   },
   "additionalProperties": false
 }
 ```
 
-**output:** `{ "snippets": [ { "path", "title", "excerpt", "score" } ] }`
+**output:** `{ "match", "snippets": [ { "path", "title", "excerpt", "score", ... } ] }`
+
+---
+
+### Project artifacts / config inspect (path policy, read-only)
+
+| Tool | Purpose |
+|------|---------|
+| `inspect_configuration` | Compact classes+links from model XML |
+| `search_configuration_links` | Filter links in a sample/project XML |
+| `list_project_files` | List sidecar files under open project |
+| `read_text_artifact` | Capped text/csv/json/xml/md read |
+| `stat_project_file` | Size/mtime/ext; optional image dims (no vision) |
 
 ---
 

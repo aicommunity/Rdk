@@ -16,6 +16,9 @@ bool isActionableGoalForActOrClarify(const std::string& planning_text, LLMIntent
         return true;
     if(intent == LLMIntentKind::Plan && filter_include_write)
         return true;
+    // Query/Explain: force tool use (search_tools / explore / docs) instead of prose essays.
+    if(intent == LLMIntentKind::Query || intent == LLMIntentKind::Explain)
+        return true;
     if(lifecycle_action != ConfigurationLifecycleAction::None)
         return true;
     if(isConnectGoalText(planning_text) || isDisconnectGoalText(planning_text))

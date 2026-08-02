@@ -28,6 +28,7 @@ struct EphemeralContextInput {
     std::string system_log_summary;
     const URdkContextRetriever* context_retriever = nullptr;
     std::string prefetched_docs_block;
+    std::string prefetched_class_schema_block;
     std::string link_patterns_block;
     std::string connect_semantics_block;
     std::string long_term_memory_block;

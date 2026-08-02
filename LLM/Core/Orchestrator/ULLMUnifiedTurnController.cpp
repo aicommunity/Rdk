@@ -6,8 +6,10 @@
 #include "../Packs/ULLMCapabilityPackRegistry.h"
 #include "Turn/ULLMTurnPhaseGoalRouter.h"
 #include "Turn/ULLMTurnPhaseLegacy.h"
+#include "Turn/ULLMTurnPhasePreReactFunnel.h"
 #include "Turn/ULLMTurnPhasePrepare.h"
 #include "Turn/ULLMTurnPhaseSessionGuard.h"
+#include "Turn/ULLMTurnPhaseTaskPath.h"
 #include "Turn/ULLMTurnPipeline.h"
 
 #include <exception>
@@ -35,11 +37,13 @@ LLMFinalResponse ULLMUnifiedTurnController::handleTurn(ULLMAgentOrchestrator& or
 {
     try
     {
-        // TD-170: SessionGuard → Prepare → GoalRouter → LegacyRest (TaskPath/ReAct).
+        // TD-170: SessionGuard → Prepare → GoalRouter → TaskPath → PreReact → Legacy(ReAct).
         std::vector<std::unique_ptr<ITurnPhase>> phases;
         phases.push_back(std::make_unique<ULLMTurnPhaseSessionGuard>());
         phases.push_back(std::make_unique<ULLMTurnPhasePrepare>());
         phases.push_back(std::make_unique<ULLMTurnPhaseGoalRouter>());
+        phases.push_back(std::make_unique<ULLMTurnPhaseTaskPath>());
+        phases.push_back(std::make_unique<ULLMTurnPhasePreReactFunnel>());
         phases.push_back(std::make_unique<ULLMTurnPhaseLegacy>());
         ULLMTurnPipeline pipeline(std::move(phases));
 

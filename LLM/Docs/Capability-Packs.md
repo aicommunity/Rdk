@@ -36,7 +36,7 @@ Audit events: `pack_matched`, `pack_recorded_fired` (`pack_id`, `score`; multi-g
 | `channel_calc` | DD-CALC-001 | Migrated (Recorded + hints) |
 | `component_structure` | DD-STRUCT-001 | Migrated (Recorded + hints) |
 | `watch_plot` | DD-WATCH-001/002 | Migrated (Recorded + hints) |
-| `connect` | DD-CONN-001/002 | Hints only; live-analogous execute still in orchestrator (TD-169) |
+| `connect` | DD-CONN-001/002 | Migrated (Recorded live-analogous + hints; TD-169) |
 | `add_component_direct` | DD-MEM-002/003 | Migrated (Recorded + hints) |
 | `lifecycle_soft` | TD-102 | Hints only; env-gated load direct stays in orchestrator (not migrating) |
 

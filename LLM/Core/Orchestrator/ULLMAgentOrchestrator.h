@@ -102,8 +102,6 @@ public:
 
     LLMFinalResponse handleUserMessage(const LLMRequestEnvelope& req,
                                        const LLMStreamHandlers* stream = nullptr);
-    LLMFinalResponse handleUserMessageImpl(const LLMRequestEnvelope& req,
-                                           const LLMStreamHandlers* stream = nullptr);
     LLMFinalResponse confirmPending(const std::string& session_id, const std::string& confirmation_id);
     LLMFinalResponse confirmPlanExecution(const std::string& session_id, const std::string& trace_id,
                                           const LLMSessionContext& session);
@@ -125,6 +123,8 @@ public:
     /// Phase implementation entry points; the pipeline owns turn ordering and busy lifetime.
     TurnPhaseResult prepareTurnContext(TurnContext& ctx, TurnServices& svc);
     TurnPhaseResult runPackGoalRouter(TurnContext& ctx, TurnServices& svc);
+    TurnPhaseResult runTaskPathPhase(TurnContext& ctx, TurnServices& svc);
+    TurnPhaseResult runPreReactFunnelPhase(TurnContext& ctx, TurnServices& svc);
     LLMFinalResponse handleUserMessageAfterPacks(TurnContext& ctx, TurnServices& svc);
     void finalizeTurnContext(TurnContext& ctx);
 

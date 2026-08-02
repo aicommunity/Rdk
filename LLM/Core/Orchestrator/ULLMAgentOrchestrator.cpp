@@ -38,6 +38,7 @@
 #include "ULLMDialogSlotMerge.h"
 #include "ULLMLifecycleArgumentGate.h"
 #include "../Domain/URdkApplicationCommands.h"
+#include "../Domain/ULLMNameResolution.h"
 #include "ULLMToolFilterBuilder.h"
 #include "ULLMWriteToolUserMessage.h"
 #include "ULLMWriteToolExecution.h"
@@ -86,14 +87,6 @@
 namespace RDK::LLM {
 
 namespace {
-
-ILLMCapabilityPackRegistry& packsForCompatTurn()
-{
-    if(LLMServices::instance().isInitialized())
-        return LLMServices::instance().packs();
-    static ULLMCapabilityPackRegistry empty;
-    return empty;
-}
 
 std::string pseudoSha256(const std::string& text)
 {
@@ -687,25 +680,7 @@ void ULLMAgentOrchestrator::finalizeTurnContext(TurnContext& ctx)
         attachTurnToolTrace(*ctx.state, ctx.final);
 }
 
-LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageImpl(const LLMRequestEnvelope& req,
-                                                              const LLMStreamHandlers* stream)
-{
-    TurnContext ctx;
-    ctx.req = req;
-    ctx.stream = stream;
-    SessionBusyScope busy(*this, req.session_id, ctx.final);
-    if(!busy)
-        return ctx.final;
-    ctx.busy_held = true;
-    TurnServices svc{m_provider, m_registry, m_gateway, m_store, packsForCompatTurn(), *this};
-    if(prepareTurnContext(ctx, svc) == TurnPhaseResult::Continue
-       && runPackGoalRouter(ctx, svc) == TurnPhaseResult::Continue)
-        ctx.final = handleUserMessageAfterPacks(ctx, svc);
-    finalizeTurnContext(ctx);
-    return ctx.final;
-}
-
-LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext& ctx, TurnServices&)
+TurnPhaseResult ULLMAgentOrchestrator::runTaskPathPhase(TurnContext& ctx, TurnServices&)
 {
     const LLMRequestEnvelope& req = ctx.req;
     const LLMStreamHandlers* stream = ctx.stream;
@@ -722,6 +697,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
     const std::vector<std::string>& matched_pack_ids = ctx.matched_pack_ids;
     std::string& pack_hints_block = ctx.pack_hints_block;
     const std::vector<std::string>& pack_extra_tool_names = ctx.pack_extra_tool_names;
+
 
     const LLMTaskPathMode task_path_mode = resolveTaskPathMode();
     const bool task_path_fast = task_path_mode == LLMTaskPathMode::FastPath;
@@ -814,7 +790,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                 setWorkflowPhase(state, LLMWorkflowPhase::AwaitingConfirmation, req.trace_id);
                 assignTurnTerminal(final, TurnTerminal::AwaitingConfirm);
                 m_store.persistToDisk(req.session_id);
-                return final;
+                return TurnPhaseResult::ShortCircuit;
             }
 
             setWorkflowPhase(state, LLMWorkflowPhase::TaskExecuting, req.trace_id);
@@ -837,11 +813,19 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
             assignTurnTerminal(final,
                                exec.ok ? TurnTerminal::TaskFastPathCompleted : TurnTerminal::Completed);
             m_store.persistToDisk(req.session_id);
-            return final;
+            return TurnPhaseResult::ShortCircuit;
         }
         // Live-analogous connect Recorded: UPackConnect::tryRecorded (TD-169 / DD-CONN-002).
         if(tp.ok)
         {
+            for(const auto& step : tp.plan.steps)
+            {
+                const std::string gid = "task_step_" + std::to_string(step.step_id);
+                const std::string criteria =
+                    step.success ? step.success->type : std::string{};
+                upsertWorkingGoal(state, gid, step.tool_name, criteria,
+                                  WorkingGoalStatus::Pending);
+            }
             appendAgentNote(state,
                             "[Task planner hint]\n" + formatExecutionPlanPreview(tp.plan).substr(0, 1200));
             GetAuditLog().append("task_plan_hint",
@@ -859,7 +843,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                          + ". [Enable connect plan LLM fallback or rephrase.]";
             setWorkflowPhase(state, LLMWorkflowPhase::Failed, req.trace_id);
             m_store.persistToDisk(req.session_id);
-            return final;
+            return TurnPhaseResult::ShortCircuit;
         }
         else
         {
@@ -869,6 +853,28 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                 req.trace_id, req.session_id);
         }
     }
+    return TurnPhaseResult::Continue;
+}
+
+TurnPhaseResult ULLMAgentOrchestrator::runPreReactFunnelPhase(TurnContext& ctx, TurnServices&)
+{
+    const LLMRequestEnvelope& req = ctx.req;
+    const LLMStreamHandlers* stream = ctx.stream;
+    ConversationState& state = *ctx.state;
+    LLMSessionContext& session = ctx.session;
+    LLMFinalResponse& final = ctx.final;
+    const bool skip_pre_llm_funnel = ctx.skip_pre_llm_funnel;
+    const std::string& planning_text = ctx.planning_text;
+    const std::string& entity_user_text_hint = ctx.entity_user_text_hint;
+    const LLMIntentKind intent = ctx.intent;
+    const IntentParseResult& intent_result = ctx.intent_result;
+    const ConfigurationLifecycleAction lifecycle_action = ctx.lifecycle;
+    const TaskPathDecision& task_path_decision = ctx.task_path_decision;
+    const std::vector<std::string>& matched_pack_ids = ctx.matched_pack_ids;
+    std::string& pack_hints_block = ctx.pack_hints_block;
+    const std::vector<std::string>& pack_extra_tool_names = ctx.pack_extra_tool_names;
+
+
     const char* intent_name = "query";
     switch(intent)
     {
@@ -906,7 +912,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
             "LLM write tools are disabled. Enable \"Allow LLM write tools\" in AI Assistant Settings.";
         setWorkflowPhase(state, LLMWorkflowPhase::Failed, req.trace_id);
         m_store.persistToDisk(req.session_id);
-        return final;
+        return TurnPhaseResult::ShortCircuit;
     }
 
     if(LLMServices::instance().isInitialized())
@@ -941,7 +947,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
             if(direct.ok && !direct.needs_argument_clarification && !direct.pending_confirmation)
                 m_store.clearPendingToolArguments(req.session_id);
             attachTurnToolTrace(state, direct);
-            return direct;
+            final = direct;
+            return TurnPhaseResult::ShortCircuit;
         }
         if(lifecycle_action == ConfigurationLifecycleAction::Load
            && wantsRecentConfiguration(req.user_text))
@@ -957,7 +964,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                     "No recent configurations are available. Open or create a project first.";
                 setWorkflowPhase(state, LLMWorkflowPhase::Failed, req.trace_id);
                 m_store.persistToDisk(req.session_id);
-                return response;
+                final = response;
+            return TurnPhaseResult::ShortCircuit;
             }
         }
     }
@@ -982,7 +990,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
             if(direct.ok && !direct.needs_argument_clarification && !direct.pending_confirmation)
                 m_store.clearPendingToolArguments(req.session_id);
             attachTurnToolTrace(state, direct);
-            return direct;
+            final = direct;
+            return TurnPhaseResult::ShortCircuit;
         }
     }
 
@@ -1087,7 +1096,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                                    + formatClarificationMessage(payload);
                     m_store.setPendingToolArguments(req.session_id, pending);
                     m_store.persistToDisk(req.session_id);
-                    return response;
+                    final = response;
+            return TurnPhaseResult::ShortCircuit;
                 }
             }
 
@@ -1099,7 +1109,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
             {
                 pending.partial_arguments = std::move(merged);
                 pending.missing_fields = still_missing;
-                return returnArgumentRequest(state, req.trace_id, pending, app);
+                final = returnArgumentRequest(state, req.trace_id, pending, app);
+                return TurnPhaseResult::ShortCircuit;
             }
             pending.partial_arguments = merged;
             if(pending.disambiguation_kind == PendingDisambiguationKind::Component
@@ -1133,7 +1144,10 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                         req.session_id, req.trace_id, pending.tool_name, rep_args, session,
                         entity_user_text_hint);
                     if(!one.ok)
-                        return one;
+                    {
+                        final = one;
+                        return TurnPhaseResult::ShortCircuit;
+                    }
                     ++added;
                     if(!class_name.empty() && rep_args.contains("class_name"))
                         class_name = rep_args["class_name"].get<std::string>();
@@ -1143,7 +1157,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                 response.text = "Added " + std::to_string(added) + " component(s)"
                              + (class_name.empty() ? "." : (": " + class_name));
                 m_store.clearPendingToolArguments(req.session_id);
-                return response;
+                final = response;
+            return TurnPhaseResult::ShortCircuit;
             }
 
             // Merged args already include the user's pick; avoid re-merging user_text in gateway.
@@ -1153,9 +1168,50 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
             if(response.ok && !response.needs_argument_clarification && !response.needs_entity_clarification
                && !response.needs_tool_disambiguation && !response.pending_confirmation)
                 m_store.clearPendingToolArguments(req.session_id);
-            return response;
+            final = response;
+            return TurnPhaseResult::ShortCircuit;
         }
     }
+
+    return TurnPhaseResult::Continue;
+}
+
+LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext& ctx, TurnServices&)
+{
+    const LLMRequestEnvelope& req = ctx.req;
+    const LLMStreamHandlers* stream = ctx.stream;
+    ConversationState& state = *ctx.state;
+    LLMSessionContext& session = ctx.session;
+    LLMFinalResponse& final = ctx.final;
+    const bool skip_pre_llm_funnel = ctx.skip_pre_llm_funnel;
+    const std::string& planning_text = ctx.planning_text;
+    const std::string& entity_user_text_hint = ctx.entity_user_text_hint;
+    const LLMIntentKind intent = ctx.intent;
+    const IntentParseResult& intent_result = ctx.intent_result;
+    const ConfigurationLifecycleAction lifecycle_action = ctx.lifecycle;
+    const TaskPathDecision& task_path_decision = ctx.task_path_decision;
+    const std::vector<std::string>& matched_pack_ids = ctx.matched_pack_ids;
+    std::string& pack_hints_block = ctx.pack_hints_block;
+    const std::vector<std::string>& pack_extra_tool_names = ctx.pack_extra_tool_names;
+
+    const char* intent_name = "query";
+    switch(intent)
+    {
+    case LLMIntentKind::Mutate:
+        intent_name = "mutate";
+        break;
+    case LLMIntentKind::Explain:
+        intent_name = "explain";
+        break;
+    case LLMIntentKind::Plan:
+        intent_name = "plan";
+        break;
+    default:
+        break;
+    }
+    RDK::UApplication* app = nullptr;
+    if(LLMServices::instance().isInitialized())
+        app = LLMServices::instance().domain().application();
 
     LLMContextAcquisitionMode acquisition_mode = LLMContextAcquisitionMode::Auto;
     if(LLMServices::instance().isInitialized())
@@ -1241,6 +1297,37 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
         }
     }
 
+    if(provider_tools && ctx_plan.prefetch_class_schema && LLMServices::instance().isInitialized()
+       && LLMServices::instance().projectContext())
+    {
+        std::string class_name = req.gui.focused_class_name;
+        if(class_name.empty())
+        {
+            std::vector<std::string> registered;
+            if(LLMServices::instance().domain().listRegisteredClassNames(registered).ok())
+            {
+                if(const auto hit =
+                       findExplicitRegisteredClassInUserText(planning_text, registered))
+                    class_name = *hit;
+            }
+        }
+        if(!class_name.empty())
+        {
+            std::string frag =
+                LLMServices::instance().projectContext()->clDescFragment(class_name, "ru-RU");
+            if(frag.empty())
+                frag = LLMServices::instance().projectContext()->clDescFragment(class_name, "en-US");
+            if(!frag.empty())
+            {
+                if(frag.size() > 6000)
+                    frag.resize(6000);
+                ctx_input.prefetched_class_schema_block =
+                    "## Class schema (ClDesc)\nclass_name: " + class_name + "\n```xml\n" + frag
+                    + "\n```\n";
+            }
+        }
+    }
+
     if(ctx_plan.inject_link_patterns)
     {
         const ULinkPatternCatalog& link_cat = defaultLinkPatternCatalog();
@@ -1253,14 +1340,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                                            ctx_plan.link_pattern_top_k);
     }
 
-    if(isConnectGoalText(planning_text))
-    {
-        const std::string inspect = buildConnectInspectHintBlock();
-        if(ctx_input.connect_semantics_block.empty())
-            ctx_input.connect_semantics_block = inspect;
-        else
-            ctx_input.connect_semantics_block += "\n" + inspect;
-    }
+    // Connect inspect ephemeral is contributed by UPackConnect::hints (avoid dual inject).
 
     ctx_input.allow_retriever_without_list_focus =
         ctx_plan.prefetch_snapshot && !req.gui.diagram_scope_long_name.empty();
@@ -1556,13 +1636,32 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                             "Do not use open_component_gui_tab for plotting. If no tool fits, "
                             "reply exactly: NO_SUITABLE_TOOL.";
                     }
+                    else if(intent == LLMIntentKind::Query || intent == LLMIntentKind::Explain)
+                    {
+                        recovery.content =
+                            "Informational request: call a suitable read tool before answering — "
+                            "prefer search_tools, search_project_docs, get_net_snapshot, "
+                            "describe_class, or spawn_explore_subagent (inspect_graph / search_docs). "
+                            "Do not invent topology or class names. If no tool fits, reply exactly: "
+                            "NO_SUITABLE_TOOL.";
+                        mergePackToolNames(filter,
+                                           {"search_tools", "spawn_explore_subagent",
+                                            "search_project_docs", "get_net_snapshot",
+                                            "describe_class", "ask_user"});
+                        opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
+                        ctx_input.tool_filter = filter;
+                    }
                     else
                     {
                         recovery.content =
                             "Actionable request detected. Call exactly one suitable tool, or "
-                            "ask_user if arguments are missing. "
+                            "ask_user if arguments are missing. Prefer search_tools when unsure "
+                            "which tool fits. "
                             "If no tool can satisfy the request, reply exactly: NO_SUITABLE_TOOL. "
                             "Do not narrate topology or invent link results without tools.";
+                        mergePackToolNames(filter, {"search_tools", "spawn_explore_subagent"});
+                        opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
+                        ctx_input.tool_filter = filter;
                     }
                     m_store.appendMessage(req.session_id, recovery);
                     GetAuditLog().append("act_or_clarify_recovery",
@@ -2426,6 +2525,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
     m_store.persistToDisk(req.session_id);
     return final;
 }
+
 
 LLMFinalResponse ULLMAgentOrchestrator::confirmPending(const std::string& session_id,
                                                       const std::string& confirmation_id)

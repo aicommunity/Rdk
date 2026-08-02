@@ -8,6 +8,8 @@
 #include "../Domain/ULLMNameResolution.h"
 #include "RegisterApplicationTools.h"
 #include "RegisterObservabilityTools.h"
+#include "RegisterProjectKnowledgeTools.h"
+#include "RegisterObservabilityTools.h"
 #include "ULLMToolRegistry.h"
 
 #include <algorithm>
@@ -343,7 +345,8 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
     registry.registerTool(
         makeDef("search_project_docs", LLMToolKind::Read,
                 "Use when answering how-to / conceptual questions from NMSDK docs. "
-                "Prefer over guessing. Do not use for live model graph — use get_net_snapshot.",
+                "Prefer over guessing. Do not use for live model graph — use get_net_snapshot. "
+                "match=literal finds exact identifiers in path/title/excerpt.",
                 {{"type", "object"},
                  {"required", {"query"}},
                  {"properties",
@@ -352,7 +355,11 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                    {"scope",
                     {{"type", "string"},
                      {"enum", nlohmann::json::array({"docs", "sources", "all"})},
-                     {"default", "docs"}}}}},
+                     {"default", "docs"}}},
+                   {"match",
+                    {{"type", "string"},
+                     {"enum", nlohmann::json::array({"tfidf", "literal"})},
+                     {"default", "tfidf"}}}}},
                  {"additionalProperties", false}},
                 {{"type", "object"}}),
         [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
@@ -361,17 +368,29 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
             const std::string query = args.at("query").get<std::string>();
             const int top_k = args.value("top_k", 5);
             const std::string scope = args.value("scope", std::string("docs"));
+            const std::string match = args.value("match", std::string("tfidf"));
             std::vector<DocSnippet> snippets;
             if(LLMServices::instance().isInitialized())
-                snippets = LLMServices::instance().searchIndex().searchWithScope(query, top_k, scope);
+            {
+                if(match == "literal")
+                    snippets =
+                        LLMServices::instance().searchIndex().searchLiteral(query, top_k, scope);
+                else
+                    snippets =
+                        LLMServices::instance().searchIndex().searchWithScope(query, top_k, scope);
+            }
             else if(project_ctx)
                 snippets = project_ctx->searchDocs(query, top_k);
-            snippets.erase(std::remove_if(snippets.begin(), snippets.end(),
-                                            [](const DocSnippet& sn) {
-                                                return sn.score < kMinRetrievalScore;
-                                            }),
-                           snippets.end());
+            if(match != "literal")
+            {
+                snippets.erase(std::remove_if(snippets.begin(), snippets.end(),
+                                                [](const DocSnippet& sn) {
+                                                    return sn.score < kMinRetrievalScore;
+                                                }),
+                               snippets.end());
+            }
             r.result["snippets"] = nlohmann::json::array();
+            r.result["match"] = match;
             for(const DocSnippet& s : snippets)
             {
                 r.result["snippets"].push_back({{"source_id", s.source_id},
@@ -818,6 +837,7 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
         });
 
     RegisterApplicationTools(registry);
+    RegisterProjectKnowledgeTools(registry);
     RegisterObservabilityTools(registry, domain);
 }
 

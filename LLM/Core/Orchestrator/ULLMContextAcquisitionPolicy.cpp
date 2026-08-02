@@ -165,6 +165,12 @@ ContextAcquisitionPlan computeContextAcquisitionPlan(const ConversationState& st
             || (acq_signals.intent == LLMIntentKind::Mutate
                 && (mutate_prefetch_auto || mutate_prefetch_env)));
 
+    plan.prefetch_class_schema =
+        acq_signals.intent == LLMIntentKind::Mutate
+        && (acq_signals.mutate_subkind == MutateSubkind::Add
+            || acq_signals.mutate_subkind == MutateSubkind::Property || structure_mutate
+            || !gui.focused_class_name.empty());
+
     plan.max_known_facts = 12;
     return plan;
 }
