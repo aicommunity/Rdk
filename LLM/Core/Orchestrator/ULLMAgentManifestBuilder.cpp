@@ -75,7 +75,11 @@ std::string buildAgentManifest(const ULLMToolRegistry& registry, const ToolFilte
     oss << "- Live project graph (components/links on the open configuration): get_net_snapshot, "
            "find_component, get_component_properties — not search_project_docs.\n";
     oss << "- Product docs / how-to / class ClDesc: search_project_docs(scope=docs|sources|all), "
-           "describe_class.\n";
+           "library search_*_docs, describe_class.\n";
+    oss << "- Docs Q&A: after search, if >=2 hits, final answer MUST list markdown links using each "
+           "snippet.doc_uri (nmsdk-doc:...) or nmsdk-help:/nmsdk-class: when relevant. Cite title/path.\n";
+    oss << "- Open help / markdown Docs / class description in GUI: open_help, open_documentation, "
+           "open_class_docs (do not only describe in prose). list_help_topics lists Help HTML pages.\n";
     oss << "## Rules\n";
     oss << "- Use write tools only for explicit mutate requests.\n";
     oss << "- Graph mutations: add_component, set_property, connect_components (and disconnect_components) as requested.\n";

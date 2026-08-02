@@ -92,7 +92,9 @@ std::string buildRdkSystemPrompt(const std::string& response_language)
            "Creating a project description means update_configuration(project_description=…), "
            "not create_configuration. "
            "Diagram edits inside an open configuration: add_component, set_property, connect. "
-           "Documentation: search_project_docs (scope docs|sources|all). "
+           "Documentation: search_project_docs (scope docs|sources|all); open via "
+           "open_documentation / open_help / open_class_docs; multi-hit answers list "
+           "markdown links with snippet.doc_uri. "
            "Always respond in "
         << display << " (language code: " << code
         << "). Use this language for all user-facing text unless the user explicitly requests "

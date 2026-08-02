@@ -121,6 +121,7 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-170 | Multi-phase TurnPipeline extract | pack-tails | P2 | done | SessionGuard, Prepare, GoalRouter, LegacyRest; shared turn state in `TurnContext` |
 | TD-171 | Library pack adapter + subagent profiles + goals hooks | pack-tails | P3 | done | Pulse `UPackPulseDocs`; inspect_graph/search_docs; TaskExecutor evidence; compactor preserves goals |
 | TD-172 | Capability Risk Gate: detect weak Cortex, cascade once or abstain | weak-model | P1 | done | `ULLMCapabilityRiskGate`; orch pre-escalate + cascade; `error.model_too_weak_for_request`; [Weak-Model-Mitigation.md](Docs/Weak-Model-Mitigation.md); DD-CAP-001 |
+| TD-173 | Documentation open/navigation: Help, ClDesc, markdown Docs, chat nmsdk-* links | docs-agent | P1 | done | `ULLMDocOpenPolicy`; sink open*; tools `open_help`/`open_documentation`/`open_class_docs`; chat anchors; [Agent-Documentation.md](Docs/Agent-Documentation.md); DD-DOC-001 |
 
 ---
 
@@ -279,3 +280,4 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | 2026-08-01 | DD-WM-001: `working_goals` in session JSON; `store_schema_version` 3→4 with backward load | Structured reasoning memory (Cursor-like todos) | pack-phase-C | TD-162 |
 | 2026-08-01 | DD-PACK-003: Multi-goal Recorded — no exclusive short-circuit when ≥2 high matches or compound conjunction; sequential dependency order (add→…→calc) | Chat log 22-06-32: add+calc only ran calc | pack-tails | TD-166 |
 | 2026-08-02 | DD-CAP-001: Capability Risk Gate — black-box evidence fusion + one cascade / abstain (no Gatekeeper fine-tune) | Weak local models invent prose / skip tools; literature FrugalGPT/UniCR | weak-model | TD-172 |
+| 2026-08-02 | DD-DOC-001: Agent opens Help / class ClDesc / markdown Docs; multi-hit chat links via nmsdk-doc/help/class | Docs Q&A without GUI open; Help was OOS | docs-agent | TD-173 |

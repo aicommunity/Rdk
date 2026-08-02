@@ -205,7 +205,23 @@ If `candidates.length > 1` && score close → `resolved: false`; write-tools **m
 }
 ```
 
-**output:** `{ "match", "snippets": [ { "path", "title", "excerpt", "score", ... } ] }`
+**output:** `{ "match", "snippets": [ { "path", "title", "excerpt", "score", "source_id", "doc_uri?", ... } ] }`  
+`doc_uri` is `nmsdk-doc:<repo-relative>` when the path is under indexed Docs roots (for chat links / `open_documentation`).
+
+---
+
+### Documentation open / Help (DD-DOC-001)
+
+| Tool | Kind | Purpose |
+|------|------|---------|
+| `list_help_topics` | Read | List `Bin/Help/{locale}/*.html` → `{topics:[{topic, help_uri, title}]}` |
+| `open_help` | Read | Open GUI User Guide; optional `topic` (default index) |
+| `open_class_docs` | Read | Open `UClassDescriptionDisplay` for `class_name` (ambiguous → candidates) |
+| `open_documentation` | Read | Open markdown Docs via `path` or `doc_uri` (allowlisted roots only) |
+
+Chat markdown may use the same URIs: `nmsdk-doc:…`, `nmsdk-help:…`, `nmsdk-class:…` (clickable in the assistant dock).
+
+See [Agent-Documentation.md](Agent-Documentation.md).
 
 ---
 

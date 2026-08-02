@@ -67,6 +67,25 @@ These tools are registered in `RegisterApplicationTools.cpp`:
 
 Registered in `RegisterApplicationTools.cpp` via `invokeApplicationTool` → `ILLMPresentationSink::watch*` → `UGEngineControlWidget::llmWatch*` (GUI thread only; no Qt in `URdkApplicationCommands`).
 
+### Documentation open (DD-DOC-001)
+
+Registered in `RegisterDocumentationTools.cpp`. Sink methods:
+
+| Sink API | Host |
+|----------|------|
+| `openHelpTopic(topic)` | `UGEngineControlWidget::openHelpWindow(topic)` → `UHelpWindow::showHelp` |
+| `openClassDescription(name)` | `openClassDescriptionWindow` → `UClassDescriptionDisplay` |
+| `openMarkdownDocument(path, title)` | `openMarkdownDocWindow` → `UMarkdownDocWindow` |
+
+Chat: `ULlmChatHistoryPanel` `anchorClicked` → same sink (schemes `nmsdk-doc|help|class`).
+
+| Tool | Notes |
+|------|-------|
+| `list_help_topics` | Scan `Bin/Help/{locale}` |
+| `open_help` / `open_class_docs` / `open_documentation` | Read tools; autonomous UI whitelist |
+
+See [Agent-Documentation.md](Agent-Documentation.md).
+
 | Tool | Kind | Host |
 |------|------|------|
 | `add_watch_series` | Write | `llmWatchAddSeries` (`surface=window\|mdi`) |
@@ -198,6 +217,10 @@ These tools are registered in `RegisterApplicationTools.cpp`:
 ### Watch series and MDI (DD-WATCH-001)
 
 Same as RU section: `add/list/remove/clear_watch_series`, `list/create/focus/close_watch_mdi` via presentation sink → `UGEngineControlWidget::llmWatch*` (GUI thread).
+
+### Documentation open (DD-DOC-001)
+
+Same as RU: `open_help` / `open_class_docs` / `open_documentation` / `list_help_topics` via `ILLMPresentationSink::open*` and chat `nmsdk-*` anchors. See [Agent-Documentation.md](Agent-Documentation.md).
 
 ## Policy
 

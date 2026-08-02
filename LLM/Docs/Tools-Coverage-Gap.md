@@ -19,6 +19,7 @@ Sources: Qt main menu (`UGEngineControllWidget`), C-API (`rdk_init.h` / `nmsdk.h
 | Channel calc | `start/pause/reset/step_channel_calculation`, `run_n_steps`, `list_channels`, `set_active_channel` |
 | Channel CRUD | `add_channel`, `delete_channel`, `clone_channel` |
 | UI | `list_ui_panels`, `show_ui_panel`, `open_component_gui_tab` |
+| Docs / Help | `search_project_docs`, library `search_*_docs`, `list_help_topics`, `open_help`, `open_class_docs`, `open_documentation` |
 | Watch | `add/list/remove/clear_watch_series`, `list/create/focus/close_watch_mdi` |
 
 ## Gaps (priority)
@@ -39,7 +40,8 @@ Sources: Qt main menu (`UGEngineControllWidget`), C-API (`rdk_init.h` / `nmsdk.h
 
 ## Out of scope for LLM (for now)
 
-Broadcasters, video, FTP, Help, theme/skin — low agent value.
+Broadcasters, video, FTP, theme/skin — low agent value.
+(Help / Docs open is **in scope** — DD-DOC-001: `open_help` / `open_documentation` / `open_class_docs`.)
 
 ### ADR: no raw shell / filesystem / git (domain agent)
 
