@@ -1,5 +1,6 @@
 #include "ULLMToolTrace.h"
 
+#include "../Context/ULLMDocCatalogHelpers.h"
 #include "../Session/ULLMConversationStore.h"
 
 #include <cctype>
@@ -143,6 +144,8 @@ void recordTurnToolInvocation(ConversationState& state, const std::string& tool_
     view.message = result.message;
     view.duration_ms = duration_ms;
     view.pending_confirmation = result.pending_confirmation;
+    if(result.ok)
+        extractDocLinksFromToolResult(result.result, view.doc_links);
     state.current_turn_tool_trace.push_back(std::move(view));
 }
 

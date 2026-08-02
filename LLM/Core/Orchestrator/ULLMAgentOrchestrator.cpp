@@ -51,6 +51,7 @@
 #include "../Context/ULLMLongTermMemoryLoader.h"
 #include "../Context/ULinkPatternCatalog.h"
 #include "../Context/URdkContextRetriever.h"
+#include "../Context/ULLMDocCatalogHelpers.h"
 #include "../Domain/ULLMResolvedEntityStore.h"
 #include "../Session/ULLMContextCompactor.h"
 #include "../Session/ULLMWorkingGoals.h"
@@ -1308,17 +1309,31 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
     if(provider_tools && ctx_plan.prefetch_docs && LLMServices::instance().isInitialized()
        && !ctx_signals.retrieval_query.empty())
     {
+        std::filesystem::path repo_root;
+        if(LLMServices::instance().projectContext())
+            repo_root = LLMServices::instance().projectContext()->paths().repository_root;
+        int prefetch_k = ctx_plan.docs_top_k;
+        if(isCatalogInventoryQuery(planning_text) || isCatalogInventoryQuery(req.user_text))
+            prefetch_k = std::max(prefetch_k, 8);
         ctx_input.prefetched_docs_block = buildDocsPrefetchBlock(
             LLMServices::instance().searchIndex(), ctx_signals.retrieval_query,
-            ctx_plan.docs_scope, ctx_plan.docs_top_k, 4096);
+            ctx_plan.docs_scope, prefetch_k, 4096, repo_root);
     }
     else if(provider_tools && intent == LLMIntentKind::Query)
     {
         const char* prefetch_env = std::getenv("NMSDK_LLM_QUERY_PREFETCH_DOCS");
         if(prefetch_env && prefetch_env[0] == '1' && LLMServices::instance().isInitialized())
         {
+            std::filesystem::path repo_root;
+            if(LLMServices::instance().projectContext())
+                repo_root = LLMServices::instance().projectContext()->paths().repository_root;
+            const int prefetch_k =
+                (isCatalogInventoryQuery(planning_text) || isCatalogInventoryQuery(req.user_text))
+                    ? 8
+                    : 3;
             ctx_input.prefetched_docs_block = buildDocsPrefetchBlock(
-                LLMServices::instance().searchIndex(), planning_text, "docs", 3, 4096);
+                LLMServices::instance().searchIndex(), planning_text, "docs", prefetch_k, 4096,
+                repo_root);
         }
     }
 
@@ -1395,6 +1410,12 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
     }
 
     ctx_input.pack_hints_block = std::move(pack_hints_block);
+    if(isCatalogInventoryQuery(planning_text) || isCatalogInventoryQuery(req.user_text))
+    {
+        if(!ctx_input.pack_hints_block.empty())
+            ctx_input.pack_hints_block += "\n\n";
+        ctx_input.pack_hints_block += inventoryCatalogEphemeralHint();
+    }
 
     LLMCompletionOptions opts;
     if(LLMServices::instance().isInitialized())
@@ -1728,24 +1749,57 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                     }
                     else if(intent == LLMIntentKind::Query || intent == LLMIntentKind::Explain)
                     {
-                        recovery.content =
-                            "Informational request: call a suitable read tool, then answer from "
-                            "tool results and Project context. Prefer get_net_snapshot **without** "
-                            "root_long_name (omit = Model root), search_project_docs, describe_class, "
-                            "inspect_configuration **omitting** configuration_path "
-                            "(empty = currently open configuration), "
-                            "or spawn_explore_subagent. On ComponentNotFound or PATH_NOT_ALLOWED, "
-                            "retry get_net_snapshot with no root / inspect with empty path — do not "
-                            "narrate path-policy errors. Never pass configuration_path='open project' "
-                            "or root_path='.'. Do not invent topology. "
-                            "If a prior tool in this turn already returned ok data (e.g. snapshot), "
-                            "write a clear prose answer now — do not emit NO_SUITABLE_TOOL. "
-                            "Use NO_SUITABLE_TOOL only if no project is open and docs tools also fail.";
-                        mergePackToolNames(filter,
-                                           {"search_tools", "spawn_explore_subagent",
-                                            "search_project_docs", "get_net_snapshot",
-                                            "describe_class", "inspect_configuration",
-                                            "list_project_files", "ask_user"});
+                        const bool inventory =
+                            isCatalogInventoryQuery(planning_text)
+                            || isCatalogInventoryQuery(req.user_text);
+                        const bool links_req =
+                            userAskedForDocumentationLinks(planning_text)
+                            || userAskedForDocumentationLinks(req.user_text);
+                        if(inventory)
+                        {
+                            recovery.content = inventoryCatalogRecoveryHint(links_req);
+                            mergePackToolNames(
+                                filter, {"search_tools", "spawn_explore_subagent",
+                                         "list_pulse_component_classes",
+                                         "list_registered_classes", "search_pulse_docs",
+                                         "search_project_docs", "list_help_topics", "open_help",
+                                         "open_class_docs", "open_documentation",
+                                         "describe_class", "get_net_snapshot",
+                                         "inspect_configuration", "list_project_files",
+                                         "ask_user"});
+                        }
+                        else
+                        {
+                            recovery.content =
+                                "Informational request: call a suitable read tool, then answer from "
+                                "tool results and Project context. Prefer get_net_snapshot **without** "
+                                "root_long_name (omit = Model root), search_project_docs / "
+                                "search_*_docs, list_*_component_classes, describe_class, "
+                                "inspect_configuration **omitting** configuration_path "
+                                "(empty = currently open configuration), "
+                                "or spawn_explore_subagent. On ComponentNotFound or PATH_NOT_ALLOWED, "
+                                "retry get_net_snapshot with no root / inspect with empty path — do not "
+                                "narrate path-policy errors. Never pass configuration_path='open project' "
+                                "or root_path='.'. Do not invent topology. "
+                                "If a prior tool in this turn already returned ok data (e.g. snapshot), "
+                                "write a clear prose answer now — do not emit NO_SUITABLE_TOOL. "
+                                "Use NO_SUITABLE_TOOL only if no project is open and docs tools also fail.";
+                            if(links_req)
+                            {
+                                recovery.content +=
+                                    " User asked for documentation links: include markdown "
+                                    "[title](doc_uri) from tool snippets.";
+                            }
+                            mergePackToolNames(filter,
+                                               {"search_tools", "spawn_explore_subagent",
+                                                "search_project_docs", "search_pulse_docs",
+                                                "list_pulse_component_classes",
+                                                "list_registered_classes", "list_help_topics",
+                                                "open_help", "open_class_docs",
+                                                "open_documentation", "get_net_snapshot",
+                                                "describe_class", "inspect_configuration",
+                                                "list_project_files", "ask_user"});
+                        }
                         opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
                         ctx_input.tool_filter = filter;
                     }
@@ -2032,6 +2086,17 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                         // Prefer model prose over generic "no action" (informational exhaust).
                         final.no_suitable_tool = false;
                         final.text = model_text;
+                        if(appendDocLinkFooterFromToolTrace(final.text, req.user_text,
+                                                            state.current_turn_tool_trace))
+                        {
+                            GetAuditLog().append("docs_links_appended",
+                                                 {{"path", "act_or_clarify_exhausted"},
+                                                  {"links",
+                                                   collectDocLinksFromToolTrace(
+                                                       state.current_turn_tool_trace)
+                                                       .size()}},
+                                                 req.trace_id, req.session_id);
+                        }
                     }
                     else if(query_like)
                     {
@@ -2059,10 +2124,20 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
             LLMMessage assistant;
             assistant.role = LLMMessage::Role::Assistant;
             assistant.content = completion.text;
+            if(appendDocLinkFooterFromToolTrace(assistant.content, req.user_text,
+                                                state.current_turn_tool_trace))
+            {
+                GetAuditLog().append(
+                    "docs_links_appended",
+                    {{"path", "assistant_prose"},
+                     {"links",
+                      collectDocLinksFromToolTrace(state.current_turn_tool_trace).size()}},
+                    req.trace_id, req.session_id);
+            }
             if(!completion.thinking.empty())
                 assistant.thinking = completion.thinking;
             m_store.appendMessage(req.session_id, assistant);
-            final.text = completion.text;
+            final.text = assistant.content;
             if(!completion.thinking.empty())
             {
                 final.thinking = completion.thinking;

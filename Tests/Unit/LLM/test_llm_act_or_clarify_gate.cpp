@@ -76,6 +76,19 @@ TEST(LLMActOrClarifyGate, TurnHasSuccessfulReadOnlyEvidence)
     EXPECT_FALSE(turnHasSuccessfulReadOnlyEvidence({fail}));
 }
 
+TEST(LLMActOrClarifyGate, LibraryDocsSearchCountsAsReadEvidence)
+{
+    TurnToolInvocationView pulse;
+    pulse.tool_name = "search_pulse_docs";
+    pulse.ok = true;
+    EXPECT_TRUE(turnHasSuccessfulReadOnlyEvidence({pulse}));
+
+    TurnToolInvocationView list;
+    list.tool_name = "list_pulse_component_classes";
+    list.ok = true;
+    EXPECT_TRUE(turnHasSuccessfulReadOnlyEvidence({list}));
+}
+
 TEST(LLMActOrClarifyGate, DescriptionWriteRequiredBlocksProseAfterReads)
 {
     // chat 17-49-10: force_include_write must keep gate until update_configuration ok.

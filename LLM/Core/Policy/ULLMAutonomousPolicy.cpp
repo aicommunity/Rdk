@@ -1,6 +1,7 @@
 #include "ULLMAutonomousPolicy.h"
 
 #include "ULLMPolicyLimits.h"
+#include "../Context/ULLMDocCatalogHelpers.h"
 
 #include <unordered_set>
 
@@ -113,7 +114,8 @@ bool isChannelCalcWriteTool(const std::string& tool_name)
 
 bool ULLMAutonomousPolicy::isAutonomousReadTool(const std::string& tool_name)
 {
-    return autonomousReadTools().count(tool_name) > 0;
+    return autonomousReadTools().count(tool_name) > 0
+           || isLibraryDocsOrCatalogReadTool(tool_name);
 }
 
 bool ULLMAutonomousPolicy::isAutonomousWriteTool(const std::string& tool_name)

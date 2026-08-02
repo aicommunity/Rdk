@@ -5,6 +5,7 @@
 #include "ULLMConnectPlanParsing.h"
 #include "ULLMTaskPlanParsing.h"
 #include "ULLMWatchPlotGoal.h"
+#include "../Context/ULLMDocCatalogHelpers.h"
 
 #include <unordered_set>
 
@@ -14,6 +15,11 @@ namespace {
 
 bool isInformationalReadToolName(const std::string& tool_name)
 {
+    if(isLibraryDocsOrCatalogReadTool(tool_name))
+        return true;
+    if(tool_name == "open_help" || tool_name == "open_class_docs"
+       || tool_name == "open_documentation" || tool_name == "list_help_topics")
+        return true;
     static const std::unordered_set<std::string> k = {
         "get_net_snapshot",
         "list_model_links",

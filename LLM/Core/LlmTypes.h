@@ -328,6 +328,12 @@ struct ToolGatewayResult {
     std::string confirmation_id;
 };
 
+/// Compact doc refs from tool results (DD-DOC-002 link footer).
+struct TurnDocLinkView {
+    std::string title;
+    std::string uri;
+};
+
 struct TurnToolInvocationView {
     std::string tool_name;
     nlohmann::json arguments = nlohmann::json::object();
@@ -336,6 +342,7 @@ struct TurnToolInvocationView {
     std::string message;
     int duration_ms = 0;
     bool pending_confirmation = false;
+    std::vector<TurnDocLinkView> doc_links;
 };
 
 enum class WorkingGoalStatus {

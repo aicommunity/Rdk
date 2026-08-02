@@ -77,6 +77,24 @@ TEST(LLMAutonomousPolicy, ProjectKnowledgeReadsWhitelisted)
     EXPECT_TRUE(d.allowed);
 }
 
+TEST(LLMAutonomousPolicy, LibraryDocsAndCatalogListWhitelisted)
+{
+    // DD-DOC-002: chat 20-25-23 — search_pulse_docs was AUTONOMOUS deny.
+    EXPECT_TRUE(
+        ULLMAutonomousPolicy::isToolWhitelisted("search_pulse_docs", LLMAutonomousMode::Strict));
+    EXPECT_TRUE(ULLMAutonomousPolicy::isToolWhitelisted("list_pulse_component_classes",
+                                                          LLMAutonomousMode::SemiAuto));
+    EXPECT_TRUE(ULLMAutonomousPolicy::isToolWhitelisted("search_basic_docs",
+                                                          LLMAutonomousMode::Strict));
+    EXPECT_TRUE(ULLMAutonomousPolicy::isToolWhitelisted("list_hardware_component_classes",
+                                                          LLMAutonomousMode::SemiAuto));
+    EXPECT_TRUE(
+        ULLMAutonomousPolicy::isToolWhitelisted("open_documentation", LLMAutonomousMode::Strict));
+    AutonomousStepDecision d = ULLMAutonomousPolicy::checkStep(
+        "search_pulse_docs", LLMAutonomousMode::Strict, 99, 3);
+    EXPECT_TRUE(d.allowed);
+}
+
 TEST(LLMAutonomousPolicy, UiWatchAndProposePlanWhitelistedWithoutStepBurn)
 {
     EXPECT_TRUE(

@@ -2,6 +2,7 @@
 
 #include "../Context/UDocSearchIndex.h"
 #include "../Context/ULLMConnectSemanticsCatalog.h"
+#include "../Context/ULLMDocOpenPolicy.h"
 #include "../Context/ULinkPatternCatalog.h"
 
 #include <sstream>
@@ -83,7 +84,8 @@ std::string buildConnectInspectHintBlock()
 }
 
 std::string buildDocsPrefetchBlock(UDocSearchIndex& index, const std::string& query,
-                                   const std::string& scope, int top_k, std::size_t max_chars)
+                                   const std::string& scope, int top_k, std::size_t max_chars,
+                                   const std::filesystem::path& repo_root)
 {
     if(query.empty() || top_k <= 0)
         return {};
@@ -99,7 +101,24 @@ std::string buildDocsPrefetchBlock(UDocSearchIndex& index, const std::string& qu
         std::string excerpt = snip.excerpt;
         if(excerpt.size() > kDefaultExcerptChars)
             excerpt.resize(kDefaultExcerptChars);
-        prefetch << "- [" << snip.source_id << "] " << snip.path << ": " << excerpt << "\n";
+        std::string doc_uri;
+        if(!repo_root.empty() && !snip.path.empty())
+        {
+            const std::string rel = repoRelativePosixPath(snip.path, repo_root);
+            if(!rel.empty())
+                doc_uri = makeDocUriFromRepoRelative(rel);
+        }
+        prefetch << "- [" << snip.source_id << "] ";
+        if(!doc_uri.empty())
+        {
+            const std::string label = snip.title.empty() ? snip.path : snip.title;
+            prefetch << "[" << label << "](" << doc_uri << ") doc_uri=" << doc_uri << ": ";
+        }
+        else
+        {
+            prefetch << snip.path << ": ";
+        }
+        prefetch << excerpt << "\n";
     }
     std::string block = prefetch.str();
     truncateInPlace(block, max_chars);
