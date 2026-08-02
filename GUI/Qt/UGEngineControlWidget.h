@@ -14,6 +14,7 @@
 #include <QSet>
 #include <QPair>
 #include <QPoint>
+#include <QToolBar>
 
 #include <rdk_application.h>
 
@@ -284,6 +285,7 @@ private:
     UComponentPropertyChanger *propertyChanger;
     UModernDiagramContainerWidget *modernDiagram;
     UBreadcrumbsWidget *breadcrumbsWidget;
+    QToolBar *breadcrumbsToolBar;
     UComponentLinksWidget *componentLinks;
     UImagesWidget *images;
     QMainWindow *imagesWindow;

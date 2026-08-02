@@ -104,6 +104,18 @@ QToolBar::separator {
     margin: 4px 6px;
 }
 
+/* Compact full-width breadcrumbs strip under mainToolBar */
+QToolBar#breadcrumbsToolBar {
+    spacing: 0;
+    padding: 0px 4px;
+    border-bottom: 1px solid #E2E8F0;
+}
+
+QToolBar#breadcrumbsToolBar QToolButton {
+    padding: 0;
+    margin: 0;
+}
+
 QToolButton {
     background-color: transparent;
     border: none;
@@ -177,6 +189,7 @@ QDockWidget::title {
     font-weight: 600;
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
+    border-bottom: 2px solid #3B82F6;
 }
 
 QDockWidget::close-button,
@@ -199,6 +212,7 @@ QDockWidget::float-button:pressed {
 
 QWidget#loggerDockTitleBar {
     background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #5B8DEF, stop:1 #4F7BE8);
+    border-bottom: 2px solid #3B82F6;
 }
 
 QLabel#loggerDockTitleLabel {
@@ -275,12 +289,13 @@ QTabBar::close-button {
     height: 16px;
 }
 
-/* QMdiArea использует свой собственный QTabBar, нужно явно указать стили */
+/* QMdiArea использует свой собственный QTabBar, нужно явно указать стили.
+   Высота ряда tabs выровнена с QDockWidget::title (padding 4px 8px, bottom 2px). */
 QMdiArea QTabBar::tab {
     background-color: #F1F5F9;
     border: 1px solid #E2E8F0;
-    border-bottom: none;
-    padding: 4px 6px;
+    border-bottom: 2px solid transparent;
+    padding: 4px 8px;
     margin-right: 2px;
     margin-left: 0px;
     margin-top: 0px;
@@ -298,14 +313,14 @@ QMdiArea QTabBar::tab:selected {
     border-top: 1px solid #5B8DEF;
     border-left: 1px solid #5B8DEF;
     border-right: 1px solid #5B8DEF;
-    border-bottom: 3px solid #3B82F6;
+    border-bottom: 2px solid #3B82F6;
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
     margin-left: 0px;
     margin-right: 2px;
     margin-top: 0px;
     margin-bottom: 0px;
-    padding: 4px 6px;
+    padding: 4px 8px;
     font-weight: 600;
 }
 

@@ -44,6 +44,8 @@
 #include <QDragLeaveEvent>
 #include <QLabel>
 #include <QStyle>
+#include <QToolBar>
+#include <QSizePolicy>
 
 /*int heheheCounter = 0;
 void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
@@ -84,6 +86,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     modernDiagram = NULL;
     componentLinks = NULL;
     breadcrumbsWidget = NULL;
+    breadcrumbsToolBar = NULL;
     images = NULL;
     imagesWindow = NULL;
     channels = NULL;
@@ -200,11 +203,20 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
         });
     });
 
-    // Создаем breadcrumbs виджет
+    // Breadcrumbs на всю ширину окна — отдельная строка под mainToolBar (над docks)
     breadcrumbsWidget = new UBreadcrumbsWidget(this);
-    // Высота задаётся в UBreadcrumbsWidget (compact density)
-    // Добавляем breadcrumbsWidget в layout перед mdiArea
-    ui->verticalLayout->insertWidget(0, breadcrumbsWidget);
+    breadcrumbsWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+
+    breadcrumbsToolBar = new QToolBar(tr("Breadcrumbs"), this);
+    breadcrumbsToolBar->setObjectName(QStringLiteral("breadcrumbsToolBar"));
+    breadcrumbsToolBar->setMovable(false);
+    breadcrumbsToolBar->setFloatable(false);
+    breadcrumbsToolBar->setContextMenuPolicy(Qt::PreventContextMenu);
+    breadcrumbsToolBar->setIconSize(QSize(1, 1));
+    breadcrumbsToolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    breadcrumbsToolBar->addWidget(breadcrumbsWidget);
+    addToolBar(Qt::TopToolBarArea, breadcrumbsToolBar);
+    insertToolBarBreak(breadcrumbsToolBar);
 
     // Создаем современную диаграмму
     modernDiagram = new UModernDiagramContainerWidget(this, application);

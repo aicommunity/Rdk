@@ -40,7 +40,8 @@ UBreadcrumbsWidget::UBreadcrumbsWidget(QWidget *parent)
     breadcrumbsLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 
     setMinimumHeight(22);
-    setMaximumHeight(26);
+    setMaximumHeight(24);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
     updateBreadcrumbs("");
 }
