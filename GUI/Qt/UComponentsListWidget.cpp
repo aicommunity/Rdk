@@ -18,6 +18,7 @@
 #include "UEngineSelectionSync.h"
 #include "UComponentGuiService.h"
 #include "UComponentFormRegistry.h"
+#include "Plot/PlotDocument.h"
 #include <QTimer>
 
 UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication *app, int channel_mode) :
@@ -608,6 +609,11 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
 
         for(RDK::UComponent::VariableMapIteratorT i = varMap.begin(); i != varMap.end(); ++i)
         {
+            if (m_watchablePropertiesOnly && i->second.Property
+                && !NMSDK::Plot::isWatchableLanguageType(i->second.Property->GetLanguageType()))
+            {
+                continue;
+            }
             if (i->second.CheckMask(ptPubParameter) && ui->tabWidgetComponentInfo->currentIndex() == 0)
             {
                 QTreeWidgetItem* parametersItem = new QTreeWidgetItem(ui->treeWidgetParameters);
@@ -1388,7 +1394,15 @@ void UComponentsListWidget::setUpdateInterval(long value)
 
 void UComponentsListWidget::setTreeExpansionPolicy(int policy)
 {
-  m_treeExpansionPolicy = policy;
+    m_treeExpansionPolicy = policy;
+}
+
+void UComponentsListWidget::setWatchablePropertiesOnly(bool on)
+{
+    if (m_watchablePropertiesOnly == on)
+        return;
+    m_watchablePropertiesOnly = on;
+    reloadPropertys(true);
 }
 
 void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem, const QSet<QString> &expandedItems)

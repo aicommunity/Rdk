@@ -4,6 +4,7 @@
 #include "Plot/PlotDataAdapter.h"
 #include "Plot/PlotSettingsSidePanel.h"
 #include "Plot/PlotSurface.h"
+#include "Plot/UWatchSeriesWizard.h"
 #include "../../Core/Serialize/USerStorageXML.h"
 
 #include <QHBoxLayout>
@@ -499,136 +500,12 @@ void UWatchTab::createSelectionDialog(int chartIndex)
     if (chartIndex < 0 || chartIndex >= graph.count() || !graph[chartIndex])
         return;
 
-    int channelIndex = 0;
-    QString componentName;
-    QString componentProperty;
-
-    UComponentPropertySelectionWidget dialog(this, 3, application, 1);
-    dialog.setModal(true);
-    if (dialog.exec())
-    {
-         channelIndex = dialog.componentsList->getSelectedChannelIndex();
-         componentName = dialog.componentsList->getSelectedComponentLongName();
-         componentProperty = dialog.componentsList->getSelectedPropertyName();
-    }
-
-    if(!componentName.isEmpty() && !componentProperty.isEmpty())
-    {
-        bool is_int_or_double = false;
-
-        {
-            RDK::UELockPtr<RDK::UNet> model=RDK::GetModelLock<RDK::UNet>();
-
-            RDK::UContainer *cont = model->GetComponentL(componentName.toStdString());
-            if(!cont)
-                return;
-
-            RDK::UEPtr<RDK::UIProperty> prop=cont->FindProperty(componentProperty.toStdString());
-            if(!prop)
-                return;
-
-            if(prop->GetLanguageType() == typeid(double) || prop->GetLanguageType() == typeid(int))
-            {
-                is_int_or_double = true;
-            }
-        }
-
-        const double time_interval = graph[chartIndex]->getAxisXrange();
-        if (graph[chartIndex]->getVizKind() == NMSDK::Plot::VizKind::XYLine
-            || graph[chartIndex]->getVizKind() == NMSDK::Plot::VizKind::XYScatter)
-        {
-            // First dialog picks Y; second picks X.
-            QString xComponent;
-            QString xProperty;
-            int xJx = 0;
-            int xJy = 0;
-            UComponentPropertySelectionWidget xDialog(this, 3, application, 1);
-            xDialog.setWindowTitle(tr("Select X source"));
-            xDialog.setModal(true);
-            if (!xDialog.exec())
-                return;
-            xComponent = xDialog.componentsList->getSelectedComponentLongName();
-            xProperty = xDialog.componentsList->getSelectedPropertyName();
-            if (xComponent.isEmpty() || xProperty.isEmpty())
-                return;
-
-            int yJx = 0;
-            int yJy = 0;
-            if (!is_int_or_double)
-            {
-                UMatrixFormDialog* form = new UMatrixFormDialog();
-                form->SelectMatrix(componentName.toStdString(), componentProperty.toStdString());
-                if (form->exec() == QDialog::Accepted && !form->SelectedRows.empty())
-                {
-                    yJx = form->SelectedRows[0];
-                    yJy = form->SelectedCols.empty() ? 0 : form->SelectedCols[0];
-                }
-                delete form;
-            }
-            {
-                bool xScalar = true;
-                RDK::UELockPtr<RDK::UNet> model = RDK::GetModelLock<RDK::UNet>();
-                RDK::UContainer* cont = model->GetComponentL(xComponent.toStdString());
-                if (cont)
-                {
-                    RDK::UEPtr<RDK::UIProperty> prop = cont->FindProperty(xProperty.toStdString());
-                    if (prop
-                        && prop->GetLanguageType() != typeid(double)
-                        && prop->GetLanguageType() != typeid(int))
-                    {
-                        xScalar = false;
-                    }
-                }
-                if (!xScalar)
-                {
-                    UMatrixFormDialog* form = new UMatrixFormDialog();
-                    form->SelectMatrix(xComponent.toStdString(), xProperty.toStdString());
-                    if (form->exec() == QDialog::Accepted && !form->SelectedRows.empty())
-                    {
-                        xJx = form->SelectedRows[0];
-                        xJy = form->SelectedCols.empty() ? 0 : form->SelectedCols[0];
-                    }
-                    delete form;
-                }
-            }
-
-            graph[chartIndex]->createSerieXY(
-                channelIndex, xComponent, xProperty, xJx, xJy, componentName, componentProperty,
-                yJx, yJy, 0.0, graph[chartIndex]->getVizKind());
-            return;
-        }
-
-        if(is_int_or_double)
-        {
-            graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, QString(), 0, 0, time_interval, 0.0);
-            return;
-        }
-
-        UMatrixFormDialog* form = new UMatrixFormDialog();
-        form->SelectMatrix(componentName.toStdString(),componentProperty.toStdString());
-
-        if(form->exec()== QDialog::Accepted)
-        {
-            if(form->SelectedRows.empty() || form->SelectedCols.empty())
-             {
-                form->SelectedRows = {0};
-                form->SelectedCols = {0};
-            }
-
-            for(int i = 0; i < form->SelectedRows.size(); i++)
-                graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, QString(), form->SelectedRows[i], form->SelectedCols[i], time_interval, 0.0);
-        }
-        delete form;
-    }
-    syncDocumentFromCharts();
-}
-
-void UWatchTab::createXYSelectionDialog(int chartIndex)
-{
-    if (chartIndex < 0 || chartIndex >= graph.count() || !graph[chartIndex])
+    UWatchSeriesWizard wiz(graph[chartIndex], application, this);
+    wiz.setWindowTitle(tr("Add series"));
+    if (wiz.exec() != QDialog::Accepted)
         return;
-    graph[chartIndex]->setVizKind(NMSDK::Plot::VizKind::XYLine);
-    createSelectionDialog(chartIndex);
+    if (wiz.applyToChart(graph[chartIndex]) > 0)
+        syncDocumentFromCharts();
 }
 
 void UWatchTab::saveUpdateInterval(int newInterval)

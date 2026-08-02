@@ -124,6 +124,10 @@ public:
     /// Режим раскрытия дерева в диалоге: 0 — все узлы развёрнуты, 1 — только Model и при одном компоненте он развёрнут
     void setTreeExpansionPolicy(int policy);
 
+    /// When true, property trees only list Watch-compatible numeric / matrix types.
+    void setWatchablePropertiesOnly(bool on);
+    bool watchablePropertiesOnly() const { return m_watchablePropertiesOnly; }
+
 signals:
     void componentSelected(QString name); //single click
     void componentDoubleClick(QString name);
@@ -228,6 +232,9 @@ private:
 
     /// Режим раскрытия дерева в диалоге (0 = expandAll, 1 = только Model + один компонент при одном)
     int m_treeExpansionPolicy;
+
+    /// Filter property lists to Watch-compatible types only
+    bool m_watchablePropertiesOnly = false;
 
     /// Указатель на кастомный класс TreeWidget с перемещением компонентов при нажатом shift
     UComponentListTreeWidget *componentsTree;

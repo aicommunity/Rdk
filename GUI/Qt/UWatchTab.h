@@ -9,9 +9,7 @@
 #include <QSplitter>
 
 #include "UWatchChart.h"
-#include "UMatrixFormDialog.h"
 #include "UVisualControllerWidget.h"
-#include "UComponentPropertySelectionWidget.h"
 #include "Plot/PlotDocument.h"
 #include "Plot/PlotSettingsSidePanel.h"
 #include "NmsdkQtCompat.h"
@@ -41,7 +39,6 @@ public:
     void setActiveChart(int index);
 
     void createSelectionDialog(int chartIndex);
-    void createXYSelectionDialog(int chartIndex);
 
     int UpdateIntervalMs = 200;
     void saveUpdateInterval(int newInterval);

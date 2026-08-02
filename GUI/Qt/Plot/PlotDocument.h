@@ -6,6 +6,7 @@
 #include <QString>
 #include <QVector>
 #include <string>
+#include <typeinfo>
 
 namespace RDK
 {
@@ -140,6 +141,10 @@ inline DataBinding makeXYBinding(int channel,
 
 QString vizKindToString(VizKind kind);
 VizKind vizKindFromString(const QString& s, VizKind fallback = VizKind::TimeSeries);
+
+/// Watchable property types (double/int and MDMatrix/MDVector of those).
+bool isWatchableLanguageType(const std::type_info& ti);
+bool isScalarWatchableLanguageType(const std::type_info& ti);
 
 /// Save PlotDocument layout into current XML node (UWatchTab node).
 void savePlotDocument(RDK::USerStorageXML& xml, const PlotDocument& doc);

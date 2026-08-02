@@ -26,6 +26,7 @@
 #include "../../Core/Engine/UEnvSupport.h"
 #include "../../Core/Math/MDMatrix.h"
 #include "../../Core/Math/MDVector.h"
+#include "../../Core/Math/UWatchablePropertyTypes.h"
 
 #include <regex>
 #include <typeinfo>
@@ -1238,23 +1239,6 @@ DomainStatus URdkDomainAccess::getComponentClassName(const std::string& long_nam
     return {};
 }
 
-namespace {
-
-bool isWatchableLanguageType(const std::type_info& ti)
-{
-    // Mirrors UWatchTab::createSelectionDialog / UMatrixFormDialog type gate.
-    return ti == typeid(double) || ti == typeid(int) || ti == typeid(RDK::MDMatrix<double>)
-           || ti == typeid(RDK::MDMatrix<int>) || ti == typeid(RDK::MDVector<double>)
-           || ti == typeid(RDK::MDVector<int>);
-}
-
-bool isScalarWatchableLanguageType(const std::type_info& ti)
-{
-    return ti == typeid(double) || ti == typeid(int);
-}
-
-} // namespace
-
 DomainStatus URdkDomainAccess::validateWatchProperty(const std::string& long_name,
                                                      const std::string& property_name,
                                                      int channel_index, int jx, int jy) const
@@ -1307,14 +1291,14 @@ DomainStatus URdkDomainAccess::validateWatchProperty(const std::string& long_nam
     }
 
     const std::type_info& ti = prop->GetLanguageType();
-    if(!isWatchableLanguageType(ti))
+    if(!RDK::isWatchableLanguageType(ti))
     {
         return {DomainStatusCode::InvalidPropertyValue,
                 "Property \"" + property_name + "\" on " + long_name
                     + " is not numeric/matrix Watch-compatible (need int, double, "
                       "MDMatrix/MDVector of int|double)."};
     }
-    if(isScalarWatchableLanguageType(ti) && (jx != 0 || jy != 0))
+    if(RDK::isScalarWatchableLanguageType(ti) && (jx != 0 || jy != 0))
     {
         return {DomainStatusCode::InvalidPropertyValue,
                 "Property \"" + property_name + "\" is scalar; use jx=0, jy=0"};

@@ -1,6 +1,7 @@
 #include "UWatch.h"
 #include "ui_UWatch.h"
 #include <QDebug>
+#include <QStyle>
 #include <QTabBar>
 #include <QTimer>
 

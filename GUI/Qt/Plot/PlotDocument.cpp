@@ -1,5 +1,6 @@
 #include "PlotDocument.h"
 
+#include "../../Core/Math/UWatchablePropertyTypes.h"
 #include "../../Core/Serialize/USerStorageXML.h"
 #include "../../Core/Utilities/USupport.h"
 
@@ -9,6 +10,16 @@ namespace NMSDK
 {
 namespace Plot
 {
+
+bool isWatchableLanguageType(const std::type_info& ti)
+{
+    return RDK::isWatchableLanguageType(ti);
+}
+
+bool isScalarWatchableLanguageType(const std::type_info& ti)
+{
+    return RDK::isScalarWatchableLanguageType(ti);
+}
 
 QString vizKindToString(VizKind kind)
 {
