@@ -78,7 +78,7 @@ Registered in `RegisterApplicationTools.cpp` via `invokeApplicationTool` → `IL
 
 FastPath: «на график выход X и Y» → `add_watch_series`×N (`ULLMWatchPlotGoal`). Nested («ltzone pneuron», «низкопороговой зоны … PNeuron») → `resolveNestedWatchTarget` → `PNeuron.LTZone` + `Output` (DD-WATCH-002). Spaced `long_name` / `Child.Property` normalized in `normalizeWriteToolArguments`. Autonomous whitelist treats UI/watch tools like `ask_user` (no write-step burn).
 
-**Chat Tab autocomplete:** `ULlmChatInputCompleter` on assistant input — dictionary from `listNetSnapshot` long_names (all nesting), `listRegisteredClasses` (ClassesList), and property names; Tab accepts suggestion.
+**Chat name autocomplete:** `ULlmChatInputCompleter` on assistant input — dictionary from `listNetSnapshot` long_names (all nesting), `listRegisteredClasses` (ClassesList), and property names. Popup opens/refines while typing (token length ≥ 2 or scoped `.`/`:`); Tab / Shift+Tab open or cycle highlight without inserting; Enter or click accepts; Escape dismisses.
 
 ## Policy
 

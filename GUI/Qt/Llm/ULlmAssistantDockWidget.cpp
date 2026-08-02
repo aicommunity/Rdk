@@ -795,6 +795,9 @@ bool ULlmAssistantDockWidget::eventFilter(QObject* watched, QEvent* event)
     if(watched == m_input && event->type() == QEvent::KeyPress)
     {
         auto* key_event = static_cast<QKeyEvent*>(event);
+        if(key_event->key() == Qt::Key_Escape && m_name_completer
+           && m_name_completer->handleEscape())
+            return true;
         if(key_event->key() == Qt::Key_Tab || key_event->key() == Qt::Key_Backtab)
         {
             if(m_name_completer
@@ -803,6 +806,10 @@ bool ULlmAssistantDockWidget::eventFilter(QObject* watched, QEvent* event)
                 return true;
             return UVisualControllerWidget::eventFilter(watched, event);
         }
+        if((key_event->key() == Qt::Key_Return || key_event->key() == Qt::Key_Enter)
+           && !(key_event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier))
+           && m_name_completer && m_name_completer->acceptCurrentSuggestion())
+            return true;
         if(m_enter_send_filter_active
            && (key_event->key() == Qt::Key_Return || key_event->key() == Qt::Key_Enter)
            && !(key_event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier)))

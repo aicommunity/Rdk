@@ -6,9 +6,21 @@
 
 #include <QAbstractItemView>
 #include <QCompleter>
+#include <QEvent>
+#include <QFontMetrics>
+#include <QKeyEvent>
 #include <QPlainTextEdit>
 #include <QStringListModel>
 #include <QTextCursor>
+
+#include <algorithm>
+
+namespace {
+
+constexpr int kPopupMinWidth = 220;
+constexpr int kPopupHMargin = 24;
+
+} // namespace
 
 ULlmChatInputCompleter::ULlmChatInputCompleter(QPlainTextEdit* input, RDK::UApplication* app,
                                                QObject* parent)
@@ -24,6 +36,11 @@ ULlmChatInputCompleter::ULlmChatInputCompleter(QPlainTextEdit* input, RDK::UAppl
     m_completer->setModel(new QStringListModel(this));
     connect(m_completer, QOverload<const QString&>::of(&QCompleter::activated), this,
             &ULlmChatInputCompleter::applyCompletion);
+    if(m_input)
+    {
+        connect(m_input, &QPlainTextEdit::textChanged, this, &ULlmChatInputCompleter::onInputChanged);
+        m_input->installEventFilter(this);
+    }
     refreshDictionary();
 }
 
@@ -110,6 +127,29 @@ void ULlmChatInputCompleter::refreshDictionary(int channel_index)
     m_property_names.removeDuplicates();
 }
 
+QString ULlmChatInputCompleter::currentTokenText() const
+{
+    if(!m_input)
+        return {};
+    const QTextCursor cur = m_input->textCursor();
+    const QString all = m_input->toPlainText();
+    const QString prefix = all.left(cur.position());
+    const size_t byte_pos = static_cast<size_t>(prefix.toUtf8().size());
+    const std::string utf8 = all.toUtf8().toStdString();
+    const RDK::LLM::ChatNameTokenSpan span = RDK::LLM::extractChatNameToken(utf8, byte_pos);
+    return QString::fromStdString(span.text);
+}
+
+bool ULlmChatInputCompleter::shouldShowSuggestions(const QString& token,
+                                                   const QStringList& suggestions) const
+{
+    if(suggestions.isEmpty() || token.isEmpty())
+        return false;
+    if(token.size() >= 2)
+        return true;
+    return token.contains(QLatin1Char('.')) || token.contains(QLatin1Char(':'));
+}
+
 QStringList ULlmChatInputCompleter::currentSuggestions() const
 {
     if(!m_input)
@@ -144,10 +184,69 @@ QStringList ULlmChatInputCompleter::currentSuggestions() const
     return out;
 }
 
+void ULlmChatInputCompleter::showSuggestionsPopup(const QStringList& suggestions)
+{
+    if(!m_input || !m_completer || suggestions.isEmpty())
+        return;
+
+    if(auto* model = qobject_cast<QStringListModel*>(m_completer->model()))
+        model->setStringList(suggestions);
+    m_completer->setCompletionPrefix(QString());
+
+    if(m_suggest_index < 0 || m_suggest_index >= suggestions.size())
+        m_suggest_index = 0;
+
+    QRect cr = m_input->cursorRect();
+    int width = kPopupMinWidth;
+    if(QAbstractItemView* view = m_completer->popup())
+    {
+        const int hint = view->sizeHintForColumn(0) + kPopupHMargin;
+        width = std::max(width, hint);
+    }
+    const QFontMetrics fm(m_input->font());
+    for(const QString& s : suggestions)
+        width = std::max(width, fm.horizontalAdvance(s) + kPopupHMargin);
+    cr.setWidth(width);
+
+    m_completer->complete(cr);
+    m_completer->setCurrentRow(m_suggest_index);
+}
+
+void ULlmChatInputCompleter::hideSuggestionsPopup()
+{
+    if(m_completer && m_completer->popup())
+        m_completer->popup()->hide();
+    m_suggest_index = -1;
+}
+
+void ULlmChatInputCompleter::onInputChanged()
+{
+    if(m_applying || !m_input)
+        return;
+
+    const QStringList suggestions = currentSuggestions();
+    const QString token = currentTokenText();
+    if(!shouldShowSuggestions(token, suggestions))
+    {
+        hideSuggestionsPopup();
+        return;
+    }
+
+    // Keep selection if still present; otherwise highlight first.
+    if(m_suggest_index >= 0 && m_suggest_index < suggestions.size())
+    {
+        // index still valid for new list length — ok
+    }
+    else
+        m_suggest_index = 0;
+    showSuggestionsPopup(suggestions);
+}
+
 void ULlmChatInputCompleter::applyCompletion(const QString& completion)
 {
     if(!m_input || completion.isEmpty())
         return;
+    m_applying = true;
     QTextCursor cur = m_input->textCursor();
     const QString all = m_input->toPlainText();
     const QString prefix = all.left(cur.position());
@@ -163,7 +262,7 @@ void ULlmChatInputCompleter::applyCompletion(const QString& completion)
         QString::fromUtf8(utf8.data(), static_cast<int>(span.end)).size();
 
     QString insert = completion;
-            const int colon_in_token = QString::fromStdString(span.text).indexOf(QLatin1Char(':'));
+    const int colon_in_token = QString::fromStdString(span.text).indexOf(QLatin1Char(':'));
     if(colon_in_token >= 0 && !completion.contains(QLatin1Char(':')))
     {
         const QString left = QString::fromStdString(span.text).left(colon_in_token + 1);
@@ -174,6 +273,8 @@ void ULlmChatInputCompleter::applyCompletion(const QString& completion)
     cur.setPosition(q_end, QTextCursor::KeepAnchor);
     cur.insertText(insert);
     m_input->setTextCursor(cur);
+    hideSuggestionsPopup();
+    m_applying = false;
 }
 
 bool ULlmChatInputCompleter::handleTab(bool forward)
@@ -185,32 +286,62 @@ bool ULlmChatInputCompleter::handleTab(bool forward)
     if(suggestions.isEmpty())
         return false;
 
-    if(m_completer && m_completer->popup() && m_completer->popup()->isVisible())
+    const bool popup_visible =
+        m_completer && m_completer->popup() && m_completer->popup()->isVisible();
+    if(popup_visible)
     {
-        // Cycle within popup
         if(forward)
             m_suggest_index = (m_suggest_index + 1) % suggestions.size();
         else
             m_suggest_index =
                 (m_suggest_index - 1 + suggestions.size()) % suggestions.size();
-    }
-    else
-    {
-        m_suggest_index = forward ? 0 : suggestions.size() - 1;
-        if(auto* model = qobject_cast<QStringListModel*>(m_completer->model()))
-            model->setStringList(suggestions);
-        m_completer->setCompletionPrefix(QString());
-        const QRect cr = m_input->cursorRect();
-        m_completer->complete(cr);
-    }
-
-    if(m_suggest_index >= 0 && m_suggest_index < suggestions.size())
-    {
-        applyCompletion(suggestions.at(m_suggest_index));
-        // Keep popup in sync
         if(auto* model = qobject_cast<QStringListModel*>(m_completer->model()))
             model->setStringList(suggestions);
         m_completer->setCurrentRow(m_suggest_index);
+        return true;
     }
+
+    m_suggest_index = forward ? 0 : suggestions.size() - 1;
+    showSuggestionsPopup(suggestions);
     return true;
+}
+
+bool ULlmChatInputCompleter::handleEscape()
+{
+    if(!isPopupVisible())
+        return false;
+    hideSuggestionsPopup();
+    return true;
+}
+
+bool ULlmChatInputCompleter::isPopupVisible() const
+{
+    return m_completer && m_completer->popup() && m_completer->popup()->isVisible();
+}
+
+bool ULlmChatInputCompleter::acceptCurrentSuggestion()
+{
+    if(!isPopupVisible())
+        return false;
+    const QStringList suggestions = currentSuggestions();
+    if(suggestions.isEmpty())
+    {
+        hideSuggestionsPopup();
+        return false;
+    }
+    if(m_suggest_index < 0 || m_suggest_index >= suggestions.size())
+        m_suggest_index = 0;
+    applyCompletion(suggestions.at(m_suggest_index));
+    return true;
+}
+
+bool ULlmChatInputCompleter::eventFilter(QObject* watched, QEvent* event)
+{
+    if(watched == m_input && event->type() == QEvent::KeyPress)
+    {
+        auto* key_event = static_cast<QKeyEvent*>(event);
+        if(key_event->key() == Qt::Key_Escape && handleEscape())
+            return true;
+    }
+    return QObject::eventFilter(watched, event);
 }
