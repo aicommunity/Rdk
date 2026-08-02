@@ -360,6 +360,38 @@ DomainStatus URdkDomainAccess::listRegisteredClasses(nlohmann::json& out,
     if(!st.ok())
         return st;
 
+    auto canonicalizeLibraryFilter = [](std::string filter) -> std::string {
+        if(filter.empty())
+            return filter;
+        // Common short / folder-style aliases → ULibrary::GetName().
+        static const std::pair<const char*, const char*> kAliases[] = {
+            {"PulseLib", "PulseLibrary"},
+            {"Nmsdk-PulseLib", "PulseLibrary"},
+            {"Pulse", "PulseLibrary"},
+            {"HardwareLib", "HardwareLibrary"},
+            {"Rdk-HardwareLib", "HardwareLibrary"},
+            {"Hardware", "HardwareLibrary"},
+            {"MotionControlLib", "MotionControlLibrary"},
+            {"Nmsdk-MotionControlLib", "MotionControlLibrary"},
+            {"Motion", "MotionControlLibrary"},
+            {"Rdk-BasicLib", "BasicLib"},
+            {"BasicLibrary", "BasicLib"},
+            {"Basic", "BasicLib"},
+            {"Rdk-CvBasicLib", "CvBasicLib"},
+            {"CvBasicLibrary", "CvBasicLib"},
+            {"CvBasic", "CvBasicLib"},
+            {"CRLibrary", "CvBasicLib"},
+            {nullptr, nullptr},
+        };
+        for(const auto* p = kAliases; p->first; ++p)
+        {
+            if(filter == p->first)
+                return p->second;
+        }
+        return filter;
+    };
+    const std::string filter = canonicalizeLibraryFilter(library_filter);
+
     RDK::UELockPtr<RDK::UStorage> storage_lock = RDK::GetStorageLock();
     RDK::UStorage* storage = storage_lock.Get();
 
@@ -373,7 +405,7 @@ DomainStatus URdkDomainAccess::listRegisteredClasses(nlohmann::json& out,
             if(lib)
                 library = lib->GetName();
         }
-        if(!library_filter.empty() && library != library_filter)
+        if(!filter.empty() && library != filter)
             continue;
         nlohmann::json item = {{"class_name", class_name}};
         if(!library.empty())
@@ -381,6 +413,8 @@ DomainStatus URdkDomainAccess::listRegisteredClasses(nlohmann::json& out,
         classes.push_back(std::move(item));
     }
     out["classes"] = classes;
+    if(!library_filter.empty() && filter != library_filter)
+        out["library_filter_resolved"] = filter;
     return {};
 }
 

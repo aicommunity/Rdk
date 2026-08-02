@@ -17,6 +17,10 @@ std::string lookup(const std::string& key, const std::string& lang)
         return ru ? "Остановлено: слишком много шагов." : "Stopped: too many steps.";
     if(key == "error.no_suitable_tool")
         return ru ? "Не найдено подходящее действие." : "Cannot find a suitable action.";
+    if(key == "error.query_inspect_failed")
+        return ru ? "Не удалось прочитать модель или документацию. Откройте конфигурацию "
+                    "или уточните вопрос."
+                  : "Could not read the model or docs. Open a configuration or clarify the question.";
     if(key == "error.index_missing")
         return ru ? "Индекс знаний недоступен." : "Knowledge index unavailable.";
     return key;

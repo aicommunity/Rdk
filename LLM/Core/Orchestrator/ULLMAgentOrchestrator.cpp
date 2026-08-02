@@ -1584,7 +1584,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
             if(shouldRequireActOrClarify(
                    provider_tools, true, planning_text, intent, lifecycle_action,
                    filter.include_write, static_cast<bool>(state.pending_tool_arguments),
-                   state.workflow_phase == LLMWorkflowPhase::Understanding))
+                   state.workflow_phase == LLMWorkflowPhase::Understanding,
+                   tool_invocations > 0 || !state.current_turn_tool_trace.empty()))
             {
                 if(!recovery_used)
                 {
@@ -1639,15 +1640,18 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                     else if(intent == LLMIntentKind::Query || intent == LLMIntentKind::Explain)
                     {
                         recovery.content =
-                            "Informational request: call a suitable read tool before answering — "
-                            "prefer search_tools, search_project_docs, get_net_snapshot, "
-                            "describe_class, or spawn_explore_subagent (inspect_graph / search_docs). "
-                            "Do not invent topology or class names. If no tool fits, reply exactly: "
-                            "NO_SUITABLE_TOOL.";
+                            "Informational request: call a suitable read tool, then answer from "
+                            "tool results and Project context. Prefer get_net_snapshot **without** "
+                            "root_long_name (omit = Model root), search_project_docs, describe_class, "
+                            "inspect_configuration, or spawn_explore_subagent. On ComponentNotFound "
+                            "retry get_net_snapshot with no root_long_name. Do not invent topology. "
+                            "After tools, write a clear prose answer. Use NO_SUITABLE_TOOL only if "
+                            "no project is open and docs tools also fail.";
                         mergePackToolNames(filter,
                                            {"search_tools", "spawn_explore_subagent",
                                             "search_project_docs", "get_net_snapshot",
-                                            "describe_class", "ask_user"});
+                                            "describe_class", "inspect_configuration",
+                                            "list_project_files", "ask_user"});
                         opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
                         ctx_input.tool_filter = filter;
                     }
@@ -1821,10 +1825,30 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                     continue;
                 }
                 final.no_suitable_tool = true;
-                final.text = formatUserMessage("error.no_suitable_tool", user_lang);
+                const bool query_like =
+                    intent == LLMIntentKind::Query || intent == LLMIntentKind::Explain;
+                const std::string model_text = completion.text;
+                const bool model_said_none =
+                    model_text.find("NO_SUITABLE_TOOL") != std::string::npos;
+                if(query_like && !model_text.empty() && !model_said_none)
+                {
+                    // Prefer model prose over generic "no action" (informational exhaust).
+                    final.no_suitable_tool = false;
+                    final.text = model_text;
+                }
+                else if(query_like)
+                {
+                    final.text = formatUserMessage("error.query_inspect_failed", user_lang);
+                }
+                else
+                {
+                    final.text = formatUserMessage("error.no_suitable_tool", user_lang);
+                }
                 assignTurnTerminal(final, TurnTerminal::Completed);
                 GetAuditLog().append("act_or_clarify_exhausted",
-                                     {{"intent", intent_name}},
+                                     {{"intent", intent_name},
+                                      {"query_soft_fallback", query_like},
+                                      {"had_model_text", !model_text.empty()}},
                                      req.trace_id, req.session_id);
                 setWorkflowPhase(state, LLMWorkflowPhase::Completed, req.trace_id);
                 setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);

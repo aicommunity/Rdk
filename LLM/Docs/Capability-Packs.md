@@ -39,6 +39,7 @@ Audit events: `pack_matched`, `pack_recorded_fired` (`pack_id`, `score`; multi-g
 | `connect` | DD-CONN-001/002 | Migrated (Recorded live-analogous + hints; TD-169) |
 | `add_component_direct` | DD-MEM-002/003 | Migrated (Recorded + hints) |
 | `lifecycle_soft` | TD-102 | Hints only; env-gated load direct stays in orchestrator (not migrating) |
+| `project_description` | chat-log Query/write | Hints: snapshot → synthesize → `update_configuration`; placeholders rejected in tool |
 
 ## 4. Registration
 

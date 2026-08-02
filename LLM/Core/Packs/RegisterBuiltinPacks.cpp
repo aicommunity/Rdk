@@ -5,6 +5,7 @@
 #include "Builtin/UPackComponentStructure.h"
 #include "Builtin/UPackConnect.h"
 #include "Builtin/UPackLifecycleSoft.h"
+#include "Builtin/UPackProjectDescription.h"
 #include "Builtin/UPackWatchPlot.h"
 #include "ULLMCapabilityPackRegistry.h"
 
@@ -19,6 +20,7 @@ void RegisterBuiltinCapabilityPacks(ILLMCapabilityPackRegistry& registry)
     registry.registerPack(std::make_unique<UPackWatchPlot>());
     registry.registerPack(std::make_unique<UPackChannelCalc>());
     registry.registerPack(std::make_unique<UPackLifecycleSoft>());
+    registry.registerPack(std::make_unique<UPackProjectDescription>());
 }
 
 } // namespace RDK::LLM

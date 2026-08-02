@@ -16,7 +16,7 @@ bool isActionableGoalForActOrClarify(const std::string& planning_text, LLMIntent
         return true;
     if(intent == LLMIntentKind::Plan && filter_include_write)
         return true;
-    // Query/Explain: force tool use (search_tools / explore / docs) instead of prose essays.
+    // Query/Explain: force an initial read tool instead of inventing topology/docs.
     if(intent == LLMIntentKind::Query || intent == LLMIntentKind::Explain)
         return true;
     if(lifecycle_action != ConfigurationLifecycleAction::None)
@@ -38,11 +38,15 @@ bool shouldRequireActOrClarify(bool provider_tools_offered, bool tool_calls_empt
                                const std::string& planning_text, LLMIntentKind intent,
                                ConfigurationLifecycleAction lifecycle_action,
                                bool filter_include_write, bool has_pending_tool_arguments,
-                               bool in_understanding_phase)
+                               bool in_understanding_phase, bool has_turn_tool_evidence)
 {
     if(!provider_tools_offered || !tool_calls_empty)
         return false;
     if(has_pending_tool_arguments || in_understanding_phase)
+        return false;
+    // After any tool result this turn, Query/Explain may synthesize prose (chat 16-38-37).
+    if(has_turn_tool_evidence
+       && (intent == LLMIntentKind::Query || intent == LLMIntentKind::Explain))
         return false;
     return isActionableGoalForActOrClarify(planning_text, intent, lifecycle_action,
                                            filter_include_write);

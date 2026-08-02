@@ -7,6 +7,7 @@
 #include "ApplicationToolHelpers.h"
 #include "ULLMToolRegistry.h"
 
+#include <cctype>
 #include <unordered_map>
 
 namespace RDK::LLM {
@@ -232,7 +233,9 @@ void RegisterApplicationTools(ULLMToolRegistry& registry)
 
     registry.registerTool(
         makeAppDef("update_configuration", LLMToolKind::Write,
-                   "Update metadata/settings of the open configuration",
+                   "Update metadata/settings of the open configuration. For project_description, "
+                   "pass concrete text gathered from get_net_snapshot/inspect_configuration — "
+                   "never placeholders like 'указать здесь' or 'which you want to add'.",
                    {{"type", "object"},
                     {"properties",
                      {{"project_name", {{"type", "string"}}},
@@ -262,6 +265,34 @@ void RegisterApplicationTools(ULLMToolRegistry& registry)
                     {"additionalProperties", false}},
                    true, true),
         [](const nlohmann::json& args) -> ToolGatewayResult {
+            if(args.contains("project_description") && args["project_description"].is_string())
+            {
+                const std::string desc = args["project_description"].get<std::string>();
+                std::string lower = desc;
+                for(char& c : lower)
+                    c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+                const bool placeholder =
+                    lower.find("указать") != std::string::npos
+                    || lower.find("которое вы хотите") != std::string::npos
+                    || lower.find("which you want") != std::string::npos
+                    || lower.find("[list") != std::string::npos
+                    || lower.find("[указать") != std::string::npos
+                    || lower.find("todo") != std::string::npos
+                    || lower.find("placeholder") != std::string::npos
+                    || (lower.find("модул") != std::string::npos
+                        && lower.find("здесь") != std::string::npos);
+                if(placeholder)
+                {
+                    ToolGatewayResult r;
+                    r.ok = false;
+                    r.error_code = "PlaceholderDescription";
+                    r.message =
+                        "project_description looks like a placeholder. Call get_net_snapshot "
+                        "(no root_long_name) and/or inspect_configuration, then rewrite "
+                        "project_description with real module/class names — or ask_user.";
+                    return r;
+                }
+            }
             return invokeApplicationTool(activeSink(),
                                          [&]() { return commands().updateConfiguration(args); });
         });

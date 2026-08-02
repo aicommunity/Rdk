@@ -59,12 +59,17 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
     registry.registerTool(
         makeDef("get_net_snapshot", LLMToolKind::Read,
                 "Use when you need the component graph / topology of the active channel. "
-                "Requires an open project/channel. Do not use for docs or class metadata.",
+                "Requires an open project/channel. Do not use for docs or class metadata. "
+                "Omit root_long_name (or leave empty) to walk from Model root; only set it for "
+                "a known subtree long_name. On ComponentNotFound, retry without root_long_name.",
                 {{"type", "object"},
                  {"properties",
                   {{"channel_index", {{"type", "integer"}, {"minimum", 0}}},
                    {"max_components", {{"type", "integer"}, {"minimum", 1}, {"maximum", 500}}},
-                   {"root_long_name", {{"type", "string"}}}}},
+                   {"root_long_name",
+                    {{"type", "string"},
+                     {"description",
+                      "Optional subtree root. Empty/omitted = entire Model root."}}}}},
                  {"additionalProperties", false}},
                 {{"type", "object"}}),
         [domain_access, project_ctx](const nlohmann::json& args) -> ToolGatewayResult {
@@ -76,11 +81,26 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
                     ? args["root_long_name"].get<std::string>()
                     : std::string();
             DomainStatus st = domain_access->listNetSnapshot(r.result, ch, max_c, root);
+            if(!st.ok() && !root.empty() && st.code == DomainStatusCode::ComponentNotFound)
+            {
+                DomainStatus retry = domain_access->listNetSnapshot(r.result, ch, max_c, "");
+                if(retry.ok())
+                {
+                    r.ok = true;
+                    r.result["retried_without_root"] = true;
+                    r.result["discarded_root_long_name"] = root;
+                    r.message =
+                        "root_long_name not found; returned Model-root snapshot instead.";
+                    return r;
+                }
+            }
             r.ok = st.ok();
             if(!r.ok)
             {
                 r.error_code = "DomainError";
                 r.message = st.message;
+                if(!root.empty())
+                    r.message += " Tip: omit root_long_name to snapshot the whole Model.";
             }
             return r;
         });
@@ -222,8 +242,10 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
     registry.registerTool(
         makeDef("list_registered_classes", LLMToolKind::Read,
                 "Use when discovering which component classes exist (optionally by library). "
-                "Do not use to inspect an instance already on the net — use find_component / "
-                "get_component_properties instead.",
+                "library_filter must match ULibrary::GetName() (e.g. PulseLibrary, BasicLib, "
+                "HardwareLibrary, MotionControlLibrary, CvBasicLib). Short aliases like PulseLib "
+                "are accepted. Do not use to inspect an instance already on the net — use "
+                "find_component / get_component_properties instead.",
                 {{"type", "object"},
                  {"properties", {{"library_filter", {{"type", "string"}}}}},
                  {"additionalProperties", false}},

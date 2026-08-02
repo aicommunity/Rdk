@@ -21,33 +21,38 @@
 {
   "type": "object",
   "properties": {
-    "library_filter": { "type": "string", "description": "Optional exact library name filter" }
+    "library_filter": {
+      "type": "string",
+      "description": "Optional ULibrary::GetName() filter (PulseLibrary, BasicLib, HardwareLibrary, MotionControlLibrary, CvBasicLib). Short aliases (PulseLib, HardwareLib, …) are resolved."
+    }
   },
   "additionalProperties": false
 }
 ```
 
-**output:**
+**output:** `{ "classes": [ { "class_name", "library?" } ], "library_filter_resolved?" }`
+
+---
+
+### `get_net_snapshot`
+
+**input:**
 ```json
 {
   "type": "object",
-  "required": ["classes"],
   "properties": {
-    "classes": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["class_name"],
-        "properties": {
-          "class_name": { "type": "string" },
-          "library": { "type": "string", "description": "Optional" },
-          "header": { "type": "string", "description": "Optional" }
-        }
-      }
+    "channel_index": { "type": "integer", "minimum": 0, "default": 0 },
+    "max_components": { "type": "integer", "minimum": 1, "maximum": 500, "default": 200 },
+    "root_long_name": {
+      "type": "string",
+      "description": "Optional subtree root. Empty/omitted = entire Model root. Unknown root → auto-retry Model root."
     }
-  }
+  },
+  "additionalProperties": false
 }
 ```
+
+**output:** see `NetSnapshot` в [Domain-Layer.md](Domain-Layer.md); may include `retried_without_root` when a bad root was discarded.
 
 ---
 
@@ -67,25 +72,6 @@
 ```
 
 **output:** `{ "class_name", "cl_desc_xml_fragment", "properties_summary": [...] }`
-
----
-
-### `get_net_snapshot`
-
-**input:**
-```json
-{
-  "type": "object",
-  "properties": {
-    "channel_index": { "type": "integer", "minimum": 0, "default": 0 },
-    "max_components": { "type": "integer", "minimum": 1, "maximum": 500, "default": 200 },
-    "root_long_name": { "type": "string", "description": "Optional subtree root (model long_name)" }
-  },
-  "additionalProperties": false
-}
-```
-
-**output:** see `NetSnapshot` в [Domain-Layer.md](Domain-Layer.md)
 
 ---
 

@@ -13,16 +13,26 @@ TEST(LLMActOrClarifyGate, ConnectGoalRequiresActionEvenIfQueryIntent)
         ConfigurationLifecycleAction::None, false));
     EXPECT_TRUE(shouldRequireActOrClarify(
         true, true, "подключил PGenerator к PNeuron", LLMIntentKind::Query,
-        ConfigurationLifecycleAction::None, false, false, false));
+        ConfigurationLifecycleAction::None, false, false, false, false));
 }
 
-TEST(LLMActOrClarifyGate, PureQueryAllowsProse)
+TEST(LLMActOrClarifyGate, PureQueryRequiresInitialTool)
 {
-    EXPECT_FALSE(isActionableGoalForActOrClarify(
+    EXPECT_TRUE(isActionableGoalForActOrClarify(
         "что на схеме", LLMIntentKind::Query, ConfigurationLifecycleAction::None, false));
-    EXPECT_FALSE(shouldRequireActOrClarify(true, true, "что на схеме", LLMIntentKind::Query,
-                                           ConfigurationLifecycleAction::None, false, false,
-                                           false));
+    EXPECT_TRUE(shouldRequireActOrClarify(true, true, "что на схеме", LLMIntentKind::Query,
+                                          ConfigurationLifecycleAction::None, false, false, false,
+                                          false));
+}
+
+TEST(LLMActOrClarifyGate, QueryAllowsProseAfterToolEvidence)
+{
+    EXPECT_FALSE(shouldRequireActOrClarify(true, true, "расскажи о проекте", LLMIntentKind::Query,
+                                           ConfigurationLifecycleAction::None, false, false, false,
+                                           true));
+    EXPECT_FALSE(shouldRequireActOrClarify(true, true, "explain the model", LLMIntentKind::Explain,
+                                           ConfigurationLifecycleAction::None, false, false, false,
+                                           true));
 }
 
 TEST(LLMActOrClarifyGate, MutateWithWriteRequiresAction)
