@@ -61,14 +61,19 @@ TEST(LLMAutonomousPolicy, LifecycleCreateAllowedInAutonomous)
     EXPECT_TRUE(d.allowed);
 }
 
-TEST(LLMAutonomousPolicy, InspectLinkToolsWhitelisted)
+TEST(LLMAutonomousPolicy, ProjectKnowledgeReadsWhitelisted)
 {
+    EXPECT_TRUE(ULLMAutonomousPolicy::isToolWhitelisted("inspect_configuration",
+                                                          LLMAutonomousMode::SemiAuto));
+    EXPECT_TRUE(ULLMAutonomousPolicy::isToolWhitelisted("search_project_docs",
+                                                          LLMAutonomousMode::Strict));
     EXPECT_TRUE(
-        ULLMAutonomousPolicy::isToolWhitelisted("list_model_links", LLMAutonomousMode::SemiAuto));
+        ULLMAutonomousPolicy::isToolWhitelisted("list_project_files", LLMAutonomousMode::SemiAuto));
     EXPECT_TRUE(
-        ULLMAutonomousPolicy::isToolWhitelisted("get_component_ports", LLMAutonomousMode::Strict));
+        ULLMAutonomousPolicy::isToolWhitelisted("stat_project_file", LLMAutonomousMode::Strict));
+    EXPECT_TRUE(ULLMAutonomousPolicy::isToolWhitelisted("search_tools", LLMAutonomousMode::SemiAuto));
     AutonomousStepDecision d = ULLMAutonomousPolicy::checkStep(
-        "list_model_links", LLMAutonomousMode::Strict, 99, 3);
+        "inspect_configuration", LLMAutonomousMode::Strict, 99, 3);
     EXPECT_TRUE(d.allowed);
 }
 

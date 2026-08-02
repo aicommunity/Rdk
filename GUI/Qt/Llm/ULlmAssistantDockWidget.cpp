@@ -27,7 +27,6 @@
 #include "../../../LLM/Core/Orchestrator/ULLMWorkflowState.h"
 #include "../../../LLM/Core/Policy/ULLMPolicyLimits.h"
 #include "../../../LLM/Core/Session/ULLMConversationStore.h"
-#include "../../../LLM/Core/Settings/ULLMProviderAuth.h"
 #include "../UGEngineControlWidget.h"
 
 #include <functional>

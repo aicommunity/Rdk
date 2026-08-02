@@ -9,6 +9,16 @@ TEST(LLMIntentParser, QueryIntent)
     ULLMIntentParser parser;
     EXPECT_EQ(parser.parse("покажи список компонентов"), LLMIntentKind::Query);
     EXPECT_EQ(parser.parse("what components are on the diagram"), LLMIntentKind::Query);
+    EXPECT_EQ(parser.parse("расскажи о проекте"), LLMIntentKind::Query);
+    EXPECT_EQ(parser.parse("tell me about the project"), LLMIntentKind::Query);
+}
+
+TEST(LLMIntentParser, ProjectLifecycleStaysMutate)
+{
+    ULLMIntentParser parser;
+    EXPECT_EQ(parser.parse("создай новый проект"), LLMIntentKind::Mutate);
+    EXPECT_EQ(parser.parse("открой проект"), LLMIntentKind::Mutate);
+    EXPECT_EQ(parser.parse("create project"), LLMIntentKind::Mutate);
 }
 
 TEST(LLMIntentParser, ConfidencePrefersMutateOverWeakQuery)

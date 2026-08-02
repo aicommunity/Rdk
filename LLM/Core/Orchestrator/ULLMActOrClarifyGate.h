@@ -5,6 +5,7 @@
 #include "ULLMConfigurationLifecycle.h"
 
 #include <string>
+#include <vector>
 
 namespace RDK::LLM {
 
@@ -15,14 +16,20 @@ bool isActionableGoalForActOrClarify(const std::string& planning_text, LLMIntent
                                      ConfigurationLifecycleAction lifecycle_action,
                                      bool filter_include_write);
 
+/// True when the turn trace has at least one ok informational/read tool and no write tools.
+/// Used so Mutate false-positives (e.g. «расскажи о проекте») can still answer after snapshot.
+bool turnHasSuccessfulReadOnlyEvidence(const std::vector<TurnToolInvocationView>& trace);
+
 /// True when empty tool_calls must trigger recovery / NO_SUITABLE_TOOL instead of prose.
 /// When has_turn_tool_evidence is true, Query/Explain prose is allowed (synthesize from tools).
+/// When has_successful_read_only_evidence is true, prose is allowed for any intent (incl. Mutate).
 bool shouldRequireActOrClarify(bool provider_tools_offered, bool tool_calls_empty,
                                const std::string& planning_text, LLMIntentKind intent,
                                ConfigurationLifecycleAction lifecycle_action,
                                bool filter_include_write, bool has_pending_tool_arguments,
                                bool in_understanding_phase,
-                               bool has_turn_tool_evidence = false);
+                               bool has_turn_tool_evidence = false,
+                               bool has_successful_read_only_evidence = false);
 
 } // namespace RDK::LLM
 

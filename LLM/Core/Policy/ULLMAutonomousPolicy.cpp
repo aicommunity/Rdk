@@ -20,6 +20,14 @@ const std::unordered_set<std::string>& autonomousReadTools()
         "describe_class",
         "validate_project",
         "list_channels",
+        "inspect_configuration",
+        "search_project_docs",
+        "list_project_files",
+        "stat_project_file",
+        "search_tools",
+        "read_text_artifact",
+        "search_configuration_links",
+        "list_recent_configurations",
     };
     return k;
 }

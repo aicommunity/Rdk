@@ -185,6 +185,15 @@ void syncWorkingGoalEvidenceFromTrace(ConversationState& state)
 void attachTurnToolTrace(ConversationState& state, LLMFinalResponse& response)
 {
     syncWorkingGoalEvidenceFromTrace(state);
+    // Tool ok must not imply goal Done when Act-or-Clarify exhausted to no_suitable_tool.
+    if(response.no_suitable_tool)
+    {
+        for(WorkingGoal& g : state.working_goals)
+        {
+            if(g.status == WorkingGoalStatus::Done || g.status == WorkingGoalStatus::InProgress)
+                g.status = WorkingGoalStatus::Blocked;
+        }
+    }
     response.tool_trace = state.current_turn_tool_trace;
     response.working_goals = state.working_goals;
 }
@@ -1581,11 +1590,15 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                 return final;
             }
 
+            const bool has_tool_evidence =
+                tool_invocations > 0 || !state.current_turn_tool_trace.empty();
+            const bool has_read_only_ok =
+                turnHasSuccessfulReadOnlyEvidence(state.current_turn_tool_trace);
             if(shouldRequireActOrClarify(
                    provider_tools, true, planning_text, intent, lifecycle_action,
                    filter.include_write, static_cast<bool>(state.pending_tool_arguments),
-                   state.workflow_phase == LLMWorkflowPhase::Understanding,
-                   tool_invocations > 0 || !state.current_turn_tool_trace.empty()))
+                   state.workflow_phase == LLMWorkflowPhase::Understanding, has_tool_evidence,
+                   has_read_only_ok))
             {
                 if(!recovery_used)
                 {
@@ -1645,8 +1658,9 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                             "root_long_name (omit = Model root), search_project_docs, describe_class, "
                             "inspect_configuration, or spawn_explore_subagent. On ComponentNotFound "
                             "retry get_net_snapshot with no root_long_name. Do not invent topology. "
-                            "After tools, write a clear prose answer. Use NO_SUITABLE_TOOL only if "
-                            "no project is open and docs tools also fail.";
+                            "If a prior tool in this turn already returned ok data (e.g. snapshot), "
+                            "write a clear prose answer now — do not emit NO_SUITABLE_TOOL. "
+                            "Use NO_SUITABLE_TOOL only if no project is open and docs tools also fail.";
                         mergePackToolNames(filter,
                                            {"search_tools", "spawn_explore_subagent",
                                             "search_project_docs", "get_net_snapshot",
@@ -1826,7 +1840,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                 }
                 final.no_suitable_tool = true;
                 const bool query_like =
-                    intent == LLMIntentKind::Query || intent == LLMIntentKind::Explain;
+                    intent == LLMIntentKind::Query || intent == LLMIntentKind::Explain
+                    || turnHasSuccessfulReadOnlyEvidence(state.current_turn_tool_trace);
                 const std::string model_text = completion.text;
                 const bool model_said_none =
                     model_text.find("NO_SUITABLE_TOOL") != std::string::npos;

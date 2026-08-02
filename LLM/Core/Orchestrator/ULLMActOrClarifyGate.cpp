@@ -6,7 +6,57 @@
 #include "ULLMTaskPlanParsing.h"
 #include "ULLMWatchPlotGoal.h"
 
+#include <unordered_set>
+
 namespace RDK::LLM {
+
+namespace {
+
+bool isInformationalReadToolName(const std::string& tool_name)
+{
+    static const std::unordered_set<std::string> k = {
+        "get_net_snapshot",
+        "list_model_links",
+        "get_component_ports",
+        "find_component",
+        "get_component_properties",
+        "list_registered_classes",
+        "describe_class",
+        "validate_project",
+        "validate_configuration",
+        "list_channels",
+        "inspect_configuration",
+        "search_configuration_links",
+        "search_project_docs",
+        "list_project_files",
+        "stat_project_file",
+        "read_text_artifact",
+        "search_tools",
+        "list_recent_configurations",
+        "list_ui_panels",
+        "list_watch_series",
+        "list_watch_mdi",
+        "spawn_explore_subagent",
+    };
+    return k.count(tool_name) > 0;
+}
+
+} // namespace
+
+bool turnHasSuccessfulReadOnlyEvidence(const std::vector<TurnToolInvocationView>& trace)
+{
+    if(trace.empty())
+        return false;
+    bool any_ok_read = false;
+    for(const TurnToolInvocationView& inv : trace)
+    {
+        if(!isInformationalReadToolName(inv.tool_name))
+            return false;
+        if(inv.ok)
+            any_ok_read = true;
+    }
+    return any_ok_read;
+}
 
 bool isActionableGoalForActOrClarify(const std::string& planning_text, LLMIntentKind intent,
                                      ConfigurationLifecycleAction lifecycle_action,
@@ -38,15 +88,18 @@ bool shouldRequireActOrClarify(bool provider_tools_offered, bool tool_calls_empt
                                const std::string& planning_text, LLMIntentKind intent,
                                ConfigurationLifecycleAction lifecycle_action,
                                bool filter_include_write, bool has_pending_tool_arguments,
-                               bool in_understanding_phase, bool has_turn_tool_evidence)
+                               bool in_understanding_phase, bool has_turn_tool_evidence,
+                               bool has_successful_read_only_evidence)
 {
     if(!provider_tools_offered || !tool_calls_empty)
         return false;
     if(has_pending_tool_arguments || in_understanding_phase)
         return false;
-    // After any tool result this turn, Query/Explain may synthesize prose (chat 16-38-37).
+    // After tool results: Query/Explain may synthesize; Mutate misfires with read-only evidence too
+    // (chat 17-11-11: «расскажи о проекте» scored Mutate via bare «проект»).
     if(has_turn_tool_evidence
-       && (intent == LLMIntentKind::Query || intent == LLMIntentKind::Explain))
+       && (intent == LLMIntentKind::Query || intent == LLMIntentKind::Explain
+           || has_successful_read_only_evidence))
         return false;
     return isActionableGoalForActOrClarify(planning_text, intent, lifecycle_action,
                                            filter_include_write);

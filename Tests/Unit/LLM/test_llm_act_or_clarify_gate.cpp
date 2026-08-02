@@ -35,6 +35,39 @@ TEST(LLMActOrClarifyGate, QueryAllowsProseAfterToolEvidence)
                                            true));
 }
 
+TEST(LLMActOrClarifyGate, MutateAllowsProseAfterSuccessfulReadOnlyEvidence)
+{
+    // chat 17-11-11: bare «проект» → Mutate, but get_net_snapshot already ok.
+    EXPECT_FALSE(shouldRequireActOrClarify(true, true, "расскажи о проекте", LLMIntentKind::Mutate,
+                                           ConfigurationLifecycleAction::None, true, false, false,
+                                           true, true));
+}
+
+TEST(LLMActOrClarifyGate, MutateStillRequiresActionWithoutReadEvidence)
+{
+    EXPECT_TRUE(shouldRequireActOrClarify(true, true, "add NSPNeuron", LLMIntentKind::Mutate,
+                                          ConfigurationLifecycleAction::None, true, false, false,
+                                          true, false));
+}
+
+TEST(LLMActOrClarifyGate, TurnHasSuccessfulReadOnlyEvidence)
+{
+    TurnToolInvocationView snap;
+    snap.tool_name = "get_net_snapshot";
+    snap.ok = true;
+    EXPECT_TRUE(turnHasSuccessfulReadOnlyEvidence({snap}));
+
+    TurnToolInvocationView write;
+    write.tool_name = "add_component";
+    write.ok = true;
+    EXPECT_FALSE(turnHasSuccessfulReadOnlyEvidence({snap, write}));
+
+    TurnToolInvocationView fail;
+    fail.tool_name = "get_net_snapshot";
+    fail.ok = false;
+    EXPECT_FALSE(turnHasSuccessfulReadOnlyEvidence({fail}));
+}
+
 TEST(LLMActOrClarifyGate, MutateWithWriteRequiresAction)
 {
     EXPECT_TRUE(shouldRequireActOrClarify(true, true, "add NSPNeuron", LLMIntentKind::Mutate,

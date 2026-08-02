@@ -33,10 +33,14 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
         c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
 
     const float plan_s = scoreKeywords(lower, {"план", "спланируй", "шаги", "plan ", "steps", "roadmap", "сначала"}, 1.2f);
+    // Do not use bare "проект"/"project" — they fire on «расскажи о проекте» (chat 17-11-11).
+    // Lifecycle uses explicit phrases below.
     const float mutate_s =
         scoreKeywords(lower,
                       {"добав", "создай", "удали", "измени", "сохран", "загруз", "открой", "закрой", "конфиг",
-                       "конфигурац", "проект", "configuration", "project", "project.ini", "скопируй",
+                       "конфигурац", "configuration", "project.ini", "скопируй",
+                       "создай проект", "новый проект", "открой проект", "сохрани проект", "закрой проект",
+                       "create project", "new project", "open project", "save project", "close project",
                        "переимен", "запусти расч", "останови расч", "расчёт", "расчет",
                        "start calc", "run calculation", "pause calculation", "reset calculation",
                        "start calculation", "stop calculation",
@@ -57,7 +61,8 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
         scoreKeywords(lower,
                       {"arduino", "firmware", "hardware", "датчик", "плата", "что", "какие", "покажи",
                        "список", "опиши", "найди", "валидируй", "проверь конфиг", "validate configuration", "what",
-                       "list", "show", "describe", "search", "find ", "tool", "tools", "имена инструментов"},
+                       "list", "show", "describe", "search", "find ", "tool", "tools", "имена инструментов",
+                       "расскаж", "tell ", "about the", "о проекте", "о этом проект"},
                       1.2f);
 
     IntentParseResult result;
