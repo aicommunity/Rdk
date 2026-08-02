@@ -383,8 +383,8 @@ QTreeView {
     border: 1px solid #181A1F;
     border-radius: 8px;
     alternate-background-color: #21252B;
-    selection-background-color: #2C313A;
-    selection-color: #61AFEF;
+    selection-background-color: #2A4A6F;
+    selection-color: #FFFFFF;
     outline: none;
 }
 
@@ -397,14 +397,18 @@ QTreeView::item {
 }
 
 QTreeWidget::item:selected,
-QTreeView::item:selected {
-    background-color: #2C313A;
-    color: #61AFEF;
+QTreeView::item:selected,
+QTreeWidget::item:selected:active,
+QTreeView::item:selected:active,
+QTreeWidget::item:selected:!active,
+QTreeView::item:selected:!active {
+    background-color: #2A4A6F;
+    color: #FFFFFF;
 }
 
 QTreeWidget::item:hover,
 QTreeView::item:hover {
-    background-color: #2C313A;
+    background-color: #3E4451;
 }
 
 /* ===== Table Widget / Table View ===== */
@@ -414,8 +418,8 @@ QTableView {
     border: 1px solid #181A1F;
     border-radius: 8px;
     gridline-color: #3E4451;
-    selection-background-color: #2C313A;
-    selection-color: #61AFEF;
+    selection-background-color: #2A4A6F;
+    selection-color: #FFFFFF;
     outline: none;
 }
 
@@ -426,8 +430,13 @@ QTableView::item {
 }
 
 QTableWidget::item:selected,
-QTableView::item:selected {
-    background-color: #2C313A;
+QTableView::item:selected,
+QTableWidget::item:selected:active,
+QTableView::item:selected:active,
+QTableWidget::item:selected:!active,
+QTableView::item:selected:!active {
+    background-color: #2A4A6F;
+    color: #FFFFFF;
 }
 
 QHeaderView::section {
@@ -451,8 +460,8 @@ QListView {
     background-color: #282C34;
     border: 1px solid #181A1F;
     border-radius: 8px;
-    selection-background-color: #2C313A;
-    selection-color: #61AFEF;
+    selection-background-color: #2A4A6F;
+    selection-color: #FFFFFF;
     outline: none;
 }
 
@@ -465,14 +474,18 @@ QListView::item {
 }
 
 QListWidget::item:selected,
-QListView::item:selected {
-    background-color: #2C313A;
-    color: #61AFEF;
+QListView::item:selected,
+QListWidget::item:selected:active,
+QListView::item:selected:active,
+QListWidget::item:selected:!active,
+QListView::item:selected:!active {
+    background-color: #2A4A6F;
+    color: #FFFFFF;
 }
 
 QListWidget::item:hover,
 QListView::item:hover {
-    background-color: #2C313A;
+    background-color: #3E4451;
 }
 
 /* ===== Push Button ===== */
@@ -605,9 +618,14 @@ QComboBox QAbstractItemView {
     background-color: #282C34;
     border: 1px solid #181A1F;
     border-radius: 6px;
-    selection-background-color: #2C313A;
-    selection-color: #61AFEF;
+    selection-background-color: #2A4A6F;
+    selection-color: #FFFFFF;
     padding: 4px;
+}
+
+QComboBox QAbstractItemView::item:selected {
+    background-color: #2A4A6F;
+    color: #FFFFFF;
 }
 
 /* ===== Spin Box ===== */

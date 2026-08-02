@@ -21,7 +21,7 @@ public:
 
     void setApplication(RDK::UApplication* app);
     void refreshDictionary(int channel_index = 0);
-    /// Handle Tab / Shift+Tab: open or cycle highlight without inserting. Returns true if consumed.
+    /// Tab accepts when popup visible; Shift+Tab cycles. Hidden → open popup.
     bool handleTab(bool forward);
     /// Hide popup on Escape. Returns true if consumed.
     bool handleEscape();
@@ -39,7 +39,10 @@ private:
     bool shouldShowSuggestions(const QString& token, const QStringList& suggestions) const;
     void showSuggestionsPopup(const QStringList& suggestions);
     void hideSuggestionsPopup();
+    void highlightRow(int row);
+    void ensurePopupEventFilter();
     void onInputChanged();
+    QString highlightedCompletion() const;
 
     QPlainTextEdit* m_input = nullptr;
     RDK::UApplication* m_app = nullptr;
@@ -49,6 +52,7 @@ private:
     QStringList m_property_names;
     int m_suggest_index = -1;
     bool m_applying = false;
+    bool m_popup_filter_installed = false;
 };
 
 #endif

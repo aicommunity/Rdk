@@ -8,6 +8,7 @@
 #include <QCompleter>
 #include <QEvent>
 #include <QFontMetrics>
+#include <QItemSelectionModel>
 #include <QKeyEvent>
 #include <QPlainTextEdit>
 #include <QStringListModel>
@@ -32,7 +33,7 @@ ULlmChatInputCompleter::ULlmChatInputCompleter(QPlainTextEdit* input, RDK::UAppl
     m_completer->setWidget(m_input);
     m_completer->setCompletionMode(QCompleter::PopupCompletion);
     m_completer->setCaseSensitivity(Qt::CaseInsensitive);
-    m_completer->setFilterMode(Qt::MatchStartsWith);
+    m_completer->setFilterMode(Qt::MatchContains);
     m_completer->setModel(new QStringListModel(this));
     connect(m_completer, QOverload<const QString&>::of(&QCompleter::activated), this,
             &ULlmChatInputCompleter::applyCompletion);
@@ -81,7 +82,6 @@ void ULlmChatInputCompleter::refreshDictionary(int channel_index)
     nlohmann::json classes;
     if(domain.listRegisteredClasses(classes).ok())
     {
-        // listRegisteredClasses returns array or object with classes — accept both.
         const nlohmann::json* arr = nullptr;
         if(classes.is_array())
             arr = &classes;
@@ -105,14 +105,13 @@ void ULlmChatInputCompleter::refreshDictionary(int channel_index)
         m_class_names.removeDuplicates();
     }
 
-    // Property cache: focused component if any in long_names top-level + common Output/Input.
     m_property_names = QStringList{QStringLiteral("Output"), QStringLiteral("Input")};
     constexpr int kMaxPropComps = 24;
     int n = 0;
     for(const QString& ln : m_long_names)
     {
         if(ln.contains(QLatin1Char('.')))
-            continue; // prefer roots first for property dump
+            continue;
         nlohmann::json props;
         if(!domain.getComponentProperties(ln.toStdString(), props, channel_index).ok())
             continue;
@@ -157,7 +156,6 @@ QStringList ULlmChatInputCompleter::currentSuggestions() const
     const QTextCursor cur = m_input->textCursor();
     const QString all = m_input->toPlainText();
     const std::string utf8 = all.toUtf8().toStdString();
-    // Approximate cursor byte offset via UTF-16→UTF-8 of prefix.
     const QString prefix = all.left(cur.position());
     const size_t byte_pos = static_cast<size_t>(prefix.toUtf8().size());
 
@@ -184,6 +182,43 @@ QStringList ULlmChatInputCompleter::currentSuggestions() const
     return out;
 }
 
+void ULlmChatInputCompleter::ensurePopupEventFilter()
+{
+    if(!m_completer || m_popup_filter_installed)
+        return;
+    if(QAbstractItemView* popup = m_completer->popup())
+    {
+        popup->installEventFilter(this);
+        m_popup_filter_installed = true;
+    }
+}
+
+void ULlmChatInputCompleter::highlightRow(int row)
+{
+    if(!m_completer)
+        return;
+    auto* model = qobject_cast<QStringListModel*>(m_completer->model());
+    if(!model || model->rowCount() <= 0)
+        return;
+    row = std::clamp(row, 0, model->rowCount() - 1);
+    m_suggest_index = row;
+    m_completer->setCurrentRow(row);
+    if(QAbstractItemView* popup = m_completer->popup())
+    {
+        const QModelIndex idx = m_completer->completionModel()->index(row, 0);
+        if(idx.isValid())
+        {
+            popup->setCurrentIndex(idx);
+            if(QItemSelectionModel* sel = popup->selectionModel())
+            {
+                sel->select(idx, QItemSelectionModel::ClearAndSelect
+                                     | QItemSelectionModel::Rows);
+            }
+            popup->scrollTo(idx);
+        }
+    }
+}
+
 void ULlmChatInputCompleter::showSuggestionsPopup(const QStringList& suggestions)
 {
     if(!m_input || !m_completer || suggestions.isEmpty())
@@ -191,10 +226,10 @@ void ULlmChatInputCompleter::showSuggestionsPopup(const QStringList& suggestions
 
     if(auto* model = qobject_cast<QStringListModel*>(m_completer->model()))
         model->setStringList(suggestions);
+    // Empty prefix: model already filtered by ChatNameCompletion.
     m_completer->setCompletionPrefix(QString());
 
-    if(m_suggest_index < 0 || m_suggest_index >= suggestions.size())
-        m_suggest_index = 0;
+    ensurePopupEventFilter();
 
     QRect cr = m_input->cursorRect();
     int width = kPopupMinWidth;
@@ -209,7 +244,9 @@ void ULlmChatInputCompleter::showSuggestionsPopup(const QStringList& suggestions
     cr.setWidth(width);
 
     m_completer->complete(cr);
-    m_completer->setCurrentRow(m_suggest_index);
+    if(m_suggest_index < 0 || m_suggest_index >= suggestions.size())
+        m_suggest_index = 0;
+    highlightRow(m_suggest_index);
 }
 
 void ULlmChatInputCompleter::hideSuggestionsPopup()
@@ -232,12 +269,7 @@ void ULlmChatInputCompleter::onInputChanged()
         return;
     }
 
-    // Keep selection if still present; otherwise highlight first.
-    if(m_suggest_index >= 0 && m_suggest_index < suggestions.size())
-    {
-        // index still valid for new list length — ok
-    }
-    else
+    if(m_suggest_index < 0 || m_suggest_index >= suggestions.size())
         m_suggest_index = 0;
     showSuggestionsPopup(suggestions);
 }
@@ -255,7 +287,6 @@ void ULlmChatInputCompleter::applyCompletion(const QString& completion)
     const RDK::LLM::ChatNameTokenSpan span =
         RDK::LLM::extractChatNameToken(utf8, byte_pos);
 
-    // Map byte span back to QString positions via UTF-8 prefix lengths.
     const int q_begin =
         QString::fromUtf8(utf8.data(), static_cast<int>(span.begin)).size();
     const int q_end =
@@ -277,6 +308,28 @@ void ULlmChatInputCompleter::applyCompletion(const QString& completion)
     m_applying = false;
 }
 
+QString ULlmChatInputCompleter::highlightedCompletion() const
+{
+    if(!m_completer)
+        return {};
+    if(QAbstractItemView* popup = m_completer->popup())
+    {
+        const QModelIndex idx = popup->currentIndex();
+        if(idx.isValid())
+        {
+            const QString text = idx.data(Qt::DisplayRole).toString();
+            if(!text.isEmpty())
+                return text;
+        }
+    }
+    auto* model = qobject_cast<QStringListModel*>(m_completer->model());
+    if(!model || model->rowCount() <= 0)
+        return {};
+    const int row =
+        (m_suggest_index >= 0 && m_suggest_index < model->rowCount()) ? m_suggest_index : 0;
+    return model->data(model->index(row, 0), Qt::DisplayRole).toString();
+}
+
 bool ULlmChatInputCompleter::handleTab(bool forward)
 {
     if(!m_input)
@@ -286,18 +339,20 @@ bool ULlmChatInputCompleter::handleTab(bool forward)
     if(suggestions.isEmpty())
         return false;
 
-    const bool popup_visible =
-        m_completer && m_completer->popup() && m_completer->popup()->isVisible();
-    if(popup_visible)
+    if(isPopupVisible())
     {
+        // Tab accepts; Shift+Tab cycles selection.
         if(forward)
-            m_suggest_index = (m_suggest_index + 1) % suggestions.size();
-        else
-            m_suggest_index =
-                (m_suggest_index - 1 + suggestions.size()) % suggestions.size();
-        if(auto* model = qobject_cast<QStringListModel*>(m_completer->model()))
-            model->setStringList(suggestions);
-        m_completer->setCurrentRow(m_suggest_index);
+            return acceptCurrentSuggestion();
+        auto* model = qobject_cast<QStringListModel*>(m_completer->model());
+        const int count = model ? model->rowCount() : suggestions.size();
+        if(count <= 0)
+            return false;
+        int next = m_suggest_index;
+        if(next < 0)
+            next = 0;
+        next = (next - 1 + count) % count;
+        highlightRow(next);
         return true;
     }
 
@@ -323,25 +378,70 @@ bool ULlmChatInputCompleter::acceptCurrentSuggestion()
 {
     if(!isPopupVisible())
         return false;
-    const QStringList suggestions = currentSuggestions();
-    if(suggestions.isEmpty())
+    const QString completion = highlightedCompletion();
+    if(completion.isEmpty())
     {
         hideSuggestionsPopup();
         return false;
     }
-    if(m_suggest_index < 0 || m_suggest_index >= suggestions.size())
-        m_suggest_index = 0;
-    applyCompletion(suggestions.at(m_suggest_index));
+    applyCompletion(completion);
     return true;
 }
 
 bool ULlmChatInputCompleter::eventFilter(QObject* watched, QEvent* event)
 {
-    if(watched == m_input && event->type() == QEvent::KeyPress)
+    if(event->type() != QEvent::KeyPress)
+        return QObject::eventFilter(watched, event);
+
+    auto* key_event = static_cast<QKeyEvent*>(event);
+    const bool on_input = (watched == m_input);
+    const bool on_popup =
+        m_completer && watched == static_cast<QObject*>(m_completer->popup());
+
+    if(!on_input && !on_popup)
+        return QObject::eventFilter(watched, event);
+
+    if(key_event->key() == Qt::Key_Escape && handleEscape())
+        return true;
+
+    if((key_event->key() == Qt::Key_Return || key_event->key() == Qt::Key_Enter)
+       && !(key_event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier))
+       && acceptCurrentSuggestion())
+        return true;
+
+    if(on_popup || isPopupVisible())
     {
-        auto* key_event = static_cast<QKeyEvent*>(event);
-        if(key_event->key() == Qt::Key_Escape && handleEscape())
-            return true;
+        if(key_event->key() == Qt::Key_Down)
+        {
+            auto* model = qobject_cast<QStringListModel*>(m_completer->model());
+            const int count = model ? model->rowCount() : 0;
+            if(count > 0)
+            {
+                const int next = (std::max(0, m_suggest_index) + 1) % count;
+                highlightRow(next);
+                return true;
+            }
+        }
+        if(key_event->key() == Qt::Key_Up)
+        {
+            auto* model = qobject_cast<QStringListModel*>(m_completer->model());
+            const int count = model ? model->rowCount() : 0;
+            if(count > 0)
+            {
+                const int next = (std::max(0, m_suggest_index) - 1 + count) % count;
+                highlightRow(next);
+                return true;
+            }
+        }
+        if(key_event->key() == Qt::Key_Tab
+           || key_event->key() == Qt::Key_Backtab)
+        {
+            const bool forward = key_event->key() != Qt::Key_Backtab
+                                 && !(key_event->modifiers() & Qt::ShiftModifier);
+            if(handleTab(forward))
+                return true;
+        }
     }
+
     return QObject::eventFilter(watched, event);
 }
