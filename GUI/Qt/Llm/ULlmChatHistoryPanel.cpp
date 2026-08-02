@@ -4,6 +4,7 @@
 #include "ULlmCollapsibleDetailsWidget.h"
 #include "ULlmDetailsHtml.h"
 
+#include <QDesktopServices>
 #include <QMetaObject>
 #include <QScrollBar>
 #include <QTextBrowser>
@@ -37,6 +38,24 @@ ULlmChatHistoryPanel::ULlmChatHistoryPanel(QWidget* parent)
     setWidget(m_container);
 }
 
+void ULlmChatHistoryPanel::setAnchorHandler(std::function<void(const QUrl&)> handler)
+{
+    m_anchor_handler = std::move(handler);
+}
+
+void ULlmChatHistoryPanel::onAnchorClicked(const QUrl& url)
+{
+    if(m_anchor_handler)
+    {
+        m_anchor_handler(url);
+        return;
+    }
+    const QString scheme = url.scheme().toLower();
+    if(scheme == QStringLiteral("http") || scheme == QStringLiteral("https")
+       || scheme == QStringLiteral("mailto"))
+        QDesktopServices::openUrl(url);
+}
+
 void ULlmChatHistoryPanel::clear()
 {
     cancelStream();
@@ -60,11 +79,13 @@ void ULlmChatHistoryPanel::addRow(QWidget* w)
 QTextBrowser* ULlmChatHistoryPanel::makeTextRow(const QString& html)
 {
     auto* browser = new QTextBrowser(m_container);
-    browser->setOpenExternalLinks(true);
+    browser->setOpenExternalLinks(false);
+    browser->setOpenLinks(false);
     browser->setFrameShape(QFrame::NoFrame);
     browser->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     browser->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     browser->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    connect(browser, &QTextBrowser::anchorClicked, this, &ULlmChatHistoryPanel::onAnchorClicked);
     browser->setHtml(html);
     fitBrowserHeight(browser);
     return browser;
@@ -162,8 +183,11 @@ void ULlmChatHistoryPanel::cancelStream()
 
 void ULlmChatHistoryPanel::scrollToEnd()
 {
-    if(QScrollBar* bar = verticalScrollBar())
-        QMetaObject::invokeMethod(
-            this,
-            [bar]() { bar->setValue(bar->maximum()); }, Qt::QueuedConnection);
+    QMetaObject::invokeMethod(
+        this,
+        [this]() {
+            if(QScrollBar* bar = verticalScrollBar())
+                bar->setValue(bar->maximum());
+        },
+        Qt::QueuedConnection);
 }

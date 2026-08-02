@@ -3,6 +3,9 @@
 
 #include <QScrollArea>
 #include <QString>
+#include <QUrl>
+
+#include <functional>
 
 class QVBoxLayout;
 class QTextBrowser;
@@ -13,6 +16,9 @@ class ULlmChatHistoryPanel : public QScrollArea {
     Q_OBJECT
 public:
     explicit ULlmChatHistoryPanel(QWidget* parent = nullptr);
+
+    /// DD-DOC-001: handle nmsdk-doc / nmsdk-help / nmsdk-class (and http(s) fallback).
+    void setAnchorHandler(std::function<void(const QUrl&)> handler);
 
     void clear();
     /// Append HTML; splits out `<details>` blocks into collapsible widgets.
@@ -27,6 +33,9 @@ public:
 
     void scrollToEnd();
 
+private slots:
+    void onAnchorClicked(const QUrl& url);
+
 private:
     void appendPlainHtmlRow(const QString& html);
     QTextBrowser* makeTextRow(const QString& html);
@@ -36,5 +45,6 @@ private:
     QVBoxLayout* m_layout = nullptr;
     QTextBrowser* m_stream_row = nullptr;
     QString m_stream_plain;
+    std::function<void(const QUrl&)> m_anchor_handler;
 };
 #endif

@@ -9,6 +9,7 @@
 #include "ULlmDetailsHtml.h"
 
 #include <QDateTime>
+#include <QDesktopServices>
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QKeyEvent>
@@ -22,6 +23,7 @@
 #include <QVBoxLayout>
 
 #include "../../../LLM/Core/LlmPublicApi.h"
+#include "../../../LLM/Core/Context/ULLMDocOpenPolicy.h"
 #include "../../../LLM/Core/Observability/ULLMToolTrace.h"
 #include "../../../LLM/Core/Orchestrator/ULLMAgentOrchestrator.h"
 #include "../../../LLM/Core/Orchestrator/ULLMWorkflowState.h"
@@ -267,6 +269,52 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     layout->addWidget(m_archive_banner);
 
     m_history = new ULlmChatHistoryPanel(this);
+    m_history->setAnchorHandler([](const QUrl& url) {
+        const QString scheme = url.scheme().toLower();
+        if(scheme == QStringLiteral("http") || scheme == QStringLiteral("https")
+           || scheme == QStringLiteral("mailto"))
+        {
+            QDesktopServices::openUrl(url);
+            return;
+        }
+        if(!RDK::LLM::LLMServices::instance().isInitialized())
+            return;
+        auto* sink = RDK::LLM::LLMServices::instance().presentationSink();
+        auto* ctx = RDK::LLM::LLMServices::instance().projectContext();
+        if(!sink || !ctx)
+            return;
+        const fs::path root = ctx->paths().repository_root;
+        // Rebuild URI: QUrl may parse nmsdk-doc:path oddly (host vs path).
+        QString uri = url.toString();
+        if(scheme == QStringLiteral("nmsdk-doc") || scheme == QStringLiteral("nmsdk-help")
+           || scheme == QStringLiteral("nmsdk-class"))
+        {
+            // Prefer scheme + opaque remainder when Qt split host/path.
+            if(!url.path().isEmpty() || !url.host().isEmpty())
+            {
+                QString rest = url.host();
+                if(!url.path().isEmpty())
+                {
+                    if(!rest.isEmpty() && !url.path().startsWith(QLatin1Char('/')))
+                        rest += QLatin1Char('/');
+                    rest += url.path();
+                    if(rest.startsWith(QLatin1Char('/')))
+                        rest = rest.mid(1);
+                }
+                uri = scheme + QLatin1Char(':') + rest;
+            }
+        }
+        const RDK::LLM::DocOpenResolve resolved =
+            RDK::LLM::resolveDocUri(uri.toStdString(), root);
+        if(!resolved.ok)
+            return;
+        if(resolved.kind == "markdown")
+            sink->openMarkdownDocument(resolved.abs_path.string(), {});
+        else if(resolved.kind == "help")
+            sink->openHelpTopic(resolved.help_topic);
+        else if(resolved.kind == "class")
+            sink->openClassDescription(resolved.class_name);
+    });
     layout->addWidget(m_history, 1);
 
     m_request_status = new QLabel(this);
