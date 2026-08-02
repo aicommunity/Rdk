@@ -5,6 +5,7 @@
 #include <QToolBar>
 #include <QAction>
 #include <QGraphicsView>
+#include <QMouseEvent>
 #include <QtCharts/QXYSeries>
 #include <iostream>
 
@@ -74,7 +75,9 @@ UWatchChart::UWatchChart(QWidget *parent) :
     chartView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(chartView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(slotCustomMenuRequested(QPoint)));
     connect(chartView, SIGNAL(updateChartAxes(double, double, double, double)), this, SLOT(updateAxes(double, double, double, double)));
-
+    connect(chartView, &UWatchChartView::chartClicked, this, [this]() {
+        emit chartActivated(chartIndex);
+    });
 
     WatchTab = dynamic_cast<UWatchTab*>(parent);
 
@@ -538,7 +541,7 @@ void UWatchChart::slotCustomMenuRequested(QPoint pos)
 
     QAction * addSeiesAction =      new QAction("Add series", this);
     QAction * seriesOptionAction =  new QAction("Series settings", this);
-    QAction * chartOptionAction =   new QAction("Panel settings", this);
+    QAction * chartOptionAction =   new QAction("Chart settings", this);
     QAction * saveJpegAction =      new QAction("Save chart to JPEG", this);
     QAction * restoreAxesAction =   new QAction("Restore Axes", this);
 
@@ -564,18 +567,32 @@ void UWatchChart::addSeriesSlot()
 
 void UWatchChart::seriesOptionSlot()
 {
+    emit chartActivated(chartIndex);
     emit openSettingsPanel(chartIndex, true);
-    if(!WatchTab)
-        return;
-    WatchTab->seriesOptionTriggered();
 }
 
 void UWatchChart::chartOptionSlot()
 {
+    emit chartActivated(chartIndex);
     emit openSettingsPanel(chartIndex, false);
-    if(!WatchTab)
+}
+
+void UWatchChart::setSelected(bool selected)
+{
+    m_selected = selected;
+    if (!chartView)
         return;
-    WatchTab->chartsOptionTriggered();
+    if (selected)
+        chartView->setStyleSheet(QStringLiteral("QChartView { border: 2px solid #2F80ED; }"));
+    else
+        chartView->setStyleSheet(QStringLiteral("QChartView { border: 2px solid transparent; }"));
+}
+
+void UWatchChart::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton)
+        emit chartActivated(chartIndex);
+    QWidget::mousePressEvent(event);
 }
 
 void UWatchChart::saveToJpegSlot()

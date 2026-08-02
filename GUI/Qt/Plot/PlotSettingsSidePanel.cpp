@@ -14,6 +14,9 @@
 #include <QLineEdit>
 #include <QListWidget>
 #include <QPushButton>
+#include <QShortcut>
+#include <QKeySequence>
+#include <QSignalBlocker>
 #include <QSpinBox>
 #include <QVBoxLayout>
 
@@ -22,9 +25,13 @@ PlotSettingsSidePanel::PlotSettingsSidePanel(UWatchTab* tab, QWidget* parent)
     , m_tab(tab)
 {
     setObjectName(QStringLiteral("PlotSettingsSidePanel"));
-    setMinimumWidth(260);
-    setMaximumWidth(360);
+    setMinimumWidth(280);
+    setMaximumWidth(380);
     buildUi();
+    auto* esc = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+    esc->setContext(Qt::WidgetWithChildrenShortcut);
+    connect(esc, &QShortcut::activated, this, &PlotSettingsSidePanel::requestHide);
+    hide();
 }
 
 void PlotSettingsSidePanel::buildUi()
@@ -32,62 +39,82 @@ void PlotSettingsSidePanel::buildUi()
     auto* root = new QVBoxLayout(this);
     root->setContentsMargins(6, 6, 6, 6);
 
-    m_pageCombo = new QComboBox(this);
-    m_pageCombo->addItem(tr("Panel"));
-    m_pageCombo->addItem(tr("Series"));
-    root->addWidget(m_pageCombo);
+    auto* headerRow = new QHBoxLayout();
+    m_headerLabel = new QLabel(this);
+    m_headerLabel->setWordWrap(true);
+    m_hideBtn = new QPushButton(tr("Hide"), this);
+    m_hideBtn->setFixedWidth(56);
+    headerRow->addWidget(m_headerLabel, 1);
+    headerRow->addWidget(m_hideBtn);
+    root->addLayout(headerRow);
+    connect(m_hideBtn, &QPushButton::clicked, this, &PlotSettingsSidePanel::requestHide);
 
-    m_panelPage = new QWidget(this);
-    auto* panelForm = new QFormLayout(m_panelPage);
-    m_gridRows = new QSpinBox(m_panelPage);
-    m_gridCols = new QSpinBox(m_panelPage);
+    m_activeChartCombo = new QComboBox(this);
+    root->addWidget(new QLabel(tr("Active chart"), this));
+    root->addWidget(m_activeChartCombo);
+    connect(m_activeChartCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &PlotSettingsSidePanel::onActiveChartComboChanged);
+
+    m_pageCombo = new QComboBox(this);
+    m_pageCombo->addItem(tr("Layout"), static_cast<int>(PlotInspectorPage::Layout));
+    m_pageCombo->addItem(tr("Chart"), static_cast<int>(PlotInspectorPage::Chart));
+    m_pageCombo->addItem(tr("Series"), static_cast<int>(PlotInspectorPage::Series));
+    root->addWidget(m_pageCombo);
+    connect(m_pageCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &PlotSettingsSidePanel::onPageComboChanged);
+
+    // --- Layout page (tab scope) ---
+    m_layoutPage = new QWidget(this);
+    auto* layoutForm = new QFormLayout(m_layoutPage);
+    m_gridRows = new QSpinBox(m_layoutPage);
+    m_gridCols = new QSpinBox(m_layoutPage);
     m_gridRows->setRange(1, 8);
     m_gridCols->setRange(1, 8);
-    m_titleEdit = new QLineEdit(m_panelPage);
-    m_axisXEdit = new QLineEdit(m_panelPage);
-    m_axisYEdit = new QLineEdit(m_panelPage);
-    m_yMin = new QDoubleSpinBox(m_panelPage);
-    m_yMax = new QDoubleSpinBox(m_panelPage);
-    m_xRange = new QDoubleSpinBox(m_panelPage);
+    m_updateInterval = new QSpinBox(m_layoutPage);
+    m_updateInterval->setRange(16, 10000);
+    m_updateInterval->setSuffix(QStringLiteral(" ms"));
+    layoutForm->addRow(tr("Grid rows"), m_gridRows);
+    layoutForm->addRow(tr("Grid cols"), m_gridCols);
+    layoutForm->addRow(tr("Update interval"), m_updateInterval);
+    auto* applyLayout = new QPushButton(tr("Apply layout"), m_layoutPage);
+    layoutForm->addRow(applyLayout);
+    connect(applyLayout, &QPushButton::clicked, this, &PlotSettingsSidePanel::onApplyLayout);
+
+    // --- Chart page ---
+    m_chartPage = new QWidget(this);
+    auto* chartForm = new QFormLayout(m_chartPage);
+    m_titleEdit = new QLineEdit(m_chartPage);
+    m_axisXEdit = new QLineEdit(m_chartPage);
+    m_axisYEdit = new QLineEdit(m_chartPage);
+    m_yMin = new QDoubleSpinBox(m_chartPage);
+    m_yMax = new QDoubleSpinBox(m_chartPage);
+    m_xRange = new QDoubleSpinBox(m_chartPage);
     m_yMin->setRange(-1e9, 1e9);
     m_yMax->setRange(-1e9, 1e9);
     m_xRange->setRange(0.001, 1e9);
     m_xRange->setDecimals(3);
-    m_trackLatest = new QCheckBox(tr("Track latest"), m_panelPage);
-    m_legendVisible = new QCheckBox(tr("Show legend"), m_panelPage);
-    m_titleVisible = new QCheckBox(tr("Show title"), m_panelPage);
-    m_vizKind = new QComboBox(m_panelPage);
+    m_trackLatest = new QCheckBox(tr("Track latest"), m_chartPage);
+    m_legendVisible = new QCheckBox(tr("Show legend"), m_chartPage);
+    m_titleVisible = new QCheckBox(tr("Show title"), m_chartPage);
+    m_vizKind = new QComboBox(m_chartPage);
     m_vizKind->addItem(tr("Time series"), static_cast<int>(NMSDK::Plot::VizKind::TimeSeries));
     m_vizKind->addItem(tr("XY line"), static_cast<int>(NMSDK::Plot::VizKind::XYLine));
     m_vizKind->addItem(tr("XY scatter"), static_cast<int>(NMSDK::Plot::VizKind::XYScatter));
-    m_updateInterval = new QSpinBox(m_panelPage);
-    m_updateInterval->setRange(16, 10000);
-    m_updateInterval->setSuffix(QStringLiteral(" ms"));
+    chartForm->addRow(tr("Title"), m_titleEdit);
+    chartForm->addRow(tr("X axis"), m_axisXEdit);
+    chartForm->addRow(tr("Y axis"), m_axisYEdit);
+    chartForm->addRow(tr("Y min"), m_yMin);
+    chartForm->addRow(tr("Y max"), m_yMax);
+    chartForm->addRow(tr("X range"), m_xRange);
+    chartForm->addRow(tr("Viz kind"), m_vizKind);
+    chartForm->addRow(m_trackLatest);
+    chartForm->addRow(m_legendVisible);
+    chartForm->addRow(m_titleVisible);
+    auto* applyChart = new QPushButton(tr("Apply chart"), m_chartPage);
+    chartForm->addRow(applyChart);
+    connect(applyChart, &QPushButton::clicked, this, &PlotSettingsSidePanel::onApplyChart);
 
-    panelForm->addRow(tr("Grid rows"), m_gridRows);
-    panelForm->addRow(tr("Grid cols"), m_gridCols);
-    auto* applyGrid = new QPushButton(tr("Apply grid"), m_panelPage);
-    panelForm->addRow(applyGrid);
-    connect(applyGrid, &QPushButton::clicked, this, &PlotSettingsSidePanel::onApplyGrid);
-
-    panelForm->addRow(tr("Title"), m_titleEdit);
-    panelForm->addRow(tr("X axis"), m_axisXEdit);
-    panelForm->addRow(tr("Y axis"), m_axisYEdit);
-    panelForm->addRow(tr("Y min"), m_yMin);
-    panelForm->addRow(tr("Y max"), m_yMax);
-    panelForm->addRow(tr("X range"), m_xRange);
-    panelForm->addRow(tr("Viz kind"), m_vizKind);
-    panelForm->addRow(tr("Update"), m_updateInterval);
-    panelForm->addRow(m_trackLatest);
-    panelForm->addRow(m_legendVisible);
-    panelForm->addRow(m_titleVisible);
-
-    auto* applyPanel = new QPushButton(tr("Apply panel"), m_panelPage);
-    panelForm->addRow(applyPanel);
-    connect(applyPanel, &QPushButton::clicked, this, &PlotSettingsSidePanel::onApplyPanel);
-    connect(m_vizKind, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &PlotSettingsSidePanel::onVizKindChanged);
-
+    // --- Series page ---
     m_seriesPage = new QWidget(this);
     auto* seriesLayout = new QVBoxLayout(m_seriesPage);
     m_seriesList = new QListWidget(m_seriesPage);
@@ -120,40 +147,134 @@ void PlotSettingsSidePanel::buildUi()
     connect(m_seriesList, &QListWidget::currentRowChanged,
             this, &PlotSettingsSidePanel::onSeriesSelectionChanged);
 
-    root->addWidget(m_panelPage);
+    root->addWidget(m_layoutPage);
+    root->addWidget(m_chartPage);
     root->addWidget(m_seriesPage);
-    m_seriesPage->hide();
+    root->addStretch(1);
+    updatePageVisibility();
+}
 
-    connect(m_pageCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int i) {
-        m_panelPage->setVisible(i == 0);
-        m_seriesPage->setVisible(i == 1);
-        if (i == 1)
-            refreshFromTab();
-    });
+void PlotSettingsSidePanel::updatePageVisibility()
+{
+    const int page = m_pageCombo ? m_pageCombo->currentData().toInt() : 0;
+    m_layoutPage->setVisible(page == static_cast<int>(PlotInspectorPage::Layout));
+    m_chartPage->setVisible(page == static_cast<int>(PlotInspectorPage::Chart));
+    m_seriesPage->setVisible(page == static_cast<int>(PlotInspectorPage::Series));
+    // Active chart combo only relevant for Chart/Series
+    const bool chartScoped = page != static_cast<int>(PlotInspectorPage::Layout);
+    m_activeChartCombo->setEnabled(chartScoped);
+}
+
+void PlotSettingsSidePanel::updateHeader()
+{
+    if (!m_tab)
+    {
+        m_headerLabel->setText(tr("Inspector"));
+        return;
+    }
+    const int n = m_tab->countGraphs();
+    QString chartTitle;
+    if (m_chartIndex >= 0 && m_chartIndex < n)
+    {
+        if (UWatchChart* c = m_tab->getChart(m_chartIndex))
+            chartTitle = c->getChartTitle();
+    }
+    if (chartTitle.isEmpty())
+        chartTitle = tr("Chart %1").arg(m_chartIndex + 1);
+
+    const int page = m_pageCombo->currentData().toInt();
+    if (page == static_cast<int>(PlotInspectorPage::Layout))
+        m_headerLabel->setText(tr("Layout — tab grid & update"));
+    else if (page == static_cast<int>(PlotInspectorPage::Series))
+        m_headerLabel->setText(tr("Series — Chart %1/%2 — %3")
+                                   .arg(m_chartIndex + 1)
+                                   .arg(qMax(1, n))
+                                   .arg(chartTitle));
+    else
+        m_headerLabel->setText(tr("Chart %1/%2 — %3")
+                                   .arg(m_chartIndex + 1)
+                                   .arg(qMax(1, n))
+                                   .arg(chartTitle));
 }
 
 void PlotSettingsSidePanel::setActiveChart(int chartIndex)
 {
     m_chartIndex = chartIndex;
+    {
+        QSignalBlocker blocker(m_activeChartCombo);
+        if (chartIndex >= 0 && chartIndex < m_activeChartCombo->count())
+            m_activeChartCombo->setCurrentIndex(chartIndex);
+    }
     refreshFromTab();
 }
 
-void PlotSettingsSidePanel::showPanelPage()
+void PlotSettingsSidePanel::showPage(PlotInspectorPage page)
 {
-    m_pageCombo->setCurrentIndex(0);
+    const int idx = m_pageCombo->findData(static_cast<int>(page));
+    if (idx >= 0)
+        m_pageCombo->setCurrentIndex(idx);
+    else
+        updatePageVisibility();
+    updateHeader();
 }
 
-void PlotSettingsSidePanel::showSeriesPage()
+void PlotSettingsSidePanel::showInspector(PlotInspectorPage page, int chartIndex)
 {
-    m_pageCombo->setCurrentIndex(1);
+    if (chartIndex >= 0)
+        setActiveChart(chartIndex);
+    showPage(page);
+    show();
+    raise();
+}
+
+void PlotSettingsSidePanel::onPageComboChanged(int)
+{
+    updatePageVisibility();
+    refreshFromTab();
+    updateHeader();
+}
+
+void PlotSettingsSidePanel::onActiveChartComboChanged(int index)
+{
+    if (index < 0)
+        return;
+    m_chartIndex = index;
+    emit activeChartChanged(index);
+    refreshFromTab();
+    updateHeader();
 }
 
 void PlotSettingsSidePanel::refreshFromTab()
 {
     if (!m_tab)
         return;
+
     m_gridRows->setValue(qMax(1, m_tab->getRowNumber()));
     m_gridCols->setValue(qMax(1, m_tab->getColNumber()));
+    m_updateInterval->setValue(m_tab->UpdateIntervalMs);
+
+    {
+        QSignalBlocker blocker(m_activeChartCombo);
+        m_activeChartCombo->clear();
+        for (int i = 0; i < m_tab->countGraphs(); ++i)
+        {
+            UWatchChart* c = m_tab->getChart(i);
+            QString title = c ? c->getChartTitle() : QString();
+            if (title.isEmpty())
+                title = tr("Chart %1").arg(i + 1);
+            m_activeChartCombo->addItem(QStringLiteral("%1 — %2").arg(i + 1).arg(title), i);
+        }
+        if (m_chartIndex >= 0 && m_chartIndex < m_activeChartCombo->count())
+            m_activeChartCombo->setCurrentIndex(m_chartIndex);
+        else if (m_activeChartCombo->count() > 0)
+        {
+            m_chartIndex = 0;
+            m_activeChartCombo->setCurrentIndex(0);
+        }
+    }
+
+    updateHeader();
+
     if (m_chartIndex < 0 || m_chartIndex >= m_tab->countGraphs())
         return;
     UWatchChart* chart = m_tab->getChart(m_chartIndex);
@@ -169,7 +290,6 @@ void PlotSettingsSidePanel::refreshFromTab()
     m_trackLatest->setChecked(chart->getIsAxisXtrackable());
     m_legendVisible->setChecked(chart->isLegendVisible());
     m_titleVisible->setChecked(chart->isTitleVisible());
-    m_updateInterval->setValue(m_tab->UpdateIntervalMs);
 
     const int viz = static_cast<int>(chart->getVizKind());
     const int vizIdx = m_vizKind->findData(viz);
@@ -225,18 +345,20 @@ void PlotSettingsSidePanel::onSeriesSelectionChanged()
     m_bindingLabel->setText(binding);
 }
 
-void PlotSettingsSidePanel::onApplyGrid()
+void PlotSettingsSidePanel::onApplyLayout()
 {
     if (!m_tab)
         return;
+    m_tab->saveUpdateInterval(m_updateInterval->value());
     m_tab->createGridLayout(m_gridRows->value(), m_gridCols->value());
-    m_chartIndex = 0;
+    m_chartIndex = qBound(0, m_chartIndex, m_tab->countGraphs() - 1);
+    m_tab->setActiveChart(m_chartIndex);
     m_tab->syncDocumentFromCharts();
     refreshFromTab();
     emit requestApply();
 }
 
-void PlotSettingsSidePanel::onApplyPanel()
+void PlotSettingsSidePanel::onApplyChart()
 {
     if (!m_tab || m_chartIndex < 0 || m_chartIndex >= m_tab->countGraphs())
         return;
@@ -254,9 +376,9 @@ void PlotSettingsSidePanel::onApplyPanel()
     chart->setLegendVisible(m_legendVisible->isChecked());
     chart->setTitleVisible(m_titleVisible->isChecked());
     chart->setVizKind(static_cast<NMSDK::Plot::VizKind>(m_vizKind->currentData().toInt()));
-    m_tab->saveUpdateInterval(m_updateInterval->value());
     chart->fixInitialAxesState();
     m_tab->syncDocumentFromCharts();
+    refreshFromTab();
     emit requestApply();
 }
 
@@ -278,8 +400,4 @@ void PlotSettingsSidePanel::onApplySeries()
     m_tab->syncDocumentFromCharts();
     refreshFromTab();
     emit requestApply();
-}
-
-void PlotSettingsSidePanel::onVizKindChanged(int)
-{
 }

@@ -69,8 +69,9 @@ public:
 
 private slots:
     void on_actionCreate_tab_triggered();
-    void on_actionSeries_option_triggered();
-    void on_actionCharts_option_triggered();
+    void on_actionLayout_settings_triggered();
+    void on_actionChart_settings_triggered();
+    void on_actionSeries_settings_triggered();
     void on_tabWidget_tabCloseRequested(int index);
 
 

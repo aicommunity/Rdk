@@ -26,9 +26,10 @@ protected:
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
 
-private:
 signals:
     void updateChartAxes(double x_min, double x_max, double y_min, double y_max);
+    /// Left-click without meaningful drag (focus chart without zoom).
+    void chartClicked();
 
 };
 

@@ -6,6 +6,9 @@
 #include "Plot/PlotSurface.h"
 #include "../../Core/Serialize/USerStorageXML.h"
 
+#include <QHBoxLayout>
+
+
 
 UWatchTab::UWatchTab(QWidget *parent, RDK::UApplication* app) :
     UVisualControllerWidget(parent, app),
@@ -13,9 +16,20 @@ UWatchTab::UWatchTab(QWidget *parent, RDK::UApplication* app) :
 {
     ui->setupUi(this);
     colSplitter = nullptr;
+
+    mainSplitter = new QSplitter(Qt::Horizontal, this);
+    chartsHost = new QWidget(mainSplitter);
+    auto* chartsLayout = new QHBoxLayout(chartsHost);
+    chartsLayout->setContentsMargins(0, 0, 0, 0);
+    chartsLayout->setSpacing(0);
+    // Move existing horizontalLayout content hosting into chartsHost via reparent:
+    // createSplitterGrid adds colSplitter into chartsHost layout.
+    ui->horizontalLayout->addWidget(mainSplitter);
+
     createGridLayout(1,1);
     ensureSettingsPanel();
     syncDocumentFromCharts();
+    setActiveChart(0);
 
     UpdateInterval = UpdateIntervalMs;
     setAccessibleName("UWatchTab");
@@ -33,6 +47,7 @@ void UWatchTab::createGraph()
 
     connect(graph.last(), SIGNAL(addSerieSignal(int)), this, SLOT(createSelectionDialogSlot(int)));
     connect(graph.last(), SIGNAL(openSettingsPanel(int,bool)), this, SLOT(openSettingsPanelSlot(int,bool)));
+    connect(graph.last(), SIGNAL(chartActivated(int)), this, SLOT(onChartActivated(int)));
 }
 
 void UWatchTab::deleteGraph(int index)
@@ -267,57 +282,121 @@ void UWatchTab::createSelectionDialogSlot(int index)
     createSelectionDialog(index);
 }
 
-void UWatchTab::seriesOptionTriggered()
+void UWatchTab::setActiveChart(int index)
 {
-    ensureSettingsPanel();
-    if (settingsPanel)
+    if (graph.isEmpty())
     {
-        settingsPanel->setVisible(true);
-        settingsPanel->setActiveChart(0);
-        settingsPanel->showSeriesPage();
+        m_activeChartIndex = 0;
+        return;
     }
+    if (index < 0)
+        index = 0;
+    if (index >= graph.count())
+        index = graph.count() - 1;
+    m_activeChartIndex = index;
+    for (int i = 0; i < graph.count(); ++i)
+    {
+        if (graph[i])
+            graph[i]->setSelected(i == m_activeChartIndex);
+    }
+    if (settingsPanel && settingsPanel->isVisible())
+        settingsPanel->setActiveChart(m_activeChartIndex);
 }
 
-void UWatchTab::chartsOptionTriggered()
+void UWatchTab::onChartActivated(int chartIndex)
 {
-    ensureSettingsPanel();
-    if (settingsPanel)
-    {
-        settingsPanel->setVisible(true);
-        settingsPanel->setActiveChart(0);
-        settingsPanel->showPanelPage();
-    }
+    setActiveChart(chartIndex);
 }
 
-void UWatchTab::openSettingsPanelSlot(int chartIndex, bool seriesPage)
+void UWatchTab::onInspectorActiveChartChanged(int chartIndex)
+{
+    setActiveChart(chartIndex);
+}
+
+void UWatchTab::showInspector(PlotInspectorPage page, int chartIndex)
 {
     ensureSettingsPanel();
     if (!settingsPanel)
         return;
-    settingsPanel->setVisible(true);
-    settingsPanel->setActiveChart(chartIndex);
-    if (seriesPage)
-        settingsPanel->showSeriesPage();
+    if (chartIndex < 0)
+        chartIndex = m_activeChartIndex;
+    setActiveChart(chartIndex);
+    settingsPanel->showInspector(page, m_activeChartIndex);
+    updateInspectorSplitterSizes(true);
+}
+
+void UWatchTab::hideInspector()
+{
+    if (!settingsPanel)
+        return;
+    settingsPanel->hide();
+    updateInspectorSplitterSizes(false);
+}
+
+bool UWatchTab::isInspectorVisible() const
+{
+    return settingsPanel && settingsPanel->isVisible();
+}
+
+void UWatchTab::updateInspectorSplitterSizes(bool show)
+{
+    if (!mainSplitter || !settingsPanel)
+        return;
+    if (show)
+    {
+        settingsPanel->show();
+        const int total = qMax(mainSplitter->width(), 400);
+        mainSplitter->setSizes({total - 300, 300});
+    }
     else
-        settingsPanel->showPanelPage();
+    {
+        settingsPanel->hide();
+        mainSplitter->setSizes({1, 0});
+    }
+}
+
+void UWatchTab::layoutOptionTriggered()
+{
+    showInspector(PlotInspectorPage::Layout, m_activeChartIndex);
+}
+
+void UWatchTab::seriesOptionTriggered()
+{
+    showInspector(PlotInspectorPage::Series, m_activeChartIndex);
+}
+
+void UWatchTab::chartsOptionTriggered()
+{
+    showInspector(PlotInspectorPage::Chart, m_activeChartIndex);
+}
+
+void UWatchTab::openSettingsPanelSlot(int chartIndex, bool seriesPage)
+{
+    showInspector(seriesPage ? PlotInspectorPage::Series : PlotInspectorPage::Chart, chartIndex);
 }
 
 void UWatchTab::ensureSettingsPanel()
 {
     if (settingsPanel)
         return;
-    settingsPanel = new PlotSettingsSidePanel(this, this);
-    ui->horizontalLayout->addWidget(settingsPanel);
-    settingsPanel->setVisible(true);
+    if (!mainSplitter)
+        return;
+    settingsPanel = new PlotSettingsSidePanel(this, mainSplitter);
+    mainSplitter->addWidget(settingsPanel);
+    mainSplitter->setStretchFactor(0, 1);
+    mainSplitter->setStretchFactor(1, 0);
+    mainSplitter->setCollapsible(1, true);
+    connect(settingsPanel, &PlotSettingsSidePanel::requestHide, this, &UWatchTab::hideInspector);
+    connect(settingsPanel, &PlotSettingsSidePanel::activeChartChanged,
+            this, &UWatchTab::onInspectorActiveChartChanged);
+    settingsPanel->hide();
+    updateInspectorSplitterSizes(false);
 }
 
 void UWatchTab::createSplitterGrid(int rowNumber)
 {
-    //создаем вертикальный контейнер, в котором располагаются горизонтальные
-
-    colSplitter = new QSplitter(this);
+    colSplitter = new QSplitter(chartsHost ? chartsHost : this);
     colSplitter->setOrientation(Qt::Vertical);
-
 
     QList<int> sizes;
     int height = this->height();
@@ -329,7 +408,10 @@ void UWatchTab::createSplitterGrid(int rowNumber)
         sizes.push_back(height/rowNumber);
     }
     colSplitter->setSizes(sizes);
-    ui->horizontalLayout->addWidget(colSplitter);
+    if (chartsHost && chartsHost->layout())
+        chartsHost->layout()->addWidget(colSplitter);
+    else
+        ui->horizontalLayout->addWidget(colSplitter);
 }
 
 void UWatchTab::deleteGraphs(int new_graph_count)
@@ -341,27 +423,26 @@ void UWatchTab::deleteGraphs(int new_graph_count)
         graphs_to_remove = 0;
     }
 
-    // deleting unnecessary graphs
     for(int i=0; i < graphs_to_remove; i++)
         delete graph.takeLast();
 
-
-    //удаляем все графики
     for (int i = tabRowNumber-1; i >= 0; --i)
     {
         int widget_count = rowSplitter[i]->count();
-        // clear children in rowSplitter, so while it is deleted, graphs won't be deleted
         for(int j = 0; j < widget_count; j++)
             rowSplitter[i]->widget(0)->setParent(nullptr);
 
         delete rowSplitter.takeLast();
     }
 
-    //удаляем расположение
     if (colSplitter !=nullptr)
     {
-        ui->horizontalLayout->removeWidget(colSplitter);
+        if (chartsHost && chartsHost->layout())
+            chartsHost->layout()->removeWidget(colSplitter);
+        else
+            ui->horizontalLayout->removeWidget(colSplitter);
         delete colSplitter;
+        colSplitter = nullptr;
     }
 }
 
@@ -399,6 +480,7 @@ void UWatchTab::createGridLayout(int rowNumber, int colNumber)
         }
         rowSplitter[i]->setSizes(sizes);
     }
+    setActiveChart(m_activeChartIndex);
 }
 
 UWatchChart *UWatchTab::getChart(int index)

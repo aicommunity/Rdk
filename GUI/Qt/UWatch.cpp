@@ -43,22 +43,31 @@ void UWatch::on_actionCreate_tab_triggered()
     createTab();
 }
 
-void UWatch::on_actionSeries_option_triggered()
+void UWatch::on_actionLayout_settings_triggered()
 {
     UWatchTab* current_tab = getCurrentTab();
     if(!current_tab)
      return;
 
-    current_tab->seriesOptionTriggered();
+    current_tab->layoutOptionTriggered();
 }
 
-void UWatch::on_actionCharts_option_triggered()
+void UWatch::on_actionChart_settings_triggered()
 {
     UWatchTab* current_tab = getCurrentTab();
     if(!current_tab)
      return;
 
     current_tab->chartsOptionTriggered();
+}
+
+void UWatch::on_actionSeries_settings_triggered()
+{
+    UWatchTab* current_tab = getCurrentTab();
+    if(!current_tab)
+     return;
+
+    current_tab->seriesOptionTriggered();
 }
 
 void UWatch::createTab()

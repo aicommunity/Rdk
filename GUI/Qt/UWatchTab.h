@@ -13,6 +13,7 @@
 #include "UVisualControllerWidget.h"
 #include "UComponentPropertySelectionWidget.h"
 #include "Plot/PlotDocument.h"
+#include "Plot/PlotSettingsSidePanel.h"
 #include "NmsdkQtCompat.h"
 
 NMSDK_QT_CHARTS_USE_NS
@@ -36,6 +37,8 @@ public:
 
     UWatchChart *getChart(int index);
     int countGraphs();
+    int activeChartIndex() const { return m_activeChartIndex; }
+    void setActiveChart(int index);
 
     void createSelectionDialog(int chartIndex);
     void createXYSelectionDialog(int chartIndex);
@@ -46,11 +49,14 @@ public:
     int getColNumber();
     int getRowNumber();
 
-    /// Live PlotDocument mirror (synced from charts before save / after mutations).
     const NMSDK::Plot::PlotDocument& plotDocument() const { return m_document; }
     void syncDocumentFromCharts();
     NMSDK::Plot::PlotDocument capturePlotDocument() const;
     void applyPlotDocument(const NMSDK::Plot::PlotDocument& doc);
+
+    void showInspector(PlotInspectorPage page, int chartIndex = -1);
+    void hideInspector();
+    bool isInspectorVisible() const;
 
     virtual void ASaveParameters(RDK::USerStorageXML &xml);
     virtual void ALoadParameters(RDK::USerStorageXML &xml);
@@ -68,18 +74,21 @@ private:
     void createSplitterGrid(int rowNumber);
     void ensureSettingsPanel();
     void applySplitterSizes(const NMSDK::Plot::PlotDocument& doc);
+    void updateInspectorSplitterSizes(bool show);
 
     int tabColNumber=0;
     int tabRowNumber=0;
+    int m_activeChartIndex = 0;
 
     QVector <UWatchChart*> graph;
     std::list<double> XData;
     std::list<double> YData;
     QVector<QPointF> points;
 
+    QWidget *chartsHost = nullptr;
+    QSplitter *mainSplitter = nullptr;
     QSplitter *colSplitter;
     QVector <QSplitter*> rowSplitter;
-    QSplitter *rootSplitter = nullptr;
     PlotSettingsSidePanel *settingsPanel = nullptr;
     NMSDK::Plot::PlotDocument m_document;
 
@@ -91,9 +100,12 @@ private:
 
 public slots:
     void createSelectionDialogSlot(int index);
+    void layoutOptionTriggered();
     void seriesOptionTriggered();
     void chartsOptionTriggered();
     void openSettingsPanelSlot(int chartIndex, bool seriesPage);
+    void onChartActivated(int chartIndex);
+    void onInspectorActiveChartChanged(int chartIndex);
 
 };
 

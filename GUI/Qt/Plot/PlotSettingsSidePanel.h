@@ -13,7 +13,14 @@ class QListWidget;
 class QPushButton;
 class QLabel;
 
-/// Side inspector: Panel settings + Series settings (replaces overlapping dialogs).
+enum class PlotInspectorPage
+{
+    Layout = 0,
+    Chart = 1,
+    Series = 2
+};
+
+/// Collapsible inspector: Layout (tab) | Chart | Series.
 class PlotSettingsSidePanel : public QWidget
 {
     Q_OBJECT
@@ -22,31 +29,49 @@ public:
 
     void setActiveChart(int chartIndex);
     void refreshFromTab();
-    void showPanelPage();
-    void showSeriesPage();
+    void showPage(PlotInspectorPage page);
+    void showLayoutPage() { showPage(PlotInspectorPage::Layout); }
+    void showChartPage() { showPage(PlotInspectorPage::Chart); }
+    void showSeriesPage() { showPage(PlotInspectorPage::Series); }
+
+    /// Open inspector on page for chartIndex (no forced chart 0).
+    void showInspector(PlotInspectorPage page, int chartIndex);
 
 signals:
     void requestApply();
+    void requestHide();
+    void activeChartChanged(int chartIndex);
 
 private slots:
-    void onApplyPanel();
+    void onApplyLayout();
+    void onApplyChart();
     void onApplySeries();
-    void onApplyGrid();
     void onSeriesSelectionChanged();
-    void onVizKindChanged(int index);
+    void onActiveChartComboChanged(int index);
+    void onPageComboChanged(int index);
 
 private:
     void buildUi();
+    void updateHeader();
+    void updatePageVisibility();
+
     UWatchTab* m_tab = nullptr;
     int m_chartIndex = 0;
     int m_serieIndex = 0;
 
+    QLabel* m_headerLabel = nullptr;
+    QComboBox* m_activeChartCombo = nullptr;
     QComboBox* m_pageCombo = nullptr;
-    QWidget* m_panelPage = nullptr;
+    QPushButton* m_hideBtn = nullptr;
+
+    QWidget* m_layoutPage = nullptr;
+    QWidget* m_chartPage = nullptr;
     QWidget* m_seriesPage = nullptr;
 
     QSpinBox* m_gridRows = nullptr;
     QSpinBox* m_gridCols = nullptr;
+    QSpinBox* m_updateInterval = nullptr;
+
     QLineEdit* m_titleEdit = nullptr;
     QLineEdit* m_axisXEdit = nullptr;
     QLineEdit* m_axisYEdit = nullptr;
@@ -57,7 +82,6 @@ private:
     QCheckBox* m_legendVisible = nullptr;
     QCheckBox* m_titleVisible = nullptr;
     QComboBox* m_vizKind = nullptr;
-    QSpinBox* m_updateInterval = nullptr;
 
     QListWidget* m_seriesList = nullptr;
     QLineEdit* m_serieName = nullptr;

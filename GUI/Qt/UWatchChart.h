@@ -10,6 +10,7 @@
 
 #include <QWheelEvent>
 #include <QKeyEvent>
+#include <QMouseEvent>
 
 #include <QString>
 #include <QVector>
@@ -127,6 +128,9 @@ public:
     NMSDK::Plot::PlotPanel toPlotPanel() const;
     void applyPlotPanelMeta(const NMSDK::Plot::PlotPanel& panel);
 
+    void setSelected(bool selected);
+    bool isSelected() const { return m_selected; }
+
     //работа с динамикой осей
     int axisXrange;
     bool isAxisXtrackable = true;   //будет ли "поле зрения" бежать за временем
@@ -166,6 +170,7 @@ private:
     NMSDK::Plot::VizKind vizKind = NMSDK::Plot::VizKind::TimeSeries;
     bool m_legendVisible = true;
     bool m_titleVisible = true;
+    bool m_selected = false;
 
  public:
     UWatchChartView *chartView;
@@ -184,6 +189,9 @@ private:
     bool pendingUpdate = false;
 
 
+
+protected:
+    void mousePressEvent(QMouseEvent *event) override;
 
 private slots:
     //скролл и зум по оси Y
@@ -205,6 +213,7 @@ signals:
     void addSerieSignal(int someIndex);
     void UpdateTabGuiSignal(bool force_update);
     void openSettingsPanel(int chartIndex, bool seriesPage);
+    void chartActivated(int chartIndex);
 };
 
 #endif // UWATCHCHART_H

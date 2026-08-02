@@ -68,8 +68,9 @@
      <string>Actions</string>
     </property>
     <addaction name="actionCreate_tab"/>
-    <addaction name="actionSeries_option"/>
-    <addaction name="actionCharts_option"/>
+    <addaction name="actionLayout_settings"/>
+    <addaction name="actionChart_settings"/>
+    <addaction name="actionSeries_settings"/>
    </widget>
    <addaction name="menu"/>
   </widget>
@@ -86,8 +87,9 @@
    </attribute>
    <addaction name="actionCreate_tab"/>
    <addaction name="separator"/>
-   <addaction name="actionSeries_option"/>
-   <addaction name="actionCharts_option"/>
+   <addaction name="actionLayout_settings"/>
+   <addaction name="actionChart_settings"/>
+   <addaction name="actionSeries_settings"/>
    <addaction name="separator"/>
   </widget>
   <action name="actionCreate_tab">
@@ -95,20 +97,28 @@
     <string>Create tab</string>
    </property>
   </action>
-  <action name="actionSeries_option">
+  <action name="actionLayout_settings">
    <property name="text">
-    <string>Series options</string>
+    <string>Layout…</string>
+   </property>
+   <property name="toolTip">
+    <string>Tab layout: grid and update interval</string>
    </property>
   </action>
-  <action name="actionCharts_option">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
+  <action name="actionChart_settings">
    <property name="text">
-    <string>Charts options</string>
+    <string>Chart settings…</string>
    </property>
-   <property name="visible">
-    <bool>false</bool>
+   <property name="toolTip">
+    <string>Settings for the active chart</string>
+   </property>
+  </action>
+  <action name="actionSeries_settings">
+   <property name="text">
+    <string>Series…</string>
+   </property>
+   <property name="toolTip">
+    <string>Series of the active chart</string>
    </property>
   </action>
  </widget>
