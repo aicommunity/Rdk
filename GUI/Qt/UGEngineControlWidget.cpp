@@ -477,6 +477,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 
     aboutDialog = 0;
     helpWindow = 0;
+    markdownDocWindow = nullptr;
 }
 
 bool UGEngineControlWidget::eventFilter(QObject* watched, QEvent* event)
@@ -1979,11 +1980,6 @@ void UGEngineControlWidget::keyPressEvent(QKeyEvent *event)
     UVisualControllerMainWidget::keyPressEvent(event);
 }
 
-void UGEngineControlWidget::openHelpWindow()
-{
-    on_actionUserGuide_triggered();
-}
-
 void UGEngineControlWidget::showCustomWidgetById(const QString& id)
 {
     createOrActivateCustomWidget(id);
@@ -3166,15 +3162,47 @@ void UGEngineControlWidget::on_actionAbout_triggered()
  aboutDialog->show();
 }
 
-void UGEngineControlWidget::on_actionUserGuide_triggered()
+void UGEngineControlWidget::openHelpWindow(const QString& topic)
 {
  if(!helpWindow)
  {
   helpWindow = new UHelpWindow(this, application);
  }
+ helpWindow->showHelp(topic);
  helpWindow->show();
  helpWindow->raise();
  helpWindow->activateWindow();
+}
+
+void UGEngineControlWidget::openClassDescriptionWindow(const std::string& class_name)
+{
+ if(class_name.empty())
+  return;
+ QMainWindow* classDescWindow = new QMainWindow(this);
+ classDescWindow->setAttribute(Qt::WA_DeleteOnClose);
+ UClassDescriptionDisplay* display =
+     new UClassDescriptionDisplay(class_name, classDescWindow, application);
+ classDescWindow->setCentralWidget(display);
+ classDescWindow->setWindowTitle(tr("Class Description: %1").arg(QString::fromStdString(class_name)));
+ classDescWindow->resize(display->size().isEmpty() ? QSize(640, 480) : display->size());
+ display->show();
+ classDescWindow->showNormal();
+ classDescWindow->raise();
+ classDescWindow->activateWindow();
+}
+
+bool UGEngineControlWidget::openMarkdownDocWindow(const QString& absPath, const QString& title)
+{
+ if(absPath.isEmpty())
+  return false;
+ if(!markdownDocWindow)
+  markdownDocWindow = new UMarkdownDocWindow(this);
+ return markdownDocWindow->openFile(absPath, title);
+}
+
+void UGEngineControlWidget::on_actionUserGuide_triggered()
+{
+ openHelpWindow(QString());
 }
 
 

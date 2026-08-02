@@ -35,6 +35,11 @@ public:
     nlohmann::json watchMdiFocus(int mdi_id) override;
     nlohmann::json watchMdiClose(int mdi_id) override;
 
+    nlohmann::json openHelpTopic(const std::string& topic) override;
+    nlohmann::json openClassDescription(const std::string& class_name) override;
+    nlohmann::json openMarkdownDocument(const std::string& abs_path,
+                                        const std::string& title) override;
+
     std::string captureNavigationToken() const override;
     void restoreNavigationToken(const std::string& token) override;
     void navigateToDiagramScope(const std::string& scope_long_name, int channel_index) override;

@@ -96,6 +96,25 @@ public:
         (void)mdi_id;
         return {{"ok", false}, {"error", "Watch host unavailable"}};
     }
+
+    /// DD-DOC-001: open Help / class ClDesc / markdown Docs in host UI.
+    virtual nlohmann::json openHelpTopic(const std::string& topic)
+    {
+        (void)topic;
+        return {{"ok", false}, {"error", "Presentation host unavailable"}};
+    }
+    virtual nlohmann::json openClassDescription(const std::string& class_name)
+    {
+        (void)class_name;
+        return {{"ok", false}, {"error", "Presentation host unavailable"}};
+    }
+    virtual nlohmann::json openMarkdownDocument(const std::string& abs_path,
+                                                const std::string& title)
+    {
+        (void)abs_path;
+        (void)title;
+        return {{"ok", false}, {"error", "Presentation host unavailable"}};
+    }
 };
 
 } // namespace RDK::LLM

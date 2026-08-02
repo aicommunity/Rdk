@@ -44,6 +44,8 @@
 #include "UCurlFtpClientTestWidget.h"
 #include "UAboutDialog.h"
 #include "UHelpWindow.h"
+#include "UMarkdownDocWindow.h"
+#include "UClassDescriptionDisplay.h"
 #include "UProjectDescriptionWindow.h"
 #include "UComponentGuiService.h"
 #include "UComponentGuiContext.h"
@@ -134,8 +136,12 @@ public:
     /// загрузка проекта извне (используется, например, пунктами меню и автозагрузкой)
     void loadProjectExternal(const QString &config_path);
 
-    /// Open help window (public method for use by child widgets)
-    void openHelpWindow();
+    /// Open help window (public method for use by child widgets). Empty topic → index.
+    void openHelpWindow(const QString& topic = QString());
+
+    /// DD-DOC-001: open class ClDesc panel / markdown documentation viewer.
+    void openClassDescriptionWindow(const std::string& class_name);
+    bool openMarkdownDocWindow(const QString& absPath, const QString& title = QString());
 
     // Регистрация пользовательского виджета (дополнительного окна/панели),
     // который затем создаётся по требованию из меню/toolbar.
@@ -309,6 +315,7 @@ private:
     UTcpServerControlWidget *tcpServerControlWidget;
     UAboutDialog *aboutDialog;
     UHelpWindow *helpWindow;
+    UMarkdownDocWindow* markdownDocWindow = nullptr;
 #ifndef RDK_DISABLE_EXT_GUI
     UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
 #endif

@@ -437,3 +437,79 @@ nlohmann::json ULlmQtPresentationSink::watchMdiClose(int mdi_id)
         return {{"ok", false}, {"error", cmd.status.message}};
     return cmd.payload;
 }
+
+nlohmann::json ULlmQtPresentationSink::openHelpTopic(const std::string& topic)
+{
+    RDK::LLM::ApplicationCommandResult cmd = invokeHostSynchronized([&]() {
+        RDK::LLM::ApplicationCommandResult r;
+        if(!m_host)
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::NotInitialized;
+            r.status.message = "Presentation host unavailable";
+            r.payload = {{"ok", false}, {"error", r.status.message}};
+            return r;
+        }
+        m_host->openHelpWindow(QString::fromStdString(topic));
+        r.payload = {{"ok", true},
+                     {"topic", topic.empty() ? std::string("index.html") : topic}};
+        return r;
+    });
+    if(!cmd.status.ok())
+        return {{"ok", false}, {"error", cmd.status.message}};
+    return cmd.payload;
+}
+
+nlohmann::json ULlmQtPresentationSink::openClassDescription(const std::string& class_name)
+{
+    RDK::LLM::ApplicationCommandResult cmd = invokeHostSynchronized([&]() {
+        RDK::LLM::ApplicationCommandResult r;
+        if(!m_host)
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::NotInitialized;
+            r.status.message = "Presentation host unavailable";
+            r.payload = {{"ok", false}, {"error", r.status.message}};
+            return r;
+        }
+        if(class_name.empty())
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::InvalidPropertyValue;
+            r.status.message = "class_name required";
+            r.payload = {{"ok", false}, {"error", r.status.message}};
+            return r;
+        }
+        m_host->openClassDescriptionWindow(class_name);
+        r.payload = {{"ok", true}, {"class_name", class_name}};
+        return r;
+    });
+    if(!cmd.status.ok())
+        return {{"ok", false}, {"error", cmd.status.message}};
+    return cmd.payload;
+}
+
+nlohmann::json ULlmQtPresentationSink::openMarkdownDocument(const std::string& abs_path,
+                                                            const std::string& title)
+{
+    RDK::LLM::ApplicationCommandResult cmd = invokeHostSynchronized([&]() {
+        RDK::LLM::ApplicationCommandResult r;
+        if(!m_host)
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::NotInitialized;
+            r.status.message = "Presentation host unavailable";
+            r.payload = {{"ok", false}, {"error", r.status.message}};
+            return r;
+        }
+        if(!m_host->openMarkdownDocWindow(QString::fromStdString(abs_path),
+                                          QString::fromStdString(title)))
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::IOError;
+            r.status.message = "Failed to open markdown document";
+            r.payload = {{"ok", false}, {"error", r.status.message}, {"path", abs_path}};
+            return r;
+        }
+        r.payload = {{"ok", true}, {"path", abs_path}, {"title", title}};
+        return r;
+    });
+    if(!cmd.status.ok())
+        return {{"ok", false}, {"error", cmd.status.message}, {"path", abs_path}};
+    return cmd.payload;
+}
