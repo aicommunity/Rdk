@@ -368,18 +368,14 @@ void ULlmAssistantDockWidget::refreshProviderBar()
 
     const auto active = store.activeProfile();
     const bool has_key = RDK::LLM::ULLMProviderAuth::hasApiKey(active, store.runtime());
-    const auto preset = store.presetProfile(active.profile_id);
-    const bool custom_endpoint =
-        active.base_url != preset.base_url || active.model != preset.model;
     QString status;
     if(active.is_cloud)
         status = has_key ? tr("Cloud · key set") : tr("Cloud · key missing");
     else
         status = tr("Local");
-    if(custom_endpoint)
-        status += tr(" · custom endpoint");
-    status += tr("\n%1 · %2").arg(QString::fromStdString(active.base_url))
-                   .arg(QString::fromStdString(active.model));
+    const QString model = QString::fromStdString(active.model).trimmed();
+    if(!model.isEmpty())
+        status += tr(" · %1").arg(model);
     m_provider_status->setText(status);
 }
 
