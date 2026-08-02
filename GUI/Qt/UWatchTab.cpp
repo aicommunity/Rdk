@@ -1,7 +1,10 @@
 #include "UWatchTab.h"
 #include "ui_UWatchTab.h"
 #include "UGuiTelemetry.h"
-
+#include "Plot/PlotDataAdapter.h"
+#include "Plot/PlotSettingsSidePanel.h"
+#include "Plot/PlotSurface.h"
+#include "../../Core/Serialize/USerStorageXML.h"
 
 
 UWatchTab::UWatchTab(QWidget *parent, RDK::UApplication* app) :
@@ -10,10 +13,10 @@ UWatchTab::UWatchTab(QWidget *parent, RDK::UApplication* app) :
 {
     ui->setupUi(this);
     colSplitter = nullptr;
-    //создаем один график на вкладке
     createGridLayout(1,1);
+    ensureSettingsPanel();
+    syncDocumentFromCharts();
 
-    //время обновления графика
     UpdateInterval = UpdateIntervalMs;
     setAccessibleName("UWatchTab");
 }
@@ -25,11 +28,11 @@ UWatchTab::~UWatchTab()
 
 void UWatchTab::createGraph()
 {
-    //создание 1 графика
-    graph.push_back(new UWatchChart(this));
+    graph.push_back(new NMSDK::Plot::PlotSurface(this));
     graph.last()->setChartIndex(graph.count()-1);
 
     connect(graph.last(), SIGNAL(addSerieSignal(int)), this, SLOT(createSelectionDialogSlot(int)));
+    connect(graph.last(), SIGNAL(openSettingsPanel(int,bool)), this, SLOT(openSettingsPanelSlot(int,bool)));
 }
 
 void UWatchTab::deleteGraph(int index)
@@ -43,20 +46,17 @@ void UWatchTab::AUpdateInterface()
 {
     NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UWatchTab"), accessibleName());
 
-    // Блокируем ядро один раз для всех операций
     RDK::UELockPtr<RDK::UEnvironment> env = RDK::GetEnvironmentLock();
     if (!env) {
         return;
     }
 
-    // Батчинг обновлений: отключаем обновления для всех графиков сразу
     for (int graphIndex = 0; graphIndex < graph.count(); graphIndex++) {
         if (graph[graphIndex] && graph[graphIndex]->chartView) {
             graph[graphIndex]->chartView->setUpdatesEnabled(false);
         }
     }
 
-    // Обрабатываем все графики
     for (int graphIndex = 0; graphIndex < graph.count(); graphIndex++)
     {
         if (!graph[graphIndex]) {
@@ -65,123 +65,152 @@ void UWatchTab::AUpdateInterface()
 
         double x_min = 0.0;
         double x_max = 0.0;
+        const NMSDK::Plot::VizKind panelViz = graph[graphIndex]->getVizKind();
+        const bool panelIsXY = panelViz == NMSDK::Plot::VizKind::XYLine
+                               || panelViz == NMSDK::Plot::VizKind::XYScatter;
 
-        // Проверяем валидность серий (используем уже полученную блокировку)
         int i = 0;
         while (i < graph[graphIndex]->countSeries())
         {
+            UWatchSerie* serie = graph[graphIndex]->getSerie(i);
             RDK::UControllerDataReader* data_reader = env->GetDataReader(
-                graph[graphIndex]->getSerie(i)->nameComponent.toStdString(),
-                graph[graphIndex]->getSerie(i)->nameProperty.toStdString(),
-                graph[graphIndex]->getSerie(i)->Jx,
-                graph[graphIndex]->getSerie(i)->Jy);
-            if (!data_reader) {
+                serie->nameComponent.toStdString(),
+                serie->nameProperty.toStdString(),
+                serie->Jx < 0 ? 0 : serie->Jx,
+                serie->Jy < 0 ? 0 : serie->Jy);
+            bool xOk = true;
+            if (serie->vizKind == NMSDK::Plot::VizKind::XYLine
+                || serie->vizKind == NMSDK::Plot::VizKind::XYScatter)
+            {
+                xOk = env->GetDataReader(
+                          serie->xNameComponent.toStdString(),
+                          serie->xNameProperty.toStdString(),
+                          serie->xJx < 0 ? 0 : serie->xJx,
+                          serie->xJy < 0 ? 0 : serie->xJy)
+                      != nullptr;
+            }
+            if (!data_reader || !xOk) {
                 graph[graphIndex]->deleteSerie(i);
             } else {
                 ++i;
             }
         }
 
-        // Обновляем данные для всех серий
         for (int serieIndex = 0; serieIndex < graph[graphIndex]->countSeries(); serieIndex++)
         {
-            // Считывание данных в серию из DataReadera (используем уже полученную блокировку)
             UWatchSerie *current_serie = graph[graphIndex]->getSerie(serieIndex);
-            if (!current_serie) {
+            if (!current_serie || !current_serie->isOnline) {
+                if (current_serie)
+                {
+                    RDK::UControllerDataReader* probe = env->GetDataReader(
+                        current_serie->nameComponent.toStdString(),
+                        current_serie->nameProperty.toStdString(),
+                        current_serie->Jx < 0 ? 0 : current_serie->Jx,
+                        current_serie->Jy < 0 ? 0 : current_serie->Jy);
+                    current_serie->setOnlineStatus(probe != nullptr);
+                }
                 continue;
+            }
+
+            NMSDK::Plot::PlotSeries dto = current_serie->toPlotSeries();
+            QVector<QPointF> samplePoints;
+            const bool isXY = current_serie->vizKind == NMSDK::Plot::VizKind::XYLine
+                              || current_serie->vizKind == NMSDK::Plot::VizKind::XYScatter
+                              || panelIsXY;
+
+            if (isXY && dto.binding.x.kind == NMSDK::Plot::DataRoleKind::Property)
+            {
+                samplePoints = NMSDK::Plot::samplePropertyPair(
+                    env.Get(),
+                    dto,
+                    current_serie->YShift,
+                    current_serie->xyRing,
+                    current_serie->xyLastXCount,
+                    current_serie->xyLastYCount);
+            }
+            else
+            {
+                samplePoints = NMSDK::Plot::sampleTimeSeries(
+                    env.Get(), dto, current_serie->YShift);
             }
 
             RDK::UControllerDataReader* data_reader = env->GetDataReader(
                 current_serie->nameComponent.toStdString(),
                 current_serie->nameProperty.toStdString(),
-                current_serie->Jx,
-                current_serie->Jy);
+                current_serie->Jx < 0 ? 0 : current_serie->Jx,
+                current_serie->Jy < 0 ? 0 : current_serie->Jy);
+            current_serie->setOnlineStatus(data_reader != nullptr);
 
-            // Обновляем статус серии (активна/неактивна)
-            const bool isOnline = (data_reader != nullptr);
-            if (current_serie->isOnline != isOnline) {
-                current_serie->setOnlineStatus(isOnline);
-            }
-
-            if (!data_reader) {
-                XData.clear();
-                YData.clear();
-                continue;
-            }
-
-            XData = data_reader->XData;
-            YData = data_reader->YData;
-
-            // Ограничение количества точек для производительности (кольцевой буфер)
-            const int maxPoints = 10000; // Максимальное количество точек на серию
-            if (XData.size() > maxPoints) {
-                // Оставляем только последние maxPoints точек
-                auto xIt = XData.begin();
-                auto yIt = YData.begin();
-                std::advance(xIt, XData.size() - maxPoints);
-                std::advance(yIt, YData.size() - maxPoints);
-                XData.erase(XData.begin(), xIt);
-                YData.erase(YData.begin(), yIt);
-            }
-
-            // Получение точек для серии
-            const int pointCount = int(XData.size());
-            points.resize(pointCount);
-
-            int pointIndex = 0;
-            for (auto itx = XData.begin(), ity = YData.begin();
-                 itx != XData.end() && ity != YData.end();
-                 ++itx, ++ity, ++pointIndex)
+            if (!samplePoints.isEmpty())
             {
-                points[pointIndex] = QPointF(*itx, *ity + current_serie->YShift);
-            }
+                // Incremental append when only one new point; else full replace.
+                const int oldCount = current_serie->count();
+                const int newCount = samplePoints.size();
+                if (oldCount > 0 && newCount == oldCount + 1
+                    && current_serie->at(oldCount - 1) == samplePoints.at(oldCount - 1))
+                {
+                    current_serie->append(samplePoints.last());
+                }
+                else
+                {
+                    const int decimationThreshold = 8000;
+                    if (newCount > decimationThreshold)
+                    {
+                        QVector<QPointF> decimated;
+                        const int step = (newCount + decimationThreshold - 1) / decimationThreshold;
+                        decimated.reserve(newCount / step + 1);
+                        for (int p = 0; p < newCount; p += step)
+                            decimated.push_back(samplePoints.at(p));
+                        if (decimated.last() != samplePoints.last())
+                            decimated.push_back(samplePoints.last());
+                        current_serie->replace(decimated);
+                    }
+                    else
+                    {
+                        current_serie->replace(samplePoints);
+                    }
+                }
 
-            // Отрисовка текущих точек серии
-            // Используем replace только если данные изменились
-            if (!points.isEmpty()) {
-                // Проверяем, нужно ли обновлять (упрощенная проверка по размеру)
-                if (current_serie->count() != pointCount) {
-                    current_serie->replace(points);
-                } else {
-                    // Обновляем только если данные действительно изменились
-                    // Для оптимизации просто заменяем все точки
-                    current_serie->replace(points);
+                if (!isXY)
+                {
+                    if (x_min == 0.0 || x_min > samplePoints.first().x())
+                        x_min = samplePoints.first().x();
+                    if (x_max < samplePoints.last().x())
+                        x_max = samplePoints.last().x();
                 }
-            }
-
-            // Обновление диапазона X
-            if (!XData.empty())
-            {
-                if (x_min == 0.0) {
-                    x_min = XData.front();
-                }
-                if (x_min > XData.front()) {
-                    x_min = XData.front();
-                }
-                if (x_max < XData.back()) {
-                    x_max = XData.back();
+                else
+                {
+                    for (const QPointF& pt : samplePoints)
+                    {
+                        if (x_min == 0.0 || x_min > pt.x())
+                            x_min = pt.x();
+                        if (x_max < pt.x())
+                            x_max = pt.x();
+                    }
                 }
             }
         }
 
-        // Обновление осей
         if (!graph[graphIndex]->checkZoomed())
         {
-            if (x_max - x_min < graph[graphIndex]->getAxisXrange()) {
-                x_max = x_min + graph[graphIndex]->getAxisXrange();
+            if (!panelIsXY)
+            {
+                if (x_max - x_min < graph[graphIndex]->getAxisXrange()) {
+                    x_max = x_min + graph[graphIndex]->getAxisXrange();
+                }
             }
-
-            graph[graphIndex]->setAxisXmax(x_max);
-            graph[graphIndex]->setAxisXmin(x_min);
-            graph[graphIndex]->fixInitialAxesState();
+            if (graph[graphIndex]->getIsAxisXtrackable() || panelIsXY)
+            {
+                graph[graphIndex]->setAxisXmax(x_max);
+                graph[graphIndex]->setAxisXmin(x_min);
+                graph[graphIndex]->fixInitialAxesState();
+            }
         }
     }
 
-    // Включаем обновления для всех графиков сразу (батчинг)
     for (int graphIndex = 0; graphIndex < graph.count(); graphIndex++) {
         if (graph[graphIndex] && graph[graphIndex]->chartView) {
             graph[graphIndex]->chartView->setUpdatesEnabled(true);
-            // Коммитим накопленные обновления
             graph[graphIndex]->commitUpdate();
         }
     }
@@ -240,18 +269,46 @@ void UWatchTab::createSelectionDialogSlot(int index)
 
 void UWatchTab::seriesOptionTriggered()
 {
-    seriesOption = new UWatchSeriesOption(this, application);
-    seriesOption->setWindowTitle("Series option");
-    //seriesOption->setModal(true);
-    seriesOption->show();
+    ensureSettingsPanel();
+    if (settingsPanel)
+    {
+        settingsPanel->setVisible(true);
+        settingsPanel->setActiveChart(0);
+        settingsPanel->showSeriesPage();
+    }
 }
 
 void UWatchTab::chartsOptionTriggered()
 {
-    chartOption = new UWatchChartOption(this);
-    chartOption->setModal(true);
-    chartOption->setWindowTitle("Charts option");
-    chartOption->show();
+    ensureSettingsPanel();
+    if (settingsPanel)
+    {
+        settingsPanel->setVisible(true);
+        settingsPanel->setActiveChart(0);
+        settingsPanel->showPanelPage();
+    }
+}
+
+void UWatchTab::openSettingsPanelSlot(int chartIndex, bool seriesPage)
+{
+    ensureSettingsPanel();
+    if (!settingsPanel)
+        return;
+    settingsPanel->setVisible(true);
+    settingsPanel->setActiveChart(chartIndex);
+    if (seriesPage)
+        settingsPanel->showSeriesPage();
+    else
+        settingsPanel->showPanelPage();
+}
+
+void UWatchTab::ensureSettingsPanel()
+{
+    if (settingsPanel)
+        return;
+    settingsPanel = new PlotSettingsSidePanel(this, this);
+    ui->horizontalLayout->addWidget(settingsPanel);
+    settingsPanel->setVisible(true);
 }
 
 void UWatchTab::createSplitterGrid(int rowNumber)
@@ -357,18 +414,15 @@ int UWatchTab::countGraphs()
 
 void UWatchTab::createSelectionDialog(int chartIndex)
 {
-    int channelIndex=0;
+    if (chartIndex < 0 || chartIndex >= graph.count() || !graph[chartIndex])
+        return;
+
+    int channelIndex = 0;
     QString componentName;
     QString componentProperty;
 
-    //почему то не рабоатет если раскоментить(
-    //if(!application)
-    //    return;
-
-    //создаем окно для выбора источника данных
     UComponentPropertySelectionWidget dialog(this, 3, application, 1);
     dialog.setModal(true);
-  //  dialog.show();
     if (dialog.exec())
     {
          channelIndex = dialog.componentsList->getSelectedChannelIndex();
@@ -376,7 +430,6 @@ void UWatchTab::createSelectionDialog(int chartIndex)
          componentProperty = dialog.componentsList->getSelectedPropertyName();
     }
 
-    //проверяем что у выбран не пустой элемент (если нет модели)
     if(!componentName.isEmpty() && !componentProperty.isEmpty())
     {
         bool is_int_or_double = false;
@@ -392,24 +445,83 @@ void UWatchTab::createSelectionDialog(int chartIndex)
             if(!prop)
                 return;
 
-            // Если тип double или int
             if(prop->GetLanguageType() == typeid(double) || prop->GetLanguageType() == typeid(int))
             {
                 is_int_or_double = true;
             }
         }
 
-        // Если тип double или int
-        if(is_int_or_double)
+        const double time_interval = graph[chartIndex]->getAxisXrange();
+        if (graph[chartIndex]->getVizKind() == NMSDK::Plot::VizKind::XYLine
+            || graph[chartIndex]->getVizKind() == NMSDK::Plot::VizKind::XYScatter)
         {
-            //создаем серию для выбранного источника
-            double time_interval = graph[channelIndex]->getAxisXmax() - graph[channelIndex]->getAxisXmin();
-            graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", 0, 0, time_interval, 0.0);
+            // First dialog picks Y; second picks X.
+            QString xComponent;
+            QString xProperty;
+            int xJx = 0;
+            int xJy = 0;
+            UComponentPropertySelectionWidget xDialog(this, 3, application, 1);
+            xDialog.setWindowTitle(tr("Select X source"));
+            xDialog.setModal(true);
+            if (!xDialog.exec())
+                return;
+            xComponent = xDialog.componentsList->getSelectedComponentLongName();
+            xProperty = xDialog.componentsList->getSelectedPropertyName();
+            if (xComponent.isEmpty() || xProperty.isEmpty())
+                return;
+
+            int yJx = 0;
+            int yJy = 0;
+            if (!is_int_or_double)
+            {
+                UMatrixFormDialog* form = new UMatrixFormDialog();
+                form->SelectMatrix(componentName.toStdString(), componentProperty.toStdString());
+                if (form->exec() == QDialog::Accepted && !form->SelectedRows.empty())
+                {
+                    yJx = form->SelectedRows[0];
+                    yJy = form->SelectedCols.empty() ? 0 : form->SelectedCols[0];
+                }
+                delete form;
+            }
+            {
+                bool xScalar = true;
+                RDK::UELockPtr<RDK::UNet> model = RDK::GetModelLock<RDK::UNet>();
+                RDK::UContainer* cont = model->GetComponentL(xComponent.toStdString());
+                if (cont)
+                {
+                    RDK::UEPtr<RDK::UIProperty> prop = cont->FindProperty(xProperty.toStdString());
+                    if (prop
+                        && prop->GetLanguageType() != typeid(double)
+                        && prop->GetLanguageType() != typeid(int))
+                    {
+                        xScalar = false;
+                    }
+                }
+                if (!xScalar)
+                {
+                    UMatrixFormDialog* form = new UMatrixFormDialog();
+                    form->SelectMatrix(xComponent.toStdString(), xProperty.toStdString());
+                    if (form->exec() == QDialog::Accepted && !form->SelectedRows.empty())
+                    {
+                        xJx = form->SelectedRows[0];
+                        xJy = form->SelectedCols.empty() ? 0 : form->SelectedCols[0];
+                    }
+                    delete form;
+                }
+            }
+
+            graph[chartIndex]->createSerieXY(
+                channelIndex, xComponent, xProperty, xJx, xJy, componentName, componentProperty,
+                yJx, yJy, 0.0, graph[chartIndex]->getVizKind());
             return;
         }
 
-        // Если тип, где надо выбрать ячейку (ряд и колонку)
-        // MDMatrix<double>   MDMatrix<int>   MDVector<double>   MDVector<int>
+        if(is_int_or_double)
+        {
+            graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, QString(), 0, 0, time_interval, 0.0);
+            return;
+        }
+
         UMatrixFormDialog* form = new UMatrixFormDialog();
         form->SelectMatrix(componentName.toStdString(),componentProperty.toStdString());
 
@@ -421,13 +533,20 @@ void UWatchTab::createSelectionDialog(int chartIndex)
                 form->SelectedCols = {0};
             }
 
-            //создаем серии для выбранного источника
-            double time_interval = graph[channelIndex]->getAxisXmax() - graph[channelIndex]->getAxisXmin();
             for(int i = 0; i < form->SelectedRows.size(); i++)
-                graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, "type", form->SelectedRows[i], form->SelectedCols[i], time_interval, 0.0);
+                graph[chartIndex]->createSerie(channelIndex, componentName, componentProperty, QString(), form->SelectedRows[i], form->SelectedCols[i], time_interval, 0.0);
         }
         delete form;
     }
+    syncDocumentFromCharts();
+}
+
+void UWatchTab::createXYSelectionDialog(int chartIndex)
+{
+    if (chartIndex < 0 || chartIndex >= graph.count() || !graph[chartIndex])
+        return;
+    graph[chartIndex]->setVizKind(NMSDK::Plot::VizKind::XYLine);
+    createSelectionDialog(chartIndex);
 }
 
 void UWatchTab::saveUpdateInterval(int newInterval)
@@ -463,107 +582,144 @@ int UWatchTab::getRowNumber()
 void UWatchTab::ASaveParameters(RDK::USerStorageXML &xml)
 {
     xml.DelNodeInternalContent();
-    xml.WriteInteger("GridColCount", tabColNumber);
-    xml.WriteInteger("GridRowCount", tabRowNumber);
-    xml.WriteInteger("GraphCount", countGraphs());
+    syncDocumentFromCharts();
+    NMSDK::Plot::savePlotDocument(xml, m_document);
+}
 
-    // Пробегаем по списку всех открытых графов и серий в них
-    for (int graphIndex=0; graphIndex < countGraphs(); graphIndex++)
+void UWatchTab::syncDocumentFromCharts()
+{
+    m_document = capturePlotDocument();
+}
+
+NMSDK::Plot::PlotDocument UWatchTab::capturePlotDocument() const
+{
+    NMSDK::Plot::PlotDocument doc;
+    doc.schemaVersion = NMSDK::Plot::PlotDocument::CurrentSchemaVersion;
+    doc.gridCols = tabColNumber;
+    doc.gridRows = tabRowNumber;
+    doc.colSplitterSizes = captureColSplitterSizes();
+    doc.rowSplitterSizes = captureRowSplitterSizes();
+    for (int i = 0; i < graph.count(); ++i)
     {
-        xml.SelectNodeForce("graph_"+RDK::sntoa(graphIndex));
-
-        xml.WriteString ("ChartTitle",      graph[graphIndex]->getChartTitle().toStdString());
-        xml.WriteString ("AxisXName",       graph[graphIndex]->getAxisXName().toStdString());
-        xml.WriteString ("AxisYName",       graph[graphIndex]->getAxisYName().toStdString());
-        xml.WriteFloat  ("AxisXmin",        graph[graphIndex]->getAxisXmin());
-        xml.WriteFloat  ("AxisXmax",        graph[graphIndex]->getAxisXmax());
-        xml.WriteFloat  ("AxisYmin",        graph[graphIndex]->getAxisYmin());
-        xml.WriteFloat  ("AxisYmax",        graph[graphIndex]->getAxisYmax());
-        xml.WriteFloat  ("AxisXrange",      graph[graphIndex]->getAxisXrange());
-
-        xml.WriteInteger("SeriesCount",     graph[graphIndex]->countSeries());
-
-        for(int serieIndex=0; serieIndex<graph[graphIndex]->countSeries(); serieIndex++)
-        {
-            xml.SelectNodeForce("serie_"+RDK::sntoa(serieIndex));
-            xml.WriteString ("SerieName",       graph[graphIndex]->getSerieName(serieIndex).toStdString());
-            xml.WriteInteger("SerieWidth",      graph[graphIndex]->getSerieWidth(serieIndex));
-            xml.WriteInteger("SerieLineType",   graph[graphIndex]->getSerieLineType(serieIndex));
-            xml.WriteInteger("SerieColor",      graph[graphIndex]->getSerieColor(serieIndex).rgb());
-
-            xml.WriteString ("SerieNameComponent",  graph[graphIndex]->getSerie(serieIndex)->nameComponent.toStdString());
-            xml.WriteString ("SerieNameProperty",   graph[graphIndex]->getSerie(serieIndex)->nameProperty.toStdString());
-            xml.WriteInteger("SerieJx",             graph[graphIndex]->getSerie(serieIndex)->Jx);
-            xml.WriteInteger("SerieJy",             graph[graphIndex]->getSerie(serieIndex)->Jy);
-            xml.WriteFloat  ("SerieYShift",         graph[graphIndex]->getSerie(serieIndex)->YShift);
-
-            xml.SelectUp();
-        }
-        xml.SelectUp();
+        if (!graph[i])
+            continue;
+        NMSDK::Plot::PlotPanel panel = graph[i]->toPlotPanel();
+        panel.updateIntervalMs = UpdateIntervalMs;
+        doc.panels.push_back(panel);
     }
+    return doc;
+}
+
+QList<int> UWatchTab::captureColSplitterSizes() const
+{
+    if (!colSplitter)
+        return {};
+    return colSplitter->sizes();
+}
+
+QVector<QList<int>> UWatchTab::captureRowSplitterSizes() const
+{
+    QVector<QList<int>> out;
+    out.reserve(rowSplitter.size());
+    for (QSplitter* s : rowSplitter)
+        out.push_back(s ? s->sizes() : QList<int>());
+    return out;
+}
+
+void UWatchTab::applySplitterSizes(const NMSDK::Plot::PlotDocument& doc)
+{
+    if (colSplitter && !doc.colSplitterSizes.isEmpty()
+        && doc.colSplitterSizes.size() == colSplitter->count())
+    {
+        colSplitter->setSizes(doc.colSplitterSizes);
+    }
+    for (int r = 0; r < rowSplitter.size() && r < doc.rowSplitterSizes.size(); ++r)
+    {
+        if (rowSplitter[r] && !doc.rowSplitterSizes[r].isEmpty()
+            && doc.rowSplitterSizes[r].size() == rowSplitter[r]->count())
+        {
+            rowSplitter[r]->setSizes(doc.rowSplitterSizes[r]);
+        }
+    }
+}
+
+void UWatchTab::applyPlotDocument(const NMSDK::Plot::PlotDocument& doc)
+{
+    createGridLayout(doc.gridRows, doc.gridCols);
+    if (doc.panels.size() != countGraphs())
+        return;
+
+    for (int graphIndex = 0; graphIndex < doc.panels.size(); ++graphIndex)
+    {
+        const NMSDK::Plot::PlotPanel& panel = doc.panels[graphIndex];
+        UWatchChart* chart = graph[graphIndex];
+        if (!chart)
+            continue;
+
+        while (chart->countSeries() > 0)
+            chart->deleteSerie(0);
+
+        chart->applyPlotPanelMeta(panel);
+        if (panel.updateIntervalMs > 0)
+            saveUpdateInterval(panel.updateIntervalMs);
+
+        for (const NMSDK::Plot::PlotSeries& serie : panel.series)
+        {
+            const double time_interval = panel.axisXRange > 0 ? panel.axisXRange : chart->getAxisXrange();
+            if (serie.binding.x.kind == NMSDK::Plot::DataRoleKind::Property)
+            {
+                chart->createSerieXY(
+                    serie.binding.channel,
+                    serie.binding.x.prop.component,
+                    serie.binding.x.prop.property,
+                    serie.binding.x.prop.jx,
+                    serie.binding.x.prop.jy,
+                    serie.binding.y.prop.component,
+                    serie.binding.y.prop.property,
+                    serie.binding.y.prop.jx,
+                    serie.binding.y.prop.jy,
+                    serie.yOffset,
+                    panel.viz == NMSDK::Plot::VizKind::TimeSeries ? NMSDK::Plot::VizKind::XYLine
+                                                                  : panel.viz);
+            }
+            else
+            {
+                chart->createSerie(
+                    serie.binding.channel,
+                    serie.binding.y.prop.component,
+                    serie.binding.y.prop.property,
+                    QString(),
+                    serie.binding.y.prop.jx < 0 ? 0 : serie.binding.y.prop.jx,
+                    serie.binding.y.prop.jy < 0 ? 0 : serie.binding.y.prop.jy,
+                    time_interval,
+                    serie.yOffset);
+            }
+
+            const int idx = chart->countSeries() - 1;
+            if (idx < 0)
+                continue;
+            if (!serie.visual.displayName.isEmpty())
+                chart->setSerieName(idx, serie.visual.displayName);
+            chart->setSerieWidth(idx, serie.visual.width);
+            chart->setSerieLineType(idx, static_cast<Qt::PenStyle>(serie.visual.penStyle));
+            chart->getSerie(idx)->setColor(serie.visual.color);
+            chart->getSerie(idx)->windowSize = serie.binding.windowSize;
+        }
+    }
+    applySplitterSizes(doc);
+    m_document = doc;
+    m_document.schemaVersion = NMSDK::Plot::PlotDocument::CurrentSchemaVersion;
 }
 
 // Загружает параметры интерфейса из xml
 void UWatchTab::ALoadParameters(RDK::USerStorageXML &xml)
 {
-    int grid_cols = xml.ReadInteger("GridColCount", 1);
-    int grid_rows = xml.ReadInteger("GridRowCount", 1);
-
-    createGridLayout(grid_rows, grid_cols);
-
-    int graph_count = xml.ReadInteger("GraphCount", 0);
-
-    // ошибка в кол-ве созданных графов и указанных в xml-файле
-    if(graph_count != countGraphs())
-        return;
-
-    for (int graphIndex=0; graphIndex < graph_count; graphIndex++)
+    NMSDK::Plot::PlotDocument doc;
+    if (!NMSDK::Plot::loadPlotDocument(xml, doc))
     {
-        xml.SelectNodeForce("graph_"+RDK::sntoa(graphIndex));
-
-        graph[graphIndex]->setChartTitle (xml.ReadString ("ChartTitle",  "").c_str());
-        graph[graphIndex]->setAxisXname  (xml.ReadString ("AxisXName",   "").c_str());
-        graph[graphIndex]->setAxisYname  (xml.ReadString ("AxisYName",   "").c_str());
-
-        graph[graphIndex]->setAxisYmin   (xml.ReadFloat  ("AxisYmin",    0));
-        graph[graphIndex]->setAxisYmax   (xml.ReadFloat  ("AxisYmax",    0));
-
-//        graph[graphIndex]->axisXrange =  xml.ReadFloat("AxisXmax", 0) - xml.ReadFloat  ("AxisXmin", 0);
-        graph[graphIndex]->setAxisXmin   (0.0);
-        graph[graphIndex]->setAxisXmax   (xml.ReadFloat("AxisXmax", 0) - xml.ReadFloat  ("AxisXmin", 0));
-        graph[graphIndex]->setAxisXrange (xml.ReadFloat("AxisXrange",   5));
-        graph[graphIndex]->fixInitialAxesState();
-        int series_count = graph[graphIndex]->countSeries();
-        for(int i = 0; i < series_count; i++)
-            graph[graphIndex]->deleteSerie(0);
-
-        series_count = xml.ReadInteger("SeriesCount", 0);
-
-        int current_seires_index = -1;
-        for(int serieIndex=0; serieIndex < series_count; serieIndex++)
-        {
-            xml.SelectNodeForce("serie_"+RDK::sntoa(serieIndex));
-
-            QString name_comp = xml.ReadString("SerieNameComponent", "").c_str();
-            QString name_prop = xml.ReadString("SerieNameProperty", "").c_str();
-            int jx = xml.ReadInteger("SerieJx", -1);
-            int jy = xml.ReadInteger("SerieJy", -1);
-            double y_shift = xml.ReadFloat("SerieYShift", 0.0);
-
-            double time_interval = graph[graphIndex]->getAxisXrange();
-
-            // TODO: 0 - Ошибка. не  будет работать если больше 1 канала.
-            graph[graphIndex]->createSerie(0, name_comp, name_prop, "type", jx, jy, time_interval, y_shift);
-            // TODO: костыль: серия создается, но может быть сразу удалена, если компонента не существует (при обновлении внутри createSerie)
-            if(current_seires_index == graph[graphIndex]->countSeries()-1)
-             continue; // Если размер не поменялся то график не был создан, пропускаем
-            current_seires_index = graph[graphIndex]->countSeries()-1;
-            graph[graphIndex]->setSerieName      (current_seires_index, xml.ReadString("SerieName", "").c_str());
-            graph[graphIndex]->setSerieWidth     (current_seires_index, xml.ReadInteger("SerieWidth", 0));
-            graph[graphIndex]->setSerieLineType  (current_seires_index, static_cast<Qt::PenStyle>(xml.ReadInteger("SerieLineType", 0)));
-            graph[graphIndex]->getSerie(current_seires_index)->setColor(xml.ReadInteger("SerieColor", 0));
-            xml.SelectUp();
-        }
-        xml.SelectUp();
+        // Fallback empty
+        createGridLayout(1, 1);
+        return;
     }
+    applyPlotDocument(doc);
 }

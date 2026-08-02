@@ -34,9 +34,7 @@
 #include "UCreateTestWidget.h"
 #include "UStatusPanel.h"
 #include "USettingsReaderWidget.h"
-#include "UGraphWidget.h"
 #include "UTableInfo.h"
-#include "UWatchFormWidget.h"
 #include "UWatch.h"
 #include "UClDescEditor.h"
 #include "UTcpServerControlWidget.h"
@@ -81,15 +79,6 @@ UImagesWidget* Images;
 
 USubTabDescriptionImages(void)
     : USubTabDescription(),Images(NULL)
-{};
-};
-
-struct USubTabDescriptionWatches: public USubTabDescription
-{
-UGraphWidget* Watches;
-
-USubTabDescriptionWatches(void)
-    : USubTabDescription(),Watches(NULL)
 {};
 };
 
@@ -191,6 +180,14 @@ public slots:
                                         const QString& propertyName);
     nlohmann::json llmWatchClearSeries(const std::string& surface, int mdi_id, int tab_index,
                                        int chart_index);
+    nlohmann::json llmWatchSetPanelVizKind(const std::string& surface, int mdi_id, int tab_index,
+                                           int chart_index, const QString& vizKind);
+    nlohmann::json llmWatchSetSeriesBinding(const std::string& surface, int mdi_id, int tab_index,
+                                            int chart_index, int serie_index, int channel_index,
+                                            const QString& yLongName, const QString& yProperty,
+                                            int yJx, int yJy,
+                                            const QString& xLongName, const QString& xProperty,
+                                            int xJx, int xJy, const QString& vizKind);
     nlohmann::json llmWatchMdiList();
     nlohmann::json llmWatchMdiCreate(int grid_rows = 1, int grid_cols = 1,
                                      const QString& title = QString());
@@ -298,15 +295,12 @@ private:
     UImagesWidget *images;
     QMainWindow *imagesWindow;
     QMainWindow *clDescWindow;
-    QMainWindow *graphWindow;
     QMainWindow *profilingWindow;
     UCalculationChannelsWidget *channels;
     ULoggerWidget *logger;
     UCreateConfigurationWizardWidget *createConfigurationWizardWidget;
     UCreateTestWidget *createTestWidget;
     UStatusPanel *statusPanel;
-    UGraphWidget *graphWindowWidget;
- //   UWatchFormWidget *watchFormWidget;
     UTableInfo *profilingWindowWidget;
     UWatch *watchWindow;
     UProjectDescriptionWindow *projectDescriptionWindow;

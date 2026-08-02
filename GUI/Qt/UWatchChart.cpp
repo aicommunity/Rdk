@@ -2,6 +2,10 @@
 #include "ui_UWatchChart.h"
 #include "UStyleManager.h"
 #include <QVBoxLayout>
+#include <QToolBar>
+#include <QAction>
+#include <QGraphicsView>
+#include <QtCharts/QXYSeries>
 #include <iostream>
 
 #include "UWatchTab.h"
@@ -15,16 +19,31 @@ UWatchChart::UWatchChart(QWidget *parent) :
     setAccessibleName("UWatchChart");
     ui->setupUi(this);
 
-    //создаем график, скроллбар и располагаем вертикально
     verticalLayout = new QVBoxLayout(this);
     chart = new QChart();
     chartView = new UWatchChartView(this);
-    horizontalScrolBar = new QScrollBar(Qt::Horizontal,this);
 
     setLayout(verticalLayout);
 
+    modeBar = new QToolBar(tr("Chart tools"), this);
+    modeBar->setIconSize(QSize(16, 16));
+    modeBar->setMovable(false);
+    actPan = modeBar->addAction(tr("Pan"));
+    actBoxZoom = modeBar->addAction(tr("Box zoom"));
+    actTrack = modeBar->addAction(tr("Track"));
+    actReset = modeBar->addAction(tr("Reset"));
+    actPan->setCheckable(true);
+    actBoxZoom->setCheckable(true);
+    actTrack->setCheckable(true);
+    actTrack->setChecked(true);
+    actBoxZoom->setChecked(true);
+    connect(actPan, &QAction::triggered, this, &UWatchChart::onModePan);
+    connect(actBoxZoom, &QAction::triggered, this, &UWatchChart::onModeBoxZoom);
+    connect(actTrack, &QAction::triggered, this, &UWatchChart::onModeTrack);
+    connect(actReset, &QAction::triggered, this, &UWatchChart::onModeReset);
+
+    verticalLayout->addWidget(modeBar);
     verticalLayout->addWidget(chartView);
-    verticalLayout->addWidget(horizontalScrolBar);
     verticalLayout->setSpacing(0);
     verticalLayout->setContentsMargins(0,0,0,0);
 
@@ -42,9 +61,12 @@ UWatchChart::UWatchChart(QWidget *parent) :
     //устанавливаем оси
     chart->addAxis(axisX, Qt::AlignBottom);
     chart->addAxis(axisY, Qt::AlignLeft);
+    if (chart->legend())
+        chart->legend()->setVisible(m_legendVisible);
 
     //устанавливаем график в график -_-
     chartView->setChart(chart);
+    chartView->setRubberBand(QChartView::RectangleRubberBand);
 
     //делаем красивую рамочку для графика
     chartView->setFrameStyle(QFrame::Panel |QFrame::StyledPanel);
@@ -181,26 +203,23 @@ bool UWatchChart::checkZoomed(void)
 void UWatchChart::createSerie(int channelIndex, const QString componentName, const QString propertyName,
                               const QString type, int jx, int jy, double time_interval, double y_shift)
 {
-    //создаем новый график и привязываем его к осям
+    Q_UNUSED(type);
     series.push_back(new UWatchSerie());
     chart->addSeries(series.last());
     series.last()->attachAxis(axisX);
     series.last()->attachAxis(axisY);
 
-    //имя графика = имя компонента +  имя свойства
     series.last()->setName(componentName+ ": " + propertyName +"(" + QString::number(jx)+", "+ QString::number(jy)+")");
     series.last()->setColor(getDefaultColor(series.count()-1));
 
-    //записываем параметры источника данных
     series.last()->indexChannel = channelIndex;
     series.last()->nameComponent = componentName;
     series.last()->nameProperty = propertyName;
-    series.last()->typeProperty = type;
     series.last()->Jx = jx;
     series.last()->Jy = jy;
     series.last()->YShift = y_shift;
+    series.last()->vizKind = NMSDK::Plot::VizKind::TimeSeries;
 
-    // Создание DataReadera в ядре для дальнейщего получения данных
     RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
 
     RDK::UControllerDataReader * data_reader = env->RegisterDataReader(componentName.toStdString(),
@@ -212,6 +231,50 @@ void UWatchChart::createSerie(int channelIndex, const QString componentName, con
         series.last()->data_reader = data_reader;
         data_reader->SetTimeInterval(time_interval);
     }
+    connectSerieTooltip(series.last());
+    emit UpdateTabGuiSignal(false);
+}
+
+void UWatchChart::createSerieXY(int channelIndex,
+                                const QString& xComponent, const QString& xProperty, int xJx, int xJy,
+                                const QString& yComponent, const QString& yProperty, int yJx, int yJy,
+                                double y_shift, NMSDK::Plot::VizKind viz)
+{
+    series.push_back(new UWatchSerie());
+    chart->addSeries(series.last());
+    series.last()->attachAxis(axisX);
+    series.last()->attachAxis(axisY);
+
+    series.last()->setName(QStringLiteral("%1.%2 vs %3.%4")
+                               .arg(xComponent, xProperty, yComponent, yProperty));
+    series.last()->setColor(getDefaultColor(series.count()-1));
+    series.last()->indexChannel = channelIndex;
+    series.last()->YShift = y_shift;
+    series.last()->vizKind = viz;
+    series.last()->applyBinding(
+        NMSDK::Plot::makeXYBinding(
+            channelIndex,
+            NMSDK::Plot::PropertyRef{xComponent, xProperty, xJx, xJy},
+            NMSDK::Plot::PropertyRef{yComponent, yProperty, yJx, yJy}),
+        viz);
+
+    RDK::UELockPtr<RDK::UEnvironment> env = RDK::GetEnvironmentLock();
+    if (env)
+    {
+        series.last()->x_data_reader = env->RegisterDataReader(
+            xComponent.toStdString(), xProperty.toStdString(), xJx < 0 ? 0 : xJx, xJy < 0 ? 0 : xJy);
+        series.last()->data_reader = env->RegisterDataReader(
+            yComponent.toStdString(), yProperty.toStdString(), yJx < 0 ? 0 : yJx, yJy < 0 ? 0 : yJy);
+        if (series.last()->x_data_reader)
+            series.last()->x_data_reader->SetTimeInterval(axisXrange);
+        if (series.last()->data_reader)
+            series.last()->data_reader->SetTimeInterval(axisXrange);
+    }
+
+    if (vizKind == NMSDK::Plot::VizKind::TimeSeries)
+        setVizKind(viz);
+    setAxisXname(QStringLiteral("X"));
+    connectSerieTooltip(series.last());
     emit UpdateTabGuiSignal(false);
 }
 
@@ -223,6 +286,13 @@ void UWatchChart::deleteSerie(int serieIndex)
                               series[serieIndex]->nameProperty.toStdString(),
                               series[serieIndex]->Jx,
                               series[serieIndex]->Jy);
+    if (!series[serieIndex]->xNameComponent.isEmpty())
+    {
+        env->UnRegisterDataReader(series[serieIndex]->xNameComponent.toStdString(),
+                                  series[serieIndex]->xNameProperty.toStdString(),
+                                  series[serieIndex]->xJx < 0 ? 0 : series[serieIndex]->xJx,
+                                  series[serieIndex]->xJy < 0 ? 0 : series[serieIndex]->xJy);
+    }
 
     delete series[serieIndex];
     series.remove(serieIndex);
@@ -273,10 +343,12 @@ bool UWatchChart::getIsAxisXtrackable(void) const
 void UWatchChart::updateTimeIntervals(double value)
 {
     setAxisXrange(value);
- //   setAxisXmax(getAxisXmin()+value);
     for(int i = 0; i < series.size(); i++)
     {
-        series[i]->data_reader->SetTimeInterval(value);
+        if (series[i]->data_reader)
+            series[i]->data_reader->SetTimeInterval(value);
+        if (series[i]->x_data_reader)
+            series[i]->x_data_reader->SetTimeInterval(value);
     }
 }
 
@@ -462,54 +534,47 @@ void UWatchChart::keyReleaseEvent(QKeyEvent *event)
 
 void UWatchChart::slotCustomMenuRequested(QPoint pos)
 {
-    // Создаем объект контекстного меню
     QMenu * menu = new QMenu(this);
 
-    // Создаём действия для контекстного меню
     QAction * addSeiesAction =      new QAction("Add series", this);
-    QAction * seriesOptionAction =  new QAction("Series option", this);
-//    QAction * chartOptionAction =   new QAction("Chart's option", this);
+    QAction * seriesOptionAction =  new QAction("Series settings", this);
+    QAction * chartOptionAction =   new QAction("Panel settings", this);
     QAction * saveJpegAction =      new QAction("Save chart to JPEG", this);
     QAction * restoreAxesAction =   new QAction("Restore Axes", this);
 
-
-    /* Подключаем СЛОТы обработчики для действий контекстного меню */
     connect(addSeiesAction, SIGNAL(triggered()), this, SLOT(addSeriesSlot()));
     connect(seriesOptionAction, SIGNAL(triggered()), this, SLOT(seriesOptionSlot()));
-//    connect(chartOptionAction, SIGNAL(triggered()), this, SLOT(chartOptionSlot()));
+    connect(chartOptionAction, SIGNAL(triggered()), this, SLOT(chartOptionSlot()));
     connect(saveJpegAction, SIGNAL(triggered()), this, SLOT(saveToJpegSlot()));
     connect(restoreAxesAction, SIGNAL(triggered()), this, SLOT(restoreAxes()));
 
-    /* Устанавливаем действия в меню */
     menu->addAction(addSeiesAction);
     menu->addAction(seriesOptionAction);
-//    menu->addAction(chartOptionAction);
+    menu->addAction(chartOptionAction);
     menu->addAction(saveJpegAction);
     menu->addAction(restoreAxesAction);
 
-    /* Вызываем контекстное меню */
     menu->popup(mapToGlobal(pos));
 }
 
 void UWatchChart::addSeriesSlot()
 {
-    //вызываем окно для добавления новой серии
     emit addSerieSignal(chartIndex);
 }
 
 void UWatchChart::seriesOptionSlot()
 {
+    emit openSettingsPanel(chartIndex, true);
     if(!WatchTab)
         return;
-
     WatchTab->seriesOptionTriggered();
 }
 
 void UWatchChart::chartOptionSlot()
 {
+    emit openSettingsPanel(chartIndex, false);
     if(!WatchTab)
         return;
-
     WatchTab->chartsOptionTriggered();
 }
 
@@ -559,4 +624,186 @@ void UWatchChart::saveToJpegSlot()
      emit UpdateTabGuiSignal(false);
  }
 
+void UWatchChart::setVizKind(NMSDK::Plot::VizKind kind)
+{
+    vizKind = kind;
+    for (int i = 0; i < series.size(); ++i)
+    {
+        if (series[i]
+            && series[i]->vizKind == NMSDK::Plot::VizKind::TimeSeries
+            && (kind == NMSDK::Plot::VizKind::XYLine || kind == NMSDK::Plot::VizKind::XYScatter))
+        {
+            // Keep existing time series as-is; panel-level viz is a default for new series.
+        }
+    }
+}
+
+bool UWatchChart::isLegendVisible() const
+{
+    return m_legendVisible;
+}
+
+void UWatchChart::setLegendVisible(bool visible)
+{
+    m_legendVisible = visible;
+    if (chart && chart->legend())
+        chart->legend()->setVisible(visible);
+}
+
+bool UWatchChart::isTitleVisible() const
+{
+    return m_titleVisible;
+}
+
+void UWatchChart::setTitleVisible(bool visible)
+{
+    m_titleVisible = visible;
+    if (!chart)
+        return;
+    if (!visible)
+        chart->setTitle(QString());
+}
+
+void UWatchChart::setInteractionTrackLatest(bool track)
+{
+    isAxisXtrackable = track;
+    if (actTrack)
+        actTrack->setChecked(track);
+}
+
+void UWatchChart::setInteractionPan(bool pan)
+{
+    if (!chartView)
+        return;
+    if (pan)
+    {
+        chartView->setRubberBand(QChartView::NoRubberBand);
+        chartView->setDragMode(QGraphicsView::ScrollHandDrag);
+        if (actPan)
+            actPan->setChecked(true);
+        if (actBoxZoom)
+            actBoxZoom->setChecked(false);
+    }
+    else
+    {
+        chartView->setDragMode(QGraphicsView::NoDrag);
+        chartView->setRubberBand(QChartView::RectangleRubberBand);
+        if (actPan)
+            actPan->setChecked(false);
+        if (actBoxZoom)
+            actBoxZoom->setChecked(true);
+    }
+}
+
+void UWatchChart::resetViewport()
+{
+    restoreInitialAxesState();
+    isAxisXtrackable = true;
+    if (actTrack)
+        actTrack->setChecked(true);
+    emit UpdateTabGuiSignal(false);
+}
+
+void UWatchChart::onModePan()
+{
+    setInteractionPan(true);
+}
+
+void UWatchChart::onModeBoxZoom()
+{
+    setInteractionPan(false);
+}
+
+void UWatchChart::onModeTrack()
+{
+    setInteractionTrackLatest(actTrack && actTrack->isChecked());
+}
+
+void UWatchChart::onModeReset()
+{
+    resetViewport();
+}
+
+void UWatchChart::connectSerieTooltip(UWatchSerie* serie)
+{
+    if (!serie)
+        return;
+    connect(serie, &QXYSeries::hovered, this, [this, serie](const QPointF& point, bool state) {
+        if (!state || !chartView)
+        {
+            if (chartView)
+                chartView->setToolTip(QString());
+            return;
+        }
+        QString tip = QStringLiteral("%1\nX=%2  Y=%3")
+                          .arg(serie->name())
+                          .arg(point.x(), 0, 'g', 6)
+                          .arg(point.y(), 0, 'g', 6);
+        tip += QStringLiteral("\nY: %1.%2[%3,%4]")
+                   .arg(serie->nameComponent, serie->nameProperty)
+                   .arg(serie->Jx)
+                   .arg(serie->Jy);
+        if (!serie->xNameComponent.isEmpty())
+        {
+            tip += QStringLiteral("\nX: %1.%2[%3,%4]")
+                       .arg(serie->xNameComponent, serie->xNameProperty)
+                       .arg(serie->xJx)
+                       .arg(serie->xJy);
+        }
+        else
+        {
+            tip += QStringLiteral("\nX: time");
+        }
+        chartView->setToolTip(tip);
+    });
+}
+
+NMSDK::Plot::PlotPanel UWatchChart::toPlotPanel() const
+{
+    NMSDK::Plot::PlotPanel panel;
+    panel.id = QStringLiteral("graph_%1").arg(chartIndex);
+    panel.viz = vizKind;
+    panel.title = chart ? chart->title() : QString();
+    panel.axisXName = axisX ? axisX->titleText() : QString();
+    panel.axisYName = axisY ? axisY->titleText() : QString();
+    panel.axisYMin = axisY ? axisY->min() : -1.0;
+    panel.axisYMax = axisY ? axisY->max() : 1.0;
+    panel.axisXRange = axisXrange;
+    panel.legendVisible = m_legendVisible;
+    panel.titleVisible = m_titleVisible;
+    panel.trackLatest = isAxisXtrackable;
+    if (chartView && chartView->dragMode() == QGraphicsView::ScrollHandDrag)
+        panel.interaction = NMSDK::Plot::InteractionMode::Pan;
+    else if (isAxisXtrackable)
+        panel.interaction = NMSDK::Plot::InteractionMode::TrackLatest;
+    else
+        panel.interaction = NMSDK::Plot::InteractionMode::FrozenZoom;
+    for (int i = 0; i < series.size(); ++i)
+    {
+        if (series[i])
+            panel.series.push_back(series[i]->toPlotSeries());
+    }
+    return panel;
+}
+
+void UWatchChart::applyPlotPanelMeta(const NMSDK::Plot::PlotPanel& panel)
+{
+    setVizKind(panel.viz);
+    setChartTitle(panel.title);
+    setAxisXname(panel.axisXName);
+    setAxisYname(panel.axisYName);
+    setAxisYmin(panel.axisYMin);
+    setAxisYmax(panel.axisYMax);
+    setAxisXrange(panel.axisXRange);
+    setLegendVisible(panel.legendVisible);
+    setTitleVisible(panel.titleVisible);
+    isAxisXtrackable = panel.trackLatest;
+    if (panel.interaction == NMSDK::Plot::InteractionMode::Pan)
+        setInteractionPan(true);
+    else
+        setInteractionPan(false);
+    if (actTrack)
+        actTrack->setChecked(panel.trackLatest || panel.interaction == NMSDK::Plot::InteractionMode::TrackLatest);
+    fixInitialAxesState();
+}
 

@@ -2,7 +2,6 @@
 #define UWATCHCHART_H
 
 #include <QWidget>
-#include <QScrollBar>
 #include <QVBoxLayout>
 #include <QMenu>
 #include <QDir>
@@ -19,9 +18,13 @@
 #include <QtCharts/QValueAxis>
 #include "UWatchSerie.h"
 #include "UWatchChartView.h"
+#include "Plot/PlotDocument.h"
 #include <QtCharts/QChart>
 #include <QtCharts/QChartView>
 
+class QToolBar;
+class QAction;
+class PlotSettingsSidePanel;
 
 namespace Ui {
 class UWatchChart;
@@ -98,9 +101,31 @@ public:
     //действия с сериями
     void createSerie(int channelIndex, const QString componentName, const QString propertyName,
                      const QString type, int jx, int jy, double time_interval, double y_shift);
+    /// XY series: X and Y from property roles (same-tick pairs).
+    void createSerieXY(int channelIndex,
+                       const QString& xComponent, const QString& xProperty, int xJx, int xJy,
+                       const QString& yComponent, const QString& yProperty, int yJx, int yJy,
+                       double y_shift, NMSDK::Plot::VizKind viz = NMSDK::Plot::VizKind::XYLine);
     void deleteSerie(int serieIndex);
     void addDataToSerie(int serieIndex, double x, double y);
     int  countSeries();
+
+    NMSDK::Plot::VizKind getVizKind() const { return vizKind; }
+    void setVizKind(NMSDK::Plot::VizKind kind);
+
+    bool isLegendVisible() const;
+    void setLegendVisible(bool visible);
+    bool isTitleVisible() const;
+    void setTitleVisible(bool visible);
+
+    void setInteractionTrackLatest(bool track);
+    void setInteractionPan(bool pan);
+    void resetViewport();
+
+    void connectSerieTooltip(UWatchSerie* serie);
+
+    NMSDK::Plot::PlotPanel toPlotPanel() const;
+    void applyPlotPanelMeta(const NMSDK::Plot::PlotPanel& panel);
 
     //работа с динамикой осей
     int axisXrange;
@@ -120,13 +145,16 @@ private:
 
     //все график, оси, скороллбар и их расположение
     QVBoxLayout *verticalLayout;
-    QScrollBar *horizontalScrolBar;
+    QToolBar *modeBar = nullptr;
+    QAction *actPan = nullptr;
+    QAction *actBoxZoom = nullptr;
+    QAction *actTrack = nullptr;
+    QAction *actReset = nullptr;
 
     QPoint m_lastPoint;
     bool m_isPress;
     bool m_alreadySaveRange;
     double m_xMin, m_xMax, m_yMin, m_yMax;
-    QGraphicsSimpleTextItem* m_coordItem;
 
     // parent UWatchTab
     UWatchTab* WatchTab;
@@ -134,6 +162,10 @@ private:
     // array with initital values for axes
     // {x_range, y_max, y_min}
     std::vector<double> InitialAxesState;
+
+    NMSDK::Plot::VizKind vizKind = NMSDK::Plot::VizKind::TimeSeries;
+    bool m_legendVisible = true;
+    bool m_titleVisible = true;
 
  public:
     UWatchChartView *chartView;
@@ -165,9 +197,14 @@ private slots:
     void saveToJpegSlot();
     void restoreAxes();
     void updateAxes(double x_min, double x_max, double y_min, double y_max);
+    void onModePan();
+    void onModeBoxZoom();
+    void onModeTrack();
+    void onModeReset();
 signals:
     void addSerieSignal(int someIndex);
     void UpdateTabGuiSignal(bool force_update);
+    void openSettingsPanel(int chartIndex, bool seriesPage);
 };
 
 #endif // UWATCHCHART_H

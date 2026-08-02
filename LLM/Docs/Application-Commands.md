@@ -89,6 +89,8 @@ See [Agent-Documentation.md](Agent-Documentation.md).
 | Tool | Kind | Host |
 |------|------|------|
 | `add_watch_series` | Write | `llmWatchAddSeries` (`surface=window\|mdi`) |
+| `set_panel_viz_kind` | Write | `llmWatchSetPanelVizKind` (`TimeSeries\|XYLine\|XYScatter`) |
+| `set_series_binding` | Write | `llmWatchSetSeriesBinding` (Y required; X enables XY) |
 | `list_watch_series` | Read | `llmWatchListSeries` |
 | `remove_watch_series` / `clear_watch_series` | Write | remove/clear |
 | `list_watch_mdi` / `create_watch_mdi` / `focus_watch_mdi` / `close_watch_mdi` | Read/Write | MDI `Watches_N` |
@@ -216,7 +218,7 @@ These tools are registered in `RegisterApplicationTools.cpp`:
 
 ### Watch series and MDI (DD-WATCH-001)
 
-Same as RU section: `add/list/remove/clear_watch_series`, `list/create/focus/close_watch_mdi` via presentation sink → `UGEngineControlWidget::llmWatch*` (GUI thread).
+Same as RU section: `add/list/remove/clear_watch_series`, `set_panel_viz_kind`, `set_series_binding`, `list/create/focus/close_watch_mdi` via presentation sink → `UGEngineControlWidget::llmWatch*` (GUI thread). `set_series_binding` accepts optional `x_long_name`/`x_property_name` for XY plots.
 
 ### Documentation open (DD-DOC-001)
 

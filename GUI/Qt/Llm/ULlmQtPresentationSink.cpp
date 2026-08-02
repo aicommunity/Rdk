@@ -358,6 +358,59 @@ nlohmann::json ULlmQtPresentationSink::watchClearSeries(const RDK::LLM::LLMWatch
     return cmd.payload;
 }
 
+nlohmann::json ULlmQtPresentationSink::watchSetPanelVizKind(const RDK::LLM::LLMWatchSeriesArgs& args)
+{
+    RDK::LLM::ApplicationCommandResult cmd = invokeHostSynchronized([&]() {
+        RDK::LLM::ApplicationCommandResult r;
+        if(!m_host)
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::NotInitialized;
+            r.status.message = "Watch host unavailable";
+            return r;
+        }
+        r.payload = m_host->llmWatchSetPanelVizKind(
+            args.surface, args.mdi_id, args.tab_index, args.chart_index,
+            QString::fromStdString(args.viz_kind));
+        if(!r.payload.value("ok", false))
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::InvalidPropertyValue;
+            r.status.message = r.payload.value("error", "watchSetPanelVizKind failed");
+        }
+        return r;
+    });
+    if(!cmd.status.ok())
+        return {{"ok", false}, {"error", cmd.status.message}};
+    return cmd.payload;
+}
+
+nlohmann::json ULlmQtPresentationSink::watchSetSeriesBinding(const RDK::LLM::LLMWatchSeriesArgs& args)
+{
+    RDK::LLM::ApplicationCommandResult cmd = invokeHostSynchronized([&]() {
+        RDK::LLM::ApplicationCommandResult r;
+        if(!m_host)
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::NotInitialized;
+            r.status.message = "Watch host unavailable";
+            return r;
+        }
+        r.payload = m_host->llmWatchSetSeriesBinding(
+            args.surface, args.mdi_id, args.tab_index, args.chart_index, args.serie_index,
+            args.channel_index, QString::fromStdString(args.long_name),
+            QString::fromStdString(args.property_name), args.jx, args.jy,
+            QString::fromStdString(args.x_long_name), QString::fromStdString(args.x_property_name),
+            args.x_jx, args.x_jy, QString::fromStdString(args.viz_kind));
+        if(!r.payload.value("ok", false))
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::InvalidPropertyValue;
+            r.status.message = r.payload.value("error", "watchSetSeriesBinding failed");
+        }
+        return r;
+    });
+    if(!cmd.status.ok())
+        return {{"ok", false}, {"error", cmd.status.message}};
+    return cmd.payload;
+}
+
 nlohmann::json ULlmQtPresentationSink::watchMdiList()
 {
     RDK::LLM::ApplicationCommandResult cmd = invokeHostSynchronized([&]() {

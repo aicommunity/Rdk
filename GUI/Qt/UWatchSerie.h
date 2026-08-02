@@ -2,8 +2,11 @@
 #define UWATCHSERIE_H
 
 #include "NmsdkQtCompat.h"
+#include "Plot/PlotDocument.h"
 #include <QtCharts/QLineSeries>
+#include <QPointF>
 #include <QString>
+#include <QVector>
 
 namespace RDK
 {
@@ -14,25 +17,38 @@ class UWatchSerie: public NMSDK_QT_CHARTS_BASE(QLineSeries)
 {
 public:
     UWatchSerie();
-    //~UWatchSerie();
 
-    //данные об источнике данных
-    int indexChannel;      //Индекс канала
-    QString nameComponent; //Имя компонента
-    QString nameProperty;  //Имя свойства
-    QString typeProperty;  //Тип компонента
-    double YShift;
-    // вектор DataReader-ов
-    RDK::UControllerDataReader * data_reader;
-    //координаты элемента матрицы
-    int Jx;
-    int Jy;
+    // Y (and TimeSeries) source
+    int indexChannel = 0;
+    QString nameComponent;
+    QString nameProperty;
+    double YShift = 0.0;
+    RDK::UControllerDataReader * data_reader = nullptr;
+    int Jx = -1;
+    int Jy = -1;
 
-    // Статус серии (активна/неактивна)
+    // X source for XY viz (Property role)
+    QString xNameComponent;
+    QString xNameProperty;
+    int xJx = -1;
+    int xJy = -1;
+    RDK::UControllerDataReader * x_data_reader = nullptr;
+
+    NMSDK::Plot::VizKind vizKind = NMSDK::Plot::VizKind::TimeSeries;
+    int windowSize = 10000;
+
+    // XY ring buffer runtime state
+    QVector<QPointF> xyRing;
+    int xyLastXCount = -1;
+    int xyLastYCount = -1;
+
     bool isOnline = true;
 
-    // Установить статус серии (влияет на визуальное отображение)
     void setOnlineStatus(bool online);
+
+    NMSDK::Plot::DataBinding toBinding() const;
+    void applyBinding(const NMSDK::Plot::DataBinding& binding, NMSDK::Plot::VizKind viz);
+    NMSDK::Plot::PlotSeries toPlotSeries() const;
 };
 
 #endif // UWATCHSERIE_H

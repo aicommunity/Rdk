@@ -643,6 +643,11 @@ void RegisterApplicationTools(ULLMToolRegistry& registry)
         a.jx = args.value("jx", 0);
         a.jy = args.value("jy", 0);
         a.serie_index = args.value("serie_index", -1);
+        a.viz_kind = args.value("viz_kind", std::string());
+        a.x_long_name = args.value("x_long_name", std::string());
+        a.x_property_name = args.value("x_property_name", std::string());
+        a.x_jx = args.value("x_jx", 0);
+        a.x_jy = args.value("x_jy", 0);
         return a;
     };
 
@@ -769,6 +774,69 @@ void RegisterApplicationTools(ULLMToolRegistry& registry)
                     sink ? sink->watchClearSeries(wa)
                          : nlohmann::json{{"ok", false}, {"error", "Watch host unavailable"}};
                 return watchPayloadToCommand(payload, false);
+            });
+        });
+
+    registry.registerTool(
+        makeAppDef("set_panel_viz_kind", LLMToolKind::Write,
+                   "Set Watch panel visualization kind: TimeSeries, XYLine, or XYScatter",
+                   {{"type", "object"},
+                    {"required", nlohmann::json::array({"viz_kind"})},
+                    {"properties",
+                     [&]() {
+                         nlohmann::json props = watchSurfaceProps;
+                         props["viz_kind"] = {
+                             {"type", "string"},
+                             {"enum", nlohmann::json::array({"TimeSeries", "XYLine", "XYScatter"})}};
+                         return props;
+                     }()},
+                    {"additionalProperties", false}},
+                   false, true),
+        [parseWatchArgs, watchPayloadToCommand](const nlohmann::json& args) -> ToolGatewayResult {
+            const auto wa = parseWatchArgs(args);
+            return invokeApplicationTool(activeSink(), [&]() {
+                ILLMPresentationSink* sink = activeSink();
+                nlohmann::json payload =
+                    sink ? sink->watchSetPanelVizKind(wa)
+                         : nlohmann::json{{"ok", false}, {"error", "Watch host unavailable"}};
+                return watchPayloadToCommand(payload, false);
+            });
+        });
+
+    registry.registerTool(
+        makeAppDef("set_series_binding", LLMToolKind::Write,
+                   "Create/replace a Watch series binding; optional X property enables XY plot",
+                   {{"type", "object"},
+                    {"required", nlohmann::json::array({"long_name", "property_name"})},
+                    {"properties",
+                     [&]() {
+                         nlohmann::json props = watchSurfaceProps;
+                         props["long_name"] = {{"type", "string"}};
+                         props["property_name"] = {{"type", "string"}};
+                         props["jx"] = {{"type", "integer"}, {"default", 0}};
+                         props["jy"] = {{"type", "integer"}, {"default", 0}};
+                         props["channel_index"] = {{"type", "integer"}, {"default", 0}};
+                         props["serie_index"] = {{"type", "integer"}, {"default", -1}};
+                         props["viz_kind"] = {
+                             {"type", "string"},
+                             {"enum", nlohmann::json::array({"TimeSeries", "XYLine", "XYScatter"})},
+                             {"default", "TimeSeries"}};
+                         props["x_long_name"] = {{"type", "string"}};
+                         props["x_property_name"] = {{"type", "string"}};
+                         props["x_jx"] = {{"type", "integer"}, {"default", 0}};
+                         props["x_jy"] = {{"type", "integer"}, {"default", 0}};
+                         return props;
+                     }()},
+                    {"additionalProperties", false}},
+                   false, true),
+        [parseWatchArgs, watchPayloadToCommand](const nlohmann::json& args) -> ToolGatewayResult {
+            const auto wa = parseWatchArgs(args);
+            return invokeApplicationTool(activeSink(), [&]() {
+                ILLMPresentationSink* sink = activeSink();
+                nlohmann::json payload =
+                    sink ? sink->watchSetSeriesBinding(wa)
+                         : nlohmann::json{{"ok", false}, {"error", "Watch host unavailable"}};
+                return watchPayloadToCommand(payload, wa.surface == "window");
             });
         });
 

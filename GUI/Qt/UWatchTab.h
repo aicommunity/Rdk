@@ -12,8 +12,7 @@
 #include "UMatrixFormDialog.h"
 #include "UVisualControllerWidget.h"
 #include "UComponentPropertySelectionWidget.h"
-#include "UWatchChartOption.h"
-#include "UWatchSeriesOption.h"
+#include "Plot/PlotDocument.h"
 #include "NmsdkQtCompat.h"
 
 NMSDK_QT_CHARTS_USE_NS
@@ -23,9 +22,7 @@ class UWatchTab;
 }
 
 class UWatchChart;
-//////////////////////////////////////////////////////////////////////////////
-// Класс, реализующий одну вкладку с одним или несколькими графиками
-//////////////////////////////////////////////////////////////////////////////
+class PlotSettingsSidePanel;
 
 class UWatchTab : public UVisualControllerWidget
 {
@@ -35,77 +32,68 @@ public:
     explicit UWatchTab(QWidget *parent = nullptr, RDK::UApplication* app = NULL);
     ~UWatchTab();
 
-    ///создание расположений графиков
     void createGridLayout(int rowNumber, int colNumber);
-
 
     UWatchChart *getChart(int index);
     int countGraphs();
 
-    ///вызывется окно для выбора источника данных
     void createSelectionDialog(int chartIndex);
+    void createXYSelectionDialog(int chartIndex);
 
-    ///частота обновления графика, мс
     int UpdateIntervalMs = 200;
     void saveUpdateInterval(int newInterval);
 
-    //узнать количество строк и столбцов
     int getColNumber();
     int getRowNumber();
 
-    // Сохраняет параметры интерфейса в xml
-    virtual void ASaveParameters(RDK::USerStorageXML &xml);
+    /// Live PlotDocument mirror (synced from charts before save / after mutations).
+    const NMSDK::Plot::PlotDocument& plotDocument() const { return m_document; }
+    void syncDocumentFromCharts();
+    NMSDK::Plot::PlotDocument capturePlotDocument() const;
+    void applyPlotDocument(const NMSDK::Plot::PlotDocument& doc);
 
-    // Загружает параметры интерфейса из xml
+    virtual void ASaveParameters(RDK::USerStorageXML &xml);
     virtual void ALoadParameters(RDK::USerStorageXML &xml);
-    
-    // Обновление темы - применяет стили ко всем графикам
+
     void updateTheme();
 
+    QList<int> captureColSplitterSizes() const;
+    QVector<QList<int>> captureRowSplitterSizes() const;
+
 private:
-    // Создание/удаление графиков
     void createGraph();
     void deleteGraph(int index);
     void deleteGraphs(int new_graph_count);
 
     void createSplitterGrid(int rowNumber);
+    void ensureSettingsPanel();
+    void applySplitterSizes(const NMSDK::Plot::PlotDocument& doc);
 
     int tabColNumber=0;
     int tabRowNumber=0;
 
-    ///вектор графиков на одной вкладке
     QVector <UWatchChart*> graph;
     std::list<double> XData;
     std::list<double> YData;
     QVector<QPointF> points;
 
-    QSplitter *colSplitter;              //colSplitter
-    QVector <QSplitter*> rowSplitter;    // |----..---rowSplitter[0]
-                                         // |----..---
-                                         // |----..---
-                                         // ...
-                                         // |----..---rowSplitter[n]
+    QSplitter *colSplitter;
+    QVector <QSplitter*> rowSplitter;
+    QSplitter *rootSplitter = nullptr;
+    PlotSettingsSidePanel *settingsPanel = nullptr;
+    NMSDK::Plot::PlotDocument m_document;
 
     Ui::UWatchTab *ui;
 
-    UWatchChartOption *chartOption;
-    UWatchSeriesOption *seriesOption;
-
-    ///Обновляет графики
-    ///Для каждого графика - обращаемся к ядру, берем матрицу по заданному источнику данных
-    ///Ее данные положим на этот график
     virtual void AUpdateInterface();
-
-    ///Очищает интерфейс
     virtual void AClearInterface();
-
-    /// Безопасно считывает данные серии из ядра
     virtual void ReadSeriesDataSafe(int graphIndex, int serieIndex, std::list<double> &xdata, std::list<double> &ydata);
 
 public slots:
     void createSelectionDialogSlot(int index);
     void seriesOptionTriggered();
     void chartsOptionTriggered();
+    void openSettingsPanelSlot(int chartIndex, bool seriesPage);
 
 };
 

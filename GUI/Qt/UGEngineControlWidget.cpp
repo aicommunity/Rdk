@@ -96,11 +96,8 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 #ifndef RDK_DISABLE_EXT_GUI
     videoAnalyticsSimpleWidget=NULL;
 #endif
-    graphWindowWidget=NULL;
-    graphWindow=NULL;
     profilingWindow=NULL;
     profilingWindowWidget=NULL;
- //   watchFormWidget=NULL;
     watchWindow = NULL;
     projectDescriptionWindow = NULL;
     clDescWindow = NULL;
@@ -343,17 +340,6 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     ui->actionLogger->setChecked(false);
     connect(ui->dockWidgetLoger, &QDockWidget::visibilityChanged,
             ui->actionLogger, &QAction::setChecked);
-    /*
-    graphWindowWidget = new UGraphWidget(this, application);
-//    ui->dockWidgetGraph->setWidget(graphWindowWidget);
-    graphWindowWidget->setWindowTitle("Graph");
-       graphWindowWidget->hide();
-    ui->dockWidgetGraph->hide();
-    */
-
- //   watchFormWidget= new UWatchFormWidget(this, application);
- //   watchFormWidget->setWindowTitle("Watches");
- //   watchFormWidget->hide();
 
     watchWindow = new UWatch(this);
     watchWindow->setWindowTitle("Watch window");
@@ -843,7 +829,7 @@ nlohmann::json UGEngineControlWidget::llmWatchAddSeries(const std::string& surfa
     if(time_interval <= 0.0)
         time_interval = 1.0;
     const int before = chart->countSeries();
-    chart->createSerie(channel_index, longName, propertyName, QStringLiteral("type"), jx, jy,
+    chart->createSerie(channel_index, longName, propertyName, QString(), jx, jy,
                        time_interval, 0.0);
     const int after = chart->countSeries();
     if(after <= before)
@@ -976,6 +962,76 @@ nlohmann::json UGEngineControlWidget::llmWatchClearSeries(const std::string& sur
     }
     out["ok"] = true;
     out["removed_count"] = removed;
+    return out;
+}
+
+nlohmann::json UGEngineControlWidget::llmWatchSetPanelVizKind(const std::string& surface, int mdi_id,
+                                                              int tab_index, int chart_index,
+                                                              const QString& vizKind)
+{
+    nlohmann::json out;
+    UWatchTab* tab = llmWatchResolveTab(surface, mdi_id, tab_index);
+    if (!tab || chart_index < 0 || chart_index >= tab->countGraphs())
+    {
+        out["ok"] = false;
+        out["error"] = "Watch chart not found";
+        return out;
+    }
+    UWatchChart* chart = tab->getChart(chart_index);
+    if (!chart)
+    {
+        out["ok"] = false;
+        out["error"] = "chart unavailable";
+        return out;
+    }
+    chart->setVizKind(NMSDK::Plot::vizKindFromString(vizKind));
+    out["ok"] = true;
+    out["viz_kind"] = NMSDK::Plot::vizKindToString(chart->getVizKind()).toStdString();
+    return out;
+}
+
+nlohmann::json UGEngineControlWidget::llmWatchSetSeriesBinding(
+    const std::string& surface, int mdi_id, int tab_index, int chart_index, int serie_index,
+    int channel_index, const QString& yLongName, const QString& yProperty, int yJx, int yJy,
+    const QString& xLongName, const QString& xProperty, int xJx, int xJy, const QString& vizKind)
+{
+    nlohmann::json out;
+    UWatchTab* tab = llmWatchResolveTab(surface, mdi_id, tab_index);
+    if (!tab || chart_index < 0 || chart_index >= tab->countGraphs())
+    {
+        out["ok"] = false;
+        out["error"] = "Watch chart not found";
+        return out;
+    }
+    UWatchChart* chart = tab->getChart(chart_index);
+    if (!chart)
+    {
+        out["ok"] = false;
+        out["error"] = "chart unavailable";
+        return out;
+    }
+
+    const NMSDK::Plot::VizKind viz = NMSDK::Plot::vizKindFromString(
+        vizKind.isEmpty() ? QStringLiteral("XYLine") : vizKind);
+    chart->setVizKind(viz);
+
+    if (serie_index >= 0 && serie_index < chart->countSeries())
+        chart->deleteSerie(serie_index);
+
+    if (!xLongName.isEmpty() && !xProperty.isEmpty())
+    {
+        chart->createSerieXY(channel_index, xLongName, xProperty, xJx, xJy, yLongName, yProperty,
+                             yJx, yJy, 0.0, viz);
+    }
+    else
+    {
+        const double time_interval = chart->getAxisXrange();
+        chart->createSerie(channel_index, yLongName, yProperty, QString(), yJx, yJy, time_interval,
+                           0.0);
+    }
+    out["ok"] = true;
+    out["serie_index"] = chart->countSeries() - 1;
+    out["viz_kind"] = NMSDK::Plot::vizKindToString(viz).toStdString();
     return out;
 }
 
@@ -1607,9 +1663,6 @@ void UGEngineControlWidget::actionProfiling()
     profilingWindow->show();
     profilingWindow->showNormal();
     profilingWindow->activateWindow();*/
-
-    //отобразить *graphWindowWidget
-//    ui->dockWidgetGraph->show();
 }
 
 void UGEngineControlWidget::actionTcpServer()
@@ -1618,8 +1671,6 @@ void UGEngineControlWidget::actionTcpServer()
     {
         tcpServerControlWindow = new QMainWindow(this);
         tcpServerControlWindow->setWindowTitle("TcpServerControl");
-        //graphWindow->setCentralWidget(graphWindowWidget);
-        //graphWindowWidget->show();
         tcpServerControlWindow->setCentralWidget(tcpServerControlWidget);
     }
 

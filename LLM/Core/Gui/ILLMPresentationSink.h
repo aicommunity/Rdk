@@ -19,6 +19,11 @@ struct LLMWatchSeriesArgs {
     int jx = 0;
     int jy = 0;
     int serie_index = -1; // for remove by index
+    std::string viz_kind; // TimeSeries | XYLine | XYScatter
+    std::string x_long_name;
+    std::string x_property_name;
+    int x_jx = 0;
+    int x_jy = 0;
 };
 
 class ILLMPresentationSink {
@@ -71,6 +76,16 @@ public:
         return {{"ok", false}, {"error", "Watch host unavailable"}};
     }
     virtual nlohmann::json watchClearSeries(const LLMWatchSeriesArgs& args)
+    {
+        (void)args;
+        return {{"ok", false}, {"error", "Watch host unavailable"}};
+    }
+    virtual nlohmann::json watchSetPanelVizKind(const LLMWatchSeriesArgs& args)
+    {
+        (void)args;
+        return {{"ok", false}, {"error", "Watch host unavailable"}};
+    }
+    virtual nlohmann::json watchSetSeriesBinding(const LLMWatchSeriesArgs& args)
     {
         (void)args;
         return {{"ok", false}, {"error", "Watch host unavailable"}};

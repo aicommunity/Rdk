@@ -30,6 +30,8 @@ public:
     nlohmann::json watchListSeries(const RDK::LLM::LLMWatchSeriesArgs& args) override;
     nlohmann::json watchRemoveSeries(const RDK::LLM::LLMWatchSeriesArgs& args) override;
     nlohmann::json watchClearSeries(const RDK::LLM::LLMWatchSeriesArgs& args) override;
+    nlohmann::json watchSetPanelVizKind(const RDK::LLM::LLMWatchSeriesArgs& args) override;
+    nlohmann::json watchSetSeriesBinding(const RDK::LLM::LLMWatchSeriesArgs& args) override;
     nlohmann::json watchMdiList() override;
     nlohmann::json watchMdiCreate(int grid_rows, int grid_cols, const std::string& title) override;
     nlohmann::json watchMdiFocus(int mdi_id) override;
