@@ -21,6 +21,8 @@
 - `NMSDK_LLM_INPUT_ENSEMBLE` — input understanding ensemble
 - `NMSDK_LLM_TASK_PATH_STRICT` — legacy fast-path for CI
 - `LLM/enable_ollama_thinking` — Cortex thinking-first (default on)
+- `NMSDK_LLM_CAPABILITY_RISK_TAU` — Capability Risk Gate threshold (default `0.55`); see [Weak-Model-Mitigation.md](Weak-Model-Mitigation.md)
+- `NMSDK_LLM_CAPABILITY_RISK_DISABLE=1` — disable CRG pre-escalate / cascade / abstain
 
 ---
 
@@ -45,3 +47,5 @@
 - `NMSDK_LLM_INPUT_ENSEMBLE` — input understanding ensemble
 - `NMSDK_LLM_TASK_PATH_STRICT` — legacy fast-path for CI
 - `LLM/enable_ollama_thinking` — Cortex thinking-first (default on)
+- `NMSDK_LLM_CAPABILITY_RISK_TAU` — Capability Risk Gate threshold (default `0.55`); see [Weak-Model-Mitigation.md](Weak-Model-Mitigation.md)
+- `NMSDK_LLM_CAPABILITY_RISK_DISABLE=1` — disable CRG pre-escalate / cascade / abstain

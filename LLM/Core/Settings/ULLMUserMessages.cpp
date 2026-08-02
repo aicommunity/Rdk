@@ -28,6 +28,15 @@ std::string lookup(const std::string& key, const std::string& lang)
                   : "Write the project description: after inspecting the configuration, call "
                     "update_configuration with concrete description text (no greetings or invented "
                     "product names).";
+    if(key == "error.model_too_weak_for_request")
+        return ru ? "Текущая модель слишком слаба для этого запроса: агент не смог надёжно "
+                    "вызвать нужные инструменты. Смените модель в настройках LLM на более "
+                    "сильную (например ollama-thinking / qwen3:14b), упросьте запрос или "
+                    "уточните путь/цель."
+                  : "The current model is too weak for this request: the agent could not reliably "
+                    "invoke the required tools. Switch the LLM settings to a stronger model "
+                    "(e.g. ollama-thinking / qwen3:14b), simplify the request, or clarify the "
+                    "path/goal.";
     if(key == "error.index_missing")
         return ru ? "Индекс знаний недоступен." : "Knowledge index unavailable.";
     return key;

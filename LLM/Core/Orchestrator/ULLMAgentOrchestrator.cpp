@@ -35,6 +35,7 @@
 #include "ULLMComponentStructureGoal.h"
 #include "ULLMWatchPlotGoal.h"
 #include "ULLMActOrClarifyGate.h"
+#include "ULLMCapabilityRiskGate.h"
 #include "ULLMDialogSlotMerge.h"
 #include "ULLMLifecycleArgumentGate.h"
 #include "../Domain/URdkApplicationCommands.h"
@@ -1422,6 +1423,41 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
             opts.model_override = *model;
     }
 
+    // DD-CAP-001: Capability Risk Gate — pre-escalate weak Cortex on complex goals.
+    bool capability_cascade_used = false;
+    {
+        const std::string active_model =
+            opts.model_override && !opts.model_override->empty() ? *opts.model_override
+                                                                : req.provider_profile.model;
+        const bool weak_model =
+            isWeakCortexModel(req.provider_profile.profile_id, active_model)
+            || isWeakCortexModel(cortex_route.profile_hint, active_model);
+        const bool requires_write_pre =
+            ctx.pack_force_include_write || state.turn_requires_description_write;
+        const bool complex_goal = isComplexCapabilityGoal(
+            planning_text, intent, filter.include_write, requires_write_pre);
+        const std::optional<std::string> stronger = findStrongerCortexModel(active_model);
+        CapabilityRiskSignals pre_sig;
+        pre_sig.weak_cortex_profile = weak_model;
+        pre_sig.complex_goal = complex_goal;
+        pre_sig.intent_confidence = intent_result.confidence;
+        pre_sig.low_intent_confidence = intent_result.confidence < 0.45f;
+        pre_sig.requires_pending_write = requires_write_pre;
+        pre_sig.stronger_model_available = stronger.has_value();
+        const CapabilityRiskDecision pre_dec = decideCapabilityRisk(pre_sig);
+        if(pre_dec.action == CapabilityRiskAction::Escalate && stronger)
+        {
+            opts.model_override = *stronger;
+            capability_cascade_used = true;
+            GetAuditLog().append("capability_pre_escalate",
+                                 {{"from_model", active_model},
+                                  {"to_model", *stronger},
+                                  {"score", pre_dec.score},
+                                  {"reason", pre_dec.reason_code}},
+                                 req.trace_id, req.session_id);
+        }
+    }
+
     // DD-THINK-003: never force tool_choice while thinking is on.
     if(provider_tools && !thinking_enabled
        && lifecycle_action != ConfigurationLifecycleAction::None
@@ -1910,46 +1946,114 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                                          req.trace_id, req.session_id);
                     continue;
                 }
-                final.no_suitable_tool = true;
-                const bool pending_desc_write = requires_desc_write && !has_desc_write;
-                const bool query_like =
-                    !pending_desc_write
-                    && (intent == LLMIntentKind::Query || intent == LLMIntentKind::Explain
-                        || turnHasSuccessfulReadOnlyEvidence(state.current_turn_tool_trace));
-                const std::string model_text = completion.text;
-                const bool model_said_none =
-                    model_text.find("NO_SUITABLE_TOOL") != std::string::npos;
-                if(pending_desc_write)
+
+                // DD-CAP-001: one cascade retry on a stronger model before exhaust.
                 {
-                    // chat 18-19-54: never surface hallucinated greetings when write is required.
+                    int tool_errs = 0;
+                    int path_errs = 0;
+                    accumulateToolFailureSignals(state.current_turn_tool_trace, tool_errs, path_errs);
+                    const std::string active_model =
+                        opts.model_override && !opts.model_override->empty()
+                            ? *opts.model_override
+                            : req.provider_profile.model;
+                    const std::optional<std::string> stronger = findStrongerCortexModel(active_model);
+                    CapabilityRiskSignals mid_sig;
+                    mid_sig.weak_cortex_profile =
+                        isWeakCortexModel(req.provider_profile.profile_id, active_model)
+                        || isWeakCortexModel(cortex_route.profile_hint, active_model);
+                    mid_sig.complex_goal = isComplexCapabilityGoal(
+                        planning_text, intent, filter.include_write, requires_desc_write);
+                    mid_sig.intent_confidence = intent_result.confidence;
+                    mid_sig.low_intent_confidence = intent_result.confidence < 0.45f;
+                    mid_sig.requires_pending_write = requires_desc_write && !has_desc_write;
+                    mid_sig.aoc_recovery_count =
+                        (recovery_used ? 1 : 0) + (description_write_recovery_used ? 1 : 0)
+                        + (connect_recovery_used ? 1 : 0) + (calc_recovery_used ? 1 : 0)
+                        + (structure_recovery_used ? 1 : 0) + (watch_recovery_used ? 1 : 0);
+                    mid_sig.tool_error_count = tool_errs;
+                    mid_sig.path_not_allowed_count = path_errs;
+                    mid_sig.aoc_exhausted = true;
+                    mid_sig.cascade_already_used = capability_cascade_used;
+                    mid_sig.stronger_model_available = stronger.has_value();
+                    const CapabilityRiskDecision mid_dec = decideCapabilityRisk(mid_sig);
+                    if(mid_dec.action == CapabilityRiskAction::Escalate && stronger
+                       && !capability_cascade_used && round + 1 < max_rounds)
+                    {
+                        capability_cascade_used = true;
+                        opts.model_override = *stronger;
+                        LLMMessage cascade_hint;
+                        cascade_hint.role = LLMMessage::Role::System;
+                        cascade_hint.content =
+                            "Capability cascade: the previous model failed Act-or-Clarify. "
+                            "Call the required tools now. Do not finalize with prose alone. "
+                            "If no tool can satisfy the request, reply exactly: NO_SUITABLE_TOOL.";
+                        m_store.appendMessage(req.session_id, cascade_hint);
+                        GetAuditLog().append("capability_cascade_retry",
+                                             {{"from_model", active_model},
+                                              {"to_model", *stronger},
+                                              {"score", mid_dec.score},
+                                              {"reason", mid_dec.reason_code}},
+                                             req.trace_id, req.session_id);
+                        continue;
+                    }
+
                     final.no_suitable_tool = true;
-                    final.text = formatUserMessage("error.description_write_required", user_lang);
+                    const bool pending_desc_write = requires_desc_write && !has_desc_write;
+                    const bool high_capability_risk = mid_dec.score >= capabilityRiskTau();
+                    const bool query_like =
+                        !pending_desc_write && !high_capability_risk
+                        && (intent == LLMIntentKind::Query || intent == LLMIntentKind::Explain
+                            || turnHasSuccessfulReadOnlyEvidence(state.current_turn_tool_trace));
+                    const std::string model_text = completion.text;
+                    const bool model_said_none =
+                        model_text.find("NO_SUITABLE_TOOL") != std::string::npos;
+                    if(pending_desc_write)
+                    {
+                        // chat 18-19-54: never surface hallucinated greetings when write is required.
+                        final.no_suitable_tool = true;
+                        final.text = formatUserMessage("error.description_write_required", user_lang);
+                    }
+                    else if(high_capability_risk
+                            && (mid_dec.action == CapabilityRiskAction::Abstain
+                                || mid_sig.complex_goal || mid_sig.weak_cortex_profile))
+                    {
+                        final.no_suitable_tool = true;
+                        final.text =
+                            formatUserMessage("error.model_too_weak_for_request", user_lang);
+                        GetAuditLog().append("capability_risk_abstain",
+                                             {{"score", mid_dec.score},
+                                              {"reason", mid_dec.reason_code},
+                                              {"model", active_model},
+                                              {"cascade_used", capability_cascade_used}},
+                                             req.trace_id, req.session_id);
+                    }
+                    else if(query_like && !model_text.empty() && !model_said_none)
+                    {
+                        // Prefer model prose over generic "no action" (informational exhaust).
+                        final.no_suitable_tool = false;
+                        final.text = model_text;
+                    }
+                    else if(query_like)
+                    {
+                        final.text = formatUserMessage("error.query_inspect_failed", user_lang);
+                    }
+                    else
+                    {
+                        final.text = formatUserMessage("error.no_suitable_tool", user_lang);
+                    }
+                    assignTurnTerminal(final, TurnTerminal::Completed);
+                    GetAuditLog().append("act_or_clarify_exhausted",
+                                         {{"intent", intent_name},
+                                          {"query_soft_fallback", query_like},
+                                          {"pending_description_write", pending_desc_write},
+                                          {"capability_risk_score", mid_dec.score},
+                                          {"had_model_text", !model_text.empty()}},
+                                         req.trace_id, req.session_id);
+                    setWorkflowPhase(state, LLMWorkflowPhase::Completed, req.trace_id);
+                    setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
+                    m_store.persistToDisk(req.session_id);
+                    return final;
                 }
-                else if(query_like && !model_text.empty() && !model_said_none)
-                {
-                    // Prefer model prose over generic "no action" (informational exhaust).
-                    final.no_suitable_tool = false;
-                    final.text = model_text;
-                }
-                else if(query_like)
-                {
-                    final.text = formatUserMessage("error.query_inspect_failed", user_lang);
-                }
-                else
-                {
-                    final.text = formatUserMessage("error.no_suitable_tool", user_lang);
-                }
-                assignTurnTerminal(final, TurnTerminal::Completed);
-                GetAuditLog().append("act_or_clarify_exhausted",
-                                     {{"intent", intent_name},
-                                      {"query_soft_fallback", query_like},
-                                      {"pending_description_write", pending_desc_write},
-                                      {"had_model_text", !model_text.empty()}},
-                                     req.trace_id, req.session_id);
-                setWorkflowPhase(state, LLMWorkflowPhase::Completed, req.trace_id);
-                setWorkflowPhase(state, LLMWorkflowPhase::Idle, req.trace_id);
-                m_store.persistToDisk(req.session_id);
-                return final;
             }
 
             LLMMessage assistant;
