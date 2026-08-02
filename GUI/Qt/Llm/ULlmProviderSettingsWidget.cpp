@@ -80,6 +80,15 @@ ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UAp
 
     m_allow_cloud = new QCheckBox(tr("Allow cloud providers (DeepSeek, OpenAI)"), this);
     left->addWidget(m_allow_cloud);
+
+    // Profile/model help stays in the Connection column (always visible).
+    m_status = new QLabel(this);
+    m_status->setWordWrap(true);
+    m_status->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    m_status->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    m_status->setMinimumHeight(fontMetrics().lineSpacing() * 3 + 8);
+    left->addWidget(m_status);
     left->addStretch(1);
 
     // --- Right: Agent ---
@@ -161,16 +170,7 @@ ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UAp
 
     columns->addLayout(left, 1);
     columns->addLayout(right, 1);
-    root->addLayout(columns, 1);
-
-    // Full-width hint under both columns (defaults / env / test results) — not cramped in left col.
-    m_status = new QLabel(this);
-    m_status->setWordWrap(true);
-    m_status->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    m_status->setAlignment(Qt::AlignLeft | Qt::AlignTop);
-    m_status->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Minimum);
-    m_status->setStyleSheet(QStringLiteral("color: palette(mid); font-size: 11px;"));
-    root->addWidget(m_status);
+    root->addLayout(columns, 0);
 
     auto* buttons = new QHBoxLayout();
     buttons->setContentsMargins(0, 0, 0, 0);
@@ -297,18 +297,18 @@ void ULlmProviderSettingsWidget::onProfileChanged(int index)
 
     updateOllamaModelRefreshVisibility();
 
-    // Compact single-line-ish hints; full env names in tooltip.
+    // Compact hints under Connection; longer env notes in tooltip.
     QString hint;
     QString tip;
     if(preset.kind == RDK::LLM::LLMProviderKind::EmbeddedLlama)
     {
-        hint = tr("Offline GGUF · env overrides available");
-        tip = tr("Env: NMSDK_LLM_GGUF_PATH, NMSDK_LLM_CTX, NMSDK_LLM_GPU_LAYERS");
+        hint = tr("Offline GGUF. Env: NMSDK_LLM_GGUF_PATH, NMSDK_LLM_CTX, NMSDK_LLM_GPU_LAYERS");
+        tip = hint;
     }
     else if(preset.kind == RDK::LLM::LLMProviderKind::OllamaOpenAICompat
             || preset.kind == RDK::LLM::LLMProviderKind::OllamaNative)
     {
-        hint = tr("Ollama · defaults %1 · %2")
+        hint = tr("Ollama defaults: %1\nModel: %2")
                    .arg(QString::fromStdString(preset.base_url))
                    .arg(QString::fromStdString(preset.model));
         tip = tr("Chat template auto (qwen/llama3/mistral). Tools need Ollama 0.3+.\n"
@@ -316,7 +316,7 @@ void ULlmProviderSettingsWidget::onProfileChanged(int index)
     }
     else
     {
-        hint = tr("Defaults: %1 · %2")
+        hint = tr("Defaults: %1\nModel: %2")
                    .arg(QString::fromStdString(preset.base_url))
                    .arg(QString::fromStdString(preset.model));
         if(!preset.api_key_env.empty())
@@ -325,6 +325,7 @@ void ULlmProviderSettingsWidget::onProfileChanged(int index)
 
     m_status->setText(hint.trimmed());
     m_status->setToolTip(tip);
+    m_status->setVisible(true);
 
     if(m_refresh_ollama_models->isVisible())
         onRefreshOllamaModelsClicked();
