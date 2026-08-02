@@ -67,6 +67,8 @@ struct ConversationState {
     std::vector<WorkingGoal> working_goals;
     /// Tool invocations for the current user turn (cleared at turn start; copied to response).
     std::vector<TurnToolInvocationView> current_turn_tool_trace;
+    /// When true (project_description pack), goals stay InProgress until update_configuration ok.
+    bool turn_requires_description_write = false;
     /// Cumulative explore-subagent provider rounds used in this session (TD-164).
     int subagent_rounds_used = 0;
     int store_schema_version = 4;

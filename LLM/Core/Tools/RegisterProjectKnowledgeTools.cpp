@@ -221,15 +221,16 @@ void RegisterProjectKnowledgeTools(ULLMToolRegistry& registry)
             "inspect_configuration",
             "Summarize a configuration folder or model XML (classes + links) under path policy. "
             "Prefer this over dumping raw XML. For live loaded model use get_net_snapshot. "
-            "Omit configuration_path (or leave empty) for the open project; never pass bare "
-            "project.ini — it is rewritten only when a project is open.",
+            "Omit configuration_path (or leave empty) for the currently open configuration; "
+            "never pass the words 'open project' or a bare '.' — those are rewritten only when "
+            "a configuration is open; prefer omitting the argument.",
             {{"type", "object"},
              {"properties",
               {{"configuration_path",
                 {{"type", "string"},
                  {"description",
-                  "Config folder, project.ini, or model.xml. Empty/omitted = open project. "
-                  "Do not pass bare 'project.ini' unless a project is open (auto-rewritten)."}}},
+                  "Config folder, project.ini, or model.xml. Empty/omitted = open configuration. "
+                  "Do not pass 'open project' or '.' as the path."}}},
                {"max_links", {{"type", "integer"}, {"default", 80}}}}},
              {"additionalProperties", false}}),
         [](const nlohmann::json& args) -> ToolGatewayResult {
@@ -344,10 +345,13 @@ void RegisterProjectKnowledgeTools(ULLMToolRegistry& registry)
     registry.registerTool(
         makeReadDef(
             "list_project_files",
-            "List files under the open configuration folder (or allowlisted path). Read-only.",
+            "List files under the open configuration folder (or allowlisted path). Read-only. "
+            "Omit root_path for the open configuration; never pass '.' (cwd).",
             {{"type", "object"},
              {"properties",
-              {{"root_path", {{"type", "string"}}},
+              {{"root_path",
+                {{"type", "string"},
+                 {"description", "Empty/omitted = open configuration. Do not pass '.'."}}},
                {"extensions",
                 {{"type", "array"},
                  {"items", {{"type", "string"}}},

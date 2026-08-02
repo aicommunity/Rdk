@@ -111,6 +111,8 @@ const char* workingGoalTitleForPack(const std::string& pack_id)
         return "Channel calculation";
     if(pack_id == "lifecycle_soft")
         return "Configuration lifecycle";
+    if(pack_id == "project_description")
+        return "Update project description";
     return "User goal";
 }
 
@@ -129,6 +131,8 @@ std::string workingGoalIdForToolName(const std::string& tool_name)
        || tool_name == "reset_channel_calculation" || tool_name == "step_channel_calculation"
        || tool_name == "run_n_steps")
         return "goal_calc";
+    if(tool_name == "update_configuration")
+        return "goal_project_description";
     if(tool_name.find("configuration") != std::string::npos)
         return "goal_lifecycle";
     return {};

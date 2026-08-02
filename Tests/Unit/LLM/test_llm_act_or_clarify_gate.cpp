@@ -76,10 +76,28 @@ TEST(LLMActOrClarifyGate, TurnHasSuccessfulReadOnlyEvidence)
     EXPECT_FALSE(turnHasSuccessfulReadOnlyEvidence({fail}));
 }
 
-TEST(LLMActOrClarifyGate, MutateWithWriteRequiresAction)
+TEST(LLMActOrClarifyGate, DescriptionWriteRequiredBlocksProseAfterReads)
 {
-    EXPECT_TRUE(shouldRequireActOrClarify(true, true, "add NSPNeuron", LLMIntentKind::Mutate,
-                                          ConfigurationLifecycleAction::None, true, false, false));
+    // chat 17-49-10: force_include_write must keep gate until update_configuration ok.
+    EXPECT_TRUE(shouldRequireActOrClarify(true, true, "запиши description", LLMIntentKind::Mutate,
+                                          ConfigurationLifecycleAction::None, true, false, false,
+                                          true, true, true, false));
+    EXPECT_FALSE(shouldRequireActOrClarify(true, true, "запиши description", LLMIntentKind::Mutate,
+                                           ConfigurationLifecycleAction::None, true, false, false,
+                                           true, true, true, true));
+}
+
+TEST(LLMActOrClarifyGate, TurnHasSuccessfulDescriptionWrite)
+{
+    TurnToolInvocationView snap;
+    snap.tool_name = "get_net_snapshot";
+    snap.ok = true;
+    EXPECT_FALSE(turnHasSuccessfulDescriptionWrite({snap}));
+
+    TurnToolInvocationView write;
+    write.tool_name = "update_configuration";
+    write.ok = true;
+    EXPECT_TRUE(turnHasSuccessfulDescriptionWrite({snap, write}));
 }
 
 TEST(LLMActOrClarifyGate, NoToolsOfferedSkipsGate)

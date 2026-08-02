@@ -64,3 +64,14 @@ TEST(LLMPathPolicy, RewritesBareProjectIniToOpenProjectRoot)
     EXPECT_EQ(ULLMPathPolicy::rewriteRelativeConfigPath("project.ini", ""), "project.ini");
     EXPECT_EQ(ULLMPathPolicy::rewriteRelativeConfigPath("project.ini", nullptr), "project.ini");
 }
+
+TEST(LLMPathPolicy, RewritesOpenProjectSentinelsAndDot)
+{
+    const std::string root = "/tmp/nmsdk_open_cfg";
+    EXPECT_EQ(ULLMPathPolicy::rewriteRelativeConfigPath("open project", root), root);
+    EXPECT_EQ(ULLMPathPolicy::rewriteRelativeConfigPath("Open Project", root), root);
+    EXPECT_EQ(ULLMPathPolicy::rewriteRelativeConfigPath(".", root), root);
+    EXPECT_EQ(ULLMPathPolicy::rewriteRelativeConfigPath("./", root), root);
+    EXPECT_EQ(ULLMPathPolicy::rewriteRelativeConfigPath("current", root), root);
+    EXPECT_EQ(ULLMPathPolicy::rewriteRelativeConfigPath("open configuration", root), root);
+}

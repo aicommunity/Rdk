@@ -37,7 +37,7 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
     // Lifecycle uses explicit phrases below.
     const float mutate_s =
         scoreKeywords(lower,
-                      {"добав", "создай", "удали", "измени", "обнови", "обнов", "сохран", "загруз", "открой", "закрой", "конфиг",
+                      {"добав", "создай", "удали", "измени", "обнови", "обнов", "запиш", "сохран", "загруз", "открой", "закрой", "конфиг",
                        "конфигурац", "configuration", "project.ini", "скопируй",
                        "создай проект", "новый проект", "открой проект", "сохрани проект", "закрой проект",
                        "create project", "new project", "open project", "save project", "close project",
@@ -112,8 +112,21 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
         best = std::max(best, 1.0f);
     }
 
-    // Update/write verbs beat Query stems in dual goals («расскажи … и обнови описание»).
-    if(lower.find("обнови") != std::string::npos || lower.find("update description") != std::string::npos
+    // Update/write verbs beat Query stems in dual goals («расскажи … и обнови/запиши описание»).
+    const bool write_description =
+        (lower.find("обнови") != std::string::npos || lower.find("запиш") != std::string::npos
+         || lower.find("записать") != std::string::npos || lower.find("write ") != std::string::npos
+         || lower.find("update description") != std::string::npos
+         || lower.find("update project description") != std::string::npos
+         || (lower.find("update ") != std::string::npos
+             && (lower.find("description") != std::string::npos
+                 || lower.find("project") != std::string::npos
+                 || lower.find("config") != std::string::npos)))
+        && (lower.find("описан") != std::string::npos || lower.find("description") != std::string::npos
+            || lower.find("project_description") != std::string::npos
+            || lower.find("project description") != std::string::npos);
+    if(write_description || lower.find("обнови") != std::string::npos
+       || lower.find("update description") != std::string::npos
        || lower.find("update project description") != std::string::npos
        || (lower.find("update ") != std::string::npos
            && (lower.find("description") != std::string::npos || lower.find("project") != std::string::npos)))

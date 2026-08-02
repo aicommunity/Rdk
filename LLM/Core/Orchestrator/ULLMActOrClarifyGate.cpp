@@ -58,6 +58,16 @@ bool turnHasSuccessfulReadOnlyEvidence(const std::vector<TurnToolInvocationView>
     return any_ok_read;
 }
 
+bool turnHasSuccessfulDescriptionWrite(const std::vector<TurnToolInvocationView>& trace)
+{
+    for(const TurnToolInvocationView& inv : trace)
+    {
+        if(inv.tool_name == "update_configuration" && inv.ok)
+            return true;
+    }
+    return false;
+}
+
 bool isActionableGoalForActOrClarify(const std::string& planning_text, LLMIntentKind intent,
                                      ConfigurationLifecycleAction lifecycle_action,
                                      bool filter_include_write)
@@ -89,15 +99,18 @@ bool shouldRequireActOrClarify(bool provider_tools_offered, bool tool_calls_empt
                                ConfigurationLifecycleAction lifecycle_action,
                                bool filter_include_write, bool has_pending_tool_arguments,
                                bool in_understanding_phase, bool has_turn_tool_evidence,
-                               bool has_successful_read_only_evidence)
+                               bool has_successful_read_only_evidence, bool requires_pending_write,
+                               bool has_successful_description_write)
 {
     if(!provider_tools_offered || !tool_calls_empty)
         return false;
     if(has_pending_tool_arguments || in_understanding_phase)
         return false;
     (void)has_turn_tool_evidence;
-    // Prose only after successful read-only evidence (chat 17-25-18: failed inspect must not
-    // unlock an error essay). Covers Query/Explain and Mutate false-positives alike.
+    // Pack force_include_write (project description): do not unlock prose until write succeeds.
+    if(requires_pending_write && !has_successful_description_write)
+        return true;
+    // Prose only after successful read-only evidence (failed tools do not unlock).
     if(has_successful_read_only_evidence)
         return false;
     return isActionableGoalForActOrClarify(planning_text, intent, lifecycle_action,

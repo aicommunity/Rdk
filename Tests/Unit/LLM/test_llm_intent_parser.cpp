@@ -27,6 +27,10 @@ TEST(LLMIntentParser, UpdateDescriptionIsMutate)
     EXPECT_EQ(parser.parse("обнови описание проекта"), LLMIntentKind::Mutate);
     EXPECT_EQ(parser.parse("расскажи о проекте и обнови описание проекта"), LLMIntentKind::Mutate);
     EXPECT_EQ(parser.parse("update project description"), LLMIntentKind::Mutate);
+    EXPECT_EQ(parser.parse("Расскажи о проекте и запиши это в project description"),
+              LLMIntentKind::Mutate);
+    EXPECT_EQ(parser.parse("запиши описание конфигурации в project description"),
+              LLMIntentKind::Mutate);
 }
 
 TEST(LLMIntentParser, ConfidencePrefersMutateOverWeakQuery)

@@ -14,15 +14,29 @@ std::string toLowerAscii(std::string s)
     return s;
 }
 
+bool mentionsProjectOrConfig(const std::string& lower)
+{
+    return lower.find("проект") != std::string::npos || lower.find("конфиг") != std::string::npos
+           || lower.find("конфигурац") != std::string::npos || lower.find("project") != std::string::npos
+           || lower.find("config") != std::string::npos || lower.find("configuration") != std::string::npos;
+}
+
 bool looksLikeProjectDescriptionGoal(const std::string& text)
 {
     const std::string lower = toLowerAscii(text);
     if(lower.find("project description") != std::string::npos
-       || lower.find("project_description") != std::string::npos)
+       || lower.find("project_description") != std::string::npos
+       || lower.find("configuration description") != std::string::npos
+       || lower.find("описание конфигурации") != std::string::npos
+       || lower.find("описание проекта") != std::string::npos
+       || lower.find("описание конфиг") != std::string::npos)
         return true;
-    if(lower.find("описание проекта") != std::string::npos
-       || (lower.find("описани") != std::string::npos
-           && (lower.find("проект") != std::string::npos || lower.find("конфиг") != std::string::npos)))
+    if(lower.find("описани") != std::string::npos && mentionsProjectOrConfig(lower))
+        return true;
+    if((lower.find("запиш") != std::string::npos || lower.find("write ") != std::string::npos
+        || lower.find("обнови") != std::string::npos)
+       && (lower.find("description") != std::string::npos || lower.find("описан") != std::string::npos)
+       && mentionsProjectOrConfig(lower))
         return true;
     if((lower.find("модул") != std::string::npos || lower.find("module") != std::string::npos)
        && (lower.find("описан") != std::string::npos || lower.find("description") != std::string::npos
@@ -51,16 +65,17 @@ PackHintContribution UPackProjectDescription::hints(const PackTurnSnapshot& snap
     (void)snap;
     PackHintContribution h;
     h.ephemeral_markdown =
-        "## Project description\n"
+        "## Project / configuration description\n"
+        "In this product, **project**, **configuration**, and **конфигурация** mean the currently "
+        "open configuration.\n"
         "When writing or updating project description / modules:\n"
-        "1. Call `get_net_snapshot` **without** `root_long_name` (and/or `inspect_configuration`, "
-        "`list_project_files` + README) to collect real class/component names.\n"
-        "2. Synthesize a concrete description from those results.\n"
-        "3. Call `update_configuration` with `project_description` set to that text.\n"
+        "1. Call `get_net_snapshot` **omitting** `root_long_name` and/or `inspect_configuration` "
+        "**omitting** `configuration_path` (empty = open configuration). "
+        "Never pass `configuration_path` as the words 'open project' or `root_path` as '.'.\n"
+        "2. Synthesize a concrete description from those results (user language).\n"
+        "3. You MUST call `update_configuration` with `project_description` set to that text.\n"
         "Never write placeholders like «указать здесь», «которое вы хотите добавить», "
-        "or `[list modules here]`.\n"
-        "For inspect_configuration omit configuration_path (open project); never pass bare "
-        "project.ini.";
+        "or `[list modules here]`. Do not finish with prose alone — the write is required.";
     h.extra_tool_names = {"get_net_snapshot", "inspect_configuration", "list_project_files",
                           "read_text_artifact", "update_configuration", "ask_user"};
     h.act_or_clarify_recovery_tools = {"get_net_snapshot", "inspect_configuration",

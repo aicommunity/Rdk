@@ -155,6 +155,9 @@ void syncWorkingGoalEvidenceFromTrace(ConversationState& state)
                                   inv.tool_name + (inv.ok ? ":ok" : ":fail"));
     }
 
+    const bool description_write_ok =
+        turnHasSuccessfulDescriptionWrite(state.current_turn_tool_trace);
+
     for(WorkingGoal& g : state.working_goals)
     {
         bool any_ok = false;
@@ -173,6 +176,12 @@ void syncWorkingGoalEvidenceFromTrace(ConversationState& state)
         }
         if(!any_evidence)
             continue;
+        if(state.turn_requires_description_write && !description_write_ok)
+        {
+            // chat 17-49-10: reads must not mark description goals Done.
+            g.status = any_fail ? WorkingGoalStatus::Blocked : WorkingGoalStatus::InProgress;
+            continue;
+        }
         if(any_ok && !any_fail)
             g.status = WorkingGoalStatus::Done;
         else if(any_fail)
@@ -478,6 +487,7 @@ TurnPhaseResult ULLMAgentOrchestrator::prepareTurnContext(TurnContext& ctx, Turn
     ctx.state = &state;
     state.session_id = req.session_id;
     state.current_turn_tool_trace.clear();
+    state.turn_requires_description_write = false;
     snapshotLastSessionContext(state, req.session);
 
     beginGuiTurnPin(state, req.gui);
@@ -681,6 +691,7 @@ TurnPhaseResult ULLMAgentOrchestrator::runPackGoalRouter(TurnContext& ctx, TurnS
         ctx.pack_extra_tool_names = collectPackExtraToolNames(LLMServices::instance().packs(), snap);
         ctx.pack_force_include_write =
             collectPackForceIncludeWrite(LLMServices::instance().packs(), snap);
+        state.turn_requires_description_write = ctx.pack_force_include_write;
     }
     return TurnPhaseResult::Continue;
 }
@@ -1388,10 +1399,11 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
     if(LLMServices::instance().isInitialized())
     {
         opts.response_language = resolveResponseLanguage(
-            LLMServices::instance().settings().runtime().preferred_response_language, "en");
+            LLMServices::instance().settings().runtime().preferred_response_language, req.user_text,
+            "en");
     }
     else
-        opts.response_language = "en";
+        opts.response_language = resolveResponseLanguage("", req.user_text, "en");
     if(provider_tools)
         opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
     else
@@ -1598,11 +1610,15 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                 tool_invocations > 0 || !state.current_turn_tool_trace.empty();
             const bool has_read_only_ok =
                 turnHasSuccessfulReadOnlyEvidence(state.current_turn_tool_trace);
+            const bool has_desc_write =
+                turnHasSuccessfulDescriptionWrite(state.current_turn_tool_trace);
+            const bool requires_desc_write =
+                ctx.pack_force_include_write || state.turn_requires_description_write;
             if(shouldRequireActOrClarify(
                    provider_tools, true, planning_text, intent, lifecycle_action,
                    filter.include_write, static_cast<bool>(state.pending_tool_arguments),
                    state.workflow_phase == LLMWorkflowPhase::Understanding, has_tool_evidence,
-                   has_read_only_ok))
+                   has_read_only_ok, requires_desc_write, has_desc_write))
             {
                 if(!recovery_used)
                 {
@@ -1625,7 +1641,26 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                     }
                     LLMMessage recovery;
                     recovery.role = LLMMessage::Role::System;
-                    if(isChannelCalcGoalText(planning_text) || isChannelCalcGoalText(req.user_text))
+                    if(requires_desc_write && !has_desc_write)
+                    {
+                        recovery.content =
+                            "Project/configuration description goal: after gathering facts with "
+                            "get_net_snapshot (omit root_long_name) and/or inspect_configuration "
+                            "(omit configuration_path — never pass 'open project' or '.'), "
+                            "you MUST call update_configuration with project_description set to "
+                            "concrete text in the user's language. Do not finalize with prose alone. "
+                            "If facts are missing, ask_user. If no tool fits, reply exactly: "
+                            "NO_SUITABLE_TOOL.";
+                        mergePackToolNames(filter,
+                                           {"get_net_snapshot", "inspect_configuration",
+                                            "list_project_files", "update_configuration",
+                                            "ask_user"});
+                        if(session.llm_write_enabled)
+                            filter.include_write = true;
+                        opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
+                        ctx_input.tool_filter = filter;
+                    }
+                    else if(isChannelCalcGoalText(planning_text) || isChannelCalcGoalText(req.user_text))
                     {
                         recovery.content =
                             "Channel calculation goal: call start_channel_calculation "
@@ -1660,10 +1695,12 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                             "Informational request: call a suitable read tool, then answer from "
                             "tool results and Project context. Prefer get_net_snapshot **without** "
                             "root_long_name (omit = Model root), search_project_docs, describe_class, "
-                            "inspect_configuration **without** configuration_path (open project), "
+                            "inspect_configuration **omitting** configuration_path "
+                            "(empty = currently open configuration), "
                             "or spawn_explore_subagent. On ComponentNotFound or PATH_NOT_ALLOWED, "
                             "retry get_net_snapshot with no root / inspect with empty path — do not "
-                            "narrate path-policy errors. Do not invent topology. "
+                            "narrate path-policy errors. Never pass configuration_path='open project' "
+                            "or root_path='.'. Do not invent topology. "
                             "If a prior tool in this turn already returned ok data (e.g. snapshot), "
                             "write a clear prose answer now — do not emit NO_SUITABLE_TOOL. "
                             "Use NO_SUITABLE_TOOL only if no project is open and docs tools also fail.";
@@ -2609,7 +2646,8 @@ LLMFinalResponse ULLMAgentOrchestrator::confirmPending(const std::string& sessio
     std::string user_lang = "en";
     if(LLMServices::instance().isInitialized())
         user_lang = resolveResponseLanguage(
-            LLMServices::instance().settings().runtime().preferred_response_language, "en");
+            LLMServices::instance().settings().runtime().preferred_response_language,
+            state.last_user_text_original, "en");
 
     LLMGuiContextSnapshot gui;
     if(const LLMGuiContextSnapshot* pin_gui = guiContextForWrite(state))
@@ -3038,7 +3076,8 @@ LLMFinalResponse ULLMAgentOrchestrator::invokeLifecycleToolDirect(const std::str
     {
         app = LLMServices::instance().domain().application();
         user_lang = resolveResponseLanguage(
-            LLMServices::instance().settings().runtime().preferred_response_language, "en");
+            LLMServices::instance().settings().runtime().preferred_response_language,
+            state.last_user_text_original, "en");
     }
 
     const LLMGuiContextSnapshot gui = guiSnapshotForWrite(state, LLMGuiContextSnapshot{});

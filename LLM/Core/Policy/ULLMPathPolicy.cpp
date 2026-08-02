@@ -1,5 +1,6 @@
 #include "ULLMPathPolicy.h"
 
+#include <cctype>
 #include <cstdlib>
 #include <filesystem>
 
@@ -144,9 +145,33 @@ bool ULLMPathPolicy::isAllowed(const std::string& path, const RDK::UApplication*
 std::string ULLMPathPolicy::rewriteRelativeConfigPath(const std::string& path,
                                                       const std::string& open_project_root)
 {
-    if(path.empty() || open_project_root.empty())
+    if(open_project_root.empty())
         return path;
-    const std::filesystem::path p(path);
+
+    // Trim ASCII whitespace for sentinel matching.
+    std::string trimmed = path;
+    while(!trimmed.empty()
+          && (trimmed.front() == ' ' || trimmed.front() == '\t' || trimmed.front() == '\n'
+              || trimmed.front() == '\r'))
+        trimmed.erase(trimmed.begin());
+    while(!trimmed.empty()
+          && (trimmed.back() == ' ' || trimmed.back() == '\t' || trimmed.back() == '\n'
+              || trimmed.back() == '\r'))
+        trimmed.pop_back();
+
+    std::string lower = trimmed;
+    for(char& c : lower)
+        c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+
+    // Model often copies hint phrases as path args (chat 17-49-10).
+    if(trimmed.empty() || trimmed == "." || trimmed == "./" || lower == "open project"
+       || lower == "open" || lower == "current" || lower == "current project"
+       || lower == "current configuration" || lower == "open configuration")
+        return open_project_root;
+
+    if(trimmed.empty())
+        return path;
+    const std::filesystem::path p(trimmed);
     if(p.is_absolute() || hasParentTraversal(p))
         return path;
     const auto parent = p.parent_path();
