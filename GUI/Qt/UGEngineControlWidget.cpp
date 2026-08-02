@@ -380,10 +380,6 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     curlFtpClientTestWidget = new UCurlFtpClientTestWidget(NULL, application);
     curlFtpClientTestWidget->hide();
 
-    connect(statusPanel, SIGNAL(saveConfig()), this, SLOT(actionSaveConfig()));
-    connect(statusPanel, SIGNAL(setPropertyUpdateInterval(long)),
-            propertyChanger->componentsList, SLOT(setUpdateInterval(long)));
-
     // GUI actions:
 
     // file menu actions:
@@ -2270,10 +2266,6 @@ void UGEngineControlWidget::AAfterLoadProject(void)
        propertyChanger->ALoadParameters();
    });
  }
- if(propertyChanger->componentsList->GetUpdateInterval()>0)
-  statusPanel->ChangeAutoupdateProperties(true);
- else
-  statusPanel->ChangeAutoupdateProperties(false);
 }
 
 // Метод, вызываемый перед закрытием проекта

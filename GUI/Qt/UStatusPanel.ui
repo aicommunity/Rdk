@@ -75,16 +75,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QCheckBox" name="checkBoxAutoupdateProperties">
-        <property name="text">
-         <string>Autoupdate properties</string>
-        </property>
-        <property name="checked">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
        <spacer name="horizontalSpacer_2">
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
@@ -96,23 +86,6 @@
          </size>
         </property>
        </spacer>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="radioButtonSingleThreaded">
-        <property name="text">
-         <string>Single-threaded</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="radioButtonMultiThreaded">
-        <property name="text">
-         <string>Multi-threaded</string>
-        </property>
-       </widget>
       </item>
       <item>
        <widget class="QCheckBox" name="checkBoxAutosaveStates">
