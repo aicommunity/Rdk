@@ -213,7 +213,7 @@ If `candidates.length > 1` && score close → `resolved: false`; write-tools **m
 
 | Tool | Purpose |
 |------|---------|
-| `inspect_configuration` | Compact classes+links from model XML |
+| `inspect_configuration` | Compact classes+links from model XML. Omit `configuration_path` for open project; bare `project.ini` / `model.xml` is rewritten to the open project root when a project is open. |
 | `search_configuration_links` | Filter links in a sample/project XML |
 | `list_project_files` | List sidecar files under open project |
 | `read_text_artifact` | Capped text/csv/json/xml/md read |

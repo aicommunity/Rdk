@@ -58,11 +58,14 @@ PackHintContribution UPackProjectDescription::hints(const PackTurnSnapshot& snap
         "2. Synthesize a concrete description from those results.\n"
         "3. Call `update_configuration` with `project_description` set to that text.\n"
         "Never write placeholders like «указать здесь», «которое вы хотите добавить», "
-        "or `[list modules here]`.";
+        "or `[list modules here]`.\n"
+        "For inspect_configuration omit configuration_path (open project); never pass bare "
+        "project.ini.";
     h.extra_tool_names = {"get_net_snapshot", "inspect_configuration", "list_project_files",
                           "read_text_artifact", "update_configuration", "ask_user"};
     h.act_or_clarify_recovery_tools = {"get_net_snapshot", "inspect_configuration",
                                        "update_configuration", "ask_user"};
+    h.force_include_write = true;
     return h;
 }
 

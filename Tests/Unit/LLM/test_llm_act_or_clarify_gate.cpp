@@ -25,14 +25,22 @@ TEST(LLMActOrClarifyGate, PureQueryRequiresInitialTool)
                                           false));
 }
 
-TEST(LLMActOrClarifyGate, QueryAllowsProseAfterToolEvidence)
+TEST(LLMActOrClarifyGate, QueryAllowsProseAfterSuccessfulReadOnlyEvidence)
 {
     EXPECT_FALSE(shouldRequireActOrClarify(true, true, "расскажи о проекте", LLMIntentKind::Query,
                                            ConfigurationLifecycleAction::None, false, false, false,
-                                           true));
+                                           true, true));
     EXPECT_FALSE(shouldRequireActOrClarify(true, true, "explain the model", LLMIntentKind::Explain,
                                            ConfigurationLifecycleAction::None, false, false, false,
-                                           true));
+                                           true, true));
+}
+
+TEST(LLMActOrClarifyGate, QueryRequiresActionAfterFailedOnlyEvidence)
+{
+    // chat 17-25-18: PATH_NOT_ALLOWED must not unlock an error essay.
+    EXPECT_TRUE(shouldRequireActOrClarify(true, true, "расскажи о проекте", LLMIntentKind::Query,
+                                          ConfigurationLifecycleAction::None, false, false, false,
+                                          true, false));
 }
 
 TEST(LLMActOrClarifyGate, MutateAllowsProseAfterSuccessfulReadOnlyEvidence)

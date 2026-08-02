@@ -48,3 +48,19 @@ TEST(LLMPathPolicy, AllowsPathUnderTempDirWhenStrictOff)
 
     std::filesystem::remove_all(tmp, ec);
 }
+
+TEST(LLMPathPolicy, RewritesBareProjectIniToOpenProjectRoot)
+{
+    const std::string root = "/tmp/nmsdk_open_cfg";
+    EXPECT_EQ(ULLMPathPolicy::rewriteRelativeConfigPath("project.ini", root),
+              root + "/project.ini");
+    EXPECT_EQ(ULLMPathPolicy::rewriteRelativeConfigPath("./model.xml", root), root + "/model.xml");
+    EXPECT_EQ(ULLMPathPolicy::rewriteRelativeConfigPath("Model.xml", root), root + "/Model.xml");
+    EXPECT_EQ(ULLMPathPolicy::rewriteRelativeConfigPath("readme.txt", root), "readme.txt");
+    EXPECT_EQ(ULLMPathPolicy::rewriteRelativeConfigPath("subdir/project.ini", root),
+              "subdir/project.ini");
+    EXPECT_EQ(ULLMPathPolicy::rewriteRelativeConfigPath("/abs/project.ini", root),
+              "/abs/project.ini");
+    EXPECT_EQ(ULLMPathPolicy::rewriteRelativeConfigPath("project.ini", ""), "project.ini");
+    EXPECT_EQ(ULLMPathPolicy::rewriteRelativeConfigPath("project.ini", nullptr), "project.ini");
+}

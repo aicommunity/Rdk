@@ -260,4 +260,17 @@ std::vector<std::string> collectPackExtraToolNames(ILLMCapabilityPackRegistry& p
     return out;
 }
 
+bool collectPackForceIncludeWrite(ILLMCapabilityPackRegistry& packs, const PackTurnSnapshot& snap,
+                                  float min_score)
+{
+    for(const auto& entry : packs.rank(snap))
+    {
+        if(entry.second.score < min_score)
+            break;
+        if(entry.first->hints(snap).force_include_write)
+            return true;
+    }
+    return false;
+}
+
 } // namespace RDK::LLM

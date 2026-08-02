@@ -39,6 +39,7 @@ struct TurnContext {
     std::vector<std::string> matched_pack_ids;
     std::string pack_hints_block;
     std::vector<std::string> pack_extra_tool_names;
+    bool pack_force_include_write = false;
     float top_pack_score = 0.f;
     LLMFinalResponse final{};
     bool skip_pre_llm_funnel = false;

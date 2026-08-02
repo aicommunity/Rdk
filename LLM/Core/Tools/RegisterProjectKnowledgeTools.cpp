@@ -60,6 +60,8 @@ fs::path resolveUnderPolicy(const std::string& path_arg, std::string& err)
     std::string path = path_arg;
     if(path.empty())
         path = defaultProjectRoot();
+    else
+        path = ULLMPathPolicy::rewriteRelativeConfigPath(path, appOrNull());
     if(path.empty())
     {
         err = "No path given and no project is open";
@@ -218,12 +220,16 @@ void RegisterProjectKnowledgeTools(ULLMToolRegistry& registry)
         makeReadDef(
             "inspect_configuration",
             "Summarize a configuration folder or model XML (classes + links) under path policy. "
-            "Prefer this over dumping raw XML. For live loaded model use get_net_snapshot.",
+            "Prefer this over dumping raw XML. For live loaded model use get_net_snapshot. "
+            "Omit configuration_path (or leave empty) for the open project; never pass bare "
+            "project.ini — it is rewritten only when a project is open.",
             {{"type", "object"},
              {"properties",
               {{"configuration_path",
                 {{"type", "string"},
-                 {"description", "Config folder, project.ini, or model.xml (default: open project)"}}},
+                 {"description",
+                  "Config folder, project.ini, or model.xml. Empty/omitted = open project. "
+                  "Do not pass bare 'project.ini' unless a project is open (auto-rewritten)."}}},
                {"max_links", {{"type", "integer"}, {"default", 80}}}}},
              {"additionalProperties", false}}),
         [](const nlohmann::json& args) -> ToolGatewayResult {

@@ -21,6 +21,14 @@ TEST(LLMIntentParser, ProjectLifecycleStaysMutate)
     EXPECT_EQ(parser.parse("create project"), LLMIntentKind::Mutate);
 }
 
+TEST(LLMIntentParser, UpdateDescriptionIsMutate)
+{
+    ULLMIntentParser parser;
+    EXPECT_EQ(parser.parse("обнови описание проекта"), LLMIntentKind::Mutate);
+    EXPECT_EQ(parser.parse("расскажи о проекте и обнови описание проекта"), LLMIntentKind::Mutate);
+    EXPECT_EQ(parser.parse("update project description"), LLMIntentKind::Mutate);
+}
+
 TEST(LLMIntentParser, ConfidencePrefersMutateOverWeakQuery)
 {
     ULLMIntentParser parser;

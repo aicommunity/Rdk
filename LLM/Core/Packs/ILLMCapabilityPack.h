@@ -28,6 +28,9 @@ struct PackHintContribution {
     std::string ephemeral_markdown;
     std::vector<std::string> extra_tool_names;
     std::vector<std::string> act_or_clarify_recovery_tools;
+    /// When true, orchestrator sets ToolFilter::include_write so pack Write tools are offered
+    /// even if intent scored as Query (e.g. «расскажи и обнови описание»).
+    bool force_include_write = false;
 };
 
 struct PackTurnSnapshot {
@@ -110,6 +113,9 @@ std::string collectPackHintsMarkdown(ILLMCapabilityPackRegistry& packs,
 std::vector<std::string> collectPackExtraToolNames(ILLMCapabilityPackRegistry& packs,
                                                    const PackTurnSnapshot& snap,
                                                    float min_score = 0.4f);
+
+bool collectPackForceIncludeWrite(ILLMCapabilityPackRegistry& packs, const PackTurnSnapshot& snap,
+                                  float min_score = 0.4f);
 
 } // namespace RDK::LLM
 

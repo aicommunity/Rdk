@@ -95,11 +95,10 @@ bool shouldRequireActOrClarify(bool provider_tools_offered, bool tool_calls_empt
         return false;
     if(has_pending_tool_arguments || in_understanding_phase)
         return false;
-    // After tool results: Query/Explain may synthesize; Mutate misfires with read-only evidence too
-    // (chat 17-11-11: «расскажи о проекте» scored Mutate via bare «проект»).
-    if(has_turn_tool_evidence
-       && (intent == LLMIntentKind::Query || intent == LLMIntentKind::Explain
-           || has_successful_read_only_evidence))
+    (void)has_turn_tool_evidence;
+    // Prose only after successful read-only evidence (chat 17-25-18: failed inspect must not
+    // unlock an error essay). Covers Query/Explain and Mutate false-positives alike.
+    if(has_successful_read_only_evidence)
         return false;
     return isActionableGoalForActOrClarify(planning_text, intent, lifecycle_action,
                                            filter_include_write);

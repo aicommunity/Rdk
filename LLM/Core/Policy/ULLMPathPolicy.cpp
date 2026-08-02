@@ -141,4 +141,43 @@ bool ULLMPathPolicy::isAllowed(const std::string& path, const RDK::UApplication*
     return false;
 }
 
+std::string ULLMPathPolicy::rewriteRelativeConfigPath(const std::string& path,
+                                                      const std::string& open_project_root)
+{
+    if(path.empty() || open_project_root.empty())
+        return path;
+    const std::filesystem::path p(path);
+    if(p.is_absolute() || hasParentTraversal(p))
+        return path;
+    const auto parent = p.parent_path();
+    if(!parent.empty() && parent != "." && parent.generic_string() != "./")
+        return path;
+    const std::string fname = p.filename().generic_string();
+    static const char* kKnown[] = {"project.ini", "model.xml", "Model.xml", "Model_00.xml",
+                                   "model_00.xml", nullptr};
+    bool known = false;
+    for(const char** k = kKnown; *k; ++k)
+    {
+        if(fname == *k)
+        {
+            known = true;
+            break;
+        }
+    }
+    if(!known)
+        return path;
+    return (std::filesystem::path(open_project_root) / fname).generic_string();
+}
+
+std::string ULLMPathPolicy::rewriteRelativeConfigPath(const std::string& path,
+                                                      const RDK::UApplication* app)
+{
+    if(!app || !app->GetProjectOpenFlag())
+        return path;
+    const std::string root = app->GetProjectPath();
+    if(root.empty())
+        return path;
+    return rewriteRelativeConfigPath(path, root);
+}
+
 } // namespace RDK::LLM

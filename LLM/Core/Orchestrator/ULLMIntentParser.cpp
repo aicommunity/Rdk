@@ -37,17 +37,18 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
     // Lifecycle uses explicit phrases below.
     const float mutate_s =
         scoreKeywords(lower,
-                      {"добав", "создай", "удали", "измени", "сохран", "загруз", "открой", "закрой", "конфиг",
+                      {"добав", "создай", "удали", "измени", "обнови", "обнов", "сохран", "загруз", "открой", "закрой", "конфиг",
                        "конфигурац", "configuration", "project.ini", "скопируй",
                        "создай проект", "новый проект", "открой проект", "сохрани проект", "закрой проект",
                        "create project", "new project", "open project", "save project", "close project",
+                       "обнови описание", "update description", "update project description",
                        "переимен", "запусти расч", "останови расч", "расчёт", "расчет",
                        "start calc", "run calculation", "pause calculation", "reset calculation",
                        "start calculation", "stop calculation",
                        "дендрит", "numsoma", "numdendrite", "membrane parts",
                        "график", "watch", "plot",
                        "add ", "create ", "create config", "new config", "new configuration", "remove ", "delete ",
-                       "save ", "load ", "set ", "connect ", "open config", "close config", "copy config",
+                       "save ", "load ", "set ", "connect ", "update ", "open config", "close config", "copy config",
                        "rename config", "создай конфиг", "новый конфиг", "новая конфигурация"},
                       1.0f);
 
@@ -106,6 +107,16 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
     }
 
     if(isComponentStructureGoal(user_text) || isWatchPlotGoal(user_text))
+    {
+        result.kind = LLMIntentKind::Mutate;
+        best = std::max(best, 1.0f);
+    }
+
+    // Update/write verbs beat Query stems in dual goals («расскажи … и обнови описание»).
+    if(lower.find("обнови") != std::string::npos || lower.find("update description") != std::string::npos
+       || lower.find("update project description") != std::string::npos
+       || (lower.find("update ") != std::string::npos
+           && (lower.find("description") != std::string::npos || lower.find("project") != std::string::npos)))
     {
         result.kind = LLMIntentKind::Mutate;
         best = std::max(best, 1.0f);

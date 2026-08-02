@@ -21,8 +21,7 @@ bool isActionableGoalForActOrClarify(const std::string& planning_text, LLMIntent
 bool turnHasSuccessfulReadOnlyEvidence(const std::vector<TurnToolInvocationView>& trace);
 
 /// True when empty tool_calls must trigger recovery / NO_SUITABLE_TOOL instead of prose.
-/// When has_turn_tool_evidence is true, Query/Explain prose is allowed (synthesize from tools).
-/// When has_successful_read_only_evidence is true, prose is allowed for any intent (incl. Mutate).
+/// Prose is allowed only after successful read-only tool evidence (failed tools do not unlock).
 bool shouldRequireActOrClarify(bool provider_tools_offered, bool tool_calls_empty,
                                const std::string& planning_text, LLMIntentKind intent,
                                ConfigurationLifecycleAction lifecycle_action,

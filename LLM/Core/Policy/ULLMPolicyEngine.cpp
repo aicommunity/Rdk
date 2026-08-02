@@ -119,7 +119,8 @@ PolicyDecision ULLMPolicyEngine::checkToolInvoke(const ToolInvokeRequest& req,
     }
     if(isPathPolicyTool(tool.name))
     {
-        const std::string path = extractPathArg(tool.name, req.arguments, domain.application());
+        std::string path = extractPathArg(tool.name, req.arguments, domain.application());
+        path = ULLMPathPolicy::rewriteRelativeConfigPath(path, domain.application());
         if(!path.empty())
         {
             std::string path_err;

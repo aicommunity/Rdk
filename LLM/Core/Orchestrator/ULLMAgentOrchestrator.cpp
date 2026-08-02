@@ -679,6 +679,8 @@ TurnPhaseResult ULLMAgentOrchestrator::runPackGoalRouter(TurnContext& ctx, TurnS
         }
         ctx.pack_hints_block = collectPackHintsMarkdown(LLMServices::instance().packs(), snap);
         ctx.pack_extra_tool_names = collectPackExtraToolNames(LLMServices::instance().packs(), snap);
+        ctx.pack_force_include_write =
+            collectPackForceIncludeWrite(LLMServices::instance().packs(), snap);
     }
     return TurnPhaseResult::Continue;
 }
@@ -1240,6 +1242,8 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                                                 state.intent_contract_confidence);
     filter = ULLMDynamicToolRouter::apply(filter, planning_text);
     mergePackToolNames(filter, pack_extra_tool_names);
+    if(ctx.pack_force_include_write && session.llm_write_enabled)
+        filter.include_write = true;
 
     bool context_compacted = false;
     {
@@ -1656,8 +1660,10 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                             "Informational request: call a suitable read tool, then answer from "
                             "tool results and Project context. Prefer get_net_snapshot **without** "
                             "root_long_name (omit = Model root), search_project_docs, describe_class, "
-                            "inspect_configuration, or spawn_explore_subagent. On ComponentNotFound "
-                            "retry get_net_snapshot with no root_long_name. Do not invent topology. "
+                            "inspect_configuration **without** configuration_path (open project), "
+                            "or spawn_explore_subagent. On ComponentNotFound or PATH_NOT_ALLOWED, "
+                            "retry get_net_snapshot with no root / inspect with empty path — do not "
+                            "narrate path-policy errors. Do not invent topology. "
                             "If a prior tool in this turn already returned ok data (e.g. snapshot), "
                             "write a clear prose answer now — do not emit NO_SUITABLE_TOOL. "
                             "Use NO_SUITABLE_TOOL only if no project is open and docs tools also fail.";
