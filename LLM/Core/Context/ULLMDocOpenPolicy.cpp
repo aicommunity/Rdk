@@ -1,5 +1,7 @@
 #include "ULLMDocOpenPolicy.h"
 
+#include <nlohmann/json.hpp>
+
 #include <algorithm>
 #include <cctype>
 
@@ -115,6 +117,16 @@ std::string makeHelpUri(const std::string& topic)
 std::string makeClassUri(const std::string& class_name)
 {
     return "nmsdk-class:" + class_name;
+}
+
+void enrichSnippetDocUri(nlohmann::json& row, const std::string& path,
+                         const std::filesystem::path& repo_root)
+{
+    if(repo_root.empty() || path.empty())
+        return;
+    const std::string rel = repoRelativePosixPath(path, repo_root);
+    if(!rel.empty())
+        row["doc_uri"] = makeDocUriFromRepoRelative(rel);
 }
 
 DocOpenResolve resolveMarkdownPath(const std::string& path_or_rel,

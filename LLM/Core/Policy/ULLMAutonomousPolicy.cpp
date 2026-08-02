@@ -22,6 +22,10 @@ const std::unordered_set<std::string>& autonomousReadTools()
         "list_channels",
         "inspect_configuration",
         "search_project_docs",
+        "list_help_topics",
+        "open_help",
+        "open_class_docs",
+        "open_documentation",
         "list_project_files",
         "stat_project_file",
         "search_tools",
@@ -92,7 +96,9 @@ bool isAutonomousUiOrWatchTool(const std::string& tool_name)
            || tool_name == "list_watch_series" || tool_name == "remove_watch_series"
            || tool_name == "clear_watch_series" || tool_name == "list_watch_mdi"
            || tool_name == "create_watch_mdi" || tool_name == "focus_watch_mdi"
-           || tool_name == "close_watch_mdi";
+           || tool_name == "close_watch_mdi" || tool_name == "open_help"
+           || tool_name == "open_class_docs" || tool_name == "open_documentation"
+           || tool_name == "list_help_topics";
 }
 
 bool isChannelCalcWriteTool(const std::string& tool_name)

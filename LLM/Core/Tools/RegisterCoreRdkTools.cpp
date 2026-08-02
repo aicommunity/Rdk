@@ -2,17 +2,19 @@
 
 #include "../Context/ILLMProjectContextProvider.h"
 #include "../Context/UDocSearchIndex.h"
+#include "../Context/ULLMDocOpenPolicy.h"
 #include "../LlmPublicApi.h"
 #include "../Domain/URdkDomainAccess.h"
 #include "../Domain/URdkEntityResolver.h"
 #include "../Domain/ULLMNameResolution.h"
 #include "RegisterApplicationTools.h"
+#include "RegisterDocumentationTools.h"
 #include "RegisterObservabilityTools.h"
 #include "RegisterProjectKnowledgeTools.h"
-#include "RegisterObservabilityTools.h"
 #include "ULLMToolRegistry.h"
 
 #include <algorithm>
+#include <filesystem>
 #include <fstream>
 
 namespace RDK::LLM {
@@ -413,19 +415,28 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
             }
             r.result["snippets"] = nlohmann::json::array();
             r.result["match"] = match;
+            const std::filesystem::path repo_root =
+                project_ctx ? project_ctx->paths().repository_root : std::filesystem::path{};
             for(const DocSnippet& s : snippets)
             {
-                r.result["snippets"].push_back({{"source_id", s.source_id},
-                                                {"path", s.path},
-                                                {"title", s.title},
-                                                {"excerpt", s.excerpt},
-                                                {"score", s.score},
-                                                {"content_kind",
-                                                 s.content_kind == LLMContentKind::Source ? "source"
-                                                 : s.content_kind == LLMContentKind::RuntimeXml
-                                                     ? "runtime_xml"
-                                                     : "doc"},
-                                                {"start_line", s.start_line}});
+                nlohmann::json row = {{"source_id", s.source_id},
+                                      {"path", s.path},
+                                      {"title", s.title},
+                                      {"excerpt", s.excerpt},
+                                      {"score", s.score},
+                                      {"content_kind",
+                                       s.content_kind == LLMContentKind::Source ? "source"
+                                       : s.content_kind == LLMContentKind::RuntimeXml
+                                           ? "runtime_xml"
+                                           : "doc"},
+                                      {"start_line", s.start_line}};
+                if(!repo_root.empty())
+                {
+                    const std::string rel = repoRelativePosixPath(s.path, repo_root);
+                    if(!rel.empty())
+                        row["doc_uri"] = makeDocUriFromRepoRelative(rel);
+                }
+                r.result["snippets"].push_back(std::move(row));
             }
             r.ok = true;
             return r;
@@ -859,6 +870,7 @@ void RegisterCoreRdkTools(ULLMToolRegistry& registry, URdkDomainAccess& domain,
         });
 
     RegisterApplicationTools(registry);
+    RegisterDocumentationTools(registry, domain, project_context);
     RegisterProjectKnowledgeTools(registry);
     RegisterObservabilityTools(registry, domain);
 }

@@ -36,8 +36,21 @@ bool resolveProfile(const std::string& profile, SubagentProfileConfig& out)
     {
         out.system_prompt =
             "You are a read-only documentation search subagent. Prefer search_project_docs "
-            "and search_pulse_docs when available. Summarize relevant docs briefly with paths.";
-        out.allowed_tools = {"search_project_docs", "search_pulse_docs", "search_tools", "ask_user"};
+            "and library search_*_docs. When multiple hits match, list markdown links using "
+            "snippet.doc_uri (nmsdk-doc:...). Use open_documentation / open_help / open_class_docs "
+            "when the user wants pages opened in the GUI.";
+        out.allowed_tools = {"search_project_docs",
+                             "search_pulse_docs",
+                             "search_basic_docs",
+                             "search_cvbasic_docs",
+                             "search_hardware_docs",
+                             "search_motion_control_docs",
+                             "list_help_topics",
+                             "open_help",
+                             "open_class_docs",
+                             "open_documentation",
+                             "search_tools",
+                             "ask_user"};
         return true;
     }
     return false;
