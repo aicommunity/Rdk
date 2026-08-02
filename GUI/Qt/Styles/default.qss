@@ -290,12 +290,13 @@ QTabBar::close-button {
 }
 
 /* QMdiArea использует свой собственный QTabBar, нужно явно указать стили.
-   Высота ряда tabs выровнена с QDockWidget::title (padding 4px 8px, bottom 2px). */
+   Высота ряда tabs выровнена с QDockWidget::title (padding 2px 8px, bottom 2px). */
 QMdiArea QTabBar::tab {
     background-color: #F1F5F9;
     border: 1px solid #E2E8F0;
+    border-top: none;
     border-bottom: 2px solid transparent;
-    padding: 4px 8px;
+    padding: 2px 8px;
     margin-right: 2px;
     margin-left: 0px;
     margin-top: 0px;
@@ -310,7 +311,7 @@ QMdiArea QTabBar::tab {
 QMdiArea QTabBar::tab:selected {
     background-color: #EFF6FF;
     color: #1E40AF;
-    border-top: 1px solid #5B8DEF;
+    border-top: none;
     border-left: 1px solid #5B8DEF;
     border-right: 1px solid #5B8DEF;
     border-bottom: 2px solid #3B82F6;
@@ -320,7 +321,7 @@ QMdiArea QTabBar::tab:selected {
     margin-right: 2px;
     margin-top: 0px;
     margin-bottom: 0px;
-    padding: 4px 8px;
+    padding: 2px 8px;
     font-weight: 600;
 }
 

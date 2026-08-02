@@ -210,6 +210,7 @@ QPushButton* UModernDiagramViewportManager::createProjectDescriptionButton(QWidg
     m_projectDescriptionButton->setIconSize(QSize(20, 20));
     m_projectDescriptionButton->setToolTip(QCoreApplication::translate("UModernDiagramViewportManager", "Project Description"));
     m_projectDescriptionButton->setFixedSize(32, 32);
+    m_projectDescriptionButton->setEnabled(true);
     m_projectDescriptionButton->raise();
 
     if(m_owner)

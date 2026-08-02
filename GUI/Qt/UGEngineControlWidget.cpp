@@ -215,8 +215,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     breadcrumbsToolBar->setIconSize(QSize(1, 1));
     breadcrumbsToolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
     breadcrumbsToolBar->addWidget(breadcrumbsWidget);
-    addToolBar(Qt::TopToolBarArea, breadcrumbsToolBar);
-    insertToolBarBreak(breadcrumbsToolBar);
+    ensureBreadcrumbsToolBarRow();
 
     // Создаем современную диаграмму
     modernDiagram = new UModernDiagramContainerWidget(this, application);
@@ -1824,6 +1823,21 @@ void UGEngineControlWidget::execDialogUVisualControllWidget(UVisualControllerWid
     widget->setParent(widgetOldParent);
 }
 
+void UGEngineControlWidget::ensureBreadcrumbsToolBarRow()
+{
+    if(!breadcrumbsToolBar)
+        return;
+
+    // Detach then re-add on a fresh row under whatever is already in TopToolBarArea
+    // (typically mainToolBar). Survives QMainWindow::restoreState merging toolbars.
+    removeToolBar(breadcrumbsToolBar);
+    addToolBarBreak(Qt::TopToolBarArea);
+    addToolBar(Qt::TopToolBarArea, breadcrumbsToolBar);
+    breadcrumbsToolBar->setMovable(false);
+    breadcrumbsToolBar->setFloatable(false);
+    breadcrumbsToolBar->show();
+}
+
 void UGEngineControlWidget::writeSettings()
 {
     if(!application) return;
@@ -1871,6 +1885,8 @@ void UGEngineControlWidget::readSettings()
 
     restoreGeometry(projectSettings.value("geometry").toByteArray());
     restoreState(projectSettings.value("state").toByteArray());
+    // restoreState may put breadcrumbs back on the mainToolBar row — force own row
+    ensureBreadcrumbsToolBarRow();
     // Logger starts hidden; open via Window → Logger (floating). Keep geometry in state for show().
     if(ui && ui->dockWidgetLoger)
         ui->dockWidgetLoger->hide();

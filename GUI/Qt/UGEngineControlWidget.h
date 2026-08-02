@@ -272,6 +272,8 @@ private:
     void updateThemeMenuState();
     void updateRecentConfigsMenu();
     void addToRecentConfigs(const QString& path);
+    /// Force breadcrumbs onto its own row under mainToolBar (survives restoreState).
+    void ensureBreadcrumbsToolBarRow();
 
     // data
     Ui::UGEngineControllWidget *ui;
