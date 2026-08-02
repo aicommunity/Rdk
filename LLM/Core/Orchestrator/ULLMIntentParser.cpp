@@ -112,16 +112,20 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
         best = std::max(best, 1.0f);
     }
 
-    // Update/write verbs beat Query stems in dual goals («расскажи … и обнови/запиши описание»).
+    // Update/write verbs beat Query stems in dual goals («расскажи … и обнови/запиши/создай описание»).
     const bool write_description =
         (lower.find("обнови") != std::string::npos || lower.find("запиш") != std::string::npos
          || lower.find("записать") != std::string::npos || lower.find("write ") != std::string::npos
+         || lower.find("созда") != std::string::npos || lower.find("сгенерир") != std::string::npos
          || lower.find("update description") != std::string::npos
          || lower.find("update project description") != std::string::npos
+         || lower.find("create description") != std::string::npos
          || (lower.find("update ") != std::string::npos
              && (lower.find("description") != std::string::npos
                  || lower.find("project") != std::string::npos
-                 || lower.find("config") != std::string::npos)))
+                 || lower.find("config") != std::string::npos))
+         || (lower.find("create ") != std::string::npos
+             && lower.find("description") != std::string::npos))
         && (lower.find("описан") != std::string::npos || lower.find("description") != std::string::npos
             || lower.find("project_description") != std::string::npos
             || lower.find("project description") != std::string::npos);

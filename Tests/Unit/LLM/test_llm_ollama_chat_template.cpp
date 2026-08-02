@@ -28,6 +28,9 @@ TEST(OllamaChatTemplate, SystemPromptContainsLanguage)
     const std::string prompt = buildRdkSystemPrompt("ru");
     EXPECT_NE(prompt.find("ru"), std::string::npos);
     EXPECT_NE(prompt.find("Russian"), std::string::npos);
+    EXPECT_NE(prompt.find("NeuroModeler"), std::string::npos);
+    EXPECT_NE(prompt.find("robot"), std::string::npos); // anti-hallucination wording
+    EXPECT_NE(prompt.find("update_configuration"), std::string::npos);
 }
 
 TEST(OllamaChatTemplate, EnsurePromptUsesLanguage)

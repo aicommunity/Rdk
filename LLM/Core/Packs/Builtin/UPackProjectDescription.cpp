@@ -75,7 +75,8 @@ PackHintContribution UPackProjectDescription::hints(const PackTurnSnapshot& snap
         "2. Synthesize a concrete description from those results (user language).\n"
         "3. You MUST call `update_configuration` with `project_description` set to that text.\n"
         "Never write placeholders like «указать здесь», «которое вы хотите добавить», "
-        "or `[list modules here]`. Do not finish with prose alone — the write is required.";
+        "or `[list modules here]`. Do not finish with prose alone — the write is required.\n"
+        "Never greet the user or invent product names; stay on NeuroModeler / the open configuration.";
     h.extra_tool_names = {"get_net_snapshot", "inspect_configuration", "list_project_files",
                           "read_text_artifact", "update_configuration", "ask_user"};
     h.act_or_clarify_recovery_tools = {"get_net_snapshot", "inspect_configuration",

@@ -31,6 +31,8 @@ TEST(LLMIntentParser, UpdateDescriptionIsMutate)
               LLMIntentKind::Mutate);
     EXPECT_EQ(parser.parse("запиши описание конфигурации в project description"),
               LLMIntentKind::Mutate);
+    EXPECT_EQ(parser.parse("опиши открытый конфиг и создай его описание в project description"),
+              LLMIntentKind::Mutate);
 }
 
 TEST(LLMIntentParser, ConfidencePrefersMutateOverWeakQuery)

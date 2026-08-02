@@ -1457,6 +1457,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
     bool calc_recovery_used = false;
     bool structure_recovery_used = false;
     bool watch_recovery_used = false;
+    bool description_write_recovery_used = false;
     std::optional<std::pair<std::string, ToolGatewayResult>> last_graph_write;
 
     const bool is_cloud_profile = req.provider_profile.is_cloud;
@@ -1820,6 +1821,34 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                                          req.trace_id, req.session_id);
                     continue;
                 }
+                // chat 18-19-54: second recovery for force_include_write — must call update_configuration.
+                if(requires_desc_write && !has_desc_write && !description_write_recovery_used)
+                {
+                    description_write_recovery_used = true;
+                    if(session.llm_write_enabled)
+                        filter.include_write = true;
+                    filter.allowed_tool_names = std::unordered_set<std::string>{
+                        "update_configuration",
+                        "get_net_snapshot",
+                        "inspect_configuration",
+                        "ask_user",
+                    };
+                    opts.tools_for_api = m_registry.buildOpenAiToolsJson(filter);
+                    ctx_input.tool_filter = filter;
+                    LLMMessage recovery;
+                    recovery.role = LLMMessage::Role::System;
+                    recovery.content =
+                        "Description write recovery: synthesize a concrete project_description from "
+                        "prior tool results (inspect/snapshot) in the user's language, then call "
+                        "update_configuration(project_description=…). Do not greet the user, do not "
+                        "ask for a new question, do not invent product names. If data is missing, "
+                        "ask_user. If impossible, reply exactly: NO_SUITABLE_TOOL.";
+                    m_store.appendMessage(req.session_id, recovery);
+                    GetAuditLog().append("description_write_recovery_round",
+                                         {{"session_id", req.session_id}},
+                                         req.trace_id, req.session_id);
+                    continue;
+                }
                 if(isConnectGoalText(planning_text) && !connect_recovery_used)
                 {
                     connect_recovery_used = true;
@@ -1882,13 +1911,21 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                     continue;
                 }
                 final.no_suitable_tool = true;
+                const bool pending_desc_write = requires_desc_write && !has_desc_write;
                 const bool query_like =
-                    intent == LLMIntentKind::Query || intent == LLMIntentKind::Explain
-                    || turnHasSuccessfulReadOnlyEvidence(state.current_turn_tool_trace);
+                    !pending_desc_write
+                    && (intent == LLMIntentKind::Query || intent == LLMIntentKind::Explain
+                        || turnHasSuccessfulReadOnlyEvidence(state.current_turn_tool_trace));
                 const std::string model_text = completion.text;
                 const bool model_said_none =
                     model_text.find("NO_SUITABLE_TOOL") != std::string::npos;
-                if(query_like && !model_text.empty() && !model_said_none)
+                if(pending_desc_write)
+                {
+                    // chat 18-19-54: never surface hallucinated greetings when write is required.
+                    final.no_suitable_tool = true;
+                    final.text = formatUserMessage("error.description_write_required", user_lang);
+                }
+                else if(query_like && !model_text.empty() && !model_said_none)
                 {
                     // Prefer model prose over generic "no action" (informational exhaust).
                     final.no_suitable_tool = false;
@@ -1906,6 +1943,7 @@ LLMFinalResponse ULLMAgentOrchestrator::handleUserMessageAfterPacks(TurnContext&
                 GetAuditLog().append("act_or_clarify_exhausted",
                                      {{"intent", intent_name},
                                       {"query_soft_fallback", query_like},
+                                      {"pending_description_write", pending_desc_write},
                                       {"had_model_text", !model_text.empty()}},
                                      req.trace_id, req.session_id);
                 setWorkflowPhase(state, LLMWorkflowPhase::Completed, req.trace_id);

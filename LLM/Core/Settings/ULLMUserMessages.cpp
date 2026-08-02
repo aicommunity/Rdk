@@ -21,6 +21,13 @@ std::string lookup(const std::string& key, const std::string& lang)
         return ru ? "Не удалось прочитать модель или документацию. Откройте конфигурацию "
                     "или уточните вопрос."
                   : "Could not read the model or docs. Open a configuration or clarify the question.";
+    if(key == "error.description_write_required")
+        return ru ? "Нужно записать описание в project description: после анализа конфигурации "
+                    "вызовите update_configuration с текстом описания (без приветствий и "
+                    "выдуманных названий продукта)."
+                  : "Write the project description: after inspecting the configuration, call "
+                    "update_configuration with concrete description text (no greetings or invented "
+                    "product names).";
     if(key == "error.index_missing")
         return ru ? "Индекс знаний недоступен." : "Knowledge index unavailable.";
     return key;

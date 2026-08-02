@@ -21,7 +21,8 @@ std::string buildAgentManifest(const ULLMToolRegistry& registry, const ToolFilte
         oss << "## Response language\n"
             << "- Always respond to the user in "
             << responseLanguageDisplayName(response_language) << " (code: " << response_language
-            << "). Tool arguments may stay in English.\n";
+            << "). Tool arguments may stay in English.\n"
+            << "- Product identity: NeuroModeler (RDK). Do not invent alternate product names.\n";
     }
 
     oss << libraryScopeHintManifestSection(detectLibraryScopeFromUserText(user_text));
