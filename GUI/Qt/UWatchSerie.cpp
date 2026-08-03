@@ -30,11 +30,15 @@ NMSDK::Plot::DataBinding UWatchSerie::toBinding() const
     using namespace NMSDK::Plot;
     if (vizKind == VizKind::XYLine || vizKind == VizKind::XYScatter)
     {
-        PropertyRef xProp{xNameComponent, xNameProperty, xJx, xJy};
-        PropertyRef yProp{nameComponent, nameProperty, Jx, Jy};
+        PropertyRef xProp{xNameComponent, xNameProperty, xJx, xJy, xSlice};
+        PropertyRef yProp{nameComponent, nameProperty, Jx, Jy, ySlice};
         return makeXYBinding(indexChannel, xProp, yProp, windowSize, xyMinIntervalMs, xyMinDistance);
     }
-    return makeTimeSeriesBinding(indexChannel, nameComponent, nameProperty, Jx, Jy);
+    DataBinding b = makeTimeSeriesBinding(indexChannel, nameComponent, nameProperty, Jx, Jy);
+    // Preserve runtime window (synced from AxisXrange / reader NumPoints).
+    if (windowSize > 0)
+        b.windowSize = windowSize;
+    return b;
 }
 
 void UWatchSerie::applyBinding(const NMSDK::Plot::DataBinding& binding, NMSDK::Plot::VizKind viz)
@@ -52,6 +56,7 @@ void UWatchSerie::applyBinding(const NMSDK::Plot::DataBinding& binding, NMSDK::P
         nameProperty = binding.y.prop.property;
         Jx = binding.y.prop.jx;
         Jy = binding.y.prop.jy;
+        ySlice = binding.y.prop.slice;
     }
 
     if (binding.x.kind == DataRoleKind::Property)
@@ -60,6 +65,7 @@ void UWatchSerie::applyBinding(const NMSDK::Plot::DataBinding& binding, NMSDK::P
         xNameProperty = binding.x.prop.property;
         xJx = binding.x.prop.jx;
         xJy = binding.x.prop.jy;
+        xSlice = binding.x.prop.slice;
     }
     else
     {
@@ -67,6 +73,7 @@ void UWatchSerie::applyBinding(const NMSDK::Plot::DataBinding& binding, NMSDK::P
         xNameProperty.clear();
         xJx = -1;
         xJy = -1;
+        xSlice = SliceKind::Cell;
         x_data_reader = nullptr;
         xyRing.clear();
         xyLastXSimTime = -1.0;

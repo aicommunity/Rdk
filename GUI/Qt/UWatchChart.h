@@ -76,6 +76,8 @@ public:
     void setAxisYname(QString name);
     void setAxisXmin(double value);
     void setAxisXmax(double value);
+    /// Atomic X window (avoids QValueAxis min/max ordering glitches).
+    void setAxisXRange(double minValue, double maxValue);
     void setAxisYmin(double value);
     void setAxisYmax(double value);
     double getAxisXrange(void) const;
@@ -105,17 +107,22 @@ public:
     //действия с сериями
     void createSerie(int channelIndex, const QString componentName, const QString propertyName,
                      const QString type, int jx, int jy, double time_interval, double y_shift);
-    /// XY series: X and Y from property roles (same-tick pairs).
+    /// XY series: X and Y from property roles (same-tick pairs or matrix slices).
     void createSerieXY(int channelIndex,
                        const QString& xComponent, const QString& xProperty, int xJx, int xJy,
                        const QString& yComponent, const QString& yProperty, int yJx, int yJy,
-                       double y_shift, NMSDK::Plot::VizKind viz = NMSDK::Plot::VizKind::XYLine);
+                       double y_shift, NMSDK::Plot::VizKind viz = NMSDK::Plot::VizKind::XYLine,
+                       NMSDK::Plot::SliceKind xSlice = NMSDK::Plot::SliceKind::Cell,
+                       NMSDK::Plot::SliceKind ySlice = NMSDK::Plot::SliceKind::Cell);
     void deleteSerie(int serieIndex);
     void addDataToSerie(int serieIndex, double x, double y);
     int  countSeries();
 
     NMSDK::Plot::VizKind getVizKind() const { return vizKind; }
     void setVizKind(NMSDK::Plot::VizKind kind);
+
+    /// True if chart has no series or existing series share the same family as `kind`.
+    bool canAddVizKind(NMSDK::Plot::VizKind kind) const;
 
     bool isLegendVisible() const;
     void setLegendVisible(bool visible);
@@ -135,7 +142,7 @@ public:
     bool isSelected() const { return m_selected; }
 
     //работа с динамикой осей
-    int axisXrange;
+    double axisXrange = 5.0;
     bool isAxisXtrackable = true;   //будет ли "поле зрения" бежать за временем
     bool isAxisYzoomable = true;    //зум по оси У (ctrl+крокрутка)
     bool isAxisYscrollable = true;  //скролл оси У

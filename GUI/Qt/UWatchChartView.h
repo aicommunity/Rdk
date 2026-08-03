@@ -17,9 +17,14 @@ public:
     explicit UWatchChartView(QWidget *parent = nullptr);
     ~UWatchChartView();
 
+    /// When false (Pan mode), do not capture ROI / rubber-band zoom.
+    void setRoiCaptureEnabled(bool enabled);
+    bool isRoiCaptureEnabled() const { return m_roiEnabled; }
+
 private:
     QRubberBand* rubberBand;
     QPoint origin;
+    bool m_roiEnabled = true;
 
 protected:
     void mousePressEvent(QMouseEvent *event);

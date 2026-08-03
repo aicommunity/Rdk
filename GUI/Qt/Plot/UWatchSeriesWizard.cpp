@@ -83,6 +83,31 @@ public:
             const int idx = m_viz->findData(viz);
             if (idx >= 0)
                 m_viz->setCurrentIndex(idx);
+
+            // Lock family when chart already has series.
+            const bool hasSeries = wizard->chart()->countSeries() > 0;
+            if (hasSeries)
+            {
+                const bool xyOnly = NMSDK::Plot::isXYFamily(wizard->chart()->getVizKind());
+                const auto keep = m_viz->currentData();
+                m_viz->blockSignals(true);
+                m_viz->clear();
+                if (xyOnly)
+                {
+                    m_viz->addItem(QObject::tr("XY line"), static_cast<int>(NMSDK::Plot::VizKind::XYLine));
+                    m_viz->addItem(QObject::tr("XY scatter"), static_cast<int>(NMSDK::Plot::VizKind::XYScatter));
+                }
+                else
+                {
+                    m_viz->addItem(QObject::tr("Time series"), static_cast<int>(NMSDK::Plot::VizKind::TimeSeries));
+                }
+                const int keepIdx = m_viz->findData(keep);
+                if (keepIdx >= 0)
+                    m_viz->setCurrentIndex(keepIdx);
+                else if (m_viz->count() > 0)
+                    m_viz->setCurrentIndex(0);
+                m_viz->blockSignals(false);
+            }
         }
         rebuildFormItems();
     }
@@ -130,10 +155,14 @@ private:
         {
             m_form->addItem(QObject::tr("Single cell / scalar pair"),
                             static_cast<int>(UWatchSeriesWizardResult::Form::SingleCell));
-            m_form->setEnabled(false);
+            m_form->addItem(QObject::tr("Whole row → curve snapshot"),
+                            static_cast<int>(UWatchSeriesWizardResult::Form::WholeRow));
+            m_form->addItem(QObject::tr("Whole column → curve snapshot"),
+                            static_cast<int>(UWatchSeriesWizardResult::Form::WholeColumn));
+            m_form->setEnabled(true);
             m_hint->setText(QObject::tr(
-                "XY accumulates (x, y) pairs from two properties each Watch update — not a time axis. "
-                "Scalars are OK (parametric curve). Pick X then Y on the next pages; density on Style."));
+                "Y(x): pick X then Y. Scalar pair accumulates over time. "
+                "Row/column snapshots replace the curve each update (zip by min length; size may change)."));
         }
     }
 
@@ -173,7 +202,13 @@ public:
         setTitle(xy ? QObject::tr("Y source") : QObject::tr("Y(t) source"));
         setSubTitle(xy ? QObject::tr("Select the Y property for the XY pair.")
                        : QObject::tr("Select the Y property vs time."));
-        m_picker->setMatrixPickMode(xy ? MatrixPickMode::SingleCell : formToPickMode(form));
+        m_picker->setMatrixPickMode(formToPickMode(form));
+        if (xy && (form == UWatchSeriesWizardResult::Form::WholeRow
+                   || form == UWatchSeriesWizardResult::Form::WholeColumn))
+        {
+            setSubTitle(QObject::tr(
+                "Select the matrix row/column used as the Y vector (snapshot each update)."));
+        }
         notifyComplete();
         QTimer::singleShot(0, this, [this]() { notifyComplete(); });
     }
@@ -236,6 +271,18 @@ public:
 
     void initializePage() override
     {
+        const auto form = m_wizard->selectedForm();
+        m_picker->setMatrixPickMode(formToPickMode(form));
+        if (form == UWatchSeriesWizardResult::Form::WholeRow
+            || form == UWatchSeriesWizardResult::Form::WholeColumn)
+        {
+            setSubTitle(QObject::tr(
+                "Select the matrix row/column used as the X vector (snapshot each update)."));
+        }
+        else
+        {
+            setSubTitle(QObject::tr("Select the X property for the XY pair (not time)."));
+        }
         notifyComplete();
         QTimer::singleShot(0, this, [this]() { notifyComplete(); });
     }
@@ -708,11 +755,36 @@ int UWatchSeriesWizard::applyToChart(UWatchChart* chart) const
     {
         if (r.xComponent.isEmpty() || r.xProperty.isEmpty())
             return 0;
+        if (!chart->canAddVizKind(r.viz))
+            return 0;
+
+        NMSDK::Plot::SliceKind slice = NMSDK::Plot::SliceKind::Cell;
+        if (r.form == UWatchSeriesWizardResult::Form::WholeRow)
+            slice = NMSDK::Plot::SliceKind::Row;
+        else if (r.form == UWatchSeriesWizardResult::Form::WholeColumn)
+            slice = NMSDK::Plot::SliceKind::Column;
+
         const auto yc = r.yCells.isEmpty() ? UWatchMatrixSelector::CellRef{} : r.yCells.front();
+        // For row/col snapshot: index is row (jx) or column (jy) of the selected slice.
+        int xJx = r.xCell.jx;
+        int xJy = r.xCell.jy;
+        int yJx = yc.jx;
+        int yJy = yc.jy;
+        if (slice == NMSDK::Plot::SliceKind::Row)
+        {
+            xJy = -1;
+            yJy = -1;
+        }
+        else if (slice == NMSDK::Plot::SliceKind::Column)
+        {
+            xJx = -1;
+            yJx = -1;
+        }
+
         chart->createSerieXY(r.channel,
-                             r.xComponent, r.xProperty, r.xCell.jx, r.xCell.jy,
-                             r.yComponent, r.yProperty, yc.jx, yc.jy,
-                             r.yShift, r.viz);
+                             r.xComponent, r.xProperty, xJx, xJy,
+                             r.yComponent, r.yProperty, yJx, yJy,
+                             r.yShift, r.viz, slice, slice);
         const int idx = chart->countSeries() - 1;
         if (idx >= 0)
         {

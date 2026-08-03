@@ -31,6 +31,14 @@ enum class VizKind
     XYScatter = 2
 };
 
+/// How a PropertyRef addresses a matrix/vector property.
+enum class SliceKind
+{
+    Cell = 0,   ///< single (jx, jy) — scalar reader / one cell
+    Row = 1,    ///< entire row jx (jy ignored)
+    Column = 2  ///< entire column jy (jx ignored)
+};
+
 enum class InteractionMode
 {
     TrackLatest = 0,
@@ -38,13 +46,29 @@ enum class InteractionMode
     Pan = 2
 };
 
+inline bool isXYFamily(VizKind kind)
+{
+    return kind == VizKind::XYLine || kind == VizKind::XYScatter;
+}
+
+inline bool sameVizFamily(VizKind a, VizKind b)
+{
+    return isXYFamily(a) == isXYFamily(b);
+}
+
 struct PropertyRef
 {
     QString component;
     QString property;
     int jx = -1;
     int jy = -1;
+    SliceKind slice = SliceKind::Cell;
 };
+
+inline bool isSliceBinding(const PropertyRef& prop)
+{
+    return prop.slice == SliceKind::Row || prop.slice == SliceKind::Column;
+}
 
 struct DataRole
 {

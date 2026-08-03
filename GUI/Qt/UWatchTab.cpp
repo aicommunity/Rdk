@@ -6,10 +6,13 @@
 #include "Plot/PlotSurface.h"
 #include "Plot/UWatchLayoutDialog.h"
 #include "Plot/UWatchSeriesWizard.h"
+#include "Plot/WatchDebug.h"
 #include "../../Core/Serialize/USerStorageXML.h"
 
 #include <QHBoxLayout>
+#include <QElapsedTimer>
 #include <QtGlobal>
+#include <cstdio>
 
 
 
@@ -85,13 +88,17 @@ void UWatchTab::AUpdateInterface()
         double x_max = 0.0;
         bool hadXSamples = false;
         const NMSDK::Plot::VizKind panelViz = graph[graphIndex]->getVizKind();
-        const bool panelIsXY = panelViz == NMSDK::Plot::VizKind::XYLine
-                               || panelViz == NMSDK::Plot::VizKind::XYScatter;
+        const bool panelIsXY = NMSDK::Plot::isXYFamily(panelViz);
 
         int i = 0;
         while (i < graph[graphIndex]->countSeries())
         {
             UWatchSerie* serie = graph[graphIndex]->getSerie(i);
+            if (serie && serie->isMatrixSliceXY())
+            {
+                ++i;
+                continue;
+            }
             RDK::UControllerDataReader* data_reader = env->GetDataReader(
                 serie->nameComponent.toStdString(),
                 serie->nameProperty.toStdString(),
@@ -109,8 +116,13 @@ void UWatchTab::AUpdateInterface()
                       != nullptr;
             }
             if (!data_reader || !xOk) {
-                graph[graphIndex]->deleteSerie(i);
+                // Offline instead of dropping entire series on transient reader gaps.
+                if (serie)
+                    serie->setOnlineStatus(false);
+                ++i;
             } else {
+                if (serie)
+                    serie->setOnlineStatus(true);
                 ++i;
             }
         }
@@ -118,26 +130,24 @@ void UWatchTab::AUpdateInterface()
         for (int serieIndex = 0; serieIndex < graph[graphIndex]->countSeries(); serieIndex++)
         {
             UWatchSerie *current_serie = graph[graphIndex]->getSerie(serieIndex);
-            if (!current_serie || !current_serie->isOnline) {
-                if (current_serie)
-                {
-                    RDK::UControllerDataReader* probe = env->GetDataReader(
-                        current_serie->nameComponent.toStdString(),
-                        current_serie->nameProperty.toStdString(),
-                        current_serie->Jx < 0 ? 0 : current_serie->Jx,
-                        current_serie->Jy < 0 ? 0 : current_serie->Jy);
-                    current_serie->setOnlineStatus(probe != nullptr);
-                }
+            if (!current_serie)
                 continue;
-            }
 
+            const bool isXY = NMSDK::Plot::isXYFamily(current_serie->vizKind);
             NMSDK::Plot::PlotSeries dto = current_serie->toPlotSeries();
             QVector<QPointF> samplePoints;
-            const bool isXY = current_serie->vizKind == NMSDK::Plot::VizKind::XYLine
-                              || current_serie->vizKind == NMSDK::Plot::VizKind::XYScatter
-                              || panelIsXY;
 
-            if (isXY && dto.binding.x.kind == NMSDK::Plot::DataRoleKind::Property)
+            if (current_serie->isMatrixSliceXY())
+            {
+                samplePoints = NMSDK::Plot::sampleMatrixSlicePair(dto, current_serie->YShift);
+                current_serie->setOnlineStatus(!samplePoints.isEmpty()
+                                               || current_serie->isOnline);
+            }
+            else if (!current_serie->isOnline)
+            {
+                continue;
+            }
+            else if (isXY && dto.binding.x.kind == NMSDK::Plot::DataRoleKind::Property)
             {
                 samplePoints = NMSDK::Plot::samplePropertyPair(
                     env.Get(),
@@ -154,12 +164,19 @@ void UWatchTab::AUpdateInterface()
                     env.Get(), dto, current_serie->YShift);
             }
 
-            RDK::UControllerDataReader* data_reader = env->GetDataReader(
-                current_serie->nameComponent.toStdString(),
-                current_serie->nameProperty.toStdString(),
-                current_serie->Jx < 0 ? 0 : current_serie->Jx,
-                current_serie->Jy < 0 ? 0 : current_serie->Jy);
-            current_serie->setOnlineStatus(data_reader != nullptr);
+            if (!current_serie->isMatrixSliceXY())
+            {
+                RDK::UControllerDataReader* data_reader = env->GetDataReader(
+                    current_serie->nameComponent.toStdString(),
+                    current_serie->nameProperty.toStdString(),
+                    current_serie->Jx < 0 ? 0 : current_serie->Jx,
+                    current_serie->Jy < 0 ? 0 : current_serie->Jy);
+                current_serie->setOnlineStatus(data_reader != nullptr);
+            }
+            else
+            {
+                current_serie->setOnlineStatus(!samplePoints.isEmpty());
+            }
 
             if (!samplePoints.isEmpty())
             {
@@ -221,18 +238,31 @@ void UWatchTab::AUpdateInterface()
             }
         }
 
-        if (!graph[graphIndex]->checkZoomed() && hadXSamples)
+        const bool zoomed = graph[graphIndex]->checkZoomed();
+        const bool trackable = graph[graphIndex]->getIsAxisXtrackable();
+        double W = graph[graphIndex]->getAxisXrange();
+        double lo = x_min;
+        double hi = x_max;
+        bool trackApplied = false;
+
+        if (!zoomed && hadXSamples)
         {
             if (!panelIsXY)
             {
-                if (x_max - x_min < graph[graphIndex]->getAxisXrange()) {
-                    x_max = x_min + graph[graphIndex]->getAxisXrange();
-                }
-                if (graph[graphIndex]->getIsAxisXtrackable())
+                if (trackable)
                 {
-                    graph[graphIndex]->setAxisXmax(x_max);
-                    graph[graphIndex]->setAxisXmin(x_min);
+                    // Single W = axisXrange = reader.TimeInterval.
+                    // Pre-refactor pad + clamp when span > W (keeps newest visible).
+                    if (W > 0.0)
+                    {
+                        if (hi - lo < W)
+                            hi = lo + W;
+                        if (hi - lo > W)
+                            lo = hi - W;
+                    }
+                    graph[graphIndex]->setAxisXRange(lo, hi);
                     graph[graphIndex]->fixInitialAxesState();
+                    trackApplied = true;
                 }
             }
             else
@@ -245,9 +275,70 @@ void UWatchTab::AUpdateInterface()
                     x_min -= pad;
                     x_max += pad;
                 }
-                graph[graphIndex]->setAxisXmax(x_max);
-                graph[graphIndex]->setAxisXmin(x_min);
+                lo = x_min;
+                hi = x_max;
+                graph[graphIndex]->setAxisXRange(x_min, x_max);
                 graph[graphIndex]->fixInitialAxesState();
+                trackApplied = true;
+            }
+        }
+
+        if (NMSDK::WatchDebug::enabled() && !panelIsXY)
+        {
+            static QElapsedTimer s_watchDbgTimer;
+            static bool s_watchDbgTimerInit = false;
+            if (!s_watchDbgTimerInit)
+            {
+                s_watchDbgTimer.start();
+                s_watchDbgTimerInit = true;
+            }
+            // ~1 Hz across all charts (first chart that hits the gate logs).
+            if (graphIndex == 0 && s_watchDbgTimer.elapsed() >= 1000)
+            {
+                s_watchDbgTimer.restart();
+                double rTi = -1.0;
+                int rNp = -1;
+                int rN = -1;
+                double rFront = 0.0;
+                double rBack = 0.0;
+                if (graph[graphIndex]->countSeries() > 0)
+                {
+                    UWatchSerie* s0 = graph[graphIndex]->getSerie(0);
+                    RDK::UControllerDataReader* rd = s0 ? s0->data_reader : nullptr;
+                    if (!rd && s0 && env)
+                    {
+                        rd = env->GetDataReader(
+                            s0->nameComponent.toStdString(),
+                            s0->nameProperty.toStdString(),
+                            s0->Jx < 0 ? 0 : s0->Jx,
+                            s0->Jy < 0 ? 0 : s0->Jy);
+                    }
+                    if (rd)
+                    {
+                        rTi = rd->TimeInterval;
+                        rNp = rd->NumPoints;
+                        rN = static_cast<int>(rd->XData.size());
+                        if (!rd->XData.empty())
+                        {
+                            rFront = rd->XData.front();
+                            rBack = rd->XData.back();
+                        }
+                    }
+                }
+                const double axisLo = graph[graphIndex]->getAxisXmin();
+                const double axisHi = graph[graphIndex]->getAxisXmax();
+                const double sampleSpan = hadXSamples ? (x_max - x_min) : -1.0;
+                std::fprintf(stderr,
+                    "[WatchDebug] g=%d W=%.4f sampleSpan=%.4f x=[%.4f,%.4f] "
+                    "lohi=[%.4f,%.4f] axis=[%.4f,%.4f] axisW=%.4f "
+                    "zoomed=%d trackable=%d applied=%d "
+                    "readerTi=%.4f np=%d n=%d rX=[%.4f,%.4f] rSpan=%.4f\n",
+                    graphIndex, W, sampleSpan, x_min, x_max, lo, hi,
+                    axisLo, axisHi, axisHi - axisLo,
+                    zoomed ? 1 : 0, trackable ? 1 : 0, trackApplied ? 1 : 0,
+                    rTi, rNp, rN, rFront, rBack,
+                    (rN > 0) ? (rBack - rFront) : -1.0);
+                std::fflush(stderr);
             }
         }
     }
@@ -663,7 +754,13 @@ void UWatchTab::applyPlotDocument(const NMSDK::Plot::PlotDocument& doc)
         for (const NMSDK::Plot::PlotSeries& serie : panel.series)
         {
             const double time_interval = panel.axisXRange > 0 ? panel.axisXRange : chart->getAxisXrange();
-            if (serie.binding.x.kind == NMSDK::Plot::DataRoleKind::Property)
+            const bool serieIsXY = serie.binding.x.kind == NMSDK::Plot::DataRoleKind::Property;
+            const NMSDK::Plot::VizKind wantViz = serieIsXY
+                ? (NMSDK::Plot::isXYFamily(panel.viz) ? panel.viz : NMSDK::Plot::VizKind::XYLine)
+                : NMSDK::Plot::VizKind::TimeSeries;
+            if (!chart->canAddVizKind(wantViz))
+                continue;
+            if (serieIsXY)
             {
                 chart->createSerieXY(
                     serie.binding.channel,
@@ -676,8 +773,9 @@ void UWatchTab::applyPlotDocument(const NMSDK::Plot::PlotDocument& doc)
                     serie.binding.y.prop.jx,
                     serie.binding.y.prop.jy,
                     serie.yOffset,
-                    panel.viz == NMSDK::Plot::VizKind::TimeSeries ? NMSDK::Plot::VizKind::XYLine
-                                                                  : panel.viz);
+                    wantViz,
+                    serie.binding.x.prop.slice,
+                    serie.binding.y.prop.slice);
             }
             else
             {

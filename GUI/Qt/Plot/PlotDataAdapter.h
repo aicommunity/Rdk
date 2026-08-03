@@ -33,6 +33,9 @@ QVector<QPointF> samplePropertyPair(RDK::UEnvironment* env,
                                     double& lastYSimTime,
                                     double& lastAcceptSimTime);
 
+/// Snapshot Y(x) from matrix/vector row or column (replaces curve each call).
+QVector<QPointF> sampleMatrixSlicePair(const PlotSeries& series, double yOffset);
+
 class IPlotDataAdapter
 {
 public:

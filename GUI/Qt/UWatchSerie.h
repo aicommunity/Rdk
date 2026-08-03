@@ -26,12 +26,14 @@ public:
     RDK::UControllerDataReader * data_reader = nullptr;
     int Jx = -1;
     int Jy = -1;
+    NMSDK::Plot::SliceKind ySlice = NMSDK::Plot::SliceKind::Cell;
 
     // X source for XY viz (Property role)
     QString xNameComponent;
     QString xNameProperty;
     int xJx = -1;
     int xJy = -1;
+    NMSDK::Plot::SliceKind xSlice = NMSDK::Plot::SliceKind::Cell;
     RDK::UControllerDataReader * x_data_reader = nullptr;
 
     NMSDK::Plot::VizKind vizKind = NMSDK::Plot::VizKind::TimeSeries;
@@ -46,6 +48,15 @@ public:
     double xyLastAcceptSimTime = -1.0;
 
     bool isOnline = true;
+
+    bool isMatrixSliceXY() const
+    {
+        return NMSDK::Plot::isXYFamily(vizKind)
+               && (NMSDK::Plot::isSliceBinding(
+                       NMSDK::Plot::PropertyRef{xNameComponent, xNameProperty, xJx, xJy, xSlice})
+                   || NMSDK::Plot::isSliceBinding(
+                       NMSDK::Plot::PropertyRef{nameComponent, nameProperty, Jx, Jy, ySlice}));
+    }
 
     void setOnlineStatus(bool online);
 

@@ -54,6 +54,7 @@ static void writeRole(RDK::USerStorageXML& xml, const char* prefix, const DataRo
     xml.WriteString(p + "Property", role.prop.property.toStdString());
     xml.WriteInteger(p + "Jx", role.prop.jx);
     xml.WriteInteger(p + "Jy", role.prop.jy);
+    xml.WriteInteger(p + "Slice", static_cast<int>(role.prop.slice));
 }
 
 static DataRole readRole(RDK::USerStorageXML& xml, const char* prefix, DataRoleKind defaultKind)
@@ -65,6 +66,8 @@ static DataRole readRole(RDK::USerStorageXML& xml, const char* prefix, DataRoleK
     role.prop.property = QString::fromStdString(xml.ReadString(p + "Property", ""));
     role.prop.jx = xml.ReadInteger(p + "Jx", -1);
     role.prop.jy = xml.ReadInteger(p + "Jy", -1);
+    role.prop.slice = static_cast<SliceKind>(
+        xml.ReadInteger(p + "Slice", static_cast<int>(SliceKind::Cell)));
     return role;
 }
 

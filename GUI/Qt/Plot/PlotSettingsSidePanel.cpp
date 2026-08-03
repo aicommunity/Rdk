@@ -15,6 +15,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
+#include <QMessageBox>
 #include <QPushButton>
 #include <QShortcut>
 #include <QSignalBlocker>
@@ -259,8 +260,7 @@ void PlotSettingsSidePanel::updateAxesModeVisibility()
 {
     const auto viz = static_cast<NMSDK::Plot::VizKind>(
         m_vizKind ? m_vizKind->currentData().toInt() : 0);
-    const bool xy = viz == NMSDK::Plot::VizKind::XYLine
-                    || viz == NMSDK::Plot::VizKind::XYScatter;
+    const bool xy = NMSDK::Plot::isXYFamily(viz);
     if (m_xMin)
         m_xMin->setVisible(xy);
     if (m_xMax)
@@ -415,8 +415,19 @@ void PlotSettingsSidePanel::applyChartLive()
     chart->setAxisYmin(m_yMin->value());
     chart->setAxisYmax(m_yMax->value());
     const auto viz = static_cast<NMSDK::Plot::VizKind>(m_vizKind->currentData().toInt());
-    const bool xy = viz == NMSDK::Plot::VizKind::XYLine
-                    || viz == NMSDK::Plot::VizKind::XYScatter;
+    if (chart->countSeries() > 0 && !NMSDK::Plot::sameVizFamily(chart->getVizKind(), viz))
+    {
+        QSignalBlocker b(m_vizKind);
+        const int idx = m_vizKind->findData(static_cast<int>(chart->getVizKind()));
+        if (idx >= 0)
+            m_vizKind->setCurrentIndex(idx);
+        updateAxesModeVisibility();
+        QMessageBox::warning(this, tr("Watch"),
+                             tr("Cannot switch between Time series and Y(x) while the chart has series. "
+                                "Clear series or use another chart."));
+        return;
+    }
+    const bool xy = NMSDK::Plot::isXYFamily(viz);
     if (xy)
     {
         chart->setAxisXmin(m_xMin->value());

@@ -21,9 +21,16 @@ UWatchChartView::~UWatchChartView()
 
 }
 
+void UWatchChartView::setRoiCaptureEnabled(bool enabled)
+{
+    m_roiEnabled = enabled;
+    if (!enabled && rubberBand)
+        rubberBand->hide();
+}
+
 void UWatchChartView::mousePressEvent(QMouseEvent *event)
 {
-    if(event->button() == Qt::LeftButton)
+    if(event->button() == Qt::LeftButton && m_roiEnabled)
     {
         origin = event->pos();
         rubberBand->setGeometry(QRect(origin, QSize()));
@@ -34,7 +41,7 @@ void UWatchChartView::mousePressEvent(QMouseEvent *event)
 
 void UWatchChartView::mouseMoveEvent(QMouseEvent *event)
 {
-    if (rubberBand && rubberBand->isVisible())
+    if (m_roiEnabled && rubberBand && rubberBand->isVisible())
         rubberBand->setGeometry(QRect(origin, event->pos()).normalized());
     QChartView::mouseMoveEvent(event);
 }
@@ -45,9 +52,15 @@ void UWatchChartView::mouseReleaseEvent(QMouseEvent *event)
     {
         const QPoint delta = event->pos() - origin;
         const bool isClick = delta.manhattanLength() < kClickSlopPx;
-        rubberBand->hide();
+        if (rubberBand)
+            rubberBand->hide();
 
-        if (isClick)
+        if (!m_roiEnabled)
+        {
+            if (isClick)
+                emit chartClicked();
+        }
+        else if (isClick)
         {
             emit chartClicked();
         }
@@ -58,6 +71,7 @@ void UWatchChartView::mouseReleaseEvent(QMouseEvent *event)
 
             double x_min = start.x();
             double x_max = finish.x();
+            // Screen Y grows down; chart Y grows up — swap for ROI.
             double y_min = finish.y();
             double y_max = start.y();
 

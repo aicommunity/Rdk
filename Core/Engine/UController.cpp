@@ -178,7 +178,14 @@ void UControllerDataReader::SetTimeInterval(double value)
 {
  TimeInterval=value;
  if(value>0.001)
-  SetNumPoints(int(value*Component->GetTimeStep()));
+ {
+  // Nominal Hz from component TimeStep (real dt = 1/Hz). RT catch-up can
+  // deliver denser samples than 1/step — size buffer with 2x headroom; AUpdate
+  // also grows NumPoints if the time window is still short at the point cap.
+  const int hz = Component ? int(Component->GetTimeStep()) : 0;
+  const int n = hz > 0 ? int(value * hz * 2) + hz + 16 : 20000;
+  SetNumPoints(n > 0 ? n : 20000);
+ }
  else
   SetNumPoints(100000);
 }
@@ -276,6 +283,31 @@ bool UControllerDataReader::AUpdate(void)
   XData.erase(XData.begin());
  while(int(YData.size())>NumPoints)
   YData.erase(YData.begin());
+ // Keep wall-clock span within TimeInterval (NumPoints alone is wrong if
+ // AUpdate rate ≠ one sample per model step). Use >= so we retain a full window.
+ if(TimeInterval > 0.001 && XData.size() > 1)
+ {
+  const double t2 = XData.back();
+  const double span = t2 - XData.front();
+  // Point-cap hit before the time window filled → grow to match observed rate.
+  if(span + 1e-9 < TimeInterval && int(XData.size()) >= NumPoints)
+  {
+   const int hzGuess = span > 1e-6
+                           ? int(double(XData.size()) / span) + 1
+                           : NumPoints;
+   int need = int(TimeInterval * hzGuess) + hzGuess / 4 + 8;
+   if(need > 500000)
+    need = 500000;
+   if(need > NumPoints)
+    SetNumPoints(need);
+  }
+  while(XData.size() > 1 && (t2 - XData.front()) > TimeInterval + 1e-9)
+  {
+   XData.erase(XData.begin());
+   if(!YData.empty())
+    YData.erase(YData.begin());
+  }
+ }
  return true;
 }
 

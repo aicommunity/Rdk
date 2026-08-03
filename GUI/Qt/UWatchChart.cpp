@@ -15,6 +15,8 @@
 
 #include "UWatchTab.h"
 #include "UVisualControllerWidget.h"
+#include "Plot/WatchDebug.h"
+#include <cstdio>
 
 UWatchChart::UWatchChart(QWidget *parent) :
     QWidget(parent),
@@ -43,6 +45,10 @@ UWatchChart::UWatchChart(QWidget *parent) :
     actTrack->setCheckable(true);
     actTrack->setChecked(true);
     actBoxZoom->setChecked(true);
+    actPan->setToolTip(tr("Drag to pan the viewport"));
+    actBoxZoom->setToolTip(tr("Drag a rectangle to zoom. Reverse drag (e.g. right-to-left) resets zoom."));
+    actTrack->setToolTip(tr("Follow latest X data (time window). Disabled while zoomed."));
+    actReset->setToolTip(tr("Restore axes and re-enable Track"));
     connect(actPan, &QAction::triggered, this, &UWatchChart::onModePan);
     connect(actBoxZoom, &QAction::triggered, this, &UWatchChart::onModeBoxZoom);
     connect(actTrack, &QAction::triggered, this, &UWatchChart::onModeTrack);
@@ -61,7 +67,7 @@ UWatchChart::UWatchChart(QWidget *parent) :
     ///Дефолтные подписи осей и их макс и мин
     setAxisXname("time, sec");
     setAxisYname("Output parameter");
-    axisXrange = 2;
+    axisXrange = 5;
     axisX->setRange(0, axisXrange);
     axisY->setRange(-1, 1);
 
@@ -243,6 +249,14 @@ void UWatchChart::createSerie(int channelIndex, const QString componentName, con
                               const QString type, int jx, int jy, double time_interval, double y_shift)
 {
     Q_UNUSED(type);
+    if (!canAddVizKind(NMSDK::Plot::VizKind::TimeSeries))
+    {
+        QMessageBox::warning(this, tr("Watch"),
+                             tr("This chart already has Y(x) series. Time series cannot be mixed here. "
+                                "Use another chart for Time series."));
+        return;
+    }
+
     series.push_back(new UWatchSerie());
     chart->addSeries(series.last());
     series.last()->attachAxis(axisX);
@@ -261,6 +275,7 @@ void UWatchChart::createSerie(int channelIndex, const QString componentName, con
     series.last()->Jy = jy;
     series.last()->YShift = y_shift;
     series.last()->vizKind = NMSDK::Plot::VizKind::TimeSeries;
+    series.last()->ySlice = NMSDK::Plot::SliceKind::Cell;
 
     RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
 
@@ -272,7 +287,11 @@ void UWatchChart::createSerie(int channelIndex, const QString componentName, con
     {
         series.last()->data_reader = data_reader;
         data_reader->SetTimeInterval(time_interval);
+        if (data_reader->NumPoints > 0)
+            series.last()->windowSize = qMax(series.last()->windowSize, data_reader->NumPoints);
     }
+    if (vizKind != NMSDK::Plot::VizKind::TimeSeries)
+        setVizKind(NMSDK::Plot::VizKind::TimeSeries);
     connectSerieTooltip(series.last());
     emit UpdateTabGuiSignal(false);
 }
@@ -280,8 +299,19 @@ void UWatchChart::createSerie(int channelIndex, const QString componentName, con
 void UWatchChart::createSerieXY(int channelIndex,
                                 const QString& xComponent, const QString& xProperty, int xJx, int xJy,
                                 const QString& yComponent, const QString& yProperty, int yJx, int yJy,
-                                double y_shift, NMSDK::Plot::VizKind viz)
+                                double y_shift, NMSDK::Plot::VizKind viz,
+                                NMSDK::Plot::SliceKind xSlice, NMSDK::Plot::SliceKind ySlice)
 {
+    if (!NMSDK::Plot::isXYFamily(viz))
+        viz = NMSDK::Plot::VizKind::XYLine;
+    if (!canAddVizKind(viz))
+    {
+        QMessageBox::warning(this, tr("Watch"),
+                             tr("This chart already has Time series. Y(x) series cannot be mixed here. "
+                                "Use another chart for XY plots."));
+        return;
+    }
+
     series.push_back(new UWatchSerie());
     chart->addSeries(series.last());
     series.last()->attachAxis(axisX);
@@ -299,8 +329,8 @@ void UWatchChart::createSerieXY(int channelIndex,
     series.last()->applyBinding(
         NMSDK::Plot::makeXYBinding(
             channelIndex,
-            NMSDK::Plot::PropertyRef{xComponent, xProperty, xJx, xJy},
-            NMSDK::Plot::PropertyRef{yComponent, yProperty, yJx, yJy}),
+            NMSDK::Plot::PropertyRef{xComponent, xProperty, xJx, xJy, xSlice},
+            NMSDK::Plot::PropertyRef{yComponent, yProperty, yJx, yJy, ySlice}),
         viz);
 
     // Markers so stepped X dwells read as points connected by segments.
@@ -312,40 +342,58 @@ void UWatchChart::createSerieXY(int channelIndex,
         series.last()->setPen(p);
     }
 
-    RDK::UELockPtr<RDK::UEnvironment> env = RDK::GetEnvironmentLock();
-    if (env)
+    const bool sliceXY = series.last()->isMatrixSliceXY();
+    if (!sliceXY)
     {
-        series.last()->x_data_reader = env->RegisterDataReader(
-            xComponent.toStdString(), xProperty.toStdString(), xJx < 0 ? 0 : xJx, xJy < 0 ? 0 : xJy);
-        series.last()->data_reader = env->RegisterDataReader(
-            yComponent.toStdString(), yProperty.toStdString(), yJx < 0 ? 0 : yJx, yJy < 0 ? 0 : yJy);
-        if (series.last()->x_data_reader)
-            series.last()->x_data_reader->SetTimeInterval(0); // keep long history; XY uses latest values
-        if (series.last()->data_reader)
-            series.last()->data_reader->SetTimeInterval(0);
+        RDK::UELockPtr<RDK::UEnvironment> env = RDK::GetEnvironmentLock();
+        if (env)
+        {
+            series.last()->x_data_reader = env->RegisterDataReader(
+                xComponent.toStdString(), xProperty.toStdString(), xJx < 0 ? 0 : xJx, xJy < 0 ? 0 : xJy);
+            series.last()->data_reader = env->RegisterDataReader(
+                yComponent.toStdString(), yProperty.toStdString(), yJx < 0 ? 0 : yJx, yJy < 0 ? 0 : yJy);
+            if (series.last()->x_data_reader)
+                series.last()->x_data_reader->SetTimeInterval(0);
+            if (series.last()->data_reader)
+                series.last()->data_reader->SetTimeInterval(0);
+        }
     }
 
-    if (vizKind == NMSDK::Plot::VizKind::TimeSeries)
+    if (!NMSDK::Plot::isXYFamily(vizKind))
         setVizKind(viz);
     setAxisXname(QStringLiteral("X"));
     connectSerieTooltip(series.last());
     emit UpdateTabGuiSignal(false);
 }
 
+bool UWatchChart::canAddVizKind(NMSDK::Plot::VizKind kind) const
+{
+    if (series.isEmpty())
+        return true;
+    for (const UWatchSerie* s : series)
+    {
+        if (s && !NMSDK::Plot::sameVizFamily(s->vizKind, kind))
+            return false;
+    }
+    return true;
+}
+
 void UWatchChart::deleteSerie(int serieIndex)
 {
-
     RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
-    env->UnRegisterDataReader(series[serieIndex]->nameComponent.toStdString(),
-                              series[serieIndex]->nameProperty.toStdString(),
-                              series[serieIndex]->Jx,
-                              series[serieIndex]->Jy);
-    if (!series[serieIndex]->xNameComponent.isEmpty())
+    if (env && series[serieIndex] && !series[serieIndex]->isMatrixSliceXY())
     {
-        env->UnRegisterDataReader(series[serieIndex]->xNameComponent.toStdString(),
-                                  series[serieIndex]->xNameProperty.toStdString(),
-                                  series[serieIndex]->xJx < 0 ? 0 : series[serieIndex]->xJx,
-                                  series[serieIndex]->xJy < 0 ? 0 : series[serieIndex]->xJy);
+        env->UnRegisterDataReader(series[serieIndex]->nameComponent.toStdString(),
+                                  series[serieIndex]->nameProperty.toStdString(),
+                                  series[serieIndex]->Jx,
+                                  series[serieIndex]->Jy);
+        if (!series[serieIndex]->xNameComponent.isEmpty())
+        {
+            env->UnRegisterDataReader(series[serieIndex]->xNameComponent.toStdString(),
+                                      series[serieIndex]->xNameProperty.toStdString(),
+                                      series[serieIndex]->xJx < 0 ? 0 : series[serieIndex]->xJx,
+                                      series[serieIndex]->xJy < 0 ? 0 : series[serieIndex]->xJy);
+        }
     }
 
     delete series[serieIndex];
@@ -389,6 +437,20 @@ void UWatchChart::setAxisXmax(double value)
     requestUpdate();
 }
 
+void UWatchChart::setAxisXRange(double minValue, double maxValue)
+{
+    if (!axisX)
+        return;
+    if (!(maxValue > minValue))
+    {
+        const double pad = qMax(0.5, qAbs(minValue) * 0.01);
+        minValue -= pad;
+        maxValue = minValue + 2.0 * pad;
+    }
+    axisX->setRange(minValue, maxValue);
+    requestUpdate();
+}
+
 bool UWatchChart::getIsAxisXtrackable(void) const
 {
  return isAxisXtrackable;
@@ -396,14 +458,59 @@ bool UWatchChart::getIsAxisXtrackable(void) const
 
 void UWatchChart::updateTimeIntervals(double value)
 {
+    if (value < 0.001)
+        value = 0.001;
     setAxisXrange(value);
-    for(int i = 0; i < series.size(); i++)
+
+    RDK::UELockPtr<RDK::UEnvironment> env = RDK::GetEnvironmentLock();
+    for (int i = 0; i < series.size(); i++)
     {
-        if (series[i]->data_reader)
-            series[i]->data_reader->SetTimeInterval(value);
-        if (series[i]->x_data_reader)
-            series[i]->x_data_reader->SetTimeInterval(value);
+        UWatchSerie* serie = series[i];
+        if (!serie)
+            continue;
+        // XY readers keep SetTimeInterval(0) — do not overwrite with time window.
+        if (NMSDK::Plot::isXYFamily(serie->vizKind))
+            continue;
+
+        RDK::UControllerDataReader* reader = serie->data_reader;
+        if (env)
+        {
+            RDK::UControllerDataReader* live = env->GetDataReader(
+                serie->nameComponent.toStdString(),
+                serie->nameProperty.toStdString(),
+                serie->Jx < 0 ? 0 : serie->Jx,
+                serie->Jy < 0 ? 0 : serie->Jy);
+            if (live)
+            {
+                reader = live;
+                serie->data_reader = live;
+            }
+        }
+        if (!reader)
+            continue;
+
+        reader->SetTimeInterval(value);
+        if (reader->NumPoints > 0)
+            serie->windowSize = qMax(serie->windowSize, reader->NumPoints);
+
+        if (NMSDK::WatchDebug::enabled())
+        {
+            std::fprintf(stderr,
+                "[WatchDebug] updateTimeIntervals W=%.4f serie=%s Ti=%.4f NumPoints=%d\n",
+                value,
+                serie->nameComponent.isEmpty()
+                    ? "?"
+                    : (serie->nameComponent + QLatin1Char('.') + serie->nameProperty)
+                          .toLocal8Bit()
+                          .constData(),
+                reader->TimeInterval,
+                reader->NumPoints);
+            std::fflush(stderr);
+        }
     }
+
+    // Axis extents are owned by Track in AUpdateInterface (single W invariant).
+    emit UpdateTabGuiSignal(false);
 }
 
 void UWatchChart::setAxisYmin(double value)
@@ -433,26 +540,27 @@ void UWatchChart::commitUpdate()
 
 void UWatchChart::updateAxes(double x_min, double x_max, double y_min, double y_max)
 {
-    // Если зум в зоне не чувствительности:
-    // изменение по любой из осей меньше 10% от текущего диапазона
-    if(std::abs(x_max-x_min) < 0.02*(getAxisXmax()-getAxisXmin()) || std::abs(y_max-y_min) < 0.02*(getAxisYmax()-getAxisYmin()))
-        return;
-
-    // Если зум обратный, то восстанавливаем начальные значения
-    if(x_max < x_min || y_max < y_min)
+    // Reverse ROI first (before dead-zone): restores axes + Track.
+    if (x_max < x_min || y_max < y_min)
     {
         restoreInitialAxesState();
+        setInteractionTrackLatest(true);
+        emit UpdateTabGuiSignal(false);
+        return;
     }
-    // В другом случае - зум
-    else
-    {
-        //updateTimeIntervals(x_range);
-        setAxisXmin(x_min);
-        setAxisXmax(x_max);
-        setAxisYmin(y_min);
-        setAxisYmax(y_max);
 
-    }
+    // Dead-zone only for forward zoom: ignore if BOTH axes barely moved.
+    const double xSpan = getAxisXmax() - getAxisXmin();
+    const double ySpan = getAxisYmax() - getAxisYmin();
+    if (std::abs(x_max - x_min) < 0.02 * xSpan
+        && std::abs(y_max - y_min) < 0.02 * ySpan)
+        return;
+
+    setAxisXmin(x_min);
+    setAxisXmax(x_max);
+    setAxisYmin(y_min);
+    setAxisYmax(y_max);
+
     emit UpdateTabGuiSignal(false);
 }
 
@@ -774,6 +882,7 @@ void UWatchChart::setInteractionPan(bool pan)
     {
         chartView->setRubberBand(QChartView::NoRubberBand);
         chartView->setDragMode(QGraphicsView::ScrollHandDrag);
+        chartView->setRoiCaptureEnabled(false);
         if (actPan)
             actPan->setChecked(true);
         if (actBoxZoom)
@@ -783,6 +892,7 @@ void UWatchChart::setInteractionPan(bool pan)
     {
         chartView->setDragMode(QGraphicsView::NoDrag);
         chartView->setRubberBand(QChartView::RectangleRubberBand);
+        chartView->setRoiCaptureEnabled(true);
         if (actPan)
             actPan->setChecked(false);
         if (actBoxZoom)
@@ -891,7 +1001,7 @@ void UWatchChart::applyPlotPanelMeta(const NMSDK::Plot::PlotPanel& panel)
     setAxisYname(panel.axisYName);
     setAxisYmin(panel.axisYMin);
     setAxisYmax(panel.axisYMax);
-    setAxisXrange(panel.axisXRange);
+    updateTimeIntervals(panel.axisXRange > 0.0 ? panel.axisXRange : 5.0);
     const bool xy = panel.viz == NMSDK::Plot::VizKind::XYLine
                     || panel.viz == NMSDK::Plot::VizKind::XYScatter;
     if (xy && panel.axisXMax > panel.axisXMin)

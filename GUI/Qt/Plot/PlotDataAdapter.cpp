@@ -2,6 +2,11 @@
 
 #include "../../Core/Engine/UController.h"
 #include "../../Core/Engine/UEnvironment.h"
+#include "../../Core/Math/MDMatrix.h"
+#include "../../Core/Math/MDVector.h"
+
+#include "rdk.h"
+#include <rdk_application.h>
 
 #include <algorithm>
 #include <cmath>
@@ -56,26 +61,36 @@ QVector<QPointF> sampleTimeSeries(RDK::UEnvironment* env,
     if (!reader)
         return points;
 
-    std::list<double> XData = reader->XData;
-    std::list<double> YData = reader->YData;
+    // Pass-through: reader owns history (TimeInterval / NumPoints). Do not trim by
+    // windowSize or TimeInterval again — that competed with Track and clipped ends.
+    const std::list<double>& XData = reader->XData;
+    const std::list<double>& YData = reader->YData;
+    const int n = static_cast<int>(qMin(XData.size(), YData.size()));
+    if (n <= 0)
+        return points;
 
-    const int maxPoints = series.binding.windowSize > 0 ? series.binding.windowSize : 10000;
-    if (static_cast<int>(XData.size()) > maxPoints)
+    // Draw-budget decimation only; always keep first and last samples.
+    constexpr int kDrawBudget = 8000;
+    points.reserve(n > kDrawBudget ? kDrawBudget + 1 : n);
+    if (n <= kDrawBudget)
     {
-        auto xIt = XData.begin();
-        auto yIt = YData.begin();
-        std::advance(xIt, static_cast<int>(XData.size()) - maxPoints);
-        std::advance(yIt, static_cast<int>(YData.size()) - maxPoints);
-        XData.erase(XData.begin(), xIt);
-        YData.erase(YData.begin(), yIt);
+        auto itx = XData.begin();
+        auto ity = YData.begin();
+        for (int i = 0; i < n; ++i, ++itx, ++ity)
+            points.push_back(QPointF(*itx, *ity + yOffset));
     }
-
-    points.reserve(static_cast<int>(XData.size()));
-    for (auto itx = XData.begin(), ity = YData.begin();
-         itx != XData.end() && ity != YData.end();
-         ++itx, ++ity)
+    else
     {
-        points.push_back(QPointF(*itx, *ity + yOffset));
+        const int step = (n + kDrawBudget - 1) / kDrawBudget;
+        auto itx = XData.begin();
+        auto ity = YData.begin();
+        for (int i = 0; i < n; ++i, ++itx, ++ity)
+        {
+            if (i == 0 || i == n - 1 || (i % step) == 0)
+                points.push_back(QPointF(*itx, *ity + yOffset));
+        }
+        if (points.size() >= 2 && points[points.size() - 2] == points.last())
+            points.remove(points.size() - 2);
     }
     return points;
 }
@@ -197,6 +212,149 @@ QVector<QPointF> samplePropertyPair(RDK::UEnvironment* env,
     if (haveYSim)
         lastYSimTime = ySim;
     return sortedByAscendingX(ring);
+}
+
+namespace {
+
+bool readSliceVector(const PropertyRef& prop, QVector<double>& out)
+{
+    out.clear();
+    if (prop.component.isEmpty() || prop.property.isEmpty())
+        return false;
+
+    const std::string comp = prop.component.toStdString();
+    const std::string name = prop.property.toStdString();
+
+    RDK::UELockPtr<RDK::UEngine> engine = RDK::GetEngineLock();
+    if (!engine)
+        return false;
+
+    // Try matrix double
+    try
+    {
+        RDK::MDMatrix<double> m =
+            engine->Model_GetComponentPropertyData<RDK::MDMatrix<double>>(comp.c_str(), name.c_str());
+        const int rows = m.GetRows();
+        const int cols = m.GetCols();
+        if (prop.slice == SliceKind::Row)
+        {
+            const int r = prop.jx < 0 ? 0 : prop.jx;
+            if (r < 0 || r >= rows)
+                return false;
+            out.reserve(cols);
+            for (int c = 0; c < cols; ++c)
+                out.push_back(m(r, c));
+            return !out.isEmpty();
+        }
+        if (prop.slice == SliceKind::Column)
+        {
+            const int c = prop.jy < 0 ? 0 : prop.jy;
+            if (c < 0 || c >= cols)
+                return false;
+            out.reserve(rows);
+            for (int r = 0; r < rows; ++r)
+                out.push_back(m(r, c));
+            return !out.isEmpty();
+        }
+        // Cell: single value
+        const int r = prop.jx < 0 ? 0 : prop.jx;
+        const int c = prop.jy < 0 ? 0 : prop.jy;
+        if (r >= 0 && r < rows && c >= 0 && c < cols)
+        {
+            out.push_back(m(r, c));
+            return true;
+        }
+        return false;
+    }
+    catch (...)
+    {
+    }
+
+    try
+    {
+        RDK::MDMatrix<int> m =
+            engine->Model_GetComponentPropertyData<RDK::MDMatrix<int>>(comp.c_str(), name.c_str());
+        const int rows = m.GetRows();
+        const int cols = m.GetCols();
+        if (prop.slice == SliceKind::Row)
+        {
+            const int r = prop.jx < 0 ? 0 : prop.jx;
+            if (r < 0 || r >= rows)
+                return false;
+            out.reserve(cols);
+            for (int c = 0; c < cols; ++c)
+                out.push_back(static_cast<double>(m(r, c)));
+            return !out.isEmpty();
+        }
+        if (prop.slice == SliceKind::Column)
+        {
+            const int c = prop.jy < 0 ? 0 : prop.jy;
+            if (c < 0 || c >= cols)
+                return false;
+            out.reserve(rows);
+            for (int r = 0; r < rows; ++r)
+                out.push_back(static_cast<double>(m(r, c)));
+            return !out.isEmpty();
+        }
+        const int r = prop.jx < 0 ? 0 : prop.jx;
+        const int c = prop.jy < 0 ? 0 : prop.jy;
+        if (r >= 0 && r < rows && c >= 0 && c < cols)
+        {
+            out.push_back(static_cast<double>(m(r, c)));
+            return true;
+        }
+        return false;
+    }
+    catch (...)
+    {
+    }
+
+    try
+    {
+        RDK::MDVector<double> v =
+            engine->Model_GetComponentPropertyData<RDK::MDVector<double>>(comp.c_str(), name.c_str());
+        const int n = v.GetRows() > 0 ? v.GetRows() : v.GetCols();
+        out.reserve(n);
+        for (int i = 0; i < n; ++i)
+            out.push_back(v(i));
+        return !out.isEmpty();
+    }
+    catch (...)
+    {
+    }
+
+    try
+    {
+        RDK::MDVector<int> v =
+            engine->Model_GetComponentPropertyData<RDK::MDVector<int>>(comp.c_str(), name.c_str());
+        const int n = v.GetRows() > 0 ? v.GetRows() : v.GetCols();
+        out.reserve(n);
+        for (int i = 0; i < n; ++i)
+            out.push_back(static_cast<double>(v(i)));
+        return !out.isEmpty();
+    }
+    catch (...)
+    {
+    }
+
+    return false;
+}
+
+} // namespace
+
+QVector<QPointF> sampleMatrixSlicePair(const PlotSeries& series, double yOffset)
+{
+    QVector<double> xs;
+    QVector<double> ys;
+    if (!readSliceVector(series.binding.x.prop, xs) || !readSliceVector(series.binding.y.prop, ys))
+        return {};
+
+    const int n = qMin(xs.size(), ys.size());
+    QVector<QPointF> points;
+    points.reserve(n);
+    for (int i = 0; i < n; ++i)
+        points.push_back(QPointF(xs.at(i), ys.at(i) + yOffset));
+    return sortedByAscendingX(points);
 }
 
 } // namespace Plot

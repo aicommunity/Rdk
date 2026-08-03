@@ -899,12 +899,7 @@ void UEnvironment::RTCalculate(void)
  
  while(curtime-CurrentTime<timer_interval && i<elapsed_counter)
  {
-  Calculate();
-  for(size_t dri=0;dri<DataReaders.size();dri++)
-  {
-   if(DataReaders[dri].first)
-    DataReaders[dri].first->AUpdate();
-  }
+  Calculate(); // updates DataReaders once per step, then advances model time
 
   ++i;
   // Оптимизация: обновляем системное время для проверки условия цикла, но проверку MaxCalcTime делаем реже
@@ -993,12 +988,7 @@ void UEnvironment::FastCalculate(double calc_interval)
 
  while(i<elapsed_counter)
  {
-  Calculate();
-  for(size_t dri=0;dri<DataReaders.size();dri++)
-  {
-   if(DataReaders[dri].first)
-    DataReaders[dri].first->AUpdate();
-  }
+  Calculate(); // updates DataReaders once per step, then advances model time
 
   ++i;
   if(MaxCalcTime>0.0 && Time.GetDoubleTime()>=MaxCalcTime)
