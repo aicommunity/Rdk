@@ -4,6 +4,7 @@
 #include "Plot/PlotDataAdapter.h"
 #include "Plot/PlotSettingsSidePanel.h"
 #include "Plot/PlotSurface.h"
+#include "Plot/UWatchLayoutDialog.h"
 #include "Plot/UWatchSeriesWizard.h"
 #include "../../Core/Serialize/USerStorageXML.h"
 
@@ -309,11 +310,6 @@ void UWatchTab::onChartActivated(int chartIndex)
     setActiveChart(chartIndex);
 }
 
-void UWatchTab::onInspectorActiveChartChanged(int chartIndex)
-{
-    setActiveChart(chartIndex);
-}
-
 void UWatchTab::showInspector(PlotInspectorPage page, int chartIndex)
 {
     ensureSettingsPanel();
@@ -347,7 +343,8 @@ void UWatchTab::updateInspectorSplitterSizes(bool show)
     {
         settingsPanel->show();
         const int total = qMax(mainSplitter->width(), 400);
-        mainSplitter->setSizes({total - 300, 300});
+        const int panelW = 360;
+        mainSplitter->setSizes({qMax(1, total - panelW), panelW});
     }
     else
     {
@@ -358,7 +355,7 @@ void UWatchTab::updateInspectorSplitterSizes(bool show)
 
 void UWatchTab::layoutOptionTriggered()
 {
-    showInspector(PlotInspectorPage::Layout, m_activeChartIndex);
+    UWatchLayoutDialog::execForTab(this, this);
 }
 
 void UWatchTab::seriesOptionTriggered()
@@ -388,8 +385,6 @@ void UWatchTab::ensureSettingsPanel()
     mainSplitter->setStretchFactor(1, 0);
     mainSplitter->setCollapsible(1, true);
     connect(settingsPanel, &PlotSettingsSidePanel::requestHide, this, &UWatchTab::hideInspector);
-    connect(settingsPanel, &PlotSettingsSidePanel::activeChartChanged,
-            this, &UWatchTab::onInspectorActiveChartChanged);
     settingsPanel->hide();
     updateInspectorSplitterSizes(false);
 }

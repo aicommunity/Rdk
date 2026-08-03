@@ -1,6 +1,8 @@
 #include "UWatchChart.h"
 #include "ui_UWatchChart.h"
 #include "UStyleManager.h"
+#include <QPainter>
+#include <QPaintEvent>
 #include <QVBoxLayout>
 #include <QToolBar>
 #include <QAction>
@@ -19,6 +21,7 @@ UWatchChart::UWatchChart(QWidget *parent) :
     pendingUpdate(false)
 {
     setAccessibleName("UWatchChart");
+    setObjectName(QStringLiteral("UWatchChart"));
     ui->setupUi(this);
 
     verticalLayout = new QVBoxLayout(this);
@@ -47,7 +50,8 @@ UWatchChart::UWatchChart(QWidget *parent) :
     verticalLayout->addWidget(modeBar);
     verticalLayout->addWidget(chartView);
     verticalLayout->setSpacing(0);
-    verticalLayout->setContentsMargins(0,0,0,0);
+    // Leave room so selection chrome in paintEvent is not covered by children.
+    verticalLayout->setContentsMargins(3, 3, 3, 3);
 
     //создаем и настраиваем оси
     axisX = new QValueAxis(this);
@@ -616,13 +620,40 @@ void UWatchChart::chartOptionSlot()
 
 void UWatchChart::setSelected(bool selected)
 {
-    m_selected = selected;
-    if (!chartView)
+    if (m_selected == selected)
+    {
+        update();
         return;
-    if (selected)
-        chartView->setStyleSheet(QStringLiteral("QChartView { border: 2px solid #2F80ED; }"));
+    }
+    m_selected = selected;
+    update();
+}
+
+void UWatchChart::paintEvent(QPaintEvent* event)
+{
+    QWidget::paintEvent(event);
+
+    const bool multiChart = WatchTab && WatchTab->countGraphs() > 1;
+    if (!multiChart)
+        return;
+
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing, false);
+    if (m_selected)
+    {
+        QPen pen(QColor(47, 128, 237), 3);
+        pen.setJoinStyle(Qt::MiterJoin);
+        painter.setPen(pen);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawRect(rect().adjusted(1, 1, -2, -2));
+    }
     else
-        chartView->setStyleSheet(QStringLiteral("QChartView { border: 2px solid transparent; }"));
+    {
+        QPen pen(QColor(154, 160, 166), 1);
+        painter.setPen(pen);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawRect(rect().adjusted(0, 0, -1, -1));
+    }
 }
 
 void UWatchChart::mousePressEvent(QMouseEvent *event)

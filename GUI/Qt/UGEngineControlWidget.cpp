@@ -1608,12 +1608,16 @@ void UGEngineControlWidget::actionWatchWindow()
     {
         watchWindow->show();
         watchWindow->showNormal();
+        watchWindow->raise();
+        watchWindow->activateWindow();
     }
     else
     {
         watchWindow = new UWatch(this);
         watchWindow->setWindowTitle("Watch window");
         watchWindow->show();
+        watchWindow->raise();
+        watchWindow->activateWindow();
     }
 }
 

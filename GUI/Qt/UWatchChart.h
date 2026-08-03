@@ -11,6 +11,7 @@
 #include <QWheelEvent>
 #include <QKeyEvent>
 #include <QMouseEvent>
+#include <QPaintEvent>
 
 #include <QString>
 #include <QVector>
@@ -194,6 +195,7 @@ private:
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
+    void paintEvent(QPaintEvent* event) override;
 
 private slots:
     //скролл и зум по оси Y

@@ -102,7 +102,6 @@ public slots:
     void chartsOptionTriggered();
     void openSettingsPanelSlot(int chartIndex, bool seriesPage);
     void onChartActivated(int chartIndex);
-    void onInspectorActiveChartChanged(int chartIndex);
 
 };
 
