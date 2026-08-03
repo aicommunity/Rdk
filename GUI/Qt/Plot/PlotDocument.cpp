@@ -99,6 +99,8 @@ void savePlotDocument(RDK::USerStorageXML& xml, const PlotDocument& doc)
         xml.WriteString("AxisYName", panel.axisYName.toStdString());
         xml.WriteFloat("AxisYmin", panel.axisYMin);
         xml.WriteFloat("AxisYmax", panel.axisYMax);
+        xml.WriteFloat("AxisXmin", panel.axisXMin);
+        xml.WriteFloat("AxisXmax", panel.axisXMax);
         xml.WriteFloat("AxisXrange", panel.axisXRange);
         xml.WriteInteger("LegendVisible", panel.legendVisible ? 1 : 0);
         xml.WriteInteger("TitleVisible", panel.titleVisible ? 1 : 0);
@@ -120,6 +122,8 @@ void savePlotDocument(RDK::USerStorageXML& xml, const PlotDocument& doc)
             xml.WriteInteger("SerieEnabled", serie.enabled ? 1 : 0);
             xml.WriteInteger("SerieChannel", serie.binding.channel);
             xml.WriteInteger("SerieWindowSize", serie.binding.windowSize);
+            xml.WriteInteger("SerieXyMinIntervalMs", serie.binding.xyMinIntervalMs);
+            xml.WriteFloat("SerieXyMinDistance", serie.binding.xyMinDistance);
 
             xml.WriteString("SerieNameComponent", serie.binding.y.prop.component.toStdString());
             xml.WriteString("SerieNameProperty", serie.binding.y.prop.property.toStdString());
@@ -173,6 +177,8 @@ bool loadPlotDocument(RDK::USerStorageXML& xml, PlotDocument& doc)
         panel.axisYName = QString::fromStdString(xml.ReadString("AxisYName", "Output parameter"));
         panel.axisYMin = xml.ReadFloat("AxisYmin", -1.0);
         panel.axisYMax = xml.ReadFloat("AxisYmax", 1.0);
+        panel.axisXMin = xml.ReadFloat("AxisXmin", 0.0);
+        panel.axisXMax = xml.ReadFloat("AxisXmax", 1.0);
         panel.axisXRange = xml.ReadFloat("AxisXrange", 5.0);
         panel.legendVisible = xml.ReadInteger("LegendVisible", 1) != 0;
         panel.titleVisible = xml.ReadInteger("TitleVisible", 1) != 0;
@@ -206,6 +212,8 @@ bool loadPlotDocument(RDK::USerStorageXML& xml, PlotDocument& doc)
             const int channel = xml.ReadInteger("SerieChannel", 0);
             serie.binding.channel = channel;
             serie.binding.windowSize = xml.ReadInteger("SerieWindowSize", 10000);
+            serie.binding.xyMinIntervalMs = xml.ReadInteger("SerieXyMinIntervalMs", 0);
+            serie.binding.xyMinDistance = xml.ReadFloat("SerieXyMinDistance", 0.0);
 
             // Role fields (SerieYKind/…) — источник истины, даже если schemaVersion
             // в файле отсутствует или равен 1 (частично записанный v2).

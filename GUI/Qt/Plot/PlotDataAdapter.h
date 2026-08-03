@@ -29,8 +29,9 @@ QVector<QPointF> samplePropertyPair(RDK::UEnvironment* env,
                                     const PlotSeries& series,
                                     double yOffset,
                                     QVector<QPointF>& ring,
-                                    int& lastXCount,
-                                    int& lastYCount);
+                                    double& lastXSimTime,
+                                    double& lastYSimTime,
+                                    double& lastAcceptSimTime);
 
 class IPlotDataAdapter
 {
@@ -40,8 +41,9 @@ public:
                                     const PlotSeries& series,
                                     double yOffset,
                                     QVector<QPointF>* xyRing,
-                                    int* lastXCount,
-                                    int* lastYCount) = 0;
+                                    double* lastXSimTime,
+                                    double* lastYSimTime,
+                                    double* lastAcceptSimTime) = 0;
 };
 
 class TimeSeriesAdapter : public IPlotDataAdapter
@@ -51,12 +53,14 @@ public:
                             const PlotSeries& series,
                             double yOffset,
                             QVector<QPointF>* xyRing,
-                            int* lastXCount,
-                            int* lastYCount) override
+                            double* lastXSimTime,
+                            double* lastYSimTime,
+                            double* lastAcceptSimTime) override
     {
         Q_UNUSED(xyRing);
-        Q_UNUSED(lastXCount);
-        Q_UNUSED(lastYCount);
+        Q_UNUSED(lastXSimTime);
+        Q_UNUSED(lastYSimTime);
+        Q_UNUSED(lastAcceptSimTime);
         return sampleTimeSeries(env, series, yOffset);
     }
 };
@@ -68,12 +72,14 @@ public:
                             const PlotSeries& series,
                             double yOffset,
                             QVector<QPointF>* xyRing,
-                            int* lastXCount,
-                            int* lastYCount) override
+                            double* lastXSimTime,
+                            double* lastYSimTime,
+                            double* lastAcceptSimTime) override
     {
-        if (!xyRing || !lastXCount || !lastYCount)
+        if (!xyRing || !lastXSimTime || !lastYSimTime || !lastAcceptSimTime)
             return {};
-        return samplePropertyPair(env, series, yOffset, *xyRing, *lastXCount, *lastYCount);
+        return samplePropertyPair(env, series, yOffset, *xyRing, *lastXSimTime, *lastYSimTime,
+                                  *lastAcceptSimTime);
     }
 };
 

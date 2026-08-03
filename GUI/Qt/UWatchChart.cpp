@@ -3,6 +3,7 @@
 #include "UStyleManager.h"
 #include <QPainter>
 #include <QPaintEvent>
+#include <QPen>
 #include <QVBoxLayout>
 #include <QToolBar>
 #include <QAction>
@@ -302,6 +303,15 @@ void UWatchChart::createSerieXY(int channelIndex,
             NMSDK::Plot::PropertyRef{yComponent, yProperty, yJx, yJy}),
         viz);
 
+    // Markers so stepped X dwells read as points connected by segments.
+    series.last()->setPointsVisible(true);
+    if (viz == NMSDK::Plot::VizKind::XYScatter)
+    {
+        QPen p = series.last()->pen();
+        p.setStyle(Qt::NoPen);
+        series.last()->setPen(p);
+    }
+
     RDK::UELockPtr<RDK::UEnvironment> env = RDK::GetEnvironmentLock();
     if (env)
     {
@@ -310,9 +320,9 @@ void UWatchChart::createSerieXY(int channelIndex,
         series.last()->data_reader = env->RegisterDataReader(
             yComponent.toStdString(), yProperty.toStdString(), yJx < 0 ? 0 : yJx, yJy < 0 ? 0 : yJy);
         if (series.last()->x_data_reader)
-            series.last()->x_data_reader->SetTimeInterval(axisXrange);
+            series.last()->x_data_reader->SetTimeInterval(0); // keep long history; XY uses latest values
         if (series.last()->data_reader)
-            series.last()->data_reader->SetTimeInterval(axisXrange);
+            series.last()->data_reader->SetTimeInterval(0);
     }
 
     if (vizKind == NMSDK::Plot::VizKind::TimeSeries)
@@ -853,6 +863,8 @@ NMSDK::Plot::PlotPanel UWatchChart::toPlotPanel() const
     panel.axisYName = axisY ? axisY->titleText() : QString();
     panel.axisYMin = axisY ? axisY->min() : -1.0;
     panel.axisYMax = axisY ? axisY->max() : 1.0;
+    panel.axisXMin = axisX ? axisX->min() : 0.0;
+    panel.axisXMax = axisX ? axisX->max() : 1.0;
     panel.axisXRange = axisXrange;
     panel.legendVisible = m_legendVisible;
     panel.titleVisible = m_titleVisible;
@@ -880,6 +892,13 @@ void UWatchChart::applyPlotPanelMeta(const NMSDK::Plot::PlotPanel& panel)
     setAxisYmin(panel.axisYMin);
     setAxisYmax(panel.axisYMax);
     setAxisXrange(panel.axisXRange);
+    const bool xy = panel.viz == NMSDK::Plot::VizKind::XYLine
+                    || panel.viz == NMSDK::Plot::VizKind::XYScatter;
+    if (xy && panel.axisXMax > panel.axisXMin)
+    {
+        setAxisXmin(panel.axisXMin);
+        setAxisXmax(panel.axisXMax);
+    }
     setLegendVisible(panel.legendVisible);
     setTitleVisible(panel.titleVisible);
     isAxisXtrackable = panel.trackLatest;

@@ -3,7 +3,10 @@
 #include "../../Core/Engine/UController.h"
 #include "../../Core/Engine/UEnvironment.h"
 
+#include <algorithm>
+#include <cmath>
 #include <list>
+#include <QtGlobal>
 
 namespace NMSDK
 {
@@ -26,6 +29,22 @@ bool latestReaderValue(RDK::UControllerDataReader* reader, double& outValue)
         return false;
     outValue = reader->YData.back();
     return true;
+}
+
+static bool latestReaderSimTime(RDK::UControllerDataReader* reader, double& outTime)
+{
+    if (!reader || reader->XData.empty())
+        return false;
+    outTime = reader->XData.back();
+    return true;
+}
+
+static QVector<QPointF> sortedByAscendingX(const QVector<QPointF>& ring)
+{
+    QVector<QPointF> out = ring;
+    std::stable_sort(out.begin(), out.end(),
+                     [](const QPointF& a, const QPointF& b) { return a.x() < b.x(); });
+    return out;
 }
 
 QVector<QPointF> sampleTimeSeries(RDK::UEnvironment* env,
@@ -65,32 +84,119 @@ QVector<QPointF> samplePropertyPair(RDK::UEnvironment* env,
                                     const PlotSeries& series,
                                     double yOffset,
                                     QVector<QPointF>& ring,
-                                    int& lastXCount,
-                                    int& lastYCount)
+                                    double& lastXSimTime,
+                                    double& lastYSimTime,
+                                    double& lastAcceptSimTime)
 {
     RDK::UControllerDataReader* xReader = getPropertyReader(env, series.binding.x.prop);
     RDK::UControllerDataReader* yReader = getPropertyReader(env, series.binding.y.prop);
     if (!xReader || !yReader)
-        return ring;
+        return sortedByAscendingX(ring);
 
-    const int xCount = static_cast<int>(xReader->YData.size());
-    const int yCount = static_cast<int>(yReader->YData.size());
-    if (xCount > 0 && yCount > 0 && (xCount != lastXCount || yCount != lastYCount))
+    if (xReader->YData.empty() || yReader->YData.empty())
+        return sortedByAscendingX(ring);
+
+    // Gate on sim-time (XData.back), not FIFO size — size stays fixed once full.
+    double xSim = 0.0;
+    double ySim = 0.0;
+    const bool haveXSim = latestReaderSimTime(xReader, xSim);
+    const bool haveYSim = latestReaderSimTime(yReader, ySim);
+    if (!haveXSim && !haveYSim)
+        return sortedByAscendingX(ring);
+
+    const bool xChanged = haveXSim && (lastXSimTime < 0.0 || xSim != lastXSimTime);
+    const bool yChanged = haveYSim && (lastYSimTime < 0.0 || ySim != lastYSimTime);
+    if (!xChanged && !yChanged)
+        return sortedByAscendingX(ring);
+
+    double xv = 0.0;
+    double yv = 0.0;
+    if (!latestReaderValue(xReader, xv) || !latestReaderValue(yReader, yv))
     {
-        double xv = 0.0;
-        double yv = 0.0;
-        if (latestReaderValue(xReader, xv) && latestReaderValue(yReader, yv))
-        {
-            ring.push_back(QPointF(xv, yv + yOffset));
-            const int maxPoints =
-                series.binding.windowSize > 0 ? series.binding.windowSize : 10000;
-            while (ring.size() > maxPoints)
-                ring.remove(0);
-        }
-        lastXCount = xCount;
-        lastYCount = yCount;
+        if (haveXSim)
+            lastXSimTime = xSim;
+        if (haveYSim)
+            lastYSimTime = ySim;
+        return sortedByAscendingX(ring);
     }
-    return ring;
+
+    const QPointF candidate(xv, yv + yOffset);
+
+    double simTime = 0.0;
+    bool haveSim = false;
+    if (haveYSim)
+    {
+        simTime = ySim;
+        haveSim = true;
+    }
+    else if (haveXSim)
+    {
+        simTime = xSim;
+        haveSim = true;
+    }
+
+    // Same-X dwell: update existing X anywhere in the ring (Y(x) is a function of X).
+    constexpr double kSameXRel = 1e-9;
+    constexpr double kSameXAbs = 1e-12;
+    for (int i = 0; i < ring.size(); ++i)
+    {
+        const QPointF& pt = ring.at(i);
+        const double tol = qMax(kSameXAbs, kSameXRel * qMax(qAbs(pt.x()), qAbs(candidate.x())));
+        if (qAbs(pt.x() - candidate.x()) <= tol)
+        {
+            ring[i] = candidate;
+            if (haveSim)
+                lastAcceptSimTime = simTime;
+            if (haveXSim)
+                lastXSimTime = xSim;
+            if (haveYSim)
+                lastYSimTime = ySim;
+            return sortedByAscendingX(ring);
+        }
+    }
+
+    bool accept = true;
+    if (accept && series.binding.xyMinIntervalMs > 0 && haveSim
+        && lastAcceptSimTime >= 0.0)
+    {
+        const double minGapSec = series.binding.xyMinIntervalMs / 1000.0;
+        if ((simTime - lastAcceptSimTime) < minGapSec)
+            accept = false;
+    }
+
+    // Near-duplicate: reject when close on BOTH axes to any existing point.
+    if (accept && series.binding.xyMinDistance > 0.0 && !ring.isEmpty())
+    {
+        const double minD = series.binding.xyMinDistance;
+        for (const QPointF& pt : ring)
+        {
+            const double dx = qAbs(pt.x() - candidate.x());
+            const double dy = qAbs(pt.y() - candidate.y());
+            if (dx < minD && dy < minD)
+            {
+                accept = false;
+                break;
+            }
+        }
+    }
+
+    if (accept)
+    {
+        ring.push_back(candidate);
+        if (haveSim)
+            lastAcceptSimTime = simTime;
+        const int maxPoints =
+            series.binding.windowSize > 0 ? series.binding.windowSize : 2000;
+        // Chronological FIFO: drop oldest samples (ring stays time-ordered).
+        while (ring.size() > maxPoints)
+            ring.remove(0);
+    }
+
+    if (haveXSim)
+        lastXSimTime = xSim;
+    if (haveYSim)
+        lastYSimTime = ySim;
+    return sortedByAscendingX(ring);
 }
 
 } // namespace Plot

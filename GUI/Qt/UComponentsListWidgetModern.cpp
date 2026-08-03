@@ -680,7 +680,21 @@ void UComponentsListWidgetModern::AUpdateInterface()
     {
         rebuildTreeFromSnapshot(lastSnapshot);
         if(expandedItems.isEmpty())
+        {
             componentsTree->expandAll();
+        }
+        else
+        {
+            QTreeWidgetItemIterator restoreIterator(componentsTree);
+            while (*restoreIterator)
+            {
+                QTreeWidgetItem *item = *restoreIterator;
+                const QString itemName = item->data(0, Qt::UserRole).toString();
+                if (expandedItems.contains(itemName))
+                    item->setExpanded(true);
+                ++restoreIterator;
+            }
+        }
         restoreTreeSelection(oldRootItem, oldSelectedItem);
         m_treeRebuildRetryCount = 0;
     }
@@ -1593,12 +1607,19 @@ catch (std::exception &exception)
 }
 
 void UComponentsListWidgetModern::handleSnapshotUpdated(NMSDK::UGuiSnapshotPtr snapshot,
-                                                  const QStringList &,
-                                                  const QStringList &,
-                                                  const QStringList &)
+                                                  const QStringList &added,
+                                                  const QStringList &removed,
+                                                  const QStringList &changed)
 {
     lastSnapshot = snapshot;
     if (!snapshot)
+        return;
+
+    // Structural rebuild only when components added/removed/renamed (fingerprint).
+    // Property-value ticks must not clear()/rebuild the tree (expand flicker).
+    const bool treeEmpty = !componentsTree || componentsTree->topLevelItemCount() == 0;
+    const bool structureChanged = !added.isEmpty() || !removed.isEmpty() || !changed.isEmpty();
+    if (!treeEmpty && !structureChanged)
         return;
 
     if (UpdateInterfaceFlag) {
@@ -1639,17 +1660,27 @@ void UComponentsListWidgetModern::rebuildTreeFromSnapshot(const NMSDK::UGuiSnaps
     QHash<QString, QTreeWidgetItem*> items;
     items.insert(QString(), rootItem);
 
+    // Pass 1: create all items detached (QHash key order is undefined).
     const auto componentNames = snapshot->Components.keys();
     for (const QString &name : componentNames) {
         const auto summary = snapshot->Components.value(name);
-        QTreeWidgetItem *parent = items.value(summary.ParentName, rootItem);
-        if (!parent)
-            parent = rootItem;
-        auto *item = new QTreeWidgetItem(parent);
+        auto *item = new QTreeWidgetItem();
         item->setText(0, summary.ShortName);
         item->setToolTip(0, summary.LongName + QStringLiteral("\n") + summary.ClassName);
         item->setData(0, Qt::UserRole, summary.LongName);
         items.insert(summary.LongName, item);
+    }
+
+    // Pass 2: attach under parent (or Model root).
+    for (const QString &name : componentNames) {
+        const auto summary = snapshot->Components.value(name);
+        QTreeWidgetItem *item = items.value(summary.LongName);
+        if (!item || item == rootItem)
+            continue;
+        QTreeWidgetItem *parent = items.value(summary.ParentName, rootItem);
+        if (!parent)
+            parent = rootItem;
+        parent->addChild(item);
     }
 
     applyFilter(rootItem);
@@ -2253,8 +2284,7 @@ void UComponentsListWidgetModern::showTreePopup()
     treePopupDialog->raise();
     treePopupDialog->activateWindow();
 
-    // Разворачиваем все элементы дерева
-    componentsTree->expandAll();
+    // Keep current expand state (do not expandAll — resets user navigation).
 
     // Устанавливаем фокус на поле фильтра
     filterLineEdit->setFocus();

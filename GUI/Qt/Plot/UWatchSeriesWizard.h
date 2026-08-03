@@ -45,6 +45,11 @@ struct UWatchSeriesWizardResult
     bool applyXRange = false;
     double xMin = 0.0;
     double xMax = 1.0;
+
+    /// XY sampling (ignored for TimeSeries)
+    int windowSize = 2000;
+    int xyMinIntervalMs = 0;
+    double xyMinDistance = 0.0;
 };
 
 class UWatchSeriesWizard : public QWizard
@@ -58,11 +63,17 @@ public:
 
     NMSDK::Plot::VizKind selectedViz() const;
     UWatchSeriesWizardResult::Form selectedForm() const;
+    void captureYSourceIntoResult();
+    void captureXSourceIntoResult();
     void captureSourcesIntoResult();
     void captureStyleIntoResult();
 
     UWatchChart* chart() const { return m_chart; }
     RDK::UApplication* app() const { return m_app; }
+
+    int ySourcePageId() const { return m_ySourcePageId; }
+    int xSourcePageId() const { return m_xSourcePageId; }
+    int stylePageId() const { return m_stylePageId; }
 
 public slots:
     void accept() override;
@@ -72,8 +83,12 @@ private:
     RDK::UApplication* m_app = nullptr;
     UWatchSeriesWizardResult m_result;
     QWizardPage* m_typePage = nullptr;
-    QWizardPage* m_sourcesPage = nullptr;
+    QWizardPage* m_ySourcePage = nullptr;
+    QWizardPage* m_xSourcePage = nullptr;
     QWizardPage* m_stylePage = nullptr;
+    int m_ySourcePageId = -1;
+    int m_xSourcePageId = -1;
+    int m_stylePageId = -1;
 };
 
 #endif // UWATCH_SERIES_WIZARD_H

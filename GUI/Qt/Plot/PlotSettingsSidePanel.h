@@ -48,6 +48,7 @@ private:
     void buildUi();
     void updateHero();
     void connectLiveApply();
+    void updateAxesModeVisibility();
 
     UWatchTab* m_tab = nullptr;
     int m_chartIndex = 0;
@@ -64,7 +65,10 @@ private:
     QLineEdit* m_axisYEdit = nullptr;
     QDoubleSpinBox* m_yMin = nullptr;
     QDoubleSpinBox* m_yMax = nullptr;
+    QDoubleSpinBox* m_xMin = nullptr;
+    QDoubleSpinBox* m_xMax = nullptr;
     QDoubleSpinBox* m_xRange = nullptr;
+    QLabel* m_xRangeLabel = nullptr;
     QCheckBox* m_trackLatest = nullptr;
     QCheckBox* m_legendVisible = nullptr;
     QCheckBox* m_titleVisible = nullptr;

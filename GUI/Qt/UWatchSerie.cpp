@@ -1,5 +1,6 @@
 #include "UWatchSerie.h"
 #include <QPen>
+#include <QtGlobal>
 
 UWatchSerie::UWatchSerie()
 {
@@ -31,7 +32,7 @@ NMSDK::Plot::DataBinding UWatchSerie::toBinding() const
     {
         PropertyRef xProp{xNameComponent, xNameProperty, xJx, xJy};
         PropertyRef yProp{nameComponent, nameProperty, Jx, Jy};
-        return makeXYBinding(indexChannel, xProp, yProp, windowSize);
+        return makeXYBinding(indexChannel, xProp, yProp, windowSize, xyMinIntervalMs, xyMinDistance);
     }
     return makeTimeSeriesBinding(indexChannel, nameComponent, nameProperty, Jx, Jy);
 }
@@ -42,6 +43,8 @@ void UWatchSerie::applyBinding(const NMSDK::Plot::DataBinding& binding, NMSDK::P
     vizKind = viz;
     indexChannel = binding.channel;
     windowSize = binding.windowSize > 0 ? binding.windowSize : 10000;
+    xyMinIntervalMs = qMax(0, binding.xyMinIntervalMs);
+    xyMinDistance = binding.xyMinDistance > 0.0 ? binding.xyMinDistance : 0.0;
 
     if (binding.y.kind == DataRoleKind::Property)
     {
@@ -66,8 +69,9 @@ void UWatchSerie::applyBinding(const NMSDK::Plot::DataBinding& binding, NMSDK::P
         xJy = -1;
         x_data_reader = nullptr;
         xyRing.clear();
-        xyLastXCount = -1;
-        xyLastYCount = -1;
+        xyLastXSimTime = -1.0;
+        xyLastYSimTime = -1.0;
+        xyLastAcceptSimTime = -1.0;
     }
 }
 

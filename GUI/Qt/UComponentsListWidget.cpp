@@ -1109,17 +1109,28 @@ void UComponentsListWidget::rebuildTreeFromSnapshot(const NMSDK::UGuiSnapshotPtr
     QHash<QString, QTreeWidgetItem*> items;
     items.insert(QString(), rootItem);
 
+    // Pass 1: create all items detached (QHash key order is undefined — child may
+    // appear before parent, which would attach to root if done in one pass).
     const auto componentNames = snapshot->Components.keys();
     for (const QString &name : componentNames) {
         const auto summary = snapshot->Components.value(name);
-        QTreeWidgetItem *parent = items.value(summary.ParentName, rootItem);
-        if (!parent)
-            parent = rootItem;
-        auto *item = new QTreeWidgetItem(parent);
+        auto *item = new QTreeWidgetItem();
         item->setText(0, summary.ShortName);
         item->setToolTip(0, summary.LongName + QStringLiteral("\n") + summary.ClassName);
         item->setData(0, Qt::UserRole, summary.LongName);
         items.insert(summary.LongName, item);
+    }
+
+    // Pass 2: attach under parent (or Model root).
+    for (const QString &name : componentNames) {
+        const auto summary = snapshot->Components.value(name);
+        QTreeWidgetItem *item = items.value(summary.LongName);
+        if (!item || item == rootItem)
+            continue;
+        QTreeWidgetItem *parent = items.value(summary.ParentName, rootItem);
+        if (!parent)
+            parent = rootItem;
+        parent->addChild(item);
     }
 
     applyFilter(rootItem);

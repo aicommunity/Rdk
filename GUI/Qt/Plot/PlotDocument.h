@@ -58,6 +58,10 @@ struct DataBinding
     DataRole x;
     DataRole y;
     int windowSize = 10000;
+    /// XY only: min model-time gap between accepted points (ms). 0 = off.
+    int xyMinIntervalMs = 0;
+    /// XY only: skip candidate if Euclidean distance to any ring point is below this. 0 = off.
+    double xyMinDistance = 0.0;
 };
 
 struct PlotSeriesVisual
@@ -86,6 +90,8 @@ struct PlotPanel
     QString axisYName = QStringLiteral("Output parameter");
     double axisYMin = -1.0;
     double axisYMax = 1.0;
+    double axisXMin = 0.0;
+    double axisXMax = 1.0;
     double axisXRange = 5.0;
     bool legendVisible = true;
     bool titleVisible = true;
@@ -127,11 +133,15 @@ inline DataBinding makeTimeSeriesBinding(int channel,
 inline DataBinding makeXYBinding(int channel,
                                  const PropertyRef& xProp,
                                  const PropertyRef& yProp,
-                                 int windowSize = 10000)
+                                 int windowSize = 2000,
+                                 int xyMinIntervalMs = 0,
+                                 double xyMinDistance = 0.0)
 {
     DataBinding b;
     b.channel = channel;
     b.windowSize = windowSize;
+    b.xyMinIntervalMs = xyMinIntervalMs;
+    b.xyMinDistance = xyMinDistance;
     b.x.kind = DataRoleKind::Property;
     b.x.prop = xProp;
     b.y.kind = DataRoleKind::Property;

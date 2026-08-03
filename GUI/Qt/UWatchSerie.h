@@ -36,11 +36,14 @@ public:
 
     NMSDK::Plot::VizKind vizKind = NMSDK::Plot::VizKind::TimeSeries;
     int windowSize = 10000;
+    int xyMinIntervalMs = 0;
+    double xyMinDistance = 0.0;
 
-    // XY ring buffer runtime state
+    // XY ring buffer runtime state (gate on reader sim-time, not FIFO size)
     QVector<QPointF> xyRing;
-    int xyLastXCount = -1;
-    int xyLastYCount = -1;
+    double xyLastXSimTime = -1.0;
+    double xyLastYSimTime = -1.0;
+    double xyLastAcceptSimTime = -1.0;
 
     bool isOnline = true;
 

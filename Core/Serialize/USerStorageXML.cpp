@@ -14,6 +14,7 @@ See file license.txt for more information
 
 #include <string.h>
 #include <locale>
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include "USerStorageXML.h"
@@ -21,6 +22,29 @@ See file license.txt for more information
 #include "../System/rdk_system.h"
 
 namespace RDK {
+
+namespace {
+
+/// Parse float from XML wire format: accept '.' and legacy locale ',' decimals.
+double ParseXmlFloat(const char *text, double default_value)
+{
+ if(!text || !*text)
+  return default_value;
+
+ std::string normalized(text);
+ for(char &ch : normalized)
+ {
+  if(ch == ',')
+   ch = '.';
+ }
+ char *end = nullptr;
+ const double value = std::strtod(normalized.c_str(), &end);
+ if(end == normalized.c_str())
+  return default_value;
+ return value;
+}
+
+} // namespace
 
 // Методы
 // --------------------------
@@ -796,7 +820,7 @@ double USerStorageXML::ReadFloat(const std::string &name, double default_value)
  if(!SelectNode(name))
   return default_value;
 
- double res=atof(GetNodeText());
+ double res=ParseXmlFloat(GetNodeText().c_str(), default_value);
 
  SelectUp();
  return res;
@@ -807,7 +831,7 @@ double USerStorageXML::ReadFloat(const std::string &name, int node_index, double
  if(!SelectNode(name,node_index))
   return default_value;
 
- double res=atof(GetNodeText());
+ double res=ParseXmlFloat(GetNodeText().c_str(), default_value);
 
  SelectUp();
  return res;
@@ -818,7 +842,7 @@ double USerStorageXML::ReadFloat(int node_index, double default_value)
  if(!SelectNode(node_index))
   return default_value;
 
- double res=atof(GetNodeText());
+ double res=ParseXmlFloat(GetNodeText().c_str(), default_value);
 
  SelectUp();
  return res;
@@ -893,7 +917,8 @@ void USerStorageXML::WriteFloat(const std::string &name, double value)
  if(!SelectNode(name))
   AddNode(name);
 
- SetNodeText(sntoa(value));
+ // C-locale (dot decimal): sntoa(double) via stringstream inherits global locale.
+ SetNodeText(sntoa(value, 17));
 
  SelectUp();
 }

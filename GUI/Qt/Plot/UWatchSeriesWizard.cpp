@@ -2,6 +2,7 @@
 #include "UWatchSourcePickerWidget.h"
 
 #include "../UWatchChart.h"
+#include "../UWatchSerie.h"
 #include "../UStyleManager.h"
 #include "../UEngineSelectionSync.h"
 
@@ -10,16 +11,21 @@
 #include "../../Core/Engine/UContainerDescription.h"
 #include "../../Core/Engine/UStorage.h"
 
+#include <QAbstractButton>
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QFormLayout>
+#include <QGroupBox>
 #include <QHBoxLayout>
 #include <QIcon>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPixmap>
+#include <QScrollArea>
+#include <QFrame>
+#include <QSpinBox>
 #include <QToolButton>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -93,6 +99,15 @@ public:
 
     bool isComplete() const override { return true; }
 
+    int nextId() const override
+    {
+        if (!m_wizard)
+            return QWizardPage::nextId();
+        if (viz() == NMSDK::Plot::VizKind::TimeSeries)
+            return m_wizard->ySourcePageId();
+        return m_wizard->xSourcePageId();
+    }
+
 private:
     void rebuildFormItems()
     {
@@ -116,7 +131,9 @@ private:
             m_form->addItem(QObject::tr("Single cell / scalar pair"),
                             static_cast<int>(UWatchSeriesWizardResult::Form::SingleCell));
             m_form->setEnabled(false);
-            m_hint->setText(QObject::tr("X–Y same-tick pair: pick Y and X sources on the next page."));
+            m_hint->setText(QObject::tr(
+                "XY accumulates (x, y) pairs from two properties each Watch update — not a time axis. "
+                "Scalars are OK (parametric curve). Pick X then Y on the next pages; density on Style."));
         }
     }
 
@@ -126,42 +143,25 @@ private:
     QLabel* m_hint = nullptr;
 };
 
-class SourcesPage : public QWizardPage
+class YSourcePage : public QWizardPage
 {
 public:
-    explicit SourcesPage(UWatchSeriesWizard* wizard, QWidget* parent = nullptr)
+    explicit YSourcePage(UWatchSeriesWizard* wizard, QWidget* parent = nullptr)
         : QWizardPage(parent)
         , m_wizard(wizard)
     {
-        setTitle(QObject::tr("Data sources"));
-        setSubTitle(QObject::tr("Select component properties. Matrix cells are chosen inline."));
+        setTitle(QObject::tr("Y source"));
+        setSubTitle(QObject::tr("Select the Y property (and matrix cell if needed)."));
 
         auto* root = new QVBoxLayout(this);
-        m_yLabel = new QLabel(QObject::tr("Y source"), this);
-        m_yPicker = new UWatchSourcePickerWidget(this);
-        m_xLabel = new QLabel(QObject::tr("X source"), this);
-        m_xPicker = new UWatchSourcePickerWidget(this);
-
-        root->addWidget(m_yLabel);
-        root->addWidget(m_yPicker, 1);
-        root->addWidget(m_xLabel);
-        root->addWidget(m_xPicker, 1);
+        m_picker = new UWatchSourcePickerWidget(this);
+        root->addWidget(m_picker, 1);
 
         if (wizard)
-        {
-            m_yPicker->configureForWatch(wizard->app(), true);
-            m_xPicker->configureForWatch(wizard->app(), false);
-        }
+            m_picker->configureForWatch(wizard->app(), true);
 
-        connect(m_yPicker, &UWatchSourcePickerWidget::selectionChanged, this, [this]() {
-            emit completeChanged();
-            // Defer a second update so Next enablement settles after tree/matrix
-            // focus changes from the same click that selected the property.
-            QTimer::singleShot(0, this, [this]() { emit completeChanged(); });
-        });
-        connect(m_xPicker, &UWatchSourcePickerWidget::selectionChanged, this, [this]() {
-            emit completeChanged();
-            QTimer::singleShot(0, this, [this]() { emit completeChanged(); });
+        connect(m_picker, &UWatchSourcePickerWidget::selectionChanged, this, [this]() {
+            notifyComplete();
         });
     }
 
@@ -170,42 +170,107 @@ public:
         const auto viz = m_wizard->selectedViz();
         const auto form = m_wizard->selectedForm();
         const bool xy = (viz != NMSDK::Plot::VizKind::TimeSeries);
-        m_xLabel->setVisible(xy);
-        m_xPicker->setVisible(xy);
-        m_yLabel->setText(xy ? QObject::tr("Y source") : QObject::tr("Y(t) source"));
-
-        m_yPicker->setMatrixPickMode(formToPickMode(form));
-        m_xPicker->setMatrixPickMode(MatrixPickMode::SingleCell);
-        emit completeChanged();
+        setTitle(xy ? QObject::tr("Y source") : QObject::tr("Y(t) source"));
+        setSubTitle(xy ? QObject::tr("Select the Y property for the XY pair.")
+                       : QObject::tr("Select the Y property vs time."));
+        m_picker->setMatrixPickMode(xy ? MatrixPickMode::SingleCell : formToPickMode(form));
+        notifyComplete();
+        QTimer::singleShot(0, this, [this]() { notifyComplete(); });
     }
 
     bool isComplete() const override
     {
-        if (!m_yPicker || !m_yPicker->isComplete())
-            return false;
-        const auto viz = m_wizard->selectedViz();
-        if (viz == NMSDK::Plot::VizKind::TimeSeries)
-            return true;
-        if (!m_xPicker || !m_xPicker->isComplete())
-            return false;
-        return m_yPicker->cells().size() == 1;
+        return m_picker && m_picker->isComplete();
     }
 
     bool validatePage() override
     {
-        m_wizard->captureSourcesIntoResult();
-        return true;
+        m_wizard->captureYSourceIntoResult();
+        return isComplete();
     }
 
-    UWatchSourcePickerWidget* yPicker() const { return m_yPicker; }
-    UWatchSourcePickerWidget* xPicker() const { return m_xPicker; }
+    int nextId() const override
+    {
+        return m_wizard ? m_wizard->stylePageId() : QWizardPage::nextId();
+    }
+
+    UWatchSourcePickerWidget* picker() const { return m_picker; }
 
 private:
+    void notifyComplete()
+    {
+        emit completeChanged();
+        if (QWizard* w = wizard())
+        {
+            if (QAbstractButton* next = w->button(QWizard::NextButton))
+                next->setEnabled(isComplete());
+        }
+    }
+
     UWatchSeriesWizard* m_wizard = nullptr;
-    QLabel* m_yLabel = nullptr;
-    QLabel* m_xLabel = nullptr;
-    UWatchSourcePickerWidget* m_yPicker = nullptr;
-    UWatchSourcePickerWidget* m_xPicker = nullptr;
+    UWatchSourcePickerWidget* m_picker = nullptr;
+};
+
+class XSourcePage : public QWizardPage
+{
+public:
+    explicit XSourcePage(UWatchSeriesWizard* wizard, QWidget* parent = nullptr)
+        : QWizardPage(parent)
+        , m_wizard(wizard)
+    {
+        setTitle(QObject::tr("X source"));
+        setSubTitle(QObject::tr("Select the X property for the XY pair (not time)."));
+
+        auto* root = new QVBoxLayout(this);
+        m_picker = new UWatchSourcePickerWidget(this);
+        root->addWidget(m_picker, 1);
+
+        if (wizard)
+            m_picker->configureForWatch(wizard->app(), false);
+        m_picker->setMatrixPickMode(MatrixPickMode::SingleCell);
+
+        connect(m_picker, &UWatchSourcePickerWidget::selectionChanged, this, [this]() {
+            notifyComplete();
+        });
+    }
+
+    void initializePage() override
+    {
+        notifyComplete();
+        QTimer::singleShot(0, this, [this]() { notifyComplete(); });
+    }
+
+    bool isComplete() const override
+    {
+        return m_picker && m_picker->isComplete();
+    }
+
+    bool validatePage() override
+    {
+        m_wizard->captureXSourceIntoResult();
+        return isComplete();
+    }
+
+    int nextId() const override
+    {
+        return m_wizard ? m_wizard->ySourcePageId() : QWizardPage::nextId();
+    }
+
+    UWatchSourcePickerWidget* picker() const { return m_picker; }
+
+private:
+    void notifyComplete()
+    {
+        emit completeChanged();
+        if (QWizard* w = wizard())
+        {
+            if (QAbstractButton* next = w->button(QWizard::NextButton))
+                next->setEnabled(isComplete());
+        }
+    }
+
+    UWatchSeriesWizard* m_wizard = nullptr;
+    UWatchSourcePickerWidget* m_picker = nullptr;
 };
 
 class StylePage : public QWizardPage
@@ -216,19 +281,31 @@ public:
         , m_wizard(wizard)
     {
         setTitle(QObject::tr("Series style"));
-        setSubTitle(QObject::tr("Optional style and suggested axis range from class description."));
+        setSubTitle(QObject::tr("Style, axis limits (from ClDescr when available), XY sampling."));
 
-        auto* root = new QVBoxLayout(this);
+        auto* pageLayout = new QVBoxLayout(this);
+        pageLayout->setContentsMargins(0, 0, 0, 0);
+        auto* scroll = new QScrollArea(this);
+        scroll->setWidgetResizable(true);
+        scroll->setFrameShape(QFrame::NoFrame);
+        auto* content = new QWidget(scroll);
+        auto* root = new QVBoxLayout(content);
+        root->setContentsMargins(8, 8, 8, 8);
+        root->setSpacing(8);
+
         m_form = new QFormLayout();
-        m_name = new QLineEdit(this);
+        m_form->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+        m_form->setLabelAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        m_name = new QLineEdit(content);
         m_name->setPlaceholderText(QObject::tr("Auto"));
+        m_name->setMinimumWidth(160);
         m_form->addRow(QObject::tr("Series name"), m_name);
 
         auto* colorRow = new QHBoxLayout();
         m_colorGroup = new QButtonGroup(this);
         m_colorGroup->setExclusive(true);
 
-        auto* autoBtn = new QToolButton(this);
+        auto* autoBtn = new QToolButton(content);
         autoBtn->setText(QObject::tr("Auto"));
         autoBtn->setCheckable(true);
         autoBtn->setChecked(true);
@@ -245,7 +322,7 @@ public:
                                  : UStyleManager::instance()->getChartSeriesColor(i);
             QPixmap px(18, 18);
             px.fill(c);
-            auto* btn = new QToolButton(this);
+            auto* btn = new QToolButton(content);
             btn->setIcon(QIcon(px));
             btn->setIconSize(QSize(18, 18));
             btn->setCheckable(true);
@@ -256,41 +333,76 @@ public:
         colorRow->addStretch(1);
         m_form->addRow(QObject::tr("Color"), colorRow);
 
-        m_yShift = new QDoubleSpinBox(this);
+        m_yShift = new QDoubleSpinBox(content);
         m_yShift->setRange(-1e9, 1e9);
         m_yShift->setDecimals(3);
+        m_yShift->setMinimumWidth(120);
         m_form->addRow(QObject::tr("Y shift"), m_yShift);
 
-        m_rangeHint = new QLabel(this);
+        m_rangeHint = new QLabel(content);
         m_rangeHint->setWordWrap(true);
+        m_rangeHint->setStyleSheet(QStringLiteral("color: palette(mid);"));
         m_form->addRow(m_rangeHint);
 
-        m_applyYRange = new QCheckBox(QObject::tr("Apply suggested Y range to chart"), this);
-        m_yMin = new QDoubleSpinBox(this);
-        m_yMax = new QDoubleSpinBox(this);
-        m_yMin->setRange(-1e12, 1e12);
-        m_yMax->setRange(-1e12, 1e12);
-        m_yMin->setDecimals(6);
-        m_yMax->setDecimals(6);
+        auto makeSpin = [content]() {
+            auto* s = new QDoubleSpinBox(content);
+            s->setRange(-1e12, 1e12);
+            s->setDecimals(6);
+            s->setMinimumWidth(120);
+            return s;
+        };
+
+        m_applyYRange = new QCheckBox(QObject::tr("Apply Y range"), content);
+        m_yMin = makeSpin();
+        m_yMax = makeSpin();
         m_form->addRow(m_applyYRange);
         m_form->addRow(QObject::tr("Y min"), m_yMin);
         m_form->addRow(QObject::tr("Y max"), m_yMax);
 
-        m_applyXRange = new QCheckBox(QObject::tr("Apply suggested X range to chart"), this);
-        m_xMin = new QDoubleSpinBox(this);
-        m_xMax = new QDoubleSpinBox(this);
-        m_xMin->setRange(-1e12, 1e12);
-        m_xMax->setRange(-1e12, 1e12);
-        m_xMin->setDecimals(6);
-        m_xMax->setDecimals(6);
+        m_applyXRange = new QCheckBox(QObject::tr("Apply X range"), content);
+        m_xMin = makeSpin();
+        m_xMax = makeSpin();
         m_form->addRow(m_applyXRange);
         m_form->addRow(QObject::tr("X min"), m_xMin);
         m_form->addRow(QObject::tr("X max"), m_xMax);
 
         root->addLayout(m_form);
-        root->addStretch(1);
 
-        setXyRangeVisible(false);
+        m_samplingBox = new QGroupBox(QObject::tr("XY sampling"), content);
+        auto* samplingForm = new QFormLayout(m_samplingBox);
+        samplingForm->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
+        m_windowSize = new QSpinBox(m_samplingBox);
+        m_windowSize->setRange(10, 100000);
+        m_windowSize->setValue(2000);
+        m_windowSize->setMinimumWidth(120);
+        samplingForm->addRow(QObject::tr("Max points"), m_windowSize);
+
+        m_xyMinInterval = new QSpinBox(m_samplingBox);
+        m_xyMinInterval->setRange(0, 600000);
+        m_xyMinInterval->setSuffix(QObject::tr(" ms"));
+        m_xyMinInterval->setSpecialValueText(QObject::tr("Every update"));
+        m_xyMinInterval->setValue(0);
+        m_xyMinInterval->setMinimumWidth(120);
+        m_xyMinInterval->setToolTip(QObject::tr("Min model-time gap between accepted points. Layout interval polls sources."));
+        samplingForm->addRow(QObject::tr("Min interval"), m_xyMinInterval);
+
+        m_xyMinDistance = new QDoubleSpinBox(m_samplingBox);
+        m_xyMinDistance->setRange(0.0, 1e12);
+        m_xyMinDistance->setDecimals(6);
+        m_xyMinDistance->setSpecialValueText(QObject::tr("Off"));
+        m_xyMinDistance->setValue(0.0);
+        m_xyMinDistance->setMinimumWidth(120);
+        m_xyMinDistance->setToolTip(QObject::tr(
+            "Skip only if close to the last point on BOTH X and Y (|dx| and |dy| below this). "
+            "Does not scan the whole cloud."));
+        samplingForm->addRow(QObject::tr("Min distance"), m_xyMinDistance);
+
+        root->addWidget(m_samplingBox);
+        root->addStretch(1);
+        scroll->setWidget(content);
+        pageLayout->addWidget(scroll);
+
+        setXyControlsVisible(false);
     }
 
     void initializePage() override
@@ -311,8 +423,7 @@ public:
     QString seriesName() const { return m_name->text().trimmed(); }
     int colorIndex() const
     {
-        const int id = m_colorGroup ? m_colorGroup->checkedId() : -1;
-        return id;
+        return m_colorGroup ? m_colorGroup->checkedId() : -1;
     }
     double yShift() const { return m_yShift->value(); }
     bool applyYRange() const { return m_applyYRange->isChecked(); }
@@ -321,6 +432,9 @@ public:
     bool applyXRange() const { return m_applyXRange->isVisible() && m_applyXRange->isChecked(); }
     double xMin() const { return m_xMin->value(); }
     double xMax() const { return m_xMax->value(); }
+    int windowSize() const { return m_windowSize->value(); }
+    int xyMinIntervalMs() const { return m_xyMinInterval->value(); }
+    double xyMinDistance() const { return m_xyMinDistance->value(); }
 
 private:
     static bool lookupClDescrRange(const QString& component, const QString& property,
@@ -343,7 +457,6 @@ private:
             return false;
 
         const RDK::UPropertyDescription& pd = desc->GetPropertyDescription(property.toStdString());
-        // 2 = range, 4 = range with step; ValueList[0]=min, ValueList[1]=max
         if (pd.DataSelectionType != 2 && pd.DataSelectionType != 4)
         {
             note = QObject::tr("No range in class description for %1.%2")
@@ -369,7 +482,7 @@ private:
         return true;
     }
 
-    void setXyRangeVisible(bool xy)
+    void setXyControlsVisible(bool xy)
     {
         m_applyXRange->setVisible(xy);
         m_xMin->setVisible(xy);
@@ -381,6 +494,8 @@ private:
             if (QWidget* lab = m_form->labelForField(m_xMax))
                 lab->setVisible(xy);
         }
+        if (m_samplingBox)
+            m_samplingBox->setVisible(xy);
     }
 
     void refreshSuggestedRanges()
@@ -389,7 +504,7 @@ private:
             return;
         const auto& r = m_wizard->result();
         const bool xy = (r.viz != NMSDK::Plot::VizKind::TimeSeries);
-        setXyRangeVisible(xy);
+        setXyControlsVisible(xy);
 
         double ymin = -1.0;
         double ymax = 1.0;
@@ -458,6 +573,10 @@ private:
     QCheckBox* m_applyXRange = nullptr;
     QDoubleSpinBox* m_xMin = nullptr;
     QDoubleSpinBox* m_xMax = nullptr;
+    QGroupBox* m_samplingBox = nullptr;
+    QSpinBox* m_windowSize = nullptr;
+    QSpinBox* m_xyMinInterval = nullptr;
+    QDoubleSpinBox* m_xyMinDistance = nullptr;
 };
 
 } // namespace watch_wizard
@@ -468,17 +587,17 @@ UWatchSeriesWizard::UWatchSeriesWizard(UWatchChart* chart, RDK::UApplication* ap
     , m_app(app)
 {
     setWizardStyle(QWizard::ModernStyle);
-    // Finish only on the last page — early Finish on Sources silently no-op'd when
-    // accept() rejected incomplete state, which felt like a "dead" Next/Finish click.
     setOption(QWizard::HaveFinishButtonOnEarlyPages, false);
-    setMinimumSize(900, 640);
 
     m_typePage = new watch_wizard::TypeFormPage(this);
-    m_sourcesPage = new watch_wizard::SourcesPage(this);
+    m_ySourcePage = new watch_wizard::YSourcePage(this);
+    m_xSourcePage = new watch_wizard::XSourcePage(this);
     m_stylePage = new watch_wizard::StylePage(this);
     addPage(m_typePage);
-    addPage(m_sourcesPage);
-    addPage(m_stylePage);
+    m_xSourcePageId = addPage(m_xSourcePage);
+    m_ySourcePageId = addPage(m_ySourcePage);
+    m_stylePageId = addPage(m_stylePage);
+    setMinimumSize(720, 480);
 }
 
 NMSDK::Plot::VizKind UWatchSeriesWizard::selectedViz() const
@@ -491,14 +610,13 @@ UWatchSeriesWizardResult::Form UWatchSeriesWizard::selectedForm() const
     return static_cast<watch_wizard::TypeFormPage*>(m_typePage)->form();
 }
 
-void UWatchSeriesWizard::captureSourcesIntoResult()
+void UWatchSeriesWizard::captureYSourceIntoResult()
 {
     m_result.viz = selectedViz();
     m_result.form = selectedForm();
 
-    auto* sources = static_cast<watch_wizard::SourcesPage*>(m_sourcesPage);
-    auto* y = sources->yPicker();
-    auto* x = sources->xPicker();
+    auto* yPage = static_cast<watch_wizard::YSourcePage*>(m_ySourcePage);
+    auto* y = yPage ? yPage->picker() : nullptr;
     if (!y)
         return;
 
@@ -508,14 +626,27 @@ void UWatchSeriesWizard::captureSourcesIntoResult()
     m_result.yCells = y->cells();
     if (m_result.yCells.isEmpty())
         m_result.yCells.push_back(UWatchMatrixSelector::CellRef{0, 0});
+}
 
-    if (m_result.viz != NMSDK::Plot::VizKind::TimeSeries && x)
-    {
-        m_result.xComponent = x->componentLongName();
-        m_result.xProperty = x->propertyName();
-        const auto xc = x->cells();
-        m_result.xCell = xc.isEmpty() ? UWatchMatrixSelector::CellRef{0, 0} : xc.front();
-    }
+void UWatchSeriesWizard::captureXSourceIntoResult()
+{
+    m_result.viz = selectedViz();
+    auto* xPage = static_cast<watch_wizard::XSourcePage*>(m_xSourcePage);
+    auto* x = xPage ? xPage->picker() : nullptr;
+    if (!x || m_result.viz == NMSDK::Plot::VizKind::TimeSeries)
+        return;
+
+    m_result.xComponent = x->componentLongName();
+    m_result.xProperty = x->propertyName();
+    const auto xc = x->cells();
+    m_result.xCell = xc.isEmpty() ? UWatchMatrixSelector::CellRef{0, 0} : xc.front();
+}
+
+void UWatchSeriesWizard::captureSourcesIntoResult()
+{
+    captureYSourceIntoResult();
+    if (m_result.viz != NMSDK::Plot::VizKind::TimeSeries)
+        captureXSourceIntoResult();
 }
 
 void UWatchSeriesWizard::captureStyleIntoResult()
@@ -533,6 +664,9 @@ void UWatchSeriesWizard::captureStyleIntoResult()
     m_result.applyXRange = style->applyXRange();
     m_result.xMin = style->xMin();
     m_result.xMax = style->xMax();
+    m_result.windowSize = style->windowSize();
+    m_result.xyMinIntervalMs = style->xyMinIntervalMs();
+    m_result.xyMinDistance = style->xyMinDistance();
 }
 
 int UWatchSeriesWizard::applyToChart(UWatchChart* chart) const
@@ -580,22 +714,35 @@ int UWatchSeriesWizard::applyToChart(UWatchChart* chart) const
                              r.yComponent, r.yProperty, yc.jx, yc.jy,
                              r.yShift, r.viz);
         const int idx = chart->countSeries() - 1;
-        if (!r.seriesName.isEmpty())
-            chart->setSerieName(idx, r.seriesName);
-        applyColor(idx);
+        if (idx >= 0)
+        {
+            if (UWatchSerie* s = chart->getSerie(idx))
+            {
+                s->windowSize = r.windowSize > 0 ? r.windowSize : 2000;
+                s->xyMinIntervalMs = qMax(0, r.xyMinIntervalMs);
+                s->xyMinDistance = r.xyMinDistance > 0.0 ? r.xyMinDistance : 0.0;
+            }
+            if (!r.seriesName.isEmpty())
+                chart->setSerieName(idx, r.seriesName);
+            applyColor(idx);
+        }
     }
 
     if (r.applyYRange && r.yMin < r.yMax)
     {
         chart->setAxisYmin(r.yMin);
         chart->setAxisYmax(r.yMax);
-        chart->fixInitialAxesState();
     }
     if (r.applyXRange && r.xMin < r.xMax
         && r.viz != NMSDK::Plot::VizKind::TimeSeries)
     {
         chart->setAxisXmin(r.xMin);
         chart->setAxisXmax(r.xMax);
+        chart->isAxisXtrackable = false;
+    }
+    if ((r.applyYRange && r.yMin < r.yMax)
+        || (r.applyXRange && r.xMin < r.xMax && r.viz != NMSDK::Plot::VizKind::TimeSeries))
+    {
         chart->fixInitialAxesState();
     }
 
@@ -605,10 +752,12 @@ int UWatchSeriesWizard::applyToChart(UWatchChart* chart) const
 void UWatchSeriesWizard::accept()
 {
     if (currentPage() == m_typePage)
-        return; // must pick sources first
+        return;
 
-    if (currentPage() == m_sourcesPage)
-        captureSourcesIntoResult();
+    if (currentPage() == m_ySourcePage)
+        captureYSourceIntoResult();
+    else if (currentPage() == m_xSourcePage)
+        captureXSourceIntoResult();
     else if (currentPage() == m_stylePage)
         captureStyleIntoResult();
     else

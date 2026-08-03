@@ -9,6 +9,7 @@
 #include "../../Core/Serialize/USerStorageXML.h"
 
 #include <QHBoxLayout>
+#include <QtGlobal>
 
 
 
@@ -82,6 +83,7 @@ void UWatchTab::AUpdateInterface()
 
         double x_min = 0.0;
         double x_max = 0.0;
+        bool hadXSamples = false;
         const NMSDK::Plot::VizKind panelViz = graph[graphIndex]->getVizKind();
         const bool panelIsXY = panelViz == NMSDK::Plot::VizKind::XYLine
                                || panelViz == NMSDK::Plot::VizKind::XYScatter;
@@ -142,8 +144,9 @@ void UWatchTab::AUpdateInterface()
                     dto,
                     current_serie->YShift,
                     current_serie->xyRing,
-                    current_serie->xyLastXCount,
-                    current_serie->xyLastYCount);
+                    current_serie->xyLastXSimTime,
+                    current_serie->xyLastYSimTime,
+                    current_serie->xyLastAcceptSimTime);
             }
             else
             {
@@ -160,64 +163,88 @@ void UWatchTab::AUpdateInterface()
 
             if (!samplePoints.isEmpty())
             {
-                // Incremental append when only one new point; else full replace.
-                const int oldCount = current_serie->count();
-                const int newCount = samplePoints.size();
-                if (oldCount > 0 && newCount == oldCount + 1
-                    && current_serie->at(oldCount - 1) == samplePoints.at(oldCount - 1))
+                // XY is sorted by X — never incremental-append (new point may land mid-series).
+                if (isXY)
                 {
-                    current_serie->append(samplePoints.last());
+                    current_serie->replace(samplePoints);
                 }
                 else
                 {
-                    const int decimationThreshold = 8000;
-                    if (newCount > decimationThreshold)
+                    // Incremental append when only one new point; else full replace.
+                    const int oldCount = current_serie->count();
+                    const int newCount = samplePoints.size();
+                    if (oldCount > 0 && newCount == oldCount + 1
+                        && current_serie->at(oldCount - 1) == samplePoints.at(oldCount - 1))
                     {
-                        QVector<QPointF> decimated;
-                        const int step = (newCount + decimationThreshold - 1) / decimationThreshold;
-                        decimated.reserve(newCount / step + 1);
-                        for (int p = 0; p < newCount; p += step)
-                            decimated.push_back(samplePoints.at(p));
-                        if (decimated.last() != samplePoints.last())
-                            decimated.push_back(samplePoints.last());
-                        current_serie->replace(decimated);
+                        current_serie->append(samplePoints.last());
                     }
                     else
                     {
-                        current_serie->replace(samplePoints);
+                        const int decimationThreshold = 8000;
+                        if (newCount > decimationThreshold)
+                        {
+                            QVector<QPointF> decimated;
+                            const int step = (newCount + decimationThreshold - 1) / decimationThreshold;
+                            decimated.reserve(newCount / step + 1);
+                            for (int p = 0; p < newCount; p += step)
+                                decimated.push_back(samplePoints.at(p));
+                            if (decimated.last() != samplePoints.last())
+                                decimated.push_back(samplePoints.last());
+                            current_serie->replace(decimated);
+                        }
+                        else
+                        {
+                            current_serie->replace(samplePoints);
+                        }
                     }
                 }
 
                 if (!isXY)
                 {
-                    if (x_min == 0.0 || x_min > samplePoints.first().x())
+                    if (!hadXSamples || x_min > samplePoints.first().x())
                         x_min = samplePoints.first().x();
-                    if (x_max < samplePoints.last().x())
+                    if (!hadXSamples || x_max < samplePoints.last().x())
                         x_max = samplePoints.last().x();
+                    hadXSamples = true;
                 }
                 else
                 {
                     for (const QPointF& pt : samplePoints)
                     {
-                        if (x_min == 0.0 || x_min > pt.x())
+                        if (!hadXSamples || x_min > pt.x())
                             x_min = pt.x();
-                        if (x_max < pt.x())
+                        if (!hadXSamples || x_max < pt.x())
                             x_max = pt.x();
+                        hadXSamples = true;
                     }
                 }
             }
         }
 
-        if (!graph[graphIndex]->checkZoomed())
+        if (!graph[graphIndex]->checkZoomed() && hadXSamples)
         {
             if (!panelIsXY)
             {
                 if (x_max - x_min < graph[graphIndex]->getAxisXrange()) {
                     x_max = x_min + graph[graphIndex]->getAxisXrange();
                 }
+                if (graph[graphIndex]->getIsAxisXtrackable())
+                {
+                    graph[graphIndex]->setAxisXmax(x_max);
+                    graph[graphIndex]->setAxisXmin(x_min);
+                    graph[graphIndex]->fixInitialAxesState();
+                }
             }
-            if (graph[graphIndex]->getIsAxisXtrackable() || panelIsXY)
+            else
             {
+                // XY: follow sample extents even when TrackLatest is off (manual pan
+                // still protected by checkZoomed above).
+                if (!(x_max > x_min))
+                {
+                    const double pad = qMax(0.5, qAbs(x_min) * 0.01);
+                    x_min -= pad;
+                    x_max += pad;
+                }
                 graph[graphIndex]->setAxisXmax(x_max);
                 graph[graphIndex]->setAxisXmin(x_min);
                 graph[graphIndex]->fixInitialAxesState();
@@ -674,6 +701,8 @@ void UWatchTab::applyPlotDocument(const NMSDK::Plot::PlotDocument& doc)
             chart->setSerieLineType(idx, static_cast<Qt::PenStyle>(serie.visual.penStyle));
             chart->getSerie(idx)->setColor(serie.visual.color);
             chart->getSerie(idx)->windowSize = serie.binding.windowSize;
+            chart->getSerie(idx)->xyMinIntervalMs = serie.binding.xyMinIntervalMs;
+            chart->getSerie(idx)->xyMinDistance = serie.binding.xyMinDistance;
         }
     }
     applySplitterSizes(doc);

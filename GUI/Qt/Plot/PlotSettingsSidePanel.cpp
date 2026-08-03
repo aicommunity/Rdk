@@ -100,16 +100,31 @@ void PlotSettingsSidePanel::buildUi()
     m_axisYEdit = new QLineEdit(axesBox);
     m_yMin = new QDoubleSpinBox(axesBox);
     m_yMax = new QDoubleSpinBox(axesBox);
+    m_xMin = new QDoubleSpinBox(axesBox);
+    m_xMax = new QDoubleSpinBox(axesBox);
     m_xRange = new QDoubleSpinBox(axesBox);
     m_yMin->setRange(-1e9, 1e9);
     m_yMax->setRange(-1e9, 1e9);
+    m_xMin->setRange(-1e9, 1e9);
+    m_xMax->setRange(-1e9, 1e9);
+    m_xMin->setDecimals(6);
+    m_xMax->setDecimals(6);
+    m_yMin->setDecimals(6);
+    m_yMax->setDecimals(6);
+    m_xMin->setMinimumWidth(120);
+    m_xMax->setMinimumWidth(120);
+    m_yMin->setMinimumWidth(120);
+    m_yMax->setMinimumWidth(120);
     m_xRange->setRange(0.001, 1e9);
     m_xRange->setDecimals(3);
     axesForm->addRow(tr("X axis"), m_axisXEdit);
     axesForm->addRow(tr("Y axis"), m_axisYEdit);
+    axesForm->addRow(tr("X min"), m_xMin);
+    axesForm->addRow(tr("X max"), m_xMax);
     axesForm->addRow(tr("Y min"), m_yMin);
     axesForm->addRow(tr("Y max"), m_yMax);
     axesForm->addRow(tr("X range"), m_xRange);
+    m_xRangeLabel = qobject_cast<QLabel*>(axesForm->labelForField(m_xRange));
     chartLayout->addWidget(axesBox);
 
     auto* displayBox = new QGroupBox(tr("Display"), m_chartPage);
@@ -183,8 +198,13 @@ void PlotSettingsSidePanel::connectLiveApply()
     connect(m_axisYEdit, &QLineEdit::editingFinished, this, chartLive);
     connect(m_yMin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, chartLive);
     connect(m_yMax, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, chartLive);
+    connect(m_xMin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, chartLive);
+    connect(m_xMax, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, chartLive);
     connect(m_xRange, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, chartLive);
-    connect(m_vizKind, QOverload<int>::of(&QComboBox::currentIndexChanged), this, chartLive);
+    connect(m_vizKind, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this, chartLive]() {
+        updateAxesModeVisibility();
+        chartLive();
+    });
     connect(m_trackLatest, &QCheckBox::toggled, this, chartLive);
     connect(m_legendVisible, &QCheckBox::toggled, this, chartLive);
     connect(m_titleVisible, &QCheckBox::toggled, this, chartLive);
@@ -235,6 +255,35 @@ void PlotSettingsSidePanel::onTabChanged(int)
     updateHero();
 }
 
+void PlotSettingsSidePanel::updateAxesModeVisibility()
+{
+    const auto viz = static_cast<NMSDK::Plot::VizKind>(
+        m_vizKind ? m_vizKind->currentData().toInt() : 0);
+    const bool xy = viz == NMSDK::Plot::VizKind::XYLine
+                    || viz == NMSDK::Plot::VizKind::XYScatter;
+    if (m_xMin)
+        m_xMin->setVisible(xy);
+    if (m_xMax)
+        m_xMax->setVisible(xy);
+    if (m_xRange)
+        m_xRange->setVisible(!xy);
+    if (m_xRangeLabel)
+        m_xRangeLabel->setVisible(!xy);
+    if (m_trackLatest)
+        m_trackLatest->setVisible(!xy);
+    // Show labels for X min/max when XY
+    if (m_xMin && m_xMin->parentWidget())
+    {
+        if (auto* form = qobject_cast<QFormLayout*>(m_xMin->parentWidget()->layout()))
+        {
+            if (QWidget* lab = form->labelForField(m_xMin))
+                lab->setVisible(xy);
+            if (QWidget* lab = form->labelForField(m_xMax))
+                lab->setVisible(xy);
+        }
+    }
+}
+
 void PlotSettingsSidePanel::refreshFromTab()
 {
     if (!m_tab)
@@ -267,6 +316,8 @@ void PlotSettingsSidePanel::refreshFromTab()
         QSignalBlocker b3(m_axisYEdit);
         QSignalBlocker b4(m_yMin);
         QSignalBlocker b5(m_yMax);
+        QSignalBlocker bXmin(m_xMin);
+        QSignalBlocker bXmax(m_xMax);
         QSignalBlocker b6(m_xRange);
         QSignalBlocker b7(m_trackLatest);
         QSignalBlocker b8(m_legendVisible);
@@ -278,6 +329,8 @@ void PlotSettingsSidePanel::refreshFromTab()
         m_axisYEdit->setText(chart->getAxisYName());
         m_yMin->setValue(chart->getAxisYmin());
         m_yMax->setValue(chart->getAxisYmax());
+        m_xMin->setValue(chart->getAxisXmin());
+        m_xMax->setValue(chart->getAxisXmax());
         m_xRange->setValue(chart->getAxisXrange());
         m_trackLatest->setChecked(chart->getIsAxisXtrackable());
         m_legendVisible->setChecked(chart->isLegendVisible());
@@ -288,6 +341,7 @@ void PlotSettingsSidePanel::refreshFromTab()
         if (vizIdx >= 0)
             m_vizKind->setCurrentIndex(vizIdx);
     }
+    updateAxesModeVisibility();
 
     {
         QSignalBlocker blocker(m_seriesList);
@@ -360,11 +414,23 @@ void PlotSettingsSidePanel::applyChartLive()
     chart->setAxisYname(m_axisYEdit->text());
     chart->setAxisYmin(m_yMin->value());
     chart->setAxisYmax(m_yMax->value());
-    chart->updateTimeIntervals(m_xRange->value());
-    chart->isAxisXtrackable = m_trackLatest->isChecked();
+    const auto viz = static_cast<NMSDK::Plot::VizKind>(m_vizKind->currentData().toInt());
+    const bool xy = viz == NMSDK::Plot::VizKind::XYLine
+                    || viz == NMSDK::Plot::VizKind::XYScatter;
+    if (xy)
+    {
+        chart->setAxisXmin(m_xMin->value());
+        chart->setAxisXmax(m_xMax->value());
+        chart->isAxisXtrackable = false;
+    }
+    else
+    {
+        chart->updateTimeIntervals(m_xRange->value());
+        chart->isAxisXtrackable = m_trackLatest->isChecked();
+    }
     chart->setLegendVisible(m_legendVisible->isChecked());
     chart->setTitleVisible(m_titleVisible->isChecked());
-    chart->setVizKind(static_cast<NMSDK::Plot::VizKind>(m_vizKind->currentData().toInt()));
+    chart->setVizKind(viz);
     chart->fixInitialAxesState();
     m_tab->syncDocumentFromCharts();
     updateHero();
