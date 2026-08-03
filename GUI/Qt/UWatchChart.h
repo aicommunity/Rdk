@@ -133,6 +133,14 @@ public:
     void setInteractionPan(bool pan);
     void resetViewport();
 
+    /// Export chart view to PNG/JPEG/SVG by path suffix. Returns false on failure.
+    bool exportImage(const QString& path) const;
+    QString sanitizedTitleForFile() const;
+
+    void setExpandActionVisible(bool visible);
+    void setExpandChecked(bool expanded);
+    bool isExpandChecked() const;
+
     void connectSerieTooltip(UWatchSerie* serie);
 
     NMSDK::Plot::PlotPanel toPlotPanel() const;
@@ -164,6 +172,7 @@ private:
     QAction *actBoxZoom = nullptr;
     QAction *actTrack = nullptr;
     QAction *actReset = nullptr;
+    QAction *actExpand = nullptr;
 
     QPoint m_lastPoint;
     bool m_isPress;
@@ -213,18 +222,23 @@ private slots:
     void addSeriesSlot();
     void seriesOptionSlot();
     void chartOptionSlot();
-    void saveToJpegSlot();
+    void saveChartAsSlot();
+    void quickSaveChartSlot();
     void restoreAxes();
     void updateAxes(double x_min, double x_max, double y_min, double y_max);
     void onModePan();
     void onModeBoxZoom();
     void onModeTrack();
     void onModeReset();
+    void onModeExpand();
 signals:
     void addSerieSignal(int someIndex);
     void UpdateTabGuiSignal(bool force_update);
     void openSettingsPanel(int chartIndex, bool seriesPage);
     void chartActivated(int chartIndex);
+    void expandToggleRequested(int chartIndex);
+    void saveChartAsRequested(int chartIndex);
+    void quickSaveChartRequested(int chartIndex);
 };
 
 #endif // UWATCHCHART_H

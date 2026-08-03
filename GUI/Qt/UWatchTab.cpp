@@ -8,9 +8,16 @@
 #include "Plot/UWatchSeriesWizard.h"
 #include "Plot/WatchDebug.h"
 #include "../../Core/Serialize/USerStorageXML.h"
+#include "../../Core/Application/UApplication.h"
 
 #include <QHBoxLayout>
 #include <QElapsedTimer>
+#include <QShortcut>
+#include <QKeySequence>
+#include <QFileDialog>
+#include <QDir>
+#include <QDateTime>
+#include <QMessageBox>
 #include <QtGlobal>
 #include <cstdio>
 
@@ -39,6 +46,13 @@ UWatchTab::UWatchTab(QWidget *parent, RDK::UApplication* app) :
 
     UpdateInterval = UpdateIntervalMs;
     setAccessibleName("UWatchTab");
+
+    auto* escCollapse = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+    escCollapse->setContext(Qt::WidgetWithChildrenShortcut);
+    connect(escCollapse, &QShortcut::activated, this, [this]() {
+        if (m_expandedIndex >= 0)
+            collapseExpandedChart();
+    });
 }
 
 UWatchTab::~UWatchTab()
@@ -54,6 +68,9 @@ void UWatchTab::createGraph()
     connect(graph.last(), SIGNAL(addSerieSignal(int)), this, SLOT(createSelectionDialogSlot(int)));
     connect(graph.last(), SIGNAL(openSettingsPanel(int,bool)), this, SLOT(openSettingsPanelSlot(int,bool)));
     connect(graph.last(), SIGNAL(chartActivated(int)), this, SLOT(onChartActivated(int)));
+    connect(graph.last(), &UWatchChart::expandToggleRequested, this, &UWatchTab::onExpandToggleRequested);
+    connect(graph.last(), &UWatchChart::saveChartAsRequested, this, &UWatchTab::onSaveChartAsRequested);
+    connect(graph.last(), &UWatchChart::quickSaveChartRequested, this, &UWatchTab::onQuickSaveChartRequested);
 }
 
 void UWatchTab::deleteGraph(int index)
@@ -428,6 +445,246 @@ void UWatchTab::onChartActivated(int chartIndex)
     setActiveChart(chartIndex);
 }
 
+void UWatchTab::updateExpandActionsVisibility()
+{
+    const bool multi = countGraphs() > 1;
+    for (int i = 0; i < graph.count(); ++i)
+    {
+        if (!graph[i])
+            continue;
+        graph[i]->setExpandActionVisible(multi);
+        graph[i]->setExpandChecked(multi && i == m_expandedIndex);
+    }
+}
+
+void UWatchTab::restoreExpandedSplitterSizes()
+{
+    if (colSplitter && !m_savedColSizes.isEmpty()
+        && m_savedColSizes.size() == colSplitter->count())
+    {
+        colSplitter->setSizes(m_savedColSizes);
+    }
+    for (int r = 0; r < rowSplitter.size() && r < m_savedRowSizes.size(); ++r)
+    {
+        if (rowSplitter[r] && !m_savedRowSizes[r].isEmpty()
+            && m_savedRowSizes[r].size() == rowSplitter[r]->count())
+        {
+            rowSplitter[r]->setSizes(m_savedRowSizes[r]);
+        }
+    }
+}
+
+void UWatchTab::collapseExpandedChart()
+{
+    if (m_expandedIndex < 0)
+        return;
+    m_expandedIndex = -1;
+    for (int i = 0; i < graph.count(); ++i)
+    {
+        if (!graph[i])
+            continue;
+        graph[i]->show();
+        graph[i]->setExpandChecked(false);
+    }
+    restoreExpandedSplitterSizes();
+    m_savedColSizes.clear();
+    m_savedRowSizes.clear();
+    updateExpandActionsVisibility();
+}
+
+void UWatchTab::toggleExpandChart(int chartIndex)
+{
+    if (countGraphs() <= 1)
+        return;
+    if (chartIndex < 0 || chartIndex >= graph.count() || !graph[chartIndex])
+        return;
+
+    if (m_expandedIndex == chartIndex)
+    {
+        collapseExpandedChart();
+        return;
+    }
+
+    if (m_expandedIndex < 0)
+    {
+        m_savedColSizes = captureColSplitterSizes();
+        m_savedRowSizes = captureRowSplitterSizes();
+    }
+
+    m_expandedIndex = chartIndex;
+    setActiveChart(chartIndex);
+    for (int i = 0; i < graph.count(); ++i)
+    {
+        if (!graph[i])
+            continue;
+        const bool show = (i == chartIndex);
+        graph[i]->setVisible(show);
+        graph[i]->setExpandChecked(show);
+    }
+    updateExpandActionsVisibility();
+}
+
+void UWatchTab::onExpandToggleRequested(int chartIndex)
+{
+    toggleExpandChart(chartIndex);
+}
+
+QString UWatchTab::savedWatchesRoot() const
+{
+    if (!application)
+        return {};
+    QString path = QString::fromStdString(application->GetProjectPath());
+    if (path.isEmpty())
+        return {};
+    if (!path.endsWith(QLatin1Char('/')) && !path.endsWith(QLatin1Char('\\')))
+        path += QLatin1Char('/');
+    return path + QStringLiteral("SavedWatches/");
+}
+
+bool UWatchTab::exportChartToPath(int chartIndex, const QString& path)
+{
+    if (chartIndex < 0 || chartIndex >= graph.count() || !graph[chartIndex])
+        return false;
+    return graph[chartIndex]->exportImage(path);
+}
+
+int UWatchTab::exportAllChartsToDirectory(const QString& dirPath, const QString& extension)
+{
+    QDir dir(dirPath);
+    if (!dir.exists() && !dir.mkpath(QStringLiteral(".")))
+        return 0;
+    const QString ext = extension.startsWith(QLatin1Char('.'))
+                            ? extension.mid(1)
+                            : extension;
+    int saved = 0;
+    for (int i = 0; i < graph.count(); ++i)
+    {
+        if (!graph[i])
+            continue;
+        const QString name = QStringLiteral("%1_%2.%3")
+                                 .arg(i + 1, 2, 10, QLatin1Char('0'))
+                                 .arg(graph[i]->sanitizedTitleForFile())
+                                 .arg(ext);
+        if (graph[i]->exportImage(dir.filePath(name)))
+            ++saved;
+    }
+    return saved;
+}
+
+void UWatchTab::onSaveChartAsRequested(int chartIndex)
+{
+    setActiveChart(chartIndex);
+    QString startDir = savedWatchesRoot();
+    if (startDir.isEmpty())
+    {
+        QMessageBox::warning(this, tr("Save chart"),
+                             tr("Open a project first so charts can be saved under the configuration folder."));
+        return;
+    }
+    QDir().mkpath(startDir);
+    UWatchChart* chart = getChart(chartIndex);
+    if (!chart)
+        return;
+    const QString defaultName = startDir + chart->sanitizedTitleForFile() + QStringLiteral(".png");
+    const QString path = QFileDialog::getSaveFileName(
+        this,
+        tr("Save chart"),
+        defaultName,
+        tr("PNG (*.png);;SVG (*.svg);;JPEG (*.jpg *.jpeg)"));
+    if (path.isEmpty())
+        return;
+    if (!exportChartToPath(chartIndex, path))
+    {
+        QMessageBox::warning(this, tr("Save chart"), tr("Failed to save chart."));
+        return;
+    }
+}
+
+void UWatchTab::onQuickSaveChartRequested(int chartIndex)
+{
+    if (!quickSaveOneChart(chartIndex))
+    {
+        // Errors already reported inside when project path missing / IO fail.
+    }
+}
+
+QString UWatchTab::ensureQuickSaveSessionDir()
+{
+    if (!m_quickSaveDir.isEmpty() && QDir(m_quickSaveDir).exists())
+        return m_quickSaveDir;
+
+    const QString root = savedWatchesRoot();
+    if (root.isEmpty())
+    {
+        QMessageBox::warning(this, tr("Quick save"),
+                             tr("Open a project first so charts can be saved under SavedWatches."));
+        return {};
+    }
+    const QString stamp = QDateTime::currentDateTime().toString(QStringLiteral("yyyy-MM-dd_HH-mm-ss"));
+    const QString dir = root + stamp + QLatin1Char('/');
+    if (!QDir().mkpath(dir))
+    {
+        QMessageBox::warning(this, tr("Quick save"), tr("Cannot create folder:\n%1").arg(dir));
+        return {};
+    }
+    m_quickSaveDir = dir;
+    return m_quickSaveDir;
+}
+
+int UWatchTab::quickSaveAllCharts()
+{
+    const QString dir = ensureQuickSaveSessionDir();
+    if (dir.isEmpty())
+        return 0;
+    const QString tick = QDateTime::currentDateTime().toString(QStringLiteral("HH-mm-ss"));
+    int saved = 0;
+    if (countGraphs() == 1)
+    {
+        UWatchChart* chart = getChart(0);
+        if (!chart)
+            return 0;
+        const QString path = dir + QStringLiteral("chart_%1.png").arg(tick);
+        if (exportChartToPath(0, path))
+            ++saved;
+        return saved;
+    }
+    for (int i = 0; i < graph.count(); ++i)
+    {
+        if (!graph[i])
+            continue;
+        const QString path = dir
+                             + QStringLiteral("%1_%2_%3.png")
+                                   .arg(i + 1, 2, 10, QLatin1Char('0'))
+                                   .arg(graph[i]->sanitizedTitleForFile())
+                                   .arg(tick);
+        if (exportChartToPath(i, path))
+            ++saved;
+    }
+    return saved;
+}
+
+bool UWatchTab::quickSaveOneChart(int chartIndex)
+{
+    const QString dir = ensureQuickSaveSessionDir();
+    if (dir.isEmpty())
+        return false;
+    UWatchChart* chart = getChart(chartIndex);
+    if (!chart)
+        return false;
+    const QString tick = QDateTime::currentDateTime().toString(QStringLiteral("HH-mm-ss"));
+    const QString path = dir
+                         + QStringLiteral("%1_%2_%3.png")
+                               .arg(chartIndex + 1, 2, 10, QLatin1Char('0'))
+                               .arg(chart->sanitizedTitleForFile())
+                               .arg(tick);
+    if (!exportChartToPath(chartIndex, path))
+    {
+        QMessageBox::warning(this, tr("Quick save"), tr("Failed to save chart."));
+        return false;
+    }
+    return true;
+}
+
 void UWatchTab::showInspector(PlotInspectorPage page, int chartIndex)
 {
     ensureSettingsPanel();
@@ -564,6 +821,8 @@ void UWatchTab::deleteGraphs(int new_graph_count)
 
 void UWatchTab::createGridLayout(int rowNumber, int colNumber)
 {
+    collapseExpandedChart();
+
     // Очистка лишних графиков (в функцию передается новое кол-во графиков)
     deleteGraphs(rowNumber*colNumber);
 
@@ -595,6 +854,7 @@ void UWatchTab::createGridLayout(int rowNumber, int colNumber)
         rowSplitter[i]->setSizes(sizes);
     }
     setActiveChart(m_activeChartIndex);
+    updateExpandActionsVisibility();
 }
 
 UWatchChart *UWatchTab::getChart(int index)
@@ -720,6 +980,8 @@ void UWatchTab::applySplitterSizes(const NMSDK::Plot::PlotDocument& doc)
 
 void UWatchTab::applyPlotDocument(const NMSDK::Plot::PlotDocument& doc)
 {
+    collapseExpandedChart();
+
     int rows = doc.gridRows > 0 ? doc.gridRows : 1;
     int cols = doc.gridCols > 0 ? doc.gridCols : 1;
     const int panelCount = doc.panels.size();
@@ -806,6 +1068,7 @@ void UWatchTab::applyPlotDocument(const NMSDK::Plot::PlotDocument& doc)
     applySplitterSizes(doc);
     m_document = doc;
     m_document.schemaVersion = NMSDK::Plot::PlotDocument::CurrentSchemaVersion;
+    updateExpandActionsVisibility();
 }
 
 // Загружает параметры интерфейса из xml

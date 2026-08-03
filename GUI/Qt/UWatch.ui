@@ -71,6 +71,10 @@
     <addaction name="actionLayout_settings"/>
     <addaction name="actionChart_settings"/>
     <addaction name="actionSeries_settings"/>
+    <addaction name="separator"/>
+    <addaction name="actionSave_chart"/>
+    <addaction name="actionSave_all_charts"/>
+    <addaction name="actionQuick_save"/>
    </widget>
    <addaction name="menu"/>
   </widget>
@@ -90,6 +94,10 @@
    <addaction name="actionLayout_settings"/>
    <addaction name="actionChart_settings"/>
    <addaction name="actionSeries_settings"/>
+   <addaction name="separator"/>
+   <addaction name="actionSave_chart"/>
+   <addaction name="actionSave_all_charts"/>
+   <addaction name="actionQuick_save"/>
    <addaction name="separator"/>
   </widget>
   <action name="actionCreate_tab">
@@ -119,6 +127,30 @@
    </property>
    <property name="toolTip">
     <string>Series of the active chart</string>
+   </property>
+  </action>
+  <action name="actionSave_chart">
+   <property name="text">
+    <string>Save chart…</string>
+   </property>
+   <property name="toolTip">
+    <string>Save the active chart as PNG/SVG/JPEG</string>
+   </property>
+  </action>
+  <action name="actionSave_all_charts">
+   <property name="text">
+    <string>Save all…</string>
+   </property>
+   <property name="toolTip">
+    <string>Save all charts on this tab into a folder</string>
+   </property>
+  </action>
+  <action name="actionQuick_save">
+   <property name="text">
+    <string>Quick save</string>
+   </property>
+   <property name="toolTip">
+    <string>Save into Project/SavedWatches/&lt;datetime&gt;/ (session folder)</string>
    </property>
   </action>
  </widget>

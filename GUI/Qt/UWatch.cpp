@@ -5,6 +5,9 @@
 #include <QStyle>
 #include <QTabBar>
 #include <QTimer>
+#include <QFileDialog>
+#include <QDir>
+#include <QMessageBox>
 
 UWatch::UWatch(QWidget *parent, RDK::UApplication* app)
     : UVisualControllerMainWidget(parent, app), ui(new Ui::UWatch)
@@ -70,6 +73,51 @@ void UWatch::on_actionSeries_settings_triggered()
      return;
 
     current_tab->seriesOptionTriggered();
+}
+
+void UWatch::on_actionSave_chart_triggered()
+{
+    UWatchTab* current_tab = getCurrentTab();
+    if (!current_tab || current_tab->countGraphs() <= 0)
+        return;
+    current_tab->onSaveChartAsRequested(current_tab->activeChartIndex());
+}
+
+void UWatch::on_actionSave_all_charts_triggered()
+{
+    UWatchTab* current_tab = getCurrentTab();
+    if (!current_tab || current_tab->countGraphs() <= 0)
+        return;
+
+    QString startDir = current_tab->savedWatchesRoot();
+    if (startDir.isEmpty())
+    {
+        QMessageBox::warning(this, tr("Save all charts"),
+                             tr("Open a project first so charts can be saved under the configuration folder."));
+        return;
+    }
+    QDir().mkpath(startDir);
+    const QString dir = QFileDialog::getExistingDirectory(
+        this,
+        tr("Save all charts"),
+        startDir,
+        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    if (dir.isEmpty())
+        return;
+
+    const int n = current_tab->exportAllChartsToDirectory(dir, QStringLiteral("png"));
+    if (n <= 0)
+        QMessageBox::warning(this, tr("Save all charts"), tr("No charts were saved."));
+}
+
+void UWatch::on_actionQuick_save_triggered()
+{
+    UWatchTab* current_tab = getCurrentTab();
+    if (!current_tab || current_tab->countGraphs() <= 0)
+        return;
+    const int n = current_tab->quickSaveAllCharts();
+    if (n <= 0)
+        return; // errors already shown when path missing
 }
 
 void UWatch::createTab()

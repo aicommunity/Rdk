@@ -17,6 +17,9 @@
 #include "UVisualControllerWidget.h"
 #include "Plot/WatchDebug.h"
 #include <cstdio>
+#include <QFileInfo>
+#include <QPainter>
+#include <QtSvg/QSvgGenerator>
 
 UWatchChart::UWatchChart(QWidget *parent) :
     QWidget(parent),
@@ -40,19 +43,24 @@ UWatchChart::UWatchChart(QWidget *parent) :
     actBoxZoom = modeBar->addAction(tr("Box zoom"));
     actTrack = modeBar->addAction(tr("Track"));
     actReset = modeBar->addAction(tr("Reset"));
+    actExpand = modeBar->addAction(tr("Expand"));
     actPan->setCheckable(true);
     actBoxZoom->setCheckable(true);
     actTrack->setCheckable(true);
     actTrack->setChecked(true);
     actBoxZoom->setChecked(true);
+    actExpand->setCheckable(true);
+    actExpand->setVisible(false);
     actPan->setToolTip(tr("Drag to pan the viewport"));
     actBoxZoom->setToolTip(tr("Drag a rectangle to zoom. Reverse drag (e.g. right-to-left) resets zoom."));
     actTrack->setToolTip(tr("Follow latest X data (time window). Disabled while zoomed."));
     actReset->setToolTip(tr("Restore axes and re-enable Track"));
+    actExpand->setToolTip(tr("Expand this chart to fill the grid (double-click). Esc or click again to restore."));
     connect(actPan, &QAction::triggered, this, &UWatchChart::onModePan);
     connect(actBoxZoom, &QAction::triggered, this, &UWatchChart::onModeBoxZoom);
     connect(actTrack, &QAction::triggered, this, &UWatchChart::onModeTrack);
     connect(actReset, &QAction::triggered, this, &UWatchChart::onModeReset);
+    connect(actExpand, &QAction::triggered, this, &UWatchChart::onModeExpand);
 
     verticalLayout->addWidget(modeBar);
     verticalLayout->addWidget(chartView);
@@ -89,6 +97,10 @@ UWatchChart::UWatchChart(QWidget *parent) :
     connect(chartView, SIGNAL(updateChartAxes(double, double, double, double)), this, SLOT(updateAxes(double, double, double, double)));
     connect(chartView, &UWatchChartView::chartClicked, this, [this]() {
         emit chartActivated(chartIndex);
+    });
+    connect(chartView, &UWatchChartView::chartDoubleClicked, this, [this]() {
+        emit chartActivated(chartIndex);
+        emit expandToggleRequested(chartIndex);
     });
 
     WatchTab = dynamic_cast<UWatchTab*>(parent);
@@ -698,22 +710,26 @@ void UWatchChart::slotCustomMenuRequested(QPoint pos)
 {
     QMenu * menu = new QMenu(this);
 
-    QAction * addSeiesAction =      new QAction("Add series", this);
-    QAction * seriesOptionAction =  new QAction("Series settings", this);
-    QAction * chartOptionAction =   new QAction("Chart settings", this);
-    QAction * saveJpegAction =      new QAction("Save chart to JPEG", this);
-    QAction * restoreAxesAction =   new QAction("Restore Axes", this);
+    QAction * addSeiesAction =      new QAction(tr("Add series"), this);
+    QAction * seriesOptionAction =  new QAction(tr("Series settings"), this);
+    QAction * chartOptionAction =   new QAction(tr("Chart settings"), this);
+    QAction * saveAsAction =        new QAction(tr("Save chart…"), this);
+    QAction * quickSaveAction =     new QAction(tr("Quick save chart"), this);
+    QAction * restoreAxesAction =   new QAction(tr("Restore Axes"), this);
 
-    connect(addSeiesAction, SIGNAL(triggered()), this, SLOT(addSeriesSlot()));
-    connect(seriesOptionAction, SIGNAL(triggered()), this, SLOT(seriesOptionSlot()));
-    connect(chartOptionAction, SIGNAL(triggered()), this, SLOT(chartOptionSlot()));
-    connect(saveJpegAction, SIGNAL(triggered()), this, SLOT(saveToJpegSlot()));
-    connect(restoreAxesAction, SIGNAL(triggered()), this, SLOT(restoreAxes()));
+    connect(addSeiesAction, &QAction::triggered, this, &UWatchChart::addSeriesSlot);
+    connect(seriesOptionAction, &QAction::triggered, this, &UWatchChart::seriesOptionSlot);
+    connect(chartOptionAction, &QAction::triggered, this, &UWatchChart::chartOptionSlot);
+    connect(saveAsAction, &QAction::triggered, this, &UWatchChart::saveChartAsSlot);
+    connect(quickSaveAction, &QAction::triggered, this, &UWatchChart::quickSaveChartSlot);
+    connect(restoreAxesAction, &QAction::triggered, this, &UWatchChart::restoreAxes);
 
     menu->addAction(addSeiesAction);
     menu->addAction(seriesOptionAction);
     menu->addAction(chartOptionAction);
-    menu->addAction(saveJpegAction);
+    menu->addSeparator();
+    menu->addAction(saveAsAction);
+    menu->addAction(quickSaveAction);
     menu->addAction(restoreAxesAction);
 
     menu->popup(mapToGlobal(pos));
@@ -781,44 +797,90 @@ void UWatchChart::mousePressEvent(QMouseEvent *event)
     QWidget::mousePressEvent(event);
 }
 
-void UWatchChart::saveToJpegSlot()
+void UWatchChart::saveChartAsSlot()
 {
-    QPixmap screenShot;
-    screenShot = chartView->grab(); //захватываем только текущую вкладку
-    QString currentDate = QDateTime::currentDateTime().toString("dd-MM-yy HH-mm"); //не ставить . и :, иначе не создает расшираение
+    emit chartActivated(chartIndex);
+    emit saveChartAsRequested(chartIndex);
+}
 
-    //работа с путем к папке screenshot
-    QDir dir = QDir::current();
-    dir.cdUp();
-    dir.cdUp();
-    dir.cdUp();
+void UWatchChart::quickSaveChartSlot()
+{
+    emit chartActivated(chartIndex);
+    emit quickSaveChartRequested(chartIndex);
+}
 
-    //проверяем, есть ли папка screenshots
-    //если нет, то создаем
-    if(dir.cd("screenshots"))
+QString UWatchChart::sanitizedTitleForFile() const
+{
+    QString title = chart ? chart->title() : QStringLiteral("chart");
+    for (QChar& c : title)
     {
-        std::cout<<"screenshot folder is exist"<<std::endl;
+        if (QStringLiteral("\\/:*?\"<>|").contains(c))
+            c = QLatin1Char('_');
     }
-    else {
-         std::cout<<"screenshot folder is not exist"<<std::endl;
-         std::cout<<"screenshot folder creating"<<std::endl;
-         dir.mkdir("screenshots");
-         dir.cd("screenshots");
+    title = title.trimmed();
+    if (title.isEmpty())
+        title = QStringLiteral("chart_%1").arg(chartIndex + 1);
+    return title;
+}
+
+bool UWatchChart::exportImage(const QString& path) const
+{
+    if (!chartView || path.isEmpty())
+        return false;
+
+    const QFileInfo fi(path);
+    const QString suffix = fi.suffix().toLower();
+    if (suffix == QLatin1String("svg"))
+    {
+        QSvgGenerator generator;
+        generator.setFileName(path);
+        const QSize sz = chartView->size().expandedTo(QSize(64, 64));
+        generator.setSize(sz);
+        generator.setViewBox(QRect(QPoint(0, 0), sz));
+        generator.setTitle(sanitizedTitleForFile());
+        generator.setDescription(tr("NeuroModeler Watch chart export"));
+        QPainter painter;
+        if (!painter.begin(&generator))
+            return false;
+        chartView->render(&painter);
+        painter.end();
+        return QFileInfo::exists(path);
     }
 
-    if(screenShot.save((dir.path()+"/"+chart->title()+ " " + currentDate + ".jpeg")))
+    const QPixmap shot = chartView->grab();
+    if (shot.isNull())
+        return false;
+    const char* format = "PNG";
+    if (suffix == QLatin1String("jpg") || suffix == QLatin1String("jpeg"))
+        format = "JPEG";
+    else if (suffix == QLatin1String("bmp"))
+        format = "BMP";
+    return shot.save(path, format);
+}
+
+void UWatchChart::setExpandActionVisible(bool visible)
+{
+    if (actExpand)
+        actExpand->setVisible(visible);
+}
+
+void UWatchChart::setExpandChecked(bool expanded)
+{
+    if (actExpand)
     {
-        //говорим что все хорошо и где натйи скриншот
-        std::cout<<"chart save succes"<<std::endl;
-        QMessageBox messageBox;
-        messageBox.setText("Chart save successfully!");
-        messageBox.setInformativeText("saved in folder \"screenshots\"");
-        messageBox.setWindowTitle("Saving chart");
-        messageBox.setIcon(QMessageBox::Information);
-        messageBox.setStandardButtons(QMessageBox::Cancel);
-        messageBox.exec();
+        actExpand->setChecked(expanded);
+        actExpand->setText(expanded ? tr("Restore") : tr("Expand"));
     }
-    else std::cout<<"chart save not succes"<<std::endl;  //что-то не так
+}
+
+bool UWatchChart::isExpandChecked() const
+{
+    return actExpand && actExpand->isChecked();
+}
+
+void UWatchChart::onModeExpand()
+{
+    emit expandToggleRequested(chartIndex);
 }
 
  void UWatchChart::restoreAxes()

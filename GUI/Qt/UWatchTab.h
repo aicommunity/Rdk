@@ -55,6 +55,20 @@ public:
     void hideInspector();
     bool isInspectorVisible() const;
 
+    void toggleExpandChart(int chartIndex);
+    void collapseExpandedChart();
+    bool isChartExpanded() const { return m_expandedIndex >= 0; }
+    int expandedChartIndex() const { return m_expandedIndex; }
+
+    /// `<ProjectPath>/SavedWatches/` or empty if no project.
+    QString savedWatchesRoot() const;
+    /// Ensures session folder `<SavedWatches>/<datetime>/`; empty on failure.
+    QString ensureQuickSaveSessionDir();
+    bool exportChartToPath(int chartIndex, const QString& path);
+    int exportAllChartsToDirectory(const QString& dirPath, const QString& extension = QStringLiteral("png"));
+    int quickSaveAllCharts();
+    bool quickSaveOneChart(int chartIndex);
+
     virtual void ASaveParameters(RDK::USerStorageXML &xml);
     virtual void ALoadParameters(RDK::USerStorageXML &xml);
 
@@ -72,10 +86,16 @@ private:
     void ensureSettingsPanel();
     void applySplitterSizes(const NMSDK::Plot::PlotDocument& doc);
     void updateInspectorSplitterSizes(bool show);
+    void updateExpandActionsVisibility();
+    void restoreExpandedSplitterSizes();
 
     int tabColNumber=0;
     int tabRowNumber=0;
     int m_activeChartIndex = 0;
+    int m_expandedIndex = -1;
+    QList<int> m_savedColSizes;
+    QVector<QList<int>> m_savedRowSizes;
+    QString m_quickSaveDir;
 
     QVector <UWatchChart*> graph;
     std::list<double> XData;
@@ -102,6 +122,9 @@ public slots:
     void chartsOptionTriggered();
     void openSettingsPanelSlot(int chartIndex, bool seriesPage);
     void onChartActivated(int chartIndex);
+    void onExpandToggleRequested(int chartIndex);
+    void onSaveChartAsRequested(int chartIndex);
+    void onQuickSaveChartRequested(int chartIndex);
 
 };
 

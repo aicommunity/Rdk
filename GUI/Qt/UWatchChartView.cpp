@@ -80,3 +80,10 @@ void UWatchChartView::mouseReleaseEvent(QMouseEvent *event)
     }
     QChartView::mouseReleaseEvent(event);
 }
+
+void UWatchChartView::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton)
+        emit chartDoubleClicked();
+    QChartView::mouseDoubleClickEvent(event);
+}

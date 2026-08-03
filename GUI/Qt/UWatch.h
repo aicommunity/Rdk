@@ -72,6 +72,9 @@ private slots:
     void on_actionLayout_settings_triggered();
     void on_actionChart_settings_triggered();
     void on_actionSeries_settings_triggered();
+    void on_actionSave_chart_triggered();
+    void on_actionSave_all_charts_triggered();
+    void on_actionQuick_save_triggered();
     void on_tabWidget_tabCloseRequested(int index);
 
 
