@@ -2082,10 +2082,6 @@ static QMenu* menuForPath(QMenuBar* menuBar, const QString& menuPath,
 
     QMenu* currentMenu = nullptr;
     const QString first = parts.first();
-    const QString before =
-        insertBeforeTitle.isEmpty() && first == QStringLiteral("AI Assistant")
-            ? QStringLiteral("Window")
-            : insertBeforeTitle;
     for(QAction* action : menuBar->actions())
     {
         QMenu* menu = action->menu();
@@ -2095,8 +2091,9 @@ static QMenu* menuForPath(QMenuBar* menuBar, const QString& menuPath,
             break;
         }
     }
+    // AI Assistant (and other dynamic top-level menus) append after Help by default.
     if(!currentMenu)
-        currentMenu = ensureTopLevelMenu(menuBar, first, before);
+        currentMenu = ensureTopLevelMenu(menuBar, first, insertBeforeTitle);
 
     for(int i = 1; i < parts.size(); ++i)
     {
