@@ -99,7 +99,7 @@
   </action>
   <action name="actionLayout_settings">
    <property name="text">
-    <string>Layout…</string>
+    <string>Layout</string>
    </property>
    <property name="toolTip">
     <string>Tab layout: grid and update interval</string>
@@ -107,7 +107,7 @@
   </action>
   <action name="actionChart_settings">
    <property name="text">
-    <string>Chart settings…</string>
+    <string>Chart settings</string>
    </property>
    <property name="toolTip">
     <string>Settings for the active chart</string>
@@ -115,7 +115,7 @@
   </action>
   <action name="actionSeries_settings">
    <property name="text">
-    <string>Series…</string>
+    <string>Series</string>
    </property>
    <property name="toolTip">
     <string>Series of the active chart</string>

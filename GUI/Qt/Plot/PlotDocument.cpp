@@ -207,7 +207,9 @@ bool loadPlotDocument(RDK::USerStorageXML& xml, PlotDocument& doc)
             serie.binding.channel = channel;
             serie.binding.windowSize = xml.ReadInteger("SerieWindowSize", 10000);
 
-            if (doc.schemaVersion >= 2 && xml.ReadInteger("SerieYKind", -1) >= 0)
+            // Role fields (SerieYKind/…) — источник истины, даже если schemaVersion
+            // в файле отсутствует или равен 1 (частично записанный v2).
+            if (xml.ReadInteger("SerieYKind", -1) >= 0)
             {
                 serie.binding.x = readRole(xml, "SerieX", DataRoleKind::Time);
                 serie.binding.y = readRole(xml, "SerieY", DataRoleKind::Property);

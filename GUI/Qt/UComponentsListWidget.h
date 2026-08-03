@@ -127,6 +127,8 @@ public:
     /// When true, property trees only list Watch-compatible numeric / matrix types.
     void setWatchablePropertiesOnly(bool on);
     bool watchablePropertiesOnly() const { return m_watchablePropertiesOnly; }
+    /// Hide Type column and stretch Name (for Watch source picker).
+    void applyWatchableColumnLayout();
 
 signals:
     void componentSelected(QString name); //single click

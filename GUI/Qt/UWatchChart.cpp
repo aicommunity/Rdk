@@ -6,6 +6,7 @@
 #include <QAction>
 #include <QGraphicsView>
 #include <QMouseEvent>
+#include <QSet>
 #include <QtCharts/QXYSeries>
 #include <iostream>
 
@@ -147,7 +148,37 @@ void UWatchChart::setSerieName(int serieIndex, QString name)
 
 void UWatchChart::setSerieColor(int serieIndex, int colorIndex)
 {
-     series[serieIndex]->setColor(getDefaultColor(colorIndex));
+    if (serieIndex < 0 || serieIndex >= series.count() || !series[serieIndex])
+        return;
+    const QColor c = getDefaultColor(colorIndex);
+    series[serieIndex]->setColor(c);
+    QPen pen = series[serieIndex]->pen();
+    pen.setColor(c);
+    if (pen.widthF() < 1.0)
+        pen.setWidth(2);
+    series[serieIndex]->setPen(pen);
+}
+
+int UWatchChart::suggestAutoColorIndex(int serieIndex) const
+{
+    QSet<QRgb> used;
+    for (int i = 0; i < series.count(); ++i)
+    {
+        if (i == serieIndex || !series[i])
+            continue;
+        used.insert(series[i]->color().rgb());
+    }
+    // Prefer visually distinct order (avoid red, darkRed as first two).
+    static const int kOrder[] = {8, 4, 10, 6, 0, 2, 11, 7, 5, 9, 1, 3, 12, 13, 14};
+    const int n = qMax(1, UStyleManager::instance()->getChartSeriesColorCount());
+    for (int oi : kOrder)
+    {
+        if (oi >= n)
+            continue;
+        if (!used.contains(getDefaultColor(oi).rgb()))
+            return oi;
+    }
+    return serieIndex >= 0 ? (serieIndex % n) : 0;
 }
 
 void UWatchChart::setSerieLineType(int serieIndex, Qt::PenStyle lineType)
@@ -213,7 +244,10 @@ void UWatchChart::createSerie(int channelIndex, const QString componentName, con
     series.last()->attachAxis(axisY);
 
     series.last()->setName(componentName+ ": " + propertyName +"(" + QString::number(jx)+", "+ QString::number(jy)+")");
-    series.last()->setColor(getDefaultColor(series.count()-1));
+    {
+        const int autoIdx = suggestAutoColorIndex(series.count() - 1);
+        setSerieColor(series.count() - 1, autoIdx);
+    }
 
     series.last()->indexChannel = channelIndex;
     series.last()->nameComponent = componentName;
@@ -250,7 +284,10 @@ void UWatchChart::createSerieXY(int channelIndex,
 
     series.last()->setName(QStringLiteral("%1.%2 vs %3.%4")
                                .arg(xComponent, xProperty, yComponent, yProperty));
-    series.last()->setColor(getDefaultColor(series.count()-1));
+    {
+        const int autoIdx = suggestAutoColorIndex(series.count() - 1);
+        setSerieColor(series.count() - 1, autoIdx);
+    }
     series.last()->indexChannel = channelIndex;
     series.last()->YShift = y_shift;
     series.last()->vizKind = viz;

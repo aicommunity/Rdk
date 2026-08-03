@@ -2,12 +2,26 @@
 #include "UWatchSourcePickerWidget.h"
 
 #include "../UWatchChart.h"
+#include "../UStyleManager.h"
+#include "../UEngineSelectionSync.h"
 
+#include "rdk.h"
+#include <rdk_application.h>
+#include "../../Core/Engine/UContainerDescription.h"
+#include "../../Core/Engine/UStorage.h"
+
+#include <QButtonGroup>
+#include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QFormLayout>
+#include <QHBoxLayout>
+#include <QIcon>
 #include <QLabel>
 #include <QLineEdit>
+#include <QPixmap>
+#include <QToolButton>
+#include <QTimer>
 #include <QVBoxLayout>
 #include <QWizardPage>
 
@@ -141,9 +155,13 @@ public:
 
         connect(m_yPicker, &UWatchSourcePickerWidget::selectionChanged, this, [this]() {
             emit completeChanged();
+            // Defer a second update so Next enablement settles after tree/matrix
+            // focus changes from the same click that selected the property.
+            QTimer::singleShot(0, this, [this]() { emit completeChanged(); });
         });
         connect(m_xPicker, &UWatchSourcePickerWidget::selectionChanged, this, [this]() {
             emit completeChanged();
+            QTimer::singleShot(0, this, [this]() { emit completeChanged(); });
         });
     }
 
@@ -198,28 +216,88 @@ public:
         , m_wizard(wizard)
     {
         setTitle(QObject::tr("Series style"));
-        setSubTitle(QObject::tr("Optional. Leave name empty to use the automatic series title."));
+        setSubTitle(QObject::tr("Optional style and suggested axis range from class description."));
 
-        auto* form = new QFormLayout(this);
+        auto* root = new QVBoxLayout(this);
+        m_form = new QFormLayout();
         m_name = new QLineEdit(this);
         m_name->setPlaceholderText(QObject::tr("Auto"));
-        m_color = new QComboBox(this);
-        m_color->addItem(QObject::tr("Auto (next palette color)"), -1);
-        if (wizard && wizard->chart())
+        m_form->addRow(QObject::tr("Series name"), m_name);
+
+        auto* colorRow = new QHBoxLayout();
+        m_colorGroup = new QButtonGroup(this);
+        m_colorGroup->setExclusive(true);
+
+        auto* autoBtn = new QToolButton(this);
+        autoBtn->setText(QObject::tr("Auto"));
+        autoBtn->setCheckable(true);
+        autoBtn->setChecked(true);
+        autoBtn->setToolTip(QObject::tr("Next unused palette color"));
+        m_colorGroup->addButton(autoBtn, -1);
+        colorRow->addWidget(autoBtn);
+
+        const int paletteCount = UStyleManager::instance()->getChartSeriesColorCount();
+        const int n = qMin(12, qMax(1, paletteCount));
+        for (int i = 0; i < n; ++i)
         {
-            for (int i = 0; i < 12; ++i)
-            {
-                const QColor c = wizard->chart()->getDefaultColor(i);
-                m_color->addItem(QObject::tr("Palette %1").arg(i + 1), i);
-                m_color->setItemData(m_color->count() - 1, c, Qt::DecorationRole);
-            }
+            const QColor c = wizard && wizard->chart()
+                                 ? wizard->chart()->getDefaultColor(i)
+                                 : UStyleManager::instance()->getChartSeriesColor(i);
+            QPixmap px(18, 18);
+            px.fill(c);
+            auto* btn = new QToolButton(this);
+            btn->setIcon(QIcon(px));
+            btn->setIconSize(QSize(18, 18));
+            btn->setCheckable(true);
+            btn->setToolTip(QObject::tr("Palette %1").arg(i + 1));
+            m_colorGroup->addButton(btn, i);
+            colorRow->addWidget(btn);
         }
+        colorRow->addStretch(1);
+        m_form->addRow(QObject::tr("Color"), colorRow);
+
         m_yShift = new QDoubleSpinBox(this);
         m_yShift->setRange(-1e9, 1e9);
         m_yShift->setDecimals(3);
-        form->addRow(QObject::tr("Series name"), m_name);
-        form->addRow(QObject::tr("Color"), m_color);
-        form->addRow(QObject::tr("Y shift"), m_yShift);
+        m_form->addRow(QObject::tr("Y shift"), m_yShift);
+
+        m_rangeHint = new QLabel(this);
+        m_rangeHint->setWordWrap(true);
+        m_form->addRow(m_rangeHint);
+
+        m_applyYRange = new QCheckBox(QObject::tr("Apply suggested Y range to chart"), this);
+        m_yMin = new QDoubleSpinBox(this);
+        m_yMax = new QDoubleSpinBox(this);
+        m_yMin->setRange(-1e12, 1e12);
+        m_yMax->setRange(-1e12, 1e12);
+        m_yMin->setDecimals(6);
+        m_yMax->setDecimals(6);
+        m_form->addRow(m_applyYRange);
+        m_form->addRow(QObject::tr("Y min"), m_yMin);
+        m_form->addRow(QObject::tr("Y max"), m_yMax);
+
+        m_applyXRange = new QCheckBox(QObject::tr("Apply suggested X range to chart"), this);
+        m_xMin = new QDoubleSpinBox(this);
+        m_xMax = new QDoubleSpinBox(this);
+        m_xMin->setRange(-1e12, 1e12);
+        m_xMax->setRange(-1e12, 1e12);
+        m_xMin->setDecimals(6);
+        m_xMax->setDecimals(6);
+        m_form->addRow(m_applyXRange);
+        m_form->addRow(QObject::tr("X min"), m_xMin);
+        m_form->addRow(QObject::tr("X max"), m_xMax);
+
+        root->addLayout(m_form);
+        root->addStretch(1);
+
+        setXyRangeVisible(false);
+    }
+
+    void initializePage() override
+    {
+        if (m_wizard)
+            m_wizard->captureSourcesIntoResult();
+        refreshSuggestedRanges();
     }
 
     bool isComplete() const override { return true; }
@@ -231,14 +309,155 @@ public:
     }
 
     QString seriesName() const { return m_name->text().trimmed(); }
-    int colorIndex() const { return m_color->currentData().toInt(); }
+    int colorIndex() const
+    {
+        const int id = m_colorGroup ? m_colorGroup->checkedId() : -1;
+        return id;
+    }
     double yShift() const { return m_yShift->value(); }
+    bool applyYRange() const { return m_applyYRange->isChecked(); }
+    double yMin() const { return m_yMin->value(); }
+    double yMax() const { return m_yMax->value(); }
+    bool applyXRange() const { return m_applyXRange->isVisible() && m_applyXRange->isChecked(); }
+    double xMin() const { return m_xMin->value(); }
+    double xMax() const { return m_xMax->value(); }
 
 private:
+    static bool lookupClDescrRange(const QString& component, const QString& property,
+                                   int channel, double& outMin, double& outMax, QString& note)
+    {
+        note.clear();
+        if (component.isEmpty() || property.isEmpty())
+            return false;
+
+        const QString classNameStr = componentClassNameFromModelScope(channel, component);
+        if (classNameStr.isEmpty())
+        {
+            note = QObject::tr("Class name unavailable for %1").arg(component);
+            return false;
+        }
+
+        RDK::UEPtr<RDK::UContainerDescription> desc =
+            RDK::GetStorageLock()->GetClassDescription(classNameStr.toLocal8Bit().constData(), true);
+        if (!desc)
+            return false;
+
+        const RDK::UPropertyDescription& pd = desc->GetPropertyDescription(property.toStdString());
+        // 2 = range, 4 = range with step; ValueList[0]=min, ValueList[1]=max
+        if (pd.DataSelectionType != 2 && pd.DataSelectionType != 4)
+        {
+            note = QObject::tr("No range in class description for %1.%2")
+                       .arg(component, property);
+            return false;
+        }
+        if (pd.ValueList.size() < 2)
+            return false;
+
+        bool okMin = false;
+        bool okMax = false;
+        const double mn = QString::fromStdString(pd.ValueList[0]).toDouble(&okMin);
+        const double mx = QString::fromStdString(pd.ValueList[1]).toDouble(&okMax);
+        if (!okMin || !okMax || !(mn < mx))
+            return false;
+
+        outMin = mn;
+        outMax = mx;
+        note = QObject::tr("From ClDescr %1::%2 → [%3, %4]")
+                   .arg(classNameStr, property)
+                   .arg(mn)
+                   .arg(mx);
+        return true;
+    }
+
+    void setXyRangeVisible(bool xy)
+    {
+        m_applyXRange->setVisible(xy);
+        m_xMin->setVisible(xy);
+        m_xMax->setVisible(xy);
+        if (m_form)
+        {
+            if (QWidget* lab = m_form->labelForField(m_xMin))
+                lab->setVisible(xy);
+            if (QWidget* lab = m_form->labelForField(m_xMax))
+                lab->setVisible(xy);
+        }
+    }
+
+    void refreshSuggestedRanges()
+    {
+        if (!m_wizard)
+            return;
+        const auto& r = m_wizard->result();
+        const bool xy = (r.viz != NMSDK::Plot::VizKind::TimeSeries);
+        setXyRangeVisible(xy);
+
+        double ymin = -1.0;
+        double ymax = 1.0;
+        QString yNote;
+        const bool hasY = lookupClDescrRange(r.yComponent, r.yProperty, r.channel, ymin, ymax, yNote);
+        if (hasY)
+        {
+            m_yMin->setValue(ymin);
+            m_yMax->setValue(ymax);
+            m_applyYRange->setChecked(true);
+            m_applyYRange->setEnabled(true);
+            m_yMin->setEnabled(true);
+            m_yMax->setEnabled(true);
+        }
+        else
+        {
+            if (m_wizard->chart())
+            {
+                m_yMin->setValue(m_wizard->chart()->getAxisYmin());
+                m_yMax->setValue(m_wizard->chart()->getAxisYmax());
+            }
+            m_applyYRange->setChecked(false);
+        }
+
+        QString hint = hasY ? yNote
+                            : (yNote.isEmpty()
+                                   ? QObject::tr("Y range: no ClDescr range for selected Y property.")
+                                   : yNote);
+
+        if (xy)
+        {
+            double xmin = 0.0;
+            double xmax = 1.0;
+            QString xNote;
+            const bool hasX = lookupClDescrRange(r.xComponent, r.xProperty, r.channel, xmin, xmax, xNote);
+            if (hasX)
+            {
+                m_xMin->setValue(xmin);
+                m_xMax->setValue(xmax);
+                m_applyXRange->setChecked(true);
+                hint += QStringLiteral("\n") + xNote;
+            }
+            else
+            {
+                m_applyXRange->setChecked(false);
+                if (!xNote.isEmpty())
+                    hint += QStringLiteral("\n") + xNote;
+                else
+                    hint += QStringLiteral("\n")
+                            + QObject::tr("X range: no ClDescr range for selected X property.");
+            }
+        }
+
+        m_rangeHint->setText(hint);
+    }
+
     UWatchSeriesWizard* m_wizard = nullptr;
+    QFormLayout* m_form = nullptr;
     QLineEdit* m_name = nullptr;
-    QComboBox* m_color = nullptr;
+    QButtonGroup* m_colorGroup = nullptr;
     QDoubleSpinBox* m_yShift = nullptr;
+    QLabel* m_rangeHint = nullptr;
+    QCheckBox* m_applyYRange = nullptr;
+    QDoubleSpinBox* m_yMin = nullptr;
+    QDoubleSpinBox* m_yMax = nullptr;
+    QCheckBox* m_applyXRange = nullptr;
+    QDoubleSpinBox* m_xMin = nullptr;
+    QDoubleSpinBox* m_xMax = nullptr;
 };
 
 } // namespace watch_wizard
@@ -249,7 +468,9 @@ UWatchSeriesWizard::UWatchSeriesWizard(UWatchChart* chart, RDK::UApplication* ap
     , m_app(app)
 {
     setWizardStyle(QWizard::ModernStyle);
-    setOption(QWizard::HaveFinishButtonOnEarlyPages, true);
+    // Finish only on the last page — early Finish on Sources silently no-op'd when
+    // accept() rejected incomplete state, which felt like a "dead" Next/Finish click.
+    setOption(QWizard::HaveFinishButtonOnEarlyPages, false);
     setMinimumSize(900, 640);
 
     m_typePage = new watch_wizard::TypeFormPage(this);
@@ -306,6 +527,12 @@ void UWatchSeriesWizard::captureStyleIntoResult()
     m_result.seriesName = style->seriesName();
     m_result.colorIndex = style->colorIndex();
     m_result.yShift = style->yShift();
+    m_result.applyYRange = style->applyYRange();
+    m_result.yMin = style->yMin();
+    m_result.yMax = style->yMax();
+    m_result.applyXRange = style->applyXRange();
+    m_result.xMin = style->xMin();
+    m_result.xMax = style->xMax();
 }
 
 int UWatchSeriesWizard::applyToChart(UWatchChart* chart) const
@@ -324,6 +551,13 @@ int UWatchSeriesWizard::applyToChart(UWatchChart* chart) const
     const double t = chart->getAxisXrange();
     const int before = chart->countSeries();
 
+    auto applyColor = [&](int idx) {
+        if (r.colorIndex >= 0)
+            chart->setSerieColor(idx, r.colorIndex);
+        else
+            chart->setSerieColor(idx, chart->suggestAutoColorIndex(idx));
+    };
+
     if (r.viz == NMSDK::Plot::VizKind::TimeSeries)
     {
         for (const auto& c : r.yCells)
@@ -333,8 +567,7 @@ int UWatchSeriesWizard::applyToChart(UWatchChart* chart) const
             const int idx = chart->countSeries() - 1;
             if (!r.seriesName.isEmpty() && r.yCells.size() == 1)
                 chart->setSerieName(idx, r.seriesName);
-            if (r.colorIndex >= 0)
-                chart->setSerieColor(idx, r.colorIndex);
+            applyColor(idx);
         }
     }
     else
@@ -349,9 +582,23 @@ int UWatchSeriesWizard::applyToChart(UWatchChart* chart) const
         const int idx = chart->countSeries() - 1;
         if (!r.seriesName.isEmpty())
             chart->setSerieName(idx, r.seriesName);
-        if (r.colorIndex >= 0)
-            chart->setSerieColor(idx, r.colorIndex);
+        applyColor(idx);
     }
+
+    if (r.applyYRange && r.yMin < r.yMax)
+    {
+        chart->setAxisYmin(r.yMin);
+        chart->setAxisYmax(r.yMax);
+        chart->fixInitialAxesState();
+    }
+    if (r.applyXRange && r.xMin < r.xMax
+        && r.viz != NMSDK::Plot::VizKind::TimeSeries)
+    {
+        chart->setAxisXmin(r.xMin);
+        chart->setAxisXmax(r.xMax);
+        chart->fixInitialAxesState();
+    }
+
     return chart->countSeries() - before;
 }
 

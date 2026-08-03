@@ -1437,7 +1437,8 @@ void UGEngineControlWidget::actionRenameConfig()
 
 void UGEngineControlWidget::actionExit()
 {
-  QApplication::quit();
+  // close() → closeEvent: autosave/CloseProject пока GUI ещё зарегистрирован.
+  close();
 }
 
 void UGEngineControlWidget::actionConfigOptions()
@@ -2245,6 +2246,20 @@ void UGEngineControlWidget::closeEvent(QCloseEvent *event)
 {
  application->PauseChannel(-1);
  writeSettings();
+ // Важно: CloseProject/autosave здесь, пока дочерние UIVisualController ещё в
+ // InterfaceUpdaters. После accept Qt уничтожит окно, UnInit вызовет CloseProject
+ // повторно — но ProjectOpenFlag уже false, а защита SaveProject не даст
+ // затереть Interface.xml пустым деревом.
+ if(application && application->GetProjectOpenFlag())
+ {
+  try
+  {
+   application->CloseProject();
+  }
+  catch(...)
+  {
+  }
+ }
  event->accept();
 }
 
@@ -2366,6 +2381,7 @@ void UGEngineControlWidget::AAfterCalculate(void)
 // Сохраняет параметры интерфейса в xml
 void UGEngineControlWidget::ASaveParameters(RDK::USerStorageXML &xml)
 {
+    // Штатно: реестр MDI Watches/Images; тело каждого виджета пишет storage.
     xml.WriteInteger("WatchesCount", int(watchesVector.size()));
     xml.SelectNodeForce("Watches");
 
@@ -2392,7 +2408,8 @@ void UGEngineControlWidget::ASaveParameters(RDK::USerStorageXML &xml)
 // Загружает параметры интерфейса из xml
 void UGEngineControlWidget::ALoadParameters(RDK::USerStorageXML &xml)
 {
-    // Очистка существующих Watches
+    // Штатно: пересоздаём MDI-окна и выставляем accessibleName.
+    // PlotDocument подтянет UIVisualControllerStorage на следующем проходе.
     size_t watches_size = watchesVector.size();
     for(size_t i=0; i < watches_size; i++)
     {
@@ -2413,7 +2430,6 @@ void UGEngineControlWidget::ALoadParameters(RDK::USerStorageXML &xml)
         watchesVector.at(i)->setWindowTitle(watches_name);
     }
     xml.SelectUp();
-
 
     // Очистка существующих Images
     size_t images_size = imagesVector.size();

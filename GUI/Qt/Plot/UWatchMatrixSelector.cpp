@@ -8,6 +8,8 @@
 #include <QHeaderView>
 #include <QItemSelectionModel>
 #include <QLabel>
+#include <QPoint>
+#include <QSignalBlocker>
 #include <QTableWidget>
 #include <QTimer>
 #include <QVBoxLayout>
@@ -112,11 +114,20 @@ bool UWatchMatrixSelector::bind(const QString& component, const QString& propert
     const std::type_info& ti = prop->GetLanguageType();
     if (RDK::isScalarWatchableLanguageType(ti))
     {
-        clearBinding();
+        // Avoid clearBinding() here: it emits selectionChanged with empty property and
+        // briefly disables QWizard Next (clicks get swallowed).
+        m_timer->stop();
+        m_table->hide();
+        m_table->clear();
+        m_table->setRowCount(0);
+        m_table->setColumnCount(0);
         m_scalar = true;
+        m_propertyType = 0;
         m_component = component;
         m_property = property;
         m_label->setText(tr("%1.%2 (scalar)").arg(component, property));
+        m_label->show();
+        emit selectionChanged();
         return true;
     }
 
@@ -219,25 +230,106 @@ void UWatchMatrixSelector::refreshValues()
         return;
     if (m_propertyType < 1 || m_propertyType > 4)
         return;
+    if (!m_table)
+        return;
 
-    QItemSelectionModel* sel_m = m_table->selectionModel();
-    std::vector<int> row_ids;
-    std::vector<int> col_ids;
-    if (sel_m && sel_m->hasSelection())
+    // Preserve selection across refresh. Clearing the table (even briefly) makes
+    // isReady()/wizard isComplete() flicker to false and QWizard Next swallows clicks.
+    QVector<QPoint> savedCells;
+    if (QItemSelectionModel* sel_m = m_table->selectionModel())
     {
         const QModelIndexList ids = sel_m->selectedIndexes();
+        savedCells.reserve(ids.size());
         for (const QModelIndex& idx : ids)
-        {
-            row_ids.push_back(idx.row());
-            col_ids.push_back(idx.column());
-        }
+            savedCells.push_back(QPoint(idx.column(), idx.row()));
     }
 
     const std::string comp = m_component.toStdString();
     const std::string prop = m_property.toStdString();
 
-    auto fillMatrix = [&](int rows, int cols, const std::function<QString(int, int)>& at) {
-        m_table->clear();
+    int rows = 0;
+    int cols = 0;
+    std::function<QString(int, int)> at;
+
+    switch (m_propertyType)
+    {
+    case 1:
+    {
+        RDK::MDMatrix<double> m;
+        {
+            RDK::UELockPtr<RDK::UEngine> engine = RDK::GetEngineLock();
+            m = engine->Model_GetComponentPropertyData<RDK::MDMatrix<double>>(comp.c_str(), prop.c_str());
+        }
+        rows = m.GetRows();
+        cols = m.GetCols();
+        at = [m](int i, int j) { return QString::number(m(i, j)); };
+        break;
+    }
+    case 2:
+    {
+        RDK::MDMatrix<int> m;
+        {
+            RDK::UELockPtr<RDK::UEngine> engine = RDK::GetEngineLock();
+            m = engine->Model_GetComponentPropertyData<RDK::MDMatrix<int>>(comp.c_str(), prop.c_str());
+        }
+        rows = m.GetRows();
+        cols = m.GetCols();
+        at = [m](int i, int j) { return QString::number(m(i, j)); };
+        break;
+    }
+    case 3:
+    {
+        RDK::MDVector<double> m;
+        {
+            RDK::UELockPtr<RDK::UEngine> engine = RDK::GetEngineLock();
+            m = engine->Model_GetComponentPropertyData<RDK::MDVector<double>>(comp.c_str(), prop.c_str());
+        }
+        rows = m.GetRows();
+        cols = m.GetCols();
+        at = [m](int i, int) { return QString::number(m(i)); };
+        break;
+    }
+    case 4:
+    {
+        RDK::MDVector<int> m;
+        {
+            RDK::UELockPtr<RDK::UEngine> engine = RDK::GetEngineLock();
+            m = engine->Model_GetComponentPropertyData<RDK::MDVector<int>>(comp.c_str(), prop.c_str());
+        }
+        rows = m.GetRows();
+        cols = m.GetCols();
+        at = [m](int i, int) { return QString::number(m(i)); };
+        break;
+    }
+    default:
+        return;
+    }
+
+    const bool sameShape = (m_table->rowCount() == rows && m_table->columnCount() == cols);
+    if (sameShape)
+    {
+        // In-place text update: selection and isReady() stay stable.
+        for (int i = 0; i < rows; ++i)
+            for (int j = 0; j < cols; ++j)
+            {
+                QTableWidgetItem* item = m_table->item(i, j);
+                if (!item)
+                {
+                    item = new QTableWidgetItem;
+                    m_table->setItem(i, j, item);
+                }
+                const QString text = at(i, j);
+                if (item->text() != text)
+                    item->setText(text);
+            }
+        return;
+    }
+
+    {
+        QSignalBlocker tableBlocker(m_table);
+        QSignalBlocker selBlocker(m_table->selectionModel());
+
+        m_table->clearContents();
         m_table->setRowCount(rows);
         m_table->setColumnCount(cols);
         QStringList labels;
@@ -251,61 +343,26 @@ void UWatchMatrixSelector::refreshValues()
         for (int i = 0; i < rows; ++i)
             for (int j = 0; j < cols; ++j)
                 m_table->setItem(i, j, new QTableWidgetItem(at(i, j)));
-    };
 
-    switch (m_propertyType)
-    {
-    case 1:
-    {
-        RDK::MDMatrix<double> m;
+        if (QItemSelectionModel* sel_m = m_table->selectionModel())
         {
-            RDK::UELockPtr<RDK::UEngine> engine = RDK::GetEngineLock();
-            m = engine->Model_GetComponentPropertyData<RDK::MDMatrix<double>>(comp.c_str(), prop.c_str());
-        }
-        fillMatrix(m.GetRows(), m.GetCols(), [&](int i, int j) { return QString::number(m(i, j)); });
-        break;
-    }
-    case 2:
-    {
-        RDK::MDMatrix<int> m;
-        {
-            RDK::UELockPtr<RDK::UEngine> engine = RDK::GetEngineLock();
-            m = engine->Model_GetComponentPropertyData<RDK::MDMatrix<int>>(comp.c_str(), prop.c_str());
-        }
-        fillMatrix(m.GetRows(), m.GetCols(), [&](int i, int j) { return QString::number(m(i, j)); });
-        break;
-    }
-    case 3:
-    {
-        RDK::MDVector<double> m;
-        {
-            RDK::UELockPtr<RDK::UEngine> engine = RDK::GetEngineLock();
-            m = engine->Model_GetComponentPropertyData<RDK::MDVector<double>>(comp.c_str(), prop.c_str());
-        }
-        fillMatrix(m.GetRows(), m.GetCols(), [&](int i, int) { return QString::number(m(i)); });
-        break;
-    }
-    case 4:
-    {
-        RDK::MDVector<int> m;
-        {
-            RDK::UELockPtr<RDK::UEngine> engine = RDK::GetEngineLock();
-            m = engine->Model_GetComponentPropertyData<RDK::MDVector<int>>(comp.c_str(), prop.c_str());
-        }
-        fillMatrix(m.GetRows(), m.GetCols(), [&](int i, int) { return QString::number(m(i)); });
-        break;
-    }
-    default:
-        break;
-    }
-
-    sel_m = m_table->selectionModel();
-    for (size_t i = 0; i < row_ids.size(); ++i)
-    {
-        if (row_ids[i] < m_table->rowCount() && col_ids[i] < m_table->columnCount())
-        {
-            const QModelIndex temp = m_table->model()->index(row_ids[i], col_ids[i]);
-            sel_m->select(temp, QItemSelectionModel::Select);
+            for (const QPoint& p : savedCells)
+            {
+                if (p.y() < rows && p.x() < cols)
+                {
+                    const QModelIndex temp = m_table->model()->index(p.y(), p.x());
+                    sel_m->select(temp, QItemSelectionModel::Select);
+                }
+            }
+            if (!sel_m->hasSelection() && rows > 0 && cols > 0)
+            {
+                if (m_mode == MatrixPickMode::WholeRow)
+                    m_table->selectRow(0);
+                else if (m_mode == MatrixPickMode::WholeColumn)
+                    m_table->selectColumn(0);
+                else
+                    m_table->setCurrentCell(0, 0);
+            }
         }
     }
 }

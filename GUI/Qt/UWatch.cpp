@@ -1,6 +1,7 @@
 #include "UWatch.h"
 #include "ui_UWatch.h"
 #include <QDebug>
+#include <QStringList>
 #include <QStyle>
 #include <QTabBar>
 #include <QTimer>
@@ -78,14 +79,16 @@ void UWatch::createTab()
     if(!tab.empty())
         index = tab.last()->accessibleName().replace("tab_","").toInt()+1;
 
+    const QString tabKey = QString("tab_%0").arg(index);
+
     //создаем каждую новую вкладку с именем tab + номер
+    // accessibleName задаём сразу: CalcFullName() → ключ XML Interface.xml
     tab.push_back(new UWatchTab(this));
+    tab.last()->setAccessibleName(tabKey);
 
-
-    ui->tabWidget->addTab(tab.last(), QString("tab_%0").arg(index));
+    ui->tabWidget->addTab(tab.last(), tabKey);
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
-    tab.last()->setAccessibleName(QString("tab_%0").arg(index));
-    
+
     // Обновляем стили табов после создания новой вкладки
     QTimer::singleShot(0, this, [this]() {
         if(ui && ui->tabWidget)
@@ -163,15 +166,21 @@ void UWatch::AAfterCalculate(void){}
 // Сохраняет параметры интерфейса в xml
 void UWatch::ASaveParameters(RDK::USerStorageXML &xml)
 {
+    // Штатно: родитель пишет только реестр вкладок.
+    // Тело (сетка/серии) сохраняет каждый UWatchTab через
+    // UIVisualControllerStorage → SaveParameters → ASaveParameters.
     xml.WriteInteger("TabCount", tab.count());
     xml.SelectNodeForce("Tabs");
 
     for(int i=0; i < tab.count(); i++)
     {
-        if(ui->tabWidget->indexOf(tab.at(i)) == -1)
+        if(!tab.at(i) || ui->tabWidget->indexOf(tab.at(i)) == -1)
             continue;
-        QString tab_name = ui->tabWidget->tabText(ui->tabWidget->indexOf(tab.at(i)));
-        xml.WriteString("name_"+RDK::sntoa(i+1), tab_name.toStdString().c_str());
+        // Ключ XML = accessibleName (CalcFullName у вкладки).
+        QString tab_key = tab.at(i)->accessibleName();
+        if(tab_key.isEmpty())
+            tab_key = ui->tabWidget->tabText(ui->tabWidget->indexOf(tab.at(i)));
+        xml.WriteString("name_"+RDK::sntoa(i+1), tab_key.toStdString().c_str());
     }
     xml.SelectUp();
 }
@@ -179,7 +188,9 @@ void UWatch::ASaveParameters(RDK::USerStorageXML &xml)
 // Загружает параметры интерфейса из xml
 void UWatch::ALoadParameters(RDK::USerStorageXML &xml)
 {
-    // Очистка существующих табов
+    // Штатно: пересоздаём вкладки и выставляем accessibleName.
+    // PlotDocument каждой вкладки подтянет storage на следующем проходе
+    // (см. UIVisualControllerStorage::LoadParameters).
     int tab_size = tab.size();
     for(int i=0; i < tab_size; i++)
     {
@@ -190,17 +201,23 @@ void UWatch::ALoadParameters(RDK::USerStorageXML &xml)
 
     int count=xml.ReadInteger("TabCount", 0);
 
-    for(int i=0; i < count; i++)
-        createTab();
-
     xml.SelectNodeForce("Tabs");
-    for(int i=0; i < tab.count(); i++)
+    QStringList names;
+    names.reserve(count);
+    for(int i=0; i < count; i++)
     {
-        QString tab_name = xml.ReadString("name_"+RDK::sntoa(i+1), "tab_" + RDK::sntoa(i+1)).c_str();
-        ui->tabWidget->setTabText(i, tab_name);
-        tab.at(i)->setAccessibleName(tab_name);
+        names << QString::fromStdString(
+            xml.ReadString("name_"+RDK::sntoa(i+1), "tab_" + RDK::sntoa(i+1)));
     }
     xml.SelectUp();
+
+    for(int i=0; i < count; i++)
+    {
+        createTab();
+        const QString& tab_key = names.at(i);
+        ui->tabWidget->setTabText(i, tab_key);
+        tab.at(i)->setAccessibleName(tab_key);
+    }
 }
 
 void UWatch::on_tabWidget_currentChanged(int index)

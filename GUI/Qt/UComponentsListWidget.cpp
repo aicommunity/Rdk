@@ -12,6 +12,7 @@
 #include <QClipboard>
 #include <QScrollBar>
 #include <QSignalBlocker>
+#include <QHeaderView>
 #include <QVBoxLayout>
 
 #include "UGuiTelemetry.h"
@@ -774,6 +775,8 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
         currentDrawPropertyComponentName = targetComponent;
         m_propertyReloadRetryCount = 0;
         UpdateInterfaceFlag=false;
+        if (m_watchablePropertiesOnly)
+            applyWatchableColumnLayout();
     }
     catch (RDK::UException &exception)
     {
@@ -1400,9 +1403,40 @@ void UComponentsListWidget::setTreeExpansionPolicy(int policy)
 void UComponentsListWidget::setWatchablePropertiesOnly(bool on)
 {
     if (m_watchablePropertiesOnly == on)
+    {
+        applyWatchableColumnLayout();
         return;
+    }
     m_watchablePropertiesOnly = on;
     reloadPropertys(true);
+    applyWatchableColumnLayout();
+}
+
+void UComponentsListWidget::applyWatchableColumnLayout()
+{
+    auto applyTree = [this](QTreeWidget* tw) {
+        if (!tw || tw->columnCount() < 1)
+            return;
+        if (tw->columnCount() >= 3)
+            tw->setColumnHidden(2, m_watchablePropertiesOnly);
+        if (m_watchablePropertiesOnly)
+        {
+            tw->header()->setStretchLastSection(false);
+            tw->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+            if (tw->columnCount() >= 2)
+                tw->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+            // Name gets most of the width
+            const int w = qMax(tw->viewport()->width(), 200);
+            tw->setColumnWidth(0, (w * 2) / 3);
+            if (tw->columnCount() >= 2)
+                tw->setColumnWidth(1, w / 3);
+        }
+    };
+    applyTree(ui->treeWidgetParameters);
+    applyTree(ui->treeWidgetState);
+    applyTree(ui->treeWidgetInputs);
+    applyTree(ui->treeWidgetOutputs);
+    applyTree(ui->treeWidgetFavorites);
 }
 
 void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem, const QSet<QString> &expandedItems)

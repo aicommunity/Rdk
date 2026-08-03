@@ -86,6 +86,8 @@ public:
 
     void setSerieName(int serieIndex, QString name);
     void setSerieColor(int serieIndex, int colorIndex);
+    /// First unused palette index (skips colors already used by other series).
+    int suggestAutoColorIndex(int serieIndex) const;
     void setSerieLineType(int serieIndex, Qt::PenStyle lineType);
     void setSerieWidth(int serieIndex, int width);
     void setSerieStyle(int serieIndex, QColor color, int width, Qt::PenStyle lineType);

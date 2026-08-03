@@ -38,6 +38,13 @@ struct UWatchSeriesWizardResult
     QString seriesName;
     int colorIndex = -1;
     double yShift = 0.0;
+
+    bool applyYRange = false;
+    double yMin = -1.0;
+    double yMax = 1.0;
+    bool applyXRange = false;
+    double xMin = 0.0;
+    double xMax = 1.0;
 };
 
 class UWatchSeriesWizard : public QWizard

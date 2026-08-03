@@ -540,8 +540,11 @@ int UWatchTab::getRowNumber()
 // Сохраняет параметры интерфейса в xml
 void UWatchTab::ASaveParameters(RDK::USerStorageXML &xml)
 {
-    xml.DelNodeInternalContent();
+    // CurrentNode уже выбран SaveParameters (узел вкладки). Нельзя вызывать
+    // DelNodeInternalContent, если SelectNodeForce не удался и мы всё ещё на
+    // Interfaces — это сносит всё дерево GUI.
     syncDocumentFromCharts();
+    xml.DelNodeInternalContent();
     NMSDK::Plot::savePlotDocument(xml, m_document);
 }
 
@@ -604,11 +607,24 @@ void UWatchTab::applySplitterSizes(const NMSDK::Plot::PlotDocument& doc)
 
 void UWatchTab::applyPlotDocument(const NMSDK::Plot::PlotDocument& doc)
 {
-    createGridLayout(doc.gridRows, doc.gridCols);
-    if (doc.panels.size() != countGraphs())
-        return;
+    int rows = doc.gridRows > 0 ? doc.gridRows : 1;
+    int cols = doc.gridCols > 0 ? doc.gridCols : 1;
+    const int panelCount = doc.panels.size();
+    // GraphCount и rows*cols могут расходиться в старых/битых XML — не бросаем
+    // всю конфигурацию серий из-за раннего return.
+    if (panelCount > 0 && rows * cols != panelCount)
+    {
+        if (cols < 1)
+            cols = 1;
+        rows = (panelCount + cols - 1) / cols;
+        if (rows < 1)
+            rows = 1;
+    }
 
-    for (int graphIndex = 0; graphIndex < doc.panels.size(); ++graphIndex)
+    createGridLayout(rows, cols);
+
+    const int applyCount = qMin(panelCount, countGraphs());
+    for (int graphIndex = 0; graphIndex < applyCount; ++graphIndex)
     {
         const NMSDK::Plot::PlotPanel& panel = doc.panels[graphIndex];
         UWatchChart* chart = graph[graphIndex];

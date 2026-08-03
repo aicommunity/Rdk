@@ -243,13 +243,10 @@ bool USerStorageXML::SaveToFile(const std::string &file_name)
 // Позиционируется на корневой узел
 void USerStorageXML::SelectRoot(void)
 {
- // Инвалидируем кэш только если действительно меняем узел
- if(CurrentNode.getName() != RootNode.getName() || CurrentNode.isEmpty() != RootNode.isEmpty())
- {
-  CurrentNode=RootNode;
-  NodeNameCached = false;
-  NodeTextCached = false;
- }
+ CurrentNode=RootNode;
+ NodeNameCached = false;
+ NodeTextCached = false;
+ AttributesCached = false;
 }
 
 // Позиционируется на родительский узел
@@ -258,13 +255,14 @@ void USerStorageXML::SelectUp(void)
  XMLNode node=CurrentNode.getParentNode();
  if(node.isEmpty())
   return;
- // Инвалидируем кэш только если действительно меняем узел
- if(node.getName() != CurrentNode.getName() || node.isEmpty() != CurrentNode.isEmpty())
- {
-  CurrentNode=node;
-  NodeNameCached = false;
-  NodeTextCached = false;
- }
+ // Всегда переходим на родителя. Сравнение getName() по указателям (особенно
+ // при RDK_UNICODE_RUN) ложно оставляло CurrentNode на месте — следующие
+ // SelectNodeForce писали не в Interfaces, а DelNodeInternalContent мог
+ // снести уже сохранённых соседей. В Interface.xml оставался один хвост.
+ CurrentNode=node;
+ NodeNameCached = false;
+ NodeTextCached = false;
+ AttributesCached = false;
 }
 
 // Возвращает число узлов с заданным именем
