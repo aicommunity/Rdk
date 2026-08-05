@@ -552,14 +552,18 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
     ui->treeWidgetInputs->clear();
     ui->treeWidgetOutputs->clear();
     ui->treeWidgetFavorites->clear();
-        RDK::UComponent::VariableMapT varMap = cont->GetPropertiesList();
+        const RDK::UComponent::VariableMapT& varMap = cont->GetPropertiesList();
+        const std::vector<RDK::NameT>& propOrder = cont->GetPropertiesOrder();
         std::string buffer;
 
         bool is_new_outputs(false);
         bool is_new_inputs(false);
 
-        for(RDK::UComponent::VariableMapIteratorT i = varMap.begin(); i != varMap.end(); ++i)
+        for(size_t oi = 0; oi < propOrder.size(); ++oi)
         {
+            RDK::UComponent::VariableMapCIteratorT i = varMap.find(propOrder[oi]);
+            if(i == varMap.end())
+             continue;
             if (i->second.CheckMask(ptPubInput))
             {
              std::string::size_type k=i->first.find("DataInput");
@@ -578,38 +582,16 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
              break;
         }
 
-        for(RDK::UComponent::VariableMapIteratorT i = varMap.begin(); i != varMap.end();)
+        for(size_t oi = 0; oi < propOrder.size(); ++oi)
         {
-            if (i->second.CheckMask(ptPubInput) && is_new_inputs)
-            {
-             std::string::size_type k=i->first.find("DataInput");
-             if(k == 0)
-             {
-              i = varMap.erase(i);
-             }
-             else
-              ++i;
-            }
-            else
-            if (i->second.CheckMask(ptPubOutput) && is_new_outputs)
-            {
-             std::string::size_type k=i->first.find("DataOutput");
-             if(k == 0)
-             {
-              i = varMap.erase(i);
-             }
-             else
-              ++i;
-            }
-            else
-            {
-             ++i;
-            }
-        }
+            RDK::UComponent::VariableMapCIteratorT i = varMap.find(propOrder[oi]);
+            if(i == varMap.end())
+             continue;
+            if (i->second.CheckMask(ptPubInput) && is_new_inputs && i->first.find("DataInput") == 0)
+             continue;
+            if (i->second.CheckMask(ptPubOutput) && is_new_outputs && i->first.find("DataOutput") == 0)
+             continue;
 
-
-        for(RDK::UComponent::VariableMapIteratorT i = varMap.begin(); i != varMap.end(); ++i)
-        {
             if (m_watchablePropertiesOnly && i->second.Property
                 && !NMSDK::Plot::isWatchableLanguageType(i->second.Property->GetLanguageType()))
             {
@@ -1109,9 +1091,8 @@ void UComponentsListWidget::rebuildTreeFromSnapshot(const NMSDK::UGuiSnapshotPtr
     QHash<QString, QTreeWidgetItem*> items;
     items.insert(QString(), rootItem);
 
-    // Pass 1: create all items detached (QHash key order is undefined — child may
-    // appear before parent, which would attach to root if done in one pass).
-    const auto componentNames = snapshot->Components.keys();
+    // Pass 1: create all items detached; sibling order comes from ComponentOrder (not QHash::keys).
+    const auto& componentNames = snapshot->ComponentOrder;
     for (const QString &name : componentNames) {
         const auto summary = snapshot->Components.value(name);
         auto *item = new QTreeWidgetItem();
