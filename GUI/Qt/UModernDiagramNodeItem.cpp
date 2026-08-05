@@ -226,12 +226,12 @@ UModernDiagramNodeItem::UModernDiagramNodeItem(UModernDiagramWidget* owner, cons
                         });
     }
 
-    // Константы для размеров
+    // Константы для размеров (высота ~−40% vs прежние 80px; GRID_CELL_* не трогаем)
     const double minWidth = 180.0;  // Увеличено в 1.5 раза (120 * 1.5)
-    const double minHeight = 40.0;  // Минимальная высота для текста
-    const double portSpacing = 20.0;
-    const double topMargin = 30.0;  // Отступ сверху для текста
-    const double bottomMargin = 10.0;  // Отступ снизу
+    const double minHeight = 36.0;  // Минимальная высота для текста
+    const double portSpacing = 12.0;
+    const double topMargin = 16.0;  // Отступ сверху для текста / портов (−2)
+    const double bottomMargin = 13.0;  // +5 к высоте блока (было 6 при top=18 → 48; теперь 16+13+24=53)
 
     // Загружаем реальные порты компонента
     if(m_owner && m_owner->m_application)
