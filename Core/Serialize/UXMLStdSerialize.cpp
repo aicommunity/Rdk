@@ -318,6 +318,11 @@ USerStorageXML& operator >> (USerStorageXML& storage, std::vector<double> &data)
   {
    // Оптимизированная десериализация - прямой парсинг строки
    std::string text = storage.GetNodeText();
+   for(char &ch : text)
+   {
+    if(ch == ',')
+     ch = '.';
+   }
    const char* start = text.c_str();
    const char* end = start + text.length();
    

@@ -21,6 +21,7 @@ See file license.txt for more information
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
+#include <clocale>
 #include <cwchar>
 #include "UPtr.h"
 
@@ -116,6 +117,67 @@ bool is_inf(NumT n)
  return ((n==std::numeric_limits<NumT>::infinity()) || (n==-std::numeric_limits<NumT>::infinity()));
 }
 
+/// Force ASCII '.' after snprintf which may emit locale ',' for LC_NUMERIC.
+inline void ForceCDecimalPointInPlace(char *buffer, int len)
+{
+ if(!buffer || len <= 0)
+  return;
+ for(int i = 0; i < len; ++i)
+ {
+  if(buffer[i] == ',')
+   buffer[i] = '.';
+ }
+}
+
+/// Accept both '.' and legacy locale ',' before strtod/wcstod.
+inline void NormalizeDecimalSeparatorsInPlace(std::string &text)
+{
+ for(char &ch : text)
+ {
+  if(ch == ',')
+   ch = '.';
+ }
+}
+
+inline void NormalizeDecimalSeparatorsInPlace(std::wstring &text)
+{
+ for(wchar_t &ch : text)
+ {
+  if(ch == L',')
+   ch = L'.';
+ }
+}
+
+/// Parse float with C numeric rules ('.' decimal), independent of process locale.
+inline double ParseFloatLocaleIndependent(const char *text)
+{
+ if(!text || !*text)
+  return 0.0;
+ std::string normalized(text);
+ NormalizeDecimalSeparatorsInPlace(normalized);
+
+ const char *previous = std::setlocale(LC_NUMERIC, nullptr);
+ const std::string previousLocale = previous ? previous : "C";
+ std::setlocale(LC_NUMERIC, "C");
+ const double value = std::strtod(normalized.c_str(), nullptr);
+ std::setlocale(LC_NUMERIC, previousLocale.c_str());
+ return value;
+}
+
+inline double ParseFloatLocaleIndependent(const wchar_t *text)
+{
+ if(!text || !*text)
+  return 0.0;
+ std::wstring normalized(text);
+ NormalizeDecimalSeparatorsInPlace(normalized);
+
+ const char *previous = std::setlocale(LC_NUMERIC, nullptr);
+ const std::string previousLocale = previous ? previous : "C";
+ std::setlocale(LC_NUMERIC, "C");
+ const double value = std::wcstod(normalized.c_str(), nullptr);
+ std::setlocale(LC_NUMERIC, previousLocale.c_str());
+ return value;
+}
 
 // Оптимизированные перегрузки для преобразования чисел в строку
 // Для вещественных чисел используется максимальная точность для сохранения полной мантиссы
@@ -129,11 +191,13 @@ inline string& ntoa(double n, string &buf)
  {
   // Fallback на stringstream в случае ошибки
   basic_stringstream<char> stream;
+  stream.imbue(std::locale::classic());
   stream << std::setprecision(17) << n;
   buf = stream.str();
  }
  else
  {
+  ForceCDecimalPointInPlace(buffer, len);
   buf.assign(buffer, len);
  }
  return buf;
@@ -147,11 +211,13 @@ inline string& ntoa(float n, string &buf)
  if(len < 0 || len >= (int)sizeof(buffer))
  {
   basic_stringstream<char> stream;
+  stream.imbue(std::locale::classic());
   stream << std::setprecision(9) << n;
   buf = stream.str();
  }
  else
  {
+  ForceCDecimalPointInPlace(buffer, len);
   buf.assign(buffer, len);
  }
  return buf;
@@ -165,11 +231,13 @@ inline string& ntoa(long double n, string &buf)
  if(len < 0 || len >= (int)sizeof(buffer))
  {
   basic_stringstream<char> stream;
+  stream.imbue(std::locale::classic());
   stream << std::setprecision(21) << n;
   buf = stream.str();
  }
  else
  {
+  ForceCDecimalPointInPlace(buffer, len);
   buf.assign(buffer, len);
  }
  return buf;
@@ -300,11 +368,13 @@ inline string& ntoa(double n, int digs, string &buf)
   if(len < 0 || len >= (int)sizeof(buffer))
   {
    basic_stringstream<char> stream;
+   stream.imbue(std::locale::classic());
    stream << std::setprecision(17) << n;
    buf = stream.str();
   }
   else
   {
+   ForceCDecimalPointInPlace(buffer, len);
    buf.assign(buffer, len);
   }
  }
@@ -315,6 +385,7 @@ inline string& ntoa(double n, int digs, string &buf)
   if(len < 0 || len >= (int)sizeof(buffer))
   {
    basic_stringstream<char> stream;
+   stream.imbue(std::locale::classic());
    stream.width(digs);
    stream.fill('0');
    stream << std::fixed << std::setprecision(digs) << n;
@@ -322,6 +393,7 @@ inline string& ntoa(double n, int digs, string &buf)
   }
   else
   {
+   ForceCDecimalPointInPlace(buffer, len);
    buf.assign(buffer, len);
   }
  }
@@ -340,11 +412,13 @@ inline string& ntoa(float n, int digs, string &buf)
   if(len < 0 || len >= (int)sizeof(buffer))
   {
    basic_stringstream<char> stream;
+   stream.imbue(std::locale::classic());
    stream << std::setprecision(9) << n;
    buf = stream.str();
   }
   else
   {
+   ForceCDecimalPointInPlace(buffer, len);
    buf.assign(buffer, len);
   }
  }
@@ -355,6 +429,7 @@ inline string& ntoa(float n, int digs, string &buf)
   if(len < 0 || len >= (int)sizeof(buffer))
   {
    basic_stringstream<char> stream;
+   stream.imbue(std::locale::classic());
    stream.width(digs);
    stream.fill('0');
    stream << std::fixed << std::setprecision(digs) << n;
@@ -362,6 +437,7 @@ inline string& ntoa(float n, int digs, string &buf)
   }
   else
   {
+   ForceCDecimalPointInPlace(buffer, len);
    buf.assign(buffer, len);
   }
  }
@@ -380,11 +456,13 @@ inline string& ntoa(long double n, int digs, string &buf)
   if(len < 0 || len >= (int)sizeof(buffer))
   {
    basic_stringstream<char> stream;
+   stream.imbue(std::locale::classic());
    stream << std::setprecision(21) << n;
    buf = stream.str();
   }
   else
   {
+   ForceCDecimalPointInPlace(buffer, len);
    buf.assign(buffer, len);
   }
  }
@@ -395,6 +473,7 @@ inline string& ntoa(long double n, int digs, string &buf)
   if(len < 0 || len >= (int)sizeof(buffer))
   {
    basic_stringstream<char> stream;
+   stream.imbue(std::locale::classic());
    stream.width(digs);
    stream.fill('0');
    stream << std::fixed << std::setprecision(digs) << n;
@@ -402,6 +481,7 @@ inline string& ntoa(long double n, int digs, string &buf)
   }
   else
   {
+   ForceCDecimalPointInPlace(buffer, len);
    buf.assign(buffer, len);
   }
  }
@@ -503,15 +583,22 @@ wstring wntohex(NumT n, int digs)
 }
 
 // Оптимизированная функция, преобразующая строку в вещественное число
-// Сохраняет полную точность при десериализации
+// Сохраняет полную точность при десериализации; '.' и ',' принимаются.
 template<typename CharT>
 double atof(const std::basic_string<CharT> &str)
 {
  if(str.empty())
   return 0.0;
- // Используем стандартную функцию C для быстрого преобразования
- // strtod обеспечивает максимальную точность
- return std::strtod(str.c_str(), nullptr);
+ std::string normalized;
+ normalized.reserve(str.size());
+ for(CharT ch : str)
+ {
+  if(ch == CharT(','))
+   normalized.push_back('.');
+  else
+   normalized.push_back(static_cast<char>(ch));
+ }
+ return ParseFloatLocaleIndependent(normalized.c_str());
 }
 
 // Специализация для wstring
@@ -520,8 +607,7 @@ inline double atof<wchar_t>(const std::basic_string<wchar_t> &str)
 {
  if(str.empty())
   return 0.0;
- // Для wide string используем wcstod
- return std::wcstod(str.c_str(), nullptr);
+ return ParseFloatLocaleIndependent(str.c_str());
 }
 
 // Оптимизированная функция, преобразующая строку в целое число

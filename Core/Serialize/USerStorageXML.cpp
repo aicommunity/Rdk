@@ -14,6 +14,7 @@ See file license.txt for more information
 
 #include <string.h>
 #include <locale>
+#include <clocale>
 #include <cstdlib>
 #include <iostream>
 #include <fstream>
@@ -37,8 +38,12 @@ double ParseXmlFloat(const char *text, double default_value)
   if(ch == ',')
    ch = '.';
  }
+ const char *previous = std::setlocale(LC_NUMERIC, nullptr);
+ const std::string previousLocale = previous ? previous : "C";
+ std::setlocale(LC_NUMERIC, "C");
  char *end = nullptr;
  const double value = std::strtod(normalized.c_str(), &end);
+ std::setlocale(LC_NUMERIC, previousLocale.c_str());
  if(end == normalized.c_str())
   return default_value;
  return value;

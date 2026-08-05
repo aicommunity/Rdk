@@ -15,6 +15,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
+#include <QLocale>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QShortcut>
@@ -104,6 +105,12 @@ void PlotSettingsSidePanel::buildUi()
     m_xMin = new QDoubleSpinBox(axesBox);
     m_xMax = new QDoubleSpinBox(axesBox);
     m_xRange = new QDoubleSpinBox(axesBox);
+    const QLocale cLocale = QLocale::c();
+    m_yMin->setLocale(cLocale);
+    m_yMax->setLocale(cLocale);
+    m_xMin->setLocale(cLocale);
+    m_xMax->setLocale(cLocale);
+    m_xRange->setLocale(cLocale);
     m_yMin->setRange(-1e9, 1e9);
     m_yMax->setRange(-1e9, 1e9);
     m_xMin->setRange(-1e9, 1e9);
@@ -161,6 +168,7 @@ void PlotSettingsSidePanel::buildUi()
     m_channelSpin = new QSpinBox(selectedBox);
     m_channelSpin->setRange(0, 255);
     m_yShift = new QDoubleSpinBox(selectedBox);
+    m_yShift->setLocale(QLocale::c());
     m_yShift->setRange(-1e9, 1e9);
     m_bindingLabel = new QLabel(selectedBox);
     m_bindingLabel->setWordWrap(true);

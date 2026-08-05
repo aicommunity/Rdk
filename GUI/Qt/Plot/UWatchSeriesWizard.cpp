@@ -22,6 +22,7 @@
 #include <QIcon>
 #include <QLabel>
 #include <QLineEdit>
+#include <QLocale>
 #include <QPixmap>
 #include <QScrollArea>
 #include <QFrame>
@@ -381,6 +382,7 @@ public:
         m_form->addRow(QObject::tr("Color"), colorRow);
 
         m_yShift = new QDoubleSpinBox(content);
+        m_yShift->setLocale(QLocale::c());
         m_yShift->setRange(-1e9, 1e9);
         m_yShift->setDecimals(3);
         m_yShift->setMinimumWidth(120);
@@ -393,6 +395,7 @@ public:
 
         auto makeSpin = [content]() {
             auto* s = new QDoubleSpinBox(content);
+            s->setLocale(QLocale::c());
             s->setRange(-1e12, 1e12);
             s->setDecimals(6);
             s->setMinimumWidth(120);
@@ -434,6 +437,7 @@ public:
         samplingForm->addRow(QObject::tr("Min interval"), m_xyMinInterval);
 
         m_xyMinDistance = new QDoubleSpinBox(m_samplingBox);
+        m_xyMinDistance->setLocale(QLocale::c());
         m_xyMinDistance->setRange(0.0, 1e12);
         m_xyMinDistance->setDecimals(6);
         m_xyMinDistance->setSpecialValueText(QObject::tr("Off"));

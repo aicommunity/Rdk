@@ -745,6 +745,11 @@ USerStorageXML& operator >> (USerStorageXML& storage, double (&data)[Size])
   {
    // Оптимизированная десериализация с сохранением полной точности
    std::string text = storage.GetNodeText();
+   for(char &ch : text)
+   {
+    if(ch == ',')
+     ch = '.';
+   }
    const char* start = text.c_str();
    const char* end = start + text.length();
    
