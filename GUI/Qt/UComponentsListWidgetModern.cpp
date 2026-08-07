@@ -2639,9 +2639,11 @@ bool UComponentsListWidgetModern::applyPropertyValueFromEditor(QTreeWidgetItem* 
             RDK::GetModelLockTimeout(getWorkChannelIndex(), kModelLockTimeoutMs);
         if(model)
         {
-            RDK::UEPtr<RDK::UContainer> cont = comp.isEmpty()
-                ? model.Get()
-                : model->GetComponentL(comp.toLocal8Bit().constData(), true);
+            RDK::UEPtr<RDK::UContainer> cont;
+            if(comp.isEmpty())
+                cont = model.Get();
+            else
+                cont = model->GetComponentL(comp.toLocal8Bit().constData(), true);
             RDK::UEPtr<RDK::UNet> unet = RDK::dynamic_pointer_cast<RDK::UNet>(cont);
             if(unet)
             {
