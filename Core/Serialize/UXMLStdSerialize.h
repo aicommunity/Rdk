@@ -1084,17 +1084,11 @@ USerStorageXML& operator << (USerStorageXML& storage, bool const (&data)[Size1][
 
  std::stringstream stream;
 
- stream<<endl;
  for(unsigned i=0;i<Size1;i++)
  {
-  for(unsigned j=0;j<Size2;j++)
-  {
-   stream<<int(data[i][j]);
-//   if(j<Size2-1)
-	stream<<"\t";
-  }
-  if(i<Size1-1)
-   stream<<endl;
+  AppendMatrixTextRow(stream, (int)Size2, [&](unsigned j) { stream << int(data[i][j]); });
+  if(i+1<Size1)
+   stream<<'\n';
  }
 
  storage.SetNodeText(stream.str());
@@ -1116,7 +1110,8 @@ USerStorageXML& operator >> (USerStorageXML& storage, bool (&data)[Size1][Size2]
  if(size1>0 && size2>0)
  {
   std::string rvalue=storage.GetNodeText();
-  std::stringstream stream(rvalue.c_str());
+  MatrixNodeTextTrimInPlace(rvalue);
+  std::stringstream stream(rvalue);
 
   for(int i=0;i<size1;i++)
   {
@@ -1144,17 +1139,11 @@ USerStorageXML& operator << (USerStorageXML& storage, double const (&data)[Size1
 
  std::stringstream stream;
 
- stream<<endl;
  for(unsigned i=0;i<Size1;i++)
  {
-  for(unsigned j=0;j<Size2;j++)
-  {
-   stream<<data[i][j];
-//   if(j<Size2-1)
-	stream<<"\t";
-  }
-  if(i<Size1-1)
-   stream<<endl;
+  AppendMatrixTextRow(stream, (int)Size2, [&](unsigned j) { stream << data[i][j]; });
+  if(i+1<Size1)
+   stream<<'\n';
  }
 
  storage.SetNodeText(stream.str());
@@ -1177,7 +1166,8 @@ USerStorageXML& operator >> (USerStorageXML& storage, double (&data)[Size1][Size
  if(size1>0 && size2>0)
  {
   std::string rvalue=storage.GetNodeText();
-  std::stringstream stream(rvalue.c_str());
+  MatrixNodeTextTrimInPlace(rvalue);
+  std::stringstream stream(rvalue);
 
   for(int i=0;i<size1;i++)
   {
@@ -1205,17 +1195,11 @@ USerStorageXML& operator << (USerStorageXML& storage, int const (&data)[Size1][S
 
  std::stringstream stream;
 
- stream<<endl;
  for(unsigned i=0;i<Size1;i++)
  {
-  for(unsigned j=0;j<Size2;j++)
-  {
-   stream<<data[i][j];
-//   if(j<Size2-1)
-	stream<<"\t";
-  }
-  if(i<Size1-1)
-   stream<<endl;
+  AppendMatrixTextRow(stream, (int)Size2, [&](unsigned j) { stream << data[i][j]; });
+  if(i+1<Size1)
+   stream<<'\n';
  }
 
  storage.SetNodeText(stream.str());
@@ -1238,7 +1222,8 @@ USerStorageXML& operator >> (USerStorageXML& storage, int (&data)[Size1][Size2])
  if(size1>0 && size2>0)
  {
   std::string rvalue=storage.GetNodeText();
-  std::stringstream stream(rvalue.c_str());
+  MatrixNodeTextTrimInPlace(rvalue);
+  std::stringstream stream(rvalue);
 
   for(int i=0;i<size1;i++)
   {
@@ -1266,17 +1251,11 @@ USerStorageXML& operator << (USerStorageXML& storage, uint32_t const (&data)[Siz
 
  std::stringstream stream;
 
- stream<<endl;
  for(unsigned i=0;i<Size1;i++)
  {
-  for(unsigned j=0;j<Size2;j++)
-  {
-   stream<<data[i][j];
-//   if(j<Size2-1)
-	stream<<"\t";
-  }
-  if(i<Size1-1)
-   stream<<endl;
+  AppendMatrixTextRow(stream, (int)Size2, [&](unsigned j) { stream << data[i][j]; });
+  if(i+1<Size1)
+   stream<<'\n';
  }
 
  storage.SetNodeText(stream.str());
@@ -1299,7 +1278,8 @@ USerStorageXML& operator >> (USerStorageXML& storage, uint32_t (&data)[Size1][Si
  if(size1>0 && size2>0)
  {
   std::string rvalue=storage.GetNodeText();
-  std::stringstream stream(rvalue.c_str());
+  MatrixNodeTextTrimInPlace(rvalue);
+  std::stringstream stream(rvalue);
 
   for(int i=0;i<size1;i++)
   {
@@ -1327,17 +1307,11 @@ USerStorageXML& operator << (USerStorageXML& storage, uint8_t const (&data)[Size
 
  std::stringstream stream;
 
- stream<<endl;
  for(unsigned i=0;i<Size1;i++)
  {
-  for(unsigned j=0;j<Size2;j++)
-  {
-   stream<<uint32_t(data[i][j]);
-//   if(j<Size2-1)
-	stream<<"\t";
-  }
-  if(i<Size1-1)
-   stream<<endl;
+  AppendMatrixTextRow(stream, (int)Size2, [&](unsigned j) { stream << uint32_t(data[i][j]); });
+  if(i+1<Size1)
+   stream<<'\n';
  }
 
  storage.SetNodeText(stream.str());
@@ -1360,7 +1334,8 @@ USerStorageXML& operator >> (USerStorageXML& storage, uint8_t (&data)[Size1][Siz
  if(size1>0 && size2>0)
  {
   std::string rvalue=storage.GetNodeText();
-  std::stringstream stream(rvalue.c_str());
+  MatrixNodeTextTrimInPlace(rvalue);
+  std::stringstream stream(rvalue);
 
   for(int i=0;i<size1;i++)
   {

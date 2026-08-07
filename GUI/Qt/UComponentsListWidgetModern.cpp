@@ -39,8 +39,35 @@
 #include <QAbstractItemView>
 
 #include "../../Deploy/Include/rdk_error_codes.h"
+#include "../../Core/Utilities/USupport.h"
+#include "../../Core/Engine/UComponent.h"
+#include "../../Core/Engine/UNet.h"
 
 namespace {
+
+bool fetchPropertyValueFromModel(int channel,
+                                 const QString& componentLongName,
+                                 const QString& propertyName,
+                                 std::string& outValue)
+{
+ RDK::UELockPtr<RDK::UContainer> model =
+     RDK::GetModelLockTimeout(channel, 250);
+ if(!model)
+  return false;
+
+ RDK::UEPtr<RDK::UContainer> cont;
+ if(componentLongName.isEmpty())
+  cont = model.Get();
+ else
+  cont = model->GetComponentL(componentLongName.toLocal8Bit().constData(), true);
+
+ RDK::UEPtr<RDK::UNet> unet = RDK::dynamic_pointer_cast<RDK::UNet>(cont);
+ if(!unet)
+  return false;
+
+ unet->GetPropertyValue(propertyName.toStdString(), outValue);
+ return true;
+}
 
 constexpr int kFavRoleProp = Qt::UserRole;
 constexpr int kFavRoleDisplayPath = Qt::UserRole + 1;
@@ -1140,6 +1167,8 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
                 QString parameterName = QString::fromLocal8Bit(i->first.c_str());
                 parametersItem->setText(0, parameterName);
                 cont->GetPropertyValue(i->first, buffer);
+                if(RDK::IsMatrixPropertyTypeName(i->second.Property->GetLanguageType().name()))
+                    buffer = RDK::NormalizeMatrixPropertyText(buffer);
                 const QString rawValue = QString::fromLocal8Bit(buffer.c_str());
                 parametersItem->setData(1, Qt::UserRole, rawValue);
                 parametersItem->setText(1, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
@@ -1169,6 +1198,8 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
                 QString stateName = QString::fromLocal8Bit(i->first.c_str());
                 stateItem->setText(0, stateName);
                 cont->GetPropertyValue(i->first, buffer);
+                if(RDK::IsMatrixPropertyTypeName(i->second.Property->GetLanguageType().name()))
+                    buffer = RDK::NormalizeMatrixPropertyText(buffer);
                 const QString rawValue = QString::fromLocal8Bit(buffer.c_str());
                 stateItem->setData(1, Qt::UserRole, rawValue);
                 stateItem->setText(1, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
@@ -1184,6 +1215,8 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
                 QString inputName = QString::fromLocal8Bit(i->first.c_str());
                 inputItem->setText(0, inputName);
                 cont->GetPropertyValue(i->first, buffer);
+                if(RDK::IsMatrixPropertyTypeName(i->second.Property->GetLanguageType().name()))
+                    buffer = RDK::NormalizeMatrixPropertyText(buffer);
                 const QString rawValue = QString::fromLocal8Bit(buffer.c_str());
                 inputItem->setData(1, Qt::UserRole, rawValue);
                 inputItem->setText(1, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
@@ -1200,6 +1233,8 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
                 QString outputName = QString::fromLocal8Bit(i->first.c_str());
                 outputItem->setText(0, outputName);
                 cont->GetPropertyValue(i->first, buffer);
+                if(RDK::IsMatrixPropertyTypeName(i->second.Property->GetLanguageType().name()))
+                    buffer = RDK::NormalizeMatrixPropertyText(buffer);
                 const QString rawValue = QString::fromLocal8Bit(buffer.c_str());
                 outputItem->setData(1, Qt::UserRole, rawValue);
                 outputItem->setText(1, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
@@ -1310,8 +1345,10 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
             if(child_cont)
             {
                 child_cont->GetPropertyValue(prop_name.toStdString(), buffer);
-                rawValue = QString::fromLocal8Bit(buffer.c_str());
                 prop = child_cont->FindProperty(prop_name.toStdString());
+                if(prop && RDK::IsMatrixPropertyTypeName(prop->GetLanguageType().name()))
+                    buffer = RDK::NormalizeMatrixPropertyText(buffer);
+                rawValue = QString::fromLocal8Bit(buffer.c_str());
             }
 
             for(QTreeWidgetItem* groupParent : targetGroups)
@@ -2596,7 +2633,30 @@ bool UComponentsListWidgetModern::applyPropertyValueFromEditor(QTreeWidgetItem* 
     if(prop.isEmpty())
         return false;
 
-    if(!commitPropertyValue(comp, prop, value))
+    QString commitValue = value;
+    {
+        RDK::UELockPtr<RDK::UContainer> model =
+            RDK::GetModelLockTimeout(getWorkChannelIndex(), kModelLockTimeoutMs);
+        if(model)
+        {
+            RDK::UEPtr<RDK::UContainer> cont = comp.isEmpty()
+                ? model.Get()
+                : model->GetComponentL(comp.toLocal8Bit().constData(), true);
+            RDK::UEPtr<RDK::UNet> unet = RDK::dynamic_pointer_cast<RDK::UNet>(cont);
+            if(unet)
+            {
+                RDK::UEPtr<RDK::UIProperty> property = unet->FindProperty(prop.toStdString());
+                if(property && RDK::IsMatrixPropertyTypeName(property->GetLanguageType().name()))
+                {
+                    std::string normalized = RDK::NormalizeMatrixPropertyText(
+                        value.toLocal8Bit().constData());
+                    commitValue = QString::fromLocal8Bit(normalized.c_str());
+                }
+            }
+        }
+    }
+
+    if(!commitPropertyValue(comp, prop, commitValue))
     {
         QToolTip::showText(QCursor::pos(),
                            tr("Failed to apply property value"),
@@ -2604,8 +2664,13 @@ bool UComponentsListWidgetModern::applyPropertyValueFromEditor(QTreeWidgetItem* 
         return false;
     }
 
+    QString displayValue = commitValue;
+    std::string canonical;
+    if(fetchPropertyValueFromModel(getWorkChannelIndex(), comp, prop, canonical))
+        displayValue = QString::fromLocal8Bit(canonical.c_str());
+
     UpdateInterfaceFlag = true;
-    updatePropertyItemDisplay(item, value);
+    updatePropertyItemDisplay(item, displayValue);
     UpdateInterfaceFlag = false;
     return true;
 }
@@ -2631,6 +2696,15 @@ bool UComponentsListWidgetModern::beginPropertyValueEdit(QTreeWidgetItem* item)
     if(isMultilinePropertyValue(raw, display))
     {
         QString edited = raw;
+        {
+            std::string normalized = edited.toLocal8Bit().constData();
+            if(normalized.find('\t') != std::string::npos
+               || (!normalized.empty() && (normalized.front() == '\n' || normalized.front() == '\r')))
+            {
+                normalized = RDK::NormalizeMatrixPropertyText(normalized);
+                edited = QString::fromLocal8Bit(normalized.c_str());
+            }
+        }
         if(!editMultilineValueDialog(this, edited))
             return false;
         return applyPropertyValueFromEditor(item, edited);

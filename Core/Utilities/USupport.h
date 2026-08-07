@@ -18,6 +18,8 @@ See file license.txt for more information
 #include <iomanip>
 #include <locale>
 #include <limits>
+#include <algorithm>
+#include <ostream>
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
@@ -177,6 +179,60 @@ inline double ParseFloatLocaleIndependent(const wchar_t *text)
  const double value = std::wcstod(normalized.c_str(), nullptr);
  std::setlocale(LC_NUMERIC, previousLocale.c_str());
  return value;
+}
+
+/// Trim legacy matrix node text (leading/trailing whitespace) before parse.
+inline void MatrixNodeTextTrimInPlace(std::string &text)
+{
+ auto notSpace = [](unsigned char c) {
+  return c != ' ' && c != '\t' && c != '\r' && c != '\n';
+ };
+ text.erase(text.begin(), std::find_if(text.begin(), text.end(), notSpace));
+ text.erase(std::find_if(text.rbegin(), text.rend(), notSpace).base(), text.end());
+}
+
+/// Write one matrix row: v0\\tv1\\t... without trailing tab.
+template<typename WriteFn>
+inline void AppendMatrixTextRow(std::ostream &out, int cols, WriteFn writeCell)
+{
+ for(int j = 0; j < cols; ++j)
+ {
+  if(j > 0)
+   out << '\t';
+  writeCell(j);
+ }
+}
+
+inline bool IsMatrixPropertyTypeName(const std::string &typeName)
+{
+ return typeName.find("MDMatrix") != std::string::npos
+     || typeName.find("MMatrix") != std::string::npos;
+}
+
+/// Normalize matrix property text for GUI display/edit (trim + strip trailing tabs per line).
+inline std::string NormalizeMatrixPropertyText(std::string text)
+{
+ MatrixNodeTextTrimInPlace(text);
+ if(text.empty())
+  return text;
+
+ std::string result;
+ result.reserve(text.size());
+ std::size_t lineStart = 0;
+ for(std::size_t i = 0; i <= text.size(); ++i)
+ {
+  if(i == text.size() || text[i] == '\n')
+  {
+   std::size_t lineEnd = i;
+   while(lineEnd > lineStart && (text[lineEnd - 1] == '\t' || text[lineEnd - 1] == '\r'))
+    --lineEnd;
+   if(!result.empty())
+    result += '\n';
+   result.append(text, lineStart, lineEnd - lineStart);
+   lineStart = i + 1;
+  }
+ }
+ return result;
 }
 
 // Оптимизированные перегрузки для преобразования чисел в строку
