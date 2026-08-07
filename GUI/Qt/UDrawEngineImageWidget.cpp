@@ -2,6 +2,7 @@
 #include "UEngineSelectionSync.h"
 #include "UQuickLinkDialog.h"
 #include "UStyleManager.h"
+#include "UModernDiagramWidget.h"
 
 #include <QDebug>
 #include <QByteArray>
@@ -758,13 +759,17 @@ void UDrawEngineImageWidget::componentCopyClassNameToClipboard()
 
 void UDrawEngineImageWidget::componentReset()
 {
-    Env_Reset(myLongName().toLocal8Bit());
+    const QString longName = myLongName();
+    Env_Reset(longName.toLocal8Bit());
+    UModernDiagramWidget::invalidatePortsCacheEverywhere(longName);
     emit updateComponentsList();
 }
 
 void UDrawEngineImageWidget::componentCalculate()
 {
-    Env_Calculate(myLongName().toLocal8Bit());
+    const QString longName = myLongName();
+    Env_Calculate(longName.toLocal8Bit());
+    UModernDiagramWidget::invalidatePortsCacheEverywhere(longName);
     RDK::UIVisualControllerStorage::UpdateInterface();
 }
 
@@ -794,6 +799,7 @@ void UDrawEngineImageWidget::componentDefault()
     if(owner)
      object->CreateLinks(links_list, owner);
 
+    UModernDiagramWidget::invalidatePortsCacheEverywhere(selectedComponentLongName);
     RDK::UIVisualControllerStorage::UpdateInterface(true);
 }
 

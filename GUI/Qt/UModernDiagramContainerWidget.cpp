@@ -396,3 +396,13 @@ void UModernDiagramContainerWidget::updateTheme()
         modernScheme->updateTheme();
     }
 }
+
+void UModernDiagramContainerWidget::invalidatePortsCache(const QString& componentFullName)
+{
+    if(!modernScheme)
+        return;
+    if(componentFullName.isEmpty())
+        modernScheme->invalidatePortsCache();
+    else
+        modernScheme->invalidatePortsCache(componentFullName);
+}

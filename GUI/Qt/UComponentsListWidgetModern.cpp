@@ -26,6 +26,8 @@
 #include "UComponentGuiService.h"
 #include "UComponentFormRegistry.h"
 
+#include "UModernDiagramWidget.h"
+
 #include <QApplication>
 #include <QPainter>
 #include <QStyledItemDelegate>
@@ -1955,6 +1957,7 @@ void UComponentsListWidgetModern::componentReset()
     if(componentsTree->currentItem())
     {
         Env_Reset(selectedComponentLongName.toLocal8Bit());
+        UModernDiagramWidget::invalidatePortsCacheEverywhere(selectedComponentLongName);
         UpdateInterface(true);
     }
 }
@@ -1964,6 +1967,7 @@ void UComponentsListWidgetModern::componentCalculate()
     if(componentsTree->currentItem())
     {
         Env_Calculate(selectedComponentLongName.toLocal8Bit());
+        UModernDiagramWidget::invalidatePortsCacheEverywhere(selectedComponentLongName);
         RDK::UIVisualControllerStorage::UpdateInterface();
     }
 }
@@ -2227,6 +2231,7 @@ void UComponentsListWidgetModern::on_actionDefaultAllParameters_triggered()
         storage->DefaultObject(object);
         if(owner)
          object->CreateLinks(links_list, owner);
+        UModernDiagramWidget::invalidatePortsCacheEverywhere(selectedComponentLongName);
         RDK::UIVisualControllerStorage::UpdateInterface(true);
     }
 }

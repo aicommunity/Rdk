@@ -893,6 +893,7 @@ void UModernDiagramWidget::buildLinks()
     // Оптимизация: создаем все связи сначала, затем добавляем в сцену пакетами
     QList<UModernDiagramLinkItem*> linksToAdd;
     QHash<QPair<UModernDiagramNodeItem*, QString>, PortCategory> portCategoryCache;  // Кэш для determinePortCategory
+    QHash<QString, UModernDiagramLinkItem*> aggregatedLinks;  // ключ: src|dst|srcCat|dstCat
 
     int added = 0;
     int skipped = 0;
@@ -1182,8 +1183,21 @@ void UModernDiagramWidget::buildLinks()
                 }
             }
 
-            // Создаем LinkItem с категориями портов
+            // Создаем / агрегируем LinkItem по (src, dst, srcCategory, dstCategory)
+            const QString aggKey = QString::number(quintptr(srcNode)) + QLatin1Char('|')
+                + QString::number(quintptr(dstNode)) + QLatin1Char('|')
+                + QString::number(static_cast<int>(srcCategory)) + QLatin1Char('|')
+                + QString::number(static_cast<int>(dstCategory));
+
+            if(UModernDiagramLinkItem* existing = aggregatedLinks.value(aggKey, nullptr))
+            {
+                existing->incrementParallelCount();
+                added++;
+                continue;
+            }
+
             auto* l = new UModernDiagramLinkItem(srcNode, dstNode, srcCategory, dstCategory);
+            aggregatedLinks.insert(aggKey, l);
 
             if(dstNode)
             {
@@ -1508,6 +1522,88 @@ void UModernDiagramWidget::updateTheme()
 
     // Обновляем стили кнопки сброса масштаба
     m_viewportManager->updateResetZoomButtonStyle();
+}
+
+namespace {
+void clearNodePortsCache(UModernDiagramNodeItem* node)
+{
+    if(!node)
+        return;
+    node->m_portsCacheValid = false;
+    node->m_cachedOwnInputPorts.clear();
+    node->m_cachedChildInputPorts.clear();
+    node->m_cachedAliasInputPorts.clear();
+    node->m_cachedOwnOutputPorts.clear();
+    node->m_cachedChildOutputPorts.clear();
+    node->m_cachedAliasOutputPorts.clear();
+    node->m_hasConnectionsToInputCache.clear();
+    node->m_hasConnectionsToOutputCache.clear();
+    node->m_hasInputPortsCache.clear();
+    node->m_hasOutputPortsCache.clear();
+    node->m_cacheValid = false;
+}
+} // namespace
+
+void UModernDiagramWidget::invalidatePortsCache()
+{
+    if(m_cacheManager)
+        m_cacheManager->invalidateComponentCache();
+    for(auto* node : m_nodes)
+        clearNodePortsCache(node);
+}
+
+void UModernDiagramWidget::invalidatePortsCache(const QString& componentFullName)
+{
+    if(componentFullName.isEmpty())
+    {
+        invalidatePortsCache();
+        return;
+    }
+
+    if(m_cacheManager)
+        m_cacheManager->invalidateComponentCache(componentFullName);
+
+    auto findAndClear = [this](const QString& name) -> bool {
+        if(auto it = m_nodeByName.find(name); it != m_nodeByName.end())
+        {
+            clearNodePortsCache(it.value());
+            return true;
+        }
+        return false;
+    };
+
+    if(findAndClear(componentFullName))
+        return;
+
+    if(!m_componentName.isEmpty() && componentFullName.startsWith(m_componentName + "."))
+    {
+        const QString relative = componentFullName.mid(m_componentName.size() + 1);
+        const int dot = relative.indexOf('.');
+        const QString top = dot >= 0 ? relative.left(dot) : relative;
+        findAndClear(top);
+        if(m_cacheManager && top != relative)
+            m_cacheManager->invalidateComponentCache(m_componentName + "." + top);
+        return;
+    }
+
+    const int dot = componentFullName.indexOf('.');
+    const QString top = dot >= 0 ? componentFullName.left(dot) : componentFullName;
+    findAndClear(top);
+}
+
+void UModernDiagramWidget::invalidatePortsCacheEverywhere(const QString& componentFullName)
+{
+    const QWidgetList widgets = QApplication::allWidgets();
+    for(QWidget* w : widgets)
+    {
+        auto* diagram = qobject_cast<UModernDiagramWidget*>(w);
+        if(!diagram)
+            continue;
+        if(componentFullName.isEmpty())
+            diagram->invalidatePortsCache();
+        else
+            diagram->invalidatePortsCache(componentFullName);
+    }
 }
 
 

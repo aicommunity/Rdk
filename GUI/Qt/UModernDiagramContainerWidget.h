@@ -38,6 +38,8 @@ public:
     virtual void ALoadParameters();
     /// Обновление темы - инвалидирует кэш всех узлов и обновляет сцену
     void updateTheme();
+    /// Сброс кэша портов ModernDiagram (пустой fullName — весь кэш)
+    void invalidatePortsCache(const QString& componentFullName = QString());
 
     UModernDiagramWidget* modernDiagramWidget() const { return modernScheme; }
 

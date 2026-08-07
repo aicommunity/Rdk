@@ -102,6 +102,12 @@ public slots:
     int selectNodesInRect(const QRectF& selectionRect, bool addToSelection = false);
     /// Обновление темы - инвалидирует кэш всех узлов и обновляет сцену
     void updateTheme();
+    /// Сброс кэша портов (локальный NodeItem + global ComponentCache) для всей диаграммы
+    void invalidatePortsCache();
+    /// Сброс кэша портов одного компонента (fullName — long name в модели)
+    void invalidatePortsCache(const QString& componentFullName);
+    /// Сброс кэша портов во всех открытых UModernDiagramWidget (Reset/Calculate/Default извне диаграммы)
+    static void invalidatePortsCacheEverywhere(const QString& componentFullName = QString());
     /// Вызвать открытие окна описания проекта (используется кнопкой на диаграмме)
     void requestOpenProjectDescription();
     /// Показать/скрыть палитру классов (кнопка на диаграмме)

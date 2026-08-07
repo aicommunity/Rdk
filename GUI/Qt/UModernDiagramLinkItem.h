@@ -34,6 +34,9 @@ public:
     void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
 
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
+    QRectF boundingRect() const override;
+
     // Getters for tooltip generation
     UModernDiagramNodeItem* getSourceNode() const { return m_src; }
     UModernDiagramNodeItem* getDestinationNode() const { return m_dst; }
@@ -47,6 +50,10 @@ public:
     bool useOutput() const { return m_useOutput; }
     bool useInput() const { return m_useInput; }
 
+    int parallelCount() const { return m_parallelCount; }
+    void setParallelCount(int count) { m_parallelCount = count > 0 ? count : 1; }
+    void incrementParallelCount() { ++m_parallelCount; }
+
 private:
     UModernDiagramWidget* m_owner;
     UModernDiagramNodeItem* m_src;
@@ -59,6 +66,7 @@ private:
     PortCategory m_srcCategory;  // Категория исходного порта (если известна)
     PortCategory m_dstCategory;   // Категория целевого порта (если известна)
     bool m_hasCategories;        // Флаг, указывающий, что категории заданы
+    int m_parallelCount = 1;     // Число свёрнутых в одну линию connector'ов
 };
 
 // Включаем полное определение UModernDiagramWidget после объявления класса

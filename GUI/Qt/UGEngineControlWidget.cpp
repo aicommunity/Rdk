@@ -2364,7 +2364,8 @@ void UGEngineControlWidget::ABeforeReset(void)
 // Метод, вызываемый после сброса модели
 void UGEngineControlWidget::AAfterReset(void)
 {
-
+    if(modernDiagram)
+        modernDiagram->invalidatePortsCache();
 }
 
 // Метод, вызываемый перед шагом расчета

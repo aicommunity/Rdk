@@ -20,6 +20,7 @@
 #include "UComponentGuiService.h"
 #include "UComponentFormRegistry.h"
 #include "Plot/PlotDocument.h"
+#include "UModernDiagramWidget.h"
 #include <QTimer>
 
 UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication *app, int channel_mode) :
@@ -1322,6 +1323,7 @@ void UComponentsListWidget::componentReset()
     if(componentsTree->currentItem())
     {
         Env_Reset(selectedComponentLongName.toLocal8Bit());
+        UModernDiagramWidget::invalidatePortsCacheEverywhere(selectedComponentLongName);
         UpdateInterface(true);
     }
 }
@@ -1331,6 +1333,7 @@ void UComponentsListWidget::componentCalculate()
     if(componentsTree->currentItem())
     {
         Env_Calculate(selectedComponentLongName.toLocal8Bit());
+        UModernDiagramWidget::invalidatePortsCacheEverywhere(selectedComponentLongName);
         RDK::UIVisualControllerStorage::UpdateInterface();
     }
 }
@@ -1689,6 +1692,7 @@ void UComponentsListWidget::on_actionDefaultAllParameters_triggered()
         storage->DefaultObject(object);
         if(owner)
          object->CreateLinks(links_list, owner);
+        UModernDiagramWidget::invalidatePortsCacheEverywhere(selectedComponentLongName);
         RDK::UIVisualControllerStorage::UpdateInterface(true);
     }
 }
