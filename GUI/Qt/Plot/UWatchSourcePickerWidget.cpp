@@ -1,6 +1,7 @@
 #include "UWatchSourcePickerWidget.h"
 
-#include "../UComponentsListWidget.h"
+#include "../UComponentsListWidgetModern.h"
+#include "../UPropertyListOptions.h"
 
 #include "rdk.h"
 #include <rdk_application.h>
@@ -38,14 +39,27 @@ void UWatchSourcePickerWidget::configureForWatch(RDK::UApplication* app, bool sh
     if (m_list)
         return;
 
-    m_list = new UComponentsListWidget(this, app, 0);
+    m_list = new UComponentsListWidgetModern(this, app, 0);
     m_list->setUpdateInterval(0);
     m_list->setVerticalOrientation(false);
-    m_list->setTreeExpansionPolicy(1);
-    m_list->setWatchablePropertiesOnly(true);
+    m_list->setComponentTreeEmbedded(true);
+    m_list->setLayoutPreset(ComponentsListLayoutPreset::PropertyPicker);
+
+    PropertyListOptions opt;
+    opt.presentation = PropertyListPresentation::UnifiedGrouped;
+    opt.visibleGroups = GroupAllIO;
+    opt.watchableOnly = true;
+    opt.subtitleMode = PropertySubtitleMode::Type;
+    opt.allowInlineEdit = false;
+    opt.showValueColumn = true;
+    opt.expandGroups = true;
+    opt.hideTabBarInUnified = true;
+    opt.selectLeavesOnly = true;
+    m_list->setPropertyListOptions(opt);
     m_list->setChannelsListVisible(showChannels);
-    m_list->openTabN(3);
     m_list->UpdateInterface(true);
+    // Re-apply after UpdateInterface / channel visibility so geometry sticks
+    m_list->setLayoutPreset(ComponentsListLayoutPreset::PropertyPicker);
 
     m_split->addWidget(m_list);
     m_split->addWidget(m_matrix);

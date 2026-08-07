@@ -4,6 +4,8 @@
 #include <QWidget>
 
 class UWatchTab;
+class UWatchChart;
+class UWatchSerie;
 class QComboBox;
 class QLineEdit;
 class QDoubleSpinBox;
@@ -12,6 +14,7 @@ class QListWidget;
 class QLabel;
 class QPushButton;
 class QTabWidget;
+class QButtonGroup;
 
 enum class PlotInspectorPage
 {
@@ -43,6 +46,7 @@ private slots:
     void onSeriesSelectionChanged();
     void applyChartLive();
     void applySeriesLive();
+    void applySerieColor(int colorId);
 
 private:
     void buildUi();
@@ -81,6 +85,10 @@ private:
     QLabel* m_bindingLabel = nullptr;
     QPushButton* m_addSerieBtn = nullptr;
     class QSpinBox* m_channelSpin = nullptr;
+    QButtonGroup* m_serieColorGroup = nullptr;
+    int m_serieColorIndex = -1;
+
+    void syncSerieColorSelection(UWatchChart* chart, UWatchSerie* serie);
 };
 
 #endif // PLOTSETTINGSSIDEPANEL_H

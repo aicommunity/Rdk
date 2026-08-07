@@ -34,6 +34,8 @@ protected:
     void mouseDoubleClickEvent(QMouseEvent *event) override;
 
 private:
+    QPointF mapPixelToSeriesValue(const QPoint& viewPos) const;
+
     QRubberBand* rubberBand;
     QPoint origin;
     bool m_roiEnabled = true;

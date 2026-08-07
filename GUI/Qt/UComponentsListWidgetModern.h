@@ -5,6 +5,12 @@
 #include "UDrawEngineImageWidget.h"
 #include "UGuiModelSnapshot.h"
 #include "UComponentGuiContext.h"
+#include "UPropertyListOptions.h"
+#include "../../Core/Engine/UComponent.h"
+
+namespace RDK {
+class UContainerDescription;
+}
 
 #include <QLineEdit>
 #include <QTreeWidgetItem>
@@ -21,6 +27,8 @@
 #include <QVBoxLayout>
 #include <QKeyEvent>
 #include <QSet>
+#include <QVector>
+#include <QStringList>
 
 namespace Ui {
 class UComponentsListWidgetModern;
@@ -129,6 +137,26 @@ public:
     /// Устанавливает режим видимости для виджета выбора канала расчёта
     void setChannelsListVisible(bool value);
 
+    /// Дерево компонентов: false = компактный popup (☰), true = встроенное как в legacy picker
+    void setComponentTreeEmbedded(bool embedded);
+    bool isComponentTreeEmbedded() const { return m_componentTreeEmbedded; }
+
+    /// Пресет компоновки (Inspector — главная форма; PropertyPicker — мастер выбора свойства)
+    void setLayoutPreset(ComponentsListLayoutPreset preset);
+    ComponentsListLayoutPreset layoutPreset() const { return m_layoutPreset; }
+
+    /// Опции списка свойств (Tabbed / UnifiedGrouped + фильтры)
+    void setPropertyListOptions(const PropertyListOptions& opt);
+    PropertyListOptions propertyListOptions() const { return m_propertyListOptions; }
+
+    void setPropertyListPresentation(PropertyListPresentation mode);
+    void setVisiblePropertyGroups(PropertyGroupFlags flags);
+    void setWatchablePropertiesOnly(bool on);
+    void setPropertySubtitleMode(PropertySubtitleMode mode);
+    void setPropertyInlineEditEnabled(bool on);
+    void setPropertyValueColumnVisible(bool on);
+    void setExpandPropertyGroups(bool on);
+
     /// Применить значение из inline-редактора (вызывается delegate)
     bool applyPropertyValueFromEditor(QTreeWidgetItem* item, const QString& value);
 
@@ -156,6 +184,7 @@ public slots:
     void inputsListSelectionChanged();
     void outputsListSelectionChanged();
     void favoritesListSelectionChanged();
+    void unifiedListSelectionChanged();
 
     void parametersListItemChanged(QTreeWidgetItem *item, int column);
     void favoritesListItemChanged(QTreeWidgetItem *item, int column);
@@ -249,9 +278,35 @@ private:
     QString selectedInputName;
     QString selectedOutputName;
     QString selectedFavName;
+    QString selectedUnifiedName;
 
     /// Показывать favorite сразу в нескольких группах ролей (default true)
     bool m_favoritesShowInAllSections = true;
+
+    PropertyListOptions m_propertyListOptions;
+    bool m_componentTreeEmbedded = false;
+    ComponentsListLayoutPreset m_layoutPreset = ComponentsListLayoutPreset::Inspector;
+    bool m_pickerLayoutApplied = false;
+    QWidget* m_unifiedPage = nullptr;
+    QTreeWidget* m_unifiedTree = nullptr;
+    int m_unifiedTabIndex = -1;
+    QVector<QWidget*> m_savedPropertyTabs;
+    QStringList m_savedPropertyTabLabels;
+
+    void applyPropertyListPresentationUi();
+    void ensureUnifiedPropertyPage();
+    void applyLayoutPresetUi();
+    void applyPropertyColumnLayout();
+    QString buildPropertySubtitle(const QString& propName,
+                                  const QString& typeName,
+                                  const QString& componentLongName) const;
+    void fillUnifiedPropertyTree(RDK::UContainer* cont,
+                                 const RDK::UComponent::VariableMapT& varMap,
+                                 const std::vector<RDK::NameT>& propOrder,
+                                 bool is_new_inputs,
+                                 bool is_new_outputs,
+                                 const std::map<std::string, std::string>& favorites,
+                                 RDK::UContainerDescription* class_desc);
 
     bool m_syncingColumnWidths = false;
 

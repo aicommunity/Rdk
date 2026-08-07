@@ -27,6 +27,8 @@
 #include "UComponentFormRegistry.h"
 
 #include "UModernDiagramWidget.h"
+#include "Plot/PlotDocument.h"
+#include "../../Core/Math/UWatchablePropertyTypes.h"
 
 #include <QApplication>
 #include <QPainter>
@@ -39,11 +41,14 @@
 #include <QToolTip>
 #include <QCursor>
 #include <QAbstractItemView>
+#include <QListView>
+#include <QHeaderView>
 
 #include "../../Deploy/Include/rdk_error_codes.h"
 #include "../../Core/Utilities/USupport.h"
 #include "../../Core/Engine/UComponent.h"
 #include "../../Core/Engine/UNet.h"
+#include "../../Core/Engine/UContainerDescription.h"
 
 namespace {
 
@@ -71,9 +76,10 @@ bool fetchPropertyValueFromModel(int channel,
  return true;
 }
 
-constexpr int kFavRoleProp = Qt::UserRole;
-constexpr int kFavRoleDisplayPath = Qt::UserRole + 1;
+constexpr int kFavRoleProp = Qt::UserRole;           // property name (unified + favorites)
+constexpr int kFavRoleDisplayPath = Qt::UserRole + 1;  // subtitle text
 constexpr int kFavRoleComponent = Qt::UserRole + 2;
+constexpr int kPropRoleIsGroup = Qt::UserRole + 3;
 constexpr int kMinNameColumnWidth = 120;
 constexpr int kMinEditorWidth = 120;
 
@@ -267,6 +273,8 @@ public:
     {
         Q_UNUSED(option);
         if(index.column() != 1)
+            return nullptr;
+        if(m_owner && !m_owner->propertyListOptions().allowInlineEdit)
             return nullptr;
         auto* edit = new QLineEdit(parent);
         edit->setText(index.data(Qt::UserRole).toString());
@@ -854,6 +862,22 @@ void UComponentsListWidgetModern::setVerticalOrientation(bool vertical)
 
 QString UComponentsListWidgetModern::getSelectedComponentLongName()
 {
+    if(m_propertyListOptions.presentation == PropertyListPresentation::UnifiedGrouped
+       && m_unifiedTree)
+    {
+        QTreeWidgetItem* item = m_unifiedTree->currentItem();
+        if(item && item->childCount() == 0
+           && !item->data(0, kPropRoleIsGroup).toBool())
+        {
+            const QString fromRole = item->data(0, kFavRoleComponent).toString();
+            if(!fromRole.isEmpty())
+                return fromRole;
+        }
+        if(componentsTree->currentItem())
+            return componentsTree->currentItem()->data(0, Qt::UserRole).toString();
+        return QString();
+    }
+
     if(!componentsTree->currentItem())
       return "";
     else
@@ -890,6 +914,16 @@ int UComponentsListWidgetModern::currentTabIndex()
 
 QString UComponentsListWidgetModern::getSelectedPropertyName()
 {
+  if(m_propertyListOptions.presentation == PropertyListPresentation::UnifiedGrouped
+     && m_unifiedTree)
+  {
+      QTreeWidgetItem* item = m_unifiedTree->currentItem();
+      if(!item || item->childCount() > 0 || item->data(0, kPropRoleIsGroup).toBool())
+          return QString();
+      const QString prop = item->data(0, kFavRoleProp).toString();
+      return prop.isEmpty() ? item->data(0, Qt::DisplayRole).toString() : prop;
+  }
+
   QWidget* tab = ui->tabWidgetComponentInfo->currentWidget();
   if(tab == ui->tabParameters)
   {
@@ -961,6 +995,273 @@ void UComponentsListWidgetModern::setChannelsListVisible(bool value)
     ui->listWidgetChannelSelection->setVisible(value);
     channelsSelectionVisible = value;
     redrawChannelsList();
+}
+
+void UComponentsListWidgetModern::setComponentTreeEmbedded(bool embedded)
+{
+    if(m_componentTreeEmbedded == embedded)
+    {
+        // Re-apply UI in case widgets were moved to popup
+        if(embedded)
+        {
+            if(treePopupDialog && treePopupDialog->isVisible())
+                hideTreePopup();
+            if(ui->treeContainer)
+                ui->treeContainer->show();
+            if(toggleModeButton)
+                toggleModeButton->hide();
+        }
+        return;
+    }
+
+    m_componentTreeEmbedded = embedded;
+
+    if(embedded)
+    {
+        if(treePopupDialog && treePopupDialog->isVisible())
+            hideTreePopup();
+
+        // Ensure filter + tree live in the main treeContainer (not popup layout)
+        if(treePopupLayout)
+        {
+            treePopupLayout->removeWidget(filterLineEdit);
+            treePopupLayout->removeWidget(componentsTree);
+        }
+        QWidget* treeContainer = ui->treeContainer;
+        QVBoxLayout* treeLayout = treeContainer
+            ? qobject_cast<QVBoxLayout*>(treeContainer->layout()) : nullptr;
+        if(treeLayout)
+        {
+            if(treeLayout->indexOf(filterLineEdit) < 0)
+                treeLayout->addWidget(filterLineEdit);
+            if(treeLayout->indexOf(componentsTree) < 0)
+                treeLayout->addWidget(componentsTree);
+        }
+        if(treeContainer)
+            treeContainer->show();
+        if(toggleModeButton)
+            toggleModeButton->hide();
+    }
+    else
+    {
+        if(ui->treeContainer)
+            ui->treeContainer->hide();
+        if(toggleModeButton)
+        {
+            toggleModeButton->show();
+            toggleModeButton->setChecked(false);
+            toggleModeButton->setText(tr("☰"));
+            toggleModeButton->setToolTip(tr("Показать дерево компонентов"));
+        }
+    }
+}
+
+void UComponentsListWidgetModern::setLayoutPreset(ComponentsListLayoutPreset preset)
+{
+    if(m_layoutPreset == preset &&
+       (preset != ComponentsListLayoutPreset::PropertyPicker || m_pickerLayoutApplied))
+    {
+        applyLayoutPresetUi();
+        return;
+    }
+    m_layoutPreset = preset;
+    applyLayoutPresetUi();
+}
+
+void UComponentsListWidgetModern::applyLayoutPresetUi()
+{
+    QWidget* leftPane = ui->splitter ? ui->splitter->widget(0) : nullptr;
+    QWidget* rightPane = ui->splitter ? ui->splitter->widget(1) : nullptr;
+    QVBoxLayout* leftLayout = leftPane ? qobject_cast<QVBoxLayout*>(leftPane->layout()) : nullptr;
+    QVBoxLayout* rightLayout = rightPane ? qobject_cast<QVBoxLayout*>(rightPane->layout()) : nullptr;
+
+    if(m_layoutPreset == ComponentsListLayoutPreset::PropertyPicker)
+    {
+        setComponentTreeEmbedded(true);
+        setVerticalOrientation(false); // left: components, right: properties
+
+        if(toggleModeButton)
+            toggleModeButton->hide();
+
+        // Channel strip: compact bar above the component tree (full left width)
+        if(ui->listWidgetChannelSelection)
+        {
+            ui->horizontalLayoutTreeWidget->removeWidget(ui->listWidgetChannelSelection);
+            ui->listWidgetChannelSelection->setMinimumWidth(0);
+            ui->listWidgetChannelSelection->setMaximumWidth(16777215);
+            ui->listWidgetChannelSelection->setMaximumHeight(64);
+            ui->listWidgetChannelSelection->setMinimumHeight(0);
+            ui->listWidgetChannelSelection->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+            ui->listWidgetChannelSelection->setFlow(QListView::LeftToRight);
+            ui->listWidgetChannelSelection->setWrapping(true);
+            ui->listWidgetChannelSelection->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+            ui->listWidgetChannelSelection->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+            if(leftLayout && leftLayout->indexOf(ui->listWidgetChannelSelection) < 0)
+                leftLayout->insertWidget(0, ui->listWidgetChannelSelection);
+        }
+
+        // Class name sits above properties (right pane), not beside channels
+        if(ui->labelComponentClassName && rightLayout)
+        {
+            ui->horizontalLayoutTreeWidget->removeWidget(ui->labelComponentClassName);
+            ui->labelComponentClassName->setMaximumHeight(22);
+            ui->labelComponentClassName->setMinimumHeight(18);
+            ui->labelComponentClassName->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+            if(rightLayout->indexOf(ui->labelComponentClassName) < 0)
+                rightLayout->insertWidget(0, ui->labelComponentClassName);
+        }
+
+        // Hide empty header row on the left if only toggle was there
+        if(ui->horizontalLayoutTreeWidget)
+        {
+            bool anyVisible = false;
+            for(int i = 0; i < ui->horizontalLayoutTreeWidget->count(); ++i)
+            {
+                if(QWidget* w = ui->horizontalLayoutTreeWidget->itemAt(i)->widget())
+                {
+                    if(w->isVisibleTo(this))
+                        anyVisible = true;
+                }
+            }
+            // Keep layout item but collapse left header chrome
+            Q_UNUSED(anyVisible);
+        }
+
+        if(leftPane)
+        {
+            leftPane->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+            leftPane->setMinimumWidth(220);
+        }
+        if(rightPane)
+        {
+            rightPane->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+            rightPane->setMinimumWidth(280);
+        }
+        if(ui->splitter)
+        {
+            ui->splitter->setStretchFactor(0, 2);
+            ui->splitter->setStretchFactor(1, 3);
+            // Give properties more width for Name column (Favorites-like)
+            QList<int> sz = ui->splitter->sizes();
+            if(sz.size() >= 2 && (sz[0] + sz[1]) > 0)
+            {
+                const int total = qMax(600, sz[0] + sz[1]);
+                ui->splitter->setSizes({ total * 2 / 5, total * 3 / 5 });
+            }
+            else
+            {
+                ui->splitter->setSizes({ 280, 420 });
+            }
+        }
+
+        if(ui->treeContainer)
+            ui->treeContainer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+        if(leftLayout && ui->treeContainer)
+        {
+            const int treeIdx = leftLayout->indexOf(ui->treeContainer);
+            if(treeIdx >= 0)
+                leftLayout->setStretch(treeIdx, 1);
+            // Collapse leftover header row (toggle hidden) so tree gets vertical space
+            for(int i = 0; i < leftLayout->count(); ++i)
+            {
+                QLayoutItem* it = leftLayout->itemAt(i);
+                if(it && it->layout() == ui->horizontalLayoutTreeWidget)
+                    leftLayout->setStretch(i, 0);
+            }
+        }
+
+        m_pickerLayoutApplied = true;
+        applyPropertyColumnLayout();
+        return;
+    }
+
+    // Inspector (default main-form layout)
+    if(m_pickerLayoutApplied)
+    {
+        // Restore channel + class into the top header row
+        if(ui->listWidgetChannelSelection)
+        {
+            if(leftLayout)
+                leftLayout->removeWidget(ui->listWidgetChannelSelection);
+            ui->listWidgetChannelSelection->setFlow(QListView::TopToBottom);
+            ui->listWidgetChannelSelection->setWrapping(false);
+            ui->listWidgetChannelSelection->setMaximumHeight(16777215);
+            ui->listWidgetChannelSelection->setMinimumWidth(150);
+            ui->listWidgetChannelSelection->setMaximumWidth(180);
+            ui->listWidgetChannelSelection->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding);
+            ui->listWidgetChannelSelection->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+            if(ui->horizontalLayoutTreeWidget->indexOf(ui->listWidgetChannelSelection) < 0)
+                ui->horizontalLayoutTreeWidget->insertWidget(0, ui->listWidgetChannelSelection);
+        }
+        if(ui->labelComponentClassName)
+        {
+            if(rightLayout)
+                rightLayout->removeWidget(ui->labelComponentClassName);
+            ui->labelComponentClassName->setMaximumHeight(24);
+            ui->labelComponentClassName->setMinimumHeight(20);
+            if(ui->horizontalLayoutTreeWidget->indexOf(ui->labelComponentClassName) < 0)
+            {
+                // After channels and toggle: [ch][☰][class]
+                ui->horizontalLayoutTreeWidget->addWidget(ui->labelComponentClassName);
+            }
+        }
+        if(toggleModeButton && !m_componentTreeEmbedded)
+            toggleModeButton->show();
+
+        setVerticalOrientation(true);
+        if(leftPane)
+            leftPane->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+        if(ui->splitter)
+        {
+            ui->splitter->setStretchFactor(0, 0);
+            ui->splitter->setStretchFactor(1, 1);
+        }
+        if(!m_componentTreeEmbedded && ui->treeContainer)
+            ui->treeContainer->hide();
+
+        m_pickerLayoutApplied = false;
+    }
+    applyPropertyColumnLayout();
+}
+
+void UComponentsListWidgetModern::applyPropertyColumnLayout()
+{
+    const bool picker = (m_layoutPreset == ComponentsListLayoutPreset::PropertyPicker);
+
+    auto applyOne = [&](QTreeWidget* tree) {
+        if(!tree || tree->columnCount() < 1)
+            return;
+        QHeaderView* header = tree->header();
+        const QSignalBlocker blocker(header);
+        header->setStretchLastSection(false);
+        tree->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+        if(picker)
+        {
+            // Favorites-like: Name dominates; Value is secondary
+            header->setSectionResizeMode(0, QHeaderView::Stretch);
+            if(tree->columnCount() > 1)
+            {
+                header->setSectionResizeMode(1, QHeaderView::Interactive);
+                header->resizeSection(1, 110);
+            }
+        }
+        else
+        {
+            header->setSectionResizeMode(0, QHeaderView::Interactive);
+            header->resizeSection(0, qMax(header->sectionSize(0), kMinNameColumnWidth));
+            if(tree->columnCount() > 1)
+                header->setSectionResizeMode(1, QHeaderView::Stretch);
+        }
+        if(tree->columnCount() > 2)
+            header->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    };
+
+    m_syncingColumnWidths = true;
+    for(QTreeWidget* tree : {ui->treeWidgetParameters, ui->treeWidgetState, ui->treeWidgetInputs,
+                             ui->treeWidgetOutputs, ui->treeWidgetFavorites, m_unifiedTree})
+        applyOne(tree);
+    m_syncingColumnWidths = false;
 }
 
 void UComponentsListWidgetModern::componentListItemSelectionChanged()
@@ -1123,6 +1424,8 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
     ui->treeWidgetInputs->clear();
     ui->treeWidgetOutputs->clear();
     ui->treeWidgetFavorites->clear();
+    if(m_unifiedTree)
+        m_unifiedTree->clear();
         const RDK::UComponent::VariableMapT& varMap = cont->GetPropertiesList();
         const std::vector<RDK::NameT>& propOrder = cont->GetPropertiesOrder();
         std::string buffer;
@@ -1151,6 +1454,17 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
 
             if(is_new_inputs && is_new_outputs)
              break;
+        }
+
+        if(m_propertyListOptions.presentation == PropertyListPresentation::UnifiedGrouped)
+        {
+            ensureUnifiedPropertyPage();
+            fillUnifiedPropertyTree(cont.Get(), varMap, propOrder, is_new_inputs, is_new_outputs,
+                                    Favorites, class_desc.Get());
+            currentDrawPropertyComponentName = targetComponent;
+            m_propertyReloadRetryCount = 0;
+            UpdateInterfaceFlag=false;
+            return;
         }
 
         for(size_t oi = 0; oi < propOrder.size(); ++oi)
@@ -2238,6 +2552,9 @@ void UComponentsListWidgetModern::on_actionDefaultAllParameters_triggered()
 
 void UComponentsListWidgetModern::toggleTreeViewMode()
 {
+    if(m_componentTreeEmbedded)
+        return; // дерево всегда на панели — popup не используется
+
     if (treePopupDialog->isVisible()) {
         // Если popup открыт, закрываем его
         hideTreePopup();
@@ -2394,6 +2711,390 @@ QWidget* UComponentsListWidgetModern::widgetFromLogicalTabIndex(int logicalIndex
     }
 }
 
+
+void UComponentsListWidgetModern::setPropertyListOptions(const PropertyListOptions& opt)
+{
+    m_propertyListOptions = opt;
+    applyPropertyListPresentationUi();
+    reloadPropertys(true);
+}
+
+void UComponentsListWidgetModern::setPropertyListPresentation(PropertyListPresentation mode)
+{
+    if(m_propertyListOptions.presentation == mode)
+        return;
+    m_propertyListOptions.presentation = mode;
+    applyPropertyListPresentationUi();
+    reloadPropertys(true);
+}
+
+void UComponentsListWidgetModern::setVisiblePropertyGroups(PropertyGroupFlags flags)
+{
+    m_propertyListOptions.visibleGroups = flags;
+    if(m_propertyListOptions.presentation == PropertyListPresentation::UnifiedGrouped)
+        reloadPropertys(true);
+}
+
+void UComponentsListWidgetModern::setWatchablePropertiesOnly(bool on)
+{
+    if(m_propertyListOptions.watchableOnly == on)
+        return;
+    m_propertyListOptions.watchableOnly = on;
+    reloadPropertys(true);
+}
+
+void UComponentsListWidgetModern::setPropertySubtitleMode(PropertySubtitleMode mode)
+{
+    m_propertyListOptions.subtitleMode = mode;
+    if(m_propertyListOptions.presentation == PropertyListPresentation::UnifiedGrouped)
+        reloadPropertys(true);
+}
+
+void UComponentsListWidgetModern::setPropertyInlineEditEnabled(bool on)
+{
+    m_propertyListOptions.allowInlineEdit = on;
+}
+
+void UComponentsListWidgetModern::setPropertyValueColumnVisible(bool on)
+{
+    m_propertyListOptions.showValueColumn = on;
+    if(m_unifiedTree)
+        m_unifiedTree->setColumnHidden(1, !on);
+}
+
+void UComponentsListWidgetModern::setExpandPropertyGroups(bool on)
+{
+    m_propertyListOptions.expandGroups = on;
+}
+
+void UComponentsListWidgetModern::ensureUnifiedPropertyPage()
+{
+    if(m_unifiedPage && m_unifiedTree)
+        return;
+
+    m_unifiedPage = new QWidget(ui->tabWidgetComponentInfo);
+    auto* layout = new QVBoxLayout(m_unifiedPage);
+    layout->setContentsMargins(0, 0, 0, 0);
+    m_unifiedTree = new QTreeWidget(m_unifiedPage);
+    m_unifiedTree->setColumnCount(2);
+    m_unifiedTree->setHeaderLabels(QStringList() << tr("Name") << tr("Value"));
+    m_unifiedTree->setRootIsDecorated(true);
+    m_unifiedTree->setAlternatingRowColors(true);
+    layout->addWidget(m_unifiedTree);
+
+    m_unifiedTree->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    m_unifiedTree->setContextMenuPolicy(Qt::ActionsContextMenu);
+    m_unifiedTree->setItemDelegate(new FavoritesPathSubtitleDelegate(m_unifiedTree, this));
+    connect(m_unifiedTree, &QTreeWidget::itemDoubleClicked,
+            this, &UComponentsListWidgetModern::onPropertyItemDoubleClicked);
+    connect(m_unifiedTree, &QTreeWidget::itemSelectionChanged,
+            this, &UComponentsListWidgetModern::unifiedListSelectionChanged);
+    m_unifiedTree->viewport()->installEventFilter(this);
+    m_unifiedTree->installEventFilter(this);
+}
+
+void UComponentsListWidgetModern::applyPropertyListPresentationUi()
+{
+    ensureUnifiedPropertyPage();
+    QTabWidget* tabs = ui->tabWidgetComponentInfo;
+    if(!tabs)
+        return;
+
+    if(m_propertyListOptions.presentation == PropertyListPresentation::UnifiedGrouped)
+    {
+        if(m_savedPropertyTabs.isEmpty())
+        {
+            for(int i = 0; i < tabs->count(); ++i)
+            {
+                m_savedPropertyTabs.append(tabs->widget(i));
+                m_savedPropertyTabLabels.append(tabs->tabText(i));
+            }
+        }
+        while(tabs->count() > 0)
+            tabs->removeTab(0);
+        m_unifiedTabIndex = tabs->addTab(m_unifiedPage, tr("Properties"));
+        if(m_propertyListOptions.hideTabBarInUnified && tabs->tabBar())
+            tabs->tabBar()->hide();
+        m_unifiedTree->setColumnHidden(1, !m_propertyListOptions.showValueColumn);
+        applyPropertyColumnLayout();
+    }
+    else
+    {
+        if(tabs->tabBar())
+            tabs->tabBar()->show();
+        // Restore saved tabs if we previously stripped them
+        if(!m_savedPropertyTabs.isEmpty())
+        {
+            while(tabs->count() > 0)
+                tabs->removeTab(0);
+            for(int i = 0; i < m_savedPropertyTabs.size(); ++i)
+                tabs->addTab(m_savedPropertyTabs[i], m_savedPropertyTabLabels.value(i));
+            m_savedPropertyTabs.clear();
+            m_savedPropertyTabLabels.clear();
+            m_unifiedTabIndex = -1;
+        }
+        else if(m_unifiedTabIndex >= 0)
+        {
+            const int idx = tabs->indexOf(m_unifiedPage);
+            if(idx >= 0)
+                tabs->removeTab(idx);
+            m_unifiedTabIndex = -1;
+        }
+    }
+}
+
+QString UComponentsListWidgetModern::buildPropertySubtitle(const QString& propName,
+                                                          const QString& typeName,
+                                                          const QString& componentLongName) const
+{
+    switch(m_propertyListOptions.subtitleMode)
+    {
+    case PropertySubtitleMode::None:
+        return QString();
+    case PropertySubtitleMode::Type:
+        return typeName;
+    case PropertySubtitleMode::Path:
+        return componentLongName.isEmpty() ? propName : (componentLongName + ":" + propName);
+    case PropertySubtitleMode::TypeAndPath:
+    {
+        const QString path = componentLongName.isEmpty() ? propName : (componentLongName + ":" + propName);
+        if(typeName.isEmpty())
+            return path;
+        return typeName + QStringLiteral(" — ") + path;
+    }
+    }
+    return typeName;
+}
+
+void UComponentsListWidgetModern::unifiedListSelectionChanged()
+{
+    if(!m_unifiedTree)
+        return;
+    QTreeWidgetItem* item = m_unifiedTree->currentItem();
+    if(!item || item->childCount() > 0 || item->data(0, kPropRoleIsGroup).toBool())
+        return;
+    if(item->data(0, kFavRoleProp).toString().isEmpty())
+        return;
+    const QString changed = item->data(0, Qt::DisplayRole).toString();
+    if(selectedUnifiedName == changed)
+        return;
+    selectedUnifiedName = changed;
+    emit selectedPropertyValue(item->data(1, Qt::UserRole).toString());
+}
+
+void UComponentsListWidgetModern::fillUnifiedPropertyTree(RDK::UContainer* cont,
+                                                         const RDK::UComponent::VariableMapT& varMap,
+                                                         const std::vector<RDK::NameT>& propOrder,
+                                                         bool is_new_inputs,
+                                                         bool is_new_outputs,
+                                                         const std::map<std::string, std::string>& favorites,
+                                                         RDK::UContainerDescription* class_desc)
+{
+    if(!m_unifiedTree || !cont)
+        return;
+
+    const QString targetComponent = selectedComponentLongName;
+    const PropertyGroupFlags groups = m_propertyListOptions.visibleGroups;
+    m_unifiedTree->clear();
+
+    auto makeGroup = [&](const QString& title) -> QTreeWidgetItem* {
+        auto* g = new QTreeWidgetItem(m_unifiedTree);
+        g->setText(0, title);
+        g->setData(0, kPropRoleIsGroup, true);
+        Qt::ItemFlags f = Qt::ItemIsEnabled;
+        if(!m_propertyListOptions.selectLeavesOnly)
+            f |= Qt::ItemIsSelectable;
+        g->setFlags(f);
+        QFont font = g->font(0);
+        font.setBold(true);
+        g->setFont(0, font);
+        return g;
+    };
+
+    QTreeWidgetItem* groupParameters = (groups & GroupParameters) ? makeGroup(tr("Parameters")) : nullptr;
+    QTreeWidgetItem* groupState = (groups & GroupState) ? makeGroup(tr("State")) : nullptr;
+    QTreeWidgetItem* groupInputs = (groups & GroupInputs) ? makeGroup(tr("Inputs")) : nullptr;
+    QTreeWidgetItem* groupOutputs = (groups & GroupOutputs) ? makeGroup(tr("Outputs")) : nullptr;
+    QTreeWidgetItem* groupFavorites = (groups & GroupFavorites) ? makeGroup(tr("Favorites")) : nullptr;
+
+    std::string buffer;
+
+    for(size_t oi = 0; oi < propOrder.size(); ++oi)
+    {
+        RDK::UComponent::VariableMapCIteratorT i = varMap.find(propOrder[oi]);
+        if(i == varMap.end() || !i->second.Property)
+            continue;
+        if(i->second.CheckMask(ptPubInput) && is_new_inputs && i->first.find("DataInput") == 0)
+            continue;
+        if(i->second.CheckMask(ptPubOutput) && is_new_outputs && i->first.find("DataOutput") == 0)
+            continue;
+        if(m_propertyListOptions.watchableOnly
+           && !NMSDK::Plot::isWatchableLanguageType(i->second.Property->GetLanguageType()))
+            continue;
+
+        QTreeWidgetItem* parent = nullptr;
+        // Single group: Parameter > Output > Input > State
+        if(i->second.CheckMask(ptPubParameter) && groupParameters)
+            parent = groupParameters;
+        else if(i->second.CheckMask(ptPubOutput) && groupOutputs)
+            parent = groupOutputs;
+        else if(i->second.CheckMask(ptPubInput) && groupInputs)
+            parent = groupInputs;
+        else if(i->second.CheckMask(ptPubState) && groupState)
+            parent = groupState;
+        if(!parent)
+            continue;
+
+        const QString propName = QString::fromLocal8Bit(i->first.c_str());
+        cont->GetPropertyValue(i->first, buffer);
+        if(RDK::IsMatrixPropertyTypeName(i->second.Property->GetLanguageType().name()))
+            buffer = RDK::NormalizeMatrixPropertyText(buffer);
+        const QString rawValue = QString::fromLocal8Bit(buffer.c_str());
+        QString typeName = QString::fromLocal8Bit(i->second.Property->GetLanguageType().name());
+        if(RDK::IsMatrixPropertyTypeName(i->second.Property->GetLanguageType().name()))
+            typeName = QStringLiteral("Matrix");
+
+        auto* item = new QTreeWidgetItem(parent);
+        item->setText(0, propName);
+        item->setData(0, kFavRoleProp, propName);
+        item->setData(0, kFavRoleComponent, targetComponent);
+        item->setData(0, kFavRoleDisplayPath,
+                      buildPropertySubtitle(propName, typeName, targetComponent));
+        item->setData(0, kPropRoleIsGroup, false);
+        std::string displayBuf = buffer;
+        item->setData(1, Qt::UserRole, rawValue);
+        item->setText(1, QString::fromLocal8Bit(PreparePropertyValueToListView(displayBuf).c_str()));
+        item->setToolTip(1, rawValue);
+
+        if(m_propertyListOptions.allowInlineEdit)
+        {
+            if(i->second.Property->GetLanguageType() == typeid(bool))
+            {
+                item->setFlags((item->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable)
+                               & ~Qt::ItemIsEditable);
+                const bool* val = reinterpret_cast<const bool*>(i->second.Property->GetMemoryArea());
+                item->setCheckState(1, (val && *val) ? Qt::Checked : Qt::Unchecked);
+            }
+            else
+            {
+                item->setFlags((item->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable)
+                               & ~Qt::ItemIsUserCheckable);
+            }
+        }
+        else
+        {
+            item->setFlags((item->flags() | Qt::ItemIsSelectable)
+                           & ~(Qt::ItemIsEditable | Qt::ItemIsUserCheckable));
+        }
+
+        if(propName == selectedUnifiedName)
+            m_unifiedTree->setCurrentItem(item);
+    }
+
+    // Optional Favorites group (ClDesc) — single placement, no multi-section duplicates
+    if(groupFavorites && !favorites.empty())
+    {
+        RDK::UELockPtr<RDK::UContainer> model =
+            RDK::GetModelLockTimeout(getWorkChannelIndex(), kModelLockTimeoutMs);
+        for(std::map<std::string, std::string>::const_iterator it = favorites.begin();
+            it != favorites.end(); ++it)
+        {
+            QString favoriteName = QString::fromLocal8Bit(it->first.c_str());
+            QString favoritePath = QString::fromLocal8Bit(it->second.c_str());
+            favoritePath.replace("{CompName}", targetComponent);
+            bool isAlias = class_desc && class_desc->IsFavoriteAlias(it->first);
+            QString component_long_name;
+            QString prop_name;
+            if(isAlias && class_desc)
+            {
+                std::string componentPath, propertyName;
+                if(class_desc->ParseFavoritePath(it->second, componentPath, propertyName))
+                {
+                    component_long_name = targetComponent;
+                    if(!componentPath.empty())
+                        component_long_name += "." + QString::fromStdString(componentPath);
+                    prop_name = QString::fromStdString(propertyName);
+                }
+            }
+            else
+            {
+                QStringList vals = favoritePath.split(":");
+                if(vals.size() == 2)
+                {
+                    component_long_name = vals[0];
+                    prop_name = vals[1];
+                }
+            }
+            if(prop_name.isEmpty())
+                continue;
+
+            RDK::UEPtr<RDK::UContainer> child_cont;
+            if(model)
+                child_cont = model->GetComponentL(component_long_name.toLocal8Bit().constData(), true);
+            if(m_propertyListOptions.watchableOnly && child_cont)
+            {
+                RDK::UEPtr<RDK::UIProperty> p = child_cont->FindProperty(prop_name.toStdString());
+                if(!p || !NMSDK::Plot::isWatchableLanguageType(p->GetLanguageType()))
+                    continue;
+            }
+
+            QString typeName;
+            QString rawValue;
+            if(child_cont)
+            {
+                child_cont->GetPropertyValue(prop_name.toStdString(), buffer);
+                RDK::UEPtr<RDK::UIProperty> prop = child_cont->FindProperty(prop_name.toStdString());
+                if(prop)
+                {
+                    typeName = QString::fromLocal8Bit(prop->GetLanguageType().name());
+                    if(RDK::IsMatrixPropertyTypeName(prop->GetLanguageType().name()))
+                    {
+                        buffer = RDK::NormalizeMatrixPropertyText(buffer);
+                        typeName = QStringLiteral("Matrix");
+                    }
+                }
+                rawValue = QString::fromLocal8Bit(buffer.c_str());
+            }
+
+            auto* favoriteItem = new QTreeWidgetItem(groupFavorites);
+            favoriteItem->setText(0, isAlias ? (favoriteName + " [Alias]") : favoriteName);
+            favoriteItem->setToolTip(0, favoritePath);
+            favoriteItem->setData(0, kFavRoleProp, prop_name);
+            favoriteItem->setData(0, kFavRoleComponent, component_long_name);
+            favoriteItem->setData(0, kFavRoleDisplayPath,
+                                  buildPropertySubtitle(prop_name, typeName, component_long_name));
+            favoriteItem->setData(0, kPropRoleIsGroup, false);
+            if(child_cont)
+            {
+                std::string displayBuf = buffer;
+                favoriteItem->setData(1, Qt::UserRole, rawValue);
+                favoriteItem->setText(1, QString::fromLocal8Bit(PreparePropertyValueToListView(displayBuf).c_str()));
+                favoriteItem->setToolTip(1, rawValue);
+            }
+            favoriteItem->setFlags((favoriteItem->flags() | Qt::ItemIsSelectable)
+                                   & ~(Qt::ItemIsEditable | Qt::ItemIsUserCheckable));
+        }
+    }
+
+    QList<QTreeWidgetItem*> allGroups;
+    allGroups << groupParameters << groupState << groupInputs << groupOutputs << groupFavorites;
+    for(QTreeWidgetItem* group : allGroups)
+    {
+        if(!group)
+            continue;
+        if(group->childCount() == 0)
+        {
+            delete group;
+            continue;
+        }
+        if(m_propertyListOptions.sortWithinGroup == PropertySortMode::Alphabetical)
+            group->sortChildren(0, Qt::AscendingOrder);
+        if(m_propertyListOptions.expandGroups)
+            group->setExpanded(true);
+    }
+    applyPropertyColumnLayout();
+}
+
 void UComponentsListWidgetModern::setupPropertyEditing()
 {
     auto setupTree = [this](QTreeWidget* tree) {
@@ -2513,11 +3214,19 @@ void UComponentsListWidgetModern::syncPropertyColumnWidths(QTreeWidget* sourceTr
 
 void UComponentsListWidgetModern::applySharedColumnWidths(int nameWidth, int valueWidth, int typeWidth)
 {
+    if(m_layoutPreset == ComponentsListLayoutPreset::PropertyPicker)
+    {
+        applyPropertyColumnLayout();
+        return;
+    }
+
     Q_UNUSED(valueWidth);
     m_syncingColumnWidths = true;
     for(QTreeWidget* tree : {ui->treeWidgetParameters, ui->treeWidgetState, ui->treeWidgetInputs,
-                             ui->treeWidgetOutputs, ui->treeWidgetFavorites})
+                             ui->treeWidgetOutputs, ui->treeWidgetFavorites, m_unifiedTree})
     {
+        if(!tree)
+            continue;
         QHeaderView* header = tree->header();
         const QSignalBlocker blocker(header);
         header->setStretchLastSection(false);
@@ -2559,6 +3268,8 @@ bool UComponentsListWidgetModern::isMultilinePropertyValue(const QString& rawVal
 
 QTreeWidget* UComponentsListWidgetModern::currentPropertyTree() const
 {
+    if(m_propertyListOptions.presentation == PropertyListPresentation::UnifiedGrouped)
+        return m_unifiedTree;
     QWidget* tab = ui->tabWidgetComponentInfo->currentWidget();
     if(tab == ui->tabParameters) return ui->treeWidgetParameters;
     if(tab == ui->tabState) return ui->treeWidgetState;
@@ -2576,7 +3287,8 @@ QTreeWidgetItem* UComponentsListWidgetModern::currentPropertyItem() const
     QTreeWidgetItem* item = tree->currentItem();
     if(!item)
         return nullptr;
-    if(tree == ui->treeWidgetFavorites && item->childCount() > 0)
+    if((tree == ui->treeWidgetFavorites || tree == m_unifiedTree) &&
+       (item->childCount() > 0 || item->data(0, kPropRoleIsGroup).toBool()))
         return nullptr;
     return item;
 }
@@ -2585,8 +3297,13 @@ QString UComponentsListWidgetModern::propertyComponentForItem(QTreeWidgetItem* i
 {
     if(!item)
         return QString();
-    if(ui->tabWidgetComponentInfo->currentWidget() == ui->tabFavorites)
-        return item->data(0, kFavRoleComponent).toString();
+    if(m_propertyListOptions.presentation == PropertyListPresentation::UnifiedGrouped
+       || ui->tabWidgetComponentInfo->currentWidget() == ui->tabFavorites)
+    {
+        const QString fromRole = item->data(0, kFavRoleComponent).toString();
+        if(!fromRole.isEmpty())
+            return fromRole;
+    }
     return currentDrawPropertyComponentName;
 }
 
@@ -2594,8 +3311,13 @@ QString UComponentsListWidgetModern::propertyNameForItem(QTreeWidgetItem* item) 
 {
     if(!item)
         return QString();
-    if(ui->tabWidgetComponentInfo->currentWidget() == ui->tabFavorites)
-        return item->data(0, kFavRoleProp).toString();
+    if(m_propertyListOptions.presentation == PropertyListPresentation::UnifiedGrouped
+       || ui->tabWidgetComponentInfo->currentWidget() == ui->tabFavorites)
+    {
+        const QString prop = item->data(0, kFavRoleProp).toString();
+        if(!prop.isEmpty())
+            return prop;
+    }
     return item->data(0, Qt::DisplayRole).toString();
 }
 
@@ -2745,7 +3467,8 @@ bool UComponentsListWidgetModern::eventFilter(QObject *obj, QEvent *event)
             obj == ui->treeWidgetState->viewport() ||
             obj == ui->treeWidgetInputs->viewport() ||
             obj == ui->treeWidgetOutputs->viewport() ||
-            obj == ui->treeWidgetFavorites->viewport();
+            obj == ui->treeWidgetFavorites->viewport() ||
+            (m_unifiedTree && (obj == m_unifiedTree || obj == m_unifiedTree->viewport()));
 
         if(isPropertyTree &&
            (keyEvent->key() == Qt::Key_F2 || keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter))
@@ -2761,6 +3484,8 @@ bool UComponentsListWidgetModern::eventFilter(QObject *obj, QEvent *event)
                 tree = ui->treeWidgetOutputs;
             else if(obj == ui->treeWidgetFavorites || obj == ui->treeWidgetFavorites->viewport())
                 tree = ui->treeWidgetFavorites;
+            else if(m_unifiedTree && (obj == m_unifiedTree || obj == m_unifiedTree->viewport()))
+                tree = m_unifiedTree;
 
             // Не переоткрывать редактор, пока уже идёт edit (Enter = commit).
             // QAbstractItemView::state() is protected in Qt5 — detect via focused QLineEdit.

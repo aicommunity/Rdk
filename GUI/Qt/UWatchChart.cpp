@@ -87,7 +87,7 @@ UWatchChart::UWatchChart(QWidget *parent) :
 
     //устанавливаем график в график -_-
     chartView->setChart(chart);
-    chartView->setRubberBand(QChartView::RectangleRubberBand);
+    chartView->setRubberBand(QChartView::NoRubberBand);
 
     //делаем красивую рамочку для графика
     chartView->setFrameStyle(QFrame::Panel |QFrame::StyledPanel);
@@ -953,7 +953,7 @@ void UWatchChart::setInteractionPan(bool pan)
     else
     {
         chartView->setDragMode(QGraphicsView::NoDrag);
-        chartView->setRubberBand(QChartView::RectangleRubberBand);
+        chartView->setRubberBand(QChartView::NoRubberBand);
         chartView->setRoiCaptureEnabled(true);
         if (actPan)
             actPan->setChecked(false);

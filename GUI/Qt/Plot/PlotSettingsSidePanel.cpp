@@ -3,25 +3,31 @@
 #include "../UWatchTab.h"
 #include "../UWatchChart.h"
 #include "../UWatchSerie.h"
+#include "../UStyleManager.h"
 #include "PlotDocument.h"
 
+#include <QAbstractButton>
+#include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QFormLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
+#include <QIcon>
 #include <QKeySequence>
 #include <QLabel>
 #include <QLineEdit>
 #include <QListWidget>
 #include <QLocale>
 #include <QMessageBox>
+#include <QPixmap>
 #include <QPushButton>
 #include <QShortcut>
 #include <QSignalBlocker>
 #include <QSpinBox>
 #include <QTabWidget>
+#include <QToolButton>
 #include <QVBoxLayout>
 
 namespace {
@@ -177,6 +183,35 @@ void PlotSettingsSidePanel::buildUi()
     selectedForm->addRow(tr("Channel"), m_channelSpin);
     selectedForm->addRow(tr("Y shift"), m_yShift);
     selectedForm->addRow(tr("Binding"), m_bindingLabel);
+
+    auto* colorRow = new QHBoxLayout();
+    m_serieColorGroup = new QButtonGroup(selectedBox);
+    m_serieColorGroup->setExclusive(true);
+    auto* autoBtn = new QToolButton(selectedBox);
+    autoBtn->setText(tr("Auto"));
+    autoBtn->setCheckable(true);
+    autoBtn->setChecked(true);
+    autoBtn->setToolTip(tr("Next unused palette color"));
+    m_serieColorGroup->addButton(autoBtn, -1);
+    colorRow->addWidget(autoBtn);
+    const int paletteCount = UStyleManager::instance()->getChartSeriesColorCount();
+    const int n = qMin(12, qMax(1, paletteCount));
+    for (int i = 0; i < n; ++i)
+    {
+        const QColor c = UStyleManager::instance()->getChartSeriesColor(i);
+        QPixmap px(18, 18);
+        px.fill(c);
+        auto* btn = new QToolButton(selectedBox);
+        btn->setIcon(QIcon(px));
+        btn->setIconSize(QSize(18, 18));
+        btn->setCheckable(true);
+        btn->setToolTip(tr("Palette %1").arg(i + 1));
+        m_serieColorGroup->addButton(btn, i);
+        colorRow->addWidget(btn);
+    }
+    colorRow->addStretch(1);
+    selectedForm->addRow(tr("Color"), colorRow);
+
     seriesLayout->addWidget(selectedBox);
 
     m_addSerieBtn = new QPushButton(tr("Add series…"), m_seriesPage);
@@ -221,6 +256,11 @@ void PlotSettingsSidePanel::connectLiveApply()
     connect(m_serieName, &QLineEdit::editingFinished, this, seriesLive);
     connect(m_channelSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, seriesLive);
     connect(m_yShift, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, seriesLive);
+    if (m_serieColorGroup)
+    {
+        connect(m_serieColorGroup, QOverload<int>::of(&QButtonGroup::idClicked),
+                this, &PlotSettingsSidePanel::applySerieColor);
+    }
 }
 
 void PlotSettingsSidePanel::updateHero()
@@ -407,6 +447,50 @@ void PlotSettingsSidePanel::onSeriesSelectionChanged()
         binding += QStringLiteral("\nX: time");
     }
     m_bindingLabel->setText(binding);
+
+    syncSerieColorSelection(chart, s);
+}
+
+void PlotSettingsSidePanel::syncSerieColorSelection(UWatchChart* chart, UWatchSerie* serie)
+{
+    if (!m_serieColorGroup || !chart || !serie)
+        return;
+    const QRgb rgb = serie->color().rgb();
+    int matched = -1;
+    const int paletteCount = UStyleManager::instance()->getChartSeriesColorCount();
+    for (int i = 0; i < paletteCount; ++i)
+    {
+        if (chart->getDefaultColor(i).rgb() == rgb)
+        {
+            matched = i;
+            break;
+        }
+    }
+    m_serieColorIndex = matched;
+    QSignalBlocker blocker(m_serieColorGroup);
+    if (QAbstractButton* btn = m_serieColorGroup->button(matched))
+        btn->setChecked(true);
+    else if (QAbstractButton* autoBtn = m_serieColorGroup->button(-1))
+        autoBtn->setChecked(true);
+}
+
+void PlotSettingsSidePanel::applySerieColor(int colorId)
+{
+    if (m_refreshing || !m_tab || m_chartIndex < 0 || m_chartIndex >= m_tab->countGraphs())
+        return;
+    UWatchChart* chart = m_tab->getChart(m_chartIndex);
+    if (!chart)
+        return;
+    if (m_serieIndex < 0 || m_serieIndex >= chart->countSeries())
+        return;
+
+    m_serieColorIndex = colorId;
+    if (colorId < 0)
+        chart->setSerieColor(m_serieIndex, chart->suggestAutoColorIndex(m_serieIndex));
+    else
+        chart->setSerieColor(m_serieIndex, colorId);
+    m_tab->syncDocumentFromCharts();
+    emit requestApply();
 }
 
 void PlotSettingsSidePanel::applyChartLive()

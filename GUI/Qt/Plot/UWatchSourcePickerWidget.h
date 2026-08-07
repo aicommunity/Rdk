@@ -12,7 +12,7 @@ namespace RDK
 class UApplication;
 }
 
-class UComponentsListWidget;
+class UComponentsListWidgetModern;
 class QLabel;
 class QSplitter;
 
@@ -43,7 +43,7 @@ private:
     void updateBindingFromList();
     void updateReadout();
 
-    UComponentsListWidget* m_list = nullptr;
+    UComponentsListWidgetModern* m_list = nullptr;
     UWatchMatrixSelector* m_matrix = nullptr;
     QLabel* m_bindingReadout = nullptr;
     QSplitter* m_split = nullptr;
