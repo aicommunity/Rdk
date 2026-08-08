@@ -4,6 +4,8 @@
 #include "UStyleManager.h"
 #include "UComponentGuiBootstrap.h"
 #include "UComponentGuiDndPayload.h"
+#include "UGuiShellController.h"
+#include "UGuiShellTypes.h"
 
 
 #include <rdk_application.h>
@@ -1437,8 +1439,62 @@ void UGEngineControlWidget::actionRenameConfig()
 
 void UGEngineControlWidget::actionExit()
 {
-  // close() → closeEvent: autosave/CloseProject пока GUI ещё зарегистрирован.
-  close();
+  if(m_shell)
+    m_shell->requestApplicationExit();
+  else
+    close();
+}
+
+void UGEngineControlWidget::setShellController(UGuiShellController* shell)
+{
+    m_shell = shell;
+}
+
+void UGEngineControlWidget::setHostChromeVisible(bool visible)
+{
+    if(menuBar())
+        menuBar()->setVisible(visible);
+    if(ui && ui->mainToolBar)
+        ui->mainToolBar->setVisible(visible);
+    if(breadcrumbsToolBar)
+        breadcrumbsToolBar->setVisible(visible);
+    if(statusBar())
+        statusBar()->setVisible(visible);
+    if(visible)
+        ensureBreadcrumbsToolBarRow();
+}
+
+void UGEngineControlWidget::performSessionTeardown()
+{
+    if(application)
+        application->PauseChannel(-1);
+    writeSettings();
+    if(application && application->GetProjectOpenFlag())
+    {
+        try
+        {
+            application->CloseProject();
+        }
+        catch(...)
+        {
+        }
+    }
+}
+
+void UGEngineControlWidget::notifyShellMenusChanged()
+{
+    if(m_shell)
+        m_shell->notifyHostMenusChanged();
+}
+
+QToolBar* UGEngineControlWidget::primaryToolBar() const
+{
+    return ui ? ui->mainToolBar : nullptr;
+}
+
+QMenu* UGEngineControlWidget::windowMenu() const
+{
+    return ui ? ui->menuWindow : nullptr;
 }
 
 void UGEngineControlWidget::actionConfigOptions()
@@ -2126,6 +2182,7 @@ void UGEngineControlWidget::appendMenuAction(const QString& menuPath, QAction* a
     QMenu* menu = menuForPath(ui->menuBar, menuPath);
     if(menu)
         menu->addAction(action);
+    notifyShellMenusChanged();
 }
 
 void UGEngineControlWidget::appendMenuSeparator(const QString& menuPath)
@@ -2135,6 +2192,7 @@ void UGEngineControlWidget::appendMenuSeparator(const QString& menuPath)
     QMenu* menu = menuForPath(ui->menuBar, menuPath);
     if(menu)
         menu->addSeparator();
+    notifyShellMenusChanged();
 }
 
 void UGEngineControlWidget::registerCustomWidget(const UCustomWidgetDescriptor &descriptor)
@@ -2161,6 +2219,7 @@ void UGEngineControlWidget::registerCustomWidget(const UCustomWidgetDescriptor &
                              this, &UGEngineControlWidget::handleCustomWidgetActionTriggered);
         }
     }
+    notifyShellMenusChanged();
 }
 
 void UGEngineControlWidget::handleCustomWidgetActionTriggered()
@@ -2245,22 +2304,26 @@ void UGEngineControlWidget::createOrActivateCustomWidget(const QString &id)
 
 void UGEngineControlWidget::closeEvent(QCloseEvent *event)
 {
- application->PauseChannel(-1);
- writeSettings();
- // Важно: CloseProject/autosave здесь, пока дочерние UIVisualController ещё в
- // InterfaceUpdaters. После accept Qt уничтожит окно, UnInit вызовет CloseProject
- // повторно — но ProjectOpenFlag уже false, а защита SaveProject не даст
- // затереть Interface.xml пустым деревом.
- if(application && application->GetProjectOpenFlag())
+ if(m_shell && m_shell->isExiting())
  {
-  try
-  {
-   application->CloseProject();
-  }
-  catch(...)
-  {
-  }
+  event->accept();
+  return;
  }
+ if(m_shell && m_shell->preset() == GuiShellPreset::ControlBar && m_shell->isStripVisible())
+ {
+  event->ignore();
+  hide();
+  m_shell->notifyWorkspaceVisibilityChanged();
+  return;
+ }
+ if(m_shell)
+ {
+  m_shell->requestApplicationExit();
+  event->ignore();
+  return;
+ }
+
+ performSessionTeardown();
  event->accept();
 }
 
@@ -3337,6 +3400,7 @@ void UGEngineControlWidget::createThemeMenu()
 
     // Update menu state based on current theme
     updateThemeMenuState();
+    notifyShellMenusChanged();
 }
 
 void UGEngineControlWidget::updateThemeMenuState()
@@ -3387,6 +3451,7 @@ void UGEngineControlWidget::updateRecentConfigsMenu()
     {
         QAction* noRecent = ui->menuRecentConfigs->addAction(tr("No recent configs"));
         noRecent->setEnabled(false);
+        notifyShellMenusChanged();
         return;
     }
 
@@ -3400,6 +3465,7 @@ void UGEngineControlWidget::updateRecentConfigsMenu()
         action->setToolTip(path);
         connect(action, &QAction::triggered, this, [this, path]() { loadProjectExternal(path); });
     }
+    notifyShellMenusChanged();
 }
 
 void UGEngineControlWidget::addToRecentConfigs(const QString& path)

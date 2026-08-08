@@ -55,6 +55,8 @@ public:
  int showLlmAssistantMenu;
  double calcTimeIntervalSec;
  int exitAfterCalcFlag;
+ /// Studio | ControlBar — default GUI shell preset (see UGuiShellTypes).
+ std::string guiShellPreset;
 
  std::string mainFormName;
  int minimizeToTray;
@@ -179,6 +181,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  hideAdminForm        = RDK::atoi(projectIniFile("General", "HideAdminForm", "0"));
  startMinimized       = RDK::atoi(projectIniFile("General", "StartMinimized", "0"));
  showLlmAssistantMenu = RDK::atoi(projectIniFile("General", "ShowLlmAssistantMenu", "0"));
+ guiShellPreset       = projectIniFile("General", "GuiShellPreset", "Studio");
 
  mainFormName=projectIniFile("General", "MainFormName", "");
  minimizeToTray=atoi(projectIniFile("General","MinimizeToTray","0"));

@@ -49,6 +49,9 @@
 #include "UComponentGuiContext.h"
 #include "UComponentGuiTabHostWidget.h"
 
+class UGuiShellController;
+class QMenu;
+
 #ifndef RDK_DISABLE_EXT_GUI
 #include "UVideoAnalyticsSimpleSettingsWidget.h"
 #endif
@@ -140,6 +143,19 @@ public:
     void showCustomWidgetById(const QString& id);
 
     UModernDiagramContainerWidget* modernDiagramContainer() const { return modernDiagram; }
+
+    void setShellController(UGuiShellController* shell);
+    UGuiShellController* shellController() const { return m_shell; }
+
+    /// Hide/show menuBar, mainToolBar, breadcrumbs, statusBar (widgets stay alive).
+    void setHostChromeVisible(bool visible);
+    /// Pause / writeSettings / CloseProject — shared exit path for shell.
+    void performSessionTeardown();
+    void notifyShellMenusChanged();
+
+    QToolBar* primaryToolBar() const;
+    QMenu* windowMenu() const;
+    RDK::UApplication* engineApplication() const { return application; }
 
 #ifndef RDK_DISABLE_EXT_GUI
     void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
@@ -280,6 +296,7 @@ private:
 
     // data
     Ui::UGEngineControllWidget *ui;
+    UGuiShellController* m_shell = nullptr;
 
     // Theme menu actions
     QAction* m_lightThemeAction;
