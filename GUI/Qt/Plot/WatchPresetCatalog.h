@@ -30,6 +30,16 @@ struct WatchPreset
     QVector<WatchPresetSeriesRef> series;
     QString className;
     QString library;
+    /// Optional UI provenance (inherited / family)
+    QString sourceClass;
+    QString viaSlot;
+    bool viaFamily = false;
+};
+
+struct WatchCompositionSlot
+{
+    QString slot;
+    QString childClass;
 };
 
 /// Loads human-editable JSON watch presets from Bin/WatchPresets/<Lib>/<Class>.json.
@@ -41,10 +51,13 @@ public:
     void setRootPath(const QString& absoluteOrRelativePath);
     QString rootPath() const { return m_rootPath; }
 
-    /// Reload from disk (skips meta/ and draft/).
+    /// Reload from disk (skips meta/ and draft/). Loads composition.json from root.
     bool reload();
 
+    /// Own presets + nested composition children + family siblings.
     QVector<WatchPreset> presetsForClass(const QString& className) const;
+    /// Own presets only (no inheritance).
+    QVector<WatchPreset> ownPresetsForClass(const QString& className) const;
     WatchPreset presetById(const QString& className, const QString& presetId) const;
 
     /// Resolve series to absolute PropertyRefs; empty list on failure (see errorOut).
@@ -58,10 +71,17 @@ public:
 private:
     WatchPresetCatalog() = default;
     bool loadFile(const QString& filePath);
+    bool loadComposition(const QString& filePath);
     static NMSDK::Plot::VizKind vizFromString(const QString& s);
+    static WatchPreset rewritePresetPath(const WatchPreset& src,
+                                         const QString& slotPrefix,
+                                         const QString& newId);
 
     QString m_rootPath;
     QHash<QString, QVector<WatchPreset>> m_byClass;
+    QHash<QString, QVector<WatchCompositionSlot>> m_parentSlots;
+    QHash<QString, QVector<WatchCompositionSlot>> m_membraneSlots;
+    QHash<QString, QStringList> m_families; ///< className -> sibling list including self
 };
 
 QString defaultWatchPresetsPath(RDK::UApplication* app);

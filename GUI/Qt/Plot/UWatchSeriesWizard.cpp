@@ -88,10 +88,16 @@ public:
         m_hint->setWordWrap(true);
         layout->addRow(m_hint);
 
-        auto syncModeUi = [this]() {
+        auto syncModeUi = [this, layout]() {
             const bool preset = m_modePreset && m_modePreset->isChecked();
+            m_viz->setVisible(!preset);
+            m_form->setVisible(!preset);
             m_viz->setEnabled(!preset);
             m_form->setEnabled(!preset);
+            if (QWidget* lab = layout->labelForField(m_viz))
+                lab->setVisible(!preset);
+            if (QWidget* lab = layout->labelForField(m_form))
+                lab->setVisible(!preset);
             if (preset)
                 m_hint->setText(QObject::tr(
                     "Preset: pick a component, then a visualization recipe for its class."));
@@ -776,7 +782,8 @@ public:
         , m_wizard(wizard)
     {
         setTitle(QObject::tr("Visualization preset"));
-        setSubTitle(QObject::tr("Choose how to plot the selected component."));
+        setSubTitle(QObject::tr(
+            "Presets for this class, including nested children and similar types."));
 
         auto* root = new QVBoxLayout(this);
         m_list = new QListWidget(this);
@@ -802,7 +809,12 @@ public:
         m_presets = WatchPresetCatalog::instance().presetsForClass(cls);
         for (const WatchPreset& p : m_presets)
         {
-            auto* item = new QListWidgetItem(p.title, m_list);
+            QString label = p.title;
+            if (!p.viaSlot.isEmpty())
+                label += QObject::tr(" (via %1)").arg(p.viaSlot);
+            else if (p.viaFamily && !p.sourceClass.isEmpty())
+                label += QObject::tr(" (like %1)").arg(p.sourceClass);
+            auto* item = new QListWidgetItem(label, m_list);
             item->setToolTip(p.description);
             item->setData(Qt::UserRole, p.id);
         }
@@ -862,6 +874,13 @@ private:
         }
         QStringList lines;
         lines << p.description;
+        if (!p.sourceClass.isEmpty())
+        {
+            if (!p.viaSlot.isEmpty())
+                lines << QObject::tr("Source: %1 via %2").arg(p.sourceClass, p.viaSlot);
+            else if (p.viaFamily)
+                lines << QObject::tr("Similar class: %1").arg(p.sourceClass);
+        }
         for (const WatchPresetSeriesRef& s : p.series)
         {
             const QString path = s.path.isEmpty() ? QStringLiteral(".") : s.path;

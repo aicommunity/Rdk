@@ -5,6 +5,7 @@
 #include "rdk.h"
 #include <rdk_application.h>
 #include "../../Core/Engine/UContainer.h"
+#include "../../Core/Math/UWatchablePropertyTypes.h"
 
 #include <QDir>
 #include <QFile>
@@ -12,7 +13,9 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QObject>
+#include <QSet>
 #include <QDebug>
+#include <utility>
 
 WatchPresetCatalog& WatchPresetCatalog::instance()
 {
@@ -98,9 +101,73 @@ bool WatchPresetCatalog::loadFile(const QString& filePath)
     return true;
 }
 
+bool WatchPresetCatalog::loadComposition(const QString& filePath)
+{
+    m_parentSlots.clear();
+    m_membraneSlots.clear();
+    m_families.clear();
+
+    QFile f(filePath);
+    if (!f.open(QIODevice::ReadOnly))
+        return false;
+    QJsonParseError err{};
+    const QJsonDocument doc = QJsonDocument::fromJson(f.readAll(), &err);
+    if (err.error != QJsonParseError::NoError || !doc.isObject())
+    {
+        qWarning() << "WatchPresetCatalog: invalid composition" << filePath << err.errorString();
+        return false;
+    }
+    const QJsonObject root = doc.object();
+
+    auto loadSlotsMap = [](const QJsonObject& obj, QHash<QString, QVector<WatchCompositionSlot>>& dest) {
+        for (auto it = obj.begin(); it != obj.end(); ++it)
+        {
+            if (!it.value().isArray())
+                continue;
+            QVector<WatchCompositionSlot> entries;
+            for (const QJsonValue& v : it.value().toArray())
+            {
+                if (!v.isObject())
+                    continue;
+                const QJsonObject so = v.toObject();
+                WatchCompositionSlot entry;
+                entry.slot = so.value(QStringLiteral("slot")).toString();
+                entry.childClass = so.value(QStringLiteral("childClass")).toString();
+                if (!entry.slot.isEmpty() && !entry.childClass.isEmpty())
+                    entries.push_back(entry);
+            }
+            if (!entries.isEmpty())
+                dest.insert(it.key(), entries);
+        }
+    };
+
+    loadSlotsMap(root.value(QStringLiteral("parents")).toObject(), m_parentSlots);
+    loadSlotsMap(root.value(QStringLiteral("membraneChildren")).toObject(), m_membraneSlots);
+
+    const QJsonObject families = root.value(QStringLiteral("families")).toObject();
+    for (auto it = families.begin(); it != families.end(); ++it)
+    {
+        if (!it.value().isArray())
+            continue;
+        QStringList members;
+        for (const QJsonValue& v : it.value().toArray())
+        {
+            const QString m = v.toString();
+            if (!m.isEmpty())
+                members << m;
+        }
+        for (const QString& m : members)
+            m_families.insert(m, members);
+    }
+    return true;
+}
+
 bool WatchPresetCatalog::reload()
 {
     m_byClass.clear();
+    m_parentSlots.clear();
+    m_membraneSlots.clear();
+    m_families.clear();
     if (m_rootPath.isEmpty())
         return false;
     QDir root(m_rootPath);
@@ -109,6 +176,8 @@ bool WatchPresetCatalog::reload()
         qWarning() << "WatchPresetCatalog: root missing" << m_rootPath;
         return false;
     }
+
+    loadComposition(root.filePath(QStringLiteral("composition.json")));
 
     static const QStringList kSkip = {
         QStringLiteral("meta"),
@@ -130,14 +199,83 @@ bool WatchPresetCatalog::reload()
     return loaded > 0;
 }
 
-QVector<WatchPreset> WatchPresetCatalog::presetsForClass(const QString& className) const
+WatchPreset WatchPresetCatalog::rewritePresetPath(const WatchPreset& src,
+                                                 const QString& slotPrefix,
+                                                 const QString& newId)
+{
+    WatchPreset p = src;
+    p.id = newId;
+    for (WatchPresetSeriesRef& s : p.series)
+    {
+        if (s.path.isEmpty())
+            s.path = slotPrefix;
+        else
+            s.path = slotPrefix + QLatin1Char('.') + s.path;
+    }
+    return p;
+}
+
+QVector<WatchPreset> WatchPresetCatalog::ownPresetsForClass(const QString& className) const
 {
     return m_byClass.value(className);
 }
 
+QVector<WatchPreset> WatchPresetCatalog::presetsForClass(const QString& className) const
+{
+    QVector<WatchPreset> out;
+    QSet<QString> seenIds;
+
+    auto appendUnique = [&](WatchPreset p) {
+        if (p.id.isEmpty() || seenIds.contains(p.id))
+            return;
+        seenIds.insert(p.id);
+        out.push_back(std::move(p));
+    };
+
+    for (const WatchPreset& p : ownPresetsForClass(className))
+        appendUnique(p);
+
+    auto inheritEntries = [&](const QVector<WatchCompositionSlot>& entries) {
+        for (const WatchCompositionSlot& entry : entries)
+        {
+            for (const WatchPreset& childP : ownPresetsForClass(entry.childClass))
+            {
+                WatchPreset inh = rewritePresetPath(
+                    childP, entry.slot,
+                    QStringLiteral("inherited:%1:%2").arg(entry.slot, childP.id));
+                inh.sourceClass = entry.childClass;
+                inh.viaSlot = entry.slot;
+                inh.className = className;
+                appendUnique(std::move(inh));
+            }
+        }
+    };
+
+    inheritEntries(m_parentSlots.value(className));
+    inheritEntries(m_membraneSlots.value(className));
+
+    const QStringList family = m_families.value(className);
+    for (const QString& sib : family)
+    {
+        if (sib == className)
+            continue;
+        for (const WatchPreset& sibP : ownPresetsForClass(sib))
+        {
+            WatchPreset fp = sibP;
+            fp.id = QStringLiteral("family:%1:%2").arg(sib, sibP.id);
+            fp.sourceClass = sib;
+            fp.viaFamily = true;
+            fp.className = className;
+            appendUnique(std::move(fp));
+        }
+    }
+
+    return out;
+}
+
 WatchPreset WatchPresetCatalog::presetById(const QString& className, const QString& presetId) const
 {
-    for (const WatchPreset& p : m_byClass.value(className))
+    for (const WatchPreset& p : presetsForClass(className))
     {
         if (p.id == presetId)
             return p;
@@ -176,7 +314,18 @@ QVector<NMSDK::Plot::PropertyRef> WatchPresetCatalog::resolve(const WatchPreset&
         RDK::UEPtr<RDK::UContainer> cont = model->GetComponentL(full.toStdString(), true);
         if (!cont)
         {
-            failures << full;
+            failures << QObject::tr("%1 (component missing)").arg(full);
+            continue;
+        }
+        RDK::UEPtr<RDK::UIProperty> prop = cont->FindProperty(s.property.toStdString());
+        if (!prop)
+        {
+            failures << QObject::tr("%1.%2 (property missing)").arg(full, s.property);
+            continue;
+        }
+        if (!RDK::isWatchableLanguageType(prop->GetLanguageType()))
+        {
+            failures << QObject::tr("%1.%2 (not watchable)").arg(full, s.property);
             continue;
         }
         NMSDK::Plot::PropertyRef ref;
@@ -191,7 +340,8 @@ QVector<NMSDK::Plot::PropertyRef> WatchPresetCatalog::resolve(const WatchPreset&
     if (!failures.isEmpty())
     {
         if (errorOut)
-            *errorOut = QObject::tr("Components not found:\n%1").arg(failures.join(QLatin1Char('\n')));
+            *errorOut = QObject::tr("Could not resolve preset series:\n%1")
+                            .arg(failures.join(QLatin1Char('\n')));
         return {};
     }
     if (out.size() != preset.series.size())
