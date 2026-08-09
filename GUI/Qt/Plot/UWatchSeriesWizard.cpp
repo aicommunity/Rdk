@@ -249,6 +249,7 @@ public:
         setSubTitle(xy ? QObject::tr("Select the Y property for the XY pair.")
                        : QObject::tr("Select the Y property vs time."));
         m_picker->setMatrixPickMode(formToPickMode(form));
+        m_picker->setTimeSeriesCompactMode(!xy);
         if (xy && (form == UWatchSeriesWizardResult::Form::WholeRow
                    || form == UWatchSeriesWizardResult::Form::WholeColumn))
         {
@@ -697,14 +698,22 @@ public:
         setSubTitle(QObject::tr("Select a component instance. Presets are filtered by its class."));
 
         auto* root = new QVBoxLayout(this);
-        m_classLabel = new QLabel(this);
-        m_classLabel->setWordWrap(true);
-        root->addWidget(m_classLabel);
+        root->setContentsMargins(0, 0, 0, 0);
+        root->setSpacing(4);
 
         m_picker = new UWatchSourcePickerWidget(this);
         root->addWidget(m_picker, 1);
         if (wizard)
+        {
             m_picker->configureForWatch(wizard->app(), true);
+            m_picker->setComponentOnlyMode(true);
+        }
+
+        m_classLabel = new QLabel(this);
+        m_classLabel->setWordWrap(true);
+        m_classLabel->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+        m_classLabel->setStyleSheet(QStringLiteral("color: palette(mid);"));
+        root->addWidget(m_classLabel, 0);
 
         connect(m_picker, &UWatchSourcePickerWidget::selectionChanged, this, [this]() {
             refreshClass();
@@ -753,7 +762,7 @@ private:
         m_className = componentClassNameFromModelScope(channelIndex(), longName);
         const int n = WatchPresetCatalog::instance().presetsForClass(m_className).size();
         m_classLabel->setText(
-            QObject::tr("Class: %1\nAvailable presets: %2")
+            QObject::tr("Class: %1 · presets: %2")
                 .arg(m_className.isEmpty() ? QObject::tr("(unknown)") : m_className)
                 .arg(n));
     }

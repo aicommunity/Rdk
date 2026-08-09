@@ -8,6 +8,7 @@
 #include "../../Core/Math/UWatchablePropertyTypes.h"
 
 #include <QLabel>
+#include <QSizePolicy>
 #include <QVBoxLayout>
 #include <QSplitter>
 #include <typeinfo>
@@ -15,18 +16,22 @@
 UWatchSourcePickerWidget::UWatchSourcePickerWidget(QWidget* parent)
     : QWidget(parent)
 {
-    auto* root = new QVBoxLayout(this);
-    root->setContentsMargins(0, 0, 0, 0);
+    m_rootLayout = new QVBoxLayout(this);
+    m_rootLayout->setContentsMargins(0, 0, 0, 0);
+    m_rootLayout->setSpacing(4);
+
+    m_split = new QSplitter(Qt::Vertical, this);
+    m_rootLayout->addWidget(m_split, 1);
+
+    m_matrix = new UWatchMatrixSelector(this);
+    m_matrix->setMinimumHeight(48);
+    m_matrix->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
 
     m_bindingReadout = new QLabel(tr("No property selected"), this);
     m_bindingReadout->setWordWrap(true);
-    root->addWidget(m_bindingReadout);
-
-    m_split = new QSplitter(Qt::Vertical, this);
-    root->addWidget(m_split, 1);
-
-    m_matrix = new UWatchMatrixSelector(this);
-    m_matrix->setMinimumHeight(100);
+    m_bindingReadout->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+    m_bindingReadout->setStyleSheet(QStringLiteral("color: palette(mid);"));
+    m_rootLayout->addWidget(m_bindingReadout, 0);
 
     connect(m_matrix, &UWatchMatrixSelector::selectionChanged, this, [this]() {
         updateReadout();
@@ -63,11 +68,78 @@ void UWatchSourcePickerWidget::configureForWatch(RDK::UApplication* app, bool sh
 
     m_split->addWidget(m_list);
     m_split->addWidget(m_matrix);
-    m_split->setStretchFactor(0, 3);
-    m_split->setStretchFactor(1, 2);
+    applyLayoutModes();
 
     connect(m_list, SIGNAL(componentSelected(QString)), this, SLOT(onListSelectionChanged()));
     connect(m_list, SIGNAL(selectedPropertyValue(QString)), this, SLOT(onListSelectionChanged()));
+}
+
+void UWatchSourcePickerWidget::setComponentOnlyMode(bool enabled)
+{
+    m_componentOnly = enabled;
+    applyLayoutModes();
+}
+
+void UWatchSourcePickerWidget::setTimeSeriesCompactMode(bool enabled)
+{
+    m_timeSeriesCompact = enabled;
+    applyLayoutModes();
+}
+
+void UWatchSourcePickerWidget::applyLayoutModes()
+{
+    if (!m_split)
+        return;
+
+    if (m_componentOnly)
+    {
+        if (m_bindingReadout)
+            m_bindingReadout->setVisible(false);
+        if (m_matrix)
+            m_matrix->setVisible(false);
+        m_split->setStretchFactor(0, 1);
+        m_split->setStretchFactor(1, 0);
+        QList<int> sizes = m_split->sizes();
+        if (sizes.size() >= 2)
+        {
+            const int total = qMax(1, sizes[0] + sizes[1]);
+            m_split->setSizes({total, 0});
+        }
+        return;
+    }
+
+    if (m_bindingReadout)
+        m_bindingReadout->setVisible(true);
+
+    const bool scalar = m_matrix && m_matrix->isScalarProperty()
+                        && !propertyName().isEmpty();
+    const bool hideMatrix = m_timeSeriesCompact && scalar;
+
+    if (m_matrix)
+    {
+        m_matrix->setVisible(!hideMatrix);
+        m_matrix->setMinimumHeight(m_timeSeriesCompact ? 40 : 48);
+    }
+
+    if (m_timeSeriesCompact)
+    {
+        m_split->setStretchFactor(0, 8);
+        m_split->setStretchFactor(1, hideMatrix ? 0 : 1);
+        if (hideMatrix)
+        {
+            QList<int> sizes = m_split->sizes();
+            if (sizes.size() >= 2)
+            {
+                const int total = qMax(1, sizes[0] + sizes[1]);
+                m_split->setSizes({total, 0});
+            }
+        }
+    }
+    else
+    {
+        m_split->setStretchFactor(0, 5);
+        m_split->setStretchFactor(1, 1);
+    }
 }
 
 void UWatchSourcePickerWidget::onListSelectionChanged()
@@ -85,6 +157,7 @@ void UWatchSourcePickerWidget::updateBindingFromList()
     if (comp.isEmpty() || prop.isEmpty())
     {
         m_matrix->clearBinding();
+        applyLayoutModes();
         updateReadout();
         emit selectionChanged();
         return;
@@ -110,6 +183,7 @@ void UWatchSourcePickerWidget::updateBindingFromList()
     else if (!m_matrix->bind(comp, prop))
         m_matrix->clearBinding();
 
+    applyLayoutModes();
     updateReadout();
     emit selectionChanged();
 }
@@ -188,4 +262,5 @@ void UWatchSourcePickerWidget::setMatrixPickMode(MatrixPickMode mode)
 {
     if (m_matrix)
         m_matrix->setPickMode(mode);
+    applyLayoutModes();
 }
