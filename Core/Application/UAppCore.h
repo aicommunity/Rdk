@@ -87,7 +87,7 @@ public:
 
  std::string librariesPath;
  std::string clDescPath;
-
+ std::string watchPresetsPath;
  std::string temp_proj_path;
 
  std::string database_address;
@@ -203,6 +203,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
 
  librariesPath=projectIniFile("General", "LibrariesPath", "../../");
  clDescPath=projectIniFile("General", "ClDescPath", "../../ClDesc/");
+ watchPresetsPath=projectIniFile("General", "WatchPresetsPath", "../../WatchPresets/");
 
  databaseMainPath=projectIniFile("General","DatabaseMainPath","");
  remoteFtpDatabasePath=projectIniFile("General","RemoteFtpDatabasePath","");
@@ -251,6 +252,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
 
  application.SetLibrariesPath(librariesPath);
  application.SetClDescPath(clDescPath);
+ application.SetWatchPresetsPath(watchPresetsPath);
  application.SetConfigsMainPath(configsMainPath);
  application.ChangeUseNewXmlFormatProjectFile(useNewXmlFormatProjectFile);
  application.ChangeUseNewProjectFilesStructure(useNewProjectFilesStructure);

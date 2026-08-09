@@ -1,5 +1,6 @@
 #include "UWatchSeriesWizard.h"
 #include "UWatchSourcePickerWidget.h"
+#include "WatchPresetCatalog.h"
 
 #include "../UWatchChart.h"
 #include "../UWatchSerie.h"
@@ -15,6 +16,7 @@
 #include <QButtonGroup>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QDebug>
 #include <QDoubleSpinBox>
 #include <QFormLayout>
 #include <QGroupBox>
@@ -22,8 +24,11 @@
 #include <QIcon>
 #include <QLabel>
 #include <QLineEdit>
+#include <QListWidget>
 #include <QLocale>
+#include <QMessageBox>
 #include <QPixmap>
+#include <QRadioButton>
 #include <QScrollArea>
 #include <QFrame>
 #include <QSpinBox>
@@ -31,7 +36,6 @@
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QWizardPage>
-
 namespace watch_wizard {
 
 MatrixPickMode formToPickMode(UWatchSeriesWizardResult::Form form)
@@ -58,9 +62,19 @@ public:
         , m_wizard(wizard)
     {
         setTitle(QObject::tr("Chart type"));
-        setSubTitle(QObject::tr("Choose visualization kind and how matrix sources are expanded into series."));
+        setSubTitle(QObject::tr("Choose manual setup or a component visualization preset."));
 
         auto* layout = new QFormLayout(this);
+
+        m_modeManual = new QRadioButton(QObject::tr("Manual"), this);
+        m_modePreset = new QRadioButton(QObject::tr("Preset"), this);
+        m_modeManual->setChecked(true);
+        auto* modeRow = new QHBoxLayout();
+        modeRow->addWidget(m_modeManual);
+        modeRow->addWidget(m_modePreset);
+        modeRow->addStretch(1);
+        layout->addRow(QObject::tr("Mode"), modeRow);
+
         m_viz = new QComboBox(this);
         m_viz->addItem(QObject::tr("Time series"), static_cast<int>(NMSDK::Plot::VizKind::TimeSeries));
         m_viz->addItem(QObject::tr("XY line"), static_cast<int>(NMSDK::Plot::VizKind::XYLine));
@@ -73,6 +87,19 @@ public:
         m_hint = new QLabel(this);
         m_hint->setWordWrap(true);
         layout->addRow(m_hint);
+
+        auto syncModeUi = [this]() {
+            const bool preset = m_modePreset && m_modePreset->isChecked();
+            m_viz->setEnabled(!preset);
+            m_form->setEnabled(!preset);
+            if (preset)
+                m_hint->setText(QObject::tr(
+                    "Preset: pick a component, then a visualization recipe for its class."));
+            else
+                rebuildFormItems();
+        };
+        connect(m_modeManual, &QRadioButton::toggled, this, [syncModeUi](bool) { syncModeUi(); });
+        connect(m_modePreset, &QRadioButton::toggled, this, [syncModeUi](bool) { syncModeUi(); });
 
         connect(m_viz, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int) {
             rebuildFormItems();
@@ -111,6 +138,12 @@ public:
             }
         }
         rebuildFormItems();
+        syncModeUi();
+    }
+
+    bool isPresetMode() const
+    {
+        return m_modePreset && m_modePreset->isChecked();
     }
 
     NMSDK::Plot::VizKind viz() const
@@ -129,6 +162,8 @@ public:
     {
         if (!m_wizard)
             return QWizardPage::nextId();
+        if (isPresetMode())
+            return m_wizard->presetComponentPageId();
         if (viz() == NMSDK::Plot::VizKind::TimeSeries)
             return m_wizard->ySourcePageId();
         return m_wizard->xSourcePageId();
@@ -137,6 +172,8 @@ public:
 private:
     void rebuildFormItems()
     {
+        if (isPresetMode())
+            return;
         m_form->clear();
         const auto v = viz();
         if (v == NMSDK::Plot::VizKind::TimeSeries)
@@ -168,6 +205,8 @@ private:
     }
 
     UWatchSeriesWizard* m_wizard = nullptr;
+    QRadioButton* m_modeManual = nullptr;
+    QRadioButton* m_modePreset = nullptr;
     QComboBox* m_viz = nullptr;
     QComboBox* m_form = nullptr;
     QLabel* m_hint = nullptr;
@@ -459,7 +498,18 @@ public:
     void initializePage() override
     {
         if (m_wizard)
-            m_wizard->captureSourcesIntoResult();
+        {
+            if (m_wizard->isPresetMode())
+            {
+                const UWatchSeriesWizardResult r = m_wizard->result();
+                if (m_name->text().trimmed().isEmpty() && !r.seriesName.isEmpty())
+                    m_name->setText(r.seriesName);
+            }
+            else
+            {
+                m_wizard->captureSourcesIntoResult();
+            }
+        }
         refreshSuggestedRanges();
     }
 
@@ -630,6 +680,212 @@ private:
     QDoubleSpinBox* m_xyMinDistance = nullptr;
 };
 
+class PresetComponentPage : public QWizardPage
+{
+public:
+    explicit PresetComponentPage(UWatchSeriesWizard* wizard, QWidget* parent = nullptr)
+        : QWizardPage(parent)
+        , m_wizard(wizard)
+    {
+        setTitle(QObject::tr("Component"));
+        setSubTitle(QObject::tr("Select a component instance. Presets are filtered by its class."));
+
+        auto* root = new QVBoxLayout(this);
+        m_classLabel = new QLabel(this);
+        m_classLabel->setWordWrap(true);
+        root->addWidget(m_classLabel);
+
+        m_picker = new UWatchSourcePickerWidget(this);
+        root->addWidget(m_picker, 1);
+        if (wizard)
+            m_picker->configureForWatch(wizard->app(), true);
+
+        connect(m_picker, &UWatchSourcePickerWidget::selectionChanged, this, [this]() {
+            refreshClass();
+            notifyComplete();
+        });
+    }
+
+    void initializePage() override
+    {
+        refreshClass();
+        notifyComplete();
+    }
+
+    QString componentLongName() const
+    {
+        return m_picker ? m_picker->componentLongName() : QString();
+    }
+
+    QString className() const { return m_className; }
+
+    int channelIndex() const
+    {
+        return m_picker ? m_picker->channelIndex() : 0;
+    }
+
+    bool isComplete() const override
+    {
+        return !componentLongName().isEmpty() && !m_className.isEmpty();
+    }
+
+    int nextId() const override
+    {
+        return m_wizard ? m_wizard->presetSelectPageId() : QWizardPage::nextId();
+    }
+
+private:
+    void refreshClass()
+    {
+        m_className.clear();
+        const QString longName = componentLongName();
+        if (longName.isEmpty() || !m_wizard)
+        {
+            m_classLabel->setText(QObject::tr("No component selected."));
+            return;
+        }
+        m_className = componentClassNameFromModelScope(channelIndex(), longName);
+        const int n = WatchPresetCatalog::instance().presetsForClass(m_className).size();
+        m_classLabel->setText(
+            QObject::tr("Class: %1\nAvailable presets: %2")
+                .arg(m_className.isEmpty() ? QObject::tr("(unknown)") : m_className)
+                .arg(n));
+    }
+
+    void notifyComplete()
+    {
+        emit completeChanged();
+        if (QWizard* w = wizard())
+        {
+            if (QAbstractButton* next = w->button(QWizard::NextButton))
+                next->setEnabled(isComplete());
+        }
+    }
+
+    UWatchSeriesWizard* m_wizard = nullptr;
+    UWatchSourcePickerWidget* m_picker = nullptr;
+    QLabel* m_classLabel = nullptr;
+    QString m_className;
+};
+
+class PresetSelectPage : public QWizardPage
+{
+public:
+    explicit PresetSelectPage(UWatchSeriesWizard* wizard, QWidget* parent = nullptr)
+        : QWizardPage(parent)
+        , m_wizard(wizard)
+    {
+        setTitle(QObject::tr("Visualization preset"));
+        setSubTitle(QObject::tr("Choose how to plot the selected component."));
+
+        auto* root = new QVBoxLayout(this);
+        m_list = new QListWidget(this);
+        root->addWidget(m_list, 1);
+        m_preview = new QLabel(this);
+        m_preview->setWordWrap(true);
+        root->addWidget(m_preview);
+
+        connect(m_list, &QListWidget::currentRowChanged, this, [this](int) {
+            updatePreview();
+            notifyComplete();
+        });
+    }
+
+    void initializePage() override
+    {
+        m_list->clear();
+        m_presets.clear();
+        auto* compPage = m_wizard
+            ? static_cast<PresetComponentPage*>(m_wizard->page(m_wizard->presetComponentPageId()))
+            : nullptr;
+        const QString cls = compPage ? compPage->className() : QString();
+        m_presets = WatchPresetCatalog::instance().presetsForClass(cls);
+        for (const WatchPreset& p : m_presets)
+        {
+            auto* item = new QListWidgetItem(p.title, m_list);
+            item->setToolTip(p.description);
+            item->setData(Qt::UserRole, p.id);
+        }
+        if (m_list->count() > 0)
+            m_list->setCurrentRow(0);
+        updatePreview();
+        notifyComplete();
+    }
+
+    WatchPreset selectedPreset() const
+    {
+        const int row = m_list ? m_list->currentRow() : -1;
+        if (row < 0 || row >= m_presets.size())
+            return {};
+        return m_presets[row];
+    }
+
+    bool isComplete() const override
+    {
+        return m_list && m_list->currentRow() >= 0 && !m_presets.isEmpty();
+    }
+
+    bool validatePage() override
+    {
+        if (!m_wizard || !isComplete())
+            return false;
+        m_wizard->capturePresetIntoResult();
+        if (m_wizard->result().presetBindings.isEmpty())
+        {
+            QMessageBox::warning(this, QObject::tr("Preset"),
+                                 QObject::tr("Could not resolve preset series for the selected component."));
+            return false;
+        }
+        if (m_wizard->chart()
+            && !m_wizard->chart()->canAddVizKind(m_wizard->result().viz))
+        {
+            QMessageBox::warning(this, QObject::tr("Preset"),
+                                 QObject::tr("This chart already uses a different visualization family."));
+            return false;
+        }
+        return true;
+    }
+
+    int nextId() const override
+    {
+        return m_wizard ? m_wizard->stylePageId() : QWizardPage::nextId();
+    }
+
+private:
+    void updatePreview()
+    {
+        const WatchPreset p = selectedPreset();
+        if (p.id.isEmpty())
+        {
+            m_preview->setText(QObject::tr("No presets for this class."));
+            return;
+        }
+        QStringList lines;
+        lines << p.description;
+        for (const WatchPresetSeriesRef& s : p.series)
+        {
+            const QString path = s.path.isEmpty() ? QStringLiteral(".") : s.path;
+            lines << QStringLiteral("• %1.%2 (%3,%4)").arg(path, s.property).arg(s.jx).arg(s.jy);
+        }
+        m_preview->setText(lines.join(QLatin1Char('\n')));
+    }
+
+    void notifyComplete()
+    {
+        emit completeChanged();
+        if (QWizard* w = wizard())
+        {
+            if (QAbstractButton* next = w->button(QWizard::NextButton))
+                next->setEnabled(isComplete());
+        }
+    }
+
+    UWatchSeriesWizard* m_wizard = nullptr;
+    QListWidget* m_list = nullptr;
+    QLabel* m_preview = nullptr;
+    QVector<WatchPreset> m_presets;
+};
+
 } // namespace watch_wizard
 
 UWatchSeriesWizard::UWatchSeriesWizard(UWatchChart* chart, RDK::UApplication* app, QWidget* parent)
@@ -640,11 +896,22 @@ UWatchSeriesWizard::UWatchSeriesWizard(UWatchChart* chart, RDK::UApplication* ap
     setWizardStyle(QWizard::ModernStyle);
     setOption(QWizard::HaveFinishButtonOnEarlyPages, false);
 
+    auto& catalog = WatchPresetCatalog::instance();
+    if (catalog.rootPath().isEmpty())
+    {
+        catalog.setRootPath(defaultWatchPresetsPath(app));
+        catalog.reload();
+    }
+
     m_typePage = new watch_wizard::TypeFormPage(this);
+    m_presetComponentPage = new watch_wizard::PresetComponentPage(this);
+    m_presetSelectPage = new watch_wizard::PresetSelectPage(this);
     m_ySourcePage = new watch_wizard::YSourcePage(this);
     m_xSourcePage = new watch_wizard::XSourcePage(this);
     m_stylePage = new watch_wizard::StylePage(this);
     addPage(m_typePage);
+    m_presetComponentPageId = addPage(m_presetComponentPage);
+    m_presetSelectPageId = addPage(m_presetSelectPage);
     m_xSourcePageId = addPage(m_xSourcePage);
     m_ySourcePageId = addPage(m_ySourcePage);
     m_stylePageId = addPage(m_stylePage);
@@ -653,6 +920,8 @@ UWatchSeriesWizard::UWatchSeriesWizard(UWatchChart* chart, RDK::UApplication* ap
 
 NMSDK::Plot::VizKind UWatchSeriesWizard::selectedViz() const
 {
+    if (isPresetMode() && !m_result.presetId.isEmpty())
+        return m_result.viz;
     return static_cast<watch_wizard::TypeFormPage*>(m_typePage)->viz();
 }
 
@@ -661,8 +930,50 @@ UWatchSeriesWizardResult::Form UWatchSeriesWizard::selectedForm() const
     return static_cast<watch_wizard::TypeFormPage*>(m_typePage)->form();
 }
 
+bool UWatchSeriesWizard::isPresetMode() const
+{
+    return static_cast<watch_wizard::TypeFormPage*>(m_typePage)->isPresetMode();
+}
+
+void UWatchSeriesWizard::capturePresetIntoResult()
+{
+    m_result = UWatchSeriesWizardResult{};
+    m_result.mode = UWatchSeriesWizardResult::Mode::Preset;
+    auto* compPage = static_cast<watch_wizard::PresetComponentPage*>(m_presetComponentPage);
+    auto* selPage = static_cast<watch_wizard::PresetSelectPage*>(m_presetSelectPage);
+    if (!compPage || !selPage)
+        return;
+
+    m_result.channel = compPage->channelIndex();
+    m_result.rootComponent = compPage->componentLongName();
+    m_result.componentClassName = compPage->className();
+    const WatchPreset preset = selPage->selectedPreset();
+    m_result.presetId = preset.id;
+    m_result.viz = preset.vizKind;
+    m_result.form = UWatchSeriesWizardResult::Form::SingleCell;
+    m_result.seriesName = preset.title;
+
+    QString err;
+    m_result.presetBindings = WatchPresetCatalog::instance().resolve(
+        preset, m_result.rootComponent, m_result.channel, &err);
+    if (!m_result.presetBindings.isEmpty())
+    {
+        // Mirror first binding into y* for style page / accept guards
+        m_result.yComponent = m_result.presetBindings.front().component;
+        m_result.yProperty = m_result.presetBindings.front().property;
+        m_result.yCells = {UWatchMatrixSelector::CellRef{
+            m_result.presetBindings.front().jx,
+            m_result.presetBindings.front().jy}};
+    }
+    else if (!err.isEmpty())
+    {
+        qWarning() << "Watch preset resolve:" << err;
+    }
+}
+
 void UWatchSeriesWizard::captureYSourceIntoResult()
 {
+    m_result.mode = UWatchSeriesWizardResult::Mode::Manual;
     m_result.viz = selectedViz();
     m_result.form = selectedForm();
 
@@ -702,7 +1013,8 @@ void UWatchSeriesWizard::captureSourcesIntoResult()
 
 void UWatchSeriesWizard::captureStyleIntoResult()
 {
-    if (m_result.yComponent.isEmpty())
+    if (m_result.mode != UWatchSeriesWizardResult::Mode::Preset
+        && m_result.yComponent.isEmpty())
         captureSourcesIntoResult();
 
     auto* style = static_cast<watch_wizard::StylePage*>(m_stylePage);
@@ -726,13 +1038,17 @@ int UWatchSeriesWizard::applyToChart(UWatchChart* chart) const
         return 0;
 
     auto* self = const_cast<UWatchSeriesWizard*>(this);
-    if (m_result.yComponent.isEmpty())
+    if (m_result.mode == UWatchSeriesWizardResult::Mode::Preset)
+    {
+        if (m_result.presetBindings.isEmpty())
+            self->capturePresetIntoResult();
+    }
+    else if (m_result.yComponent.isEmpty())
+    {
         self->captureSourcesIntoResult();
+    }
 
     const UWatchSeriesWizardResult& r = m_result;
-    if (r.yComponent.isEmpty() || r.yProperty.isEmpty())
-        return 0;
-
     const double t = chart->getAxisXrange();
     const int before = chart->countSeries();
 
@@ -742,6 +1058,43 @@ int UWatchSeriesWizard::applyToChart(UWatchChart* chart) const
         else
             chart->setSerieColor(idx, chart->suggestAutoColorIndex(idx));
     };
+
+    if (r.mode == UWatchSeriesWizardResult::Mode::Preset)
+    {
+        if (r.presetBindings.isEmpty())
+            return 0;
+        if (!chart->canAddVizKind(r.viz))
+            return 0;
+        int created = 0;
+        for (const NMSDK::Plot::PropertyRef& ref : r.presetBindings)
+        {
+            if (r.viz != NMSDK::Plot::VizKind::TimeSeries)
+            {
+                // v1 catalog is TimeSeries-only; XY role bindings need explicit X series refs
+                qWarning() << "Watch preset: XY vizKind not applied in v1 apply path";
+                break;
+            }
+            chart->createSerie(r.channel, ref.component, ref.property, QString(),
+                               ref.jx, ref.jy, t, r.yShift);
+            const int idx = chart->countSeries() - 1;
+            if (created == 0 && !r.seriesName.isEmpty() && r.presetBindings.size() == 1)
+                chart->setSerieName(idx, r.seriesName);
+            else if (!r.seriesName.isEmpty())
+                chart->setSerieName(idx, r.seriesName + QStringLiteral(" / %1").arg(ref.property));
+            applyColor(idx);
+            ++created;
+        }
+        if (r.applyYRange && r.yMin < r.yMax)
+        {
+            chart->setAxisYmin(r.yMin);
+            chart->setAxisYmax(r.yMax);
+            chart->fixInitialAxesState();
+        }
+        return chart->countSeries() - before;
+    }
+
+    if (r.yComponent.isEmpty() || r.yProperty.isEmpty())
+        return 0;
 
     if (r.viz == NMSDK::Plot::VizKind::TimeSeries)
     {
@@ -769,7 +1122,6 @@ int UWatchSeriesWizard::applyToChart(UWatchChart* chart) const
             slice = NMSDK::Plot::SliceKind::Column;
 
         const auto yc = r.yCells.isEmpty() ? UWatchMatrixSelector::CellRef{} : r.yCells.front();
-        // For row/col snapshot: index is row (jx) or column (jy) of the selected slice.
         int xJx = r.xCell.jx;
         int xJy = r.xCell.jy;
         int yJx = yc.jx;
@@ -830,14 +1182,24 @@ void UWatchSeriesWizard::accept()
     if (currentPage() == m_typePage)
         return;
 
-    if (currentPage() == m_ySourcePage)
+    if (currentPage() == m_presetSelectPage)
+        capturePresetIntoResult();
+    else if (currentPage() == m_ySourcePage)
         captureYSourceIntoResult();
     else if (currentPage() == m_xSourcePage)
         captureXSourceIntoResult();
     else if (currentPage() == m_stylePage)
         captureStyleIntoResult();
-    else
+    else if (m_result.mode != UWatchSeriesWizardResult::Mode::Preset)
         captureSourcesIntoResult();
+
+    if (m_result.mode == UWatchSeriesWizardResult::Mode::Preset)
+    {
+        if (m_result.presetBindings.isEmpty())
+            return;
+        QWizard::accept();
+        return;
+    }
 
     if (m_result.yComponent.isEmpty() || m_result.yProperty.isEmpty())
         return;

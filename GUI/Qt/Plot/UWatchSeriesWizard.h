@@ -3,6 +3,7 @@
 
 #include "PlotDocument.h"
 #include "UWatchMatrixSelector.h"
+#include "WatchPresetCatalog.h"
 
 #include <QWizard>
 #include <QVector>
@@ -18,6 +19,12 @@ class QWizardPage;
 
 struct UWatchSeriesWizardResult
 {
+    enum class Mode
+    {
+        Manual = 0,
+        Preset = 1
+    } mode = Mode::Manual;
+
     NMSDK::Plot::VizKind viz = NMSDK::Plot::VizKind::TimeSeries;
     enum class Form
     {
@@ -34,6 +41,12 @@ struct UWatchSeriesWizardResult
     QString xComponent;
     QString xProperty;
     UWatchMatrixSelector::CellRef xCell{};
+
+    /// Preset mode
+    QString presetId;
+    QString rootComponent;
+    QString componentClassName;
+    QVector<NMSDK::Plot::PropertyRef> presetBindings;
 
     QString seriesName;
     int colorIndex = -1;
@@ -63,10 +76,12 @@ public:
 
     NMSDK::Plot::VizKind selectedViz() const;
     UWatchSeriesWizardResult::Form selectedForm() const;
+    bool isPresetMode() const;
     void captureYSourceIntoResult();
     void captureXSourceIntoResult();
     void captureSourcesIntoResult();
     void captureStyleIntoResult();
+    void capturePresetIntoResult();
 
     UWatchChart* chart() const { return m_chart; }
     RDK::UApplication* app() const { return m_app; }
@@ -74,6 +89,8 @@ public:
     int ySourcePageId() const { return m_ySourcePageId; }
     int xSourcePageId() const { return m_xSourcePageId; }
     int stylePageId() const { return m_stylePageId; }
+    int presetComponentPageId() const { return m_presetComponentPageId; }
+    int presetSelectPageId() const { return m_presetSelectPageId; }
 
 public slots:
     void accept() override;
@@ -86,9 +103,13 @@ private:
     QWizardPage* m_ySourcePage = nullptr;
     QWizardPage* m_xSourcePage = nullptr;
     QWizardPage* m_stylePage = nullptr;
+    QWizardPage* m_presetComponentPage = nullptr;
+    QWizardPage* m_presetSelectPage = nullptr;
     int m_ySourcePageId = -1;
     int m_xSourcePageId = -1;
     int m_stylePageId = -1;
+    int m_presetComponentPageId = -1;
+    int m_presetSelectPageId = -1;
 };
 
 #endif // UWATCH_SERIES_WIZARD_H

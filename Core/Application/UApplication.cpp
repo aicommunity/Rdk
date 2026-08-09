@@ -380,6 +380,19 @@ bool UApplication::SetClDescPath(const std::string &value)
  return true;
 }
 
+const std::string& UApplication::GetWatchPresetsPath(void) const
+{
+ return WatchPresetsPath;
+}
+
+bool UApplication::SetWatchPresetsPath(const std::string &value)
+{
+ if(WatchPresetsPath == value)
+  return true;
+ WatchPresetsPath=value;
+ return true;
+}
+
 /// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
 const std::string& UApplication::GetDatabaseMainPath(void) const
 {
