@@ -224,11 +224,81 @@ QVector<WatchPreset> WatchPresetCatalog::presetsForClass(const QString& classNam
 {
     QVector<WatchPreset> out;
     QSet<QString> seenIds;
+    QSet<QString> seenSignatures;
+
+    auto seriesSignature = [](const WatchPreset& p) -> QString {
+        QStringList keys;
+        keys.reserve(p.series.size());
+        for (const WatchPresetSeriesRef& s : p.series)
+        {
+            keys << QStringLiteral("%1|%2|%3|%4")
+                        .arg(s.path, s.property)
+                        .arg(s.jx)
+                        .arg(s.jy);
+        }
+        keys.sort();
+        return keys.join(QLatin1Char(';'));
+    };
+
+    auto hasWildcardOrBadPath = [](const WatchPreset& p) -> bool {
+        if (p.id.contains(QLatin1Char('*')) || p.title.contains(QLatin1Char('*')))
+            return true;
+        for (const WatchPresetSeriesRef& s : p.series)
+        {
+            if (s.path.contains(QLatin1Char('*')) || s.property.contains(QLatin1Char('*')))
+                return true;
+        }
+        return false;
+    };
+
+    // Variable neuron structure must not appear as root-neuron presets.
+    const bool isNeuronParent = m_parentSlots.contains(className);
+    auto isVariableNeuronPath = [](const QString& path) -> bool {
+        if (path.isEmpty())
+            return false;
+        if (path.contains(QLatin1Char('*')))
+            return true;
+        if (path == QStringLiteral("LTZone") || path.startsWith(QStringLiteral("LTZone.")))
+            return false;
+        if (path == QStringLiteral("Soma1"))
+            return false;
+        if (path.startsWith(QStringLiteral("Soma1.")))
+            return true; // channels/synapses under soma — select membrane/channel instance
+        const QString head = path.section(QLatin1Char('.'), 0, 0);
+        if (head.startsWith(QStringLiteral("Dendrite")))
+            return true;
+        if (head.startsWith(QStringLiteral("Soma")))
+        {
+            bool ok = false;
+            head.mid(4).toInt(&ok);
+            if (ok)
+                return true;
+        }
+        if (path.contains(QStringLiteral("ExcSynapse")) || path.contains(QStringLiteral("InhSynapse")))
+            return true;
+        if (path.endsWith(QStringLiteral("ExcChannel")) || path.endsWith(QStringLiteral("InhChannel")))
+            return true;
+        return false;
+    };
 
     auto appendUnique = [&](WatchPreset p) {
         if (p.id.isEmpty() || seenIds.contains(p.id))
             return;
+        if (hasWildcardOrBadPath(p))
+            return;
+        if (isNeuronParent)
+        {
+            for (const WatchPresetSeriesRef& s : p.series)
+            {
+                if (isVariableNeuronPath(s.path))
+                    return;
+            }
+        }
+        const QString sig = seriesSignature(p);
+        if (sig.isEmpty() || seenSignatures.contains(sig))
+            return;
         seenIds.insert(p.id);
+        seenSignatures.insert(sig);
         out.push_back(std::move(p));
     };
 
