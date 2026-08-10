@@ -1,10 +1,13 @@
 #include "RegisterApplicationTools.h"
 
 #include "../Domain/URdkApplicationCommands.h"
+#include "../Domain/URdkDomainAccess.h"
+#include "../Gui/ILLMPresentationSink.h"
 #include "../LlmPublicApi.h"
 #include "ApplicationToolHelpers.h"
 #include "ULLMToolRegistry.h"
 
+#include <cctype>
 #include <unordered_map>
 
 namespace RDK::LLM {
@@ -230,7 +233,9 @@ void RegisterApplicationTools(ULLMToolRegistry& registry)
 
     registry.registerTool(
         makeAppDef("update_configuration", LLMToolKind::Write,
-                   "Update metadata/settings of the open configuration",
+                   "Update metadata/settings of the open configuration. For project_description, "
+                   "pass concrete text gathered from get_net_snapshot/inspect_configuration — "
+                   "never placeholders like 'указать здесь' or 'which you want to add'.",
                    {{"type", "object"},
                     {"properties",
                      {{"project_name", {{"type", "string"}}},
@@ -260,13 +265,43 @@ void RegisterApplicationTools(ULLMToolRegistry& registry)
                     {"additionalProperties", false}},
                    true, true),
         [](const nlohmann::json& args) -> ToolGatewayResult {
+            if(args.contains("project_description") && args["project_description"].is_string())
+            {
+                const std::string desc = args["project_description"].get<std::string>();
+                std::string lower = desc;
+                for(char& c : lower)
+                    c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+                const bool placeholder =
+                    lower.find("указать") != std::string::npos
+                    || lower.find("которое вы хотите") != std::string::npos
+                    || lower.find("which you want") != std::string::npos
+                    || lower.find("[list") != std::string::npos
+                    || lower.find("[указать") != std::string::npos
+                    || lower.find("todo") != std::string::npos
+                    || lower.find("placeholder") != std::string::npos
+                    || (lower.find("модул") != std::string::npos
+                        && lower.find("здесь") != std::string::npos);
+                if(placeholder)
+                {
+                    ToolGatewayResult r;
+                    r.ok = false;
+                    r.error_code = "PlaceholderDescription";
+                    r.message =
+                        "project_description looks like a placeholder. Call get_net_snapshot "
+                        "(no root_long_name) and/or inspect_configuration, then rewrite "
+                        "project_description with real module/class names — or ask_user.";
+                    return r;
+                }
+            }
             return invokeApplicationTool(activeSink(),
                                          [&]() { return commands().updateConfiguration(args); });
         });
 
     registry.registerTool(
         makeAppDef("validate_configuration", LLMToolKind::Read,
-                   "Validate a configuration file on disk without opening it in the UI",
+                   "Use when validating a configuration directory/file on disk without opening it. "
+                   "Requires configuration_path (or resolvable path args). "
+                   "Do not use for the already-open project — use validate_project.",
                    {{"type", "object"},
                     {"required", nlohmann::json::array({"configuration_path"})},
                     {"properties",
@@ -507,6 +542,63 @@ void RegisterApplicationTools(ULLMToolRegistry& registry)
                     [](int ch) { return commands().stepChannelCalculation(ch); });
 
     registry.registerTool(
+        makeAppDef("run_n_steps", LLMToolKind::Write,
+                   "Run N calculation steps (Calculate → Run N Steps). channel_index=-1 means all",
+                   {{"type", "object"},
+                    {"required", nlohmann::json::array({"steps"})},
+                    {"properties",
+                     {{"steps", {{"type", "integer"}, {"minimum", 1}, {"maximum", 10000}}},
+                      {"channel_index",
+                       {{"type", "integer"}, {"minimum", -1}, {"default", -1}}}}},
+                    {"additionalProperties", false}},
+                   true, true),
+        [](const nlohmann::json& args) -> ToolGatewayResult {
+            const int steps = args.at("steps").get<int>();
+            const int ch = args.value("channel_index", -1);
+            return invokeApplicationTool(activeSink(), [&]() {
+                return commands().runNStepsChannelCalculation(ch, steps);
+            });
+        });
+
+    registry.registerTool(
+        makeAppDef("add_channel", LLMToolKind::Write, "Append a new calculation channel",
+                   {{"type", "object"}, {"additionalProperties", false}}, true, true),
+        [](const nlohmann::json& args) -> ToolGatewayResult {
+            (void)args;
+            return invokeApplicationTool(activeSink(), [&]() { return commands().addChannel(); });
+        });
+
+    registry.registerTool(
+        makeAppDef("delete_channel", LLMToolKind::Write,
+                   "Delete a calculation channel (channel 0 cannot be deleted)",
+                   {{"type", "object"},
+                    {"required", nlohmann::json::array({"channel_index"})},
+                    {"properties",
+                     {{"channel_index", {{"type", "integer"}, {"minimum", 1}}}}},
+                    {"additionalProperties", false}},
+                   true, true),
+        [](const nlohmann::json& args) -> ToolGatewayResult {
+            return invokeApplicationTool(activeSink(), [&]() {
+                return commands().deleteChannel(args.at("channel_index").get<int>());
+            });
+        });
+
+    registry.registerTool(
+        makeAppDef("clone_channel", LLMToolKind::Write,
+                   "Clone a calculation channel into a new channel at the end",
+                   {{"type", "object"},
+                    {"properties",
+                     {{"source_channel_index",
+                       {{"type", "integer"}, {"minimum", 0}, {"default", 0}}}}},
+                    {"additionalProperties", false}},
+                   true, true),
+        [](const nlohmann::json& args) -> ToolGatewayResult {
+            const int src = args.value("source_channel_index", 0);
+            return invokeApplicationTool(activeSink(),
+                                         [&]() { return commands().cloneChannel(src); });
+        });
+
+    registry.registerTool(
         makeAppDef("list_channels", LLMToolKind::Read, "List calculation channels and selected index",
                    {{"type", "object"}, {"additionalProperties", false}}, false, false),
         [](const nlohmann::json& args) -> ToolGatewayResult {
@@ -530,6 +622,295 @@ void RegisterApplicationTools(ULLMToolRegistry& registry)
             const int ch = args.at("channel_index").get<int>();
             return invokeApplicationTool(activeSink(),
                                          [&]() { return commands().setActiveChannel(ch); });
+        });
+
+    const nlohmann::json watchSurfaceProps = {
+        {"surface", {{"type", "string"}, {"enum", nlohmann::json::array({"window", "mdi"})},
+                     {"default", "window"}}},
+        {"mdi_id", {{"type", "integer"}, {"default", -1}}},
+        {"tab_index", {{"type", "integer"}, {"minimum", 0}, {"default", 0}}},
+        {"chart_index", {{"type", "integer"}, {"default", 0}}}};
+
+    auto parseWatchArgs = [](const nlohmann::json& args) {
+        RDK::LLM::LLMWatchSeriesArgs a;
+        a.surface = args.value("surface", std::string("window"));
+        a.mdi_id = args.value("mdi_id", -1);
+        a.tab_index = args.value("tab_index", 0);
+        a.chart_index = args.value("chart_index", 0);
+        a.channel_index = args.value("channel_index", 0);
+        a.long_name = args.value("long_name", std::string());
+        a.property_name = args.value("property_name", std::string());
+        a.jx = args.value("jx", 0);
+        a.jy = args.value("jy", 0);
+        a.serie_index = args.value("serie_index", -1);
+        a.viz_kind = args.value("viz_kind", std::string());
+        a.x_long_name = args.value("x_long_name", std::string());
+        a.x_property_name = args.value("x_property_name", std::string());
+        a.x_jx = args.value("x_jx", 0);
+        a.x_jy = args.value("x_jy", 0);
+        return a;
+    };
+
+    auto watchPayloadToCommand = [](const nlohmann::json& payload, bool show_watch) {
+        ApplicationCommandResult r;
+        r.payload = payload;
+        if(!payload.value("ok", false))
+        {
+            r.status.code = DomainStatusCode::InvalidPropertyValue;
+            r.status.message = payload.value("error", "Watch command failed");
+            return r;
+        }
+        if(show_watch)
+        {
+            r.show_panel = LLMUiPanel::Watch;
+            r.show_panel_visible = true;
+        }
+        return r;
+    };
+
+    registry.registerTool(
+        makeAppDef("add_watch_series", LLMToolKind::Write,
+                   "Add a property series to Watch window or MDI Watches_N chart",
+                   {{"type", "object"},
+                    {"required", nlohmann::json::array({"long_name", "property_name"})},
+                    {"properties",
+                     [&]() {
+                         nlohmann::json props = watchSurfaceProps;
+                         props["long_name"] = {{"type", "string"}};
+                         props["property_name"] = {{"type", "string"}};
+                         props["jx"] = {{"type", "integer"}, {"default", 0}};
+                         props["jy"] = {{"type", "integer"}, {"default", 0}};
+                         props["channel_index"] = {{"type", "integer"}, {"default", 0}};
+                         return props;
+                     }()},
+                    {"additionalProperties", false}},
+                   false, true),
+        [parseWatchArgs, watchPayloadToCommand](const nlohmann::json& args) -> ToolGatewayResult {
+            const auto wa = parseWatchArgs(args);
+            // Domain validate before Qt createSerie (DD-WATCH-001).
+            if(LLMServices::instance().isInitialized())
+            {
+                const DomainStatus vst =
+                    LLMServices::instance().domain().validateWatchProperty(
+                        wa.long_name, wa.property_name, wa.channel_index, wa.jx, wa.jy);
+                if(!vst.ok())
+                {
+                    ToolGatewayResult err;
+                    err.ok = false;
+                    err.error_code = "DomainError";
+                    err.message = vst.message;
+                    err.result = {{"ok", false},
+                                  {"error", vst.message},
+                                  {"status_code", static_cast<int>(vst.code)},
+                                  {"long_name", wa.long_name},
+                                  {"property_name", wa.property_name}};
+                    return err;
+                }
+            }
+            return invokeApplicationTool(activeSink(), [&]() {
+                ILLMPresentationSink* sink = activeSink();
+                nlohmann::json payload =
+                    sink ? sink->watchAddSeries(wa)
+                         : nlohmann::json{{"ok", false}, {"error", "Watch host unavailable"}};
+                return watchPayloadToCommand(payload, wa.surface == "window");
+            });
+        });
+
+    registry.registerTool(
+        makeAppDef("list_watch_series", LLMToolKind::Read, "List Watch series on window or MDI",
+                   {{"type", "object"},
+                    {"properties", watchSurfaceProps},
+                    {"additionalProperties", false}},
+                   false, true),
+        [parseWatchArgs, watchPayloadToCommand](const nlohmann::json& args) -> ToolGatewayResult {
+            const auto wa = parseWatchArgs(args);
+            return invokeApplicationTool(activeSink(), [&]() {
+                ILLMPresentationSink* sink = activeSink();
+                nlohmann::json payload =
+                    sink ? sink->watchListSeries(wa)
+                         : nlohmann::json{{"ok", false},
+                                          {"error", "Watch host unavailable"},
+                                          {"items", nlohmann::json::array()}};
+                return watchPayloadToCommand(payload, false);
+            });
+        });
+
+    registry.registerTool(
+        makeAppDef("remove_watch_series", LLMToolKind::Write,
+                   "Remove a Watch series by index or long_name+property_name",
+                   {{"type", "object"},
+                    {"properties",
+                     [&]() {
+                         nlohmann::json props = watchSurfaceProps;
+                         props["serie_index"] = {{"type", "integer"}, {"default", -1}};
+                         props["long_name"] = {{"type", "string"}};
+                         props["property_name"] = {{"type", "string"}};
+                         return props;
+                     }()},
+                    {"additionalProperties", false}},
+                   false, true),
+        [parseWatchArgs, watchPayloadToCommand](const nlohmann::json& args) -> ToolGatewayResult {
+            const auto wa = parseWatchArgs(args);
+            return invokeApplicationTool(activeSink(), [&]() {
+                ILLMPresentationSink* sink = activeSink();
+                nlohmann::json payload =
+                    sink ? sink->watchRemoveSeries(wa)
+                         : nlohmann::json{{"ok", false}, {"error", "Watch host unavailable"}};
+                return watchPayloadToCommand(payload, false);
+            });
+        });
+
+    registry.registerTool(
+        makeAppDef("clear_watch_series", LLMToolKind::Write, "Clear Watch series on a chart/surface",
+                   {{"type", "object"},
+                    {"properties", watchSurfaceProps},
+                    {"additionalProperties", false}},
+                   false, true),
+        [parseWatchArgs, watchPayloadToCommand](const nlohmann::json& args) -> ToolGatewayResult {
+            const auto wa = parseWatchArgs(args);
+            return invokeApplicationTool(activeSink(), [&]() {
+                ILLMPresentationSink* sink = activeSink();
+                nlohmann::json payload =
+                    sink ? sink->watchClearSeries(wa)
+                         : nlohmann::json{{"ok", false}, {"error", "Watch host unavailable"}};
+                return watchPayloadToCommand(payload, false);
+            });
+        });
+
+    registry.registerTool(
+        makeAppDef("set_panel_viz_kind", LLMToolKind::Write,
+                   "Set Watch panel visualization kind: TimeSeries, XYLine, or XYScatter",
+                   {{"type", "object"},
+                    {"required", nlohmann::json::array({"viz_kind"})},
+                    {"properties",
+                     [&]() {
+                         nlohmann::json props = watchSurfaceProps;
+                         props["viz_kind"] = {
+                             {"type", "string"},
+                             {"enum", nlohmann::json::array({"TimeSeries", "XYLine", "XYScatter"})}};
+                         return props;
+                     }()},
+                    {"additionalProperties", false}},
+                   false, true),
+        [parseWatchArgs, watchPayloadToCommand](const nlohmann::json& args) -> ToolGatewayResult {
+            const auto wa = parseWatchArgs(args);
+            return invokeApplicationTool(activeSink(), [&]() {
+                ILLMPresentationSink* sink = activeSink();
+                nlohmann::json payload =
+                    sink ? sink->watchSetPanelVizKind(wa)
+                         : nlohmann::json{{"ok", false}, {"error", "Watch host unavailable"}};
+                return watchPayloadToCommand(payload, false);
+            });
+        });
+
+    registry.registerTool(
+        makeAppDef("set_series_binding", LLMToolKind::Write,
+                   "Create/replace a Watch series binding; optional X property enables XY plot",
+                   {{"type", "object"},
+                    {"required", nlohmann::json::array({"long_name", "property_name"})},
+                    {"properties",
+                     [&]() {
+                         nlohmann::json props = watchSurfaceProps;
+                         props["long_name"] = {{"type", "string"}};
+                         props["property_name"] = {{"type", "string"}};
+                         props["jx"] = {{"type", "integer"}, {"default", 0}};
+                         props["jy"] = {{"type", "integer"}, {"default", 0}};
+                         props["channel_index"] = {{"type", "integer"}, {"default", 0}};
+                         props["serie_index"] = {{"type", "integer"}, {"default", -1}};
+                         props["viz_kind"] = {
+                             {"type", "string"},
+                             {"enum", nlohmann::json::array({"TimeSeries", "XYLine", "XYScatter"})},
+                             {"default", "TimeSeries"}};
+                         props["x_long_name"] = {{"type", "string"}};
+                         props["x_property_name"] = {{"type", "string"}};
+                         props["x_jx"] = {{"type", "integer"}, {"default", 0}};
+                         props["x_jy"] = {{"type", "integer"}, {"default", 0}};
+                         return props;
+                     }()},
+                    {"additionalProperties", false}},
+                   false, true),
+        [parseWatchArgs, watchPayloadToCommand](const nlohmann::json& args) -> ToolGatewayResult {
+            const auto wa = parseWatchArgs(args);
+            return invokeApplicationTool(activeSink(), [&]() {
+                ILLMPresentationSink* sink = activeSink();
+                nlohmann::json payload =
+                    sink ? sink->watchSetSeriesBinding(wa)
+                         : nlohmann::json{{"ok", false}, {"error", "Watch host unavailable"}};
+                return watchPayloadToCommand(payload, wa.surface == "window");
+            });
+        });
+
+    registry.registerTool(
+        makeAppDef("list_watch_mdi", LLMToolKind::Read, "List MDI Watches_N windows",
+                   {{"type", "object"}, {"additionalProperties", false}}, false, true),
+        [watchPayloadToCommand](const nlohmann::json& args) -> ToolGatewayResult {
+            (void)args;
+            return invokeApplicationTool(activeSink(), [&]() {
+                ILLMPresentationSink* sink = activeSink();
+                nlohmann::json payload =
+                    sink ? sink->watchMdiList()
+                         : nlohmann::json{{"ok", true}, {"items", nlohmann::json::array()}};
+                return watchPayloadToCommand(payload, false);
+            });
+        });
+
+    registry.registerTool(
+        makeAppDef("create_watch_mdi", LLMToolKind::Write,
+                   "Create a new MDI Watches_N window with optional grid layout",
+                   {{"type", "object"},
+                    {"properties",
+                     {{"grid_rows", {{"type", "integer"}, {"minimum", 1}, {"default", 1}}},
+                      {"grid_cols", {{"type", "integer"}, {"minimum", 1}, {"default", 1}}},
+                      {"title", {{"type", "string"}}}}},
+                    {"additionalProperties", false}},
+                   false, true),
+        [watchPayloadToCommand](const nlohmann::json& args) -> ToolGatewayResult {
+            const int rows = args.value("grid_rows", 1);
+            const int cols = args.value("grid_cols", 1);
+            const std::string title = args.value("title", std::string());
+            return invokeApplicationTool(activeSink(), [&]() {
+                ILLMPresentationSink* sink = activeSink();
+                nlohmann::json payload =
+                    sink ? sink->watchMdiCreate(rows, cols, title)
+                         : nlohmann::json{{"ok", false}, {"error", "Watch host unavailable"}};
+                return watchPayloadToCommand(payload, false);
+            });
+        });
+
+    registry.registerTool(
+        makeAppDef("focus_watch_mdi", LLMToolKind::Write, "Focus an existing Watches_N MDI window",
+                   {{"type", "object"},
+                    {"required", nlohmann::json::array({"mdi_id"})},
+                    {"properties", {{"mdi_id", {{"type", "integer"}}}}},
+                    {"additionalProperties", false}},
+                   false, true),
+        [watchPayloadToCommand](const nlohmann::json& args) -> ToolGatewayResult {
+            const int mdi_id = args.at("mdi_id").get<int>();
+            return invokeApplicationTool(activeSink(), [&]() {
+                ILLMPresentationSink* sink = activeSink();
+                nlohmann::json payload =
+                    sink ? sink->watchMdiFocus(mdi_id)
+                         : nlohmann::json{{"ok", false}, {"error", "Watch host unavailable"}};
+                return watchPayloadToCommand(payload, false);
+            });
+        });
+
+    registry.registerTool(
+        makeAppDef("close_watch_mdi", LLMToolKind::Write, "Close an existing Watches_N MDI window",
+                   {{"type", "object"},
+                    {"required", nlohmann::json::array({"mdi_id"})},
+                    {"properties", {{"mdi_id", {{"type", "integer"}}}}},
+                    {"additionalProperties", false}},
+                   false, true),
+        [watchPayloadToCommand](const nlohmann::json& args) -> ToolGatewayResult {
+            const int mdi_id = args.at("mdi_id").get<int>();
+            return invokeApplicationTool(activeSink(), [&]() {
+                ILLMPresentationSink* sink = activeSink();
+                nlohmann::json payload =
+                    sink ? sink->watchMdiClose(mdi_id)
+                         : nlohmann::json{{"ok", false}, {"error", "Watch host unavailable"}};
+                return watchPayloadToCommand(payload, false);
+            });
         });
 }
 

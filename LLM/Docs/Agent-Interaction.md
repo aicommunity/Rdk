@@ -15,13 +15,26 @@ See [Unified-Turn-Contract.md](Unified-Turn-Contract.md).
 ## Plans
 
 - `propose_plan` tool → preview in assistant panel → user **Run plan** (HITL).
-- Task executor fast-path only when `NMSDK_LLM_TASK_PATH_STRICT=1`.
+- Task executor fast-path only when `NMSDK_LLM_TASK_PATH_STRICT=1` (or settings); each executed step uses **RecordedToolInvoke** (paired tool messages + session_graph).
+
+## Direct tool allowlist (no LLM)
+
+See [Unified-Turn-Contract.md](Unified-Turn-Contract.md) § Recorded bypass: explicit-class add, open_recent index, pending-arg resume; lifecycle load only with `NMSDK_LLM_LIFECYCLE_DIRECT=1`. Repeat «ещё таких же» may reuse `session_graph.last_add` via direct path; do not expand cue-direct without ADR.
+
+## Thinking / Reasoning (Cortex)
+
+- Cortex default profile: `ollama-thinking`, model **`qwen3:14b`** (`NMSDK_LLM_OLLAMA_THINKING_MODEL` override).
+- Setting `LLM/enable_ollama_thinking` (default on): send `think:true`; keep reasoning out of the answer bubble.
+- GUI: collapsible **Reasoning** block (`<details>`) from streamed `on_thinking_token` and/or `final.thinking` (truncated ~8KB). Same pattern as tool traces.
+- Status line may show “Model is reasoning…” while thinking tokens arrive.
+- Do not dump raw CoT into the assistant answer text.
 
 ## Settings
 
 | Key | Default |
 |-----|---------|
 | `LLM/task_path_mode` | `hint_only` (env strict for CI) |
+| `LLM/enable_ollama_thinking` | on (Cortex thinking-first) |
 | `NMSDK_LLM_INPUT_ENSEMBLE` | on |
 | `NMSDK_LLM_CLARIFY_IN_LOOP` | on |
 
@@ -42,12 +55,25 @@ See [Unified-Turn-Contract.md](Unified-Turn-Contract.md).
 ## Plans
 
 - `propose_plan` tool → preview in assistant panel → user **Run plan** (HITL).
-- Task executor fast-path only when `NMSDK_LLM_TASK_PATH_STRICT=1`.
+- Task executor fast-path only when `NMSDK_LLM_TASK_PATH_STRICT=1` (or settings); each executed step uses **RecordedToolInvoke**.
+
+## Direct tool allowlist (no LLM)
+
+See Unified-Turn-Contract § Recorded bypass (same as RU).
+
+## Thinking / Reasoning (Cortex)
+
+- Cortex default profile: `ollama-thinking`, model **`qwen3:14b`** (`NMSDK_LLM_OLLAMA_THINKING_MODEL` override).
+- Setting `LLM/enable_ollama_thinking` (default on): send `think:true`; keep reasoning out of the answer bubble.
+- GUI: collapsible **Reasoning** block (`<details>`) from streamed `on_thinking_token` and/or `final.thinking` (truncated ~8KB). Same pattern as tool traces.
+- Status line may show “Model is reasoning…” while thinking tokens arrive.
+- Do not dump raw CoT into the assistant answer text.
 
 ## Settings
 
 | Key | Default |
 |-----|---------|
 | `LLM/task_path_mode` | `hint_only` (env strict for CI) |
+| `LLM/enable_ollama_thinking` | on (Cortex thinking-first) |
 | `NMSDK_LLM_INPUT_ENSEMBLE` | on |
 | `NMSDK_LLM_CLARIFY_IN_LOOP` | on |

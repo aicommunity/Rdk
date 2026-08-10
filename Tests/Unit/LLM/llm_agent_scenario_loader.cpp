@@ -244,6 +244,7 @@ AgentScenarioCase parseScenarioFile(const nlohmann::json& root, const std::strin
         readStringArray(ej, "forbidden_tools", e2e.forbidden_tools);
         e2e.require_orchestrator_ok = ej.value("require_orchestrator_ok", true);
         e2e.allow_app_unavailable_result = ej.value("allow_app_unavailable_result", true);
+        e2e.use_thinking_profile = ej.value("use_thinking_profile", false);
         c.e2e = e2e;
     }
 

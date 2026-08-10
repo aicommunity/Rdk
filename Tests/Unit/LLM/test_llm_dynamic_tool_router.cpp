@@ -61,16 +61,43 @@ TEST(LLMDynamicToolRouter, EnabledConnectRouteNarrowsToLinkTools)
     EXPECT_FALSE(out.allowed_tool_names->count("create_configuration"));
 }
 
-TEST(LLMDynamicToolRouter, EnabledConnectRouteRussianK)
+TEST(LLMDynamicToolRouter, EnabledConnectRouteIncludesInspectTools)
 {
     ::setenv("NMSDK_LLM_DYNAMIC_TOOL_ROUTING", "1", 1);
-    const ToolFilter base = makeBaseMutateFilter();
-    const ToolFilter out = ULLMDynamicToolRouter::apply(base, "подключи PNeuron2 к PNeuron3");
+    ToolFilter base = makeBaseMutateFilter();
+    base.allowed_tool_names->insert("list_model_links");
+    base.allowed_tool_names->insert("get_component_ports");
+    base.allowed_tool_names->insert("get_component_properties");
+    base.allowed_tool_names->insert("find_component");
+    base.allowed_tool_names->insert("get_net_snapshot");
+    const ToolFilter out =
+        ULLMDynamicToolRouter::apply(base, "подключи PGenerator ко всем нейронам");
     ::unsetenv("NMSDK_LLM_DYNAMIC_TOOL_ROUTING");
 
     ASSERT_TRUE(out.allowed_tool_names.has_value());
     EXPECT_TRUE(out.allowed_tool_names->count("connect_components"));
+    EXPECT_TRUE(out.allowed_tool_names->count("list_model_links"));
+    EXPECT_TRUE(out.allowed_tool_names->count("get_component_ports"));
     EXPECT_FALSE(out.allowed_tool_names->count("add_component"));
+}
+
+TEST(LLMDynamicToolRouter, EnabledCurrentModelRoutePrefersSnapshot)
+{
+    ::setenv("NMSDK_LLM_DYNAMIC_TOOL_ROUTING", "1", 1);
+    ToolFilter base;
+    base.intent = LLMIntentKind::Query;
+    base.include_write = false;
+    base.allowed_tool_names = std::unordered_set<std::string>{
+        "get_net_snapshot", "find_component", "get_component_properties", "search_project_docs",
+        "list_recent_configurations", "describe_class", "list_channels"};
+    const ToolFilter out =
+        ULLMDynamicToolRouter::apply(base, "дай информацию о текущей модели");
+    ::unsetenv("NMSDK_LLM_DYNAMIC_TOOL_ROUTING");
+
+    ASSERT_TRUE(out.allowed_tool_names.has_value());
+    EXPECT_TRUE(out.allowed_tool_names->count("get_net_snapshot"));
+    EXPECT_TRUE(out.allowed_tool_names->count("find_component"));
+    EXPECT_FALSE(out.allowed_tool_names->count("list_recent_configurations"));
 }
 
 TEST(LLMDynamicToolRouter, EnabledScoreSubsetLimitsToolCount)

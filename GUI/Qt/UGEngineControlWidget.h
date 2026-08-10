@@ -14,6 +14,7 @@
 #include <QSet>
 #include <QPair>
 #include <QPoint>
+#include <QToolBar>
 
 #include <rdk_application.h>
 
@@ -33,9 +34,7 @@
 #include "UCreateTestWidget.h"
 #include "UStatusPanel.h"
 #include "USettingsReaderWidget.h"
-#include "UGraphWidget.h"
 #include "UTableInfo.h"
-#include "UWatchFormWidget.h"
 #include "UWatch.h"
 #include "UClDescEditor.h"
 #include "UTcpServerControlWidget.h"
@@ -43,10 +42,15 @@
 #include "UCurlFtpClientTestWidget.h"
 #include "UAboutDialog.h"
 #include "UHelpWindow.h"
+#include "UMarkdownDocWindow.h"
+#include "UClassDescriptionDisplay.h"
 #include "UProjectDescriptionWindow.h"
 #include "UComponentGuiService.h"
 #include "UComponentGuiContext.h"
 #include "UComponentGuiTabHostWidget.h"
+
+class UGuiShellController;
+class QMenu;
 
 #ifndef RDK_DISABLE_EXT_GUI
 #include "UVideoAnalyticsSimpleSettingsWidget.h"
@@ -78,15 +82,6 @@ UImagesWidget* Images;
 
 USubTabDescriptionImages(void)
     : USubTabDescription(),Images(NULL)
-{};
-};
-
-struct USubTabDescriptionWatches: public USubTabDescription
-{
-UGraphWidget* Watches;
-
-USubTabDescriptionWatches(void)
-    : USubTabDescription(),Watches(NULL)
 {};
 };
 
@@ -133,8 +128,12 @@ public:
     /// загрузка проекта извне (используется, например, пунктами меню и автозагрузкой)
     void loadProjectExternal(const QString &config_path);
 
-    /// Open help window (public method for use by child widgets)
-    void openHelpWindow();
+    /// Open help window (public method for use by child widgets). Empty topic → index.
+    void openHelpWindow(const QString& topic = QString());
+
+    /// DD-DOC-001: open class ClDesc panel / markdown documentation viewer.
+    void openClassDescriptionWindow(const std::string& class_name);
+    bool openMarkdownDocWindow(const QString& absPath, const QString& title = QString());
 
     // Регистрация пользовательского виджета (дополнительного окна/панели),
     // который затем создаётся по требованию из меню/toolbar.
@@ -144,6 +143,19 @@ public:
     void showCustomWidgetById(const QString& id);
 
     UModernDiagramContainerWidget* modernDiagramContainer() const { return modernDiagram; }
+
+    void setShellController(UGuiShellController* shell);
+    UGuiShellController* shellController() const { return m_shell; }
+
+    /// Hide/show menuBar, mainToolBar, breadcrumbs, statusBar (widgets stay alive).
+    void setHostChromeVisible(bool visible);
+    /// Pause / writeSettings / CloseProject — shared exit path for shell.
+    void performSessionTeardown();
+    void notifyShellMenusChanged();
+
+    QToolBar* primaryToolBar() const;
+    QMenu* windowMenu() const;
+    RDK::UApplication* engineApplication() const { return application; }
 
 #ifndef RDK_DISABLE_EXT_GUI
     void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
@@ -172,6 +184,32 @@ public slots:
     void showLlmUiPanel(RDK::LLM::LLMUiPanel panel);
     nlohmann::json listLlmUiPanelsState() const;
     void setLlmActiveChannel(int channel_index);
+
+    /// LLM Watch series / MDI (GUI thread only).
+    nlohmann::json llmWatchAddSeries(const std::string& surface, int mdi_id, int tab_index,
+                                     int chart_index, int channel_index, const QString& longName,
+                                     const QString& propertyName, int jx, int jy);
+    nlohmann::json llmWatchListSeries(const std::string& surface, int mdi_id, int tab_index,
+                                      int chart_index);
+    nlohmann::json llmWatchRemoveSeries(const std::string& surface, int mdi_id, int tab_index,
+                                        int chart_index, int serie_index, const QString& longName,
+                                        const QString& propertyName);
+    nlohmann::json llmWatchClearSeries(const std::string& surface, int mdi_id, int tab_index,
+                                       int chart_index);
+    nlohmann::json llmWatchSetPanelVizKind(const std::string& surface, int mdi_id, int tab_index,
+                                           int chart_index, const QString& vizKind);
+    nlohmann::json llmWatchSetSeriesBinding(const std::string& surface, int mdi_id, int tab_index,
+                                            int chart_index, int serie_index, int channel_index,
+                                            const QString& yLongName, const QString& yProperty,
+                                            int yJx, int yJy,
+                                            const QString& xLongName, const QString& xProperty,
+                                            int xJx, int xJy, const QString& vizKind);
+    nlohmann::json llmWatchMdiList();
+    nlohmann::json llmWatchMdiCreate(int grid_rows = 1, int grid_cols = 1,
+                                     const QString& title = QString());
+    bool llmWatchMdiFocus(int mdi_id);
+    bool llmWatchMdiClose(int mdi_id);
+    UWatchTab* llmWatchResolveTab(const std::string& surface, int mdi_id, int tab_index);
 
     // actions:
 
@@ -253,9 +291,12 @@ private:
     void updateThemeMenuState();
     void updateRecentConfigsMenu();
     void addToRecentConfigs(const QString& path);
+    /// Force breadcrumbs onto its own row under mainToolBar (survives restoreState).
+    void ensureBreadcrumbsToolBarRow();
 
     // data
     Ui::UGEngineControllWidget *ui;
+    UGuiShellController* m_shell = nullptr;
 
     // Theme menu actions
     QAction* m_lightThemeAction;
@@ -266,19 +307,17 @@ private:
     UComponentPropertyChanger *propertyChanger;
     UModernDiagramContainerWidget *modernDiagram;
     UBreadcrumbsWidget *breadcrumbsWidget;
+    QToolBar *breadcrumbsToolBar;
     UComponentLinksWidget *componentLinks;
     UImagesWidget *images;
     QMainWindow *imagesWindow;
     QMainWindow *clDescWindow;
-    QMainWindow *graphWindow;
     QMainWindow *profilingWindow;
     UCalculationChannelsWidget *channels;
     ULoggerWidget *logger;
     UCreateConfigurationWizardWidget *createConfigurationWizardWidget;
     UCreateTestWidget *createTestWidget;
     UStatusPanel *statusPanel;
-    UGraphWidget *graphWindowWidget;
- //   UWatchFormWidget *watchFormWidget;
     UTableInfo *profilingWindowWidget;
     UWatch *watchWindow;
     UProjectDescriptionWindow *projectDescriptionWindow;
@@ -287,6 +326,7 @@ private:
     UTcpServerControlWidget *tcpServerControlWidget;
     UAboutDialog *aboutDialog;
     UHelpWindow *helpWindow;
+    UMarkdownDocWindow* markdownDocWindow = nullptr;
 #ifndef RDK_DISABLE_EXT_GUI
     UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
 #endif

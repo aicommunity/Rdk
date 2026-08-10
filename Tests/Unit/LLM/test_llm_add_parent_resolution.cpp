@@ -15,6 +15,7 @@ TEST(LLMAddParentResolution, PrefersDiagramScopeOverRootModel)
     const AddParentResolution res =
         resolveValidAddParent(domain, "Model", "NSPNeuron", 0, pin);
     EXPECT_TRUE(res.ok);
+    EXPECT_FALSE(res.needs_clarification);
     EXPECT_EQ(res.parent_long_name, "Model.ZoneA");
 }
 
@@ -27,7 +28,58 @@ TEST(LLMAddParentResolution, DrilledContainerNamedModelIsNotRoot)
 
     const AddParentResolution res = resolveValidAddParent(domain, "", "NSPNeuron", 0, pin);
     EXPECT_TRUE(res.ok);
+    EXPECT_FALSE(res.needs_clarification);
     EXPECT_EQ(res.parent_long_name, "Model");
+}
+
+TEST(LLMAddParentResolution, EmptyParentAtRootDefaultsToEmptyWithoutClarification)
+{
+    URdkDomainAccess domain(nullptr);
+    LLMGuiContextSnapshot pin;
+    // Root view: empty diagram scope → engine root (empty parent_long_name).
+    pin.current_component_long_name = "Model";
+
+    const AddParentResolution res = resolveValidAddParent(domain, "", "NSPNeuronGen", 0, pin);
+    EXPECT_TRUE(res.ok);
+    EXPECT_FALSE(res.needs_clarification);
+    EXPECT_TRUE(res.candidates.empty());
+    EXPECT_EQ(res.parent_long_name, "");
+}
+
+TEST(LLMAddParentResolution, ModelHintAtRootDefaultsToEmptyWithoutClarification)
+{
+    URdkDomainAccess domain(nullptr);
+    LLMGuiContextSnapshot pin;
+
+    const AddParentResolution res =
+        resolveValidAddParent(domain, "Model", "NSPNeuronGen", 0, pin);
+    EXPECT_TRUE(res.ok);
+    EXPECT_FALSE(res.needs_clarification);
+    EXPECT_EQ(res.parent_long_name, "");
+}
+
+TEST(LLMAddParentResolution, EmptyParentUsesCurrentNonRootComponent)
+{
+    URdkDomainAccess domain(nullptr);
+    LLMGuiContextSnapshot pin;
+    pin.current_component_long_name = "PNeuron";
+
+    const AddParentResolution res = resolveValidAddParent(domain, "", "NSPNeuronGen", 0, pin);
+    EXPECT_TRUE(res.ok);
+    EXPECT_FALSE(res.needs_clarification);
+    EXPECT_EQ(res.parent_long_name, "PNeuron");
+}
+
+TEST(LLMAddParentResolution, ExplicitUnresolvedHintKeptAsIs)
+{
+    URdkDomainAccess domain(nullptr);
+    LLMGuiContextSnapshot pin;
+
+    const AddParentResolution res =
+        resolveValidAddParent(domain, "Some.Explicit.Parent", "NSPNeuron", 0, pin);
+    EXPECT_TRUE(res.ok);
+    EXPECT_FALSE(res.needs_clarification);
+    EXPECT_EQ(res.parent_long_name, "Some.Explicit.Parent");
 }
 
 TEST(LLMAddParentResolution, EngineParentPathIsCanonicalFullPath)

@@ -40,8 +40,13 @@ void processQuad(const LinkQuad& quad, ModelLinkWalkResult& state, const ModelLi
     if(opts.match_quad && linkQuadEquals(quad, *opts.match_quad))
         state.found_match = true;
 
-    const int index = static_cast<int>(seen_keys.size()) - 1;
-    if(index < opts.offset)
+    if(opts.subtree_filters && !linkMatchesSubtreeFilters(quad, *opts.subtree_filters))
+        return;
+
+    const int match_index = state.total_matching;
+    ++state.total_matching;
+
+    if(match_index < opts.offset)
         return;
 
     const int limit = opts.limit > 0 ? opts.limit : modelLinkWalkDefaultPageSize();
@@ -165,9 +170,14 @@ ModelLinkWalkResult applyLinkPage(const std::vector<LinkQuad>& all_quads,
     ModelLinkWalkResult out;
     out.total_quads_seen = static_cast<int>(all_quads.size());
 
+    std::vector<LinkQuad> filtered = all_quads;
+    if(opts.subtree_filters)
+        filtered = filterLinkQuadsBySubtree(all_quads, *opts.subtree_filters);
+    out.total_matching = static_cast<int>(filtered.size());
+
     if(opts.match_quad)
     {
-        for(const LinkQuad& q : all_quads)
+        for(const LinkQuad& q : filtered)
         {
             if(linkQuadEquals(q, *opts.match_quad))
             {
@@ -181,10 +191,10 @@ ModelLinkWalkResult applyLinkPage(const std::vector<LinkQuad>& all_quads,
     const int offset = std::max(0, opts.offset);
     const int limit = opts.limit > 0 ? opts.limit : modelLinkWalkDefaultPageSize();
     for(size_t i = static_cast<size_t>(offset);
-        i < all_quads.size() && static_cast<int>(out.links.size()) < limit; ++i)
-        out.links.push_back(all_quads[i]);
+        i < filtered.size() && static_cast<int>(out.links.size()) < limit; ++i)
+        out.links.push_back(filtered[i]);
 
-    if(static_cast<int>(all_quads.size()) > offset + static_cast<int>(out.links.size()))
+    if(static_cast<int>(filtered.size()) > offset + static_cast<int>(out.links.size()))
         out.truncated = true;
     out.next_offset = offset + static_cast<int>(out.links.size());
     return out;
@@ -202,8 +212,10 @@ ModelLinkWalkResult walkModelLinks(RDK::UContainer* walk_root, RDK::UContainer* 
     appendLinksFromContainerWalk(walk_root, model_root, out, opts, seen_keys, truncated_after_page);
 
     out.total_quads_seen = static_cast<int>(seen_keys.size());
-    out.truncated = truncated_after_page && out.total_quads_seen > opts.offset + static_cast<int>(out.links.size());
-    if(opts.limit > 0 && out.total_quads_seen > opts.offset + static_cast<int>(out.links.size()))
+    if(!opts.subtree_filters)
+        out.total_matching = out.total_quads_seen;
+    out.truncated = truncated_after_page;
+    if(opts.limit > 0 && out.total_matching > opts.offset + static_cast<int>(out.links.size()))
         out.truncated = true;
     out.next_offset = opts.offset + static_cast<int>(out.links.size());
     return out;

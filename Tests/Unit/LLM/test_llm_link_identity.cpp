@@ -39,3 +39,40 @@ TEST(LLMLinkIdentity, SnapshotContainsLink)
            {"to_property", "Input"}}}}};
     EXPECT_TRUE(snapshotContainsLink(snap, q));
 }
+
+TEST(LLMLinkIdentity, EndpointInSubtreeNested)
+{
+    EXPECT_TRUE(endpointInSubtree("PNeuron", "PNeuron"));
+    EXPECT_TRUE(endpointInSubtree("PNeuron.Soma1.ExcSynapse1", "PNeuron"));
+    EXPECT_FALSE(endpointInSubtree("PNeuronGen2.Soma1", "PNeuron"));
+    EXPECT_FALSE(endpointInSubtree("PNeuronX", "PNeuron"));
+}
+
+TEST(LLMLinkIdentity, MapSubtreeEndpointBothDirections)
+{
+    EXPECT_EQ(mapSubtreeEndpoint("PNeuron.Soma1.In", "PNeuron", "PNeuronGen2"),
+              "PNeuronGen2.Soma1.In");
+    EXPECT_EQ(mapSubtreeEndpoint("PGenerator", "PNeuron", "PNeuronGen2"), "PGenerator");
+    EXPECT_EQ(mapSubtreeEndpoint("PGenerator.OutChild", "PGenerator", "OtherGen"),
+              "OtherGen.OutChild");
+}
+
+TEST(LLMLinkIdentity, FilterLinkQuadsBySubtree)
+{
+    const std::vector<LinkQuad> all = {
+        {"PGenerator", "Output", "PNeuron.Soma1.ExcSynapse1", "Input"},
+        {"PGenerator", "Output", "PNeuronGen2.Soma1.ExcSynapse1", "Input"},
+        {"Other", "Out", "Else", "In"},
+    };
+    ModelLinkListFilters f;
+    f.component_long_name = "PNeuron";
+    const auto hit = filterLinkQuadsBySubtree(all, f);
+    ASSERT_EQ(hit.size(), 1u);
+    EXPECT_EQ(hit[0].to_long_name, "PNeuron.Soma1.ExcSynapse1");
+
+    ModelLinkListFilters directed;
+    directed.from_long_name = "PGenerator";
+    directed.to_long_name = "PNeuron";
+    const auto directed_hit = filterLinkQuadsBySubtree(all, directed);
+    ASSERT_EQ(directed_hit.size(), 1u);
+}

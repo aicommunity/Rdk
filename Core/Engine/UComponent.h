@@ -23,6 +23,7 @@ See file license.txt for more information
 #include "../Graphics/UFont.h"
 #include <unordered_map>
 #include <map>
+#include <vector>
 
 #ifndef RDK_PROPERTY_TYPES
 #define RDK_PROPERTY_TYPES
@@ -213,6 +214,10 @@ protected: //protected: // Системные свойства
 // Таблица соответствий имен и Id параметров свойства
 VariableMapT PropertiesLookupTable;
 
+/// Registration order of properties (AddLookupProperty). Enumeration uses this;
+/// O(1) lookup stays on PropertiesLookupTable.
+std::vector<NameT> PropertiesOrder;
+
 // Таблица соответствий Id и общего свойства
 mutable NameT CachedPropertyName;
 mutable UEPtr<UIProperty> CachedProperty;
@@ -340,6 +345,9 @@ void NotifyPropertyUpdated(const NameT &name);
 // Возвращает строку Id свойства, соответствующего указателю
 // Ищет переменную свойства в таблице по указателю на него
 const UComponent::VariableMapT& GetPropertiesList(void) const;
+
+/// Stable property name order (ctor / AddLookupProperty sequence).
+const std::vector<NameT>& GetPropertiesOrder(void) const;
 
 // Копирует все параметры этого объекта в объект 'comp', если возможно.
 const NameT& FindPropertyName(UEPtr<const UIProperty> prop) const;

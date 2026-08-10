@@ -20,7 +20,13 @@ ModelRoute routeModelForPhase(const ModelTier tier, const LLMProviderProfile& ac
     else if(tier == ModelTier::Utility)
         route.profile_hint = active.profile_id + ":utility";
     else
-        route.profile_hint = active.profile_id;
+    {
+        // Cortex: prefer dedicated thinking profile when present (DD-THINK-004).
+        if(ULLMProviderCatalog::findById("ollama-thinking"))
+            route.profile_hint = "ollama-thinking";
+        else
+            route.profile_hint = active.profile_id;
+    }
     return route;
 }
 

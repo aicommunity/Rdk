@@ -287,6 +287,14 @@ void UModernDiagramContainerWidget::AUpdateInterface()
     modernScheme->Reload();
 }
 
+void UModernDiagramContainerWidget::AClearInterface()
+{
+    if(modernScheme)
+        modernScheme->clearDiagram();
+    if(classesList)
+        classesList->ClearInterface();
+}
+
 void UModernDiagramContainerWidget::ASaveParameters()
 {
     if(!application) return;
@@ -387,4 +395,14 @@ void UModernDiagramContainerWidget::updateTheme()
     {
         modernScheme->updateTheme();
     }
+}
+
+void UModernDiagramContainerWidget::invalidatePortsCache(const QString& componentFullName)
+{
+    if(!modernScheme)
+        return;
+    if(componentFullName.isEmpty())
+        modernScheme->invalidatePortsCache();
+    else
+        modernScheme->invalidatePortsCache(componentFullName);
 }

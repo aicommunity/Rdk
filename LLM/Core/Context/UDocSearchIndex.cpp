@@ -334,7 +334,8 @@ bool UDocSearchIndex::loadPrebuilt(const fs::path& dir, const std::string& expec
     nlohmann::json manifest = nlohmann::json::parse(manifest_in, nullptr, false);
     if(manifest.is_discarded())
         return false;
-    if(manifest.value("catalog_fingerprint", std::string()) != expected_fingerprint)
+    if(!expected_fingerprint.empty()
+       && manifest.value("catalog_fingerprint", std::string()) != expected_fingerprint)
         return false;
 
     m_docs.clear();
@@ -508,6 +509,64 @@ std::vector<DocSnippet> UDocSearchIndex::searchWithScope(const std::string& quer
     if(scope == "all")
         return searchInternal(query, top_k, true, true, false);
     return searchInternal(query, top_k, true, false, false);
+}
+
+std::vector<DocSnippet> UDocSearchIndex::searchLiteral(const std::string& query, int top_k,
+                                                       const std::string& scope) const
+{
+    if(query.empty() || m_docs.empty() || top_k <= 0)
+        return {};
+
+    std::string qlower = query;
+    for(char& c : qlower)
+        c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+
+    const bool include_doc = scope != "sources";
+    const bool include_source = scope == "sources" || scope == "all";
+
+    std::vector<DocSnippet> hits;
+    for(const DocRecord& doc : m_docs)
+    {
+        if(doc.content_kind == LLMContentKind::Doc && !include_doc)
+            continue;
+        if(doc.content_kind == LLMContentKind::Source && !include_source)
+            continue;
+        if(doc.content_kind == LLMContentKind::RuntimeXml)
+            continue;
+
+        auto contains = [&](const std::string& hay) {
+            std::string lower = hay;
+            for(char& c : lower)
+                c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+            return lower.find(qlower) != std::string::npos;
+        };
+
+        double score = 0.0;
+        if(contains(doc.path))
+            score += 1.0;
+        if(contains(doc.title))
+            score += 0.8;
+        if(contains(doc.excerpt))
+            score += 0.5;
+        if(score <= 0.0)
+            continue;
+
+        DocSnippet sn;
+        sn.source_id = doc.source_id;
+        sn.path = doc.path;
+        sn.title = doc.title;
+        sn.excerpt = doc.excerpt;
+        sn.score = score;
+        sn.content_kind = doc.content_kind;
+        sn.start_line = doc.start_line;
+        hits.push_back(std::move(sn));
+    }
+
+    std::sort(hits.begin(), hits.end(),
+              [](const DocSnippet& a, const DocSnippet& b) { return a.score > b.score; });
+    if(static_cast<int>(hits.size()) > top_k)
+        hits.resize(static_cast<size_t>(top_k));
+    return hits;
 }
 
 std::vector<DocSnippet> searchDocsWithIndex(const std::vector<fs::path>& roots,

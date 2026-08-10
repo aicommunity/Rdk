@@ -1,23 +1,48 @@
 #include "UBreadcrumbsWidget.h"
 
 #include <QSignalBlocker>
+#include <QSizePolicy>
 #include "../../Deploy/Include/rdk_init.h"
 #include "UGuiTelemetry.h"
+
+namespace {
+
+constexpr char kBreadcrumbButtonObjectName[] = "breadcrumbButton";
+
+QPushButton* createBreadcrumbButton(const QString& text, QWidget* parent)
+{
+    auto* button = new QPushButton(text, parent);
+    button->setObjectName(QLatin1String(kBreadcrumbButtonObjectName));
+    button->setFlat(true);
+    button->setCursor(Qt::PointingHandCursor);
+    button->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
+    button->setMaximumHeight(22);
+    button->setStyleSheet(
+        QStringLiteral("QPushButton#breadcrumbButton {"
+                       "  text-align: left;"
+                       "  border: none;"
+                       "  border-radius: 0;"
+                       "  background: transparent;"
+                       "  min-width: 0;"
+                       "  padding: 0px 4px;"
+                       "}"));
+    return button;
+}
+
+} // namespace
 
 UBreadcrumbsWidget::UBreadcrumbsWidget(QWidget *parent)
     : QWidget(parent)
 {
-    // Настройка layout - выравнивание по левому краю
     breadcrumbsLayout = new QHBoxLayout(this);
-    breadcrumbsLayout->setContentsMargins(4, 2, 4, 2);
-    breadcrumbsLayout->setSpacing(4);
-    breadcrumbsLayout->setAlignment(Qt::AlignLeft); // Выравнивание по левому краю
+    breadcrumbsLayout->setContentsMargins(2, 0, 2, 0);
+    breadcrumbsLayout->setSpacing(2);
+    breadcrumbsLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 
-    // Устанавливаем минимальную высоту
-    setMinimumHeight(30);
-    setMaximumHeight(35);
+    setMinimumHeight(22);
+    setMaximumHeight(24);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
-    // Инициализация breadcrumbs (пустой путь = Model)
     updateBreadcrumbs("");
 }
 
@@ -27,25 +52,17 @@ UBreadcrumbsWidget::~UBreadcrumbsWidget()
 
 void UBreadcrumbsWidget::updateBreadcrumbs(const QString &componentPath)
 {
-    // DEBUG: Commented out to reduce log flood
-    // QString logMsg = QString("[SELECTION_DEBUG] UBreadcrumbsWidget::updateBreadcrumbs: called with componentPath='%1'")
-    //     .arg(componentPath);
-    // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
-
-    // Очищаем все кнопки breadcrumbs и разделители
     QList<QLayoutItem*> itemsToRemove;
     for (int i = 0; i < breadcrumbsLayout->count(); ++i) {
         QLayoutItem* item = breadcrumbsLayout->itemAt(i);
         if (item) {
             QWidget* widget = item->widget();
-            // Удаляем все виджеты (кнопки и разделители)
             if (widget) {
                 itemsToRemove.append(item);
             }
         }
     }
 
-    // Удаляем найденные виджеты
     for (QLayoutItem* item : itemsToRemove) {
         breadcrumbsLayout->removeItem(item);
         if (item->widget()) {
@@ -55,62 +72,40 @@ void UBreadcrumbsWidget::updateBreadcrumbs(const QString &componentPath)
     }
     breadcrumbButtons.clear();
 
-    // Если путь пустой, показываем только "Model"
-    if (componentPath.isEmpty()) {
-        QPushButton* modelButton = new QPushButton(tr("Model"), this);
-        modelButton->setFlat(true);
-        modelButton->setStyleSheet("QPushButton { text-align: left; border: none; padding: 2px; }");
-        connect(modelButton, &QPushButton::clicked, this, [this]() { onBreadcrumbClicked(""); });
-        breadcrumbsLayout->addWidget(modelButton);
-        breadcrumbButtons.append(modelButton);
-    } else {
-        // Добавляем кнопку "Model"
-        QPushButton* modelButton = new QPushButton(tr("Model"), this);
-        modelButton->setFlat(true);
-        modelButton->setStyleSheet("QPushButton { text-align: left; border: none; padding: 2px; }");
-        connect(modelButton, &QPushButton::clicked, this, [this]() { onBreadcrumbClicked(""); });
-        breadcrumbsLayout->addWidget(modelButton);
-        breadcrumbButtons.append(modelButton);
+    QPushButton* modelButton = createBreadcrumbButton(tr("Model"), this);
+    connect(modelButton, &QPushButton::clicked, this, [this]() { onBreadcrumbClicked(""); });
+    breadcrumbsLayout->addWidget(modelButton);
+    breadcrumbButtons.append(modelButton);
 
-        // Разбиваем путь на части и создаем кнопки для каждого уровня
-        QStringList pathParts = componentPath.split(".");
-        QString currentPath = "";
+    if (componentPath.isEmpty())
+        return;
 
-        for (int i = 0; i < pathParts.size(); ++i) {
-            // Добавляем разделитель
-            QLabel* separator = new QLabel(tr(">"), this);
-            separator->setStyleSheet("QLabel { color: gray; padding: 2px; }");
-            breadcrumbsLayout->addWidget(separator);
+    QStringList pathParts = componentPath.split(".");
+    QString currentPath;
 
-            // Формируем путь до текущего уровня
-            if (currentPath.isEmpty()) {
-                currentPath = pathParts[i];
-            } else {
-                currentPath += "." + pathParts[i];
-            }
+    for (int i = 0; i < pathParts.size(); ++i) {
+        QLabel* separator = new QLabel(tr(">"), this);
+        separator->setStyleSheet(QStringLiteral("QLabel { color: gray; padding: 0px 2px; }"));
+        breadcrumbsLayout->addWidget(separator);
 
-            // Создаем кнопку для текущего уровня
-            QPushButton* button = new QPushButton(pathParts[i], this);
-            button->setFlat(true);
-            button->setStyleSheet("QPushButton { text-align: left; border: none; padding: 2px; }");
+        if (currentPath.isEmpty())
+            currentPath = pathParts[i];
+        else
+            currentPath += "." + pathParts[i];
 
-            QString pathToSelect = currentPath;
-            connect(button, &QPushButton::clicked, this, [this, pathToSelect]() { onBreadcrumbClicked(pathToSelect); });
+        QPushButton* button = createBreadcrumbButton(pathParts[i], this);
+        const QString pathToSelect = currentPath;
+        connect(button, &QPushButton::clicked, this, [this, pathToSelect]() {
+            onBreadcrumbClicked(pathToSelect);
+        });
 
-            breadcrumbsLayout->addWidget(button);
-            breadcrumbButtons.append(button);
-        }
+        breadcrumbsLayout->addWidget(button);
+        breadcrumbButtons.append(button);
     }
 }
 
 void UBreadcrumbsWidget::onBreadcrumbClicked(const QString &componentPath)
 {
-    // DEBUG: Commented out to reduce log flood
-    // QString logMsg = QString("[SELECTION_DEBUG] UBreadcrumbsWidget::onBreadcrumbClicked: clicked on path='%1', emitting componentPathSelected")
-    //     .arg(componentPath);
-    // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
-
-    // Эмитируем сигнал для внешних обработчиков
     emit componentPathSelected(componentPath);
+    updateBreadcrumbs(componentPath);
 }
-

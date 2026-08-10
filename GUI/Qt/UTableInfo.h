@@ -2,8 +2,6 @@
 #define U_TABLE_INFO_WIDGET_H
 
 #include "UVisualControllerWidget.h"
-#include "UStructSingleGraph.h"
-#include "UGraphPaintWidget.h"
 #include "UComponentPropertySelectionWidget.h"
 
 

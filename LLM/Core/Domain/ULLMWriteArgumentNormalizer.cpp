@@ -7,6 +7,7 @@
 #include "../Orchestrator/ULLMLibraryScopeHint.h"
 #include "../Orchestrator/ULLMLifecycleArgumentGate.h"
 #include "../Session/ULLMConversationStore.h"
+#include "../Session/ULLMSessionGraphMemory.h"
 #include "ULLMConnectPortHeuristics.h"
 #include "ULLMConnectPortInference.h"
 #include "ULLMAddParentResolution.h"
@@ -50,6 +51,7 @@ const std::unordered_map<std::string, std::vector<std::string>>& entityFieldsByT
         {"connect_components", {"from_long_name", "to_long_name"}},
         {"disconnect_components", {"from_long_name", "to_long_name"}},
         {"add_component", {"parent_long_name"}},
+        {"add_watch_series", {"long_name"}},
     };
     return kMap;
 }
@@ -201,34 +203,42 @@ bool normalizeAddComponentArguments(nlohmann::json& args, URdkDomainAccess& doma
         }
 
         const std::string class_name = args.value("class_name", "");
-        const std::string query = extractClassNameQuery(class_name, user_text);
-        if(!query.empty())
+        // Continuity: a resolved registered class must not be overwritten by fuzzy nouns
+        // from user_text ("нейрона", "компонент"). Only an explicit class token may override
+        // (handled above).
+        if(isRegisteredClassName(registered, class_name))
         {
-            const RegisteredClassResolution resolved = resolveRegisteredClassName(query, registered);
-            if(resolved.status == RegisteredClassResolution::Status::Resolved)
+            args["class_name"] = canonicalRegisteredClassName(registered, class_name);
+        }
+        else
+        {
+            const std::string query = extractClassNameQuery(class_name, user_text);
+            if(!query.empty())
             {
-                args["class_name"] = resolved.class_name;
+                const RegisteredClassResolution resolved =
+                    resolveRegisteredClassName(query, registered);
+                if(resolved.status == RegisteredClassResolution::Status::Resolved)
+                {
+                    args["class_name"] = resolved.class_name;
+                }
+                else if(resolved.status == RegisteredClassResolution::Status::Ambiguous)
+                {
+                    std::vector<ClassCandidate> candidates;
+                    candidates.reserve(resolved.candidates.size());
+                    for(const auto& [name, score] : resolved.candidates)
+                        candidates.push_back({name, score});
+                    return fillClassDisambiguationOut(out, query, candidates);
+                }
+                else
+                {
+                    return fillClassDisambiguationOut(out, query, {});
+                }
             }
-            else if(resolved.status == RegisteredClassResolution::Status::Ambiguous)
+            else if(!class_name.empty())
             {
-                std::vector<ClassCandidate> candidates;
-                candidates.reserve(resolved.candidates.size());
-                for(const auto& [name, score] : resolved.candidates)
-                    candidates.push_back({name, score});
-                return fillClassDisambiguationOut(out, query, candidates);
-            }
-            else if(!isRegisteredClassName(registered, class_name))
-            {
-                return fillClassDisambiguationOut(out, query, {});
+                return fillClassDisambiguationOut(out, class_name, {});
             }
         }
-        else if(!isRegisteredClassName(registered, class_name))
-        {
-            return fillClassDisambiguationOut(out, class_name, {});
-        }
-        if(isRegisteredClassName(registered, args.value("class_name", "")))
-            args["class_name"] =
-                canonicalRegisteredClassName(registered, args["class_name"].get<std::string>());
     }
     else if(!user_text.empty())
     {
@@ -327,6 +337,19 @@ bool resolveField(const std::string& tool_name, const std::string& field,
     const std::string value = arguments[field].get<std::string>();
     if(value.empty())
         return true;
+
+    // Soft root sentinel "Model" is not a component long_name at root view.
+    if(field == "parent_long_name")
+    {
+        const LLMGuiContextSnapshot* gui = resolveGuiForWrite(conversation);
+        if(!gui && conversation && conversation->last_gui_context)
+            gui = &*conversation->last_gui_context;
+        if(isModelRootContainerToken(value, gui) || (value == "Model" && isAtRootDiagramView(gui)))
+        {
+            arguments[field] = "";
+            return true;
+        }
+    }
 
     if(conversation)
     {
@@ -570,6 +593,78 @@ WriteArgumentNormalizeResult normalizeWriteToolArguments(const std::string& tool
             return out;
     }
 
+    // Pre-resolve watch nested / spaced long_name before entity resolveField (which fails on spaces).
+    if(tool_name == "add_watch_series")
+    {
+        const int ch_pre = out.normalized_arguments.value("channel_index", channel_index);
+        std::string long_name = out.normalized_arguments.value("long_name", std::string());
+        std::string property_name = out.normalized_arguments.value("property_name", std::string());
+
+        if(!property_name.empty())
+        {
+            const auto try_split = [&](char sep) -> bool {
+                const size_t pos = property_name.find(sep);
+                if(pos == std::string::npos || pos == 0 || pos + 1 >= property_name.size())
+                    return false;
+                const std::string child = property_name.substr(0, pos);
+                const std::string prop = property_name.substr(pos + 1);
+                if(child.empty() || prop.empty())
+                    return false;
+                std::string nested_ln;
+                if(!long_name.empty()
+                   && domain.resolveNestedWatchTarget(long_name, child, ch_pre, nested_ln).ok()
+                   && !nested_ln.empty())
+                {
+                    out.normalized_arguments["long_name"] = nested_ln;
+                    out.normalized_arguments["property_name"] = prop;
+                    long_name = nested_ln;
+                    property_name = prop;
+                    return true;
+                }
+                std::string child_ln;
+                if(domain.resolveComponentLongName(child, ch_pre, child_ln).ok()
+                   && !child_ln.empty())
+                {
+                    out.normalized_arguments["long_name"] = child_ln;
+                    out.normalized_arguments["property_name"] = prop;
+                    long_name = child_ln;
+                    property_name = prop;
+                    return true;
+                }
+                return false;
+            };
+            (void)(try_split('.') || try_split(':'));
+        }
+
+        if(long_name.find(' ') != std::string::npos || long_name.find('\t') != std::string::npos)
+        {
+            std::istringstream iss(long_name);
+            std::vector<std::string> parts;
+            std::string part;
+            while(iss >> part)
+                parts.push_back(part);
+            if(parts.size() >= 2)
+            {
+                std::string nested_ln;
+                if(domain.resolveNestedWatchTarget(parts[1], parts[0], ch_pre, nested_ln).ok()
+                   && !nested_ln.empty())
+                {
+                    out.normalized_arguments["long_name"] = nested_ln;
+                    long_name = nested_ln;
+                }
+                else if(domain.resolveNestedWatchTarget(parts[0], parts[1], ch_pre, nested_ln).ok()
+                        && !nested_ln.empty())
+                {
+                    out.normalized_arguments["long_name"] = nested_ln;
+                    long_name = nested_ln;
+                }
+            }
+        }
+
+        if(out.normalized_arguments.value("property_name", std::string()).empty())
+            out.normalized_arguments["property_name"] = "Output";
+    }
+
     const auto it = entityFieldsByTool().find(tool_name);
     if(it == entityFieldsByTool().end())
     {
@@ -582,6 +677,48 @@ WriteArgumentNormalizeResult normalizeWriteToolArguments(const std::string& tool
     {
         if(!resolveField(tool_name, field, out.normalized_arguments, domain, ch, out, conversation))
             return out;
+    }
+
+    if(tool_name == "set_property")
+    {
+        const std::string long_name = out.normalized_arguments.value("long_name", std::string());
+        std::string property_name = out.normalized_arguments.value("property_name", std::string());
+        if(!long_name.empty() && !property_name.empty())
+        {
+            nlohmann::json props_out;
+            const DomainStatus pst = domain.getComponentProperties(long_name, props_out, ch);
+            if(pst.ok() && props_out.contains("properties") && props_out["properties"].is_array())
+            {
+                std::vector<std::string> catalog;
+                catalog.reserve(props_out["properties"].size());
+                for(const nlohmann::json& item : props_out["properties"])
+                {
+                    if(item.is_object() && item.contains("name") && item["name"].is_string())
+                        catalog.push_back(item["name"].get<std::string>());
+                }
+                const RegisteredClassResolution prop_res =
+                    resolvePropertyNameFromCatalog(property_name, catalog);
+                if(prop_res.status == RegisteredClassResolution::Status::Resolved)
+                {
+                    out.normalized_arguments["property_name"] = prop_res.class_name;
+                }
+                else if(prop_res.status == RegisteredClassResolution::Status::Ambiguous)
+                {
+                    out.ok = false;
+                    out.needs_clarification = true;
+                    out.error_code = "PROPERTY_AMBIGUOUS";
+                    out.message = "Ambiguous property_name for set_property";
+                    nlohmann::json candidates = nlohmann::json::array();
+                    for(const auto& [name, score] : prop_res.candidates)
+                        candidates.push_back({{"name", name}, {"score", score}});
+                    out.clarification = {{"kind", "property"},
+                                         {"field", "property_name"},
+                                         {"query", property_name},
+                                         {"candidates", candidates}};
+                    return out;
+                }
+            }
+        }
     }
 
     if(tool_name == "connect_components")
@@ -609,11 +746,52 @@ bool isAddComponentGoalUserText(const std::string& user_text)
            || lc.find("созда") != std::string::npos || lc.find("create ") != std::string::npos;
 }
 
+bool isRepeatSameAddCue(const std::string& user_text)
+{
+    std::string lc;
+    lc.reserve(user_text.size());
+    for(char c : user_text)
+        lc += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return lc.find("таких") != std::string::npos || lc.find("такой же") != std::string::npos
+           || lc.find("такое же") != std::string::npos || lc.find("same") != std::string::npos
+           || lc.find("another") != std::string::npos || lc.find("еще") != std::string::npos
+           || lc.find("ещё") != std::string::npos || lc.find("more") != std::string::npos
+           || lc.find("again") != std::string::npos;
+}
+
+/// Generic / type continuer nouns: not a new class query when last_add is set.
+bool looksLikeContinuerNoun(const std::string& user_text)
+{
+    std::string lc;
+    lc.reserve(user_text.size());
+    for(char c : user_text)
+        lc += static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return lc.find("нейрон") != std::string::npos || lc.find("neuron") != std::string::npos
+           || lc.find("компонент") != std::string::npos || lc.find("component") != std::string::npos
+           || lc.find("блок") != std::string::npos || lc.find("block") != std::string::npos
+           || lc.find("модул") != std::string::npos || lc.find("module") != std::string::npos;
+}
+
+bool looksLikeAddContinuityCueLocal(const std::string& user_text)
+{
+    return isRepeatSameAddCue(user_text) || looksLikeContinuerNoun(user_text);
+}
+
 } // namespace
+
+bool looksLikeRepeatSameAddCue(const std::string& user_text)
+{
+    return isRepeatSameAddCue(user_text);
+}
+
+bool looksLikeAddContinuityCue(const std::string& user_text)
+{
+    return looksLikeAddContinuityCueLocal(user_text);
+}
 
 std::optional<PreparedAddComponentInvoke> tryPrepareAddComponentDirect(
     const std::string& user_text, const LLMGuiContextSnapshot& gui, URdkDomainAccess& domain,
-    int channel_index, int repeat_count)
+    int channel_index, int repeat_count, const SessionGraphMemory* session_graph)
 {
     if(!isAddComponentGoalUserText(user_text))
         return std::nullopt;
@@ -623,13 +801,29 @@ std::optional<PreparedAddComponentInvoke> tryPrepareAddComponentDirect(
     if(!list_st.ok() || registered.empty())
         return std::nullopt;
 
-    const std::optional<std::string> explicit_class =
+    std::optional<std::string> explicit_class =
         findExplicitRegisteredClassInUserText(user_text, registered);
+    std::string class_from_last;
+    std::string parent_from_last;
+    std::string short_from_last;
+    if(!explicit_class && session_graph && session_graph->last_add
+       && !session_graph->last_add->class_name.empty()
+       && looksLikeAddContinuityCueLocal(user_text))
+    {
+        class_from_last = session_graph->last_add->class_name;
+        parent_from_last = session_graph->last_add->parent_long_name;
+        short_from_last = session_graph->last_add->short_name_base;
+        explicit_class = class_from_last;
+    }
     if(!explicit_class)
         return std::nullopt;
 
     nlohmann::json args = nlohmann::json::object();
     args["class_name"] = *explicit_class;
+    if(!parent_from_last.empty())
+        args["parent_long_name"] = parent_from_last;
+    if(!short_from_last.empty())
+        args["short_name"] = short_from_last;
 
     WriteArgumentNormalizeResult norm =
         normalizeWriteToolArguments("add_component", args, domain, channel_index, user_text, nullptr);
@@ -651,6 +845,16 @@ std::optional<PreparedAddComponentInvoke> tryPrepareAddComponentDirect(
         return std::nullopt;
 
     fillAddComponentDefaults(prepared.arguments, &gui);
+    if(!parent_from_last.empty()
+       && (!prepared.arguments.contains("parent_long_name")
+           || prepared.arguments.value("parent_long_name", "").empty()
+           || prepared.arguments.value("parent_long_name", "") == "Model"))
+        prepared.arguments["parent_long_name"] = parent_from_last;
+    if(!short_from_last.empty()
+       && (!prepared.arguments.contains("short_name")
+           || prepared.arguments.value("short_name", "").empty()))
+        prepared.arguments["short_name"] = short_from_last;
+
     const AddParentResolution parent_res = resolveValidAddParent(
         domain, prepared.arguments.value("parent_long_name", ""), *explicit_class, channel_index,
         gui);

@@ -103,6 +103,8 @@ std::optional<std::unordered_set<std::string>> preferredToolsForText(const std::
        && !containsAny(lower, {"добав", "add component", "add "}))
         return std::unordered_set<std::string>{"connect_components",
                                                "get_component_properties",
+                                               "get_component_ports",
+                                               "list_model_links",
                                                "disconnect_components",
                                                "find_component",
                                                "get_net_snapshot",
@@ -114,6 +116,17 @@ std::optional<std::unordered_set<std::string>> preferredToolsForText(const std::
                                                "describe_class",         "list_registered_classes",
                                                "find_component",         "get_component_properties",
                                                "get_net_snapshot",       "list_channels"};
+
+    // Live graph / current model inspection (RU+EN) — prefer snapshot tools over recent configs.
+    if(containsAny(lower, {"get_net_snapshot", "net snapshot", "net_snapshot", "diagram", "схема",
+                           "компонент", "текущ", "текущая модель", "current model", "components",
+                           "snapshot", "топологи"})
+       || (containsAny(lower, {"model", "модел"})
+           && !containsAny(lower, {"llm", "ollama", "provider", "qwen", "gpt"})))
+        return std::unordered_set<std::string>{"get_net_snapshot", "find_component",
+                                               "get_component_properties", "describe_class",
+                                               "list_registered_classes", "list_channels",
+                                               "search_project_docs"};
 
     return std::nullopt;
 }
@@ -146,6 +159,8 @@ std::unordered_set<std::string> alwaysKeepTools(const ToolFilter& base)
                               "list_registered_classes",
                               "describe_class",
                               "get_net_snapshot",
+                              "list_model_links",
+                              "get_component_ports",
                               "find_component",
                               "get_component_properties",
                               "list_recent_configurations",

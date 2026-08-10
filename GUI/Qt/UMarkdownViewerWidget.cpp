@@ -70,20 +70,24 @@ UMarkdownViewerWidget::~UMarkdownViewerWidget()
 
 void UMarkdownViewerWidget::setMarkdown(const QString& markdown)
 {
-    m_currentMarkdown = markdown;
+    // Empty content: show a clear placeholder instead of an empty Base64 payload.
+    const QString content = markdown.trimmed().isEmpty()
+        ? QStringLiteral("No project description yet.")
+        : markdown;
+    m_currentMarkdown = content;
 
 #ifdef RDK_USE_QT_WEBENGINE
     QString basePath = m_baseUrl.toString();
-    QString html = createHtmlFromMarkdown(markdown, basePath);
+    QString html = createHtmlFromMarkdown(content, basePath);
     // Базовый URL должен быть qrc:/markdown/, иначе скрипты (marked.min.js, mermaid.min.js)
     // не загружаются из-за политики происхождения (file:// vs qrc://).
     QUrl baseUrl = QUrl(QStringLiteral("qrc:/markdown/"));
     m_webView->setHtml(html, baseUrl);
 #else
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-    m_textEdit->setMarkdown(markdown);
+    m_textEdit->setMarkdown(content);
 #else
-    m_textEdit->setPlainText(markdown);
+    m_textEdit->setPlainText(content);
 #endif
 #endif
 }
@@ -351,7 +355,7 @@ QString UMarkdownViewerWidget::createHtmlFromMarkdown(const QString& markdown, c
                     // Читаем Base64 из data-атрибута
                     const markdownBase64 = el.getAttribute('data-markdown-base64');
                     if (!markdownBase64 || markdownBase64.length === 0) {
-                        el.textContent = 'Error: Empty Base64 string in data attribute';
+                        el.textContent = 'No project description yet.';
                         return;
                     }
 
@@ -377,8 +381,7 @@ QString UMarkdownViewerWidget::createHtmlFromMarkdown(const QString& markdown, c
 
                     console.log('Decoded markdown length:', markdown ? markdown.length : 0);
                     if (!markdown || markdown.length === 0) {
-                        el.textContent = 'Error: Decoded markdown is empty';
-                        console.error('Decoded markdown is empty!');
+                        el.textContent = 'No project description yet.';
                         return;
                     }
 

@@ -1,7 +1,5 @@
 #include "ULLMSearchTools.h"
 
-#include "../Orchestrator/ULLMConfigurationLifecycle.h"
-#include "../Orchestrator/ULLMToolFilterBuilder.h"
 #include "ULLMToolRegistry.h"
 
 #include <algorithm>
@@ -17,19 +15,20 @@ std::vector<std::string> tokenize(const std::string& text)
 {
     std::vector<std::string> out;
     std::string cur;
+    auto flush = [&]() {
+        if(!cur.empty() && cur.size() >= 2)
+            out.push_back(cur);
+        cur.clear();
+    };
     for(unsigned char c : text)
     {
-        if(std::isalnum(c) || c == '_' || c >= 0x80)
+        // Split on '_' so tool names like list_model_links match query tokens.
+        if(std::isalnum(c) || c >= 0x80)
             cur.push_back(static_cast<char>(std::tolower(c)));
-        else if(!cur.empty())
-        {
-            if(cur.size() >= 2)
-                out.push_back(cur);
-            cur.clear();
-        }
+        else
+            flush();
     }
-    if(!cur.empty() && cur.size() >= 2)
-        out.push_back(cur);
+    flush();
     return out;
 }
 
@@ -53,10 +52,13 @@ SearchToolsResult searchToolsByQuery(ULLMToolRegistry& registry, const std::stri
     out.query = query;
     out.index_version = 1;
 
+    // Search the full registry (not only the Mutate allowlist) so progressive disclosure
+    // can discover long-tail tools such as list_model_links / spawn_explore_subagent.
     std::unordered_set<std::string> all;
-    const ToolFilter mutate =
-        buildToolFilter(LLMIntentKind::Mutate, true, ConfigurationLifecycleAction::None);
-    for(const LLMToolDefinition& def : registry.listForLlmApi(mutate))
+    ToolFilter open;
+    open.include_write = true;
+    open.intent = LLMIntentKind::Auto;
+    for(const LLMToolDefinition& def : registry.listForLlmApi(open))
         all.insert(def.name);
 
     const std::vector<std::string> q = tokenize(query);
@@ -80,6 +82,26 @@ SearchToolsResult searchToolsByQuery(ULLMToolRegistry& registry, const std::stri
             out.tools.push_back(it.first);
     }
     return out;
+}
+
+nlohmann::json enrichSearchToolsPayload(const SearchToolsResult& found,
+                                        const ULLMToolRegistry& registry)
+{
+    nlohmann::json tools = nlohmann::json::array();
+    for(const std::string& name : found.tools)
+    {
+        nlohmann::json entry = {{"name", name}};
+        if(const LLMToolDefinition* def = registry.find(name))
+        {
+            entry["description"] = def->description;
+            entry["kind"] = def->kind == LLMToolKind::Write ? "write" : "read";
+            entry["requires_confirmation"] = def->requires_confirmation;
+        }
+        tools.push_back(std::move(entry));
+    }
+    return {{"query", found.query},
+            {"index_version", found.index_version},
+            {"tools", std::move(tools)}};
 }
 
 } // namespace RDK::LLM

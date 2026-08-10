@@ -47,11 +47,34 @@ Harness::Harness(RDK::UApplication* app)
 
     RegisterCoreRdkTools(registry, domain, nullptr);
 
-    profile.kind = LLMProviderKind::OllamaOpenAICompat;
-    profile.base_url = kLabOllamaOpenAiV1;
-    profile.model = labOllamaModelName();
-    profile.profile_id = "e2e-lab-ollama";
+    rebindProvider(defaultLabCompatProfile());
+}
 
+LLMProviderProfile defaultLabCompatProfile()
+{
+    LLMProviderProfile p;
+    p.kind = LLMProviderKind::OllamaOpenAICompat;
+    p.base_url = kLabOllamaOpenAiV1;
+    p.model = labOllamaModelName();
+    p.profile_id = "e2e-lab-ollama";
+    p.prefer_local = true;
+    return p;
+}
+
+LLMProviderProfile thinkingLabNativeProfile()
+{
+    LLMProviderProfile p;
+    p.kind = LLMProviderKind::OllamaNative;
+    p.base_url = kLabOllamaHost;
+    p.model = labOllamaThinkingModelName();
+    p.profile_id = "e2e-lab-ollama-thinking";
+    p.prefer_local = true;
+    return p;
+}
+
+void Harness::rebindProvider(const LLMProviderProfile& new_profile)
+{
+    profile = new_profile;
     provider = ULLMProviderFactory::create(profile);
     orchestrator = std::make_unique<ULLMAgentOrchestrator>(*provider, registry, gateway, store);
 }

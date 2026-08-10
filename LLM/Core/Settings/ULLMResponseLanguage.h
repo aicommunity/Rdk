@@ -7,8 +7,15 @@ namespace RDK::LLM {
 
 bool isSupportedResponseLanguageCode(const std::string& code);
 
+/// Prefer explicit configured code, then environment, then system_fallback.
 std::string resolveResponseLanguage(const std::string& configured,
                                     const std::string& system_fallback = "en");
+
+/// When configured is empty/"auto", detect Cyrillic in user_text → "ru" before env/fallback.
+std::string resolveResponseLanguage(const std::string& configured, const std::string& user_text,
+                                    const std::string& system_fallback);
+
+bool userTextLooksCyrillic(const std::string& user_text);
 
 std::string languageFromEnvironment();
 

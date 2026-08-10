@@ -14,6 +14,8 @@ See file license.txt for more information
 
 #include <string.h>
 #include <locale>
+#include <clocale>
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
 #include "USerStorageXML.h"
@@ -21,6 +23,33 @@ See file license.txt for more information
 #include "../System/rdk_system.h"
 
 namespace RDK {
+
+namespace {
+
+/// Parse float from XML wire format: accept '.' and legacy locale ',' decimals.
+double ParseXmlFloat(const char *text, double default_value)
+{
+ if(!text || !*text)
+  return default_value;
+
+ std::string normalized(text);
+ for(char &ch : normalized)
+ {
+  if(ch == ',')
+   ch = '.';
+ }
+ const char *previous = std::setlocale(LC_NUMERIC, nullptr);
+ const std::string previousLocale = previous ? previous : "C";
+ std::setlocale(LC_NUMERIC, "C");
+ char *end = nullptr;
+ const double value = std::strtod(normalized.c_str(), &end);
+ std::setlocale(LC_NUMERIC, previousLocale.c_str());
+ if(end == normalized.c_str())
+  return default_value;
+ return value;
+}
+
+} // namespace
 
 // Методы
 // --------------------------
@@ -243,13 +272,10 @@ bool USerStorageXML::SaveToFile(const std::string &file_name)
 // Позиционируется на корневой узел
 void USerStorageXML::SelectRoot(void)
 {
- // Инвалидируем кэш только если действительно меняем узел
- if(CurrentNode.getName() != RootNode.getName() || CurrentNode.isEmpty() != RootNode.isEmpty())
- {
-  CurrentNode=RootNode;
-  NodeNameCached = false;
-  NodeTextCached = false;
- }
+ CurrentNode=RootNode;
+ NodeNameCached = false;
+ NodeTextCached = false;
+ AttributesCached = false;
 }
 
 // Позиционируется на родительский узел
@@ -258,13 +284,14 @@ void USerStorageXML::SelectUp(void)
  XMLNode node=CurrentNode.getParentNode();
  if(node.isEmpty())
   return;
- // Инвалидируем кэш только если действительно меняем узел
- if(node.getName() != CurrentNode.getName() || node.isEmpty() != CurrentNode.isEmpty())
- {
-  CurrentNode=node;
-  NodeNameCached = false;
-  NodeTextCached = false;
- }
+ // Всегда переходим на родителя. Сравнение getName() по указателям (особенно
+ // при RDK_UNICODE_RUN) ложно оставляло CurrentNode на месте — следующие
+ // SelectNodeForce писали не в Interfaces, а DelNodeInternalContent мог
+ // снести уже сохранённых соседей. В Interface.xml оставался один хвост.
+ CurrentNode=node;
+ NodeNameCached = false;
+ NodeTextCached = false;
+ AttributesCached = false;
 }
 
 // Возвращает число узлов с заданным именем
@@ -798,7 +825,7 @@ double USerStorageXML::ReadFloat(const std::string &name, double default_value)
  if(!SelectNode(name))
   return default_value;
 
- double res=atof(GetNodeText());
+ double res=ParseXmlFloat(GetNodeText().c_str(), default_value);
 
  SelectUp();
  return res;
@@ -809,7 +836,7 @@ double USerStorageXML::ReadFloat(const std::string &name, int node_index, double
  if(!SelectNode(name,node_index))
   return default_value;
 
- double res=atof(GetNodeText());
+ double res=ParseXmlFloat(GetNodeText().c_str(), default_value);
 
  SelectUp();
  return res;
@@ -820,7 +847,7 @@ double USerStorageXML::ReadFloat(int node_index, double default_value)
  if(!SelectNode(node_index))
   return default_value;
 
- double res=atof(GetNodeText());
+ double res=ParseXmlFloat(GetNodeText().c_str(), default_value);
 
  SelectUp();
  return res;
@@ -895,7 +922,8 @@ void USerStorageXML::WriteFloat(const std::string &name, double value)
  if(!SelectNode(name))
   AddNode(name);
 
- SetNodeText(sntoa(value));
+ // C-locale (dot decimal): sntoa(double) via stringstream inherits global locale.
+ SetNodeText(sntoa(value, 17));
 
  SelectUp();
 }

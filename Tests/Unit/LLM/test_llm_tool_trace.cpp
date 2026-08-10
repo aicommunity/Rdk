@@ -22,6 +22,17 @@ TEST(LLMToolTrace, SanitizeMasksSensitiveKeys)
     EXPECT_EQ(out["class_name"].get<std::string>(), "NSPNeuron");
 }
 
+TEST(LLMToolTrace, SanitizeNullSchemaPropertyDoesNotThrow)
+{
+    const nlohmann::json args = {{"password", "x"}, {"class_name", "NSPNeuron"}};
+    nlohmann::json schema = {{"properties", {{"password", nullptr}, {"class_name", {{"type", "string"}}}}}};
+    EXPECT_NO_THROW({
+        const nlohmann::json out = sanitizeToolArgumentsForDisplay(args, schema);
+        EXPECT_EQ(out["password"].get<std::string>(), "***");
+        EXPECT_EQ(out["class_name"].get<std::string>(), "NSPNeuron");
+    });
+}
+
 TEST(LLMToolTrace, FormatHtmlIncludesToolName)
 {
     TurnToolInvocationView view;

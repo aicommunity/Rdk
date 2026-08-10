@@ -25,19 +25,19 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout">
     <property name="spacing">
-     <number>4</number>
+    <number>4</number>
     </property>
     <property name="leftMargin">
-     <number>0</number>
+    <number>0</number>
     </property>
     <property name="topMargin">
-     <number>0</number>
+    <number>0</number>
     </property>
     <property name="rightMargin">
-     <number>0</number>
+    <number>0</number>
     </property>
     <property name="bottomMargin">
-     <number>0</number>
+    <number>0</number>
     </property>
     <item>
      <widget class="QLabel" name="labelProjectDirectory">
@@ -49,7 +49,7 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <property name="spacing">
-       <number>4</number>
+    <number>4</number>
       </property>
       <item>
        <widget class="QLineEdit" name="lineEditProjectDirectory"/>
@@ -98,35 +98,35 @@
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_4">
     <property name="spacing">
-     <number>8</number>
+    <number>4</number>
     </property>
     <property name="leftMargin">
-     <number>6</number>
+    <number>4</number>
     </property>
     <property name="topMargin">
-     <number>6</number>
+    <number>4</number>
     </property>
     <property name="rightMargin">
-     <number>6</number>
+    <number>4</number>
     </property>
     <property name="bottomMargin">
-     <number>6</number>
+    <number>4</number>
     </property>
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <property name="spacing">
-       <number>4</number>
+    <number>4</number>
       </property>
       <property name="bottomMargin">
-       <number>4</number>
+    <number>4</number>
       </property>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_8">
         <property name="rightMargin">
-         <number>0</number>
+    <number>0</number>
         </property>
         <property name="bottomMargin">
-         <number>4</number>
+    <number>4</number>
         </property>
         <item>
          <widget class="QLabel" name="label_2">
@@ -188,19 +188,19 @@
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout_9">
          <property name="spacing">
-          <number>4</number>
+    <number>4</number>
          </property>
          <property name="leftMargin">
-          <number>6</number>
+    <number>4</number>
          </property>
          <property name="topMargin">
-          <number>6</number>
+    <number>4</number>
          </property>
          <property name="rightMargin">
-          <number>6</number>
+    <number>4</number>
          </property>
          <property name="bottomMargin">
-          <number>6</number>
+    <number>4</number>
          </property>
          <item>
           <widget class="QListWidget" name="listWidgetChannels">
@@ -223,13 +223,13 @@
          <item>
           <layout class="QVBoxLayout" name="verticalLayout_5">
            <property name="spacing">
-            <number>4</number>
+    <number>4</number>
            </property>
            <property name="topMargin">
-            <number>4</number>
+    <number>4</number>
            </property>
            <property name="bottomMargin">
-            <number>4</number>
+    <number>4</number>
            </property>
            <item>
             <widget class="QGroupBox" name="groupBox_6">
@@ -241,16 +241,16 @@
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_10">
               <property name="leftMargin">
-               <number>4</number>
+    <number>4</number>
               </property>
               <property name="topMargin">
-               <number>4</number>
+    <number>4</number>
               </property>
               <property name="rightMargin">
-               <number>4</number>
+    <number>4</number>
               </property>
               <property name="bottomMargin">
-               <number>4</number>
+    <number>4</number>
               </property>
               <item>
                <widget class="QRadioButton" name="radioButtonMSPredefinedModel">
@@ -309,19 +309,19 @@
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_13">
               <property name="spacing">
-               <number>0</number>
+    <number>0</number>
               </property>
               <property name="leftMargin">
-               <number>0</number>
+    <number>0</number>
               </property>
               <property name="topMargin">
-               <number>0</number>
+    <number>0</number>
               </property>
               <property name="rightMargin">
-               <number>0</number>
+    <number>0</number>
               </property>
               <property name="bottomMargin">
-               <number>0</number>
+    <number>0</number>
               </property>
               <item>
                <widget class="QFrame" name="framePredefinedModel">
@@ -329,10 +329,10 @@
                  <item>
                   <layout class="QHBoxLayout" name="horizontalLayout_18">
                    <property name="rightMargin">
-                    <number>0</number>
+    <number>0</number>
                    </property>
                    <property name="bottomMargin">
-                    <number>0</number>
+    <number>0</number>
                    </property>
                    <item>
                     <widget class="QLabel" name="label_4">
@@ -374,7 +374,7 @@
                    <property name="sizeHint" stdset="0">
                     <size>
                      <width>20</width>
-                     <height>40</height>
+       <height>4</height>
                     </size>
                    </property>
                   </spacer>
@@ -386,7 +386,7 @@
                <widget class="QFrame" name="frameFromComponent">
                 <layout class="QHBoxLayout" name="horizontalLayoutFromComponent">
                  <property name="leftMargin">
-                  <number>1</number>
+    <number>1</number>
                  </property>
                 </layout>
                </widget>
@@ -395,7 +395,7 @@
                <widget class="QFrame" name="frameFromFile">
                 <layout class="QVBoxLayout" name="verticalLayout_7">
                  <property name="leftMargin">
-                  <number>1</number>
+    <number>1</number>
                  </property>
                  <item>
                   <layout class="QHBoxLayout" name="horizontalLayout_19" stretch="2,0,0">
@@ -432,7 +432,7 @@
                    <property name="sizeHint" stdset="0">
                     <size>
                      <width>20</width>
-                     <height>40</height>
+       <height>4</height>
                     </size>
                    </property>
                   </spacer>
@@ -463,7 +463,7 @@
                    <property name="sizeHint" stdset="0">
                     <size>
                      <width>158</width>
-                     <height>90</height>
+       <height>4</height>
                     </size>
                    </property>
                   </spacer>
@@ -477,7 +477,7 @@
            <item>
             <layout class="QHBoxLayout" name="horizontalLayout_17">
              <property name="topMargin">
-              <number>0</number>
+    <number>0</number>
              </property>
              <item>
               <spacer name="horizontalSpacer_8">
@@ -497,7 +497,7 @@
            <item>
            <layout class="QHBoxLayout" name="horizontalLayout_18">
             <property name="topMargin">
-             <number>0</number>
+    <number>0</number>
             </property>
             <item>
              <spacer name="horizontalSpacer_9">
@@ -523,10 +523,10 @@
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_9">
            <property name="topMargin">
-            <number>2</number>
+    <number>2</number>
            </property>
            <property name="bottomMargin">
-            <number>2</number>
+    <number>2</number>
            </property>
            <item>
             <widget class="QGroupBox" name="groupBox_19">
@@ -535,10 +535,10 @@
               </property>
               <layout class="QVBoxLayout" name="verticalLayout_15">
                <property name="topMargin">
-                <number>2</number>
+    <number>2</number>
                </property>
                <property name="bottomMargin">
-                <number>2</number>
+    <number>2</number>
                </property>
                <item>
                 <widget class="QLineEdit" name="lineEditChannelName"/>
@@ -558,16 +558,16 @@
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_14">
                 <property name="leftMargin">
-                 <number>11</number>
+    <number>4</number>
                 </property>
                 <property name="topMargin">
-                 <number>0</number>
+    <number>0</number>
                 </property>
                 <property name="rightMargin">
-                 <number>11</number>
+    <number>4</number>
                 </property>
                 <property name="bottomMargin">
-                 <number>0</number>
+    <number>0</number>
                 </property>
                 <item>
                  <widget class="QRadioButton" name="radioButtonPTUniversal">
@@ -600,16 +600,16 @@
                </property>
                <layout class="QVBoxLayout" name="verticalLayout_10">
                 <property name="leftMargin">
-                 <number>11</number>
+    <number>4</number>
                 </property>
                 <property name="topMargin">
-                 <number>0</number>
+    <number>0</number>
                 </property>
                 <property name="rightMargin">
-                 <number>11</number>
+    <number>4</number>
                 </property>
                 <property name="bottomMargin">
-                 <number>0</number>
+    <number>0</number>
                 </property>
                 <item>
                  <widget class="QRadioButton" name="radioButtonCMSimple">
@@ -651,16 +651,16 @@
              </property>
              <layout class="QHBoxLayout" name="horizontalLayoutTimeStep">
               <property name="leftMargin">
-               <number>8</number>
+    <number>4</number>
               </property>
               <property name="topMargin">
-               <number>0</number>
+    <number>0</number>
               </property>
               <property name="rightMargin">
-               <number>8</number>
+    <number>4</number>
               </property>
               <property name="bottomMargin">
-               <number>2</number>
+    <number>2</number>
               </property>
               <item>
                <widget class="QLabel" name="label_6">
@@ -700,7 +700,7 @@
              <property name="minimumSize">
               <size>
                <width>0</width>
-               <height>40</height>
+               <height>28</height>
               </size>
              </property>
              <property name="title">
@@ -738,16 +738,16 @@
              </property>
              <layout class="QHBoxLayout" name="horizontalLayoutMaxMin">
               <property name="leftMargin">
-               <number>8</number>
+    <number>4</number>
               </property>
               <property name="topMargin">
-               <number>2</number>
+    <number>2</number>
               </property>
               <property name="rightMargin">
-               <number>8</number>
+    <number>4</number>
               </property>
               <property name="bottomMargin">
-               <number>2</number>
+    <number>2</number>
               </property>
               <item>
                <widget class="QLabel" name="labelMaxIter">
@@ -871,7 +871,7 @@
               <property name="sizeHint" stdset="0">
                <size>
                 <width>20</width>
-                <height>40</height>
+       <height>4</height>
                </size>
               </property>
              </spacer>

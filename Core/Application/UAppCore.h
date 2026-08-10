@@ -55,6 +55,8 @@ public:
  int showLlmAssistantMenu;
  double calcTimeIntervalSec;
  int exitAfterCalcFlag;
+ /// Studio | ControlBar — default GUI shell preset (see UGuiShellTypes).
+ std::string guiShellPreset;
 
  std::string mainFormName;
  int minimizeToTray;
@@ -85,7 +87,7 @@ public:
 
  std::string librariesPath;
  std::string clDescPath;
-
+ std::string watchPresetsPath;
  std::string temp_proj_path;
 
  std::string database_address;
@@ -179,6 +181,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
  hideAdminForm        = RDK::atoi(projectIniFile("General", "HideAdminForm", "0"));
  startMinimized       = RDK::atoi(projectIniFile("General", "StartMinimized", "0"));
  showLlmAssistantMenu = RDK::atoi(projectIniFile("General", "ShowLlmAssistantMenu", "0"));
+ guiShellPreset       = projectIniFile("General", "GuiShellPreset", "Studio");
 
  mainFormName=projectIniFile("General", "MainFormName", "");
  minimizeToTray=atoi(projectIniFile("General","MinimizeToTray","0"));
@@ -200,6 +203,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
 
  librariesPath=projectIniFile("General", "LibrariesPath", "../../");
  clDescPath=projectIniFile("General", "ClDescPath", "../../ClDesc/");
+ watchPresetsPath=projectIniFile("General", "WatchPresetsPath", "../../WatchPresets/");
 
  databaseMainPath=projectIniFile("General","DatabaseMainPath","");
  remoteFtpDatabasePath=projectIniFile("General","RemoteFtpDatabasePath","");
@@ -248,6 +252,7 @@ int UAppCore<ApplicationT, EngineControlT, ProjectT, ServerControlT, TestManager
 
  application.SetLibrariesPath(librariesPath);
  application.SetClDescPath(clDescPath);
+ application.SetWatchPresetsPath(watchPresetsPath);
  application.SetConfigsMainPath(configsMainPath);
  application.ChangeUseNewXmlFormatProjectFile(useNewXmlFormatProjectFile);
  application.ChangeUseNewProjectFilesStructure(useNewProjectFilesStructure);

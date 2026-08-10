@@ -4,7 +4,10 @@
 #include "UModernDiagramTooltipGenerator.h"
 #include "UStyleManager.h"
 
+#include <QPainter>
 #include <QPainterPath>
+#include <QFont>
+#include <QFontMetricsF>
 #include <QGraphicsSceneHoverEvent>
 
 UModernDiagramLinkItem::UModernDiagramLinkItem(UModernDiagramNodeItem* src, UModernDiagramNodeItem* dst, bool useOutput, bool useInput)
@@ -18,6 +21,7 @@ UModernDiagramLinkItem::UModernDiagramLinkItem(UModernDiagramNodeItem* src, UMod
     , m_srcCategory(PortCategory::Own)
     , m_dstCategory(PortCategory::Own)
     , m_hasCategories(false)
+    , m_parallelCount(1)
 {
     UStyleManager* style = UStyleManager::instance();
     setPen(QPen(style->getLinkColor(), style->getLinkWidth(), Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -41,6 +45,7 @@ UModernDiagramLinkItem::UModernDiagramLinkItem(UModernDiagramNodeItem* src, UMod
     , m_srcCategory(srcCategory)
     , m_dstCategory(dstCategory)
     , m_hasCategories(true)
+    , m_parallelCount(1)
 {
     UStyleManager* style = UStyleManager::instance();
     setPen(QPen(style->getLinkColor(), style->getLinkWidth(), Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -66,6 +71,7 @@ UModernDiagramLinkItem::UModernDiagramLinkItem(UModernDiagramNodeItem* src, cons
     , m_srcCategory(PortCategory::Own)
     , m_dstCategory(PortCategory::Own)
     , m_hasCategories(false)
+    , m_parallelCount(1)
 {
     UStyleManager* style = UStyleManager::instance();
     setPen(QPen(style->getLinkTempColor(), style->getLinkWidth(), Qt::DashLine, Qt::RoundCap, Qt::RoundJoin));
@@ -130,6 +136,48 @@ void UModernDiagramLinkItem::updateGeometry(const QPointF& cursorOverride)
     setPath(path);
 }
 
+QRectF UModernDiagramLinkItem::boundingRect() const
+{
+    QRectF r = QGraphicsPathItem::boundingRect();
+    if(m_parallelCount > 1)
+        r = r.adjusted(-14, -14, 14, 14);
+    return r;
+}
+
+void UModernDiagramLinkItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    QGraphicsPathItem::paint(painter, option, widget);
+    if(m_isTemp || m_parallelCount <= 1)
+        return;
+
+    const QPainterPath p = path();
+    if(p.isEmpty())
+        return;
+
+    // Число только у приёмника (конец линии), фон как у ModernDiagram — перекрывает линию
+    const QPointF nearEnd = p.pointAtPercent(0.88);
+    const QString text = QString::number(m_parallelCount);
+
+    QFont font = painter->font();
+    font.setBold(true);
+    font.setPointSizeF(qMax(8.0, font.pointSizeF()));
+
+    const QFontMetricsF fm(font);
+    QRectF textRect = fm.boundingRect(text);
+    textRect.moveCenter(nearEnd);
+    textRect.adjust(-3, -1, 3, 1);
+
+    painter->save();
+    painter->setFont(font);
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(UStyleManager::instance()->getBackgroundAltColor());
+    painter->drawRect(textRect);
+    painter->setPen(pen().color());
+    painter->setBrush(Qt::NoBrush);
+    painter->drawText(textRect, Qt::AlignCenter, text);
+    painter->restore();
+}
+
 void UModernDiagramLinkItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     QGraphicsPathItem::hoverEnterEvent(event);
@@ -145,4 +193,3 @@ void UModernDiagramLinkItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
     QGraphicsPathItem::hoverLeaveEvent(event);
     setToolTip(QString());
 }
-

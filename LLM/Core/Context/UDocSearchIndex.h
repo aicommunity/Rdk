@@ -30,12 +30,16 @@ public:
     void buildFromCatalog(const ILLMKnowledgeCatalog& catalog,
                           const std::filesystem::path& repository_root,
                           int max_files = kIndexMaxFiles);
+    /// Empty `expected_fingerprint` skips fingerprint match (accept stale index for fast startup).
     bool loadPrebuilt(const std::filesystem::path& dir, const std::string& expected_fingerprint);
     void savePrebuilt(const std::filesystem::path& dir, const std::string& fingerprint) const;
     std::vector<DocSnippet> search(const std::string& query, int top_k,
                                    LLMContentKind kind_filter = LLMContentKind::Doc) const;
     std::vector<DocSnippet> searchWithScope(const std::string& query, int top_k,
                                             const std::string& scope) const;
+    /// Substring match on path/title/excerpt (exact identifier lookup); bypasses TF-IDF threshold.
+    std::vector<DocSnippet> searchLiteral(const std::string& query, int top_k,
+                                          const std::string& scope = "docs") const;
     bool empty() const { return m_docs.empty(); }
     /// Compare on-disk mtimes to manifest; patch changed/removed files (TD-033).
     IndexSyncResult syncFromCatalog(const ILLMKnowledgeCatalog& catalog,

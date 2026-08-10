@@ -84,6 +84,12 @@ QString UModernDiagramTooltipGenerator::generateLinkTooltip(const UModernDiagram
         "• Right Click - Context menu"
     ).arg(srcName, dstName);
 
+    if(link->parallelCount() > 1)
+    {
+        tooltip += QCoreApplication::translate("UModernDiagramTooltipGenerator",
+            "<br/><br/>links: %1").arg(link->parallelCount());
+    }
+
     return tooltip;
 }
 

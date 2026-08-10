@@ -14,7 +14,7 @@
 namespace RDK::LLM {
 
 constexpr const char* TOOL_REGISTRY_VERSION = "1.0.0";
-constexpr const char* PROMPT_BUNDLE_ID = "rdk-llm-prompts-1.0.0";
+constexpr const char* PROMPT_BUNDLE_ID = "rdk-llm-prompts-1.1.0";
 
 enum class LLMProviderKind {
     OllamaOpenAICompat,
@@ -138,6 +138,15 @@ struct LLMProviderCapabilities {
     bool supports_strict_json_schema = false;
     bool runs_in_process = false;
     bool requires_network = true;
+    /// Ollama thinking models (qwen3, deepseek-r1, …): `think` request + `message.thinking`.
+    bool supports_thinking = false;
+};
+
+/// Model-native thinking for Cortex ReAct rounds (Ollama `think`).
+enum class LLMThinkMode {
+    Off,
+    On,
+    Auto
 };
 
 enum class OllamaChatTemplateFamily {
@@ -176,7 +185,7 @@ enum class LLMSendShortcutMode {
 enum class LLMContextAcquisitionMode { Auto, Minimal };
 
 struct LLMRuntimeProviderSettings {
-    std::string active_profile_id = "ollama-local";
+    std::string active_profile_id = "ollama-thinking";
     bool allow_cloud_providers = false;
     bool llm_write_enabled = true;
     /// When true, write tools run immediately without per-step Apply confirmation.
@@ -199,6 +208,8 @@ struct LLMRuntimeProviderSettings {
     LLMContextAcquisitionMode context_acquisition_mode = LLMContextAcquisitionMode::Auto;
     /// When true (GUI default), temporarily navigate diagram to pinned scope before write tools.
     bool pin_diagram_for_writes = true;
+    /// Thinking-first Cortex: send Ollama `think` and separate reasoning from answer/tools.
+    bool enable_ollama_thinking = true;
 };
 
 struct LLMGuiContextSnapshot {
@@ -231,13 +242,15 @@ struct LLMSessionContext {
 struct LLMToolCall {
     std::string id;
     std::string name;
-    nlohmann::json arguments;
+    nlohmann::json arguments = nlohmann::json::object();
 };
 
 struct LLMMessage {
     enum class Role { System, User, Assistant, Tool };
     Role role = Role::User;
     std::string content;
+    /// Model-native reasoning trace; preserve unmodified on assistant tool_call turns.
+    std::optional<std::string> thinking;
     std::optional<std::string> tool_call_id;
     std::optional<std::string> tool_name;
     std::optional<nlohmann::json> tool_arguments;
@@ -249,6 +262,8 @@ struct LLMMessage {
 struct LLMCompletionResult {
     bool ok = true;
     std::string text;
+    /// Separated reasoning (Ollama `message.thinking` / `reasoning_content`).
+    std::string thinking;
     std::vector<LLMToolCall> tool_calls;
     std::string error_message;
     int prompt_tokens = 0;
@@ -268,6 +283,10 @@ struct LLMCompletionOptions {
     std::string response_language;
     /// When set, overrides provider profile model for this completion only.
     std::optional<std::string> model_override;
+    /// Ollama thinking / reasoning mode for this completion.
+    LLMThinkMode think_mode = LLMThinkMode::Off;
+    /// Optional stream of thinking tokens (content still goes to chatStream on_chunk).
+    std::function<void(const std::string& chunk)> on_thinking_chunk;
 };
 
 using LLMStreamCallback = std::function<void(const std::string& chunk)>;
@@ -295,6 +314,9 @@ struct ToolInvokeRequest {
     bool confirmed = false;
     /// Current user turn text (for add_component class inference when the model picks a wrong class).
     std::string user_text_hint;
+    /// When true, gateway skips appending to ConversationState::current_turn_tool_trace
+    /// (caller records against the turn-attacher state explicitly — TaskExecutor FastPath).
+    bool skip_turn_tool_trace = false;
 };
 
 struct ToolGatewayResult {
@@ -306,6 +328,12 @@ struct ToolGatewayResult {
     std::string confirmation_id;
 };
 
+/// Compact doc refs from tool results (DD-DOC-002 link footer).
+struct TurnDocLinkView {
+    std::string title;
+    std::string uri;
+};
+
 struct TurnToolInvocationView {
     std::string tool_name;
     nlohmann::json arguments = nlohmann::json::object();
@@ -314,6 +342,54 @@ struct TurnToolInvocationView {
     std::string message;
     int duration_ms = 0;
     bool pending_confirmation = false;
+    std::vector<TurnDocLinkView> doc_links;
+};
+
+enum class WorkingGoalStatus {
+    Pending,
+    InProgress,
+    Done,
+    Blocked,
+    Cancelled,
+};
+
+inline const char* workingGoalStatusName(WorkingGoalStatus s)
+{
+    switch(s)
+    {
+    case WorkingGoalStatus::Pending:
+        return "pending";
+    case WorkingGoalStatus::InProgress:
+        return "in_progress";
+    case WorkingGoalStatus::Done:
+        return "done";
+    case WorkingGoalStatus::Blocked:
+        return "blocked";
+    case WorkingGoalStatus::Cancelled:
+        return "cancelled";
+    }
+    return "pending";
+}
+
+inline WorkingGoalStatus workingGoalStatusFromName(const std::string& name)
+{
+    if(name == "in_progress")
+        return WorkingGoalStatus::InProgress;
+    if(name == "done")
+        return WorkingGoalStatus::Done;
+    if(name == "blocked")
+        return WorkingGoalStatus::Blocked;
+    if(name == "cancelled")
+        return WorkingGoalStatus::Cancelled;
+    return WorkingGoalStatus::Pending;
+}
+
+struct WorkingGoal {
+    std::string id;
+    std::string title;
+    WorkingGoalStatus status = WorkingGoalStatus::Pending;
+    std::string success_criteria;
+    std::vector<std::string> evidence;
 };
 
 struct PolicyDecision {

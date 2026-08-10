@@ -374,15 +374,15 @@ void UVisualControllerWidget::SaveParameters(RDK::USerStorageXML &xml)
 {
     try
     {
-        //if(!Owner)
-        //    return;
-        //xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
-        xml.SelectNodeForce(CalcFullName());
+        // Всегда от корня Interfaces: иначе после сбоя SelectUp у соседнего
+        // контроллера узел создаётся не там, а DelNodeInternalContent может
+        // очистить уже записанное дерево.
+        xml.SelectRoot();
+        if(!xml.SelectNodeForce(CalcFullName()))
+            return;
         ASaveParameters(xml);
         xml.WriteInteger("UpdateInterval",UpdateInterval);
         xml.WriteBool("AlwaysUpdateFlag",AlwaysUpdateFlag);
-        //xml.WriteString("ComponentControlName",ComponentControlName);
-        //xml.SelectUp();
         xml.SelectUp();
     }
     catch (RDK::UException &exception)
@@ -393,10 +393,6 @@ void UVisualControllerWidget::SaveParameters(RDK::USerStorageXML &xml)
     {
         RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("Core-SaveParameters Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
-    /*catch(Exception &exception)
-    {
-        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-SaveParameters Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
-    }*/
 }
 
 void UVisualControllerWidget::ASaveParameters(RDK::USerStorageXML &xml)
@@ -409,15 +405,12 @@ void UVisualControllerWidget::LoadParameters(RDK::USerStorageXML &xml)
 {
     try
     {
-        //if(!Owner)
-        //    return;
-        //xml.SelectNodeForce(AnsiString(Owner->Name).c_str());
-        xml.SelectNodeForce(CalcFullName());
-        //ComponentControlName=xml.ReadString("ComponentControlName","");
+        xml.SelectRoot();
+        if(!xml.SelectNodeForce(CalcFullName()))
+            return;
         UpdateInterval=xml.ReadInteger("UpdateInterval",UpdateInterval);
         AlwaysUpdateFlag=xml.ReadBool("AlwaysUpdateFlag",false);
         ALoadParameters(xml);
-        //xml.SelectUp();
         xml.SelectUp();
     }
     catch (RDK::UException &exception)
@@ -428,10 +421,6 @@ void UVisualControllerWidget::LoadParameters(RDK::USerStorageXML &xml)
     {
         RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("Core-LoadParameters Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
-    /*catch(Exception &exception)
-    {
-        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-LoadParameters Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
-    }*/
 }
 
 void UVisualControllerWidget::ALoadParameters(RDK::USerStorageXML &xml)

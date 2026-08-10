@@ -31,6 +31,8 @@ public:
     UWatch(QWidget *parent = nullptr, RDK::UApplication* app = NULL);
     ~UWatch();
     UWatchTab *getCurrentTab();
+    /// Create first tab if empty (LLM / host helpers).
+    UWatchTab *ensureCurrentTab();
 
     // Обновление интерфейса
     virtual void AUpdateInterface(void);
@@ -67,8 +69,12 @@ public:
 
 private slots:
     void on_actionCreate_tab_triggered();
-    void on_actionSeries_option_triggered();
-    void on_actionCharts_option_triggered();
+    void on_actionLayout_settings_triggered();
+    void on_actionChart_settings_triggered();
+    void on_actionSeries_settings_triggered();
+    void on_actionSave_chart_triggered();
+    void on_actionSave_all_charts_triggered();
+    void on_actionQuick_save_triggered();
     void on_tabWidget_tabCloseRequested(int index);
 
 

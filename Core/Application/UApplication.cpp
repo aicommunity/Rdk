@@ -380,6 +380,19 @@ bool UApplication::SetClDescPath(const std::string &value)
  return true;
 }
 
+const std::string& UApplication::GetWatchPresetsPath(void) const
+{
+ return WatchPresetsPath;
+}
+
+bool UApplication::SetWatchPresetsPath(const std::string &value)
+{
+ if(WatchPresetsPath == value)
+  return true;
+ WatchPresetsPath=value;
+ return true;
+}
+
 /// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
 const std::string& UApplication::GetDatabaseMainPath(void) const
 {
@@ -2565,25 +2578,47 @@ try
  InterfaceXml.SelectNodeRoot(std::string("Interfaces"));
  RDK::UIVisualControllerStorage::SaveParameters(InterfaceXml);
 
+ const size_t n_ctrl = RDK::UIVisualControllerStorage::InterfaceUpdaters.size();
+ InterfaceXml.SelectRoot();
+ const int n_nodes = InterfaceXml.GetNumNodes();
+ RLOG(RDK_EX_INFO, RDK_SYS_MESSAGE, "sys",
+      std::string("Core-SaveProject: Interface controllers=")
+          + RDK::sntoa(static_cast<int>(n_ctrl))
+          + std::string(" xml_nodes=")
+          + RDK::sntoa(n_nodes));
+
+ // Защита: при выходе Qt сначала уничтожает главное окно (DelInterface),
+ // затем UAppCore::UnInit → CloseProject → autosave. К этому моменту в
+ // InterfaceUpdaters часто остаётся только UCurlFtpClientTestWidget(parent=NULL),
+ // и пустой Interface.xml затирает нормальный Save. Не перезаписываем файл.
+ const bool skip_interface_file =
+     (n_ctrl <= 1) || (n_nodes <= 1);
+ if(skip_interface_file)
+ {
+  RLOG(RDK_EX_WARNING, RDK_SYS_MESSAGE, "sys",
+       "Core-SaveProject: skip Interface.xml write — GUI controllers already destroyed "
+       "(would wipe Watch/charts). Save while the main window is still alive.");
+ }
+
  TProjectConfig config=Project->GetConfig();
  ProjectXml.SelectNodeRoot("Project/General");
 
  SaveFileSafe(ProjectPath+config.DescriptionFileName,config.ProjectDescription,"save.tmp",3);
 
- if(!config.InterfaceFileName.empty())
+ if(!config.InterfaceFileName.empty() && !skip_interface_file)
  {
   if(extract_file_path(config.InterfaceFileName).empty())
    is_saved=InterfaceXml.SaveToFile(ProjectPath+config.InterfaceFileName);
   else
    is_saved=InterfaceXml.SaveToFile(config.InterfaceFileName);
  }
- else
+ else if(config.InterfaceFileName.empty() && !skip_interface_file)
  {
   ProjectXml.WriteString("InterfaceFileName","Interface.xml");
   is_saved=InterfaceXml.SaveToFile(ProjectPath+config.InterfaceFileName);
  }
 
- if(!is_saved)
+ if(!skip_interface_file && !is_saved)
  RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-SaveProject: Can't save interface file: ") + config.InterfaceFileName);
 
  for(int i=0;i<config.NumChannels;i++)

@@ -4,6 +4,8 @@
 #include "UStyleManager.h"
 #include "UComponentGuiBootstrap.h"
 #include "UComponentGuiDndPayload.h"
+#include "UGuiShellController.h"
+#include "UGuiShellTypes.h"
 
 
 #include <rdk_application.h>
@@ -44,6 +46,8 @@
 #include <QDragLeaveEvent>
 #include <QLabel>
 #include <QStyle>
+#include <QToolBar>
+#include <QSizePolicy>
 
 /*int heheheCounter = 0;
 void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
@@ -84,6 +88,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     modernDiagram = NULL;
     componentLinks = NULL;
     breadcrumbsWidget = NULL;
+    breadcrumbsToolBar = NULL;
     images = NULL;
     imagesWindow = NULL;
     channels = NULL;
@@ -93,11 +98,8 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 #ifndef RDK_DISABLE_EXT_GUI
     videoAnalyticsSimpleWidget=NULL;
 #endif
-    graphWindowWidget=NULL;
-    graphWindow=NULL;
     profilingWindow=NULL;
     profilingWindowWidget=NULL;
- //   watchFormWidget=NULL;
     watchWindow = NULL;
     projectDescriptionWindow = NULL;
     clDescWindow = NULL;
@@ -200,12 +202,19 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
         });
     });
 
-    // Создаем breadcrumbs виджет
+    // Breadcrumbs на всю ширину окна — отдельная строка под mainToolBar (над docks)
     breadcrumbsWidget = new UBreadcrumbsWidget(this);
-    breadcrumbsWidget->setMinimumHeight(30);
-    breadcrumbsWidget->setMaximumHeight(35);
-    // Добавляем breadcrumbsWidget в layout перед mdiArea
-    ui->verticalLayout->insertWidget(0, breadcrumbsWidget);
+    breadcrumbsWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+
+    breadcrumbsToolBar = new QToolBar(tr("Breadcrumbs"), this);
+    breadcrumbsToolBar->setObjectName(QStringLiteral("breadcrumbsToolBar"));
+    breadcrumbsToolBar->setMovable(false);
+    breadcrumbsToolBar->setFloatable(false);
+    breadcrumbsToolBar->setContextMenuPolicy(Qt::PreventContextMenu);
+    breadcrumbsToolBar->setIconSize(QSize(1, 1));
+    breadcrumbsToolBar->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    breadcrumbsToolBar->addWidget(breadcrumbsWidget);
+    ensureBreadcrumbsToolBarRow();
 
     // Создаем современную диаграмму
     modernDiagram = new UModernDiagramContainerWidget(this, application);
@@ -221,7 +230,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     connect(breadcrumbsWidget, SIGNAL(componentPathSelected(QString)),
             propertyChanger->componentsList, SLOT(componentSelectedFromScheme(QString)));
     connect(breadcrumbsWidget, SIGNAL(componentPathSelected(QString)),
-            modernDiagram, SLOT(componentSingleClick(QString)));
+            modernDiagram, SLOT(componentDoubleClick(QString)));
 
     // ComponentsList -> Breadcrumbs + Diagram
     connect(propertyChanger->componentsList, SIGNAL(componentSelected(QString)),
@@ -303,7 +312,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
         QWidget* titleBar = new QWidget(ui->dockWidgetLoger);
         titleBar->setObjectName(QStringLiteral("loggerDockTitleBar"));
         auto* titleLayout = new QHBoxLayout(titleBar);
-        titleLayout->setContentsMargins(10, 4, 4, 4);
+        titleLayout->setContentsMargins(4, 2, 4, 2);
         titleLayout->setSpacing(2);
 
         QLabel* titleLabel = new QLabel(tr("Logger"), titleBar);
@@ -333,17 +342,6 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     ui->actionLogger->setChecked(false);
     connect(ui->dockWidgetLoger, &QDockWidget::visibilityChanged,
             ui->actionLogger, &QAction::setChecked);
-    /*
-    graphWindowWidget = new UGraphWidget(this, application);
-//    ui->dockWidgetGraph->setWidget(graphWindowWidget);
-    graphWindowWidget->setWindowTitle("Graph");
-       graphWindowWidget->hide();
-    ui->dockWidgetGraph->hide();
-    */
-
- //   watchFormWidget= new UWatchFormWidget(this, application);
- //   watchFormWidget->setWindowTitle("Watches");
- //   watchFormWidget->hide();
 
     watchWindow = new UWatch(this);
     watchWindow->setWindowTitle("Watch window");
@@ -368,10 +366,6 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 
     curlFtpClientTestWidget = new UCurlFtpClientTestWidget(NULL, application);
     curlFtpClientTestWidget->hide();
-
-    connect(statusPanel, SIGNAL(saveConfig()), this, SLOT(actionSaveConfig()));
-    connect(statusPanel, SIGNAL(setPropertyUpdateInterval(long)),
-            propertyChanger->componentsList, SLOT(setUpdateInterval(long)));
 
     // GUI actions:
 
@@ -471,6 +465,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 
     aboutDialog = 0;
     helpWindow = 0;
+    markdownDocWindow = nullptr;
 }
 
 bool UGEngineControlWidget::eventFilter(QObject* watched, QEvent* event)
@@ -767,6 +762,377 @@ nlohmann::json UGEngineControlWidget::listLlmUiPanelsState() const
     addItem("component_gui_tab_host", "Component GUI Tab Host", tabHostVisible);
 
     return out;
+}
+
+UWatchTab* UGEngineControlWidget::llmWatchResolveTab(const std::string& surface, int mdi_id,
+                                                     int tab_index)
+{
+    (void)tab_index;
+    if(surface == "mdi")
+    {
+        if(mdi_id < 0)
+            return nullptr;
+        const QString want = QString("Watches_%1").arg(mdi_id);
+        for(UWatchTab* tab : watchesVector)
+        {
+            if(tab && tab->accessibleName() == want)
+                return tab;
+        }
+        return nullptr;
+    }
+
+    // surface == window (standalone Watch)
+    actionWatchWindow();
+    if(!watchWindow)
+        return nullptr;
+    return watchWindow->ensureCurrentTab();
+}
+
+nlohmann::json UGEngineControlWidget::llmWatchAddSeries(const std::string& surface, int mdi_id,
+                                                        int tab_index, int chart_index,
+                                                        int channel_index, const QString& longName,
+                                                        const QString& propertyName, int jx, int jy)
+{
+    nlohmann::json out;
+    if(surface == "mdi" && mdi_id < 0)
+    {
+        out["ok"] = false;
+        out["error"] = "mdi_id required for surface=mdi; call list_watch_mdi or create_watch_mdi";
+        return out;
+    }
+
+    UWatchTab* tab = llmWatchResolveTab(surface, mdi_id, tab_index);
+    if(!tab)
+    {
+        out["ok"] = false;
+        out["error"] = surface == "mdi" ? "Watch MDI not found for mdi_id"
+                                        : "Watch window tab unavailable";
+        return out;
+    }
+
+    if(tab->countGraphs() <= 0)
+        tab->createGridLayout(1, 1);
+    if(chart_index < 0 || chart_index >= tab->countGraphs())
+    {
+        out["ok"] = false;
+        out["error"] = "chart_index out of range";
+        return out;
+    }
+
+    UWatchChart* chart = tab->getChart(chart_index);
+    if(!chart)
+    {
+        out["ok"] = false;
+        out["error"] = "chart unavailable";
+        return out;
+    }
+
+    double time_interval = chart->getAxisXmax() - chart->getAxisXmin();
+    if(time_interval <= 0.0)
+        time_interval = 1.0;
+    const int before = chart->countSeries();
+    chart->createSerie(channel_index, longName, propertyName, QString(), jx, jy,
+                       time_interval, 0.0);
+    const int after = chart->countSeries();
+    if(after <= before)
+    {
+        out["ok"] = false;
+        out["error"] = "Failed to create watch series (component/property may be invalid)";
+        return out;
+    }
+
+    out["ok"] = true;
+    out["surface"] = surface;
+    out["mdi_id"] = mdi_id;
+    out["chart_index"] = chart_index;
+    out["serie_index"] = after - 1;
+    out["long_name"] = longName.toUtf8().toStdString();
+    out["property_name"] = propertyName.toUtf8().toStdString();
+    return out;
+}
+
+nlohmann::json UGEngineControlWidget::llmWatchListSeries(const std::string& surface, int mdi_id,
+                                                         int tab_index, int chart_index)
+{
+    nlohmann::json out;
+    out["items"] = nlohmann::json::array();
+    UWatchTab* tab = llmWatchResolveTab(surface, mdi_id, tab_index);
+    if(!tab)
+    {
+        out["ok"] = false;
+        out["error"] = "Watch tab not found";
+        return out;
+    }
+    out["ok"] = true;
+    const int chart_count = tab->countGraphs();
+    const int from = chart_index < 0 ? 0 : chart_index;
+    const int to = chart_index < 0 ? chart_count : std::min(chart_count, chart_index + 1);
+    for(int ci = from; ci < to; ++ci)
+    {
+        UWatchChart* chart = tab->getChart(ci);
+        if(!chart)
+            continue;
+        for(int si = 0; si < chart->countSeries(); ++si)
+        {
+            UWatchSerie* serie = chart->getSerie(si);
+            if(!serie)
+                continue;
+            out["items"].push_back(
+                nlohmann::json{{"chart_index", ci},
+                               {"serie_index", si},
+                               {"long_name", serie->nameComponent.toUtf8().toStdString()},
+                               {"property_name", serie->nameProperty.toUtf8().toStdString()},
+                               {"channel_index", serie->indexChannel},
+                               {"jx", serie->Jx},
+                               {"jy", serie->Jy}});
+        }
+    }
+    return out;
+}
+
+nlohmann::json UGEngineControlWidget::llmWatchRemoveSeries(const std::string& surface, int mdi_id,
+                                                           int tab_index, int chart_index,
+                                                           int serie_index, const QString& longName,
+                                                           const QString& propertyName)
+{
+    nlohmann::json out;
+    UWatchTab* tab = llmWatchResolveTab(surface, mdi_id, tab_index);
+    if(!tab || chart_index < 0 || chart_index >= tab->countGraphs())
+    {
+        out["ok"] = false;
+        out["error"] = "Watch chart not found";
+        return out;
+    }
+    UWatchChart* chart = tab->getChart(chart_index);
+    if(!chart)
+    {
+        out["ok"] = false;
+        out["error"] = "chart unavailable";
+        return out;
+    }
+
+    int target = serie_index;
+    if(target < 0 && !longName.isEmpty() && !propertyName.isEmpty())
+    {
+        for(int si = 0; si < chart->countSeries(); ++si)
+        {
+            UWatchSerie* serie = chart->getSerie(si);
+            if(serie && serie->nameComponent == longName && serie->nameProperty == propertyName)
+            {
+                target = si;
+                break;
+            }
+        }
+    }
+    if(target < 0 || target >= chart->countSeries())
+    {
+        out["ok"] = false;
+        out["error"] = "serie not found";
+        return out;
+    }
+    chart->deleteSerie(target);
+    out["ok"] = true;
+    out["removed_serie_index"] = target;
+    return out;
+}
+
+nlohmann::json UGEngineControlWidget::llmWatchClearSeries(const std::string& surface, int mdi_id,
+                                                          int tab_index, int chart_index)
+{
+    nlohmann::json out;
+    UWatchTab* tab = llmWatchResolveTab(surface, mdi_id, tab_index);
+    if(!tab)
+    {
+        out["ok"] = false;
+        out["error"] = "Watch tab not found";
+        return out;
+    }
+    int removed = 0;
+    const int chart_count = tab->countGraphs();
+    const int from = chart_index < 0 ? 0 : chart_index;
+    const int to = chart_index < 0 ? chart_count : std::min(chart_count, chart_index + 1);
+    for(int ci = from; ci < to; ++ci)
+    {
+        UWatchChart* chart = tab->getChart(ci);
+        if(!chart)
+            continue;
+        while(chart->countSeries() > 0)
+        {
+            chart->deleteSerie(0);
+            ++removed;
+        }
+    }
+    out["ok"] = true;
+    out["removed_count"] = removed;
+    return out;
+}
+
+nlohmann::json UGEngineControlWidget::llmWatchSetPanelVizKind(const std::string& surface, int mdi_id,
+                                                              int tab_index, int chart_index,
+                                                              const QString& vizKind)
+{
+    nlohmann::json out;
+    UWatchTab* tab = llmWatchResolveTab(surface, mdi_id, tab_index);
+    if (!tab || chart_index < 0 || chart_index >= tab->countGraphs())
+    {
+        out["ok"] = false;
+        out["error"] = "Watch chart not found";
+        return out;
+    }
+    UWatchChart* chart = tab->getChart(chart_index);
+    if (!chart)
+    {
+        out["ok"] = false;
+        out["error"] = "chart unavailable";
+        return out;
+    }
+    chart->setVizKind(NMSDK::Plot::vizKindFromString(vizKind));
+    out["ok"] = true;
+    out["viz_kind"] = NMSDK::Plot::vizKindToString(chart->getVizKind()).toStdString();
+    return out;
+}
+
+nlohmann::json UGEngineControlWidget::llmWatchSetSeriesBinding(
+    const std::string& surface, int mdi_id, int tab_index, int chart_index, int serie_index,
+    int channel_index, const QString& yLongName, const QString& yProperty, int yJx, int yJy,
+    const QString& xLongName, const QString& xProperty, int xJx, int xJy, const QString& vizKind)
+{
+    nlohmann::json out;
+    UWatchTab* tab = llmWatchResolveTab(surface, mdi_id, tab_index);
+    if (!tab || chart_index < 0 || chart_index >= tab->countGraphs())
+    {
+        out["ok"] = false;
+        out["error"] = "Watch chart not found";
+        return out;
+    }
+    UWatchChart* chart = tab->getChart(chart_index);
+    if (!chart)
+    {
+        out["ok"] = false;
+        out["error"] = "chart unavailable";
+        return out;
+    }
+
+    const NMSDK::Plot::VizKind viz = NMSDK::Plot::vizKindFromString(
+        vizKind.isEmpty() ? QStringLiteral("XYLine") : vizKind);
+    chart->setVizKind(viz);
+
+    if (serie_index >= 0 && serie_index < chart->countSeries())
+        chart->deleteSerie(serie_index);
+
+    if (!xLongName.isEmpty() && !xProperty.isEmpty())
+    {
+        chart->createSerieXY(channel_index, xLongName, xProperty, xJx, xJy, yLongName, yProperty,
+                             yJx, yJy, 0.0, viz);
+    }
+    else
+    {
+        const double time_interval = chart->getAxisXrange();
+        chart->createSerie(channel_index, yLongName, yProperty, QString(), yJx, yJy, time_interval,
+                           0.0);
+    }
+    out["ok"] = true;
+    out["serie_index"] = chart->countSeries() - 1;
+    out["viz_kind"] = NMSDK::Plot::vizKindToString(viz).toStdString();
+    return out;
+}
+
+nlohmann::json UGEngineControlWidget::llmWatchMdiList()
+{
+    nlohmann::json out;
+    out["ok"] = true;
+    out["items"] = nlohmann::json::array();
+    for(UWatchTab* tab : watchesVector)
+    {
+        if(!tab)
+            continue;
+        const QString name = tab->accessibleName();
+        int mdi_id = -1;
+        if(name.startsWith(QStringLiteral("Watches_")))
+            mdi_id = name.mid(8).toInt();
+        int series_count = 0;
+        for(int ci = 0; ci < tab->countGraphs(); ++ci)
+        {
+            if(UWatchChart* chart = tab->getChart(ci))
+                series_count += chart->countSeries();
+        }
+        out["items"].push_back(nlohmann::json{{"mdi_id", mdi_id},
+                                              {"title", tab->windowTitle().toUtf8().toStdString()},
+                                              {"visible", tab->isVisible()},
+                                              {"chart_count", tab->countGraphs()},
+                                              {"series_count", series_count}});
+    }
+    return out;
+}
+
+nlohmann::json UGEngineControlWidget::llmWatchMdiCreate(int grid_rows, int grid_cols,
+                                                        const QString& title)
+{
+    const int rows = grid_rows > 0 ? grid_rows : 1;
+    const int cols = grid_cols > 0 ? grid_cols : 1;
+    addWatchesWidged();
+    if(watchesVector.empty() || !watchesVector.back())
+        return {{"ok", false}, {"error", "Failed to create Watches MDI"}};
+
+    UWatchTab* tab = watchesVector.back();
+    tab->createGridLayout(rows, cols);
+    if(!title.isEmpty())
+        tab->setWindowTitle(title);
+
+    int mdi_id = -1;
+    const QString name = tab->accessibleName();
+    if(name.startsWith(QStringLiteral("Watches_")))
+        mdi_id = name.mid(8).toInt();
+
+    return {{"ok", true},
+            {"mdi_id", mdi_id},
+            {"title", tab->windowTitle().toUtf8().toStdString()},
+            {"grid_rows", rows},
+            {"grid_cols", cols}};
+}
+
+bool UGEngineControlWidget::llmWatchMdiFocus(int mdi_id)
+{
+    UWatchTab* tab = llmWatchResolveTab("mdi", mdi_id, 0);
+    if(!tab)
+        return false;
+    QWidget* parent = tab->parentWidget();
+    if(auto* sub = qobject_cast<QMdiSubWindow*>(parent))
+    {
+        sub->show();
+        sub->showMaximized();
+        sub->raise();
+        sub->setFocus();
+    }
+    else
+    {
+        tab->show();
+        tab->raise();
+        tab->setFocus();
+    }
+    return true;
+}
+
+bool UGEngineControlWidget::llmWatchMdiClose(int mdi_id)
+{
+    UWatchTab* tab = llmWatchResolveTab("mdi", mdi_id, 0);
+    if(!tab)
+        return false;
+    QWidget* parent = tab->parentWidget();
+    if(auto* sub = qobject_cast<QMdiSubWindow*>(parent))
+    {
+        sub->close();
+        return true;
+    }
+    for(size_t i = 0; i < watchesVector.size(); ++i)
+    {
+        if(watchesVector[i] == tab)
+        {
+            delWatchesWidged(i);
+            return true;
+        }
+    }
+    return false;
 }
 
 void UGEngineControlWidget::actionCreateConfig()
@@ -1073,7 +1439,62 @@ void UGEngineControlWidget::actionRenameConfig()
 
 void UGEngineControlWidget::actionExit()
 {
-  QApplication::quit();
+  if(m_shell)
+    m_shell->requestApplicationExit();
+  else
+    close();
+}
+
+void UGEngineControlWidget::setShellController(UGuiShellController* shell)
+{
+    m_shell = shell;
+}
+
+void UGEngineControlWidget::setHostChromeVisible(bool visible)
+{
+    if(menuBar())
+        menuBar()->setVisible(visible);
+    if(ui && ui->mainToolBar)
+        ui->mainToolBar->setVisible(visible);
+    if(breadcrumbsToolBar)
+        breadcrumbsToolBar->setVisible(visible);
+    if(statusBar())
+        statusBar()->setVisible(visible);
+    if(visible)
+        ensureBreadcrumbsToolBarRow();
+}
+
+void UGEngineControlWidget::performSessionTeardown()
+{
+    if(application)
+        application->PauseChannel(-1);
+    writeSettings();
+    if(application && application->GetProjectOpenFlag())
+    {
+        try
+        {
+            application->CloseProject();
+        }
+        catch(...)
+        {
+        }
+    }
+}
+
+void UGEngineControlWidget::notifyShellMenusChanged()
+{
+    if(m_shell)
+        m_shell->notifyHostMenusChanged();
+}
+
+QToolBar* UGEngineControlWidget::primaryToolBar() const
+{
+    return ui ? ui->mainToolBar : nullptr;
+}
+
+QMenu* UGEngineControlWidget::windowMenu() const
+{
+    return ui ? ui->menuWindow : nullptr;
 }
 
 void UGEngineControlWidget::actionConfigOptions()
@@ -1243,12 +1664,16 @@ void UGEngineControlWidget::actionWatchWindow()
     {
         watchWindow->show();
         watchWindow->showNormal();
+        watchWindow->raise();
+        watchWindow->activateWindow();
     }
     else
     {
         watchWindow = new UWatch(this);
         watchWindow->setWindowTitle("Watch window");
         watchWindow->show();
+        watchWindow->raise();
+        watchWindow->activateWindow();
     }
 }
 
@@ -1299,9 +1724,6 @@ void UGEngineControlWidget::actionProfiling()
     profilingWindow->show();
     profilingWindow->showNormal();
     profilingWindow->activateWindow();*/
-
-    //отобразить *graphWindowWidget
-//    ui->dockWidgetGraph->show();
 }
 
 void UGEngineControlWidget::actionTcpServer()
@@ -1310,8 +1732,6 @@ void UGEngineControlWidget::actionTcpServer()
     {
         tcpServerControlWindow = new QMainWindow(this);
         tcpServerControlWindow->setWindowTitle("TcpServerControl");
-        //graphWindow->setCentralWidget(graphWindowWidget);
-        //graphWindowWidget->show();
         tcpServerControlWindow->setCentralWidget(tcpServerControlWidget);
     }
 
@@ -1516,6 +1936,21 @@ void UGEngineControlWidget::execDialogUVisualControllWidget(UVisualControllerWid
     widget->setParent(widgetOldParent);
 }
 
+void UGEngineControlWidget::ensureBreadcrumbsToolBarRow()
+{
+    if(!breadcrumbsToolBar)
+        return;
+
+    // Detach then re-add on a fresh row under whatever is already in TopToolBarArea
+    // (typically mainToolBar). Survives QMainWindow::restoreState merging toolbars.
+    removeToolBar(breadcrumbsToolBar);
+    addToolBarBreak(Qt::TopToolBarArea);
+    addToolBar(Qt::TopToolBarArea, breadcrumbsToolBar);
+    breadcrumbsToolBar->setMovable(false);
+    breadcrumbsToolBar->setFloatable(false);
+    breadcrumbsToolBar->show();
+}
+
 void UGEngineControlWidget::writeSettings()
 {
     if(!application) return;
@@ -1563,6 +1998,8 @@ void UGEngineControlWidget::readSettings()
 
     restoreGeometry(projectSettings.value("geometry").toByteArray());
     restoreState(projectSettings.value("state").toByteArray());
+    // restoreState may put breadcrumbs back on the mainToolBar row — force own row
+    ensureBreadcrumbsToolBarRow();
     // Logger starts hidden; open via Window → Logger (floating). Keep geometry in state for show().
     if(ui && ui->dockWidgetLoger)
         ui->dockWidgetLoger->hide();
@@ -1655,11 +2092,6 @@ void UGEngineControlWidget::keyPressEvent(QKeyEvent *event)
     UVisualControllerMainWidget::keyPressEvent(event);
 }
 
-void UGEngineControlWidget::openHelpWindow()
-{
-    on_actionUserGuide_triggered();
-}
-
 void UGEngineControlWidget::showCustomWidgetById(const QString& id)
 {
     createOrActivateCustomWidget(id);
@@ -1710,10 +2142,6 @@ static QMenu* menuForPath(QMenuBar* menuBar, const QString& menuPath,
 
     QMenu* currentMenu = nullptr;
     const QString first = parts.first();
-    const QString before =
-        insertBeforeTitle.isEmpty() && first == QStringLiteral("AI Assistant")
-            ? QStringLiteral("Window")
-            : insertBeforeTitle;
     for(QAction* action : menuBar->actions())
     {
         QMenu* menu = action->menu();
@@ -1723,8 +2151,9 @@ static QMenu* menuForPath(QMenuBar* menuBar, const QString& menuPath,
             break;
         }
     }
+    // AI Assistant (and other dynamic top-level menus) append after Help by default.
     if(!currentMenu)
-        currentMenu = ensureTopLevelMenu(menuBar, first, before);
+        currentMenu = ensureTopLevelMenu(menuBar, first, insertBeforeTitle);
 
     for(int i = 1; i < parts.size(); ++i)
     {
@@ -1753,6 +2182,7 @@ void UGEngineControlWidget::appendMenuAction(const QString& menuPath, QAction* a
     QMenu* menu = menuForPath(ui->menuBar, menuPath);
     if(menu)
         menu->addAction(action);
+    notifyShellMenusChanged();
 }
 
 void UGEngineControlWidget::appendMenuSeparator(const QString& menuPath)
@@ -1762,6 +2192,7 @@ void UGEngineControlWidget::appendMenuSeparator(const QString& menuPath)
     QMenu* menu = menuForPath(ui->menuBar, menuPath);
     if(menu)
         menu->addSeparator();
+    notifyShellMenusChanged();
 }
 
 void UGEngineControlWidget::registerCustomWidget(const UCustomWidgetDescriptor &descriptor)
@@ -1788,6 +2219,7 @@ void UGEngineControlWidget::registerCustomWidget(const UCustomWidgetDescriptor &
                              this, &UGEngineControlWidget::handleCustomWidgetActionTriggered);
         }
     }
+    notifyShellMenusChanged();
 }
 
 void UGEngineControlWidget::handleCustomWidgetActionTriggered()
@@ -1872,8 +2304,26 @@ void UGEngineControlWidget::createOrActivateCustomWidget(const QString &id)
 
 void UGEngineControlWidget::closeEvent(QCloseEvent *event)
 {
- application->PauseChannel(-1);
- writeSettings();
+ if(m_shell && m_shell->isExiting())
+ {
+  event->accept();
+  return;
+ }
+ if(m_shell && m_shell->preset() == GuiShellPreset::ControlBar && m_shell->isStripVisible())
+ {
+  event->ignore();
+  hide();
+  m_shell->notifyWorkspaceVisibilityChanged();
+  return;
+ }
+ if(m_shell)
+ {
+  m_shell->requestApplicationExit();
+  event->ignore();
+  return;
+ }
+
+ performSessionTeardown();
  event->accept();
 }
 
@@ -1958,10 +2408,6 @@ void UGEngineControlWidget::AAfterLoadProject(void)
        propertyChanger->ALoadParameters();
    });
  }
- if(propertyChanger->componentsList->GetUpdateInterval()>0)
-  statusPanel->ChangeAutoupdateProperties(true);
- else
-  statusPanel->ChangeAutoupdateProperties(false);
 }
 
 // Метод, вызываемый перед закрытием проекта
@@ -1981,7 +2427,8 @@ void UGEngineControlWidget::ABeforeReset(void)
 // Метод, вызываемый после сброса модели
 void UGEngineControlWidget::AAfterReset(void)
 {
-
+    if(modernDiagram)
+        modernDiagram->invalidatePortsCache();
 }
 
 // Метод, вызываемый перед шагом расчета
@@ -1999,6 +2446,7 @@ void UGEngineControlWidget::AAfterCalculate(void)
 // Сохраняет параметры интерфейса в xml
 void UGEngineControlWidget::ASaveParameters(RDK::USerStorageXML &xml)
 {
+    // Штатно: реестр MDI Watches/Images; тело каждого виджета пишет storage.
     xml.WriteInteger("WatchesCount", int(watchesVector.size()));
     xml.SelectNodeForce("Watches");
 
@@ -2025,7 +2473,8 @@ void UGEngineControlWidget::ASaveParameters(RDK::USerStorageXML &xml)
 // Загружает параметры интерфейса из xml
 void UGEngineControlWidget::ALoadParameters(RDK::USerStorageXML &xml)
 {
-    // Очистка существующих Watches
+    // Штатно: пересоздаём MDI-окна и выставляем accessibleName.
+    // PlotDocument подтянет UIVisualControllerStorage на следующем проходе.
     size_t watches_size = watchesVector.size();
     for(size_t i=0; i < watches_size; i++)
     {
@@ -2046,7 +2495,6 @@ void UGEngineControlWidget::ALoadParameters(RDK::USerStorageXML &xml)
         watchesVector.at(i)->setWindowTitle(watches_name);
     }
     xml.SelectUp();
-
 
     // Очистка существующих Images
     size_t images_size = imagesVector.size();
@@ -2846,15 +3294,47 @@ void UGEngineControlWidget::on_actionAbout_triggered()
  aboutDialog->show();
 }
 
-void UGEngineControlWidget::on_actionUserGuide_triggered()
+void UGEngineControlWidget::openHelpWindow(const QString& topic)
 {
  if(!helpWindow)
  {
   helpWindow = new UHelpWindow(this, application);
  }
+ helpWindow->showHelp(topic);
  helpWindow->show();
  helpWindow->raise();
  helpWindow->activateWindow();
+}
+
+void UGEngineControlWidget::openClassDescriptionWindow(const std::string& class_name)
+{
+ if(class_name.empty())
+  return;
+ QMainWindow* classDescWindow = new QMainWindow(this);
+ classDescWindow->setAttribute(Qt::WA_DeleteOnClose);
+ UClassDescriptionDisplay* display =
+     new UClassDescriptionDisplay(class_name, classDescWindow, application);
+ classDescWindow->setCentralWidget(display);
+ classDescWindow->setWindowTitle(tr("Class Description: %1").arg(QString::fromStdString(class_name)));
+ classDescWindow->resize(display->size().isEmpty() ? QSize(640, 480) : display->size());
+ display->show();
+ classDescWindow->showNormal();
+ classDescWindow->raise();
+ classDescWindow->activateWindow();
+}
+
+bool UGEngineControlWidget::openMarkdownDocWindow(const QString& absPath, const QString& title)
+{
+ if(absPath.isEmpty())
+  return false;
+ if(!markdownDocWindow)
+  markdownDocWindow = new UMarkdownDocWindow(this);
+ return markdownDocWindow->openFile(absPath, title);
+}
+
+void UGEngineControlWidget::on_actionUserGuide_triggered()
+{
+ openHelpWindow(QString());
 }
 
 
@@ -2920,6 +3400,7 @@ void UGEngineControlWidget::createThemeMenu()
 
     // Update menu state based on current theme
     updateThemeMenuState();
+    notifyShellMenusChanged();
 }
 
 void UGEngineControlWidget::updateThemeMenuState()
@@ -2970,6 +3451,7 @@ void UGEngineControlWidget::updateRecentConfigsMenu()
     {
         QAction* noRecent = ui->menuRecentConfigs->addAction(tr("No recent configs"));
         noRecent->setEnabled(false);
+        notifyShellMenusChanged();
         return;
     }
 
@@ -2983,6 +3465,7 @@ void UGEngineControlWidget::updateRecentConfigsMenu()
         action->setToolTip(path);
         connect(action, &QAction::triggered, this, [this, path]() { loadProjectExternal(path); });
     }
+    notifyShellMenusChanged();
 }
 
 void UGEngineControlWidget::addToRecentConfigs(const QString& path)

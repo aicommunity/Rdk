@@ -106,6 +106,23 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-108 | E2E `e2e_no_tool_email` flaky on live Ollama phrasing | post-M | P2 | done | Relaxed `NoSuitableToolOrRefusal` analyzer + headless/no-project acceptance |
 | TD-109 | `Test_LLM_WriteToolsEngine` SIGSEGV on `UAppCore` exit | post-M | P2 | done | `ShutdownLlmWriteToolsEngine()` + gtest global env teardown |
 | TD-110 | Symbol search (`UApplication`) rank below generic hits | post-M | P2 | done | Path/title boost in `UDocSearchIndex::searchInternal` |
+| TD-158 | ADR DD-PACK-001 Agent Spine + Capability Packs | pack-phase-0 | P0 | done | ADR in Deferred decisions; [Capability-Packs.md](Docs/Capability-Packs.md) |
+| TD-159 | `TurnPipeline` / `ITurnPhase` extract from `handleUserMessageImpl` | pack-phase-A | P0 | done | `ULLMTurnPipeline` + `ULLMTurnPhaseLegacy` strangler via UnifiedTurnController |
+| TD-160 | `ILLMCapabilityPack` + registry + filter merge | pack-phase-A | P0 | done | Registry + `UPackChannelCalc` (DD-CALC-001); GoalRouter via `tryRecordedCapabilityPacks` |
+| TD-161 | Migrate FastPath detectors → packs (STRUCT/WATCH/CONN/add/lifecycle) | pack-phase-B | P0 | done | STRUCT/WATCH/add recorded; connect+lifecycle hints-only (execute remains orchestrator by design until dedicated sprint) |
+| TD-162 | `working_goals` ConversationState + assembler + GUI | pack-phase-C | P1 | done | Store v4, ephemeral block, dock Goals details, evidence from tool_trace |
+| TD-163 | `search_tools` quality gate / close or re-scope TD-146 | pack-phase-D | P1 | done | Pack ActOrClarify recovery merge; parallel-read order invariant; hybrid long-tail fixture |
+| TD-164 | Unify `spawn_explore_subagent` stub → gateway + budgets | pack-phase-E | P2 | done | Gateway handler + `bindSpawnExploreSubagent`; session `subagent_rounds_used`; nested deny in runner |
+| TD-165 | Extension-Guide packs-first + library pack adapters | pack-phase-F | P2 | done | Packs-first Extension-Guide; `Core/Packs/Template/README.md`; lib tools remain valid |
+| TD-166 | Multi-goal Recorded routing (DD-PACK-003) | pack-tails | P0 | done | Sequential packs; compound add+calc |
+| TD-167 | Wire pack hints into assembler/filter | pack-tails | P1 | done | `pack_hints_block` + `collectPackHintsMarkdown` / `collectPackExtraToolNames` on ReAct path |
+| TD-168 | Sync Developer-Architecture + Unified-Turn-Contract | pack-tails | P1 | done | TurnPipeline/packs/multi-goal/`working_goals`; Capability-Packs §7 |
+| TD-169 | Migrate live-analogous connect into UPackConnect | pack-tails | P2 | done | `UPackConnect::tryRecorded`; orch FastPath removed |
+| TD-170 | Multi-phase TurnPipeline extract | pack-tails | P2 | done | SessionGuard, Prepare, GoalRouter, LegacyRest; shared turn state in `TurnContext` |
+| TD-171 | Library pack adapter + subagent profiles + goals hooks | pack-tails | P3 | done | Pulse `UPackPulseDocs`; inspect_graph/search_docs; TaskExecutor evidence; compactor preserves goals |
+| TD-172 | Capability Risk Gate: detect weak Cortex, cascade once or abstain | weak-model | P1 | done | `ULLMCapabilityRiskGate`; orch pre-escalate + cascade; `error.model_too_weak_for_request`; [Weak-Model-Mitigation.md](Docs/Weak-Model-Mitigation.md); DD-CAP-001 |
+| TD-173 | Documentation open/navigation: Help, ClDesc, markdown Docs, chat nmsdk-* links | docs-agent | P1 | done | `ULLMDocOpenPolicy`; sink open*; tools `open_help`/`open_documentation`/`open_class_docs`; chat anchors; [Agent-Documentation.md](Docs/Agent-Documentation.md); DD-DOC-001 |
+| TD-174 | Catalog inventory + library docs autonomous whitelist + deterministic doc_uri footer | docs-agent | P1 | done | `ULLMDocCatalogHelpers`; whitelist `search_*_docs`/`list_*_component_classes`; AoC evidence; inventory recovery; footer `docs_links_appended`; Pulse family hint; DD-DOC-002 |
 
 ---
 
@@ -126,6 +143,24 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | TD-137 | Post-verify add uses gateway long_name only | 2026-05-30 | `verifyAddComponentEffect` early return on `long_name` |
 | TD-138 | Migrate `set_property` / `remove_component` / link writes off `MModel_*` to engine-lock + `GetComponentL` | post-model-firmata | P2 | deferred | Indefinite (2026-07-27): umbrella Track 1 shelved. `add_component` done; remaining tools pass full `long_name` to `MModel_*`. Revisit triggers: write/lock/diagram bug, product demand to drop `MModel_*`, or dedicated sprint after GUI Track 2. |
 | TD-139 | Never call `refreshDiagramPresentation` while holding engine/model lock | post-model-firmata | P1 | done | Scoped lock in `addComponent`; `DiagramRefresh` uses `QueuedConnection`; diagram list via `childComponentShortNamesFromModelScope` |
+| TD-140 | Thinking-first: Ollama `think` + `message.thinking` in providers/types | thinking-A | P0 | done | Types, native/compat parse, history preserve, Test_LLM_Thinking |
+| TD-141 | Progressive disclosure: `search_tools` expands allowlist for next rounds | thinking-B | P0 | done | enrichSearchToolsPayload + expandToolFilterFromSearchResult |
+| TD-142 | Wire Cortex thinking profile + no forced tool_choice when think ON | thinking-C | P0 | done | ollama-thinking default, enable_ollama_thinking, orchestrator wiring |
+| TD-143 | Collapsible GUI thinking bubble / on_thinking_token UI | thinking-post | P2 | done | `757efc80`: Dock `onThinkingToken` + `<details>Reasoning</details>`; status “Model is reasoning…” |
+| TD-147 | Defer LLM doc-index rebuild off UI-thread startup (progress ~20% hang) | startup | P1 | done | Gate on `ShowLlmAssistantMenu` / `NMSDK_LLM_*`; async `initialize`; stale prebuilt; sync via `NMSDK_LLM_INDEX_SYNC_ON_START=1` |
+| TD-148 | Opaque GUI `Error: std::exception` on query (Qt5 Concurrent + qwen3 `reasoning`) | thinking-fix | P0 | done | Worker/orchestrator catch + audit `turn_exception`; JSON dump `error_handler_t::replace`; parse OpenAI-compat `reasoning` |
+| TD-149 | Query context for current model + chat markdown render | context-chat-md | P1 | done | Query/Explain decision tree; live net snapshot when project_loaded; router prefer snapshot; `ULlmChatMarkdown` via QTextDocument |
+| TD-150 | RecordedToolInvoke: memory parity for pre-LLM / FastPath / Plan / direct-HITL | memory-parity | P1 | done | `ULLMRecordedToolInvoke`; HITL `tool_call_id`; Task/Plan options; docs DD-MEM-001/002 |
+| TD-151 | Connect inspect + live analogous replicate (subtree filters, ports tool) | connect-inspect | P1 | done | `list_model_links` subtree filters + allowlist; `get_component_ports`; `analogous_ref_token` fan-out; DD-CONN-001 |
+| TD-152 | Connect funnel: intent `подключ`, autonomous inspect, session peers, HintOnly FastPath | connect-inspect | P1 | done | Intent force Mutate; whitelist; `wants_session_peers`; live-analogous execute under HintOnly |
+| TD-153 | Act-or-Clarify post-think contract (no free essay on actionable goals) | act-or-clarify | P0 | done | `ULLMActOrClarifyGate`; recovery independent of misclassified Query; DD-ACT-001 |
+| TD-154 | Channel calc FastPath + autonomous whitelist (`ask_user`, calc tools) | calc-route | P0 | done | `ULLMChannelCalcCommand`; DD-CALC-001; Act-or-Clarify calc recovery |
+| TD-155 | Component structure gate + dendrite FastPath + fuzzy property | structure | P0 | done | `ULLMComponentStructureGoal`; DD-STRUCT-001 |
+| TD-156 | Watch series/MDI tools + plot FastPath + autonomous UI whitelist | watch | P0 | done | `llmWatch*`; DD-WATCH-001 |
+| TD-157 | Nested watch roles + chat Tab name autocomplete | watch-chat | P0 | done | `resolveNestedWatchTarget`; DD-WATCH-002; `ULlmChatInputCompleter` |
+| TD-144 | Parallel independent tool fan-out in one assistant turn | thinking-post | P3 | deferred | Sequential tools OK for local ReAct MVP |
+| TD-145 | Ollama think levels (`low`/`medium`/`high`) / gpt-oss | thinking-post | P3 | deferred | Boolean `think` sufficient for qwen3:14b/deepseek-r1 |
+| TD-146 | Embed-index quality for `search_tools` hybrid ranking | thinking-post | P2 | done | Underscore-aware tokenize + hybrid long-tail fixture (`list_model_links`, `spawn_explore_subagent`); further embed tuning optional |
 | TD-120 | Remove hardcoded connect paths in Core ephemeral/heuristics | 2026-05-29 | `f3f4cc0b`: KnowledgeBlocks, acquisition policy, no LTZone in Core |
 | TD-121 | Context acquisition policy + catalog blocks in ephemeral | 2026-05-29 | `f3f4cc0b`: `computeContextAcquisitionPlan`, retriever diagram scope |
 | TD-122 | diagram_scope_long_name GUI + add parent parity | 2026-05-29 | `3c5b615f`: diagramScopeChanged, normalizer parent |
@@ -224,5 +259,27 @@ Living document. Update **after every phase** (see [Docs/Development-Workflow.md
 | 2026-05-28 | DD-CTX-005: Single `TECH-DEBT.md` for all context work (no second file) | Repo convention since 2026-05-25 | — | — |
 | 2026-05-29 | DD-UT-001: Task path default HintOnly; FastPath CI-only | Agent-first; avoid hard planner fail | — | `NMSDK_LLM_TASK_PATH_STRICT` |
 | 2026-05-29 | DD-UT-002: `ask_user` vs legacy disambiguation coexist | Gradual GUI migration | phase-C | TD-093 |
-| 2026-05-29 | DD-UT-003: Subagent runner stub until budget policy | Phase H scope | phase-H | TD-096 |
+| 2026-05-29 | DD-UT-003: Subagent explore via gateway + session round budget | Phase E (TD-164): `spawn_explore_subagent` bound after provider/gateway; nested deny in runner; default max 4 rounds / session budget 12 | phase-H→E | TD-096, TD-164 |
 | 2026-07-27 | Shelve umbrella Track 1 (LLM production hardening) indefinitely | MVP+ write-tools/agent v2/post-audit complete; TD-138 not MVP-blocking; prioritize GUI/docs | — | TD-138: reproducible write/lock/diagram bug; product demand to drop `MModel_*`; dedicated sprint after GUI Track 2 |
+| 2026-07-30 | DD-THINK-001: Cortex thinking-first via Ollama native `/api/chat` (`think:true`) | `/v1` historically drops `think` on some Ollama builds; native is source of truth | thinking-C | Lab /v1 parity verified |
+| 2026-07-30 | DD-THINK-002: Preserve unmodified `thinking` on assistant tool_call turns | Anthropic/Qwen/DeepSeek tool+thinking contract; mid-loop rewrite degrades multi-step | — | — |
+| 2026-07-30 | DD-THINK-003: `tool_choice=auto` only when think ON (no lifecycle force) | Forced tool_choice conflicts with thinking models | — | — |
+| 2026-07-30 | DD-THINK-004: Default Cortex profile `ollama-thinking` (**qwen3:14b**); Utility/Router think OFF | Thinking reserved for ReAct cortex; short structured calls stay cheap | thinking-C | Pin updated 2026-07-30 tails |
+| 2026-07-30 | DD-THINK-005: Progressive disclosure via `search_tools` expand allowlist | Full registry every round hurts local tool selection; discovery must open schemas | thinking-B | TD-141 |
+| 2026-07-31 | DD-MEM-001: Pre-LLM and plan/task invokes must use `RecordedToolInvoke` | Same memory contract as ReAct (paired tool_calls/results + session_graph); closes follow-up blindness | memory-parity | TD-150 |
+| 2026-07-31 | DD-MEM-002: Always-on direct allowlist: explicit-class add, open_recent index, pending-arg resume; lifecycle **load** remains env-gated (TD-102) | Deterministic UX when args fully specified; load stays opt-in | — | Unified-Turn § Recorded bypass |
+| 2026-07-31 | DD-MEM-003: Continuer nouns are not class queries; `last_add` is default for continuity follow-ups; resolved registered class_name must not be fuzzy-overwritten; CLASS_AMBIGUOUS surfaces last_add first | Fixes «ещё N нейрона/компонента» asking wrong class list | memory-parity | — |
+| 2026-07-31 | DD-CONN-001: Connect names are subtree anchors; live analogous uses hub↔ref nested template links, not only `last_template` / root↔root | Log 22-08-46: replicate Gen→PNeuron wiring onto peers without hallucinated topology | connect-inspect | TD-151 |
+| 2026-08-01 | DD-ACT-001: After think, actionable goals with tools offered must end in tool / ask_user / NO_SUITABLE_TOOL — not free prose | Log 10-35-14: think→essay when Query + empty tools; DD-THINK-003 keeps API tool_choice=auto | act-or-clarify | TD-153 |
+| 2026-08-01 | DD-CONN-002: `подключ*` is Mutate; live-analogous ConnectPlan FastPath even under HintOnly; session «этим» peers | Closes funnel after TD-151 tools existed but intent/HintOnly blocked execute | connect-inspect | TD-152 |
+| 2026-08-01 | DD-CALC-001: «запусти расчет» / start|pause|reset|step calculation → deterministic `*_channel_calculation` FastPath before TaskPath; autonomous allows calc tools + `ask_user` | Log 16-31-41: thinking essay after ask_user autonomous deny; tools already existed | calc-route | TD-154 |
+| 2026-08-01 | DD-STRUCT-001: structure Mutate gate + docs prefetch + dendrite FastPath (mode2/NumSoma/Vec/calculate); fuzzy `property_name` | Log 17-45: add_component Dendrite hallucination; typo set_property fail | structure | TD-155 |
+| 2026-08-01 | DD-WATCH-001: Watch series + MDI tools via presentation sink; plot FastPath; autonomous UI/watch whitelist | Log 17-45: open_component_gui_tab AUTONOMOUS deny; no series tools | watch | TD-156 |
+| 2026-08-01 | DD-WATCH-002: Nested watch Parent.Child + role labels; Tab name autocomplete in chat | Log 19-53-51: ltzone/низкопороговая → parent Output; no chat completer | watch-chat | TD-157 |
+| 2026-08-01 | DD-PACK-001: Capability Packs = unit of extensibility; FastPath only via pack tryRecorded + score threshold (gte 0.85 recorded; 0.4-0.85 hints; below 0.4 ignore) | God-orchestrator FastPath ladder; SOTA spine+skills | pack-phase-A..B | TD-158..161 |
+| 2026-08-01 | DD-PACK-002: MCP out of scope for desktop Ollama agent | Prefer pack/tool registry API; no external MCP host yet | — | Product request for out-of-process tools |
+| 2026-08-01 | DD-WM-001: `working_goals` in session JSON; `store_schema_version` 3→4 with backward load | Structured reasoning memory (Cursor-like todos) | pack-phase-C | TD-162 |
+| 2026-08-01 | DD-PACK-003: Multi-goal Recorded — no exclusive short-circuit when ≥2 high matches or compound conjunction; sequential dependency order (add→…→calc) | Chat log 22-06-32: add+calc only ran calc | pack-tails | TD-166 |
+| 2026-08-02 | DD-CAP-001: Capability Risk Gate — black-box evidence fusion + one cascade / abstain (no Gatekeeper fine-tune) | Weak local models invent prose / skip tools; literature FrugalGPT/UniCR | weak-model | TD-172 |
+| 2026-08-02 | DD-DOC-001: Agent opens Help / class ClDesc / markdown Docs; multi-hit chat links via nmsdk-doc/help/class | Docs Q&A without GUI open; Help was OOS | docs-agent | TD-173 |
+| 2026-08-02 | DD-DOC-002: Library docs/list whitelist; inventory list-first; deterministic doc_uri footer | Chat 20-25-23: autonomous deny search_pulse_docs; NSynTCNNeuron essay; no links | docs-agent | TD-174 |

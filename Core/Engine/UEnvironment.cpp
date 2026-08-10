@@ -899,9 +899,7 @@ void UEnvironment::RTCalculate(void)
  
  while(curtime-CurrentTime<timer_interval && i<elapsed_counter)
  {
-  Calculate();
-  //for(size_t i=0;i<DataReaders.size();i++)
-  // DataReaders[i]->Update();
+  Calculate(); // updates DataReaders once per step, then advances model time
 
   ++i;
   // Оптимизация: обновляем системное время для проверки условия цикла, но проверку MaxCalcTime делаем реже
@@ -960,7 +958,6 @@ void UEnvironment::FastCalculate(double calc_interval)
  ULongTime cur_time=(ULongTime)((Time.GetSourceCurrentGlobalTime()-Time.GetSourceStartGlobalTime())*(86400.0*1000.0));
  Time.SetSourceCurrentLocalTime(cur_time/1000.0);
 
- // DataReaders[i]->Update();
  unsigned long long timer_interval=0;
  //double devicemodeltime=0;
 
@@ -991,9 +988,7 @@ void UEnvironment::FastCalculate(double calc_interval)
 
  while(i<elapsed_counter)
  {
-  Calculate();
-  //for(size_t i=0;i<DataReaders.size();i++)
-  // DataReaders[i]->Update();
+  Calculate(); // updates DataReaders once per step, then advances model time
 
   ++i;
   if(MaxCalcTime>0.0 && Time.GetDoubleTime()>=MaxCalcTime)
@@ -1198,8 +1193,12 @@ bool UEnvironment::ACalculate(void)
    return false;
  }
 
- //for(size_t i=0;i<DataReaders.size();i++)
- // DataReaders[i]->Update();
+ // Update watch data readers after each calculation step
+ for(size_t dri=0;dri<DataReaders.size();dri++)
+ {
+  if(DataReaders[dri].first)
+   DataReaders[dri].first->AUpdate();
+ }
 
  // Если не задан для расчета то рассчитывается вся модель целиком,
  // иначе рассчитывается только указанный компонент и его дочерние компоненты

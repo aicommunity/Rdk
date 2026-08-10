@@ -309,6 +309,7 @@ void UGuiModelSnapshot::CollectComponent(const RDK::UEPtr<RDK::UContainer>& comp
     summary.Fingerprint = BuildFingerprint(summary);
 
     snapshot.Components.insert(summary.LongName, summary);
+    snapshot.ComponentOrder.append(summary.LongName);
 
     for (const RDK::UId& childId : children) {
         RDK::UEPtr<RDK::UContainer> child = component->GetComponent(childId, true);

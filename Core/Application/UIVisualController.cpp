@@ -2,6 +2,7 @@
 #define UIVisualController_CPP
 
 #include <algorithm>
+#include <set>
 #include <typeinfo>
 #include "UIVisualController.h"
 #include "../../Core/Utilities/USupport.h"
@@ -248,51 +249,87 @@ void UIVisualControllerStorage::ClearInterface(void)
 // Сохраняет параметры интерфейса в xml
 void UIVisualControllerStorage::SaveParameters(RDK::USerStorageXML &xml)
 {
- for(size_t i=0;i<InterfaceUpdaters.size();i++)
-  if(InterfaceUpdaters[i])
+ // Снимок: во время SaveParameters список обычно стабилен, но защита
+ // от удаления контроллера из чужого ASaveParameters полезна.
+ std::vector<RDK::UIVisualController*> snapshot = InterfaceUpdaters;
+ for(size_t i=0;i<snapshot.size();i++)
+ {
+  RDK::UIVisualController* ctrl = snapshot[i];
+  if(!ctrl)
+   continue;
+  if(std::find(InterfaceUpdaters.begin(), InterfaceUpdaters.end(), ctrl) == InterfaceUpdaters.end())
+   continue;
+  try
   {
-   try
-   {
-	InterfaceUpdaters[i]->SaveParameters(xml);
-   }
-   catch(RDK::UException &ex)
-   {
-	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SaveParameters - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
-   }
-   catch(std::exception &ex)
-   {
-	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SaveParameters - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
-   }
-   catch(...)
-   {
-	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SaveParameters - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
-   }
+	ctrl->SaveParameters(xml);
   }
+  catch(RDK::UException &ex)
+  {
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SaveParameters - ")+ex.what()+std::string(" in ")+ctrl->GetName()).c_str());
+  }
+  catch(std::exception &ex)
+  {
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SaveParameters - ")+ex.what()+std::string(" in ")+ctrl->GetName()).c_str());
+  }
+  catch(...)
+  {
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::SaveParameters - unhandled exception")+std::string(" in ")+ctrl->GetName()).c_str());
+  }
+ }
 }
 
 // Загружает параметры интерфейса из xml
 void UIVisualControllerStorage::LoadParameters(RDK::USerStorageXML &xml)
 {
- for(size_t i=0;i<InterfaceUpdaters.size();i++)
-  if(InterfaceUpdaters[i])
+ // ALoadParameters часто пересоздаёт дочерние контроллеры (UWatch tabs,
+ // MDI Watches/Images): AddInterface/DelInterface меняет InterfaceUpdaters
+ // прямо во время обхода. Один for по живому вектору пропускает новых и
+ // может дёргать уже удалённых. Штатный контракт: каждый зарегистрированный
+ // контроллер должен получить LoadParameters ровно один раз (пока жив).
+ std::set<RDK::UIVisualController*> loaded;
+ for(;;)
+ {
+  std::vector<RDK::UIVisualController*> pending;
+  pending.reserve(InterfaceUpdaters.size());
+  for(size_t i=0;i<InterfaceUpdaters.size();i++)
   {
+   RDK::UIVisualController* ctrl = InterfaceUpdaters[i];
+   if(ctrl && loaded.find(ctrl) == loaded.end())
+	pending.push_back(ctrl);
+  }
+  if(pending.empty())
+   break;
+
+  for(size_t i=0;i<pending.size();i++)
+  {
+   RDK::UIVisualController* ctrl = pending[i];
+   if(!ctrl)
+	continue;
+   // Уже уничтожен родителем в этой же итерации
+   if(std::find(InterfaceUpdaters.begin(), InterfaceUpdaters.end(), ctrl) == InterfaceUpdaters.end())
+   {
+	loaded.insert(ctrl);
+	continue;
+   }
    try
    {
-	InterfaceUpdaters[i]->LoadParameters(xml);
+	ctrl->LoadParameters(xml);
    }
    catch(RDK::UException &ex)
    {
-	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::LoadParameters - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::LoadParameters - ")+ex.what()+std::string(" in ")+ctrl->GetName()).c_str());
    }
    catch(std::exception &ex)
    {
-	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::LoadParameters - ")+ex.what()+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::LoadParameters - ")+ex.what()+std::string(" in ")+ctrl->GetName()).c_str());
    }
    catch(...)
    {
-	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::LoadParameters - unhandled exception")+std::string(" in ")+InterfaceUpdaters[i]->GetName()).c_str());
+	RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UIVisualControllerStorage::LoadParameters - unhandled exception")+std::string(" in ")+ctrl->GetName()).c_str());
    }
+   loaded.insert(ctrl);
   }
+ }
 }
 
 // Служебные методы управления интерфейсом

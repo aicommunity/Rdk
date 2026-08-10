@@ -19,6 +19,8 @@ struct PendingConfirmation {
     ToolInvokeRequest request;
     /// UTC unix seconds when confirmation was requested (TD-025).
     int64_t created_at_unix_sec = 0;
+    /// Stable id for Tool message pairing after Apply (TD-150).
+    std::string tool_call_id;
 };
 
 struct ResolvedEntityRecord {
@@ -61,9 +63,15 @@ struct ConversationState {
     /// Last `LLMSessionContext` from an orchestrator entry (resume parity, TD-088).
     std::optional<LLMSessionContext> last_session_context;
     SessionGraphMemory session_graph;
+    /// Structured turn/session goals (DD-WM-001 / TD-162).
+    std::vector<WorkingGoal> working_goals;
     /// Tool invocations for the current user turn (cleared at turn start; copied to response).
     std::vector<TurnToolInvocationView> current_turn_tool_trace;
-    int store_schema_version = 3;
+    /// When true (project_description pack), goals stay InProgress until update_configuration ok.
+    bool turn_requires_description_write = false;
+    /// Cumulative explore-subagent provider rounds used in this session (TD-164).
+    int subagent_rounds_used = 0;
+    int store_schema_version = 4;
 };
 
 class ULLMConversationStore {

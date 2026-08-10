@@ -265,8 +265,12 @@ QString propertiesLookupListFromModelScope(RDK::UContainer* model_root,
 
     QStringList entries;
     const RDK::UContainer::VariableMapT props = cont->GetPropertiesList();
-    for(RDK::UContainer::VariableMapCIteratorT it = props.begin(); it != props.end(); ++it)
+    const std::vector<RDK::NameT>& order = cont->GetPropertiesOrder();
+    for(size_t oi = 0; oi < order.size(); ++oi)
     {
+        RDK::UContainer::VariableMapCIteratorT it = props.find(order[oi]);
+        if(it == props.end())
+            continue;
         if(!it->second.CheckMask(type_mask))
             continue;
         entries.append(QString::fromUtf8(it->first.c_str()) + QLatin1Char(':') + QString::number(0));

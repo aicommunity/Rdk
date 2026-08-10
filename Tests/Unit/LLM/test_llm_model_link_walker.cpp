@@ -66,6 +66,28 @@ TEST(LLMModelLinkWalker, PlanSnapshotHasLinkWhenTruncated)
     EXPECT_TRUE(planSnapshotOrModelHasLink(snap, domain, quad, 0));
 }
 
+TEST(LLMModelLinkWalker, ApplyLinkPageSubtreeFilter)
+{
+    std::vector<LinkQuad> all = {
+        {"PGenerator", "Output", "PNeuron.Soma1.In", "Input"},
+        {"PGenerator", "Output", "PNeuronGen2.Soma1.In", "Input"},
+        {"X", "Out", "Y", "In"},
+    };
+
+    ModelLinkWalkOptions opts;
+    opts.offset = 0;
+    opts.limit = 10;
+    ModelLinkListFilters f;
+    f.component_long_name = "PNeuron";
+    opts.subtree_filters = f;
+    const ModelLinkWalkResult page = applyLinkPage(all, opts);
+
+    ASSERT_EQ(page.links.size(), 1u);
+    EXPECT_EQ(page.total_matching, 1);
+    EXPECT_EQ(page.total_quads_seen, 3);
+    EXPECT_EQ(page.links[0].to_long_name, "PNeuron.Soma1.In");
+}
+
 TEST(LLMModelLinkWalker, ListModelLinksNotInitialized)
 {
     URdkDomainAccess domain(nullptr);

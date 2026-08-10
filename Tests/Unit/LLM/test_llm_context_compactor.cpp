@@ -4,6 +4,7 @@
 
 #include "Providers/ULLMMockProvider.h"
 #include "Session/ULLMContextCompactor.h"
+#include "Session/ULLMWorkingGoals.h"
 
 using namespace RDK::LLM;
 
@@ -15,6 +16,7 @@ TEST(LLMContextCompactor, CompactsLongHistory)
 
     ConversationState state;
     state.session_id = "compact-test";
+    upsertWorkingGoal(state, "goal_add", "Add component(s)");
     for(int i = 0; i < 40; ++i)
     {
         LLMMessage user;
@@ -33,6 +35,8 @@ TEST(LLMContextCompactor, CompactsLongHistory)
     EXPECT_LT(state.messages.size(), 40u);
     EXPECT_FALSE(state.messages.empty());
     EXPECT_EQ(state.messages.front().role, LLMMessage::Role::System);
+    ASSERT_EQ(state.working_goals.size(), 1u);
+    EXPECT_EQ(state.working_goals.front().id, "goal_add");
 
     unsetenv("NMSDK_LLM_CONTEXT_COMPACT");
     unsetenv("NMSDK_LLM_CONTEXT_COMPACT_THRESHOLD");

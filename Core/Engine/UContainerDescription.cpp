@@ -141,10 +141,14 @@ void UContainerDescription::CreateProperties()
 
     if(cont)
     {
-        RDK::UComponent::VariableMapT varMap = cont->GetPropertiesList();
+        const RDK::UComponent::VariableMapT& varMap = cont->GetPropertiesList();
+        const std::vector<RDK::NameT>& propOrder = cont->GetPropertiesOrder();
 
-        for(RDK::UComponent::VariableMapIteratorT i = varMap.begin(); i != varMap.end(); ++i)
+        for(size_t oi = 0; oi < propOrder.size(); ++oi)
         {
+            RDK::UComponent::VariableMapCIteratorT i = varMap.find(propOrder[oi]);
+            if(i == varMap.end())
+                continue;
             if(i->first.empty())
                 continue;
 

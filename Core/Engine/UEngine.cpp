@@ -3903,20 +3903,19 @@ const char* UEngine::Model_GetComponentPropertiesList(const char* stringid, unsi
 	return TempString.c_str();
 
    RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
+   const std::vector<RDK::NameT>& order = cont->GetPropertiesOrder();
 
-   RDK::UContainer::VariableMapCIteratorT I,J;
-
-   I=props.begin();
-   J=props.end();
-   while(I != J)
+   for(size_t oi = 0; oi < order.size(); ++oi)
    {
+	RDK::UContainer::VariableMapCIteratorT I = props.find(order[oi]);
+	if(I == props.end())
+	 continue;
 	if(I->second.CheckMask(type_mask))
 	{
 	 if(TempString.size()>0)
 	  TempString+=",";
 	 TempString+=I->first;
 	}
-	++I;
    }
 
    return TempString.c_str();
@@ -3952,13 +3951,13 @@ const char* UEngine::Model_GetComponentPropertiesLookupList(const char* stringid
 	return TempString.c_str();
 
    RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
+   const std::vector<RDK::NameT>& order = cont->GetPropertiesOrder();
 
-   RDK::UContainer::VariableMapCIteratorT I,J;
-
-   I=props.begin();
-   J=props.end();
-   while(I != J)
+   for(size_t oi = 0; oi < order.size(); ++oi)
    {
+	RDK::UContainer::VariableMapCIteratorT I = props.find(order[oi]);
+	if(I == props.end())
+	 continue;
 	if(I->second.CheckMask(type_mask))
 	{
 	 if(TempString.size()>0)
@@ -3967,7 +3966,6 @@ const char* UEngine::Model_GetComponentPropertiesLookupList(const char* stringid
 	 TempString+=":";
 	 TempString+=sntoa(0);
 	}
-	++I;
    }
 
    return TempString.c_str();

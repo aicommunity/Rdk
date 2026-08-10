@@ -116,6 +116,285 @@ bool needsSessionDelta(const ParsedConnectGoal& parsed)
            || parsed.remaining_scope == ConnectRemainingScope::ModelGraph;
 }
 
+bool snapshotHasLongName(const nlohmann::json& snapshot_components, const std::string& long_name)
+{
+    for(const auto& comp : snapshot_components)
+    {
+        if(comp.value("long_name", "") == long_name)
+            return true;
+    }
+    return false;
+}
+
+std::vector<LinkQuad> collectSnapshotLinks(const nlohmann::json& snap)
+{
+    std::vector<LinkQuad> out;
+    if(!snap.contains("links") || !snap["links"].is_array())
+        return out;
+    for(const auto& link : snap["links"])
+        out.push_back(linkQuadFromJson(link));
+    return out;
+}
+
+std::vector<LinkQuad> collectTemplateLinksBetweenAnchors(const std::vector<LinkQuad>& links,
+                                                         const std::string& hub_ln,
+                                                         const std::string& ref_ln)
+{
+    std::vector<LinkQuad> out;
+    for(const LinkQuad& q : links)
+    {
+        const bool from_hub = endpointInSubtree(q.from_long_name, hub_ln);
+        const bool to_hub = endpointInSubtree(q.to_long_name, hub_ln);
+        const bool from_ref = endpointInSubtree(q.from_long_name, ref_ln);
+        const bool to_ref = endpointInSubtree(q.to_long_name, ref_ln);
+        if((from_hub && to_ref) || (from_ref && to_hub))
+            out.push_back(q);
+    }
+    return out;
+}
+
+std::vector<std::string> collectClassPeerTargets(const nlohmann::json& snapshot_components,
+                                                 const std::string& ref_ln,
+                                                 const std::string& ref_class)
+{
+    std::vector<std::string> targets;
+    if(ref_class.empty())
+        return targets;
+    for(const auto& comp : snapshot_components)
+    {
+        const std::string ln = comp.value("long_name", "");
+        if(ln.empty() || ln == ref_ln)
+            continue;
+        if(endpointInSubtree(ln, ref_ln))
+            continue;
+        if(comp.value("class_name", "") != ref_class)
+            continue;
+        targets.push_back(ln);
+    }
+
+    std::vector<std::string> roots;
+    for(const std::string& ln : targets)
+    {
+        bool nested_under_peer = false;
+        for(const std::string& other : targets)
+        {
+            if(other == ln)
+                continue;
+            if(endpointInSubtree(ln, other))
+            {
+                nested_under_peer = true;
+                break;
+            }
+        }
+        if(!nested_under_peer)
+            roots.push_back(ln);
+    }
+    std::sort(roots.begin(), roots.end());
+    return roots;
+}
+
+std::vector<std::string> collectSessionPeerTargets(const ConversationState* state,
+                                                   const nlohmann::json& snapshot_components,
+                                                   const std::string& ref_ln,
+                                                   const std::string& ref_class)
+{
+    std::vector<std::string> targets;
+    if(!state || ref_class.empty())
+        return targets;
+    for(const std::string& ln : state->session_graph.added_long_names)
+    {
+        if(ln.empty() || ln == ref_ln)
+            continue;
+        if(endpointInSubtree(ln, ref_ln))
+            continue;
+        const auto cls = classNameFromSnapshot(snapshot_components, ln);
+        if(!cls || *cls != ref_class)
+            continue;
+        // Skip nested under another added peer.
+        bool nested = false;
+        for(const std::string& other : state->session_graph.added_long_names)
+        {
+            if(other != ln && endpointInSubtree(ln, other))
+            {
+                nested = true;
+                break;
+            }
+        }
+        if(!nested)
+            targets.push_back(ln);
+    }
+    std::sort(targets.begin(), targets.end());
+    return targets;
+}
+
+std::string mapTemplateEndpointToTarget(const std::string& endpoint, const std::string& hub_ln,
+                                        const std::string& ref_ln, const std::string& target_ln)
+{
+    (void)hub_ln;
+    if(endpointInSubtree(endpoint, ref_ln))
+        return mapSubtreeEndpoint(endpoint, ref_ln, target_ln);
+    return endpoint;
+}
+
+bool buildLiveAnalogousPairs(const ConnectPlanBuildRequest& req, const nlohmann::json& snap,
+                             const nlohmann::json& snapshot_components,
+                             std::vector<ResolvedPair>& pairs, std::vector<std::string>& issues)
+{
+    if(!req.parsed.analogous_ref_token)
+        return false;
+
+    if(!req.parsed.hub_token)
+    {
+        issues.push_back("hub_token_required_for_live_analogous");
+        return true;
+    }
+
+    const auto hub_ln = resolveEndpointToken(*req.parsed.hub_token, req, snapshot_components);
+    const auto ref_ln =
+        resolveEndpointToken(*req.parsed.analogous_ref_token, req, snapshot_components);
+    if(!hub_ln)
+    {
+        issues.push_back("component_not_found:" + *req.parsed.hub_token);
+        return true;
+    }
+    if(!ref_ln)
+    {
+        issues.push_back("component_not_found:" + *req.parsed.analogous_ref_token);
+        return true;
+    }
+
+    std::vector<LinkQuad> all_links = collectSnapshotLinks(snap);
+    std::vector<LinkQuad> template_links =
+        collectTemplateLinksBetweenAnchors(all_links, *hub_ln, *ref_ln);
+
+    if(template_links.empty() && snap.value("links_truncated", false))
+    {
+        nlohmann::json listed;
+        ModelLinkListFilters filters;
+        filters.from_long_name = *hub_ln;
+        filters.to_long_name = *ref_ln;
+        if(req.domain.listModelLinks(listed, req.session.active_channel_index, "", 0, 2000, filters)
+               .ok()
+           && listed.contains("links") && listed["links"].is_array())
+        {
+            for(const auto& link : listed["links"])
+                template_links.push_back(linkQuadFromJson(link));
+        }
+        filters.from_long_name = *ref_ln;
+        filters.to_long_name = *hub_ln;
+        if(req.domain.listModelLinks(listed, req.session.active_channel_index, "", 0, 2000, filters)
+               .ok()
+           && listed.contains("links") && listed["links"].is_array())
+        {
+            for(const auto& link : listed["links"])
+                template_links.push_back(linkQuadFromJson(link));
+        }
+        template_links = dedupeModelLinkQuads(template_links);
+        template_links = collectTemplateLinksBetweenAnchors(template_links, *hub_ln, *ref_ln);
+    }
+
+    if(template_links.empty())
+    {
+        // Fallback: incident on ref with other end under hub via component filter.
+        ModelLinkListFilters incident;
+        incident.component_long_name = *ref_ln;
+        nlohmann::json listed;
+        if(req.domain.listModelLinks(listed, req.session.active_channel_index, "", 0, 2000, incident)
+               .ok()
+           && listed.contains("links") && listed["links"].is_array())
+        {
+            for(const auto& link : listed["links"])
+                all_links.push_back(linkQuadFromJson(link));
+            template_links = collectTemplateLinksBetweenAnchors(all_links, *hub_ln, *ref_ln);
+        }
+    }
+
+    if(template_links.empty())
+    {
+        issues.push_back("no_template_links");
+        return true;
+    }
+
+    const auto ref_class = componentClassName(req, snapshot_components, *ref_ln);
+    if(!ref_class || ref_class->empty())
+    {
+        issues.push_back("ref_class_unknown");
+        return true;
+    }
+
+    std::vector<std::string> targets;
+    if(req.parsed.wants_session_peers)
+        targets = collectSessionPeerTargets(req.state, snapshot_components, *ref_ln, *ref_class);
+    if(targets.empty())
+        targets = collectClassPeerTargets(snapshot_components, *ref_ln, *ref_class);
+    if(targets.empty())
+    {
+        issues.push_back("no_peer_targets");
+        return true;
+    }
+    (void)req.parsed.wants_all_class_peers;
+
+    for(const LinkQuad& tmpl : template_links)
+    {
+        for(const std::string& target_ln : targets)
+        {
+            ResolvedPair pair;
+            pair.from_long_name =
+                mapTemplateEndpointToTarget(tmpl.from_long_name, *hub_ln, *ref_ln, target_ln);
+            pair.to_long_name =
+                mapTemplateEndpointToTarget(tmpl.to_long_name, *hub_ln, *ref_ln, target_ln);
+            pair.from_property = tmpl.from_property;
+            pair.to_property = tmpl.to_property;
+
+            auto endpoint_ok = [&](const std::string& mapped, const std::string& original) {
+                if(snapshotHasLongName(snapshot_components, mapped))
+                    return true;
+                // Hub (or nested under hub) often omitted from shallow lists — allow.
+                if(endpointInSubtree(original, *hub_ln) || endpointInSubtree(mapped, *hub_ln))
+                    return true;
+                // Target root itself may be enough when mapping to the root.
+                if(mapped == target_ln)
+                    return true;
+                // Nested under target: require presence when any nested comps for target exist.
+                if(endpointInSubtree(mapped, target_ln))
+                {
+                    bool any_nested = false;
+                    for(const auto& comp : snapshot_components)
+                    {
+                        const std::string ln = comp.value("long_name", "");
+                        if(ln != target_ln && endpointInSubtree(ln, target_ln))
+                        {
+                            any_nested = true;
+                            break;
+                        }
+                    }
+                    if(!any_nested)
+                        return true; // isomorphic nested assumed
+                    return false;
+                }
+                return false;
+            };
+
+            if(!endpoint_ok(pair.from_long_name, tmpl.from_long_name))
+            {
+                issues.push_back("target_endpoint_missing:" + pair.from_long_name);
+                continue;
+            }
+            if(!endpoint_ok(pair.to_long_name, tmpl.to_long_name))
+            {
+                issues.push_back("target_endpoint_missing:" + pair.to_long_name);
+                continue;
+            }
+
+            pairs.push_back(std::move(pair));
+        }
+    }
+
+    if(pairs.empty() && issues.empty())
+        issues.push_back("no_pairs");
+    return true;
+}
+
 } // namespace
 
 ConnectPlanBuildResult buildConnectPlanSteps(const ConnectPlanBuildRequest& req)
@@ -138,108 +417,138 @@ ConnectPlanBuildResult buildConnectPlanSteps(const ConnectPlanBuildRequest& req)
         snap.contains("components") && snap["components"].is_array() ? snap["components"]
                                                                     : nlohmann::json::array();
 
-    if(req.parsed.wants_analogous && req.state && !req.state->session_graph.last_template)
+    std::vector<ResolvedPair> pairs;
+
+    if(req.parsed.analogous_ref_token)
+    {
+        if(buildLiveAnalogousPairs(req, snap, snapshot_components, pairs, out.issues))
+        {
+            if(!out.issues.empty() && pairs.empty())
+                return out;
+        }
+    }
+    else if(req.parsed.wants_analogous && req.state && !req.state->session_graph.last_template)
     {
         out.issues.push_back("no_previous_template");
         return out;
     }
 
-    std::vector<ResolvedPair> pairs;
-    if(!req.parsed.explicit_links.empty())
+    if(pairs.empty() && !req.parsed.analogous_ref_token)
     {
-        for(const ConnectLinkSpec& spec : req.parsed.explicit_links)
+        if(!req.parsed.explicit_links.empty())
         {
-            const auto from_ln = resolveEndpointToken(spec.from.token, req, snapshot_components);
-            const auto to_ln = resolveEndpointToken(spec.to.token, req, snapshot_components);
-            if(!from_ln)
+            for(const ConnectLinkSpec& spec : req.parsed.explicit_links)
             {
-                out.issues.push_back("component_not_found:" + spec.from.token);
-                continue;
+                const auto from_ln = resolveEndpointToken(spec.from.token, req, snapshot_components);
+                const auto to_ln = resolveEndpointToken(spec.to.token, req, snapshot_components);
+                if(!from_ln)
+                {
+                    out.issues.push_back("component_not_found:" + spec.from.token);
+                    continue;
+                }
+                if(!to_ln)
+                {
+                    out.issues.push_back("component_not_found:" + spec.to.token);
+                    continue;
+                }
+                pairs.push_back({*from_ln, *to_ln, spec.from.property, spec.to.property});
             }
-            if(!to_ln)
+        }
+        else if(needsSessionDelta(req.parsed))
+        {
+            if(req.parsed.remaining_scope == ConnectRemainingScope::SessionDelta && !req.state)
             {
-                out.issues.push_back("component_not_found:" + spec.to.token);
-                continue;
-            }
-            pairs.push_back({*from_ln, *to_ln, spec.from.property, spec.to.property});
-        }
-    }
-    else if(needsSessionDelta(req.parsed))
-    {
-        if(req.parsed.remaining_scope == ConnectRemainingScope::SessionDelta && !req.state)
-        {
-            out.issues.push_back("no_session_state");
-            return out;
-        }
-        bool links_incomplete = false;
-        std::vector<std::string> remaining =
-            collectRemainingEndpoints(req.domain, snapshot_components, req.parsed, req.state,
-                                      req.session.active_channel_index, links_incomplete);
-        if(links_incomplete)
-        {
-            out.issues.push_back("links_incomplete_for_global_remaining");
-            return out;
-        }
-        if(req.parsed.link_count > 0 && req.parsed.topology == ConnectTopology::Sequential)
-        {
-            const size_t need = static_cast<size_t>(req.parsed.link_count * 2);
-            if(remaining.size() < need)
-            {
-                out.issues.push_back("insufficient_remaining");
+                out.issues.push_back("no_session_state");
                 return out;
             }
-            remaining.resize(need);
-        }
-        if(remaining.size() < 2 && req.parsed.topology != ConnectTopology::Tree)
-        {
-            out.issues.push_back("no_remaining");
-            return out;
-        }
-
-        PairingRequest pr;
-        pr.endpoints = remaining;
-        pr.snapshot_components = &snapshot_components;
-        pr.domain = &req.domain;
-        pr.catalog = &req.catalog;
-        pr.semantics = &defaultConnectSemanticsCatalog();
-        pr.channel_index = req.session.active_channel_index;
-        pr.topology = req.parsed.topology;
-        pr.link_count = req.parsed.link_count;
-        pr.goal_en = req.goal_en;
-        pr.prefer_internal_semantics = req.parsed.wants_internal_semantics_hint;
-        if(req.parsed.hub_token)
-        {
-            const auto hub_ln =
-                resolveEndpointToken(*req.parsed.hub_token, req, snapshot_components);
-            if(hub_ln)
-                pr.hub_long_name = *hub_ln;
-            else
+            bool links_incomplete = false;
+            std::vector<std::string> remaining =
+                collectRemainingEndpoints(req.domain, snapshot_components, req.parsed, req.state,
+                                          req.session.active_channel_index, links_incomplete);
+            if(links_incomplete)
             {
-                out.issues.push_back("component_not_found:" + *req.parsed.hub_token);
+                out.issues.push_back("links_incomplete_for_global_remaining");
                 return out;
             }
-        }
+            if(req.parsed.link_count > 0 && req.parsed.topology == ConnectTopology::Sequential)
+            {
+                const size_t need = static_cast<size_t>(req.parsed.link_count * 2);
+                if(remaining.size() < need)
+                {
+                    out.issues.push_back("insufficient_remaining");
+                    return out;
+                }
+                remaining.resize(need);
+            }
+            if(remaining.size() < 2 && req.parsed.topology != ConnectTopology::Tree)
+            {
+                out.issues.push_back("no_remaining");
+                return out;
+            }
 
-        const PairingResult pr_result = buildPairingCandidates(pr);
-        if(!pr_result.issues.empty())
-        {
-            out.issues = pr_result.issues;
-            return out;
+            PairingRequest pr;
+            pr.endpoints = remaining;
+            pr.snapshot_components = &snapshot_components;
+            pr.domain = &req.domain;
+            pr.catalog = &req.catalog;
+            pr.semantics = &defaultConnectSemanticsCatalog();
+            pr.channel_index = req.session.active_channel_index;
+            pr.topology = req.parsed.topology;
+            pr.link_count = req.parsed.link_count;
+            pr.goal_en = req.goal_en;
+            pr.prefer_internal_semantics = req.parsed.wants_internal_semantics_hint;
+            if(req.parsed.hub_token)
+            {
+                const auto hub_ln =
+                    resolveEndpointToken(*req.parsed.hub_token, req, snapshot_components);
+                if(hub_ln)
+                    pr.hub_long_name = *hub_ln;
+                else
+                {
+                    out.issues.push_back("component_not_found:" + *req.parsed.hub_token);
+                    return out;
+                }
+            }
+
+            const PairingResult pr_result = buildPairingCandidates(pr);
+            if(!pr_result.issues.empty())
+            {
+                out.issues = pr_result.issues;
+                return out;
+            }
+            for(const PairingCandidate& c : pr_result.pairs)
+                pairs.push_back({c.from_long_name, c.to_long_name, c.from_property, c.to_property});
         }
-        for(const PairingCandidate& c : pr_result.pairs)
-            pairs.push_back({c.from_long_name, c.to_long_name, c.from_property, c.to_property});
     }
 
-    if(!out.issues.empty())
-        return out;
+    // Soft issues from live map (missing endpoints) should not block other successful pairs.
     if(pairs.empty())
     {
-        out.issues.push_back("no_pairs");
+        if(out.issues.empty())
+            out.issues.push_back("no_pairs");
         return out;
     }
+    // Clear soft missing-endpoint notes when we still have pairs; keep hard errors only if empty.
+    if(!pairs.empty())
+    {
+        std::vector<std::string> hard;
+        for(const std::string& issue : out.issues)
+        {
+            if(issue.rfind("target_endpoint_missing:", 0) != 0)
+                hard.push_back(issue);
+        }
+        // If only soft issues, proceed.
+        if(hard.empty())
+            out.issues.clear();
+        else
+            out.issues = std::move(hard);
+    }
+    if(!out.issues.empty() && pairs.empty())
+        return out;
 
     const bool check_new_link_quota =
-        req.parsed.kind == ConnectGoalKind::CountOnly && req.parsed.link_count > 0;
+        req.parsed.kind == ConnectGoalKind::CountOnly && req.parsed.link_count > 0
+        && !req.parsed.analogous_ref_token;
     int new_links_planned = 0;
 
     std::unordered_set<std::string> seen;
@@ -253,8 +562,8 @@ ConnectPlanBuildResult buildConnectPlanSteps(const ConnectPlanBuildRequest& req)
                                {"channel_index", req.session.active_channel_index}};
 
         const bool has_explicit_ports = !p.from_property.empty() && !p.to_property.empty();
-        if(!has_explicit_ports && req.parsed.wants_analogous && req.state
-           && req.state->session_graph.last_template)
+        if(!has_explicit_ports && req.parsed.wants_analogous && !req.parsed.analogous_ref_token
+           && req.state && req.state->session_graph.last_template)
         {
             applyAnalogousTemplatePorts(args, *req.state->session_graph.last_template, req,
                                         snapshot_components);

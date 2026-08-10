@@ -1,6 +1,7 @@
 #include "UOpenAICompatProvider.h"
 
 #include "../Http/ULLMHttpRetry.h"
+#include "ULLMThinkingParse.h"
 #include "UOllamaChatTemplate.h"
 #include "UOllamaModelInfo.h"
 
@@ -26,8 +27,14 @@ struct StreamToolPart {
 };
 
 void applyStreamDelta(const nlohmann::json& delta, std::string& text_out,
-                      std::map<int, StreamToolPart>& tools_out, LLMStreamCallback& on_chunk)
+                      std::string& thinking_out, std::map<int, StreamToolPart>& tools_out,
+                      LLMStreamCallback& on_chunk,
+                      const std::function<void(const std::string&)>& on_thinking)
 {
+    const std::size_t thinking_before = thinking_out.size();
+    extractThinkingFields(delta, thinking_out);
+    if(on_thinking && thinking_out.size() > thinking_before)
+        on_thinking(thinking_out.substr(thinking_before));
     if(delta.contains("content") && delta["content"].is_string())
     {
         const std::string piece = delta["content"].get<std::string>();
@@ -57,12 +64,13 @@ void applyStreamDelta(const nlohmann::json& delta, std::string& text_out,
     }
 }
 
-LLMCompletionResult buildStreamResult(const std::string& text,
+LLMCompletionResult buildStreamResult(const std::string& text, const std::string& thinking,
                                       const std::map<int, StreamToolPart>& tools)
 {
     LLMCompletionResult result;
     result.ok = true;
     result.text = text;
+    result.thinking = thinking;
     for(const auto& kv : tools)
     {
         if(kv.second.name.empty())
@@ -80,6 +88,7 @@ LLMCompletionResult buildStreamResult(const std::string& text,
         }
         result.tool_calls.push_back(std::move(call));
     }
+    finalizeThinkingResult(result);
     return result;
 }
 
@@ -97,6 +106,7 @@ LLMProviderCapabilities UOpenAICompatProvider::capabilities() const
     c.supports_streaming = true;
     c.supports_strict_json_schema = !isOllamaProvider(m_profile);
     c.requires_network = true;
+    c.supports_thinking = isOllamaProvider(m_profile);
     return c;
 }
 
@@ -114,6 +124,8 @@ nlohmann::json UOpenAICompatProvider::buildRequestBody(const std::vector<LLMMess
     body["temperature"] = opts.temperature;
     body["max_tokens"] = opts.max_tokens;
     body["messages"] = buildOpenAiChatMessagesJson(prepared);
+    if(shouldSendThinkTrue(opts, capabilities()))
+        body["think"] = true;
     if(!opts.tools_for_api.empty())
     {
         body["tools"] = opts.tools_for_api;
@@ -143,7 +155,13 @@ LLMCompletionResult UOpenAICompatProvider::parseResponse(const std::string& body
         const auto& choice = j["choices"][0];
         const auto& message = choice["message"];
         if(message.contains("content") && !message["content"].is_null())
-            result.text = message["content"].get<std::string>();
+        {
+            if(message["content"].is_string())
+                result.text = message["content"].get<std::string>();
+            else
+                result.text = message["content"].dump();
+        }
+        extractThinkingFields(message, result.thinking);
         if(message.contains("tool_calls"))
         {
             for(const auto& tc : message["tool_calls"])
@@ -151,11 +169,11 @@ LLMCompletionResult UOpenAICompatProvider::parseResponse(const std::string& body
                 LLMToolCall call;
                 call.id = tc.value("id", "");
                 call.name = tc["function"].value("name", "");
-                const std::string args_str = tc["function"].value("arguments", "{}");
-                call.arguments = nlohmann::json::parse(args_str);
+                call.arguments = parseToolCallArgumentsJson(tc["function"]);
                 result.tool_calls.push_back(call);
             }
         }
+        finalizeThinkingResult(result);
         result.ok = true;
     }
     catch(const std::exception& ex)
@@ -173,15 +191,25 @@ LLMCompletionResult UOpenAICompatProvider::chat(const std::vector<LLMMessage>& m
     m_cancelled = false;
     LLMCompletionResult result;
     std::string url = m_profile.base_url;
+    if(url.empty())
+    {
+        result.ok = false;
+        result.error_message = "Provider base_url is empty";
+        return result;
+    }
     if(url.back() == '/')
         url.pop_back();
     url += "/chat/completions";
 
+    try
+    {
     const nlohmann::json body = buildRequestBody(messages, opts);
+    const std::string body_str =
+        body.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace);
     constexpr int kMaxAttempts = 3;
     for(int attempt = 0; attempt < kMaxAttempts; ++attempt)
     {
-        auto resp = m_http.postJson(url, body.dump(), m_profile.api_key);
+        auto resp = m_http.postJson(url, body_str, m_profile.api_key);
         if(!resp.error.empty())
         {
             result.ok = false;
@@ -212,33 +240,62 @@ LLMCompletionResult UOpenAICompatProvider::chat(const std::vector<LLMMessage>& m
     result.ok = false;
     result.error_message = "Provider request failed after retry";
     return result;
+    }
+    catch(const std::exception& ex)
+    {
+        result.ok = false;
+        result.error_message = std::string("chat exception: ") + ex.what();
+        return result;
+    }
+    catch(...)
+    {
+        result.ok = false;
+        result.error_message = "chat exception: unknown";
+        return result;
+    }
 }
 
 void UOpenAICompatProvider::chatStream(const std::vector<LLMMessage>& messages,
                                        const LLMCompletionOptions& opts, LLMStreamCallback on_chunk,
                                        std::function<void(LLMCompletionResult)> on_done)
 {
-    m_cancelled = false;
-    std::string url = m_profile.base_url;
-    if(url.back() == '/')
-        url.pop_back();
-    url += "/chat/completions";
+    try
+    {
+        m_cancelled = false;
+        std::string url = m_profile.base_url;
+        if(url.empty())
+        {
+            LLMCompletionResult err;
+            err.ok = false;
+            err.error_message = "Provider base_url is empty";
+            if(on_done)
+                on_done(err);
+            return;
+        }
+        if(url.back() == '/')
+            url.pop_back();
+        url += "/chat/completions";
 
     nlohmann::json body = buildRequestBody(messages, opts);
     body["stream"] = true;
+    const std::string body_str =
+        body.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace);
 
     std::string accumulated_text;
+    std::string accumulated_thinking;
     std::map<int, StreamToolPart> tool_parts;
     std::string last_retry_after;
     LLMStreamCallback chunk_cb = on_chunk;
     if(!opts.tools_for_api.empty())
         chunk_cb = nullptr;
+    const auto thinking_cb = opts.on_thinking_chunk;
 
     auto run_once = [&]() -> LLMCompletionResult {
         accumulated_text.clear();
+        accumulated_thinking.clear();
         tool_parts.clear();
         const auto resp = m_http.postJsonStream(
-            url, body.dump(), m_profile.api_key,
+            url, body_str, m_profile.api_key,
             [&](const std::string& payload) -> bool {
                 if(m_cancelled.load())
                     return false;
@@ -248,7 +305,8 @@ void UOpenAICompatProvider::chatStream(const std::vector<LLMMessage>& messages,
                     if(!j.contains("choices") || j["choices"].empty())
                         return true;
                     const auto& delta = j["choices"][0].value("delta", nlohmann::json::object());
-                    applyStreamDelta(delta, accumulated_text, tool_parts, chunk_cb);
+                    applyStreamDelta(delta, accumulated_text, accumulated_thinking, tool_parts,
+                                    chunk_cb, thinking_cb);
                 }
                 catch(...)
                 {
@@ -279,7 +337,7 @@ void UOpenAICompatProvider::chatStream(const std::vector<LLMMessage>& messages,
                 err.error_message += ": " + resp.body;
             return err;
         }
-        return buildStreamResult(accumulated_text, tool_parts);
+        return buildStreamResult(accumulated_text, accumulated_thinking, tool_parts);
     };
 
     LLMCompletionResult result;
@@ -304,6 +362,23 @@ void UOpenAICompatProvider::chatStream(const std::vector<LLMMessage>& messages,
 
     if(on_done)
         on_done(result);
+    }
+    catch(const std::exception& ex)
+    {
+        LLMCompletionResult err;
+        err.ok = false;
+        err.error_message = std::string("chatStream exception: ") + ex.what();
+        if(on_done)
+            on_done(err);
+    }
+    catch(...)
+    {
+        LLMCompletionResult err;
+        err.ok = false;
+        err.error_message = "chatStream exception: unknown";
+        if(on_done)
+            on_done(err);
+    }
 }
 
 bool UOpenAICompatProvider::healthCheck(std::string& error_out)

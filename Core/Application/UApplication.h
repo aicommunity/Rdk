@@ -74,6 +74,9 @@ std::string LibrariesPath;
 /// Относительный путь до папки с описаниями классов
 std::string ClDescPath;
 
+/// Относительный путь до папки с JSON-пресетами визуализации Watch
+std::string WatchPresetsPath;
+
 /// Относительный путь до папки с хранилищем проектов (пока обычно /Database)
 std::string DatabaseMainPath;
 
@@ -263,6 +266,10 @@ bool SetLibrariesPath(const std::string &value);
 /// Относительный путь до папки с описаниями классов
 const std::string& GetClDescPath(void) const;
 bool SetClDescPath(const std::string &value);
+
+/// Относительный путь до папки с JSON-пресетами визуализации Watch
+const std::string& GetWatchPresetsPath(void) const;
+bool SetWatchPresetsPath(const std::string &value);
 
 /// Относительный путь до папки с хранилищем моделей (обычно /Bin/Models)
 const std::string& GetModelsMainPath(void) const;

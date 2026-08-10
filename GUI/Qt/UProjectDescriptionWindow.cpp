@@ -459,10 +459,12 @@ void UProjectDescriptionWindow::loadProjectDescription()
         else
         {
             qDebug() << "UProjectDescriptionWindow: Failed to load Description.rtf from:" << rtfPath;
-            m_markdownViewer->clear();
+            const QString emptyMessage = QStringLiteral("No project description yet.");
+            m_markdownViewer->setMarkdown(emptyMessage);
             if(m_markdownEditor)
             {
                 m_markdownEditor->clear();
+                m_originalContent.clear();
             }
         }
     }

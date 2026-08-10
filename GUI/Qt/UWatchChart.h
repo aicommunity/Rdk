@@ -2,7 +2,6 @@
 #define UWATCHCHART_H
 
 #include <QWidget>
-#include <QScrollBar>
 #include <QVBoxLayout>
 #include <QMenu>
 #include <QDir>
@@ -11,6 +10,8 @@
 
 #include <QWheelEvent>
 #include <QKeyEvent>
+#include <QMouseEvent>
+#include <QPaintEvent>
 
 #include <QString>
 #include <QVector>
@@ -19,9 +20,13 @@
 #include <QtCharts/QValueAxis>
 #include "UWatchSerie.h"
 #include "UWatchChartView.h"
+#include "Plot/PlotDocument.h"
 #include <QtCharts/QChart>
 #include <QtCharts/QChartView>
 
+class QToolBar;
+class QAction;
+class PlotSettingsSidePanel;
 
 namespace Ui {
 class UWatchChart;
@@ -71,6 +76,8 @@ public:
     void setAxisYname(QString name);
     void setAxisXmin(double value);
     void setAxisXmax(double value);
+    /// Atomic X window (avoids QValueAxis min/max ordering glitches).
+    void setAxisXRange(double minValue, double maxValue);
     void setAxisYmin(double value);
     void setAxisYmax(double value);
     double getAxisXrange(void) const;
@@ -82,6 +89,8 @@ public:
 
     void setSerieName(int serieIndex, QString name);
     void setSerieColor(int serieIndex, int colorIndex);
+    /// First unused palette index (skips colors already used by other series).
+    int suggestAutoColorIndex(int serieIndex) const;
     void setSerieLineType(int serieIndex, Qt::PenStyle lineType);
     void setSerieWidth(int serieIndex, int width);
     void setSerieStyle(int serieIndex, QColor color, int width, Qt::PenStyle lineType);
@@ -98,12 +107,50 @@ public:
     //действия с сериями
     void createSerie(int channelIndex, const QString componentName, const QString propertyName,
                      const QString type, int jx, int jy, double time_interval, double y_shift);
+    /// XY series: X and Y from property roles (same-tick pairs or matrix slices).
+    void createSerieXY(int channelIndex,
+                       const QString& xComponent, const QString& xProperty, int xJx, int xJy,
+                       const QString& yComponent, const QString& yProperty, int yJx, int yJy,
+                       double y_shift, NMSDK::Plot::VizKind viz = NMSDK::Plot::VizKind::XYLine,
+                       NMSDK::Plot::SliceKind xSlice = NMSDK::Plot::SliceKind::Cell,
+                       NMSDK::Plot::SliceKind ySlice = NMSDK::Plot::SliceKind::Cell);
     void deleteSerie(int serieIndex);
     void addDataToSerie(int serieIndex, double x, double y);
     int  countSeries();
 
+    NMSDK::Plot::VizKind getVizKind() const { return vizKind; }
+    void setVizKind(NMSDK::Plot::VizKind kind);
+
+    /// True if chart has no series or existing series share the same family as `kind`.
+    bool canAddVizKind(NMSDK::Plot::VizKind kind) const;
+
+    bool isLegendVisible() const;
+    void setLegendVisible(bool visible);
+    bool isTitleVisible() const;
+    void setTitleVisible(bool visible);
+
+    void setInteractionTrackLatest(bool track);
+    void setInteractionPan(bool pan);
+    void resetViewport();
+
+    /// Export chart view to PNG/JPEG/SVG by path suffix. Returns false on failure.
+    bool exportImage(const QString& path) const;
+    QString sanitizedTitleForFile() const;
+
+    void setExpandActionVisible(bool visible);
+    void setExpandChecked(bool expanded);
+    bool isExpandChecked() const;
+
+    void connectSerieTooltip(UWatchSerie* serie);
+
+    NMSDK::Plot::PlotPanel toPlotPanel() const;
+    void applyPlotPanelMeta(const NMSDK::Plot::PlotPanel& panel);
+
+    void setSelected(bool selected);
+    bool isSelected() const { return m_selected; }
+
     //работа с динамикой осей
-    int axisXrange;
+    double axisXrange = 5.0;
     bool isAxisXtrackable = true;   //будет ли "поле зрения" бежать за временем
     bool isAxisYzoomable = true;    //зум по оси У (ctrl+крокрутка)
     bool isAxisYscrollable = true;  //скролл оси У
@@ -120,13 +167,17 @@ private:
 
     //все график, оси, скороллбар и их расположение
     QVBoxLayout *verticalLayout;
-    QScrollBar *horizontalScrolBar;
+    QToolBar *modeBar = nullptr;
+    QAction *actPan = nullptr;
+    QAction *actBoxZoom = nullptr;
+    QAction *actTrack = nullptr;
+    QAction *actReset = nullptr;
+    QAction *actExpand = nullptr;
 
     QPoint m_lastPoint;
     bool m_isPress;
     bool m_alreadySaveRange;
     double m_xMin, m_xMax, m_yMin, m_yMax;
-    QGraphicsSimpleTextItem* m_coordItem;
 
     // parent UWatchTab
     UWatchTab* WatchTab;
@@ -134,6 +185,11 @@ private:
     // array with initital values for axes
     // {x_range, y_max, y_min}
     std::vector<double> InitialAxesState;
+
+    NMSDK::Plot::VizKind vizKind = NMSDK::Plot::VizKind::TimeSeries;
+    bool m_legendVisible = true;
+    bool m_titleVisible = true;
+    bool m_selected = false;
 
  public:
     UWatchChartView *chartView;
@@ -153,6 +209,10 @@ private:
 
 
 
+protected:
+    void mousePressEvent(QMouseEvent *event) override;
+    void paintEvent(QPaintEvent* event) override;
+
 private slots:
     //скролл и зум по оси Y
     void wheelEvent(QWheelEvent * event);
@@ -162,12 +222,23 @@ private slots:
     void addSeriesSlot();
     void seriesOptionSlot();
     void chartOptionSlot();
-    void saveToJpegSlot();
+    void saveChartAsSlot();
+    void quickSaveChartSlot();
     void restoreAxes();
     void updateAxes(double x_min, double x_max, double y_min, double y_max);
+    void onModePan();
+    void onModeBoxZoom();
+    void onModeTrack();
+    void onModeReset();
+    void onModeExpand();
 signals:
     void addSerieSignal(int someIndex);
     void UpdateTabGuiSignal(bool force_update);
+    void openSettingsPanel(int chartIndex, bool seriesPage);
+    void chartActivated(int chartIndex);
+    void expandToggleRequested(int chartIndex);
+    void saveChartAsRequested(int chartIndex);
+    void quickSaveChartRequested(int chartIndex);
 };
 
 #endif // UWATCHCHART_H

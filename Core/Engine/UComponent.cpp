@@ -485,14 +485,21 @@ const UComponent::VariableMapT& UComponent::GetPropertiesList(void) const
  return PropertiesLookupTable;
 }
 
+const std::vector<NameT>& UComponent::GetPropertiesOrder(void) const
+{
+ return PropertiesOrder;
+}
+
 // Копирует все параметры этого объекта в объект 'comp', если возможно.
 // копируются только свойства типа type
 void UComponent::CopyProperties(UEPtr<UComponent> comp, unsigned int type) const
 {
  USerStorageXML databuffer;
- for(VariableMapCIteratorT I=PropertiesLookupTable.begin(),
-                            J=PropertiesLookupTable.end(); I!=J; ++I)
+ for(size_t oi = 0; oi < PropertiesOrder.size(); ++oi)
  {
+  VariableMapCIteratorT I = PropertiesLookupTable.find(PropertiesOrder[oi]);
+  if(I == PropertiesLookupTable.end())
+   continue;
   if(!(I->second.Type & type))
    continue;
 //  databuffer.clear();
@@ -559,6 +566,8 @@ void UComponent::AddLookupProperty(const NameT &name, unsigned int type, UEPtr<U
  P.Type=type;
 
  auto res=PropertiesLookupTable.insert(make_pair(name,P));
+ (void)res;
+ PropertiesOrder.push_back(name);
  // Find iterator after insert (SetVariable needs const_iterator reference)
  VariableMapCIteratorT it = PropertiesLookupTable.find(name);
  P.Property->SetVariable(it);
@@ -595,6 +604,14 @@ void UComponent::DelLookupProperty(const NameT &name)
  UIProperty *prop=I->second.Property;
  bool del_enable=I->second.DelEnable;
  PropertiesLookupTable.erase(I);
+ for(size_t oi = 0; oi < PropertiesOrder.size(); ++oi)
+ {
+  if(PropertiesOrder[oi] == name)
+  {
+   PropertiesOrder.erase(PropertiesOrder.begin() + static_cast<std::ptrdiff_t>(oi));
+   break;
+  }
+ }
  if(prop && del_enable)
   delete prop;
 
@@ -625,6 +642,7 @@ void UComponent::ClearLookupPropertyTable(void)
   if(prop && del_enable)
    delete prop;
  }
+ PropertiesOrder.clear();
  Aliases.clear();
 }
 // --------------------------

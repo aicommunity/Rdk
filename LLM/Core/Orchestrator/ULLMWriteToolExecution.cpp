@@ -254,7 +254,8 @@ WriteToolExecutionResult executeWriteWithPreviewAndVerify(ULLMAgentOrchestrator&
        && LLMServices::instance().isInitialized())
     {
         recordWriteToolOutcome(state, LLMServices::instance().domain(), req.tool_name,
-                               result.gateway.result, req.session.active_channel_index);
+                               result.gateway.result, req.session.active_channel_index,
+                               &req.arguments);
     }
 
     return result;

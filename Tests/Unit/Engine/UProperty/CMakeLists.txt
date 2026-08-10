@@ -25,6 +25,31 @@ target_compile_definitions(Test_UProperty_DirectUpdateVisibility PRIVATE
 
 add_test(NAME Test_UProperty_DirectUpdateVisibility COMMAND Test_UProperty_DirectUpdateVisibility)
 
+add_executable(Test_MatrixNodeTextFormat Test_MatrixNodeTextFormat.cpp)
+
+target_sources(Test_MatrixNodeTextFormat PRIVATE
+    ${CMAKE_SOURCE_DIR}/Rdk/Deploy/Include/RdkDummyLibraries.cpp
+)
+
+target_include_directories(Test_MatrixNodeTextFormat PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../../Deploy/Include
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../../../Core
+)
+
+target_link_libraries(Test_MatrixNodeTextFormat PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+    rdk.static.qt
+)
+
+target_compile_definitions(Test_MatrixNodeTextFormat PRIVATE
+    RDK_QT
+    RDK_LIB_TYPE=
+    RDK_CALL=
+)
+
+add_test(NAME Test_MatrixNodeTextFormat COMMAND Test_MatrixNodeTextFormat)
+
 if(RDK_BUILD_LEGACY_ENGINE_UNIT_TESTS)
     add_executable(Test_UProperty_Basic Test_UProperty_Basic.cpp)
     add_executable(Test_UProperty_Connections Test_UProperty_Connections.cpp)

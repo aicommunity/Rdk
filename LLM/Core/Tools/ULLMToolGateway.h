@@ -28,6 +28,9 @@ private:
     ULLMToolArgumentValidator& m_validator;
 };
 
+/// Active `ToolInvokeRequest` while a registry handler runs (set by gateway).
+const ToolInvokeRequest* activeToolInvokeRequest();
+
 } // namespace RDK::LLM
 
 #endif

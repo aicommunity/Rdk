@@ -2,8 +2,11 @@
 
 #include "ULLMPlanQuantity.h"
 #include "ULLMPlanRepeatPolicy.h"
+#include "ULLMRecordedToolInvoke.h"
 
 #include "../LlmModuleInit.h"
+#include "../Session/ULLMConversationStore.h"
+#include "../Session/ULLMSessionGraphMemory.h"
 
 #include <algorithm>
 #include <sstream>
@@ -42,12 +45,15 @@ ULLMPlanExecutor::ULLMPlanExecutor(ULLMToolRegistry& registry, ULLMToolGateway& 
 
 int ULLMPlanExecutor::compensateCompletedWrites(const ULLMExecutionPlan& plan,
                                               const LLMSessionContext& session,
-                                              const std::string& trace_id, std::string& note_out)
+                                              const std::string& trace_id, std::string& note_out,
+                                              ConversationState* conversation_state,
+                                              ULLMConversationStore* conversation_store)
 {
     std::vector<CompletedWriteRecord> completed_writes;
     collectWriteRecordsFromPlan(plan, completed_writes);
     int applied = 0;
     std::ostringstream oss;
+    int undo_idx = 0;
 
     for(auto it = completed_writes.rbegin(); it != completed_writes.rend(); ++it)
     {
@@ -89,7 +95,30 @@ int ULLMPlanExecutor::compensateCompletedWrites(const ULLMExecutionPlan& plan,
             continue;
         }
 
-        const ToolGatewayResult undo_tr = m_gateway.invoke(undo);
+        ToolGatewayResult undo_tr;
+        if(conversation_state && conversation_store)
+        {
+            RecordedToolInvokeDeps deps{m_registry, m_gateway, *conversation_store, {}, nullptr};
+            RecordedToolInvokeRequest rreq;
+            rreq.session_id = !conversation_state->session_id.empty() ? conversation_state->session_id
+                                                                     : session.session_id;
+            rreq.trace_id = trace_id;
+            rreq.tool_name = undo.tool_name;
+            rreq.arguments = undo.arguments;
+            rreq.session = session;
+            rreq.session.session_id = rreq.session_id;
+            rreq.idempotency_action_id =
+                "plan_compensate_" + std::to_string(it->step_id) + "_" + std::to_string(undo_idx++);
+            rreq.force_confirmed = true;
+            rreq.confirmed = true;
+            rreq.skip_preview = true;
+            rreq.append_outcome_assistant = false;
+            undo_tr = recordedToolInvoke(*conversation_state, deps, rreq).gateway;
+        }
+        else
+        {
+            undo_tr = m_gateway.invoke(undo);
+        }
         if(undo_tr.ok)
         {
             ++applied;
@@ -172,23 +201,50 @@ PlanExecutionResult ULLMPlanExecutor::execute(ULLMExecutionPlan& plan, const LLM
             std::string step_error;
             for(int rep = 0; rep < repeat_total; ++rep)
             {
-                ToolInvokeRequest invoke;
-                invoke.trace_id = trace_id;
-                invoke.tool_name = step.tool_name;
-                invoke.arguments = step.arguments;
+                nlohmann::json rep_args = step.arguments;
                 if(toolSupportsPlanStepRepeat(step.tool_name) && step.tool_name == "add_component"
                    && repeat_total > 1
-                   && invoke.arguments.contains("short_name")
-                   && invoke.arguments["short_name"].is_string())
+                   && rep_args.contains("short_name") && rep_args["short_name"].is_string())
                 {
-                    const std::string base = invoke.arguments["short_name"].get<std::string>();
-                    invoke.arguments["short_name"] = uniqueShortNameForAddRepeat(base, rep);
+                    const std::string base = rep_args["short_name"].get<std::string>();
+                    rep_args["short_name"] = uniqueShortNameForAddRepeat(base, rep);
                 }
-                invoke.session = session;
-                if(def->requires_confirmation)
-                    invoke.confirmed = true;
 
-                const ToolGatewayResult tr = m_gateway.invoke(invoke);
+                ToolGatewayResult tr;
+                if(options.conversation_state && options.conversation_store)
+                {
+                    RecordedToolInvokeDeps deps{m_registry, m_gateway, *options.conversation_store,
+                                                {}, nullptr};
+                    RecordedToolInvokeRequest rreq;
+                    rreq.session_id = !options.conversation_state->session_id.empty()
+                                          ? options.conversation_state->session_id
+                                          : session.session_id;
+                    rreq.trace_id = trace_id;
+                    rreq.tool_name = step.tool_name;
+                    rreq.arguments = rep_args;
+                    rreq.session = session;
+                    rreq.session.session_id = rreq.session_id;
+                    rreq.idempotency_action_id =
+                        "plan_step_" + std::to_string(step.step_id) + "_" + std::to_string(rep);
+                    rreq.force_confirmed = true;
+                    rreq.confirmed = true;
+                    rreq.skip_preview = true;
+                    rreq.append_outcome_assistant = false;
+                    RecordedToolInvokeResult recorded =
+                        recordedToolInvoke(*options.conversation_state, deps, rreq);
+                    tr = std::move(recorded.gateway);
+                }
+                else
+                {
+                    ToolInvokeRequest invoke;
+                    invoke.trace_id = trace_id;
+                    invoke.tool_name = step.tool_name;
+                    invoke.arguments = rep_args;
+                    invoke.session = session;
+                    if(def->requires_confirmation)
+                        invoke.confirmed = true;
+                    tr = m_gateway.invoke(invoke);
+                }
                 if(!tr.ok)
                 {
                     step_failed = true;
@@ -268,7 +324,8 @@ PlanExecutionResult ULLMPlanExecutor::execute(ULLMExecutionPlan& plan, const LLM
     {
         std::string note;
         result.compensation_steps_applied =
-            compensateCompletedWrites(plan, session, trace_id, note);
+            compensateCompletedWrites(plan, session, trace_id, note, options.conversation_state,
+                                      options.conversation_store);
         result.compensation_note = note;
         if(!result.completed_step_ids.empty())
         {

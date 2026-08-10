@@ -22,6 +22,9 @@ namespace RDK::LLM {
 
 struct WriteToolExecutionRequest;
 struct WriteToolExecutionResult;
+struct TurnContext;
+struct TurnServices;
+enum class TurnPhaseResult;
 
 struct LLMRequestEnvelope {
     std::string session_id;
@@ -35,11 +38,15 @@ struct LLMRequestEnvelope {
 /// Optional GUI streaming (TD-024). Called from worker thread; marshal to UI thread in callbacks.
 struct LLMStreamHandlers {
     std::function<void(const std::string& token)> on_token;
+    /// Optional thinking-token stream (not shown in answer bubble by default).
+    std::function<void(const std::string& token)> on_thinking_token;
 };
 
 struct LLMFinalResponse {
     bool ok = true;
     std::string text;
+    /// Last-round model thinking (truncated for UI/audit; not concatenated into text).
+    std::string thinking;
     std::string error;
     bool pending_confirmation = false;
     std::string pending_confirmation_id;
@@ -70,6 +77,8 @@ struct LLMFinalResponse {
     std::string action_preview_text;
     /// Sanitized tool invocations for this user turn (GUI chat / archive).
     std::vector<TurnToolInvocationView> tool_trace;
+    /// Working goals snapshot for GUI checklist (DD-WM-001).
+    std::vector<WorkingGoal> working_goals;
 };
 
 inline void assignTurnTerminal(LLMFinalResponse& response, TurnTerminal terminal)
@@ -78,9 +87,11 @@ inline void assignTurnTerminal(LLMFinalResponse& response, TurnTerminal terminal
 }
 
 class ULLMUnifiedTurnController;
+class ULLMTurnPipeline;
 
 class ULLMAgentOrchestrator {
     friend class ULLMUnifiedTurnController;
+    friend class ULLMTurnPipeline;
     friend WriteToolExecutionResult executeWriteWithPreviewAndVerify(ULLMAgentOrchestrator& orch,
                                                                      ConversationState& state,
                                                                      const WriteToolExecutionRequest& req);
@@ -91,8 +102,6 @@ public:
 
     LLMFinalResponse handleUserMessage(const LLMRequestEnvelope& req,
                                        const LLMStreamHandlers* stream = nullptr);
-    LLMFinalResponse handleUserMessageImpl(const LLMRequestEnvelope& req,
-                                           const LLMStreamHandlers* stream = nullptr);
     LLMFinalResponse confirmPending(const std::string& session_id, const std::string& confirmation_id);
     LLMFinalResponse confirmPlanExecution(const std::string& session_id, const std::string& trace_id,
                                           const LLMSessionContext& session);
@@ -110,6 +119,14 @@ public:
     bool tryAcquireSessionBusy(const std::string& session_id);
     void releaseSessionBusy(const std::string& session_id);
     static const char* sessionBusyErrorMessage();
+
+    /// Phase implementation entry points; the pipeline owns turn ordering and busy lifetime.
+    TurnPhaseResult prepareTurnContext(TurnContext& ctx, TurnServices& svc);
+    TurnPhaseResult runPackGoalRouter(TurnContext& ctx, TurnServices& svc);
+    TurnPhaseResult runTaskPathPhase(TurnContext& ctx, TurnServices& svc);
+    TurnPhaseResult runPreReactFunnelPhase(TurnContext& ctx, TurnServices& svc);
+    LLMFinalResponse handleUserMessageAfterPacks(TurnContext& ctx, TurnServices& svc);
+    void finalizeTurnContext(TurnContext& ctx);
 
     void seedSessionContext(const std::string& session_id, const LLMSessionContext& session,
                             const LLMGuiContextSnapshot& gui);
@@ -145,7 +162,8 @@ private:
                                                  const LLMToolCall& call,
                                                  PendingDisambiguationKind kind,
                                                  const std::string& field,
-                                                 const nlohmann::json& disambiguation);
+                                                 const nlohmann::json& disambiguation,
+                                                 bool include_candidate_list = true);
 
     LLMFinalResponse returnClarificationViaAskUser(ConversationState& state,
                                                  const std::string& trace_id,

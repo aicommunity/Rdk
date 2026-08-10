@@ -11,12 +11,16 @@ namespace RDK::LLM {
 
 struct SubagentRunRequest {
     std::string task;
+    /// Profile: `explore` (default), `inspect_graph`, `search_docs`.
+    std::string profile = "explore";
     int max_rounds = 4;
 };
 
 struct SubagentRunResult {
     bool ok = true;
     std::string summary;
+    /// Provider rounds consumed by this run (for session budget accounting).
+    int rounds_used = 0;
 };
 
 class ULLMSubagentRunner {
