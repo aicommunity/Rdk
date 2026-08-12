@@ -48,6 +48,10 @@
 #include <QStyle>
 #include <QToolBar>
 #include <QSizePolicy>
+#include <QCheckBox>
+#include <QDoubleSpinBox>
+#include <QWidgetAction>
+#include <QSignalBlocker>
 
 /*int heheheCounter = 0;
 void hehehe(){qDebug("hehehe %d", ++heheheCounter);}*/
@@ -354,6 +358,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     ui->dockWidgetProfiling->hide();
 
     createConfigurationWizardWidget=new UCreateConfigurationWizardWidget(this, application);
+    connect(createConfigurationWizardWidget, &QDialog::accepted, this, &UGEngineControlWidget::syncMaxCalcTimeFromProject);
 
     createTestWidget = new UCreateTestWidget(this, application);
     createTestWidget->hide();
@@ -396,6 +401,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     connect(ui->actionReset, SIGNAL(triggered(bool)), this, SLOT(actionReset()));
     connect(ui->actionStep, SIGNAL(triggered(bool)), this, SLOT(actionStep()));
     connect(ui->actionRunNSteps, SIGNAL(triggered(bool)), this, SLOT(actionRunNSteps()));
+    setupMaxCalcTimeToolBar();
 
     // window menu actions:
     connect(ui->actionImagesFromWindow, SIGNAL(triggered(bool)), this, SLOT(actionImages()));
@@ -1497,6 +1503,124 @@ QMenu* UGEngineControlWidget::windowMenu() const
     return ui ? ui->menuWindow : nullptr;
 }
 
+void UGEngineControlWidget::setupMaxCalcTimeToolBar()
+{
+    if(!ui || !ui->mainToolBar)
+        return;
+    auto* wa = new QWidgetAction(this);
+    wa->setObjectName(QStringLiteral("maxCalcTimeAction"));
+    wa->setDefaultWidget(createMaxCalcTimeWidget(ui->mainToolBar));
+    // Place next to Start/Pause/Reset — before Step.
+    ui->mainToolBar->insertAction(ui->actionStep, wa);
+    syncMaxCalcTimeFromProject();
+}
+
+QWidget* UGEngineControlWidget::createMaxCalcTimeWidget(QWidget* parent)
+{
+    auto* w = new QWidget(parent);
+    w->setObjectName(QStringLiteral("maxCalcTimeWidget"));
+    auto* lay = new QHBoxLayout(w);
+    lay->setContentsMargins(6, 0, 6, 0);
+    lay->setSpacing(4);
+
+    auto* unlimited = new QCheckBox(tr("Unlimited"), w);
+    unlimited->setObjectName(QStringLiteral("maxCalcUnlimited"));
+    unlimited->setToolTip(tr("No max model time limit (0)"));
+
+    auto* spin = new QDoubleSpinBox(w);
+    spin->setObjectName(QStringLiteral("maxCalcSeconds"));
+    spin->setRange(0.001, 1e9);
+    spin->setDecimals(3);
+    spin->setSuffix(QStringLiteral(" s"));
+    spin->setToolTip(tr("Max model time (seconds)"));
+    spin->setMaximumWidth(110);
+
+    lay->addWidget(unlimited);
+    lay->addWidget(spin);
+
+    connect(unlimited, &QCheckBox::toggled, this, [this, spin](bool on) {
+        spin->setEnabled(!on);
+        if(m_maxCalcSyncing)
+            return;
+        applyMaxCalcTime(on ? 0.0 : spin->value());
+    });
+    connect(spin, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, [this, unlimited](double v) {
+        if(m_maxCalcSyncing)
+            return;
+        if(unlimited->isChecked())
+            return;
+        applyMaxCalcTime(v);
+    });
+
+    m_maxCalcTimeWidgets.append(w);
+    connect(w, &QObject::destroyed, this, [this, w]() {
+        m_maxCalcTimeWidgets.removeAll(w);
+    });
+    return w;
+}
+
+void UGEngineControlWidget::syncMaxCalcTimeFromProject()
+{
+    if(!application)
+        return;
+
+    double seconds = 0.0;
+    if(application->GetProjectOpenFlag())
+    {
+        const int ch = Core_GetSelectedChannelIndex();
+        const RDK::TProjectConfig& cfg = application->GetProjectConfig();
+        if(ch >= 0 && ch < static_cast<int>(cfg.ChannelsConfig.size()))
+            seconds = cfg.ChannelsConfig[ch].MaxCalculationModelTime;
+        if(auto env = RDK::GetEnvironmentLock(ch))
+            seconds = env->GetMaxCalcTime();
+    }
+
+    m_maxCalcSyncing = true;
+    for(const QPointer<QWidget>& wp : m_maxCalcTimeWidgets)
+    {
+        if(!wp)
+            continue;
+        auto* unlimited = wp->findChild<QCheckBox*>(QStringLiteral("maxCalcUnlimited"));
+        auto* spin = wp->findChild<QDoubleSpinBox*>(QStringLiteral("maxCalcSeconds"));
+        if(!unlimited || !spin)
+            continue;
+        const bool isUnlimited = (seconds <= 0.0);
+        unlimited->setChecked(isUnlimited);
+        spin->setEnabled(!isUnlimited);
+        if(!isUnlimited)
+            spin->setValue(seconds);
+    }
+    m_maxCalcSyncing = false;
+}
+
+void UGEngineControlWidget::applyMaxCalcTime(double seconds)
+{
+    if(!application || !application->GetProjectOpenFlag())
+        return;
+    if(seconds < 0.0)
+        seconds = 0.0;
+
+    const int ch = Core_GetSelectedChannelIndex();
+    RDK::TProjectConfig cfg = application->GetProjectConfig();
+    if(ch < 0 || ch >= static_cast<int>(cfg.ChannelsConfig.size()))
+        return;
+
+    if(cfg.ChannelsConfig[ch].MaxCalculationModelTime == seconds)
+    {
+        if(auto env = RDK::GetEnvironmentLock(ch))
+            env->SetMaxCalcTime(seconds);
+        syncMaxCalcTimeFromProject();
+        return;
+    }
+
+    cfg.ChannelsConfig[ch].MaxCalculationModelTime = seconds;
+    application->SetProjectConfig(cfg);
+    if(auto env = RDK::GetEnvironmentLock(ch))
+        env->SetMaxCalcTime(seconds);
+    application->SaveProjectConfig();
+    syncMaxCalcTimeFromProject();
+}
+
 void UGEngineControlWidget::actionConfigOptions()
 {
  createConfigurationWizardWidget->restart();
@@ -2399,6 +2523,7 @@ void UGEngineControlWidget::AClearInterface(void)
 void UGEngineControlWidget::AAfterLoadProject(void)
 {
  UpdateInterface();
+ syncMaxCalcTimeFromProject();
  if(propertyChanger)
  {
    propertyChanger->ALoadParameters();

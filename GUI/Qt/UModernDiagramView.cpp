@@ -328,6 +328,9 @@ bool UModernDiagramView::viewportEvent(QEvent *event)
             }
         }
 
+        if(!(wheel->modifiers() & Qt::ControlModifier))
+            return QGraphicsView::viewportEvent(event);
+
         const double factor = wheel->angleDelta().y() > 0 ? 1.15 : 0.87;
 
         // 1. Сохраняем позицию курсора в координатах сцены до масштабирования

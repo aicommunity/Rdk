@@ -2188,12 +2188,12 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
 
   if(old_project_config.ChannelsConfig[i].MaxCalculationModelTime != project_config.ChannelsConfig[i].MaxCalculationModelTime)
   {
-   GetEnvironmentLock()->SetMaxCalcTime(project_config.ChannelsConfig[i].MaxCalculationModelTime);
+   GetEnvironmentLock(i)->SetMaxCalcTime(project_config.ChannelsConfig[i].MaxCalculationModelTime);
   }
 
   if(old_project_config.ChannelsConfig[i].UseIndTimeStepFlag != project_config.ChannelsConfig[i].UseIndTimeStepFlag)
   {
-   GetEnvironmentLock()->SetUseIndTimeStepFlag(project_config.ChannelsConfig[i].UseIndTimeStepFlag);
+   GetEnvironmentLock(i)->SetUseIndTimeStepFlag(project_config.ChannelsConfig[i].UseIndTimeStepFlag);
   }
 
  }

@@ -752,7 +752,7 @@
               <item>
                <widget class="QLabel" name="labelMaxIter">
                 <property name="text">
-                 <string>Max iteration time (ms)</string>
+                 <string>Max model time (s), 0 = unlimited</string>
                 </property>
                </widget>
               </item>

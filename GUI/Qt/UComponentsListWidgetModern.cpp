@@ -27,6 +27,7 @@
 #include "UComponentFormRegistry.h"
 
 #include "UModernDiagramWidget.h"
+#include "UPropertyXMLWidget.h"
 #include "Plot/PlotDocument.h"
 #include "../../Core/Math/UWatchablePropertyTypes.h"
 
@@ -588,6 +589,12 @@ UComponentsListWidgetModern::UComponentsListWidgetModern(QWidget *parent, RDK::U
             this, SLOT(parametersListItemChanged(QTreeWidgetItem *, int )));
     connect(ui->treeWidgetFavorites, SIGNAL(itemChanged(QTreeWidgetItem *, int )),
             this, SLOT(favoritesListItemChanged(QTreeWidgetItem *, int )));
+    connect(ui->treeWidgetState, SIGNAL(itemChanged(QTreeWidgetItem *, int )),
+            this, SLOT(stateListItemChanged(QTreeWidgetItem *, int )));
+    connect(ui->treeWidgetInputs, SIGNAL(itemChanged(QTreeWidgetItem *, int )),
+            this, SLOT(inputsListItemChanged(QTreeWidgetItem *, int )));
+    connect(ui->treeWidgetOutputs, SIGNAL(itemChanged(QTreeWidgetItem *, int )),
+            this, SLOT(outputsListItemChanged(QTreeWidgetItem *, int )));
 
     //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     connect(ui->listWidgetChannelSelection, SIGNAL(itemSelectionChanged()), this, SLOT(channelsListSelectionChanged()));
@@ -646,10 +653,14 @@ UComponentsListWidgetModern::UComponentsListWidgetModern(QWidget *parent, RDK::U
     m_actionEditProperty->setToolTip(tr("Double-click the Value cell, or press F2"));
     connect(m_actionEditProperty, &QAction::triggered, this, &UComponentsListWidgetModern::propertyEditValue);
 
+    m_actionShowPropertyXml = new QAction(tr("Show XML…"), this);
+    connect(m_actionShowPropertyXml, &QAction::triggered, this, &UComponentsListWidgetModern::propertyShowXml);
+
     for(QTreeWidget* tree : {ui->treeWidgetParameters, ui->treeWidgetState, ui->treeWidgetInputs,
                              ui->treeWidgetOutputs, ui->treeWidgetFavorites})
     {
         tree->addAction(m_actionEditProperty);
+        tree->addAction(m_actionShowPropertyXml);
         tree->addAction(ui->actionCopyPropertyNameToClipboard);
         tree->addAction(ui->actionCopyPropertyValueToClipboard);
         tree->addAction(ui->actionPastePropertyValueFromClipboard);
@@ -910,6 +921,41 @@ void UComponentsListWidgetModern::openTabN(int n)
 int UComponentsListWidgetModern::currentTabIndex()
 {
     return logicalTabIndexFromWidget(ui->tabWidgetComponentInfo->currentWidget());
+}
+
+int UComponentsListWidgetModern::currentPropertyXmlMask() const
+{
+    if(m_propertyListOptions.presentation == PropertyListPresentation::UnifiedGrouped
+       && m_unifiedTree)
+    {
+        QTreeWidgetItem* item = m_unifiedTree->currentItem();
+        if(item)
+        {
+            QTreeWidgetItem* group = item->data(0, kPropRoleIsGroup).toBool() ? item : item->parent();
+            if(group)
+            {
+                const QString title = group->text(0);
+                if(title == tr("State"))
+                    return static_cast<int>(ptPubState);
+                if(title == tr("Inputs"))
+                    return static_cast<int>(ptPubInput);
+                if(title == tr("Outputs"))
+                    return static_cast<int>(ptPubOutput);
+            }
+        }
+        return static_cast<int>(ptPubParameter);
+    }
+
+    switch(logicalTabIndexFromWidget(ui->tabWidgetComponentInfo->currentWidget()))
+    {
+    case 1: return static_cast<int>(ptPubState);
+    case 2: return static_cast<int>(ptPubInput);
+    case 3: return static_cast<int>(ptPubOutput);
+    case 0:
+    case 4:
+    default:
+        return static_cast<int>(ptPubParameter);
+    }
 }
 
 QString UComponentsListWidgetModern::getSelectedPropertyName()
@@ -1493,14 +1539,7 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
                     ui->treeWidgetParameters->setCurrentItem(parametersItem);
                 if(i->second.Property->GetLanguageType() == typeid(bool))
                 {
-                 parametersItem->setFlags((parametersItem->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable)
-                                          & ~Qt::ItemIsEditable);
-
-                 const bool* val=reinterpret_cast<const bool*>(i->second.Property->GetMemoryArea());
-                 if(*val)
-                  parametersItem->setCheckState(1,Qt::Checked);
-                 else
-                  parametersItem->setCheckState(1,Qt::Unchecked);
+                 applyBoolCheckFlags(parametersItem, i->second.Property);
                 }
                 else
                 {
@@ -1520,8 +1559,11 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
                 stateItem->setData(1, Qt::UserRole, rawValue);
                 stateItem->setText(1, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
                 stateItem->setToolTip(1, rawValue);
-                stateItem->setFlags((stateItem->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable)
-                                    & ~Qt::ItemIsUserCheckable);
+                if(i->second.Property->GetLanguageType() == typeid(bool))
+                    applyBoolCheckFlags(stateItem, i->second.Property);
+                else
+                    stateItem->setFlags((stateItem->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable)
+                                        & ~Qt::ItemIsUserCheckable);
                 if(stateName == selectedStateName)
                     ui->treeWidgetState->setCurrentItem(stateItem);
             }
@@ -1538,8 +1580,11 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
                 inputItem->setText(1, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
                 inputItem->setToolTip(1, rawValue);
                 inputItem->setText(2, QString(i->second.Property->GetLanguageType().name()));
-                inputItem->setFlags((inputItem->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable)
-                                    & ~Qt::ItemIsUserCheckable);
+                if(i->second.Property->GetLanguageType() == typeid(bool))
+                    applyBoolCheckFlags(inputItem, i->second.Property);
+                else
+                    inputItem->setFlags((inputItem->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable)
+                                        & ~Qt::ItemIsUserCheckable);
                 if(inputName == selectedInputName)
                     ui->treeWidgetInputs->setCurrentItem(inputItem);
             }
@@ -1556,8 +1601,11 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
                 outputItem->setText(1, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
                 outputItem->setToolTip(1, rawValue);
                 outputItem->setText(2, QString(i->second.Property->GetLanguageType().name()));
-                outputItem->setFlags((outputItem->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable)
-                                     & ~Qt::ItemIsUserCheckable);
+                if(i->second.Property->GetLanguageType() == typeid(bool))
+                    applyBoolCheckFlags(outputItem, i->second.Property);
+                else
+                    outputItem->setFlags((outputItem->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable)
+                                         & ~Qt::ItemIsUserCheckable);
                 if(outputName == selectedOutputName)
                     ui->treeWidgetOutputs->setCurrentItem(outputItem);
             }
@@ -1688,14 +1736,7 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
 
                     if(prop && prop->GetLanguageType() == typeid(bool))
                     {
-                     favoriteItem->setFlags((favoriteItem->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable)
-                                            & ~Qt::ItemIsEditable);
-
-                     const bool* val=reinterpret_cast<const bool*>(prop->GetMemoryArea());
-                     if(*val)
-                      favoriteItem->setCheckState(1,Qt::Checked);
-                     else
-                      favoriteItem->setCheckState(1,Qt::Unchecked);
+                     applyBoolCheckFlags(favoriteItem, prop);
                     }
                     else
                     {
@@ -1770,45 +1811,12 @@ void UComponentsListWidgetModern::parametersListSelectionChanged()
 
 void UComponentsListWidgetModern::parametersListItemChanged(QTreeWidgetItem *item, int column)
 {
+ Q_UNUSED(column);
  try
  {
-  if(UpdateInterfaceFlag)
+  if(UpdateInterfaceFlag || !item)
    return;
-  // Use timeout to avoid blocking UI during calculation
-  RDK::UELockPtr<RDK::UContainer> model =
-      RDK::GetModelLockTimeout(getWorkChannelIndex(), kModelLockTimeoutMs);
-  if (!model)
-  {
-   schedulePropertyReloadRetry();
-   return;
-  }
-
-  RDK::UEPtr<RDK::UContainer> cont;
-  if (currentDrawPropertyComponentName.isEmpty())
-   cont = model.Get();
-  else
-   cont = model->GetComponentL(currentDrawPropertyComponentName.toLocal8Bit().constData(), true);
-
-  if(!cont)
-   return;
-
-  QString parameterName=item->text(0);
-  RDK::UEPtr<RDK::UIProperty> property;
-
-  property=cont->FindProperty(parameterName.toLocal8Bit().constData());
-
-  if(!property)
-   return;
-
-  if(property->GetLanguageType() == typeid(bool))
-  {
-   bool value(false);
-   if(item->checkState(1) == Qt::Checked)
-    value=true;
-   else
-    value=false;
-   property->ReadFromMemory(&value);
-  }
+  commitBoolPropertyFromItem(item, currentDrawPropertyComponentName, item->text(0));
  }
 catch (RDK::UException &exception)
 {
@@ -1818,6 +1826,21 @@ catch (std::exception &exception)
 {
     RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
 }
+}
+
+void UComponentsListWidgetModern::stateListItemChanged(QTreeWidgetItem *item, int column)
+{
+    parametersListItemChanged(item, column);
+}
+
+void UComponentsListWidgetModern::inputsListItemChanged(QTreeWidgetItem *item, int column)
+{
+    parametersListItemChanged(item, column);
+}
+
+void UComponentsListWidgetModern::outputsListItemChanged(QTreeWidgetItem *item, int column)
+{
+    parametersListItemChanged(item, column);
 }
 
 void UComponentsListWidgetModern::stateListSelectionChanged()
@@ -1885,7 +1908,7 @@ void UComponentsListWidgetModern::favoritesListSelectionChanged()
 
 void UComponentsListWidgetModern::favoritesListItemChanged(QTreeWidgetItem *item, int column)
 {
-
+ Q_UNUSED(column);
 try
 {
     if(UpdateInterfaceFlag)
@@ -1899,35 +1922,7 @@ try
      if(prop_name.isEmpty() || component_long_name.isEmpty())
         return;
 
-     // Use timeout to avoid blocking UI during calculation
-     RDK::UELockPtr<RDK::UContainer> model =
-         RDK::GetModelLockTimeout(getWorkChannelIndex(), kModelLockTimeoutMs);
-     if (!model)
-      return;
-
-     RDK::UEPtr<RDK::UContainer> cont;
-
-     cont = model->GetComponentL(component_long_name.toLocal8Bit().constData(), true);
-
-     if(!cont)
-      return;
-
-     RDK::UEPtr<RDK::UIProperty> property;
-
-     property=cont->FindProperty(prop_name.toLocal8Bit().constData());
-
-     if(!property)
-      return;
-
-     if(property->GetLanguageType() == typeid(bool))
-     {
-      bool value(false);
-      if(item->checkState(1) == Qt::Checked)
-       value=true;
-      else
-       value=false;
-      property->ReadFromMemory(&value);
-     }
+     commitBoolPropertyFromItem(item, component_long_name, prop_name);
 }
 
 catch (RDK::UException &exception)
@@ -1939,6 +1934,56 @@ catch (std::exception &exception)
     RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
 }
 
+}
+
+void UComponentsListWidgetModern::unifiedListItemChanged(QTreeWidgetItem *item, int column)
+{
+    favoritesListItemChanged(item, column);
+}
+
+void UComponentsListWidgetModern::applyBoolCheckFlags(QTreeWidgetItem* item, RDK::UEPtr<RDK::UIProperty> prop)
+{
+    if(!item || !prop)
+        return;
+    item->setFlags((item->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable)
+                   & ~Qt::ItemIsEditable);
+    const bool* val = reinterpret_cast<const bool*>(prop->GetMemoryArea());
+    item->setCheckState(1, (val && *val) ? Qt::Checked : Qt::Unchecked);
+    item->setText(1, QString());
+}
+
+bool UComponentsListWidgetModern::commitBoolPropertyFromItem(QTreeWidgetItem* item,
+                                                             const QString& componentLongName,
+                                                             const QString& propertyName)
+{
+    if(!item || propertyName.isEmpty())
+        return false;
+
+    RDK::UELockPtr<RDK::UContainer> model =
+        RDK::GetModelLockTimeout(getWorkChannelIndex(), kModelLockTimeoutMs);
+    if(!model)
+    {
+        schedulePropertyReloadRetry();
+        return false;
+    }
+
+    RDK::UEPtr<RDK::UContainer> cont;
+    if(componentLongName.isEmpty())
+        cont = model.Get();
+    else
+        cont = model->GetComponentL(componentLongName.toLocal8Bit().constData(), true);
+    if(!cont)
+        return false;
+
+    RDK::UEPtr<RDK::UIProperty> property =
+        cont->FindProperty(propertyName.toLocal8Bit().constData());
+    if(!property || property->GetLanguageType() != typeid(bool))
+        return false;
+
+    const bool value = (item->checkState(1) == Qt::Checked);
+    bool writable = value;
+    property->ReadFromMemory(&writable);
+    return true;
 }
 
 void UComponentsListWidgetModern::handleSnapshotUpdated(NMSDK::UGuiSnapshotPtr snapshot,
@@ -2506,6 +2551,19 @@ void UComponentsListWidgetModern::propertyEditValue()
   beginPropertyValueEdit(currentPropertyItem());
 }
 
+void UComponentsListWidgetModern::propertyShowXml()
+{
+  const QString longName = getSelectedComponentLongName();
+  if(longName.isEmpty())
+    return;
+  if(!m_propertyXmlDialog)
+    m_propertyXmlDialog = new UPropertyXMLWidget(this);
+  m_propertyXmlDialog->initWidget(longName, currentPropertyXmlMask());
+  m_propertyXmlDialog->show();
+  m_propertyXmlDialog->raise();
+  m_propertyXmlDialog->activateWindow();
+}
+
 
 void UComponentsListWidgetModern::on_actionReloadTree_triggered()
 {
@@ -2789,6 +2847,11 @@ void UComponentsListWidgetModern::ensureUnifiedPropertyPage()
             this, &UComponentsListWidgetModern::onPropertyItemDoubleClicked);
     connect(m_unifiedTree, &QTreeWidget::itemSelectionChanged,
             this, &UComponentsListWidgetModern::unifiedListSelectionChanged);
+    connect(m_unifiedTree, &QTreeWidget::itemChanged,
+            this, &UComponentsListWidgetModern::unifiedListItemChanged);
+    m_unifiedTree->addAction(m_actionEditProperty);
+    if(m_actionShowPropertyXml)
+        m_unifiedTree->addAction(m_actionShowPropertyXml);
     m_unifiedTree->viewport()->installEventFilter(this);
     m_unifiedTree->installEventFilter(this);
 }
@@ -2970,10 +3033,7 @@ void UComponentsListWidgetModern::fillUnifiedPropertyTree(RDK::UContainer* cont,
         {
             if(i->second.Property->GetLanguageType() == typeid(bool))
             {
-                item->setFlags((item->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable)
-                               & ~Qt::ItemIsEditable);
-                const bool* val = reinterpret_cast<const bool*>(i->second.Property->GetMemoryArea());
-                item->setCheckState(1, (val && *val) ? Qt::Checked : Qt::Unchecked);
+                applyBoolCheckFlags(item, i->second.Property);
             }
             else
             {
@@ -3040,14 +3100,15 @@ void UComponentsListWidgetModern::fillUnifiedPropertyTree(RDK::UContainer* cont,
 
             QString typeName;
             QString rawValue;
+            RDK::UEPtr<RDK::UIProperty> favProp;
             if(child_cont)
             {
                 child_cont->GetPropertyValue(prop_name.toStdString(), buffer);
-                RDK::UEPtr<RDK::UIProperty> prop = child_cont->FindProperty(prop_name.toStdString());
-                if(prop)
+                favProp = child_cont->FindProperty(prop_name.toStdString());
+                if(favProp)
                 {
-                    typeName = QString::fromLocal8Bit(prop->GetLanguageType().name());
-                    if(RDK::IsMatrixPropertyTypeName(prop->GetLanguageType().name()))
+                    typeName = QString::fromLocal8Bit(favProp->GetLanguageType().name());
+                    if(RDK::IsMatrixPropertyTypeName(favProp->GetLanguageType().name()))
                     {
                         buffer = RDK::NormalizeMatrixPropertyText(buffer);
                         typeName = QStringLiteral("Matrix");
@@ -3071,8 +3132,21 @@ void UComponentsListWidgetModern::fillUnifiedPropertyTree(RDK::UContainer* cont,
                 favoriteItem->setText(1, QString::fromLocal8Bit(PreparePropertyValueToListView(displayBuf).c_str()));
                 favoriteItem->setToolTip(1, rawValue);
             }
-            favoriteItem->setFlags((favoriteItem->flags() | Qt::ItemIsSelectable)
-                                   & ~(Qt::ItemIsEditable | Qt::ItemIsUserCheckable));
+            if(m_propertyListOptions.allowInlineEdit && favProp
+               && favProp->GetLanguageType() == typeid(bool))
+            {
+                applyBoolCheckFlags(favoriteItem, favProp);
+            }
+            else if(m_propertyListOptions.allowInlineEdit)
+            {
+                favoriteItem->setFlags((favoriteItem->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable)
+                                       & ~Qt::ItemIsUserCheckable);
+            }
+            else
+            {
+                favoriteItem->setFlags((favoriteItem->flags() | Qt::ItemIsSelectable)
+                                       & ~(Qt::ItemIsEditable | Qt::ItemIsUserCheckable));
+            }
         }
     }
 

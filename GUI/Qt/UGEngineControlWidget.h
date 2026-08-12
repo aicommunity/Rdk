@@ -157,6 +157,11 @@ public:
     QMenu* windowMenu() const;
     RDK::UApplication* engineApplication() const { return application; }
 
+    /// Max model time toolbar control (host + Control Bar twin).
+    QWidget* createMaxCalcTimeWidget(QWidget* parent);
+    void syncMaxCalcTimeFromProject();
+    void applyMaxCalcTime(double seconds);
+
 #ifndef RDK_DISABLE_EXT_GUI
     void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
 #endif
@@ -293,10 +298,13 @@ private:
     void addToRecentConfigs(const QString& path);
     /// Force breadcrumbs onto its own row under mainToolBar (survives restoreState).
     void ensureBreadcrumbsToolBarRow();
+    void setupMaxCalcTimeToolBar();
 
     // data
     Ui::UGEngineControllWidget *ui;
     UGuiShellController* m_shell = nullptr;
+    bool m_maxCalcSyncing = false;
+    QList<QPointer<QWidget>> m_maxCalcTimeWidgets;
 
     // Theme menu actions
     QAction* m_lightThemeAction;

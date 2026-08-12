@@ -204,24 +204,28 @@ void UGuiShellController::installWindowMenuActions()
 
     windowMenu->addSeparator();
 
+    QMenu* layoutMenu = windowMenu->addMenu(tr("Layout"));
+
     m_presetGroup = new QActionGroup(m_host);
     m_presetGroup->setExclusive(true);
 
-    m_actionStudio = windowMenu->addAction(tr("Studio"));
+    m_actionStudio = layoutMenu->addAction(tr("Studio"));
     m_actionStudio->setCheckable(true);
     m_presetGroup->addAction(m_actionStudio);
 
-    m_actionControlBar = windowMenu->addAction(tr("Control Bar"));
+    m_actionControlBar = layoutMenu->addAction(tr("Control Bar"));
     m_actionControlBar->setCheckable(true);
     m_presetGroup->addAction(m_actionControlBar);
 
-    m_actionShowControlBar = windowMenu->addAction(tr("Show Control Bar"));
+    m_actionShowControlBar = layoutMenu->addAction(tr("Show Control Bar"));
     m_actionShowControlBar->setCheckable(true);
 
-    m_actionAlwaysOnTop = windowMenu->addAction(tr("Control Bar Always on Top"));
-    m_actionAlwaysOnTop->setCheckable(true);
+    m_actionShowWorkspace = layoutMenu->addAction(tr("Show Workspace"));
 
-    m_actionShowWorkspace = windowMenu->addAction(tr("Show Workspace"));
+    layoutMenu->addSeparator();
+
+    m_actionAlwaysOnTop = layoutMenu->addAction(tr("Control Bar Always on Top"));
+    m_actionAlwaysOnTop->setCheckable(true);
 
     connect(m_actionStudio, &QAction::triggered, this, &UGuiShellController::onShellStudioTriggered);
     connect(m_actionControlBar, &QAction::triggered, this, &UGuiShellController::onShellControlBarTriggered);

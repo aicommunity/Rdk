@@ -102,7 +102,7 @@ QString UModernDiagramTooltipGenerator::generateCanvasTooltip()
         "• Shift + Left Click + Drag - Add to selection<br/><br/>"
         "<b>Navigation:</b><br/>"
         "• Ctrl + Left Click + Drag - Pan canvas<br/>"
-        "• Mouse Wheel - Zoom<br/>"
+        "• Ctrl + Mouse Wheel - Zoom<br/>"
         "• Double Right Click - Go up level<br/><br/>"
         "<b>Connections:</b><br/>"
         "• Right Click - Cancel connection"

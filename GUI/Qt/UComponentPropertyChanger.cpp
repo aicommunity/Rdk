@@ -125,30 +125,11 @@ void UComponentPropertyChanger::actionShowXML()
 {
   componentName = componentsList->getSelectedComponentLongName();
 
+  if(componentName.isEmpty())
+    return;
+
   if(!propertyXML) propertyXML = new UPropertyXMLWidget(this);
-  switch(componentsList->currentTabIndex())
-  {
-    case 0:
-      propertyXML->initWidget(componentName, ptPubParameter);
-      break;
-
-    case 1:
-      propertyXML->initWidget(componentName, ptPubState);
-      break;
-
-    case 2:
-      propertyXML->initWidget(componentName, ptPubInput);
-      break;
-
-    case 3:
-      propertyXML->initWidget(componentName, ptPubOutput);
-      break;
-
-    default:
-      propertyXML->initWidget(componentName, ptPubParameter);
-      break;
-  }
-
+  propertyXML->initWidget(componentName, componentsList->currentPropertyXmlMask());
   propertyXML->show();
 }
 

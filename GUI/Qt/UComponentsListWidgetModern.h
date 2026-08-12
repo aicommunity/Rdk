@@ -29,6 +29,9 @@ class UContainerDescription;
 #include <QSet>
 #include <QVector>
 #include <QStringList>
+#include <QPointer>
+
+class UPropertyXMLWidget;
 
 namespace Ui {
 class UComponentsListWidgetModern;
@@ -116,6 +119,9 @@ public:
     /// Возвращает индекс текущего окна
     int currentTabIndex();
 
+    /// Mask for UPropertyXMLWidget (ptPubParameter / State / Input / Output).
+    int currentPropertyXmlMask() const;
+
     /// Возвращает имя выбранного Property
     QString getSelectedPropertyName();
 
@@ -188,6 +194,10 @@ public slots:
 
     void parametersListItemChanged(QTreeWidgetItem *item, int column);
     void favoritesListItemChanged(QTreeWidgetItem *item, int column);
+    void unifiedListItemChanged(QTreeWidgetItem *item, int column);
+    void stateListItemChanged(QTreeWidgetItem *item, int column);
+    void inputsListItemChanged(QTreeWidgetItem *item, int column);
+    void outputsListItemChanged(QTreeWidgetItem *item, int column);
     void handleSnapshotUpdated(NMSDK::UGuiSnapshotPtr snapshot,
                                const QStringList &added,
                                const QStringList &removed,
@@ -221,6 +231,7 @@ public slots:
     void propertyCopyValueToClipboard();
     void propertyPasteValueFromClipboard();
     void propertyEditValue();
+    void propertyShowXml();
 
 private slots:
     void on_actionReloadTree_triggered();
@@ -258,6 +269,10 @@ private:
     QTreeWidgetItem* currentPropertyItem() const;
 
     void updatePropertyItemDisplay(QTreeWidgetItem* item, const QString& rawValue);
+    void applyBoolCheckFlags(QTreeWidgetItem* item, RDK::UEPtr<RDK::UIProperty> prop);
+    bool commitBoolPropertyFromItem(QTreeWidgetItem* item,
+                                    const QString& componentLongName,
+                                    const QString& propertyName);
 
 private:
 
@@ -311,7 +326,9 @@ private:
     bool m_syncingColumnWidths = false;
 
     QAction* m_actionEditProperty = nullptr;
+    QAction* m_actionShowPropertyXml = nullptr;
     QAction* m_actionFavoritesShowInAllSections = nullptr;
+    QPointer<UPropertyXMLWidget> m_propertyXmlDialog;
 
     /// Текущий канал для виджета
     int currentChannel;

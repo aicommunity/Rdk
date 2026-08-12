@@ -164,6 +164,9 @@ bool UEnvironment::SetMaxCalcTime(double value)
  if(value<0)
   return false;
  MaxCalcTime=value;
+ // Allow Start to continue after raising/clearing the limit without a full Reset.
+ if(CalcFinishedFlag && (MaxCalcTime <= 0.0 || Time.GetDoubleTime() < MaxCalcTime))
+  CalcFinishedFlag = false;
  return true;
 }
 

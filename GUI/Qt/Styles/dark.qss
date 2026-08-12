@@ -675,21 +675,21 @@ QDoubleSpinBox::down-button:hover {
 
 /* ===== Scroll Bar ===== */
 QScrollBar:vertical {
-    background-color: transparent;
+    background-color: rgba(92, 99, 112, 0.35);
     width: 10px;
     margin: 0;
     border-radius: 5px;
 }
 
 QScrollBar::handle:vertical {
-    background-color: #3E4451;
+    background-color: #7A8494;
     border-radius: 5px;
     min-height: 24px;
     margin: 2px;
 }
 
 QScrollBar::handle:vertical:hover {
-    background-color: #5C6370;
+    background-color: #A0A8B4;
 }
 
 QScrollBar::handle:vertical:pressed {
@@ -707,21 +707,21 @@ QScrollBar::sub-page:vertical {
 }
 
 QScrollBar:horizontal {
-    background-color: transparent;
+    background-color: rgba(92, 99, 112, 0.35);
     height: 10px;
     margin: 0;
     border-radius: 5px;
 }
 
 QScrollBar::handle:horizontal {
-    background-color: #3E4451;
+    background-color: #7A8494;
     border-radius: 5px;
     min-width: 24px;
     margin: 2px;
 }
 
 QScrollBar::handle:horizontal:hover {
-    background-color: #5C6370;
+    background-color: #A0A8B4;
 }
 
 QScrollBar::handle:horizontal:pressed {
@@ -731,6 +731,11 @@ QScrollBar::handle:horizontal:pressed {
 QScrollBar::add-line:horizontal,
 QScrollBar::sub-line:horizontal {
     width: 0;
+}
+
+QScrollBar::add-page:horizontal,
+QScrollBar::sub-page:horizontal {
+    background-color: transparent;
 }
 
 /* ===== Group Box ===== */

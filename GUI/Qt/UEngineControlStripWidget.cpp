@@ -14,6 +14,7 @@
 #include <QToolBar>
 #include <QShowEvent>
 #include <QWidget>
+#include <QWidgetAction>
 
 UEngineControlStripWidget::UEngineControlStripWidget(UGuiShellController* shell,
                                                      RDK::UApplication* app,
@@ -123,10 +124,22 @@ void UEngineControlStripWidget::rebuildToolBarFromHost()
         if(!action)
             continue;
         if(action->isSeparator())
+        {
             m_toolBar->addSeparator();
-        else
-            m_toolBar->addAction(action);
+            continue;
+        }
+        if(action->objectName() == QStringLiteral("maxCalcTimeAction"))
+        {
+            // Do not share QWidgetAction default widget across two toolbars.
+            auto* twin = new QWidgetAction(m_toolBar);
+            twin->setObjectName(QStringLiteral("maxCalcTimeAction"));
+            twin->setDefaultWidget(m_host->createMaxCalcTimeWidget(m_toolBar));
+            m_toolBar->addAction(twin);
+            continue;
+        }
+        m_toolBar->addAction(action);
     }
+    m_host->syncMaxCalcTimeFromProject();
 }
 
 void UEngineControlStripWidget::setAlwaysOnTop(bool on)
