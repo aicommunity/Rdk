@@ -111,7 +111,7 @@ UClassesListWidget::UClassesListWidget(QWidget *parent, RDK::UApplication *app) 
     ui->listWidgetStorageByName->setContextMenuPolicy(Qt::ActionsContextMenu);
     ui->treeWidgetStorageByLibs->setContextMenuPolicy(Qt::ActionsContextMenu);
 
-    connect(action_display_class_description, SIGNAL(triggered()), this, SLOT(on_action_cl_desc_triggered()));
+    connect(action_display_class_description, SIGNAL(triggered()), this, SLOT(actionShowClassDescription()));
 
     // Инициализация combobox для выбора метода группировки
     ui->comboBoxGroupingMethod->addItem("No Grouping", static_cast<int>(GroupingMethod::None));
@@ -776,7 +776,7 @@ void UClassesListWidget::on_tabWidget_currentChanged(int index)
     on_lineEditSearch_textChanged("");
 }
 
-void UClassesListWidget::on_action_cl_desc_triggered()
+void UClassesListWidget::actionShowClassDescription()
 {
     switch(ui->tabWidget->currentIndex())
     {
@@ -816,7 +816,7 @@ void UClassesListWidget::disable_cl_desc_popup_menu()
     QList<QAction*> actions = ui->listWidgetStorageByName->actions();
     if(actions.size()>0 && actions.at(0)->text() == "Class description")
     {
-        disconnect(actions.at(0), SIGNAL(triggered()), this, SLOT(on_action_cl_desc_triggered()));
+        disconnect(actions.at(0), SIGNAL(triggered()), this, SLOT(actionShowClassDescription()));
         ui->listWidgetStorageByName->removeAction(actions.at(0));
         ui->treeWidgetStorageByLibs->removeAction(actions.at(0));
         delete actions.at(0);
@@ -833,19 +833,19 @@ void UClassesListWidget::removeTab(int index)
 
 void UClassesListWidget::on_treeWidgetStorageByLibs_itemDoubleClicked(QTreeWidgetItem *item, int column)
 {
-    on_action_cl_desc_triggered();
+    actionShowClassDescription();
 }
 
 
 void UClassesListWidget::on_listWidgetStorageByName_itemDoubleClicked(QListWidgetItem *item)
 {
-    on_action_cl_desc_triggered();
+    actionShowClassDescription();
 }
 
 
 void UClassesListWidget::on_listWidgetRTlibClasses_itemDoubleClicked(QListWidgetItem *item)
 {
-    on_action_cl_desc_triggered();
+    actionShowClassDescription();
 }
 
 // Реализация методов группировки

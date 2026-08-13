@@ -509,6 +509,8 @@ bool UGEngineControlWidget::eventFilter(QObject* watched, QEvent* event)
 
 UGEngineControlWidget::~UGEngineControlWidget()
 {
+    // Drop tracked pointers before QWidget tears down toolbar children.
+    m_maxCalcTimeWidgets.clear();
     delete ui;
 }
 
@@ -1572,10 +1574,10 @@ QWidget* UGEngineControlWidget::createMaxCalcTimeWidget(QWidget* parent)
         applyMaxCalcTime(v);
     });
 
+    // Track with QPointer only — do NOT connect to destroyed() to prune the list.
+    // During ~UGEngineControlWidget, members are destroyed before QWidget deletes
+    // children; a destroyed lambda calling removeAll() would UAF → SIGSEGV on exit.
     m_maxCalcTimeWidgets.append(w);
-    connect(w, &QObject::destroyed, this, [this, w]() {
-        m_maxCalcTimeWidgets.removeAll(w);
-    });
     return w;
 }
 
@@ -1596,19 +1598,27 @@ void UGEngineControlWidget::syncMaxCalcTimeFromProject()
     }
 
     m_maxCalcSyncing = true;
-    for(const QPointer<QWidget>& wp : m_maxCalcTimeWidgets)
+    for(auto it = m_maxCalcTimeWidgets.begin(); it != m_maxCalcTimeWidgets.end(); )
     {
-        if(!wp)
+        if(!*it)
+        {
+            it = m_maxCalcTimeWidgets.erase(it);
             continue;
+        }
+        QWidget* wp = *it;
         auto* unlimited = wp->findChild<QCheckBox*>(QStringLiteral("maxCalcUnlimited"));
         auto* spin = wp->findChild<QDoubleSpinBox*>(QStringLiteral("maxCalcSeconds"));
         if(!unlimited || !spin)
+        {
+            ++it;
             continue;
+        }
         const bool isUnlimited = (seconds <= 0.0);
         unlimited->setChecked(isUnlimited);
         spin->setEnabled(!isUnlimited);
         if(!isUnlimited)
             spin->setValue(seconds);
+        ++it;
     }
     m_maxCalcSyncing = false;
 }
