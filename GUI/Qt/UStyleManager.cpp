@@ -1,6 +1,7 @@
 #include "UStyleManager.h"
 
 #include <QFile>
+#include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -309,6 +310,12 @@ bool UStyleManager::loadStyleSheet(const QString& qssPath)
     
     m_styleSheet = QString::fromUtf8(file.readAll());
     file.close();
+
+    // setStyleSheet(string) loses the QSS file base path — resolve icon urls.
+    const QString stylesDir = QFileInfo(qssPath).absolutePath();
+    const QString iconsDir = QDir(stylesDir).filePath(QStringLiteral("icons"));
+    m_styleSheet.replace(QStringLiteral("url(icons/"),
+                         QStringLiteral("url(%1/").arg(QDir::fromNativeSeparators(iconsDir)));
     
     qDebug() << "UStyleManager: Stylesheet loaded from" << qssPath;
     return true;

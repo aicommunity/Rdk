@@ -766,23 +766,36 @@ QCheckBox {
 QCheckBox::indicator {
     width: 18px;
     height: 18px;
-    border: 2px solid #3E4451;
+    border: 2px solid #7A8494;
     border-radius: 4px;
     background-color: #1E2127;
 }
 
+QCheckBox::indicator:unchecked {
+    border: 2px solid #7A8494;
+    background-color: #1E2127;
+}
+
 QCheckBox::indicator:checked {
-    background-color: #61AFEF;
-    border-color: #61AFEF;
+    background-color: #1E2127;
+    border: 2px solid #A0A8B4;
+    image: url(icons/checkbox-checked-dark.svg);
 }
 
 QCheckBox::indicator:hover {
     border-color: #61AFEF;
 }
 
-/* Tree/list checkboxes (bool properties) — visible frame when unchecked */
+QCheckBox::indicator:checked:hover {
+    background-color: #1E2127;
+    border-color: #61AFEF;
+}
+
+/* Tree/list/table checkboxes — checkmark, not solid fill (avoids clash with selection) */
 QTreeView::indicator,
-QTreeWidget::indicator {
+QTreeWidget::indicator,
+QListView::indicator,
+QTableView::indicator {
     width: 14px;
     height: 14px;
     border: 2px solid #7A8494;
@@ -791,20 +804,31 @@ QTreeWidget::indicator {
 }
 
 QTreeView::indicator:unchecked,
-QTreeWidget::indicator:unchecked {
+QTreeWidget::indicator:unchecked,
+QListView::indicator:unchecked,
+QTableView::indicator:unchecked {
     border: 2px solid #7A8494;
     background-color: #1E2127;
 }
 
 QTreeView::indicator:checked,
-QTreeWidget::indicator:checked {
-    background-color: #61AFEF;
-    border-color: #61AFEF;
+QTreeWidget::indicator:checked,
+QListView::indicator:checked,
+QTableView::indicator:checked {
+    background-color: #1E2127;
+    border: 2px solid #A0A8B4;
+    image: url(icons/checkbox-checked-dark.svg);
 }
 
 QTreeView::indicator:hover,
-QTreeWidget::indicator:hover {
+QTreeWidget::indicator:hover,
+QListView::indicator:hover,
+QTableView::indicator:hover {
     border-color: #61AFEF;
+}
+
+QMenu::indicator:checked {
+    image: url(icons/checkbox-checked-dark.svg);
 }
 
 /* ===== Radio Button ===== */
