@@ -24,6 +24,10 @@ public:
     /// false -  state
     void initWidget(QString longName, int mask);
 
+signals:
+    /// Emitted after Set / Default so property lists can refresh.
+    void propertiesApplied();
+
 public slots:
     void setProperty();
     void reloadProperty();

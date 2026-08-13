@@ -128,7 +128,14 @@ void UComponentPropertyChanger::actionShowXML()
   if(componentName.isEmpty())
     return;
 
-  if(!propertyXML) propertyXML = new UPropertyXMLWidget(this);
+  if(!propertyXML)
+  {
+    propertyXML = new UPropertyXMLWidget(this);
+    connect(propertyXML, &UPropertyXMLWidget::propertiesApplied, this, [this]() {
+      if(componentsList)
+        componentsList->reloadPropertys(true);
+    });
+  }
   propertyXML->initWidget(componentName, componentsList->currentPropertyXmlMask());
   propertyXML->show();
 }

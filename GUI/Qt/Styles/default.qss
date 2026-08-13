@@ -800,6 +800,33 @@ QCheckBox::indicator:checked:hover {
     background-color: #4F7BE8;
 }
 
+/* Tree/list checkboxes (bool properties) — visible frame when unchecked */
+QTreeView::indicator,
+QTreeWidget::indicator {
+    width: 14px;
+    height: 14px;
+    border: 2px solid #94A3B8;
+    border-radius: 3px;
+    background-color: #FFFFFF;
+}
+
+QTreeView::indicator:unchecked,
+QTreeWidget::indicator:unchecked {
+    border: 2px solid #94A3B8;
+    background-color: #FFFFFF;
+}
+
+QTreeView::indicator:checked,
+QTreeWidget::indicator:checked {
+    background-color: #5B8DEF;
+    border-color: #5B8DEF;
+}
+
+QTreeView::indicator:hover,
+QTreeWidget::indicator:hover {
+    border-color: #5B8DEF;
+}
+
 /* ===== Radio Button ===== */
 QRadioButton {
     spacing: 6px;

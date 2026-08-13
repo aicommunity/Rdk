@@ -269,7 +269,8 @@ private:
     QTreeWidgetItem* currentPropertyItem() const;
 
     void updatePropertyItemDisplay(QTreeWidgetItem* item, const QString& rawValue);
-    void applyBoolCheckFlags(QTreeWidgetItem* item, RDK::UEPtr<RDK::UIProperty> prop);
+    void applyBoolCheckFlags(QTreeWidgetItem* item, bool checked);
+    bool parseBoolPropertyValue(const QString& raw) const;
     bool commitBoolPropertyFromItem(QTreeWidgetItem* item,
                                     const QString& componentLongName,
                                     const QString& propertyName);

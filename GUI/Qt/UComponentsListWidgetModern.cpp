@@ -1539,7 +1539,7 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
                     ui->treeWidgetParameters->setCurrentItem(parametersItem);
                 if(i->second.Property->GetLanguageType() == typeid(bool))
                 {
-                 applyBoolCheckFlags(parametersItem, i->second.Property);
+                 applyBoolCheckFlags(parametersItem, parseBoolPropertyValue(rawValue));
                 }
                 else
                 {
@@ -1560,7 +1560,7 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
                 stateItem->setText(1, QString::fromLocal8Bit((PreparePropertyValueToListView(buffer)).c_str()));
                 stateItem->setToolTip(1, rawValue);
                 if(i->second.Property->GetLanguageType() == typeid(bool))
-                    applyBoolCheckFlags(stateItem, i->second.Property);
+                    applyBoolCheckFlags(stateItem, parseBoolPropertyValue(rawValue));
                 else
                     stateItem->setFlags((stateItem->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable)
                                         & ~Qt::ItemIsUserCheckable);
@@ -1581,7 +1581,7 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
                 inputItem->setToolTip(1, rawValue);
                 inputItem->setText(2, QString(i->second.Property->GetLanguageType().name()));
                 if(i->second.Property->GetLanguageType() == typeid(bool))
-                    applyBoolCheckFlags(inputItem, i->second.Property);
+                    applyBoolCheckFlags(inputItem, parseBoolPropertyValue(rawValue));
                 else
                     inputItem->setFlags((inputItem->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable)
                                         & ~Qt::ItemIsUserCheckable);
@@ -1602,7 +1602,7 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
                 outputItem->setToolTip(1, rawValue);
                 outputItem->setText(2, QString(i->second.Property->GetLanguageType().name()));
                 if(i->second.Property->GetLanguageType() == typeid(bool))
-                    applyBoolCheckFlags(outputItem, i->second.Property);
+                    applyBoolCheckFlags(outputItem, parseBoolPropertyValue(rawValue));
                 else
                     outputItem->setFlags((outputItem->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable)
                                          & ~Qt::ItemIsUserCheckable);
@@ -1736,7 +1736,7 @@ void UComponentsListWidgetModern::reloadPropertys(bool forceReload)
 
                     if(prop && prop->GetLanguageType() == typeid(bool))
                     {
-                     applyBoolCheckFlags(favoriteItem, prop);
+                     applyBoolCheckFlags(favoriteItem, parseBoolPropertyValue(rawValue));
                     }
                     else
                     {
@@ -1941,15 +1941,36 @@ void UComponentsListWidgetModern::unifiedListItemChanged(QTreeWidgetItem *item, 
     favoritesListItemChanged(item, column);
 }
 
-void UComponentsListWidgetModern::applyBoolCheckFlags(QTreeWidgetItem* item, RDK::UEPtr<RDK::UIProperty> prop)
+void UComponentsListWidgetModern::applyBoolCheckFlags(QTreeWidgetItem* item, bool checked)
 {
-    if(!item || !prop)
+    if(!item)
         return;
     item->setFlags((item->flags() | Qt::ItemIsUserCheckable | Qt::ItemIsSelectable)
                    & ~Qt::ItemIsEditable);
-    const bool* val = reinterpret_cast<const bool*>(prop->GetMemoryArea());
-    item->setCheckState(1, (val && *val) ? Qt::Checked : Qt::Unchecked);
-    item->setText(1, QString());
+    item->setCheckState(1, checked ? Qt::Checked : Qt::Unchecked);
+    const QString text = checked ? QStringLiteral("true") : QStringLiteral("false");
+    item->setText(1, text);
+    item->setData(1, Qt::UserRole, text);
+    item->setToolTip(1, text);
+}
+
+bool UComponentsListWidgetModern::parseBoolPropertyValue(const QString& raw) const
+{
+    const QString s = raw.trimmed().toLower();
+    if(s.isEmpty())
+        return false;
+    if(s == QStringLiteral("true") || s == QStringLiteral("1") || s == QStringLiteral("yes")
+       || s == QStringLiteral("on"))
+        return true;
+    if(s == QStringLiteral("false") || s == QStringLiteral("0") || s == QStringLiteral("no")
+       || s == QStringLiteral("off"))
+        return false;
+    // Numeric / stream leftovers ("1\n", etc.)
+    bool ok = false;
+    const int n = s.toInt(&ok);
+    if(ok)
+        return n != 0;
+    return s.startsWith(QLatin1Char('t')) || s.startsWith(QLatin1Char('y'));
 }
 
 bool UComponentsListWidgetModern::commitBoolPropertyFromItem(QTreeWidgetItem* item,
@@ -1980,9 +2001,16 @@ bool UComponentsListWidgetModern::commitBoolPropertyFromItem(QTreeWidgetItem* it
     if(!property || property->GetLanguageType() != typeid(bool))
         return false;
 
-    const bool value = (item->checkState(1) == Qt::Checked);
-    bool writable = value;
-    property->ReadFromMemory(&writable);
+    bool writable = (item->checkState(1) == Qt::Checked);
+    if(!property->ReadFromMemory(&writable))
+        return false;
+
+    // Keep label in sync with checkbox (same string Show XML uses).
+    const QString text = writable ? QStringLiteral("true") : QStringLiteral("false");
+    item->setText(1, text);
+    item->setData(1, Qt::UserRole, text);
+    item->setToolTip(1, text);
+    emit selectedPropertyValue(text);
     return true;
 }
 
@@ -2557,7 +2585,12 @@ void UComponentsListWidgetModern::propertyShowXml()
   if(longName.isEmpty())
     return;
   if(!m_propertyXmlDialog)
+  {
     m_propertyXmlDialog = new UPropertyXMLWidget(this);
+    connect(m_propertyXmlDialog, &UPropertyXMLWidget::propertiesApplied, this, [this]() {
+      reloadPropertys(true);
+    });
+  }
   m_propertyXmlDialog->initWidget(longName, currentPropertyXmlMask());
   m_propertyXmlDialog->show();
   m_propertyXmlDialog->raise();
@@ -3033,7 +3066,7 @@ void UComponentsListWidgetModern::fillUnifiedPropertyTree(RDK::UContainer* cont,
         {
             if(i->second.Property->GetLanguageType() == typeid(bool))
             {
-                applyBoolCheckFlags(item, i->second.Property);
+                applyBoolCheckFlags(item, parseBoolPropertyValue(rawValue));
             }
             else
             {
@@ -3135,7 +3168,7 @@ void UComponentsListWidgetModern::fillUnifiedPropertyTree(RDK::UContainer* cont,
             if(m_propertyListOptions.allowInlineEdit && favProp
                && favProp->GetLanguageType() == typeid(bool))
             {
-                applyBoolCheckFlags(favoriteItem, favProp);
+                applyBoolCheckFlags(favoriteItem, parseBoolPropertyValue(rawValue));
             }
             else if(m_propertyListOptions.allowInlineEdit)
             {
