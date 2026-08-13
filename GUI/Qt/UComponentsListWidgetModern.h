@@ -274,6 +274,10 @@ private:
     bool commitBoolPropertyFromItem(QTreeWidgetItem* item,
                                     const QString& componentLongName,
                                     const QString& propertyName);
+    void refreshAfterComponentMutation(const QString& longName);
+    bool toggleBoolPropertyItem(QTreeWidgetItem* item);
+    QTreeWidget* propertyTreeFromFilterObject(QObject* obj) const;
+    bool handleBoolValueMouseEvent(QTreeWidget* tree, QMouseEvent* mouseEvent);
 
 private:
 

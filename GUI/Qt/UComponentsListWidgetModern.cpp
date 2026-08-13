@@ -691,6 +691,7 @@ UComponentsListWidgetModern::~UComponentsListWidgetModern()
 void UComponentsListWidgetModern::updateComponentsListFromScheme()
 {
     UpdateInterface(true);
+    reloadPropertys(true);
 }
 
 void UComponentsListWidgetModern::AUpdateInterface()
@@ -2344,8 +2345,8 @@ void UComponentsListWidgetModern::componentReset()
     if(componentsTree->currentItem())
     {
         Env_Reset(selectedComponentLongName.toLocal8Bit());
-        UModernDiagramWidget::invalidatePortsCacheEverywhere(selectedComponentLongName);
         UpdateInterface(true);
+        refreshAfterComponentMutation(selectedComponentLongName);
     }
 }
 
@@ -2354,8 +2355,7 @@ void UComponentsListWidgetModern::componentCalculate()
     if(componentsTree->currentItem())
     {
         Env_Calculate(selectedComponentLongName.toLocal8Bit());
-        UModernDiagramWidget::invalidatePortsCacheEverywhere(selectedComponentLongName);
-        RDK::UIVisualControllerStorage::UpdateInterface();
+        refreshAfterComponentMutation(selectedComponentLongName);
     }
 }
 
@@ -2364,7 +2364,7 @@ void UComponentsListWidgetModern::componentInit()
  if(componentsTree->currentItem())
  {
      Env_ModelInit(selectedComponentLongName.toLocal8Bit());
-     RDK::UIVisualControllerStorage::UpdateInterface();
+     refreshAfterComponentMutation(selectedComponentLongName);
  }
 }
 
@@ -2373,7 +2373,7 @@ void UComponentsListWidgetModern::componentUnInit()
  if(componentsTree->currentItem())
  {
      Env_ModelUnInit(selectedComponentLongName.toLocal8Bit());
-     RDK::UIVisualControllerStorage::UpdateInterface();
+     refreshAfterComponentMutation(selectedComponentLongName);
  }
 }
 
@@ -2636,8 +2636,7 @@ void UComponentsListWidgetModern::on_actionDefaultAllParameters_triggered()
         storage->DefaultObject(object);
         if(owner)
          object->CreateLinks(links_list, owner);
-        UModernDiagramWidget::invalidatePortsCacheEverywhere(selectedComponentLongName);
-        RDK::UIVisualControllerStorage::UpdateInterface(true);
+        refreshAfterComponentMutation(selectedComponentLongName);
     }
 }
 
@@ -3358,8 +3357,101 @@ void UComponentsListWidgetModern::applySharedColumnWidths(int nameWidth, int val
 
 void UComponentsListWidgetModern::onPropertyItemDoubleClicked(QTreeWidgetItem* item, int column)
 {
-    Q_UNUSED(column);
+    if(!item)
+        return;
+    QTreeWidget* tree = item->treeWidget();
+    if(tree)
+        tree->setCurrentItem(item);
+
+    // Bool: toggle is handled in viewport eventFilter on MouseButtonDblClick.
+    // Fallback if the filter did not consume the event.
+    if(item->data(1, Qt::CheckStateRole).isValid())
+    {
+        if(column == 1)
+            toggleBoolPropertyItem(item);
+        return;
+    }
+
     beginPropertyValueEdit(item);
+}
+
+void UComponentsListWidgetModern::refreshAfterComponentMutation(const QString& longName)
+{
+    UModernDiagramWidget::invalidatePortsCacheEverywhere(longName);
+    reloadPropertys(true);
+    emit updateScheme(true);
+}
+
+bool UComponentsListWidgetModern::toggleBoolPropertyItem(QTreeWidgetItem* item)
+{
+    if(!item || !item->data(1, Qt::CheckStateRole).isValid())
+        return false;
+    if(!m_propertyListOptions.allowInlineEdit)
+        return false;
+
+    const bool next = item->checkState(1) != Qt::Checked;
+    if(QTreeWidget* tree = item->treeWidget())
+    {
+        const QSignalBlocker blocker(tree);
+        applyBoolCheckFlags(item, next);
+    }
+    else
+    {
+        applyBoolCheckFlags(item, next);
+    }
+    return commitBoolPropertyFromItem(item,
+                                      propertyComponentForItem(item),
+                                      propertyNameForItem(item));
+}
+
+QTreeWidget* UComponentsListWidgetModern::propertyTreeFromFilterObject(QObject* obj) const
+{
+    if(obj == ui->treeWidgetParameters || obj == ui->treeWidgetParameters->viewport())
+        return ui->treeWidgetParameters;
+    if(obj == ui->treeWidgetState || obj == ui->treeWidgetState->viewport())
+        return ui->treeWidgetState;
+    if(obj == ui->treeWidgetInputs || obj == ui->treeWidgetInputs->viewport())
+        return ui->treeWidgetInputs;
+    if(obj == ui->treeWidgetOutputs || obj == ui->treeWidgetOutputs->viewport())
+        return ui->treeWidgetOutputs;
+    if(obj == ui->treeWidgetFavorites || obj == ui->treeWidgetFavorites->viewport())
+        return ui->treeWidgetFavorites;
+    if(m_unifiedTree && (obj == m_unifiedTree || obj == m_unifiedTree->viewport()))
+        return m_unifiedTree;
+    return nullptr;
+}
+
+bool UComponentsListWidgetModern::handleBoolValueMouseEvent(QTreeWidget* tree, QMouseEvent* mouseEvent)
+{
+    if(!tree || !mouseEvent || !m_propertyListOptions.allowInlineEdit)
+        return false;
+
+    QTreeWidgetItem* item = tree->itemAt(mouseEvent->pos());
+    if(!item)
+        return false;
+
+    const QModelIndex index = tree->indexAt(mouseEvent->pos());
+    if(!index.isValid() || index.column() != 1)
+        return false;
+    if(!item->data(1, Qt::CheckStateRole).isValid())
+        return false;
+
+    if(mouseEvent->type() == QEvent::MouseButtonPress
+       && mouseEvent->button() == Qt::LeftButton)
+    {
+        tree->setCurrentItem(item);
+        return true; // select only — prevent Qt auto-toggle
+    }
+
+    if(mouseEvent->type() == QEvent::MouseButtonDblClick
+       && mouseEvent->button() == Qt::LeftButton)
+    {
+        tree->setCurrentItem(item);
+        toggleBoolPropertyItem(item);
+        return true;
+    }
+
+    return false;
 }
 
 void UComponentsListWidgetModern::onFavoritesShowInAllSectionsToggled(bool checked)
@@ -3563,6 +3655,16 @@ bool UComponentsListWidgetModern::eventFilter(QObject *obj, QEvent *event)
         }
     }
 
+    if(event->type() == QEvent::MouseButtonPress
+       || event->type() == QEvent::MouseButtonDblClick)
+    {
+        if(QTreeWidget* tree = propertyTreeFromFilterObject(obj))
+        {
+            if(handleBoolValueMouseEvent(tree, static_cast<QMouseEvent*>(event)))
+                return true;
+        }
+    }
+
     if(event->type() == QEvent::KeyPress)
     {
         auto* keyEvent = static_cast<QKeyEvent*>(event);
@@ -3580,19 +3682,7 @@ bool UComponentsListWidgetModern::eventFilter(QObject *obj, QEvent *event)
         if(isPropertyTree &&
            (keyEvent->key() == Qt::Key_F2 || keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter))
         {
-            QTreeWidget* tree = nullptr;
-            if(obj == ui->treeWidgetParameters || obj == ui->treeWidgetParameters->viewport())
-                tree = ui->treeWidgetParameters;
-            else if(obj == ui->treeWidgetState || obj == ui->treeWidgetState->viewport())
-                tree = ui->treeWidgetState;
-            else if(obj == ui->treeWidgetInputs || obj == ui->treeWidgetInputs->viewport())
-                tree = ui->treeWidgetInputs;
-            else if(obj == ui->treeWidgetOutputs || obj == ui->treeWidgetOutputs->viewport())
-                tree = ui->treeWidgetOutputs;
-            else if(obj == ui->treeWidgetFavorites || obj == ui->treeWidgetFavorites->viewport())
-                tree = ui->treeWidgetFavorites;
-            else if(m_unifiedTree && (obj == m_unifiedTree || obj == m_unifiedTree->viewport()))
-                tree = m_unifiedTree;
+            QTreeWidget* tree = propertyTreeFromFilterObject(obj);
 
             // Не переоткрывать редактор, пока уже идёт edit (Enter = commit).
             // QAbstractItemView::state() is protected in Qt5 — detect via focused QLineEdit.

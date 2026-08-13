@@ -493,6 +493,7 @@ void UModernDiagramContextMenu::componentReset()
     const QString longName = getSelectedComponentLongName();
     Env_Reset(longName.toLocal8Bit().constData());
     m_owner->invalidatePortsCache(longName);
+    m_owner->updateScheme(true);
     emit m_owner->updateComponentsList();
 }
 
@@ -503,6 +504,8 @@ void UModernDiagramContextMenu::componentCalculate()
     const QString longName = getSelectedComponentLongName();
     Env_Calculate(longName.toLocal8Bit().constData());
     m_owner->invalidatePortsCache(longName);
+    m_owner->updateScheme(true);
+    emit m_owner->updateComponentsList();
 }
 
 void UModernDiagramContextMenu::componentDefault()
@@ -542,7 +545,7 @@ void UModernDiagramContextMenu::componentDefault()
         object->CreateLinks(links_list, owner);
 
     m_owner->invalidatePortsCache(selectedComponentLongName);
-    m_owner->Reload();
+    m_owner->updateScheme(true);
     emit m_owner->updateComponentsList();
 }
 
