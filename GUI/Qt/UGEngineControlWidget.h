@@ -162,6 +162,9 @@ public:
     void syncMaxCalcTimeFromProject();
     void applyMaxCalcTime(double seconds);
 
+    /// Re-home logger dock for Studio vs Control Bar shell preset.
+    void ensureLoggerForShellPreset();
+
 #ifndef RDK_DISABLE_EXT_GUI
     void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
 #endif
@@ -299,6 +302,9 @@ private:
     /// Force breadcrumbs onto its own row under mainToolBar (survives restoreState).
     void ensureBreadcrumbsToolBarRow();
     void setupMaxCalcTimeToolBar();
+    QMainWindow* loggerDockHost() const;
+    void rehomeLoggerDock(QMainWindow* target, bool floating);
+    void syncStripLoggerExpanded();
 
     // data
     Ui::UGEngineControllWidget *ui;

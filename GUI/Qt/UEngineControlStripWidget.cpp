@@ -48,6 +48,7 @@ UEngineControlStripWidget::UEngineControlStripWidget(UGuiShellController* shell,
 
     setMinimumWidth(640);
     setMaximumHeight(160);
+    setDockOptions(QMainWindow::AllowTabbedDocks | QMainWindow::AnimatedDocks);
 }
 
 UEngineControlStripWidget::~UEngineControlStripWidget() = default;
@@ -156,6 +157,35 @@ void UEngineControlStripWidget::setAlwaysOnTop(bool on)
         show();
 }
 
+void UEngineControlStripWidget::setLoggerDockExpanded(bool expanded)
+{
+    if(m_loggerDockExpanded == expanded && expanded)
+    {
+        setMinimumHeight(280);
+        setMaximumHeight(QWIDGETSIZE_MAX);
+        return;
+    }
+    if(m_loggerDockExpanded == expanded)
+        return;
+
+    m_loggerDockExpanded = expanded;
+    if(expanded)
+    {
+        m_heightApplied = false;
+        setMinimumHeight(280);
+        setMaximumHeight(QWIDGETSIZE_MAX);
+        if(height() < 320)
+            resize(width(), 360);
+    }
+    else
+    {
+        setMinimumHeight(0);
+        setMaximumHeight(160);
+        m_heightApplied = false;
+        applyNarrowHeight();
+    }
+}
+
 void UEngineControlStripWidget::saveGeometrySettings()
 {
     QSettings settings(QStringLiteral("NeuroModeler"), QStringLiteral("NeuroModeler"));
@@ -179,6 +209,8 @@ void UEngineControlStripWidget::restoreGeometrySettings()
 
 void UEngineControlStripWidget::applyNarrowHeight()
 {
+    if(m_loggerDockExpanded)
+        return;
     if(m_heightApplied)
         return;
     const int h = sizeHint().height();
@@ -192,7 +224,8 @@ void UEngineControlStripWidget::applyNarrowHeight()
 void UEngineControlStripWidget::showEvent(QShowEvent* event)
 {
     QMainWindow::showEvent(event);
-    applyNarrowHeight();
+    if(!m_loggerDockExpanded)
+        applyNarrowHeight();
 }
 
 void UEngineControlStripWidget::closeEvent(QCloseEvent* event)

@@ -59,6 +59,7 @@ void UGuiShellController::applyPreset()
         if(!isWorkspaceVisible())
             showWorkspace();
     }
+    m_host->ensureLoggerForShellPreset();
     syncShellActionStates();
 }
 
@@ -275,6 +276,9 @@ void UGuiShellController::applyStartupVisibility(bool hideAdminForm, bool startM
 
     if(m_preset == GuiShellPreset::ControlBar || m_stripVisibleUser)
         setStripVisible(true);
+
+    if(m_host)
+        m_host->ensureLoggerForShellPreset();
 
     syncShellActionStates();
 }

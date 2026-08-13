@@ -6,6 +6,7 @@
 #include "UComponentGuiDndPayload.h"
 #include "UGuiShellController.h"
 #include "UGuiShellTypes.h"
+#include "UEngineControlStripWidget.h"
 
 
 #include <rdk_application.h>
@@ -328,7 +329,20 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
         floatBtn->setIcon(style()->standardIcon(QStyle::SP_TitleBarNormalButton));
         floatBtn->setToolTip(tr("Dock / undock"));
         connect(floatBtn, &QToolButton::clicked, this, [this]() {
-            ui->dockWidgetLoger->setFloating(!ui->dockWidgetLoger->isFloating());
+            QDockWidget* dock = ui->dockWidgetLoger;
+            if(!dock)
+                return;
+            if(dock->isFloating())
+            {
+                // Re-dock into the shell-appropriate main window.
+                rehomeLoggerDock(loggerDockHost(), false);
+                dock->show();
+            }
+            else
+            {
+                dock->setFloating(true);
+            }
+            syncStripLoggerExpanded();
         });
 
         QToolButton* closeBtn = new QToolButton(titleBar);
@@ -346,6 +360,12 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     ui->actionLogger->setChecked(false);
     connect(ui->dockWidgetLoger, &QDockWidget::visibilityChanged,
             ui->actionLogger, &QAction::setChecked);
+    connect(ui->dockWidgetLoger, &QDockWidget::visibilityChanged, this, [this](bool) {
+        syncStripLoggerExpanded();
+    });
+    connect(ui->dockWidgetLoger, &QDockWidget::topLevelChanged, this, [this](bool) {
+        syncStripLoggerExpanded();
+    });
 
     watchWindow = new UWatch(this);
     watchWindow->setWindowTitle("Watch window");
@@ -1761,20 +1781,114 @@ void UGEngineControlWidget::actionChannelsControl()
 
 void UGEngineControlWidget::actionLogger()
 {
-  // Menu checkbox / toggle: hide if already visible, otherwise open floating.
+  // Menu checkbox / toggle: hide if already visible, otherwise open on shell host.
   if(ui->dockWidgetLoger->isVisible())
   {
     ui->dockWidgetLoger->hide();
     ui->actionLogger->setChecked(false);
+    syncStripLoggerExpanded();
     return;
   }
 
-  if(!ui->dockWidgetLoger->isFloating())
-    ui->dockWidgetLoger->setFloating(true);
+  QMainWindow* hostWin = loggerDockHost();
+  const bool preferFloating = (hostWin == static_cast<QMainWindow*>(this));
+  rehomeLoggerDock(hostWin, preferFloating);
   ui->dockWidgetLoger->show();
   ui->dockWidgetLoger->raise();
   ui->dockWidgetLoger->activateWindow();
   ui->actionLogger->setChecked(true);
+  syncStripLoggerExpanded();
+}
+
+QMainWindow* UGEngineControlWidget::loggerDockHost() const
+{
+    if(m_shell && m_shell->preset() == GuiShellPreset::ControlBar)
+    {
+        if(UEngineControlStripWidget* strip = m_shell->strip())
+            return strip;
+    }
+    return const_cast<UGEngineControlWidget*>(this);
+}
+
+void UGEngineControlWidget::rehomeLoggerDock(QMainWindow* target, bool floating)
+{
+    QDockWidget* dock = ui ? ui->dockWidgetLoger : nullptr;
+    if(!dock || !target)
+        return;
+
+    QMainWindow* currentHost = qobject_cast<QMainWindow*>(dock->parentWidget());
+    // When floating, parent may still be the previous main window.
+    if(!currentHost)
+        currentHost = this;
+
+    if(currentHost != target)
+    {
+        const bool wasVisible = dock->isVisible();
+        currentHost->removeDockWidget(dock);
+        target->addDockWidget(Qt::BottomDockWidgetArea, dock);
+        if(wasVisible)
+            dock->show();
+    }
+    else if(!target->dockWidgetArea(dock))
+    {
+        target->addDockWidget(Qt::BottomDockWidgetArea, dock);
+    }
+
+    dock->setFloating(floating);
+    if(!floating)
+        target->addDockWidget(Qt::BottomDockWidgetArea, dock);
+
+    syncStripLoggerExpanded();
+}
+
+void UGEngineControlWidget::syncStripLoggerExpanded()
+{
+    if(!m_shell)
+        return;
+    UEngineControlStripWidget* strip = m_shell->strip();
+    if(!strip)
+        return;
+
+    QDockWidget* dock = ui ? ui->dockWidgetLoger : nullptr;
+    const bool onStrip = dock && (dock->parentWidget() == strip ||
+                                  strip->dockWidgetArea(dock) != Qt::NoDockWidgetArea);
+    const bool expanded = onStrip && dock && dock->isVisible() && !dock->isFloating();
+    strip->setLoggerDockExpanded(expanded);
+}
+
+void UGEngineControlWidget::ensureLoggerForShellPreset()
+{
+    QDockWidget* dock = ui ? ui->dockWidgetLoger : nullptr;
+    if(!dock)
+        return;
+
+    QMainWindow* hostWin = loggerDockHost();
+    if(hostWin != static_cast<QMainWindow*>(this))
+    {
+        // Control Bar: logger opens docked into the strip by default.
+        rehomeLoggerDock(hostWin, false);
+        dock->show();
+        dock->raise();
+        ui->actionLogger->setChecked(true);
+    }
+    else
+    {
+        // Studio: if dock lived on strip, bring it back as floating; keep visibility.
+        const bool wasVisible = dock->isVisible();
+        rehomeLoggerDock(this, true);
+        if(wasVisible)
+        {
+            dock->show();
+            dock->raise();
+            ui->actionLogger->setChecked(true);
+        }
+        else
+        {
+            dock->hide();
+            ui->actionLogger->setChecked(false);
+        }
+    }
+    syncStripLoggerExpanded();
 }
 
 void UGEngineControlWidget::actionTestCreator()

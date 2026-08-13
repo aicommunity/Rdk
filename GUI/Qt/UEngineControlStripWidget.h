@@ -32,6 +32,10 @@ public:
     void setAlwaysOnTop(bool on);
     bool alwaysOnTop() const { return m_alwaysOnTop; }
 
+    /// Expand strip so a Bottom-docked logger fits; collapse back to chrome-only height.
+    void setLoggerDockExpanded(bool expanded);
+    bool loggerDockExpanded() const { return m_loggerDockExpanded; }
+
     void saveGeometrySettings();
     void restoreGeometrySettings();
 
@@ -50,6 +54,7 @@ private:
     UStatusPanel* m_statusPanel = nullptr;
     bool m_alwaysOnTop = false;
     bool m_heightApplied = false;
+    bool m_loggerDockExpanded = false;
 };
 
 #endif // UENGINECONTROLSTRIPWIDGET_H
