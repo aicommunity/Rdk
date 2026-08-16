@@ -60,7 +60,7 @@ void UGuiShellController::applyPreset()
             showWorkspace();
     }
     m_host->ensureLoggerForShellPreset();
-    m_host->AUpdateInterface();
+    m_host->syncShellWindowTitles();
     syncShellActionStates();
 }
 

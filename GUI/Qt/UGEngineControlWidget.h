@@ -164,6 +164,8 @@ public:
 
     /// Re-home logger dock for Studio vs Control Bar shell preset.
     void ensureLoggerForShellPreset();
+    /// Refresh host/Control Bar window titles after preset or project change.
+    void syncShellWindowTitles();
 
 #ifndef RDK_DISABLE_EXT_GUI
     void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);

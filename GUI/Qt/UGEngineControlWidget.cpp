@@ -2608,7 +2608,11 @@ void UGEngineControlWidget::AUpdateInterface(void)
  }
  QString configSuffix;
  if(application->GetProjectOpenFlag())
-  configSuffix=" [Configuration: " + (application->GetProjectPath()+application->GetProjectFileName()).c_str()+"]";
+ {
+  configSuffix = QStringLiteral(" [Configuration: %1]")
+      .arg(QString::fromLocal8Bit(
+          (application->GetProjectPath()+application->GetProjectFileName()).c_str()));
+ }
 
  const bool controlBarActive = m_shell
      && m_shell->preset() == GuiShellPreset::ControlBar
@@ -2625,6 +2629,11 @@ void UGEngineControlWidget::AUpdateInterface(void)
   if(m_shell && m_shell->strip() && m_shell->isStripVisible())
    m_shell->strip()->setSessionWindowTitle(fullCaption);
  }
+}
+
+void UGEngineControlWidget::syncShellWindowTitles()
+{
+ AUpdateInterface();
 }
 
 // Возврат интерфейса в исходное состояние
