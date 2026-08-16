@@ -29,6 +29,9 @@ public:
     void rebuildMenusFromHost();
     void rebuildToolBarFromHost();
 
+    /// Session caption (program/user/config) shown as "%1 — Control Bar".
+    void setSessionWindowTitle(const QString& sessionTitle);
+
     void setAlwaysOnTop(bool on);
     bool alwaysOnTop() const { return m_alwaysOnTop; }
 

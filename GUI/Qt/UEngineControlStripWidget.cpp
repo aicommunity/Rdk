@@ -57,9 +57,17 @@ void UEngineControlStripWidget::bindHost(UGEngineControlWidget* host)
 {
     m_host = host;
     if(host && !host->windowTitle().isEmpty())
-        setWindowTitle(tr("%1 — Control Bar").arg(host->windowTitle()));
+        setSessionWindowTitle(host->windowTitle());
     rebuildMenusFromHost();
     rebuildToolBarFromHost();
+}
+
+void UEngineControlStripWidget::setSessionWindowTitle(const QString& sessionTitle)
+{
+    if(sessionTitle.isEmpty())
+        setWindowTitle(tr("NeuroModeler — Control Bar"));
+    else
+        setWindowTitle(tr("%1 — Control Bar").arg(sessionTitle));
 }
 
 void UEngineControlStripWidget::mirrorMenu(QMenu* src, QMenu* dst)

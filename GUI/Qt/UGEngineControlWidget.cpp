@@ -2597,18 +2597,34 @@ void UGEngineControlWidget::updateChannelsVisibility()
 // Обновление интерфейса
 void UGEngineControlWidget::AUpdateInterface(void)
 {
- QString caption_line=(application->GetProgramName()+" ").c_str();
- caption_line += QCoreApplication::applicationVersion();
+ QString baseCaption=(application->GetProgramName()+" ").c_str();
+ baseCaption += QCoreApplication::applicationVersion();
  if(!application->GetUserName().empty())
  {
-  caption_line=caption_line+" ["+application->GetUserName().c_str();
+  baseCaption=baseCaption+" ["+application->GetUserName().c_str();
   if(application->GetUserId()>=0)
-   caption_line=caption_line+":"+RDK::sntoa(application->GetUserId()).c_str();
-  caption_line=caption_line+="]";
+   baseCaption=baseCaption+":"+RDK::sntoa(application->GetUserId()).c_str();
+  baseCaption=baseCaption+="]";
  }
+ QString configSuffix;
  if(application->GetProjectOpenFlag())
-  caption_line=caption_line+" [Configuration: " + (application->GetProjectPath()+application->GetProjectFileName()).c_str()+"]";
-  this->setWindowTitle(caption_line);
+  configSuffix=" [Configuration: " + (application->GetProjectPath()+application->GetProjectFileName()).c_str()+"]";
+
+ const bool controlBarActive = m_shell
+     && m_shell->preset() == GuiShellPreset::ControlBar
+     && m_shell->strip();
+ if(controlBarActive)
+ {
+  this->setWindowTitle(baseCaption);
+  m_shell->strip()->setSessionWindowTitle(baseCaption + configSuffix);
+ }
+ else
+ {
+  const QString fullCaption = baseCaption + configSuffix;
+  this->setWindowTitle(fullCaption);
+  if(m_shell && m_shell->strip() && m_shell->isStripVisible())
+   m_shell->strip()->setSessionWindowTitle(fullCaption);
+ }
 }
 
 // Возврат интерфейса в исходное состояние
