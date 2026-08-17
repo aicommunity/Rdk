@@ -11,6 +11,7 @@
 #include "../../Deploy/Include/rdk_engine_support.h"
 #include "UVisualControllerWidget.h"
 #include "UComponentGuiTabHostWidget.h"
+#include "UComponentGuiDockChrome.h"
 
 namespace
 {
@@ -191,6 +192,7 @@ UVisualControllerWidget* UComponentGuiService::createOrActivate(QWidget* parentW
         dockHost->setAllowedAreas(Qt::AllDockWidgetAreas);
         dockHost->setWidget(widget);
         dockHost->setAttribute(Qt::WA_DeleteOnClose, true);
+        installComponentGuiFloatingChrome(dockHost);
         hostMainWindow->addDockWidget(Qt::RightDockWidgetArea, dockHost);
         dockHost->show();
     }
@@ -328,6 +330,7 @@ bool UComponentGuiService::attachToMdi(const UComponentGuiContext& context, QMdi
             dock->setAllowedAreas(Qt::AllDockWidgetAreas);
             dock->setWidget(widget);
             dock->setAttribute(Qt::WA_DeleteOnClose, true);
+            installComponentGuiFloatingChrome(dock);
             m_dockHosts[key] = dock;
         }
     }
@@ -432,6 +435,7 @@ bool UComponentGuiService::attachToTabHostDock(const UComponentGuiContext& conte
             dock->setAllowedAreas(Qt::AllDockWidgetAreas);
             dock->setWidget(widget);
             dock->setAttribute(Qt::WA_DeleteOnClose, true);
+            installComponentGuiFloatingChrome(dock);
             m_dockHosts[key] = dock;
         }
     }

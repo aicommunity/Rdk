@@ -7,6 +7,7 @@
 #include "UGuiShellController.h"
 #include "UGuiShellTypes.h"
 #include "UEngineControlStripWidget.h"
+#include "UComponentGuiDockChrome.h"
 
 
 #include <rdk_application.h>
@@ -2525,6 +2526,10 @@ void UGEngineControlWidget::createOrActivateCustomWidget(const QString &id)
     {
         auto *dock = new QDockWidget(found->title, this);
         dock->setWidget(widget);
+        dock->setFeatures(QDockWidget::DockWidgetMovable |
+                          QDockWidget::DockWidgetFloatable |
+                          QDockWidget::DockWidgetClosable);
+        installComponentGuiFloatingChrome(dock);
         addDockWidget(found->defaultDockArea, dock);
         dock->show();
     }
