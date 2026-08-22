@@ -1,6 +1,7 @@
 #include "UModernDiagramLinkItem.h"
 #include "UModernDiagramWidget.h" // Для доступа к Port, PortCategory и UModernDiagramWidget
 #include "UModernDiagramNodeItem.h"
+#include "UModernDiagramExternalSourceItem.h"
 #include "UModernDiagramTooltipGenerator.h"
 #include "UStyleManager.h"
 
@@ -82,8 +83,47 @@ UModernDiagramLinkItem::UModernDiagramLinkItem(UModernDiagramNodeItem* src, cons
     updateGeometry(tempEnd);
 }
 
+UModernDiagramLinkItem::UModernDiagramLinkItem(UModernDiagramExternalSourceItem* externalSrc,
+                                               UModernDiagramNodeItem* dst,
+                                               PortCategory dstCategory,
+                                               const QString& srcLabelForTooltip)
+    : QGraphicsPathItem()
+    , m_owner(dst ? dst->m_owner : nullptr)
+    , m_src(nullptr)
+    , m_dst(dst)
+    , m_useOutput(true)
+    , m_useInput(true)
+    , m_isTemp(false)
+    , m_srcCategory(PortCategory::Own)
+    , m_dstCategory(dstCategory)
+    , m_hasCategories(true)
+    , m_parallelCount(1)
+    , m_externalSrc(externalSrc)
+    , m_externalSrcLabel(srcLabelForTooltip)
+    , m_isExternalIncoming(true)
+{
+    UStyleManager* style = UStyleManager::instance();
+    setPen(QPen(style->getLinkColor(), style->getLinkWidth(),
+                Qt::DashLine, Qt::RoundCap, Qt::RoundJoin));
+    setZValue(-1);
+    setAcceptHoverEvents(true);
+    setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+}
+
 void UModernDiagramLinkItem::updateGeometry(const QPointF& cursorOverride)
 {
+    if(m_isExternalIncoming && m_externalSrc && m_dst)
+    {
+        QPointF start = m_externalSrc->scenePortPos();
+        QPointF end = m_dst->scenePortPosByCategory(false, m_dstCategory);
+        QPainterPath path(start);
+        QPointF c1 = start + QPointF((end.x() - start.x()) * 0.4, 0);
+        QPointF c2 = end   - QPointF((end.x() - start.x()) * 0.4, 0);
+        path.cubicTo(c1, c2, end);
+        setPath(path);
+        return;
+    }
+
     if(!m_src)
         return;
 

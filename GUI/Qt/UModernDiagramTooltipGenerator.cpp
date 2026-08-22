@@ -69,7 +69,36 @@ QString UModernDiagramTooltipGenerator::generatePortTooltip(const UModernDiagram
 
 QString UModernDiagramTooltipGenerator::generateLinkTooltip(const UModernDiagramLinkItem* link)
 {
-    if(!link || !link->getSourceNode())
+    if(!link)
+        return QString();
+
+    if(link->isExternalIncoming())
+    {
+        const UModernDiagramNodeItem* dstNode = link->getDestinationNode();
+        QString dstName = dstNode ? dstNode->nodeName : QCoreApplication::translate("UModernDiagramTooltipGenerator", "(unknown)");
+        QString categoryName;
+        switch(link->dstCategory())
+        {
+        case PortCategory::Own: categoryName = QCoreApplication::translate("UModernDiagramTooltipGenerator", "Own"); break;
+        case PortCategory::Child: categoryName = QCoreApplication::translate("UModernDiagramTooltipGenerator", "Child"); break;
+        case PortCategory::Alias: categoryName = QCoreApplication::translate("UModernDiagramTooltipGenerator", "Alias"); break;
+        }
+        QString tooltip = QCoreApplication::translate("UModernDiagramTooltipGenerator",
+            "<b>External connection</b><br/>"
+            "From: %1<br/>"
+            "To: %2 (%3)<br/><br/>"
+            "<b>Actions:</b><br/>"
+            "• Right Click - Context menu"
+        ).arg(link->externalSourceLabel(), dstName, categoryName);
+        if(link->parallelCount() > 1)
+        {
+            tooltip += QCoreApplication::translate("UModernDiagramTooltipGenerator",
+                "<br/><br/>links: %1").arg(link->parallelCount());
+        }
+        return tooltip;
+    }
+
+    if(!link->getSourceNode())
         return QString();
 
     QString srcName = link->getSourceNode()->nodeName;

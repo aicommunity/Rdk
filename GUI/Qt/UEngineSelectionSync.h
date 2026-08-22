@@ -33,6 +33,12 @@ QString componentClassNameFromModelScope(int channel_index, const QString& compo
 /// Internal links XML for a schematic scope from model root. Empty if none or not a net.
 std::string internalLinksXmlFromModelScope(int channel_index, const QString& scope_long_name);
 
+/// Personal/external links for component relative to owner scope (model root paths).
+/// Empty if component not found or no links.
+std::string personalLinksXmlFromModelScope(int channel_index,
+                                           const QString& component_long_name,
+                                           const QString& owner_level_long_name);
+
 struct DiagramAddComponentResult {
     bool ok = false;
     QString short_name;

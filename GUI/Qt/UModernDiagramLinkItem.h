@@ -10,6 +10,7 @@
 // Полное определение включается в конце файла после всех forward declarations
 class UModernDiagramWidget;
 class UModernDiagramNodeItem;
+class UModernDiagramExternalSourceItem;
 
 // PortCategory теперь в отдельном файле
 #include "UModernDiagramPort.h"
@@ -25,6 +26,10 @@ public:
     UModernDiagramLinkItem(UModernDiagramNodeItem* src, UModernDiagramNodeItem* dst,
                            PortCategory srcCategory,
                            PortCategory dstCategory);
+    UModernDiagramLinkItem(UModernDiagramExternalSourceItem* externalSrc,
+                           UModernDiagramNodeItem* dst,
+                           PortCategory dstCategory,
+                           const QString& srcLabelForTooltip);
     // Временная линия до курсора
     UModernDiagramLinkItem(UModernDiagramNodeItem* src, const QPointF& tempEnd, const QPointF& startPos = QPointF());
 
@@ -50,6 +55,10 @@ public:
     bool useOutput() const { return m_useOutput; }
     bool useInput() const { return m_useInput; }
 
+    bool isExternalIncoming() const { return m_isExternalIncoming; }
+    UModernDiagramExternalSourceItem* externalSource() const { return m_externalSrc; }
+    QString externalSourceLabel() const { return m_externalSrcLabel; }
+
     int parallelCount() const { return m_parallelCount; }
     void setParallelCount(int count) { m_parallelCount = count > 0 ? count : 1; }
     void incrementParallelCount() { ++m_parallelCount; }
@@ -67,6 +76,9 @@ private:
     PortCategory m_dstCategory;   // Категория целевого порта (если известна)
     bool m_hasCategories;        // Флаг, указывающий, что категории заданы
     int m_parallelCount = 1;     // Число свёрнутых в одну линию connector'ов
+    UModernDiagramExternalSourceItem* m_externalSrc = nullptr;
+    QString m_externalSrcLabel;
+    bool m_isExternalIncoming = false;
 };
 
 // Включаем полное определение UModernDiagramWidget после объявления класса

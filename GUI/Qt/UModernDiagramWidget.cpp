@@ -3,6 +3,7 @@
 #include "UModernDiagramView.h"
 #include "UModernDiagramLinkItem.h"
 #include "UModernDiagramNodeItem.h"
+#include "UModernDiagramExternalSourceItem.h"
 #include "UModernDiagramViewportManager.h"
 #include "UModernDiagramCoordinateManager.h"
 #include "UModernDiagramCacheManager.h"
@@ -429,6 +430,8 @@ void UModernDiagramWidget::clearScene()
     m_nodes.clear();
     m_nodeByName.clear();
     m_links.clear();
+    m_externalSources.clear();
+    m_externalSourceByKey.clear();
     m_lastNodePositions.clear();  // Очищаем сохраненные позиции
     m_componentsWithNegativePos.clear();
     m_originalAbsolutePositions.clear();
@@ -822,27 +825,19 @@ void UModernDiagramWidget::buildLinks()
         internalLinksXmlFromModelScope(Core_GetSelectedChannelIndex(), m_componentName);
     if(linksXml.empty())
     {
+        buildExternalIncomingLinks();
         setUpdatesEnabled(updatesWereEnabled);
         if(m_mainView)
             m_mainView->setUpdatesEnabled(updatesWereEnabled);
-        // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
-        // qint64 elapsed = telemetry.Elapsed();
-        // QString logMsg = QString("[UModernDiagramWidget] Component: %1, Operation: buildLinks, Duration: %2ms, Details: no links")
-        //     .arg(componentDisplayName).arg(elapsed);
-        // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
         return;
     }
     RDK::USerStorageXML xml;
     if(!xml.Load(linksXml, "Links"))
     {
+        buildExternalIncomingLinks();
         setUpdatesEnabled(updatesWereEnabled);
         if(m_mainView)
             m_mainView->setUpdatesEnabled(updatesWereEnabled);
-        // ОТЛАДОЧНОЕ ЛОГИРОВАНИЕ ЗАКОММЕНТИРОВАНО
-        // qint64 elapsed = telemetry.Elapsed();
-        // QString logMsg = QString("[UModernDiagramWidget] Component: %1, Operation: buildLinks, Duration: %2ms, Details: failed to load XML")
-        //     .arg(componentDisplayName).arg(elapsed);
-        // MLog_LogMessageEx(RDK_GLOB_MESSAGE, RDK_EX_INFO, logMsg.toStdString().c_str(), 0);
         return;
     }
 
@@ -857,38 +852,6 @@ void UModernDiagramWidget::buildLinks()
     //     componentDisplayName + " (" + QString::number(linkslist.GetSize()) + " links)");
 
     QPointF minPos = m_coordinateManager->currentMinScenePos();
-
-    auto resolveNode = [&](const QString& full)->UModernDiagramNodeItem*{
-        if(auto it = m_nodeByName.find(full); it != m_nodeByName.end())
-            return it.value();
-        if(!m_componentName.isEmpty() && full.startsWith(m_componentName + ".")) {
-            QString trimmed = full.mid(m_componentName.size() + 1);
-            int dot = trimmed.indexOf('.');
-            QString top = dot >= 0 ? trimmed.left(dot) : trimmed;
-            if(auto it = m_nodeByName.find(top); it != m_nodeByName.end())
-                return it.value();
-        }
-        int dot = full.indexOf('.');
-        QString top = dot >= 0 ? full.left(dot) : full;
-        if(auto it = m_nodeByName.find(top); it != m_nodeByName.end())
-            return it.value();
-        return nullptr;
-    };
-    auto resolveById = [&](const QString& id)->UModernDiagramNodeItem*{
-        QString base = id;
-        int dot = base.indexOf('.');
-        if(dot >= 0)
-            base = base.left(dot);
-        // если это вложенное имя под текущей моделью, уберём префикс модели
-        if(!m_componentName.isEmpty() && base.startsWith(m_componentName + "."))
-        {
-            QString trimmed = base.mid(m_componentName.size() + 1);
-            base = trimmed;
-        }
-        if(auto it = m_nodeByName.find(base); it != m_nodeByName.end())
-            return it.value();
-        return nullptr;
-    };
 
     // Оптимизация: создаем все связи сначала, затем добавляем в сцену пакетами
     QList<UModernDiagramLinkItem*> linksToAdd;
@@ -909,12 +872,12 @@ void UModernDiagramWidget::buildLinks()
             QString connName = QString::fromStdString(connSide.Name);
             std::string connId = connSide.Id;
             // Удалено избыточное логирование - создавало спам в INFO логах
-            UModernDiagramNodeItem* srcNode = resolveNode(itemName);
-            UModernDiagramNodeItem* dstNode = resolveNode(connName);
+            UModernDiagramNodeItem* srcNode = resolveNodeOnDiagram(itemName);
+            UModernDiagramNodeItem* dstNode = resolveNodeOnDiagram(connName);
             if(!srcNode)
-                srcNode = resolveById(QString::fromStdString(itemId));
+                srcNode = resolveNodeByIdOnDiagram(QString::fromStdString(itemId));
             if(!dstNode)
-                dstNode = resolveById(QString::fromStdString(connId));
+                dstNode = resolveNodeByIdOnDiagram(QString::fromStdString(connId));
 
             // Если srcNode не найден, пропускаем связь (не можем определить категорию источника)
             if(!srcNode)
@@ -936,133 +899,24 @@ void UModernDiagramWidget::buildLinks()
                 portCategoryCache[srcKey] = srcCategory;
             }
 
-            // Для определения категории входного порта нужно нормализовать connName.
-            // Цель нормализации — получить путь свойства ОТНОСИТЕЛЬНО dstNode (его nodeName),
-            // сохраняя при этом информацию о вложенных компонентах (например, "ChildComp.Prop").
-            QString normalizedConnName = connName;
-            QString dstNodeName;
             QString connIdStr = QString::fromStdString(connId);
 
-            // Если dstNode найден, используем его имя как опорную точку для нормализации
+            // Определяем категорию целевого порта
+            PortCategory dstCategory;
+            QString normalizedConnName;
             if(dstNode)
             {
-                dstNodeName = dstNode->nodeName;
-
-                // Полный путь к dstNode в текущем уровне диаграммы
-                QString fullDstNodePath = m_componentName.isEmpty()
-                    ? dstNodeName
-                    : m_componentName + "." + dstNodeName;
-
-                // Приоритет 1: нормализуем по connName, если оно не пустое
-                if(!connName.isEmpty())
-                {
-                    // На верхнем уровне (m_componentName.isEmpty()) connName может содержать
-                    // полный путь вида "PNeuronS1D2Syn1.ChildComp.Property" или просто "Property".
-                    // На вложенных уровнях connName уже относительный.
-                    if(m_componentName.isEmpty())
-                    {
-                        // Формат: "<NodeName>.<ChildPath>" - извлекаем часть после nodeName
-                        if(connName.startsWith(dstNodeName + "."))
-                        {
-                            normalizedConnName = connName.mid(dstNodeName.length() + 1);
-                        }
-                        // Формат: просто имя свойства без префикса - проверяем connId для определения пути
-                        else if(!connName.contains('.'))
-                        {
-                            // Если connId содержит путь к дочернему компоненту, используем его
-                            if(!connIdStr.isEmpty() && connIdStr.startsWith(dstNodeName + "."))
-                            {
-                                QString pathFromConnId = connIdStr.mid(dstNodeName.length() + 1);
-                                // Если pathFromConnId содержит точку, значит это путь к дочернему компоненту
-                                // Объединяем путь из connId с именем свойства из connName
-                                if(pathFromConnId.contains('.'))
-                                {
-                                    // pathFromConnId уже содержит полный путь, включая имя свойства
-                                    normalizedConnName = pathFromConnId;
-                                }
-                                else
-                                {
-                                    // pathFromConnId - это имя дочернего компонента, добавляем connName
-                                    normalizedConnName = pathFromConnId + "." + connName;
-                                }
-                            }
-                            else
-                            {
-                                // Иначе считаем, что это собственное свойство
-                                normalizedConnName = connName;
-                            }
-                        }
-                        else
-                        {
-                            // connName содержит точку, но не начинается с dstNodeName
-                            // Возможно, это уже относительный путь или путь с другим форматом
-                            // Проверяем connId для уточнения
-                            if(!connIdStr.isEmpty() && connIdStr.startsWith(dstNodeName + "."))
-                            {
-                                QString pathFromConnId = connIdStr.mid(dstNodeName.length() + 1);
-                                // Если connId указывает на дочерний компонент, используем путь из connId
-                                if(pathFromConnId.contains('.'))
-                                {
-                                    normalizedConnName = pathFromConnId;
-                                }
-                                else
-                                {
-                                    // Используем connName как есть (он уже может быть относительным)
-                                    normalizedConnName = connName;
-                                }
-                            }
-                            else
-                            {
-                                normalizedConnName = connName;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // На вложенных уровнях: connName уже относительный путь
-                        // Формат: "<FullComponentPath>.<ChildPath>"
-                        if(connName.startsWith(fullDstNodePath + "."))
-                        {
-                            normalizedConnName = connName.mid(fullDstNodePath.length() + 1);
-                        }
-                        // Формат: "<NodeName>.<ChildPath>"
-                        else if(connName.startsWith(dstNodeName + "."))
-                        {
-                            normalizedConnName = connName.mid(dstNodeName.length() + 1);
-                        }
-                        else
-                        {
-                            // Иначе считаем, что connName уже относительный путь от dstNode
-                            normalizedConnName = connName;
-                        }
-                    }
-                }
-                // Приоритет 2: если connName пуст, пробуем использовать connId
-                else if(!connIdStr.isEmpty())
-                {
-                    if(connIdStr.startsWith(fullDstNodePath + "."))
-                    {
-                        normalizedConnName = connIdStr.mid(fullDstNodePath.length() + 1);
-                    }
-                    else if(connIdStr.startsWith(dstNodeName + "."))
-                    {
-                        normalizedConnName = connIdStr.mid(dstNodeName.length() + 1);
-                    }
-                    else
-                    {
-                        normalizedConnName = connIdStr;
-                    }
-                }
+                normalizedConnName = normalizeConnectorNameForDst(dstNode, connName, connIdStr);
+                dstCategory = resolveInputPortCategory(dstNode, normalizedConnName, portCategoryCache);
             }
             else
             {
-                // Для внешних связей (dstNode не найден) пытаемся извлечь имя узла из connId или connName
-                // Это нужно для определения категории целевого порта
+                normalizedConnName = connName;
+                QString dstNodeName;
                 if(!connIdStr.isEmpty())
                 {
                     int dot = connIdStr.indexOf('.');
                     dstNodeName = dot >= 0 ? connIdStr.left(dot) : connIdStr;
-                    // Убираем префикс компонента, если есть
                     if(!m_componentName.isEmpty() && dstNodeName.startsWith(m_componentName + "."))
                     {
                         dstNodeName = dstNodeName.mid(m_componentName.length() + 1);
@@ -1077,110 +931,48 @@ void UModernDiagramWidget::buildLinks()
                     dstNodeName = dot >= 0 ? connName.left(dot) : connName;
                 }
 
-                // На верхнем уровне (m_componentName.isEmpty()) connName уже является относительным путем
-                // и не требует нормализации через удаление dstNodeName.
-                // НО: если connName - это просто имя свойства (без точки), а connId содержит путь к дочернему компоненту,
-                // нужно извлечь путь из connId относительно dstNodeName.
                 if(m_componentName.isEmpty())
                 {
-                    // Если connId указывает на dstNode напрямую (без дочерних компонентов), используем connName как есть
                     if(connIdStr == dstNodeName)
-                    {
                         normalizedConnName = connName;
-                    }
-                    // Если connId содержит путь к дочернему компоненту (начинается с dstNodeName + ".")
                     else if(connIdStr.startsWith(dstNodeName + "."))
                     {
-                        // Извлекаем путь к дочернему компоненту из connId
                         QString pathFromConnId = connIdStr.mid(dstNodeName.length() + 1);
-                        // Если connName не содержит точки (просто имя свойства), используем путь из connId
                         if(!connName.contains('.'))
-                        {
                             normalizedConnName = pathFromConnId + "." + connName;
-                        }
-                        // Если connName уже содержит путь, используем его
                         else
-                        {
                             normalizedConnName = connName;
-                        }
                     }
-                    // Если connName начинается с dstNodeName, извлекаем часть после nodeName
                     else if(connName.startsWith(dstNodeName + "."))
-                    {
                         normalizedConnName = connName.mid(dstNodeName.length() + 1);
-                    }
                 }
                 else
                 {
-                    // Для вложенных уровней проверяем различные возможные форматы пути
                     if(connName.startsWith(dstNodeName + "."))
-                    {
-                        // connName начинается с dstNodeName, извлекаем часть после nodeName
                         normalizedConnName = connName.mid(dstNodeName.length() + 1);
-                    }
                     else
                     {
-                        // Проверяем, начинается ли connName с полного пути через m_componentName
                         QString fullPath = m_componentName + "." + dstNodeName;
                         if(connName.startsWith(fullPath + "."))
-                        {
                             normalizedConnName = connName.mid(fullPath.length() + 1);
-                        }
-                        else
-                        {
-                            // Если connId указывает на dstNode, используем connName как есть
-                            // (он уже является относительным путем)
-                            if(connIdStr == dstNodeName ||
-                               connIdStr.endsWith("." + dstNodeName) ||
-                               connIdStr == fullPath ||
-                               connIdStr.endsWith("." + fullPath))
-                            {
-                                normalizedConnName = connName;
-                            }
-                        }
+                        else if(connIdStr == dstNodeName ||
+                                connIdStr.endsWith("." + dstNodeName) ||
+                                connIdStr == fullPath ||
+                                connIdStr.endsWith("." + fullPath))
+                            normalizedConnName = connName;
                     }
                 }
-            }
 
-            // Определяем категорию целевого порта
-            PortCategory dstCategory;
-            if(dstNode)
-            {
-                // Если dstNode найден, используем обычный метод
-                QPair<UModernDiagramNodeItem*, QString> dstKey(dstNode, normalizedConnName);
-                if(portCategoryCache.contains(dstKey))
-                {
-                    dstCategory = portCategoryCache[dstKey];
-                }
-                else
-                {
-                    dstCategory = dstNode->determinePortCategory(normalizedConnName, true);
-                    portCategoryCache[dstKey] = dstCategory;
-                }
-            }
-            else
-            {
-                // Для внешних связей (dstNode не найден) определяем категорию по эвристике
-                // Внешние связи обычно идут к собственным портам внешних компонентов (Own)
-                // Но если путь содержит точку после имени компонента, это может быть Child
                 if(!normalizedConnName.isEmpty() && normalizedConnName.contains('.'))
                 {
-                    // Путь содержит точку - проверяем, является ли первая часть дочерним компонентом
                     QString firstPart = normalizedConnName.split('.').first();
-                    // Если у srcNode есть дочерний компонент с таким именем, это Child
-                    // Иначе это Own (связь к собственному порту внешнего компонента)
                     QString fullName = m_componentName.isEmpty() ? srcNode->nodeName : m_componentName + "." + srcNode->nodeName;
                     const QStringList components =
-                        childComponentShortNamesFromModelScope(Core_GetSelectedChannelIndex(),
-                                                               fullName);
-                    const bool isChild = components.contains(firstPart);
-                    dstCategory = isChild ? PortCategory::Child : PortCategory::Own;
+                        childComponentShortNamesFromModelScope(Core_GetSelectedChannelIndex(), fullName);
+                    dstCategory = components.contains(firstPart) ? PortCategory::Child : PortCategory::Own;
                 }
                 else
-                {
-                    // Простое имя свойства без точки - это Own категория (собственный порт внешнего компонента)
                     dstCategory = PortCategory::Own;
-                }
             }
 
             // Создаем / агрегируем LinkItem по (src, dst, srcCategory, dstCategory)
@@ -1255,9 +1047,9 @@ void UModernDiagramWidget::buildLinks()
     for(auto* node : m_nodes)
     {
         node->m_cacheValid = false;
-        // НЕ инвалидируем кэш портов - они не меняются при создании связей
-        // node->m_portsCacheValid = false;
     }
+
+    buildExternalIncomingLinks();
 
     // Включаем обновления обратно
     setUpdatesEnabled(updatesWereEnabled);
@@ -1290,6 +1082,7 @@ void UModernDiagramWidget::rebuildLinks()
         delete link;
     }
     m_links.clear();
+    clearExternalSources();
 
     // Перестраиваем связи
     buildLinks();
@@ -1965,6 +1758,216 @@ int UModernDiagramWidget::selectNodesInRect(const QRectF& selectionRect, bool ad
 }
 
 // Tooltip generation methods теперь в UModernDiagramTooltipGenerator
+
+UModernDiagramNodeItem* UModernDiagramWidget::resolveNodeOnDiagram(const QString& fullOrRelative) const
+{
+    if(auto it = m_nodeByName.find(fullOrRelative); it != m_nodeByName.end())
+        return it.value();
+    if(!m_componentName.isEmpty() && fullOrRelative.startsWith(m_componentName + "."))
+    {
+        QString trimmed = fullOrRelative.mid(m_componentName.size() + 1);
+        int dot = trimmed.indexOf('.');
+        QString top = dot >= 0 ? trimmed.left(dot) : trimmed;
+        if(auto it2 = m_nodeByName.find(top); it2 != m_nodeByName.end())
+            return it2.value();
+    }
+    int dot = fullOrRelative.indexOf('.');
+    QString top = dot >= 0 ? fullOrRelative.left(dot) : fullOrRelative;
+    if(auto it = m_nodeByName.find(top); it != m_nodeByName.end())
+        return it.value();
+    return nullptr;
+}
+
+UModernDiagramNodeItem* UModernDiagramWidget::resolveNodeByIdOnDiagram(const QString& id) const
+{
+    QString base = id;
+    int dot = base.indexOf('.');
+    if(dot >= 0)
+        base = base.left(dot);
+    if(!m_componentName.isEmpty() && base.startsWith(m_componentName + "."))
+        base = base.mid(m_componentName.size() + 1);
+    if(auto it = m_nodeByName.find(base); it != m_nodeByName.end())
+        return it.value();
+    return nullptr;
+}
+
+QString UModernDiagramWidget::normalizeConnectorNameForDst(UModernDiagramNodeItem* dstNode,
+                                                           const QString& connName,
+                                                           const QString& connIdStr) const
+{
+    if(!dstNode)
+        return connName;
+
+    QString normalizedConnName = connName;
+    const QString dstNodeName = dstNode->nodeName;
+    const QString fullDstNodePath = m_componentName.isEmpty()
+        ? dstNodeName
+        : m_componentName + "." + dstNodeName;
+
+    if(!connName.isEmpty())
+    {
+        if(m_componentName.isEmpty())
+        {
+            if(connName.startsWith(dstNodeName + "."))
+                normalizedConnName = connName.mid(dstNodeName.length() + 1);
+            else if(!connName.contains('.'))
+            {
+                if(!connIdStr.isEmpty() && connIdStr.startsWith(dstNodeName + "."))
+                {
+                    QString pathFromConnId = connIdStr.mid(dstNodeName.length() + 1);
+                    normalizedConnName = pathFromConnId.contains('.')
+                        ? pathFromConnId
+                        : pathFromConnId + "." + connName;
+                }
+            }
+            else if(!connIdStr.isEmpty() && connIdStr.startsWith(dstNodeName + "."))
+            {
+                QString pathFromConnId = connIdStr.mid(dstNodeName.length() + 1);
+                normalizedConnName = pathFromConnId.contains('.') ? pathFromConnId : connName;
+            }
+        }
+        else
+        {
+            if(connName.startsWith(fullDstNodePath + "."))
+                normalizedConnName = connName.mid(fullDstNodePath.length() + 1);
+            else if(connName.startsWith(dstNodeName + "."))
+                normalizedConnName = connName.mid(dstNodeName.length() + 1);
+        }
+    }
+    else if(!connIdStr.isEmpty())
+    {
+        if(connIdStr.startsWith(fullDstNodePath + "."))
+            normalizedConnName = connIdStr.mid(fullDstNodePath.length() + 1);
+        else if(connIdStr.startsWith(dstNodeName + "."))
+            normalizedConnName = connIdStr.mid(dstNodeName.length() + 1);
+        else
+            normalizedConnName = connIdStr;
+    }
+    return normalizedConnName;
+}
+
+PortCategory UModernDiagramWidget::resolveInputPortCategory(
+    UModernDiagramNodeItem* dstNode,
+    const QString& normalizedConnName,
+    QHash<QPair<UModernDiagramNodeItem*, QString>, PortCategory>& portCategoryCache) const
+{
+    QPair<UModernDiagramNodeItem*, QString> dstKey(dstNode, normalizedConnName);
+    if(portCategoryCache.contains(dstKey))
+        return portCategoryCache[dstKey];
+    const PortCategory cat = dstNode->determinePortCategory(normalizedConnName, true);
+    portCategoryCache[dstKey] = cat;
+    return cat;
+}
+
+void UModernDiagramWidget::clearExternalSources()
+{
+    for(auto* ext : m_externalSources)
+    {
+        if(ext && m_scene)
+            m_scene->removeItem(ext);
+        delete ext;
+    }
+    m_externalSources.clear();
+    m_externalSourceByKey.clear();
+}
+
+void UModernDiagramWidget::buildExternalIncomingLinks()
+{
+    clearExternalSources();
+    if(m_nodes.isEmpty() || !m_scene)
+        return;
+
+    const int channel = Core_GetSelectedChannelIndex();
+    QHash<UModernDiagramNodeItem*, int> stackCounter;
+    QHash<QString, UModernDiagramLinkItem*> aggregatedExternalLinks;
+
+    const QStringList children = loadComponentList();
+    for(const QString& shortName : children)
+    {
+        const QString childLong = m_componentName.isEmpty()
+            ? shortName
+            : m_componentName + "." + shortName;
+        const std::string linksXml =
+            personalLinksXmlFromModelScope(channel, childLong, m_componentName);
+        if(linksXml.empty())
+            continue;
+
+        RDK::USerStorageXML xml;
+        if(!xml.Load(linksXml, "Links"))
+            continue;
+
+        RDK::UStringLinksList linkslist;
+        xml >> linkslist;
+
+        QHash<QPair<UModernDiagramNodeItem*, QString>, PortCategory> portCategoryCache;
+
+        for(int i = 0; i < linkslist.GetSize(); ++i)
+        {
+            const auto& link = linkslist[i];
+            const QString itemName = QString::fromStdString(link.Item.Name);
+            const QString itemId = QString::fromStdString(link.Item.Id);
+            const QString displayLabel = itemId.isEmpty() ? itemName : itemId;
+
+            UModernDiagramNodeItem* srcNode = resolveNodeOnDiagram(itemName);
+            if(!srcNode)
+                srcNode = resolveNodeByIdOnDiagram(itemId);
+            if(srcNode)
+                continue;
+
+            const QString sourceKey = itemId.isEmpty() ? itemName : itemId;
+
+            for(size_t c = 0; c < link.Connector.size(); ++c)
+            {
+                const auto& connSide = link.Connector[c];
+                const QString connName = QString::fromStdString(connSide.Name);
+                const QString connIdStr = QString::fromStdString(connSide.Id);
+
+                UModernDiagramNodeItem* dstNode = resolveNodeOnDiagram(connName);
+                if(!dstNode)
+                    dstNode = resolveNodeByIdOnDiagram(connIdStr);
+                if(!dstNode)
+                    continue;
+
+                const QString normalizedConnName =
+                    normalizeConnectorNameForDst(dstNode, connName, connIdStr);
+                const PortCategory dstCategory =
+                    resolveInputPortCategory(dstNode, normalizedConnName, portCategoryCache);
+
+                UModernDiagramExternalSourceItem* ext = m_externalSourceByKey.value(sourceKey, nullptr);
+                if(!ext)
+                {
+                    ext = new UModernDiagramExternalSourceItem(this, displayLabel, itemName);
+                    m_externalSources.append(ext);
+                    m_externalSourceByKey.insert(sourceKey, ext);
+                    m_scene->addItem(ext);
+                    const int stackIndex = stackCounter.value(dstNode, 0);
+                    stackCounter.insert(dstNode, stackIndex + 1);
+                    ext->layoutBeside(dstNode, stackIndex);
+                }
+
+                const QString aggKey = sourceKey + QLatin1Char('|')
+                    + QString::number(quintptr(dstNode)) + QLatin1Char('|')
+                    + QString::number(static_cast<int>(dstCategory));
+                if(UModernDiagramLinkItem* existing = aggregatedExternalLinks.value(aggKey, nullptr))
+                {
+                    existing->incrementParallelCount();
+                    existing->updateGeometry();
+                    continue;
+                }
+
+                auto* linkItem = new UModernDiagramLinkItem(ext, dstNode, dstCategory, displayLabel);
+                aggregatedExternalLinks.insert(aggKey, linkItem);
+                m_links.append(linkItem);
+                m_scene->addItem(linkItem);
+                dstNode->m_connectedLinks.append(linkItem);
+                linkItem->updateGeometry();
+            }
+        }
+    }
+
+    for(auto* node : m_nodes)
+        node->m_cacheValid = false;
+}
 
 // --------------------------- ComponentCache ---------------------------
 

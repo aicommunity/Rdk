@@ -54,6 +54,7 @@ namespace UModernDiagramConstants {
 class UModernDiagramWidgetMovementTest;
 class UModernDiagramLinkItem;
 class UModernDiagramNodeItem;
+class UModernDiagramExternalSourceItem;
 class UModernDiagramViewportManager;
 class UModernDiagramCoordinateManager;
 class UModernDiagramCacheManager;
@@ -205,6 +206,16 @@ private:
     bool isComponentOutsideVisibleArea(UModernDiagramNodeItem* node) const;
     void buildLinks();
     void rebuildLinks(); // Перестраивает только связи без перезагрузки всей сцены
+    void buildExternalIncomingLinks();
+    void clearExternalSources();
+    UModernDiagramNodeItem* resolveNodeOnDiagram(const QString& fullOrRelative) const;
+    UModernDiagramNodeItem* resolveNodeByIdOnDiagram(const QString& id) const;
+    QString normalizeConnectorNameForDst(UModernDiagramNodeItem* dstNode,
+                                         const QString& connName,
+                                         const QString& connIdStr) const;
+    PortCategory resolveInputPortCategory(UModernDiagramNodeItem* dstNode,
+                                          const QString& normalizedConnName,
+                                          QHash<QPair<UModernDiagramNodeItem*, QString>, PortCategory>& portCategoryCache) const;
     // Cache management methods теперь в UModernDiagramCacheManager
     // Используйте m_cacheManager для доступа к этим методам
     const Port* m_dragSourcePort;
@@ -244,6 +255,8 @@ private:
     QList<UModernDiagramNodeItem*> m_nodes;
     QHash<QString, UModernDiagramNodeItem*> m_nodeByName;
     QList<UModernDiagramLinkItem*> m_links;
+    QList<UModernDiagramExternalSourceItem*> m_externalSources;
+    QHash<QString, UModernDiagramExternalSourceItem*> m_externalSourceByKey;
 
     // Защита от бесконечной рекурсии при выборе компонента
     // Cache manager

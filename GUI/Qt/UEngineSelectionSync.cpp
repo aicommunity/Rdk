@@ -221,6 +221,35 @@ std::string internalLinksXmlFromModelScope(int channel_index, const QString& sco
     return out;
 }
 
+std::string personalLinksXmlFromModelScope(int channel_index,
+                                           const QString& component_long_name,
+                                           const QString& owner_level_long_name)
+{
+    RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock<RDK::UContainer>(channel_index);
+    if(!model)
+        return {};
+
+    RDK::UEPtr<RDK::UNet> cont = RDK::dynamic_pointer_cast<RDK::UNet>(
+        containerFromModelScope(model.Get(), component_long_name.trimmed().toUtf8()));
+    if(!cont)
+        return {};
+
+    RDK::UEPtr<RDK::UNet> owner;
+    if(!owner_level_long_name.trimmed().isEmpty())
+    {
+        owner = RDK::dynamic_pointer_cast<RDK::UNet>(
+            containerFromModelScope(model.Get(), owner_level_long_name.trimmed().toUtf8()));
+    }
+
+    RDK::USerStorageXML xml;
+    xml.Create("Links");
+    if(cont->GetComponentPersonalLinks(&xml, owner ? owner.Get() : nullptr) != 0)
+        return {};
+    std::string out;
+    xml.Save(out);
+    return out;
+}
+
 bool propertyValueFromModelScope(RDK::UContainer* model_root,
                                  const QString& component_long_name,
                                  const QByteArray& param_name,
