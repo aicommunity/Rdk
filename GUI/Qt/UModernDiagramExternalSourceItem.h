@@ -1,6 +1,8 @@
 #ifndef UMODERNDIAGRAMEXTERNALSOURCEITEM_H
 #define UMODERNDIAGRAMEXTERNALSOURCEITEM_H
 
+#include "UModernDiagramExternalLinkLayout.h"
+
 #include <QGraphicsItem>
 #include <QString>
 
@@ -12,32 +14,41 @@ class UModernDiagramExternalSourceItem : public QGraphicsItem
 {
 public:
     UModernDiagramExternalSourceItem(UModernDiagramWidget* owner,
-                                     const QString& outputFullId,
-                                     const QString& outputDisplayName);
+                                     const QString& sourceItemId,
+                                     const QString& sourceItemName);
 
-    QString outputFullId() const { return m_outputFullId; }
-    QString outputDisplayName() const { return m_outputDisplayName; }
+    QString outputFullId() const;
+    QString outputDisplayName() const { return m_sourceItemName; }
+    QString displayLabel() const { return m_displayLabel; }
+    QString sourceItemId() const { return m_sourceItemId; }
+    QString sourceItemName() const { return m_sourceItemName; }
+
+    void refreshDisplayLabel();
 
     QPointF scenePortPos() const;
     void layoutBeside(UModernDiagramNodeItem* dstNode, int stackIndex);
     void layoutOptimal(const QRectF& nodesBounds,
                        const QList<QRectF>& obstacleRects,
-                       const QList<UModernDiagramNodeItem*>& targetNodes,
+                       const QList<ExternalLayoutTarget>& targets,
                        qreal stackOffsetY = 0.0);
 
     QRectF boundingRect() const override;
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;
 
+    QVariant itemChange(GraphicsItemChange change, const QVariant& value) override;
+    void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override;
+
 private:
     UModernDiagramWidget* m_owner = nullptr;
-    QString m_outputFullId;
-    QString m_outputDisplayName;
+    QString m_sourceItemId;
+    QString m_sourceItemName;
+    QString m_displayLabel;
     mutable QRectF m_cachedBounds;
 
     static constexpr qreal kPortSize = 8.0;
     static constexpr qreal kGapFromNode = 28.0;
     static constexpr qreal kStackStep = 22.0;
-    static constexpr qreal kLabelMaxWidth = 220.0;
+    static constexpr qreal kLabelMaxWidth = 280.0;
     static constexpr qreal kLabelGap = 6.0;
 };
 

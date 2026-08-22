@@ -6,22 +6,40 @@
 
 #include <QPainter>
 #include <QFontMetricsF>
+#include <QGraphicsSceneMouseEvent>
 #include <QtGlobal>
 #include <climits>
 
 UModernDiagramExternalSourceItem::UModernDiagramExternalSourceItem(UModernDiagramWidget* owner,
-                                                                   const QString& outputFullId,
-                                                                   const QString& outputDisplayName)
+                                                                   const QString& sourceItemId,
+                                                                   const QString& sourceItemName)
     : m_owner(owner)
-    , m_outputFullId(outputFullId)
-    , m_outputDisplayName(outputDisplayName.isEmpty() ? outputFullId : outputDisplayName)
+    , m_sourceItemId(sourceItemId)
+    , m_sourceItemName(sourceItemName)
 {
     setZValue(0);
     setAcceptHoverEvents(true);
-    setToolTip(m_outputFullId + (m_outputDisplayName != m_outputFullId
-        ? QStringLiteral("\n") + m_outputDisplayName
-        : QString()));
+    setFlag(QGraphicsItem::ItemIsMovable, true);
+    setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
+    setFlag(QGraphicsItem::ItemIsSelectable, true);
+    setCursor(Qt::SizeAllCursor);
+    refreshDisplayLabel();
     prepareGeometryChange();
+}
+
+QString UModernDiagramExternalSourceItem::outputFullId() const
+{
+    return UModernDiagramWidget::externalSourceFullPathLabel(m_sourceItemId, m_sourceItemName);
+}
+
+void UModernDiagramExternalSourceItem::refreshDisplayLabel()
+{
+    m_displayLabel = UModernDiagramWidget::formatExternalSourceDisplayLabel(
+        m_sourceItemId, m_sourceItemName, static_cast<int>(kLabelMaxWidth));
+    setToolTip(UModernDiagramWidget::externalSourceFullPathLabel(m_sourceItemId, m_sourceItemName));
+    m_cachedBounds = QRectF();
+    prepareGeometryChange();
+    update();
 }
 
 QPointF UModernDiagramExternalSourceItem::scenePortPos() const
@@ -41,13 +59,13 @@ void UModernDiagramExternalSourceItem::layoutBeside(UModernDiagramNodeItem* dstN
 
 void UModernDiagramExternalSourceItem::layoutOptimal(const QRectF& nodesBounds,
                                                      const QList<QRectF>& obstacleRects,
-                                                     const QList<UModernDiagramNodeItem*>& targetNodes,
+                                                     const QList<ExternalLayoutTarget>& targets,
                                                      qreal stackOffsetY)
 {
     if(nodesBounds.isEmpty())
     {
-        if(!targetNodes.isEmpty())
-            layoutBeside(targetNodes.first(), static_cast<int>(stackOffsetY / kStackStep));
+        if(!targets.isEmpty() && targets.first().dstNode)
+            layoutBeside(targets.first().dstNode, static_cast<int>(stackOffsetY / kStackStep));
         return;
     }
 
@@ -57,35 +75,30 @@ void UModernDiagramExternalSourceItem::layoutOptimal(const QRectF& nodesBounds,
     const qreal leftX = nodesBounds.left() - kGapFromNode - width;
 
     QList<qreal> candidateYs;
-    candidateYs.reserve(targetNodes.size() + 9);
+    candidateYs.reserve(targets.size() + 16);
     qreal targetSumY = 0.0;
     int targetCount = 0;
-    for(UModernDiagramNodeItem* dstNode : targetNodes)
+    for(const ExternalLayoutTarget& target : targets)
     {
-        if(!dstNode)
+        if(!target.dstNode)
             continue;
-        const qreal centerY = dstNode->sceneBoundingRect().center().y();
+        const qreal centerY = target.dstNode->sceneBoundingRect().center().y();
         candidateYs.append(centerY);
         targetSumY += centerY;
         ++targetCount;
     }
     const qreal avgTargetY = targetCount > 0 ? targetSumY / targetCount : nodesBounds.center().y();
-    for(int i = 0; i <= 8; ++i)
-        candidateYs.append(nodesBounds.top() + nodesBounds.height() * i / 8.0);
+    for(int i = 0; i <= 15; ++i)
+        candidateYs.append(nodesBounds.top() + nodesBounds.height() * i / 15.0);
 
     qreal bestCenterY = avgTargetY + stackOffsetY;
     int bestScore = INT_MAX;
     for(qreal centerY : candidateYs)
     {
         centerY += stackOffsetY;
-        const QRectF candidate(leftX, centerY - height / 2.0, width, height);
-        int score = 0;
-        for(const QRectF& obstacle : obstacleRects)
-        {
-            if(candidate.intersects(obstacle))
-                score += 1000;
-        }
-        score += static_cast<int>(qAbs(centerY - avgTargetY));
+        const QRectF portRect(leftX, centerY - height / 2.0, width, height);
+        const QPointF portCenter(portRect.right() - kPortSize, portRect.center().y());
+        const int score = ExternalLinkLayout::layoutScore(portCenter, targets, obstacleRects, portRect);
         if(score < bestScore)
         {
             bestScore = score;
@@ -104,7 +117,7 @@ QRectF UModernDiagramExternalSourceItem::boundingRect() const
     QFont font;
     font.setPointSizeF(8.0);
     QFontMetricsF fm(font);
-    const QString label = fm.elidedText(m_outputFullId, Qt::ElideMiddle, kLabelMaxWidth);
+    const QString label = fm.elidedText(m_displayLabel, Qt::ElideMiddle, kLabelMaxWidth);
     const qreal labelWidth = qMin(kLabelMaxWidth, fm.horizontalAdvance(label));
     const qreal labelHeight = fm.height();
     const qreal width = labelWidth + kLabelGap + kPortSize * 2.0;
@@ -130,7 +143,7 @@ void UModernDiagramExternalSourceItem::paint(QPainter* painter,
     font.setPointSizeF(8.0);
     painter->setFont(font);
     QFontMetricsF fm(font);
-    const QString label = fm.elidedText(m_outputFullId, Qt::ElideMiddle, kLabelMaxWidth);
+    const QString label = fm.elidedText(m_displayLabel, Qt::ElideMiddle, kLabelMaxWidth);
     const qreal labelWidth = qMin(kLabelMaxWidth, fm.horizontalAdvance(label));
     const qreal labelHeight = fm.height();
     const QRectF bounds = boundingRect();
@@ -155,4 +168,18 @@ void UModernDiagramExternalSourceItem::paint(QPainter* painter,
     painter->setPen(QPen(style ? style->getBackgroundAltColor() : QColor(60, 60, 60), 1.2));
     painter->setBrush(Qt::NoBrush);
     painter->drawPolygon(diamond);
+}
+
+QVariant UModernDiagramExternalSourceItem::itemChange(GraphicsItemChange change, const QVariant& value)
+{
+    if(change == ItemPositionHasChanged && scene() && m_owner)
+        m_owner->updateExternalSourceLinkGeometry(this);
+    return QGraphicsItem::itemChange(change, value);
+}
+
+void UModernDiagramExternalSourceItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
+{
+    QGraphicsItem::mouseReleaseEvent(event);
+    if(m_owner)
+        m_owner->onExternalSourceMoved(this, true);
 }

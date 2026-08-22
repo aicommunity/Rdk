@@ -4,6 +4,8 @@
 #include "UModernDiagramLinkItem.h"
 #include "UModernDiagramNodeItem.h"
 #include "UModernDiagramExternalSourceItem.h"
+#include "UModernDiagramExternalLinkLayout.h"
+#include <algorithm>
 #include "UModernDiagramViewportManager.h"
 #include "UModernDiagramCoordinateManager.h"
 #include "UModernDiagramCacheManager.h"
@@ -123,6 +125,9 @@ UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
 
 UModernDiagramWidget::~UModernDiagramWidget()
 {
+    if(!m_externalSourceDirtyKeys.isEmpty())
+        saveExternalSourcePositionsToSettings();
+
     // Автоматическое сохранение кэша при закрытии
     if(m_application)
     {
@@ -408,6 +413,8 @@ void UModernDiagramWidget::clearScene()
         m_cacheManager->saveSceneToCache(m_componentName);
     }
     */
+
+    persistExternalSourcePositionsBeforeClear();
 
     // Перед очисткой сцены обнуляем указатели на прокси-виджеты,
     // чтобы предотвратить двойное удаление в деструкторе NodeItem.
@@ -1622,17 +1629,15 @@ void UModernDiagramWidget::emitOpenComponentGui(const UComponentGuiContext& cont
 void UModernDiagramWidget::SaveViewState()
 {
     if(m_viewportManager)
-    {
         m_viewportManager->saveToSettings();
-    }
+    saveExternalSourcePositionsToSettings();
 }
 
 void UModernDiagramWidget::LoadViewState()
 {
     if(m_viewportManager)
-    {
         m_viewportManager->loadFromSettings();
-    }
+    loadExternalSourcePositionsFromSettings();
 }
 
 int UModernDiagramWidget::selectNodesInRect(const QRectF& selectionRect, bool addToSelection)
@@ -1890,9 +1895,192 @@ QString UModernDiagramWidget::formatExternalSourceLabel(const QString& itemId, c
     return itemId + QLatin1Char('.') + itemName;
 }
 
+QString UModernDiagramWidget::externalSourceFullPathLabel(const QString& itemId, const QString& itemName)
+{
+    return formatExternalSourceLabel(itemId, itemName);
+}
+
+QString UModernDiagramWidget::formatExternalSourceDisplayLabel(
+    const QString& itemId, const QString& itemName, int maxWidthPx, QFontMetricsF* fmOptional)
+{
+    if(itemId.isEmpty())
+        return itemName;
+
+    const QStringList segments = itemId.split(QLatin1Char('.'), Qt::SkipEmptyParts);
+    if(segments.isEmpty())
+        return itemName;
+
+    const QString sourceComponent = segments.last();
+    const QString core = sourceComponent + QLatin1Char(':') + itemName;
+
+    QFont font;
+    font.setPointSizeF(8.0);
+    QFontMetricsF defaultFm(font);
+    QFontMetricsF& fm = fmOptional ? *fmOptional : defaultFm;
+
+    if(fm.horizontalAdvance(core) >= maxWidthPx)
+        return fm.elidedText(core, Qt::ElideMiddle, maxWidthPx);
+
+    QStringList candidates;
+    candidates << core;
+    if(segments.size() >= 2)
+    {
+        const QString parent = segments[segments.size() - 2];
+        candidates.prepend(parent + QLatin1Char('.') + core);
+    }
+    if(segments.size() >= 3)
+    {
+        const QString root = segments.first();
+        const QString middle = segments.mid(1, segments.size() - 2).join(QLatin1Char('.'));
+        if(!middle.isEmpty())
+            candidates.prepend(root + QStringLiteral("...") + middle + QLatin1Char('.') + core);
+        else
+            candidates.prepend(root + QStringLiteral("...") + core);
+    }
+
+    for(const QString& candidate : candidates)
+    {
+        if(fm.horizontalAdvance(candidate) <= maxWidthPx)
+            return candidate;
+    }
+    return core;
+}
+
 QString UModernDiagramWidget::externalSourcePositionKey(const QString& sourceKey) const
 {
     return m_componentName + QLatin1Char('|') + sourceKey;
+}
+
+void UModernDiagramWidget::persistExternalSourcePositionsBeforeClear()
+{
+    for(UModernDiagramExternalSourceItem* ext : m_externalSources)
+    {
+        if(!ext)
+            continue;
+        const QString key = externalSourcePositionKey(ext->outputFullId());
+        const bool manual = m_externalSourcePosCache.value(key).manual;
+        rememberExternalSourcePosition(key, ext->pos(), manual);
+    }
+}
+
+void UModernDiagramWidget::rememberExternalSourcePosition(
+    const QString& sourceKey, const QPointF& pos, bool manual)
+{
+    ExternalSourceStoredPosition entry;
+    entry.pos = pos;
+    entry.manual = manual || m_externalSourcePosCache.value(sourceKey).manual;
+    m_externalSourcePosCache.insert(sourceKey, entry);
+}
+
+bool UModernDiagramWidget::externalSourceStoredPosition(
+    const QString& sourceKey, ExternalSourceStoredPosition* out) const
+{
+    if(!out || !m_externalSourcePosCache.contains(sourceKey))
+        return false;
+    *out = m_externalSourcePosCache.value(sourceKey);
+    return true;
+}
+
+void UModernDiagramWidget::updateExternalSourceLinkGeometry(UModernDiagramExternalSourceItem* ext)
+{
+    if(!ext)
+        return;
+    for(UModernDiagramLinkItem* link : m_links)
+    {
+        if(link && link->externalSource() == ext)
+        {
+            link->updateGeometry();
+            link->update();
+        }
+    }
+}
+
+void UModernDiagramWidget::updateAllExternalLinkGeometry()
+{
+    for(UModernDiagramLinkItem* link : m_links)
+    {
+        if(link && link->isExternalIncoming())
+        {
+            link->updateGeometry();
+            link->update();
+        }
+    }
+}
+
+void UModernDiagramWidget::onExternalSourceMoved(UModernDiagramExternalSourceItem* ext, bool manual)
+{
+    if(!ext)
+        return;
+
+    const QString key = externalSourcePositionKey(ext->outputFullId());
+    rememberExternalSourcePosition(key, ext->pos(), manual);
+    m_externalSourceDirtyKeys.insert(key);
+    updateExternalSourceLinkGeometry(ext);
+    updateSceneRect();
+
+    if(!m_externalSourceSaveTimer)
+    {
+        m_externalSourceSaveTimer = new QTimer(this);
+        m_externalSourceSaveTimer->setSingleShot(true);
+        m_externalSourceSaveTimer->setInterval(500);
+        connect(m_externalSourceSaveTimer, &QTimer::timeout, this, [this]() {
+            saveExternalSourcePositionsToSettings();
+            m_externalSourceDirtyKeys.clear();
+        });
+    }
+    m_externalSourceSaveTimer->start();
+}
+
+void UModernDiagramWidget::saveExternalSourcePositionsToSettings()
+{
+    if(!m_application)
+        return;
+
+    QSettings settings(QString::fromLocal8Bit(m_application->GetProjectPath().c_str()) + QStringLiteral("settings.qt"),
+                       QSettings::IniFormat);
+    settings.beginGroup(QStringLiteral("UModernDiagramWidget_ExternalSourcePositions"));
+
+    QStringList keys = m_externalSourcePosCache.keys();
+    keys.sort();
+    settings.setValue(QStringLiteral("count"), keys.size());
+    for(int i = 0; i < keys.size(); ++i)
+    {
+        const QString prefix = QStringLiteral("entry_%1_").arg(i);
+        const ExternalSourceStoredPosition& entry = m_externalSourcePosCache.value(keys[i]);
+        settings.setValue(prefix + QStringLiteral("key"), keys[i]);
+        settings.setValue(prefix + QStringLiteral("x"), entry.pos.x());
+        settings.setValue(prefix + QStringLiteral("y"), entry.pos.y());
+        settings.setValue(prefix + QStringLiteral("manual"), entry.manual);
+    }
+    settings.endGroup();
+}
+
+void UModernDiagramWidget::loadExternalSourcePositionsFromSettings()
+{
+    if(!m_application)
+        return;
+
+    QSettings settings(QString::fromLocal8Bit(m_application->GetProjectPath().c_str()) + QStringLiteral("settings.qt"),
+                       QSettings::IniFormat);
+    settings.beginGroup(QStringLiteral("UModernDiagramWidget_ExternalSourcePositions"));
+
+    const int count = settings.value(QStringLiteral("count"), 0).toInt();
+    for(int i = 0; i < count; ++i)
+    {
+        const QString prefix = QStringLiteral("entry_%1_").arg(i);
+        const QString key = settings.value(prefix + QStringLiteral("key")).toString();
+        if(key.isEmpty())
+            continue;
+
+        ExternalSourceStoredPosition entry;
+        entry.pos = QPointF(settings.value(prefix + QStringLiteral("x")).toDouble(),
+                            settings.value(prefix + QStringLiteral("y")).toDouble());
+        entry.manual = settings.value(prefix + QStringLiteral("manual"), false).toBool();
+
+        if(!m_externalSourcePosCache.contains(key))
+            m_externalSourcePosCache.insert(key, entry);
+    }
+    settings.endGroup();
 }
 
 bool UModernDiagramWidget::isLinkEndpointInsideCurrentScope(const QString& path) const
@@ -2035,10 +2223,14 @@ PortCategory UModernDiagramWidget::resolveInputPortCategory(
 
 void UModernDiagramWidget::clearExternalSources()
 {
-    for(auto* ext : m_externalSources)
+    for(UModernDiagramExternalSourceItem* ext : m_externalSources)
     {
         if(ext)
-            m_externalSourcePosCache.insert(externalSourcePositionKey(ext->outputFullId()), ext->pos());
+        {
+            const QString key = externalSourcePositionKey(ext->outputFullId());
+            const bool manual = m_externalSourcePosCache.value(key).manual;
+            rememberExternalSourcePosition(key, ext->pos(), manual);
+        }
         if(ext && m_scene)
             m_scene->removeItem(ext);
         delete ext;
@@ -2091,7 +2283,7 @@ void UModernDiagramWidget::processExternalIncomingFromLinksList(
             UModernDiagramExternalSourceItem* ext = m_externalSourceByKey.value(sourceKey, nullptr);
             if(!ext)
             {
-                ext = new UModernDiagramExternalSourceItem(this, displayLabel, itemName);
+                ext = new UModernDiagramExternalSourceItem(this, itemId, itemName);
                 m_externalSources.append(ext);
                 m_externalSourceByKey.insert(sourceKey, ext);
                 m_scene->addItem(ext);
@@ -2103,7 +2295,6 @@ void UModernDiagramWidget::processExternalIncomingFromLinksList(
             if(UModernDiagramLinkItem* existing = aggregatedExternalLinks.value(aggKey, nullptr))
             {
                 existing->incrementParallelCount();
-                existing->updateGeometry();
                 continue;
             }
 
@@ -2112,7 +2303,6 @@ void UModernDiagramWidget::processExternalIncomingFromLinksList(
             m_links.append(linkItem);
             m_scene->addItem(linkItem);
             dstNode->m_connectedLinks.append(linkItem);
-            linkItem->updateGeometry();
         }
     }
 }
@@ -2152,38 +2342,50 @@ void UModernDiagramWidget::layoutExternalSources()
         obstacleRects.append(nodeRect);
     }
 
-    int stackIndex = 0;
-    for(UModernDiagramExternalSourceItem* ext : m_externalSources)
+    QHash<UModernDiagramExternalSourceItem*, QList<ExternalLayoutTarget>> targetsByExt;
+    for(UModernDiagramLinkItem* link : m_links)
+    {
+        if(!link || !link->isExternalIncoming() || !link->externalSource())
+            continue;
+        ExternalLayoutTarget target;
+        target.dstNode = link->dst();
+        target.dstCategory = link->dstCategory();
+        targetsByExt[link->externalSource()].append(target);
+    }
+
+    QList<UModernDiagramExternalSourceItem*> order = m_externalSources;
+    std::stable_sort(order.begin(), order.end(),
+                     [&targetsByExt](UModernDiagramExternalSourceItem* a,
+                                     UModernDiagramExternalSourceItem* b) {
+                         return targetsByExt.value(a).size() > targetsByExt.value(b).size();
+                     });
+
+    int autoStackIndex = 0;
+    for(UModernDiagramExternalSourceItem* ext : order)
     {
         if(!ext)
             continue;
 
         const QString posKey = externalSourcePositionKey(ext->outputFullId());
-        if(m_externalSourcePosCache.contains(posKey))
+        ExternalSourceStoredPosition stored;
+        const bool hasStored = externalSourceStoredPosition(posKey, &stored);
+
+        if(hasStored)
         {
-            ext->setPos(m_externalSourcePosCache.value(posKey));
-            obstacleRects.append(ext->sceneBoundingRect());
-            continue;
+            ext->setPos(stored.pos);
+        }
+        else
+        {
+            ext->layoutOptimal(nodesBounds, obstacleRects, targetsByExt.value(ext),
+                               autoStackIndex * 24.0);
+            rememberExternalSourcePosition(posKey, ext->pos(), false);
+            ++autoStackIndex;
         }
 
-        QList<UModernDiagramNodeItem*> targetNodes;
-        for(UModernDiagramLinkItem* link : m_links)
-        {
-            if(link && link->externalSource() == ext && link->dst())
-                targetNodes.append(link->dst());
-        }
-
-        ext->layoutOptimal(nodesBounds, obstacleRects, targetNodes, stackIndex * 24.0);
-        m_externalSourcePosCache.insert(posKey, ext->pos());
-        obstacleRects.append(ext->sceneBoundingRect());
-        ++stackIndex;
-
-        for(UModernDiagramLinkItem* link : m_links)
-        {
-            if(link && link->externalSource() == ext)
-                link->updateGeometry();
-        }
+        obstacleRects.append(ext->sceneBoundingRect().adjusted(-4, -4, 4, 4));
     }
+
+    updateAllExternalLinkGeometry();
 }
 
 void UModernDiagramWidget::buildExternalIncomingLinks()

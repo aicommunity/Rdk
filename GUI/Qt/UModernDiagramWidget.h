@@ -26,6 +26,7 @@
 #include "../Core/Engine/UXMLEnvSerialize.h"
 #include "../Core/Engine/UEnvSupport.h"
 #include "UModernDiagramPort.h"  // Для Port и PortCategory
+#include "UModernDiagramExternalLinkLayout.h"
 #include "UComponentGuiContext.h"
 
 // Константы для диаграммы
@@ -96,6 +97,15 @@ public slots:
     void SaveViewState();
     /// Загрузка состояния viewport из QSettings
     void LoadViewState();
+
+    static QString formatExternalSourceDisplayLabel(const QString& itemId,
+                                                    const QString& itemName,
+                                                    int maxWidthPx,
+                                                    QFontMetricsF* fm = nullptr);
+    static QString externalSourceFullPathLabel(const QString& itemId, const QString& itemName);
+
+    void updateExternalSourceLinkGeometry(UModernDiagramExternalSourceItem* ext);
+    void onExternalSourceMoved(UModernDiagramExternalSourceItem* ext, bool manual);
     /// Выделение всех NodeItem внутри указанного прямоугольника
     /// @param selectionRect Прямоугольник выделения в координатах scene
     /// @param addToSelection Если true, добавляет к текущему выделению, иначе очищает перед выделением
@@ -147,6 +157,7 @@ private:
     friend class UModernDiagramScene;
     friend class UModernDiagramView;
     friend class UModernDiagramLinkItem;  // Для доступа к NodeItem и PortCategory
+    friend class UModernDiagramExternalSourceItem;
     friend class UModernDiagramNodeItem;  // Для доступа к Port и PortCategory
     friend class UModernDiagramCacheManager;  // Для доступа к данным кэша
     friend class UModernDiagramCoordinateManager;  // Для доступа к данным координат
@@ -209,6 +220,12 @@ private:
     void buildExternalIncomingLinks();
     void clearExternalSources();
     void layoutExternalSources();
+    void persistExternalSourcePositionsBeforeClear();
+    void rememberExternalSourcePosition(const QString& sourceKey, const QPointF& pos, bool manual);
+    bool externalSourceStoredPosition(const QString& sourceKey, ExternalSourceStoredPosition* out) const;
+    void updateAllExternalLinkGeometry();
+    void saveExternalSourcePositionsToSettings();
+    void loadExternalSourcePositionsFromSettings();
     QString externalSourcePositionKey(const QString& sourceKey) const;
     void processExternalIncomingFromLinksList(
         const RDK::UStringLinksList& linkslist,
@@ -276,7 +293,9 @@ private:
     QList<UModernDiagramLinkItem*> m_links;
     QList<UModernDiagramExternalSourceItem*> m_externalSources;
     QHash<QString, UModernDiagramExternalSourceItem*> m_externalSourceByKey;
-    QHash<QString, QPointF> m_externalSourcePosCache;
+    QHash<QString, ExternalSourceStoredPosition> m_externalSourcePosCache;
+    QSet<QString> m_externalSourceDirtyKeys;
+    QTimer* m_externalSourceSaveTimer = nullptr;
 
     // Защита от бесконечной рекурсии при выборе компонента
     // Cache manager

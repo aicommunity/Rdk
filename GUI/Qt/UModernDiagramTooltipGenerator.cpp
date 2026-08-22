@@ -1,6 +1,7 @@
 #include "UModernDiagramTooltipGenerator.h"
 #include "UModernDiagramNodeItem.h"
 #include "UModernDiagramLinkItem.h"
+#include "UModernDiagramExternalSourceItem.h"
 #include "UModernDiagramPort.h"
 
 #include <QCoreApplication>
@@ -83,13 +84,18 @@ QString UModernDiagramTooltipGenerator::generateLinkTooltip(const UModernDiagram
         case PortCategory::Child: categoryName = QCoreApplication::translate("UModernDiagramTooltipGenerator", "Child"); break;
         case PortCategory::Alias: categoryName = QCoreApplication::translate("UModernDiagramTooltipGenerator", "Alias"); break;
         }
+        const UModernDiagramExternalSourceItem* ext = link->externalSource();
+        const QString shortLabel = ext ? ext->displayLabel() : link->externalSourceLabel();
+        const QString fullLabel = ext ? ext->outputFullId() : link->externalSourceLabel();
         QString tooltip = QCoreApplication::translate("UModernDiagramTooltipGenerator",
             "<b>External connection</b><br/>"
             "From: %1<br/>"
-            "To: %2 (%3)<br/><br/>"
+            "<small>%2</small><br/>"
+            "To: %3 (%4)<br/><br/>"
             "<b>Actions:</b><br/>"
+            "• Drag source port to reposition<br/>"
             "• Right Click - Context menu"
-        ).arg(link->externalSourceLabel(), dstName, categoryName);
+        ).arg(shortLabel, fullLabel, dstName, categoryName);
         if(link->parallelCount() > 1)
         {
             tooltip += QCoreApplication::translate("UModernDiagramTooltipGenerator",

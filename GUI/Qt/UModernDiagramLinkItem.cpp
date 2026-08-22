@@ -107,7 +107,7 @@ UModernDiagramLinkItem::UModernDiagramLinkItem(UModernDiagramExternalSourceItem*
                 Qt::DashLine, Qt::RoundCap, Qt::RoundJoin));
     setZValue(-1);
     setAcceptHoverEvents(true);
-    setCacheMode(QGraphicsItem::DeviceCoordinateCache);
+    setCacheMode(QGraphicsItem::NoCache);
 }
 
 void UModernDiagramLinkItem::updateGeometry(const QPointF& cursorOverride)
@@ -120,6 +120,7 @@ void UModernDiagramLinkItem::updateGeometry(const QPointF& cursorOverride)
         QPointF c1 = start + QPointF((end.x() - start.x()) * 0.4, 0);
         QPointF c2 = end   - QPointF((end.x() - start.x()) * 0.4, 0);
         path.cubicTo(c1, c2, end);
+        prepareGeometryChange();
         setPath(path);
         return;
     }
