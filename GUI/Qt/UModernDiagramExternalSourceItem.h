@@ -20,6 +20,10 @@ public:
 
     QPointF scenePortPos() const;
     void layoutBeside(UModernDiagramNodeItem* dstNode, int stackIndex);
+    void layoutOptimal(const QRectF& nodesBounds,
+                       const QList<QRectF>& obstacleRects,
+                       const QList<UModernDiagramNodeItem*>& targetNodes,
+                       qreal stackOffsetY = 0.0);
 
     QRectF boundingRect() const override;
     void paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget) override;

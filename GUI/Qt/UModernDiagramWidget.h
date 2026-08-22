@@ -208,8 +208,27 @@ private:
     void rebuildLinks(); // Перестраивает только связи без перезагрузки всей сцены
     void buildExternalIncomingLinks();
     void clearExternalSources();
+    void layoutExternalSources();
+    QString externalSourcePositionKey(const QString& sourceKey) const;
+    void processExternalIncomingFromLinksList(
+        const RDK::UStringLinksList& linkslist,
+        QHash<UModernDiagramNodeItem*, int>& stackCounter,
+        QHash<QString, UModernDiagramLinkItem*>& aggregatedExternalLinks);
+    bool appendExternalIncomingLinksFromXml(const std::string& linksXml,
+                                            QHash<UModernDiagramNodeItem*, int>& stackCounter,
+                                            QHash<QString, UModernDiagramLinkItem*>& aggregatedExternalLinks);
     UModernDiagramNodeItem* resolveNodeOnDiagram(const QString& fullOrRelative) const;
     UModernDiagramNodeItem* resolveNodeByIdOnDiagram(const QString& id) const;
+    UModernDiagramNodeItem* resolveDestinationNodeOnDiagram(const QString& connName,
+                                                           const QString& connId) const;
+    QString scopeShortName() const;
+    QString parentScopeName() const;
+    bool connectorTargetsScopeInput(const QString& connName, const QString& connId) const;
+    UModernDiagramNodeItem* findOwnerInputTargetChild() const;
+    static QString formatExternalSourceLabel(const QString& itemId, const QString& itemName);
+    bool isLinkEndpointInsideCurrentScope(const QString& path) const;
+    bool isConnectorNestedInsideVisibleChild(const QString& connName, const QString& connId) const;
+    bool isExternalLinkSource(const QString& itemName, const QString& itemId) const;
     QString normalizeConnectorNameForDst(UModernDiagramNodeItem* dstNode,
                                          const QString& connName,
                                          const QString& connIdStr) const;
@@ -257,6 +276,7 @@ private:
     QList<UModernDiagramLinkItem*> m_links;
     QList<UModernDiagramExternalSourceItem*> m_externalSources;
     QHash<QString, UModernDiagramExternalSourceItem*> m_externalSourceByKey;
+    QHash<QString, QPointF> m_externalSourcePosCache;
 
     // Защита от бесконечной рекурсии при выборе компонента
     // Cache manager

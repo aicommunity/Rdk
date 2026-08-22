@@ -1791,6 +1791,180 @@ UModernDiagramNodeItem* UModernDiagramWidget::resolveNodeByIdOnDiagram(const QSt
     return nullptr;
 }
 
+UModernDiagramNodeItem* UModernDiagramWidget::resolveDestinationNodeOnDiagram(const QString& connName,
+                                                                            const QString& connId) const
+{
+    if(UModernDiagramNodeItem* node = resolveNodeOnDiagram(connName))
+        return node;
+    if(UModernDiagramNodeItem* node = resolveNodeByIdOnDiagram(connId))
+        return node;
+
+    QString path = connId.isEmpty() ? connName : connId;
+    if(!m_componentName.isEmpty())
+    {
+        const QString scopePrefix = m_componentName + QLatin1Char('.');
+        if(path.startsWith(scopePrefix))
+            path = path.mid(scopePrefix.size());
+    }
+    const int dot = path.indexOf(QLatin1Char('.'));
+    const QString top = dot >= 0 ? path.left(dot) : path;
+    if(!top.isEmpty())
+    {
+        if(auto it = m_nodeByName.find(top); it != m_nodeByName.end())
+            return it.value();
+    }
+
+    if(connectorTargetsScopeInput(connName, connId))
+    {
+        if(UModernDiagramNodeItem* child = findOwnerInputTargetChild())
+            return child;
+    }
+    return nullptr;
+}
+
+QString UModernDiagramWidget::scopeShortName() const
+{
+    if(m_componentName.isEmpty())
+        return QString();
+    return m_componentName.section(QLatin1Char('.'), -1);
+}
+
+QString UModernDiagramWidget::parentScopeName() const
+{
+    const int dot = m_componentName.lastIndexOf(QLatin1Char('.'));
+    return dot >= 0 ? m_componentName.left(dot) : QString();
+}
+
+bool UModernDiagramWidget::connectorTargetsScopeInput(const QString& connName,
+                                                      const QString& connId) const
+{
+    if(m_componentName.isEmpty())
+        return false;
+
+    const QString scopeShort = scopeShortName();
+    const QString scopeLong = m_componentName;
+
+    const auto matchesScope = [&](const QString& idOrName) {
+        if(idOrName.isEmpty())
+            return false;
+        if(idOrName == scopeShort || idOrName == scopeLong)
+            return true;
+        return idOrName.endsWith(QLatin1Char('.') + scopeShort);
+    };
+
+    if(connName == QLatin1String("Input") && matchesScope(connId))
+        return true;
+    if(connName == scopeShort + QStringLiteral(".Input") || connName == scopeLong + QStringLiteral(".Input"))
+        return true;
+    if(connName.endsWith(QStringLiteral(".Input")))
+    {
+        const QString base = connName.left(connName.size() - QStringLiteral(".Input").size());
+        if(matchesScope(base))
+            return true;
+    }
+    return false;
+}
+
+UModernDiagramNodeItem* UModernDiagramWidget::findOwnerInputTargetChild() const
+{
+    if(auto it = m_nodeByName.constFind(QStringLiteral("Segment1")); it != m_nodeByName.constEnd())
+        return it.value();
+
+    const QStringList children = loadComponentList();
+    for(const QString& name : children)
+    {
+        if(UModernDiagramNodeItem* node = m_nodeByName.value(name))
+            return node;
+    }
+    return nullptr;
+}
+
+QString UModernDiagramWidget::formatExternalSourceLabel(const QString& itemId, const QString& itemName)
+{
+    if(itemId.isEmpty())
+        return itemName;
+    if(itemName.isEmpty())
+        return itemId;
+    if(itemId.endsWith(QLatin1Char('.') + itemName))
+        return itemId;
+    return itemId + QLatin1Char('.') + itemName;
+}
+
+QString UModernDiagramWidget::externalSourcePositionKey(const QString& sourceKey) const
+{
+    return m_componentName + QLatin1Char('|') + sourceKey;
+}
+
+bool UModernDiagramWidget::isLinkEndpointInsideCurrentScope(const QString& path) const
+{
+    if(path.isEmpty())
+        return false;
+
+    QString relative = path;
+    if(!m_componentName.isEmpty())
+    {
+        if(relative == m_componentName)
+            return false;
+        const QString scopePrefix = m_componentName + QLatin1Char('.');
+        if(relative.startsWith(scopePrefix))
+            relative = relative.mid(scopePrefix.size());
+        else if(relative.contains(QLatin1Char('.')))
+        {
+            const QString scopeShort = scopeShortName();
+            if(relative.startsWith(scopeShort + QLatin1Char('.')))
+                relative = relative.mid(scopeShort.size() + 1);
+        }
+    }
+
+    const int dot = relative.indexOf(QLatin1Char('.'));
+    const QString top = dot >= 0 ? relative.left(dot) : relative;
+    return !top.isEmpty() && m_nodeByName.contains(top);
+}
+
+bool UModernDiagramWidget::isExternalLinkSource(const QString& itemName, const QString& itemId) const
+{
+    if(isLinkEndpointInsideCurrentScope(itemId) || isLinkEndpointInsideCurrentScope(itemName))
+        return false;
+    if(resolveNodeOnDiagram(itemName) || resolveNodeByIdOnDiagram(itemId))
+        return false;
+    return true;
+}
+
+bool UModernDiagramWidget::isConnectorNestedInsideVisibleChild(const QString& connName,
+                                                               const QString& connId) const
+{
+    QString path = connId.isEmpty() ? connName : connId;
+    if(path.isEmpty())
+        return false;
+
+    QString relative = path;
+    if(!m_componentName.isEmpty())
+    {
+        if(relative == m_componentName)
+            return false;
+        const QString scopePrefix = m_componentName + QLatin1Char('.');
+        if(relative.startsWith(scopePrefix))
+            relative = relative.mid(scopePrefix.size());
+        else if(relative.contains(QLatin1Char('.')))
+        {
+            const QString scopeShort = scopeShortName();
+            if(relative.startsWith(scopeShort + QLatin1Char('.')))
+                relative = relative.mid(scopeShort.size() + 1);
+        }
+    }
+
+    const int dot = relative.indexOf(QLatin1Char('.'));
+    if(dot < 0)
+        return false;
+
+    const QString top = relative.left(dot);
+    if(!m_nodeByName.contains(top))
+        return false;
+
+    const QString rest = relative.mid(dot + 1);
+    return rest.contains(QLatin1Char('.'));
+}
+
 QString UModernDiagramWidget::normalizeConnectorNameForDst(UModernDiagramNodeItem* dstNode,
                                                            const QString& connName,
                                                            const QString& connIdStr) const
@@ -1863,12 +2037,153 @@ void UModernDiagramWidget::clearExternalSources()
 {
     for(auto* ext : m_externalSources)
     {
+        if(ext)
+            m_externalSourcePosCache.insert(externalSourcePositionKey(ext->outputFullId()), ext->pos());
         if(ext && m_scene)
             m_scene->removeItem(ext);
         delete ext;
     }
     m_externalSources.clear();
     m_externalSourceByKey.clear();
+}
+
+void UModernDiagramWidget::processExternalIncomingFromLinksList(
+    const RDK::UStringLinksList& linkslist,
+    QHash<UModernDiagramNodeItem*, int>& stackCounter,
+    QHash<QString, UModernDiagramLinkItem*>& aggregatedExternalLinks)
+{
+    QHash<QPair<UModernDiagramNodeItem*, QString>, PortCategory> portCategoryCache;
+
+    for(int i = 0; i < linkslist.GetSize(); ++i)
+    {
+        const auto& link = linkslist[i];
+        const QString itemName = QString::fromStdString(link.Item.Name);
+        const QString itemId = QString::fromStdString(link.Item.Id);
+        const QString displayLabel = formatExternalSourceLabel(itemId, itemName);
+
+        if(!isExternalLinkSource(itemName, itemId))
+            continue;
+
+        const QString sourceKey = formatExternalSourceLabel(itemId, itemName);
+        if(sourceKey.isEmpty())
+            continue;
+
+        for(size_t c = 0; c < link.Connector.size(); ++c)
+        {
+            const auto& connSide = link.Connector[c];
+            const QString connName = QString::fromStdString(connSide.Name);
+            const QString connIdStr = QString::fromStdString(connSide.Id);
+
+            UModernDiagramNodeItem* dstNode = resolveDestinationNodeOnDiagram(connName, connIdStr);
+            if(!dstNode)
+                continue;
+
+            const bool ownerInput = connectorTargetsScopeInput(connName, connIdStr);
+            if(!ownerInput && isConnectorNestedInsideVisibleChild(connName, connIdStr))
+                continue;
+
+            const QString normalizedConnName = ownerInput
+                ? QStringLiteral("Input")
+                : normalizeConnectorNameForDst(dstNode, connName, connIdStr);
+            const PortCategory dstCategory =
+                resolveInputPortCategory(dstNode, normalizedConnName, portCategoryCache);
+
+            UModernDiagramExternalSourceItem* ext = m_externalSourceByKey.value(sourceKey, nullptr);
+            if(!ext)
+            {
+                ext = new UModernDiagramExternalSourceItem(this, displayLabel, itemName);
+                m_externalSources.append(ext);
+                m_externalSourceByKey.insert(sourceKey, ext);
+                m_scene->addItem(ext);
+            }
+
+            const QString aggKey = sourceKey + QLatin1Char('|')
+                + QString::number(quintptr(dstNode)) + QLatin1Char('|')
+                + QString::number(static_cast<int>(dstCategory));
+            if(UModernDiagramLinkItem* existing = aggregatedExternalLinks.value(aggKey, nullptr))
+            {
+                existing->incrementParallelCount();
+                existing->updateGeometry();
+                continue;
+            }
+
+            auto* linkItem = new UModernDiagramLinkItem(ext, dstNode, dstCategory, displayLabel);
+            aggregatedExternalLinks.insert(aggKey, linkItem);
+            m_links.append(linkItem);
+            m_scene->addItem(linkItem);
+            dstNode->m_connectedLinks.append(linkItem);
+            linkItem->updateGeometry();
+        }
+    }
+}
+
+bool UModernDiagramWidget::appendExternalIncomingLinksFromXml(
+    const std::string& linksXml,
+    QHash<UModernDiagramNodeItem*, int>& stackCounter,
+    QHash<QString, UModernDiagramLinkItem*>& aggregatedExternalLinks)
+{
+    if(linksXml.empty())
+        return false;
+
+    RDK::USerStorageXML xml;
+    if(!xml.Load(linksXml, "Links"))
+        return false;
+
+    RDK::UStringLinksList linkslist;
+    xml >> linkslist;
+    if(linkslist.GetSize() == 0)
+        return false;
+
+    processExternalIncomingFromLinksList(linkslist, stackCounter, aggregatedExternalLinks);
+    return true;
+}
+
+void UModernDiagramWidget::layoutExternalSources()
+{
+    if(m_externalSources.isEmpty())
+        return;
+
+    QRectF nodesBounds;
+    QList<QRectF> obstacleRects;
+    for(UModernDiagramNodeItem* node : m_nodes)
+    {
+        const QRectF nodeRect = node->sceneBoundingRect();
+        nodesBounds = nodesBounds.isEmpty() ? nodeRect : nodesBounds.united(nodeRect);
+        obstacleRects.append(nodeRect);
+    }
+
+    int stackIndex = 0;
+    for(UModernDiagramExternalSourceItem* ext : m_externalSources)
+    {
+        if(!ext)
+            continue;
+
+        const QString posKey = externalSourcePositionKey(ext->outputFullId());
+        if(m_externalSourcePosCache.contains(posKey))
+        {
+            ext->setPos(m_externalSourcePosCache.value(posKey));
+            obstacleRects.append(ext->sceneBoundingRect());
+            continue;
+        }
+
+        QList<UModernDiagramNodeItem*> targetNodes;
+        for(UModernDiagramLinkItem* link : m_links)
+        {
+            if(link && link->externalSource() == ext && link->dst())
+                targetNodes.append(link->dst());
+        }
+
+        ext->layoutOptimal(nodesBounds, obstacleRects, targetNodes, stackIndex * 24.0);
+        m_externalSourcePosCache.insert(posKey, ext->pos());
+        obstacleRects.append(ext->sceneBoundingRect());
+        ++stackIndex;
+
+        for(UModernDiagramLinkItem* link : m_links)
+        {
+            if(link && link->externalSource() == ext)
+                link->updateGeometry();
+        }
+    }
 }
 
 void UModernDiagramWidget::buildExternalIncomingLinks()
@@ -1881,92 +2196,39 @@ void UModernDiagramWidget::buildExternalIncomingLinks()
     QHash<UModernDiagramNodeItem*, int> stackCounter;
     QHash<QString, UModernDiagramLinkItem*> aggregatedExternalLinks;
 
+    if(!m_componentName.isEmpty())
+    {
+        // Personal/external links of the scope container (e.g. PGenerator -> AxoneChain3.Input).
+        appendExternalIncomingLinksFromXml(
+            personalLinksXmlFromModelScope(channel, m_componentName, parentScopeName(), true),
+            stackCounter,
+            aggregatedExternalLinks);
+
+        // Parent-scope links: sources outside this diagram level.
+        appendExternalIncomingLinksFromXml(
+            internalLinksXmlFromModelScope(channel, parentScopeName(), true),
+            stackCounter,
+            aggregatedExternalLinks);
+    }
+
     const QStringList children = loadComponentList();
     for(const QString& shortName : children)
     {
         const QString childLong = m_componentName.isEmpty()
             ? shortName
             : m_componentName + "." + shortName;
-        const std::string linksXml =
-            personalLinksXmlFromModelScope(channel, childLong, m_componentName);
-        if(linksXml.empty())
-            continue;
-
-        RDK::USerStorageXML xml;
-        if(!xml.Load(linksXml, "Links"))
-            continue;
-
-        RDK::UStringLinksList linkslist;
-        xml >> linkslist;
-
-        QHash<QPair<UModernDiagramNodeItem*, QString>, PortCategory> portCategoryCache;
-
-        for(int i = 0; i < linkslist.GetSize(); ++i)
-        {
-            const auto& link = linkslist[i];
-            const QString itemName = QString::fromStdString(link.Item.Name);
-            const QString itemId = QString::fromStdString(link.Item.Id);
-            const QString displayLabel = itemId.isEmpty() ? itemName : itemId;
-
-            UModernDiagramNodeItem* srcNode = resolveNodeOnDiagram(itemName);
-            if(!srcNode)
-                srcNode = resolveNodeByIdOnDiagram(itemId);
-            if(srcNode)
-                continue;
-
-            const QString sourceKey = itemId.isEmpty() ? itemName : itemId;
-
-            for(size_t c = 0; c < link.Connector.size(); ++c)
-            {
-                const auto& connSide = link.Connector[c];
-                const QString connName = QString::fromStdString(connSide.Name);
-                const QString connIdStr = QString::fromStdString(connSide.Id);
-
-                UModernDiagramNodeItem* dstNode = resolveNodeOnDiagram(connName);
-                if(!dstNode)
-                    dstNode = resolveNodeByIdOnDiagram(connIdStr);
-                if(!dstNode)
-                    continue;
-
-                const QString normalizedConnName =
-                    normalizeConnectorNameForDst(dstNode, connName, connIdStr);
-                const PortCategory dstCategory =
-                    resolveInputPortCategory(dstNode, normalizedConnName, portCategoryCache);
-
-                UModernDiagramExternalSourceItem* ext = m_externalSourceByKey.value(sourceKey, nullptr);
-                if(!ext)
-                {
-                    ext = new UModernDiagramExternalSourceItem(this, displayLabel, itemName);
-                    m_externalSources.append(ext);
-                    m_externalSourceByKey.insert(sourceKey, ext);
-                    m_scene->addItem(ext);
-                    const int stackIndex = stackCounter.value(dstNode, 0);
-                    stackCounter.insert(dstNode, stackIndex + 1);
-                    ext->layoutBeside(dstNode, stackIndex);
-                }
-
-                const QString aggKey = sourceKey + QLatin1Char('|')
-                    + QString::number(quintptr(dstNode)) + QLatin1Char('|')
-                    + QString::number(static_cast<int>(dstCategory));
-                if(UModernDiagramLinkItem* existing = aggregatedExternalLinks.value(aggKey, nullptr))
-                {
-                    existing->incrementParallelCount();
-                    existing->updateGeometry();
-                    continue;
-                }
-
-                auto* linkItem = new UModernDiagramLinkItem(ext, dstNode, dstCategory, displayLabel);
-                aggregatedExternalLinks.insert(aggKey, linkItem);
-                m_links.append(linkItem);
-                m_scene->addItem(linkItem);
-                dstNode->m_connectedLinks.append(linkItem);
-                linkItem->updateGeometry();
-            }
-        }
+        appendExternalIncomingLinksFromXml(
+            personalLinksXmlFromModelScope(channel, childLong, m_componentName, true),
+            stackCounter,
+            aggregatedExternalLinks);
     }
+
+    layoutExternalSources();
 
     for(auto* node : m_nodes)
         node->m_cacheValid = false;
+
+    updateSceneRect();
 }
 
 // --------------------------- ComponentCache ---------------------------

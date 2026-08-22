@@ -31,13 +31,22 @@ QStringList childComponentShortNamesFromModelScope(int channel_index, const QStr
 QString componentClassNameFromModelScope(int channel_index, const QString& component_long_name);
 
 /// Internal links XML for a schematic scope from model root. Empty if none or not a net.
-std::string internalLinksXmlFromModelScope(int channel_index, const QString& scope_long_name);
+/// When \a paths_from_model_root is true, link Item/Connector ids use full model-root paths
+/// (required for external-source labels on nested diagrams).
+std::string internalLinksXmlFromModelScope(int channel_index,
+                                           const QString& scope_long_name,
+                                           bool paths_from_model_root = false);
 
 /// Personal/external links for component relative to owner scope (model root paths).
 /// Empty if component not found or no links.
 std::string personalLinksXmlFromModelScope(int channel_index,
                                            const QString& component_long_name,
-                                           const QString& owner_level_long_name);
+                                           const QString& owner_level_long_name,
+                                           bool paths_from_model_root = false);
+
+/// Boundary links from each direct child to the rest of the scope (SaveComponentDrawInfo semantics).
+std::string scopeChildBoundaryLinksXmlFromModelScope(int channel_index,
+                                                    const QString& scope_long_name);
 
 struct DiagramAddComponentResult {
     bool ok = false;

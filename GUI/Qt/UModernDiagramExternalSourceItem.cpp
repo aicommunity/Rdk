@@ -6,6 +6,8 @@
 
 #include <QPainter>
 #include <QFontMetricsF>
+#include <QtGlobal>
+#include <climits>
 
 UModernDiagramExternalSourceItem::UModernDiagramExternalSourceItem(UModernDiagramWidget* owner,
                                                                    const QString& outputFullId,
@@ -35,6 +37,63 @@ void UModernDiagramExternalSourceItem::layoutBeside(UModernDiagramNodeItem* dstN
     const qreal centerY = nr.center().y() + stackIndex * kStackStep;
     const qreal portX = nr.left() - kGapFromNode;
     setPos(portX - boundingRect().width(), centerY - boundingRect().height() / 2.0);
+}
+
+void UModernDiagramExternalSourceItem::layoutOptimal(const QRectF& nodesBounds,
+                                                     const QList<QRectF>& obstacleRects,
+                                                     const QList<UModernDiagramNodeItem*>& targetNodes,
+                                                     qreal stackOffsetY)
+{
+    if(nodesBounds.isEmpty())
+    {
+        if(!targetNodes.isEmpty())
+            layoutBeside(targetNodes.first(), static_cast<int>(stackOffsetY / kStackStep));
+        return;
+    }
+
+    const QRectF itemBounds = boundingRect();
+    const qreal width = itemBounds.width();
+    const qreal height = itemBounds.height();
+    const qreal leftX = nodesBounds.left() - kGapFromNode - width;
+
+    QList<qreal> candidateYs;
+    candidateYs.reserve(targetNodes.size() + 9);
+    qreal targetSumY = 0.0;
+    int targetCount = 0;
+    for(UModernDiagramNodeItem* dstNode : targetNodes)
+    {
+        if(!dstNode)
+            continue;
+        const qreal centerY = dstNode->sceneBoundingRect().center().y();
+        candidateYs.append(centerY);
+        targetSumY += centerY;
+        ++targetCount;
+    }
+    const qreal avgTargetY = targetCount > 0 ? targetSumY / targetCount : nodesBounds.center().y();
+    for(int i = 0; i <= 8; ++i)
+        candidateYs.append(nodesBounds.top() + nodesBounds.height() * i / 8.0);
+
+    qreal bestCenterY = avgTargetY + stackOffsetY;
+    int bestScore = INT_MAX;
+    for(qreal centerY : candidateYs)
+    {
+        centerY += stackOffsetY;
+        const QRectF candidate(leftX, centerY - height / 2.0, width, height);
+        int score = 0;
+        for(const QRectF& obstacle : obstacleRects)
+        {
+            if(candidate.intersects(obstacle))
+                score += 1000;
+        }
+        score += static_cast<int>(qAbs(centerY - avgTargetY));
+        if(score < bestScore)
+        {
+            bestScore = score;
+            bestCenterY = centerY;
+        }
+    }
+
+    setPos(leftX, bestCenterY - height / 2.0);
 }
 
 QRectF UModernDiagramExternalSourceItem::boundingRect() const
