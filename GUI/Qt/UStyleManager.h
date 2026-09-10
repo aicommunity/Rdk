@@ -1,6 +1,7 @@
 #ifndef USTYLEMANAGER_H
 #define USTYLEMANAGER_H
 
+#include <QObject>
 #include <QColor>
 #include <QString>
 #include <QApplication>
@@ -18,8 +19,9 @@ class QWidget;
  * Загружает цвета из theme.json для кастомной отрисовки (QPainter)
  * и применяет .qss стили к Qt виджетам.
  */
-class UStyleManager
+class UStyleManager : public QObject
 {
+    Q_OBJECT
 public:
     static UStyleManager* instance();
     
@@ -32,6 +34,9 @@ public:
     void applySystemUiFonts(QApplication* app);
     QFont titleBarFont() const;
     void applyTitleBarFont(QWidget* titleHost) const;
+
+    /// Density spacing from current UI font metrics (n * height/4, min 1).
+    static int densitySpace(int units);
     
     // Переключение темы
     bool switchTheme(const QString& themeName, QApplication* app);
@@ -115,10 +120,13 @@ public:
     
     // Имя текущей темы
     QString getThemeName() const { return m_themeName; }
+
+signals:
+    void themeChanged();
     
 private:
     UStyleManager();
-    ~UStyleManager() = default;
+    ~UStyleManager() override = default;
     UStyleManager(const UStyleManager&) = delete;
     UStyleManager& operator=(const UStyleManager&) = delete;
     

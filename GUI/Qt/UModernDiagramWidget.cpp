@@ -1297,6 +1297,11 @@ void UModernDiagramWidget::updateTheme()
         if(node)
         {
             node->m_cacheValid = false;
+            if(node->m_portListWidget)
+            {
+                node->m_portListWidget->setStyleSheet(
+                    UStyleManager::instance()->getTreeWidgetStyleSheet());
+            }
             node->update();
         }
     }

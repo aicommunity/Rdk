@@ -7,6 +7,7 @@
 #include "UGuiShellController.h"
 #include "UGuiShellTypes.h"
 #include "UEngineControlStripWidget.h"
+#include "UGuiWindowActivation.h"
 
 
 #include <rdk_application.h>
@@ -38,6 +39,8 @@
 #include <QSet>
 #include <QToolButton>
 #include <QDialog>
+#include <QClipboard>
+#include <QApplication>
 #include <QDrag>
 #include <QMimeData>
 #include <QMouseEvent>
@@ -403,10 +406,12 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
     connect(ui->actionCopyConfig, SIGNAL(triggered(bool)), this, SLOT(actionCopyConfig()));
     connect(ui->actionAutocopyConfig, SIGNAL(triggered(bool)), this, SLOT(actionAutoCopyConfig()));
     connect(ui->actionRenameConfig, SIGNAL(triggered(bool)), this, SLOT(actionRenameConfig()));
+    connect(ui->actionCopyConfigFolderPath, &QAction::triggered, this, &UGEngineControlWidget::actionCopyConfigFolderPath);
 
     connect(ui->actionConfigOptions, SIGNAL(triggered(bool)), this, SLOT(actionConfigOptions()));
 
     updateShemeClassesList();
+    updateCopyConfigFolderPathAction();
     connect(ui->actionBuildMode1,  SIGNAL(triggered(bool)), this, SLOT(actionBuildMode1()));
     connect(ui->actionBuildMode2,  SIGNAL(triggered(bool)), this, SLOT(actionBuildMode2()));
     connect(ui->actionBuildMode3,  SIGNAL(triggered(bool)), this, SLOT(actionBuildMode3()));
@@ -1127,15 +1132,13 @@ bool UGEngineControlWidget::llmWatchMdiFocus(int mdi_id)
     QWidget* parent = tab->parentWidget();
     if(auto* sub = qobject_cast<QMdiSubWindow*>(parent))
     {
-        sub->show();
         sub->showMaximized();
-        sub->raise();
+        UGuiWindowActivation::raiseAndActivateMdiSubWindow(ui ? ui->mdiArea : nullptr, sub);
         sub->setFocus();
     }
     else
     {
-        tab->show();
-        tab->raise();
+        UGuiWindowActivation::raiseAndActivateWidget(tab);
         tab->setFocus();
     }
     return true;
@@ -1654,7 +1657,27 @@ void UGEngineControlWidget::applyMaxCalcTime(double seconds)
 void UGEngineControlWidget::actionConfigOptions()
 {
  createConfigurationWizardWidget->restart();
- createConfigurationWizardWidget->show();
+ UGuiWindowActivation::raiseAndActivateWidget(createConfigurationWizardWidget);
+}
+
+void UGEngineControlWidget::updateCopyConfigFolderPathAction()
+{
+    if(!ui || !ui->actionCopyConfigFolderPath)
+        return;
+    const bool enabled = application && application->GetProjectOpenFlag()
+        && !application->GetProjectPath().empty();
+    ui->actionCopyConfigFolderPath->setEnabled(enabled);
+}
+
+void UGEngineControlWidget::actionCopyConfigFolderPath()
+{
+    if(!application || !application->GetProjectOpenFlag())
+        return;
+    const QString path = QDir::toNativeSeparators(
+        QString::fromLocal8Bit(application->GetProjectPath().c_str()));
+    if(path.isEmpty())
+        return;
+    QApplication::clipboard()->setText(path);
 }
 
 void UGEngineControlWidget::actionCreateSaveMockLibs()
@@ -1771,7 +1794,7 @@ void UGEngineControlWidget::actionImages()
     imagesWindow->resize(images->size());
     images->show();
     imagesWindow->showNormal();
-    imagesWindow->activateWindow();
+    UGuiWindowActivation::raiseAndActivateWidget(imagesWindow);
 }
 
 void UGEngineControlWidget::actionNewImages()
@@ -1781,12 +1804,12 @@ void UGEngineControlWidget::actionNewImages()
 
 void UGEngineControlWidget::actionComponentsControl()
 {
-    ui->dockWidgetComponentsList->show();
+    UGuiWindowActivation::raiseAndActivateDock(ui->dockWidgetComponentsList);
 }
 
 void UGEngineControlWidget::actionChannelsControl()
 {
-  ui->dockWidgetChannels->show();
+  UGuiWindowActivation::raiseAndActivateDock(ui->dockWidgetChannels);
 }
 
 void UGEngineControlWidget::actionLogger()
@@ -1803,9 +1826,7 @@ void UGEngineControlWidget::actionLogger()
   QMainWindow* hostWin = loggerDockHost();
   const bool preferFloating = (hostWin == static_cast<QMainWindow*>(this));
   rehomeLoggerDock(hostWin, preferFloating);
-  ui->dockWidgetLoger->show();
-  ui->dockWidgetLoger->raise();
-  ui->dockWidgetLoger->activateWindow();
+  UGuiWindowActivation::raiseAndActivateDock(ui->dockWidgetLoger);
   ui->actionLogger->setChecked(true);
   syncStripLoggerExpanded();
 }
@@ -1910,18 +1931,14 @@ void UGEngineControlWidget::actionWatchWindow()
 {
     if(watchWindow != NULL)
     {
-        watchWindow->show();
         watchWindow->showNormal();
-        watchWindow->raise();
-        watchWindow->activateWindow();
+        UGuiWindowActivation::raiseAndActivateWidget(watchWindow);
     }
     else
     {
         watchWindow = new UWatch(this);
         watchWindow->setWindowTitle("Watch window");
-        watchWindow->show();
-        watchWindow->raise();
-        watchWindow->activateWindow();
+        UGuiWindowActivation::raiseAndActivateWidget(watchWindow);
     }
 }
 
@@ -1932,10 +1949,8 @@ void UGEngineControlWidget::actionProjectDescription()
         // Устанавливаем размер окна равным размеру главного окна
         projectDescriptionWindow->resize(this->size());
         projectDescriptionWindow->setWindowState(projectDescriptionWindow->windowState() & ~Qt::WindowMaximized);
-        projectDescriptionWindow->show();
         projectDescriptionWindow->showNormal();
-        projectDescriptionWindow->raise();
-        projectDescriptionWindow->activateWindow();
+        UGuiWindowActivation::raiseAndActivateWidget(projectDescriptionWindow);
         // Обновляем содержимое при показе окна (на случай, если проект был открыт после создания окна)
         if(application && application->GetProjectOpenFlag())
         {
@@ -1950,28 +1965,13 @@ void UGEngineControlWidget::actionProjectDescription()
         // Устанавливаем размер окна равным размеру главного окна
         projectDescriptionWindow->resize(this->size());
         projectDescriptionWindow->setWindowState(Qt::WindowNoState);
-        projectDescriptionWindow->show();
-        projectDescriptionWindow->raise();
-        projectDescriptionWindow->activateWindow();
+        UGuiWindowActivation::raiseAndActivateWidget(projectDescriptionWindow);
     }
 }
 
 void UGEngineControlWidget::actionProfiling()
 {
-    if (!ui->dockWidgetProfiling->isVisible())
-    {
-        ui->dockWidgetProfiling->show();
-    }
-    /*if(!profilingWindow)
-    {
-        profilingWindow = new QMainWindow(this);
-        profilingWindow->setCentralWidget(profilingWindowWidget);
-    }
-    profilingWindow->resize(profilingWindowWidget->size());
-    profilingWindow->setWindowTitle("Profiling");
-    profilingWindow->show();
-    profilingWindow->showNormal();
-    profilingWindow->activateWindow();*/
+    UGuiWindowActivation::raiseAndActivateDock(ui->dockWidgetProfiling);
 }
 
 void UGEngineControlWidget::actionTcpServer()
@@ -1985,15 +1985,13 @@ void UGEngineControlWidget::actionTcpServer()
 
     tcpServerControlWindow->resize(tcpServerControlWidget->size());
     tcpServerControlWidget->show();
-    tcpServerControlWindow->show();
     tcpServerControlWindow->showNormal();
-    tcpServerControlWindow->activateWindow();
+    UGuiWindowActivation::raiseAndActivateWidget(tcpServerControlWindow);
 }
 
 void UGEngineControlWidget::actionFtpTest()
 {
-    curlFtpClientTestWidget->show();
-    curlFtpClientTestWidget->activateWindow();
+    UGuiWindowActivation::raiseAndActivateWidget(curlFtpClientTestWidget);
 }
 
 void UGEngineControlWidget::actionClDesc()
@@ -2017,7 +2015,7 @@ void UGEngineControlWidget::actionClDesc()
     clDescWindow->resize(clDesc->size());
     clDesc->show();
     clDescWindow->showNormal();
-    clDescWindow->activateWindow();
+    UGuiWindowActivation::raiseAndActivateWidget(clDescWindow);
 }
 
 void UGEngineControlWidget::actionNewWatches()
@@ -2082,8 +2080,8 @@ void UGEngineControlWidget::addImagesWidged()
     QMdiSubWindow *imagesSbWindow = new QMdiSubWindow(ui->mdiArea, Qt::SubWindow);
     imagesSbWindow->setWidget(imagesVector.back());
     imagesSbWindow->setAttribute(Qt::WA_DeleteOnClose);
-    imagesSbWindow->show();
     imagesSbWindow->showMaximized();
+    UGuiWindowActivation::raiseAndActivateMdiSubWindow(ui->mdiArea, imagesSbWindow);
 
     // когда закрывается вкладка Watches, необходиом грамотно очистить вектор
     connect(imagesSbWindow, SIGNAL(destroyed(QObject*)), this, SLOT(delImagesWidgetSlot(QObject*)) );
@@ -2131,8 +2129,8 @@ void UGEngineControlWidget::addWatchesWidged()
     QMdiSubWindow *imagesSbWindow = new QMdiSubWindow(ui->mdiArea, Qt::SubWindow);
     imagesSbWindow->setWidget(watchesVector.back());
     imagesSbWindow->setAttribute(Qt::WA_DeleteOnClose);
-    imagesSbWindow->show();
     imagesSbWindow->showMaximized();
+    UGuiWindowActivation::raiseAndActivateMdiSubWindow(ui->mdiArea, imagesSbWindow);
 
     // когда закрывается вкладка Watches, необходиом грамотно очистить вектор
     connect(imagesSbWindow, SIGNAL(destroyed(QObject*)), this, SLOT(delWatchesWidgetSlot(QObject*)) );
@@ -2506,9 +2504,12 @@ void UGEngineControlWidget::createOrActivateCustomWidget(const QString &id)
             if (!ptr.isNull())
             {
                 QWidget *w = ptr.data();
-                w->show();
-                w->raise();
-                w->activateWindow();
+                if(auto* sub = qobject_cast<QMdiSubWindow*>(w->parentWidget()))
+                    UGuiWindowActivation::raiseAndActivateMdiSubWindow(ui ? ui->mdiArea : nullptr, sub);
+                else if(auto* dock = qobject_cast<QDockWidget*>(w->parentWidget()))
+                    UGuiWindowActivation::raiseAndActivateDock(dock);
+                else
+                    UGuiWindowActivation::raiseAndActivateWidget(w);
                 return;
             }
         }
@@ -2526,7 +2527,7 @@ void UGEngineControlWidget::createOrActivateCustomWidget(const QString &id)
         auto *dock = new QDockWidget(found->title, this);
         dock->setWidget(widget);
         addDockWidget(found->defaultDockArea, dock);
-        dock->show();
+        UGuiWindowActivation::raiseAndActivateDock(dock);
     }
     else
     {
@@ -2536,14 +2537,12 @@ void UGEngineControlWidget::createOrActivateCustomWidget(const QString &id)
             sub->setWidget(widget);
             sub->setAttribute(Qt::WA_DeleteOnClose);
             ui->mdiArea->addSubWindow(sub);
-            sub->show();
             sub->showMaximized();
+            UGuiWindowActivation::raiseAndActivateMdiSubWindow(ui->mdiArea, sub);
         }
         else
         {
-            widget->show();
-            widget->raise();
-            widget->activateWindow();
+            UGuiWindowActivation::raiseAndActivateWidget(widget);
         }
     }
 
@@ -2673,6 +2672,7 @@ void UGEngineControlWidget::AAfterLoadProject(void)
 {
  UpdateInterface();
  syncMaxCalcTimeFromProject();
+ updateCopyConfigFolderPathAction();
  if(propertyChanger)
  {
    propertyChanger->ALoadParameters();
@@ -2690,6 +2690,8 @@ void UGEngineControlWidget::ABeforeCloseProject(void)
     writeSettings();
     m_componentGuiService.clearAllInstances();
     m_componentGuiTabHosts.clear();
+    if(ui && ui->actionCopyConfigFolderPath)
+        ui->actionCopyConfigFolderPath->setEnabled(false);
 }
 
 // Метод, вызываемый перед сбросом модели
@@ -2809,7 +2811,7 @@ UComponentGuiTabHostWidget* UGEngineControlWidget::ensureComponentGuiTabHost(con
     {
         sub->setAttribute(Qt::WA_DeleteOnClose, true);
         sub->setWindowTitle(QStringLiteral("Component Tab Host: %1").arg(hostId));
-        sub->show();
+        UGuiWindowActivation::raiseAndActivateMdiSubWindow(ui->mdiArea, sub);
     }
     m_componentGuiTabHosts[hostId] = host;
     m_componentGuiService.setTabHostMainWindow(nullptr);
@@ -3334,9 +3336,10 @@ void UGEngineControlWidget::promptAndOpenComponentGuiTabHost()
     UComponentGuiTabHostWidget* host = ensureComponentGuiTabHost(QStringLiteral("MainTabHost"));
     if(!host)
         return;
-    host->show();
-    host->raise();
-    host->activateWindow();
+    if(auto* sub = qobject_cast<QMdiSubWindow*>(host->parentWidget()))
+        UGuiWindowActivation::raiseAndActivateMdiSubWindow(ui ? ui->mdiArea : nullptr, sub);
+    else
+        UGuiWindowActivation::raiseAndActivateWidget(host);
 }
 
 void UGEngineControlWidget::startComponentGuiDrag(const UComponentGuiContext& context, QWidget* dragSource, bool detachOnIgnoredDrop)
@@ -3464,9 +3467,7 @@ void UGEngineControlWidget::showComponentGuiSecondaryHostWindow()
         m_componentGuiService.setSecondaryHostMainWindow(secondary);
     }
     ensureComponentGuiSecondaryTabHost();
-    m_componentGuiSecondaryHostWindow->show();
-    m_componentGuiSecondaryHostWindow->raise();
-    m_componentGuiSecondaryHostWindow->activateWindow();
+    UGuiWindowActivation::raiseAndActivateWidget(m_componentGuiSecondaryHostWindow.data());
 }
 
 bool UGEngineControlWidget::handleDropToSecondaryHost(const QMimeData* mimeData)
@@ -3575,9 +3576,7 @@ void UGEngineControlWidget::openHelpWindow(const QString& topic)
   helpWindow = new UHelpWindow(this, application);
  }
  helpWindow->showHelp(topic);
- helpWindow->show();
- helpWindow->raise();
- helpWindow->activateWindow();
+ UGuiWindowActivation::raiseAndActivateWidget(helpWindow);
 }
 
 void UGEngineControlWidget::openClassDescriptionWindow(const std::string& class_name)

@@ -14,6 +14,7 @@
 #include <QUrl>
 #include <QTextDocument>
 #include <QDesktopServices>
+#include <QStyle>
 
 UHelpWindow::UHelpWindow(QWidget *parent, RDK::UApplication* app)
     : QMainWindow(parent)
@@ -32,6 +33,13 @@ UHelpWindow::UHelpWindow(QWidget *parent, RDK::UApplication* app)
     
     setupUI();
     setupToolbar();
+
+    // Inherit app stylesheet; refresh on theme switch without local QSS snapshot.
+    connect(UStyleManager::instance(), &UStyleManager::themeChanged, this, [this]() {
+        style()->unpolish(this);
+        style()->polish(this);
+        update();
+    });
     
     // Load initial help content
     showHelp();
@@ -62,13 +70,7 @@ void UHelpWindow::setupUI()
     connect(m_textBrowser, &QTextBrowser::historyChanged, this, &UHelpWindow::updateNavigationButtons);
     
     mainLayout->addWidget(m_textBrowser);
-    
-    // Apply styles
-    UStyleManager* style = UStyleManager::instance();
-    if(style)
-    {
-        setStyleSheet(style->getStyleSheet());
-    }
+    // Use application stylesheet (no local snapshot — see themeChanged handler).
 }
 
 void UHelpWindow::setupToolbar()

@@ -110,6 +110,7 @@
     <addaction name="actionCopyConfig"/>
     <addaction name="actionCloseConfig"/>
     <addaction name="actionRenameConfig"/>
+    <addaction name="actionCopyConfigFolderPath"/>
     <addaction name="separator"/>
     <addaction name="actionConfigOptions"/>
     <addaction name="actionApplicationOptions"/>
@@ -319,6 +320,17 @@
    </property>
    <property name="text">
     <string>Copy Config</string>
+   </property>
+  </action>
+  <action name="actionCopyConfigFolderPath">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Copy Config Folder Path</string>
+   </property>
+   <property name="toolTip">
+    <string>Copy the open configuration folder path to the clipboard</string>
    </property>
   </action>
   <action name="actionConfigOptions">

@@ -331,15 +331,18 @@ void UModernDiagramViewportManager::updateOverlayButtonsStyle()
 {
     UStyleManager* styleManager = UStyleManager::instance();
     QString themeName = styleManager->getThemeName();
+    const int btn = qMax(28, UStyleManager::densitySpace(7));
+    const int fontPx = qMax(14, UStyleManager::densitySpace(4));
 
     QString darkStyle =
+            QStringLiteral(
             "QPushButton {"
-            "    min-width: 32px; max-width: 32px; min-height: 32px; max-height: 32px;"
+            "    min-width: %1px; max-width: %1px; min-height: %1px; max-height: %1px;"
             "    padding: 0;"
             "    background-color: rgba(33, 37, 43, 220);"
             "    border: 1px solid #5C6370;"
             "    border-radius: 4px;"
-            "    font-size: 18px;"
+            "    font-size: %2px;"
             "    color: #ABB2BF;"
             "}"
             "QPushButton:hover {"
@@ -351,15 +354,16 @@ void UModernDiagramViewportManager::updateOverlayButtonsStyle()
             "    background-color: rgba(30, 58, 95, 250);"
             "    border-color: #61AFEF;"
             "    color: #61AFEF;"
-            "}";
+            "}").arg(btn).arg(fontPx);
     QString lightStyle =
+            QStringLiteral(
             "QPushButton {"
-            "    min-width: 32px; max-width: 32px; min-height: 32px; max-height: 32px;"
+            "    min-width: %1px; max-width: %1px; min-height: %1px; max-height: %1px;"
             "    padding: 0;"
             "    background-color: rgba(255, 255, 255, 200);"
             "    border: 1px solid #ccc;"
             "    border-radius: 4px;"
-            "    font-size: 18px;"
+            "    font-size: %2px;"
             "    color: #374151;"
             "}"
             "QPushButton:hover {"
@@ -371,7 +375,7 @@ void UModernDiagramViewportManager::updateOverlayButtonsStyle()
             "    background-color: rgba(220, 220, 220, 240);"
             "    border-color: #3B82F6;"
             "    color: #1E40AF;"
-            "}";
+            "}").arg(btn).arg(fontPx);
 
     if(themeName == "Modern Dark" || themeName == "dark")
     {

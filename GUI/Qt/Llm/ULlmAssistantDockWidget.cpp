@@ -7,6 +7,7 @@
 #include "ULlmChatInputCompleter.h"
 #include "ULlmChatMarkdown.h"
 #include "ULlmDetailsHtml.h"
+#include "../UStyleManager.h"
 
 #include <QDateTime>
 #include <QDesktopServices>
@@ -255,11 +256,18 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     m_provider_status->hide();
     m_context_budget = new QLabel(this);
     m_context_budget->setObjectName(QStringLiteral("llmContextBudget"));
-    m_context_budget->setStyleSheet(QStringLiteral("color: palette(mid); font-size: 11px;"));
+    m_context_budget->setStyleSheet(QStringLiteral("color: %1; font-size: 11px;")
+                                        .arg(UStyleManager::instance()->getTextSecondaryColor().name()));
     m_archive_banner = new QLabel(this);
     m_archive_banner->setVisible(false);
     m_archive_banner->setWordWrap(true);
-    m_archive_banner->setStyleSheet(QStringLiteral("background-color: #fff3cd; padding: 4px;"));
+    {
+        const QColor warn = UStyleManager::instance()->getWarningColor();
+        const QColor text = UStyleManager::instance()->getTextColor();
+        m_archive_banner->setStyleSheet(
+            QStringLiteral("background-color: %1; color: %2; padding: 4px;")
+                .arg(warn.lighter(160).name(), text.name()));
+    }
     top_row->addWidget(m_provider_combo, 1);
     top_row->addWidget(new_chat_btn);
     top_row->addWidget(m_history_btn);

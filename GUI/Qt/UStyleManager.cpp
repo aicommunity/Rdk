@@ -9,10 +9,13 @@
 #include <QDir>
 #include <QCoreApplication>
 #include <QFontDatabase>
+#include <QFontMetrics>
 #include <QDockWidget>
 #include <QMdiSubWindow>
 #include <QEvent>
 #include <QWidget>
+#include <QScreen>
+#include <QGuiApplication>
 
 namespace {
 
@@ -62,6 +65,7 @@ UStyleManager* UStyleManager::instance()
 }
 
 UStyleManager::UStyleManager()
+    : QObject(nullptr)
 {
     setDefaults();
 }
@@ -339,6 +343,29 @@ void UStyleManager::applySystemUiFonts(QApplication* app)
     QFont uiFont = QFontDatabase::systemFont(QFontDatabase::GeneralFont);
     if(uiFont.pointSizeF() <= 0 && uiFont.pixelSize() <= 0)
         uiFont = app->font();
+
+#ifdef Q_OS_WIN
+    // Soft-cap oversized Windows UI fonts so compact chrome stays usable.
+    qreal scale = 1.0;
+    if(QScreen* screen = QGuiApplication::primaryScreen())
+    {
+        scale = qMax(screen->logicalDotsPerInchX() / 96.0, screen->devicePixelRatio());
+    }
+    constexpr qreal kScaleCapThreshold = 1.25;
+    constexpr qreal kMaxPointSize = 12.0;
+    if(scale >= kScaleCapThreshold && uiFont.pointSizeF() > kMaxPointSize)
+    {
+        static bool logged = false;
+        if(!logged)
+        {
+            qDebug() << "UStyleManager: capping UI font from" << uiFont.pointSizeF()
+                     << "pt to" << kMaxPointSize << "pt (scale" << scale << ")";
+            logged = true;
+        }
+        uiFont.setPointSizeF(kMaxPointSize);
+    }
+#endif
+
     app->setFont(uiFont);
 
     if(!m_titleFontPolisher)
@@ -354,6 +381,15 @@ void UStyleManager::applySystemUiFonts(QApplication* app)
         if(qobject_cast<QDockWidget*>(widget) || qobject_cast<QMdiSubWindow*>(widget))
             applyTitleBarFont(widget);
     }
+}
+
+int UStyleManager::densitySpace(int units)
+{
+    if(units <= 0)
+        return 0;
+    QFontMetrics fm(QApplication::font());
+    const int step = qMax(1, fm.height() / 4);
+    return units * step;
 }
 
 QFont UStyleManager::titleBarFont() const
@@ -558,6 +594,7 @@ bool UStyleManager::switchTheme(const QString& themeName, QApplication* app)
         applyGlobalStyleSheet(app);
         m_stylesPath = stylesPath; // Cache the path
         qDebug() << "UStyleManager: Switched to theme:" << m_themeName << "from" << stylesPath;
+        emit themeChanged();
         return true;
     }
     

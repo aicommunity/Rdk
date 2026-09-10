@@ -232,12 +232,14 @@ public slots:
     void actionCopyConfig();
     void actionAutoCopyConfig();
     void actionRenameConfig();
+    void actionCopyConfigFolderPath();
     void actionExit();
     void actionConfigOptions();
     void actionCreateSaveMockLibs();
     void actionBuildMode1();
     void actionBuildMode2();
     void actionBuildMode3();
+    void updateCopyConfigFolderPathAction();
 
 
     // calculate menu

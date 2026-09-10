@@ -1,5 +1,6 @@
 #include "NmsdkQtCompat.h"
 #include "UMarkdownViewerWidget.h"
+#include "UStyleManager.h"
 
 #include <QVBoxLayout>
 #include <QFile>
@@ -165,11 +166,11 @@ QString UMarkdownViewerWidget::createHtmlFromMarkdown(const QString& markdown, c
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             line-height: 1.6;
-            color: #333;
+            color: __NM_FG__;
             max-width: 100%;
             padding: 20px;
             margin: 0;
-            background-color: #fff;
+            background-color: __NM_BG__;
         }
         h1, h2, h3, h4, h5, h6 {
             margin-top: 24px;
@@ -177,12 +178,12 @@ QString UMarkdownViewerWidget::createHtmlFromMarkdown(const QString& markdown, c
             font-weight: 600;
             line-height: 1.25;
         }
-        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
-        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h1 { font-size: 2em; border-bottom: 1px solid __NM_BORDER__; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid __NM_BORDER__; padding-bottom: 0.3em; }
         h3 { font-size: 1.25em; }
         p { margin-bottom: 16px; }
         code {
-            background-color: rgba(27, 31, 35, 0.05);
+            background-color: __NM_CODE_BG__;
             border-radius: 3px;
             font-size: 85%;
             margin: 0;
@@ -190,7 +191,7 @@ QString UMarkdownViewerWidget::createHtmlFromMarkdown(const QString& markdown, c
             font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
         }
         pre {
-            background-color: #f6f8fa;
+            background-color: __NM_PRE_BG__;
             border-radius: 3px;
             font-size: 85%;
             line-height: 1.45;
@@ -449,6 +450,20 @@ QString UMarkdownViewerWidget::createHtmlFromMarkdown(const QString& markdown, c
 </body>
 </html>
 )HTML";
+    if(UStyleManager* style = UStyleManager::instance())
+    {
+        const QColor fg = style->getTextColor();
+        const QColor bg = style->getBackgroundColor();
+        const QColor alt = style->getBackgroundAltColor();
+        const bool dark = style->getThemeName().contains(QStringLiteral("Dark"), Qt::CaseInsensitive)
+            || style->getThemeName() == QStringLiteral("dark");
+        html.replace(QStringLiteral("__NM_FG__"), fg.name());
+        html.replace(QStringLiteral("__NM_BG__"), bg.name());
+        html.replace(QStringLiteral("__NM_BORDER__"), alt.name());
+        html.replace(QStringLiteral("__NM_CODE_BG__"),
+                     dark ? QStringLiteral("rgba(255,255,255,0.08)") : QStringLiteral("rgba(27, 31, 35, 0.05)"));
+        html.replace(QStringLiteral("__NM_PRE_BG__"), alt.name());
+    }
     return html;
 }
 #endif

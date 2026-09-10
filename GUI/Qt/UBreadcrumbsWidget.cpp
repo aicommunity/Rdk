@@ -1,7 +1,9 @@
 #include "UBreadcrumbsWidget.h"
+#include "UStyleManager.h"
 
 #include <QSignalBlocker>
 #include <QSizePolicy>
+#include <QFontMetrics>
 #include "../../Deploy/Include/rdk_init.h"
 #include "UGuiTelemetry.h"
 
@@ -16,7 +18,10 @@ QPushButton* createBreadcrumbButton(const QString& text, QWidget* parent)
     button->setFlat(true);
     button->setCursor(Qt::PointingHandCursor);
     button->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Fixed);
-    button->setMaximumHeight(22);
+    const int chromeH = qMax(18, UStyleManager::densitySpace(5));
+    button->setMaximumHeight(chromeH);
+    button->setMinimumHeight(chromeH - 2);
+    const QColor textColor = UStyleManager::instance()->getTextColor();
     button->setStyleSheet(
         QStringLiteral("QPushButton#breadcrumbButton {"
                        "  text-align: left;"
@@ -24,8 +29,11 @@ QPushButton* createBreadcrumbButton(const QString& text, QWidget* parent)
                        "  border-radius: 0;"
                        "  background: transparent;"
                        "  min-width: 0;"
-                       "  padding: 0px 4px;"
-                       "}"));
+                       "  padding: 0px %1px;"
+                       "  color: %2;"
+                       "}")
+            .arg(UStyleManager::densitySpace(1))
+            .arg(textColor.name()));
     return button;
 }
 
@@ -35,13 +43,14 @@ UBreadcrumbsWidget::UBreadcrumbsWidget(QWidget *parent)
     : QWidget(parent)
 {
     breadcrumbsLayout = new QHBoxLayout(this);
-    breadcrumbsLayout->setContentsMargins(2, 0, 2, 0);
-    breadcrumbsLayout->setSpacing(2);
+    breadcrumbsLayout->setContentsMargins(UStyleManager::densitySpace(1), 0,
+                                          UStyleManager::densitySpace(1), 0);
+    breadcrumbsLayout->setSpacing(UStyleManager::densitySpace(1));
     breadcrumbsLayout->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-
-    setMinimumHeight(22);
-    setMaximumHeight(24);
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    const int chromeH = qMax(20, UStyleManager::densitySpace(5));
+    setMinimumHeight(chromeH);
+    setMaximumHeight(chromeH + 4);
 
     updateBreadcrumbs("");
 }
@@ -85,7 +94,10 @@ void UBreadcrumbsWidget::updateBreadcrumbs(const QString &componentPath)
 
     for (int i = 0; i < pathParts.size(); ++i) {
         QLabel* separator = new QLabel(tr(">"), this);
-        separator->setStyleSheet(QStringLiteral("QLabel { color: gray; padding: 0px 2px; }"));
+        const QColor sepColor = UStyleManager::instance()->getTextSecondaryColor();
+        separator->setStyleSheet(QStringLiteral("QLabel { color: %1; padding: 0px %2px; }")
+                                     .arg(sepColor.name())
+                                     .arg(UStyleManager::densitySpace(1)));
         breadcrumbsLayout->addWidget(separator);
 
         if (currentPath.isEmpty())
