@@ -4,7 +4,10 @@
 #include "UModernDiagramLinkItem.h"
 #include "UModernDiagramNodeItem.h"
 #include "UModernDiagramExternalSourceItem.h"
+#include "UModernDiagramExternalSinkItem.h"
+#include "UModernDiagramScopePath.h"
 #include "UModernDiagramExternalLinkLayout.h"
+#include "UModernDiagramExternalSinkLayout.h"
 #include <algorithm>
 #include "UModernDiagramViewportManager.h"
 #include "UModernDiagramCoordinateManager.h"
@@ -127,6 +130,8 @@ UModernDiagramWidget::~UModernDiagramWidget()
 {
     if(!m_externalSourceDirtyKeys.isEmpty())
         saveExternalSourcePositionsToSettings();
+    if(!m_externalSinkDirtyKeys.isEmpty())
+        saveExternalSinkPositionsToSettings();
 
     // Автоматическое сохранение кэша при закрытии
     if(m_application)
@@ -415,6 +420,7 @@ void UModernDiagramWidget::clearScene()
     */
 
     persistExternalSourcePositionsBeforeClear();
+    persistExternalSinkPositionsBeforeClear();
 
     // Перед очисткой сцены обнуляем указатели на прокси-виджеты,
     // чтобы предотвратить двойное удаление в деструкторе NodeItem.
@@ -439,6 +445,8 @@ void UModernDiagramWidget::clearScene()
     m_links.clear();
     m_externalSources.clear();
     m_externalSourceByKey.clear();
+    m_externalSinks.clear();
+    m_externalSinkByKey.clear();
     m_lastNodePositions.clear();  // Очищаем сохраненные позиции
     m_componentsWithNegativePos.clear();
     m_originalAbsolutePositions.clear();
@@ -1107,6 +1115,7 @@ void UModernDiagramWidget::rebuildLinks()
     }
     m_links.clear();
     clearExternalSources();
+    clearExternalSinks();
 
     // Перестраиваем связи
     buildLinks();
@@ -1654,6 +1663,7 @@ void UModernDiagramWidget::SaveViewState()
     if(m_viewportManager)
         m_viewportManager->saveToSettings();
     saveExternalSourcePositionsToSettings();
+    saveExternalSinkPositionsToSettings();
 }
 
 void UModernDiagramWidget::LoadViewState()
@@ -1661,6 +1671,7 @@ void UModernDiagramWidget::LoadViewState()
     if(m_viewportManager)
         m_viewportManager->loadFromSettings();
     loadExternalSourcePositionsFromSettings();
+    loadExternalSinkPositionsFromSettings();
 }
 
 int UModernDiagramWidget::selectNodesInRect(const QRectF& selectionRect, bool addToSelection)
@@ -1808,13 +1819,19 @@ UModernDiagramNodeItem* UModernDiagramWidget::resolveNodeOnDiagram(const QString
 
 UModernDiagramNodeItem* UModernDiagramWidget::resolveNodeByIdOnDiagram(const QString& id) const
 {
-    QString base = id;
-    int dot = base.indexOf('.');
-    if(dot >= 0)
-        base = base.left(dot);
-    if(!m_componentName.isEmpty() && base.startsWith(m_componentName + "."))
-        base = base.mid(m_componentName.size() + 1);
-    if(auto it = m_nodeByName.find(base); it != m_nodeByName.end())
+    if(id.isEmpty())
+        return nullptr;
+    if(auto it = m_nodeByName.find(id); it != m_nodeByName.end())
+        return it.value();
+
+    // Full model-root ids (paths_from_model_root) must strip the current scope first.
+    // Taking the first global segment (e.g. "NeuronTimeLearnerBranch") never matches
+    // visible children like ExcChannel / Dendrite1_85.
+    const QString top = UModernDiagramScopePath::topChildName(
+        id, m_componentName, scopeShortName());
+    if(top.isEmpty())
+        return nullptr;
+    if(auto it = m_nodeByName.find(top); it != m_nodeByName.end())
         return it.value();
     return nullptr;
 }
@@ -1969,6 +1986,21 @@ QString UModernDiagramWidget::formatExternalSourceDisplayLabel(
     return core;
 }
 
+QString UModernDiagramWidget::formatExternalSinkDisplayLabel(
+    const QString& itemId,
+    const QString& itemName,
+    const QString& scopeLongName,
+    const QString& scopeShortName,
+    int maxWidthPx,
+    QFontMetricsF* fmOptional)
+{
+    const QString relativeId = UModernDiagramScopePath::labelPathUnderScope(
+        itemId, scopeLongName, scopeShortName);
+    if(relativeId.isEmpty())
+        return itemName;
+    return formatExternalSourceDisplayLabel(relativeId, itemName, maxWidthPx, fmOptional);
+}
+
 QString UModernDiagramWidget::externalSourcePositionKey(const QString& sourceKey) const
 {
     return m_componentName + QLatin1Char('|') + sourceKey;
@@ -2022,7 +2054,7 @@ void UModernDiagramWidget::updateAllExternalLinkGeometry()
 {
     for(UModernDiagramLinkItem* link : m_links)
     {
-        if(link && link->isExternalIncoming())
+        if(link && (link->isExternalIncoming() || link->isExternalOutgoing()))
         {
             link->updateGeometry();
             link->update();
@@ -2545,10 +2577,347 @@ void UModernDiagramWidget::buildExternalIncomingLinks()
 
     layoutExternalSources();
 
+    buildExternalOutgoingLinks();
+
     for(auto* node : m_nodes)
         node->m_cacheValid = false;
 
     updateSceneRect();
+}
+
+bool UModernDiagramWidget::isExternalLinkConnector(const QString& connName, const QString& connId) const
+{
+    if(isLinkEndpointInsideCurrentScope(connId) || isLinkEndpointInsideCurrentScope(connName))
+        return false;
+    if(resolveDestinationNodeOnDiagram(connName, connId))
+        return false;
+    return true;
+}
+
+QString UModernDiagramWidget::externalSinkPositionKey(const QString& sinkKey) const
+{
+    return m_componentName + QLatin1Char('|') + sinkKey;
+}
+
+void UModernDiagramWidget::persistExternalSinkPositionsBeforeClear()
+{
+    for(UModernDiagramExternalSinkItem* sink : m_externalSinks)
+    {
+        if(!sink)
+            continue;
+        const QString key = externalSinkPositionKey(sink->outputFullId());
+        const bool manual = m_externalSinkPosCache.value(key).manual;
+        rememberExternalSinkPosition(key, sink->pos(), manual);
+    }
+}
+
+void UModernDiagramWidget::rememberExternalSinkPosition(
+    const QString& sinkKey, const QPointF& pos, bool manual)
+{
+    ExternalSourceStoredPosition entry;
+    entry.pos = pos;
+    entry.manual = manual || m_externalSinkPosCache.value(sinkKey).manual;
+    m_externalSinkPosCache.insert(sinkKey, entry);
+}
+
+bool UModernDiagramWidget::externalSinkStoredPosition(
+    const QString& sinkKey, ExternalSourceStoredPosition* out) const
+{
+    if(!out || !m_externalSinkPosCache.contains(sinkKey))
+        return false;
+    *out = m_externalSinkPosCache.value(sinkKey);
+    return true;
+}
+
+void UModernDiagramWidget::updateExternalSinkLinkGeometry(UModernDiagramExternalSinkItem* sink)
+{
+    if(!sink)
+        return;
+    for(UModernDiagramLinkItem* link : m_links)
+    {
+        if(link && link->externalSink() == sink)
+        {
+            link->updateGeometry();
+            link->update();
+        }
+    }
+}
+
+void UModernDiagramWidget::onExternalSinkMoved(UModernDiagramExternalSinkItem* sink, bool manual)
+{
+    if(!sink)
+        return;
+
+    const QString key = externalSinkPositionKey(sink->outputFullId());
+    rememberExternalSinkPosition(key, sink->pos(), manual);
+    m_externalSinkDirtyKeys.insert(key);
+    updateExternalSinkLinkGeometry(sink);
+    updateSceneRect();
+
+    if(!m_externalSinkSaveTimer)
+    {
+        m_externalSinkSaveTimer = new QTimer(this);
+        m_externalSinkSaveTimer->setSingleShot(true);
+        m_externalSinkSaveTimer->setInterval(500);
+        connect(m_externalSinkSaveTimer, &QTimer::timeout, this, [this]() {
+            saveExternalSinkPositionsToSettings();
+            m_externalSinkDirtyKeys.clear();
+        });
+    }
+    m_externalSinkSaveTimer->start();
+}
+
+void UModernDiagramWidget::saveExternalSinkPositionsToSettings()
+{
+    if(!m_application)
+        return;
+
+    QSettings settings(QString::fromLocal8Bit(m_application->GetProjectPath().c_str()) + QStringLiteral("settings.qt"),
+                       QSettings::IniFormat);
+    settings.beginGroup(QStringLiteral("UModernDiagramWidget_ExternalSinkPositions"));
+    QStringList keys = m_externalSinkPosCache.keys();
+    keys.sort();
+    settings.setValue(QStringLiteral("count"), keys.size());
+    for(int i = 0; i < keys.size(); ++i)
+    {
+        const QString prefix = QStringLiteral("entry_%1_").arg(i);
+        const ExternalSourceStoredPosition& entry = m_externalSinkPosCache.value(keys[i]);
+        settings.setValue(prefix + QStringLiteral("key"), keys[i]);
+        settings.setValue(prefix + QStringLiteral("x"), entry.pos.x());
+        settings.setValue(prefix + QStringLiteral("y"), entry.pos.y());
+        settings.setValue(prefix + QStringLiteral("manual"), entry.manual);
+    }
+    settings.endGroup();
+}
+
+void UModernDiagramWidget::loadExternalSinkPositionsFromSettings()
+{
+    if(!m_application)
+        return;
+
+    QSettings settings(QString::fromLocal8Bit(m_application->GetProjectPath().c_str()) + QStringLiteral("settings.qt"),
+                       QSettings::IniFormat);
+    settings.beginGroup(QStringLiteral("UModernDiagramWidget_ExternalSinkPositions"));
+    const int count = settings.value(QStringLiteral("count"), 0).toInt();
+    for(int i = 0; i < count; ++i)
+    {
+        const QString prefix = QStringLiteral("entry_%1_").arg(i);
+        const QString key = settings.value(prefix + QStringLiteral("key")).toString();
+        if(key.isEmpty())
+            continue;
+        ExternalSourceStoredPosition entry;
+        entry.pos = QPointF(settings.value(prefix + QStringLiteral("x")).toReal(),
+                            settings.value(prefix + QStringLiteral("y")).toReal());
+        entry.manual = settings.value(prefix + QStringLiteral("manual"), false).toBool();
+        if(!m_externalSinkPosCache.contains(key))
+            m_externalSinkPosCache.insert(key, entry);
+    }
+    settings.endGroup();
+}
+
+void UModernDiagramWidget::clearExternalSinks()
+{
+    for(UModernDiagramExternalSinkItem* sink : m_externalSinks)
+    {
+        if(sink)
+        {
+            const QString key = externalSinkPositionKey(sink->outputFullId());
+            const bool manual = m_externalSinkPosCache.value(key).manual;
+            rememberExternalSinkPosition(key, sink->pos(), manual);
+        }
+        if(sink && m_scene)
+            m_scene->removeItem(sink);
+        delete sink;
+    }
+    m_externalSinks.clear();
+    m_externalSinkByKey.clear();
+}
+
+void UModernDiagramWidget::processExternalOutgoingFromLinksList(const RDK::UStringLinksList& linkslist)
+{
+    QHash<QPair<UModernDiagramNodeItem*, QString>, PortCategory> portCategoryCache;
+
+    for(int i = 0; i < linkslist.GetSize(); ++i)
+    {
+        const auto& link = linkslist[i];
+        const QString itemName = QString::fromStdString(link.Item.Name);
+        const QString itemId = QString::fromStdString(link.Item.Id);
+
+        // Local output only
+        if(isExternalLinkSource(itemName, itemId))
+            continue;
+
+        // Prefer scope-aware resolution (same as destinations): Item.Name is often
+        // just "Output", while Item.Id is a full model-root path.
+        UModernDiagramNodeItem* srcNode = resolveDestinationNodeOnDiagram(itemName, itemId);
+        if(!srcNode)
+            continue;
+
+        bool hasExternalConsumer = false;
+        for(size_t c = 0; c < link.Connector.size(); ++c)
+        {
+            const auto& connSide = link.Connector[c];
+            const QString connName = QString::fromStdString(connSide.Name);
+            const QString connIdStr = QString::fromStdString(connSide.Id);
+            if(isExternalLinkConnector(connName, connIdStr))
+            {
+                hasExternalConsumer = true;
+                break;
+            }
+        }
+        if(!hasExternalConsumer)
+            continue;
+
+        const QString sinkKey = formatExternalSourceLabel(itemId, itemName);
+        if(sinkKey.isEmpty())
+            continue;
+        if(m_externalSinkByKey.contains(sinkKey))
+            continue;
+
+        QPair<UModernDiagramNodeItem*, QString> srcKey(srcNode, itemName);
+        PortCategory srcCategory;
+        if(portCategoryCache.contains(srcKey))
+        {
+            srcCategory = portCategoryCache[srcKey];
+        }
+        else
+        {
+            srcCategory = srcNode->determinePortCategory(itemName, false);
+            portCategoryCache[srcKey] = srcCategory;
+        }
+
+        auto* sink = new UModernDiagramExternalSinkItem(this, itemId, itemName);
+        m_externalSinks.append(sink);
+        m_externalSinkByKey.insert(sinkKey, sink);
+        m_scene->addItem(sink);
+
+        auto* linkItem = new UModernDiagramLinkItem(srcNode, sink, srcCategory, sinkKey);
+        m_links.append(linkItem);
+        m_scene->addItem(linkItem);
+        srcNode->m_connectedLinks.append(linkItem);
+    }
+}
+
+bool UModernDiagramWidget::appendExternalOutgoingLinksFromXml(const std::string& linksXml)
+{
+    if(linksXml.empty())
+        return false;
+
+    RDK::USerStorageXML xml;
+    if(!xml.Load(linksXml, "Links"))
+        return false;
+
+    RDK::UStringLinksList linkslist;
+    xml >> linkslist;
+    if(linkslist.GetSize() == 0)
+        return false;
+
+    processExternalOutgoingFromLinksList(linkslist);
+    return true;
+}
+
+void UModernDiagramWidget::layoutExternalSinks()
+{
+    if(m_externalSinks.isEmpty())
+        return;
+
+    QRectF nodesBounds;
+    QList<QRectF> obstacleRects;
+    for(UModernDiagramNodeItem* node : m_nodes)
+    {
+        const QRectF nodeRect = node->sceneBoundingRect();
+        nodesBounds = nodesBounds.isEmpty() ? nodeRect : nodesBounds.united(nodeRect);
+        obstacleRects.append(nodeRect);
+    }
+    for(UModernDiagramExternalSourceItem* ext : m_externalSources)
+    {
+        if(ext)
+            obstacleRects.append(ext->sceneBoundingRect().adjusted(-4, -4, 4, 4));
+    }
+
+    QHash<UModernDiagramExternalSinkItem*, UModernDiagramLinkItem*> stubBySink;
+    for(UModernDiagramLinkItem* link : m_links)
+    {
+        if(link && link->isExternalOutgoing() && link->externalSink())
+            stubBySink.insert(link->externalSink(), link);
+    }
+
+    int autoStackIndex = 0;
+    for(UModernDiagramExternalSinkItem* sink : m_externalSinks)
+    {
+        if(!sink)
+            continue;
+
+        const QString posKey = externalSinkPositionKey(sink->outputFullId());
+        ExternalSourceStoredPosition stored;
+        const bool hasStored = externalSinkStoredPosition(posKey, &stored);
+
+        UModernDiagramLinkItem* stub = stubBySink.value(sink, nullptr);
+        UModernDiagramNodeItem* srcNode = stub ? stub->src() : nullptr;
+        const PortCategory srcCat = stub ? stub->srcCategory() : PortCategory::Own;
+        const QRectF srcRect = srcNode ? srcNode->sceneBoundingRect() : QRectF();
+
+        // Never restore an auto position from the left input pocket — sinks belong
+        // immediately to the right of their source node.
+        const bool restoreStored = hasStored
+            && (stored.manual
+                || ExternalSinkLayout::isPlausibleSinkTopLeft(stored.pos, srcRect, nodesBounds));
+
+        if(restoreStored)
+        {
+            sink->setPos(stored.pos);
+        }
+        else
+        {
+            if(srcNode)
+                sink->layoutBeside(srcNode, autoStackIndex);
+            else
+                sink->layoutOptimal(nodesBounds, obstacleRects, srcNode, srcCat,
+                                    autoStackIndex * 24.0);
+            rememberExternalSinkPosition(posKey, sink->pos(), false);
+            ++autoStackIndex;
+        }
+
+        obstacleRects.append(sink->sceneBoundingRect().adjusted(-4, -4, 4, 4));
+    }
+
+    for(UModernDiagramLinkItem* link : m_links)
+    {
+        if(link && link->isExternalOutgoing())
+        {
+            link->updateGeometry();
+            link->update();
+        }
+    }
+}
+
+void UModernDiagramWidget::buildExternalOutgoingLinks()
+{
+    clearExternalSinks();
+    if(m_nodes.isEmpty() || !m_scene)
+        return;
+
+    const int channel = Core_GetSelectedChannelIndex();
+
+    if(!m_componentName.isEmpty())
+    {
+        appendExternalOutgoingLinksFromXml(
+            personalLinksXmlFromModelScope(channel, m_componentName, parentScopeName(), true));
+        appendExternalOutgoingLinksFromXml(
+            internalLinksXmlFromModelScope(channel, parentScopeName(), true));
+    }
+
+    const QStringList children = loadComponentList();
+    for(const QString& shortName : children)
+    {
+        const QString childLong = m_componentName.isEmpty()
+            ? shortName
+            : m_componentName + "." + shortName;
+        appendExternalOutgoingLinksFromXml(
+            personalLinksXmlFromModelScope(channel, childLong, m_componentName, true));
+    }
+
+    layoutExternalSinks();
 }
 
 // --------------------------- ComponentCache ---------------------------

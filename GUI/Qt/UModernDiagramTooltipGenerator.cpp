@@ -2,6 +2,7 @@
 #include "UModernDiagramNodeItem.h"
 #include "UModernDiagramLinkItem.h"
 #include "UModernDiagramExternalSourceItem.h"
+#include "UModernDiagramExternalSinkItem.h"
 #include "UModernDiagramPort.h"
 
 #include <QCoreApplication>
@@ -102,6 +103,31 @@ QString UModernDiagramTooltipGenerator::generateLinkTooltip(const UModernDiagram
                 "<br/><br/>links: %1").arg(link->parallelCount());
         }
         return tooltip;
+    }
+
+    if(link->isExternalOutgoing())
+    {
+        QString srcName = link->getSourceNode() ? link->getSourceNode()->nodeName
+            : QCoreApplication::translate("UModernDiagramTooltipGenerator", "(unknown)");
+        QString categoryName;
+        switch(link->srcCategory())
+        {
+        case PortCategory::Own: categoryName = QCoreApplication::translate("UModernDiagramTooltipGenerator", "Own"); break;
+        case PortCategory::Child: categoryName = QCoreApplication::translate("UModernDiagramTooltipGenerator", "Child"); break;
+        case PortCategory::Alias: categoryName = QCoreApplication::translate("UModernDiagramTooltipGenerator", "Alias"); break;
+        }
+        const UModernDiagramExternalSinkItem* sink = link->externalSink();
+        const QString shortLabel = sink ? sink->displayLabel() : link->externalSinkLabel();
+        const QString fullLabel = sink ? sink->outputFullId() : link->externalSinkLabel();
+        return QCoreApplication::translate("UModernDiagramTooltipGenerator",
+            "<b>External output</b><br/>"
+            "From: %1 (%2)<br/>"
+            "Export: %3<br/>"
+            "<small>%4</small><br/><br/>"
+            "<b>Actions:</b><br/>"
+            "• Drag sink port to reposition<br/>"
+            "• Right Click - Context menu"
+        ).arg(srcName, categoryName, shortLabel, fullLabel);
     }
 
     if(!link->getSourceNode())

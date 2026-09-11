@@ -4,6 +4,7 @@
 #include "UModernDiagramPort.h"
 #include "UModernDiagramNodeItem.h"
 #include "UModernDiagramLinkRouter.h"
+#include "UModernDiagramExternalSinkLayout.h"
 
 #include <QtGlobal>
 #include <QPainterPath>
@@ -23,6 +24,9 @@ struct ExternalSourceStoredPosition {
 };
 
 namespace ExternalLinkLayout {
+
+using ExternalSinkLayout::sinkTopLeftBesideSource;
+using ExternalSinkLayout::isPlausibleSinkTopLeft;
 
 /// Score a candidate virtual-port position. Uses ExternalCorridor (same as live Auto
 /// for dashed links) so obstacleHits/bends drive placement.

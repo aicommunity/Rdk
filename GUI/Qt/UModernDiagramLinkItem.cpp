@@ -2,6 +2,7 @@
 #include "UModernDiagramWidget.h" // Для доступа к Port, PortCategory и UModernDiagramWidget
 #include "UModernDiagramNodeItem.h"
 #include "UModernDiagramExternalSourceItem.h"
+#include "UModernDiagramExternalSinkItem.h"
 #include "UModernDiagramLinkRouter.h"
 #include "UModernDiagramTooltipGenerator.h"
 #include "UStyleManager.h"
@@ -111,26 +112,57 @@ UModernDiagramLinkItem::UModernDiagramLinkItem(UModernDiagramExternalSourceItem*
     setCacheMode(QGraphicsItem::NoCache);
 }
 
+UModernDiagramLinkItem::UModernDiagramLinkItem(UModernDiagramNodeItem* src,
+                                               UModernDiagramExternalSinkItem* externalSink,
+                                               PortCategory srcCategory,
+                                               const QString& sinkLabelForTooltip)
+    : QGraphicsPathItem()
+    , m_owner(src ? src->m_owner : nullptr)
+    , m_src(src)
+    , m_dst(nullptr)
+    , m_useOutput(true)
+    , m_useInput(true)
+    , m_isTemp(false)
+    , m_srcCategory(srcCategory)
+    , m_dstCategory(PortCategory::Own)
+    , m_hasCategories(true)
+    , m_parallelCount(1)
+    , m_externalSink(externalSink)
+    , m_externalSinkLabel(sinkLabelForTooltip)
+    , m_isExternalOutgoing(true)
+{
+    UStyleManager* style = UStyleManager::instance();
+    setPen(QPen(style->getLinkColor(), style->getLinkWidth(),
+                Qt::DashLine, Qt::RoundCap, Qt::RoundJoin));
+    setZValue(-1);
+    setAcceptHoverEvents(true);
+    setCacheMode(QGraphicsItem::NoCache);
+}
+
 void UModernDiagramLinkItem::updateGeometry(const QPointF& cursorOverride)
 {
-    auto applyRoute = [this](const QPointF& start, const QPointF& end, bool external) {
+    auto applyRoute = [this](const QPointF& start, const QPointF& end, bool externalIncoming) {
         UModernDiagramLinkRouter::RouteRequest req;
         req.start = start;
         req.end = end;
-        req.externalIncoming = external;
+        req.externalIncoming = externalIncoming;
         req.parallelIndex = m_routeParallelIndex;
         if(m_owner)
         {
             req.obstacles = m_owner->routingObstacles(m_dst, m_src);
             req.diagramBounds = m_owner->routingNodesBounds();
         }
+        // Outgoing stubs stay short cubic; incoming uses Auto→ExternalCorridor
+        const UModernDiagramLinkRouter::RouteMode mode = m_isExternalOutgoing
+            ? UModernDiagramLinkRouter::RouteMode::CubicFallback
+            : UModernDiagramLinkRouter::RouteMode::Auto;
         const UModernDiagramLinkRouter::RouteResult result =
-            UModernDiagramLinkRouter::route(req, UModernDiagramLinkRouter::RouteMode::Auto);
+            UModernDiagramLinkRouter::route(req, mode);
         prepareGeometryChange();
         setPath(result.path);
 
         // Reverse internal links use green stroke; external/temp keep ctor pen style
-        if(!external && !m_isTemp)
+        if(!externalIncoming && !m_isExternalOutgoing && !m_isTemp)
         {
             UStyleManager* style = UStyleManager::instance();
             QPen p = pen();
@@ -146,6 +178,14 @@ void UModernDiagramLinkItem::updateGeometry(const QPointF& cursorOverride)
         const QPointF start = m_externalSrc->scenePortPos();
         const QPointF end = m_dst->scenePortPosByCategory(false, m_dstCategory);
         applyRoute(start, end, true);
+        return;
+    }
+
+    if(m_isExternalOutgoing && m_externalSink && m_src)
+    {
+        const QPointF start = m_src->scenePortPosByCategory(true, m_srcCategory);
+        const QPointF end = m_externalSink->scenePortPos();
+        applyRoute(start, end, false);
         return;
     }
 

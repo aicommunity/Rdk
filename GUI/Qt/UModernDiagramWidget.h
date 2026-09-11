@@ -56,6 +56,7 @@ class UModernDiagramWidgetMovementTest;
 class UModernDiagramLinkItem;
 class UModernDiagramNodeItem;
 class UModernDiagramExternalSourceItem;
+class UModernDiagramExternalSinkItem;
 class UModernDiagramViewportManager;
 class UModernDiagramCoordinateManager;
 class UModernDiagramCacheManager;
@@ -102,10 +103,19 @@ public slots:
                                                     const QString& itemName,
                                                     int maxWidthPx,
                                                     QFontMetricsF* fm = nullptr);
+    /// Outgoing sink label: same style as sources, but without the current diagram scope prefix.
+    static QString formatExternalSinkDisplayLabel(const QString& itemId,
+                                                  const QString& itemName,
+                                                  const QString& scopeLongName,
+                                                  const QString& scopeShortName,
+                                                  int maxWidthPx,
+                                                  QFontMetricsF* fm = nullptr);
     static QString externalSourceFullPathLabel(const QString& itemId, const QString& itemName);
 
     void updateExternalSourceLinkGeometry(UModernDiagramExternalSourceItem* ext);
     void onExternalSourceMoved(UModernDiagramExternalSourceItem* ext, bool manual);
+    void updateExternalSinkLinkGeometry(UModernDiagramExternalSinkItem* sink);
+    void onExternalSinkMoved(UModernDiagramExternalSinkItem* sink, bool manual);
     /// Выделение всех NodeItem внутри указанного прямоугольника
     /// @param selectionRect Прямоугольник выделения в координатах scene
     /// @param addToSelection Если true, добавляет к текущему выделению, иначе очищает перед выделением
@@ -158,6 +168,7 @@ private:
     friend class UModernDiagramView;
     friend class UModernDiagramLinkItem;  // Для доступа к NodeItem и PortCategory
     friend class UModernDiagramExternalSourceItem;
+    friend class UModernDiagramExternalSinkItem;
     friend class UModernDiagramNodeItem;  // Для доступа к Port и PortCategory
     friend class UModernDiagramCacheManager;  // Для доступа к данным кэша
     friend class UModernDiagramCoordinateManager;  // Для доступа к данным координат
@@ -218,15 +229,24 @@ private:
     void buildLinks();
     void rebuildLinks(); // Перестраивает только связи без перезагрузки всей сцены
     void buildExternalIncomingLinks();
+    void buildExternalOutgoingLinks();
     void clearExternalSources();
+    void clearExternalSinks();
     void layoutExternalSources();
+    void layoutExternalSinks();
     void persistExternalSourcePositionsBeforeClear();
+    void persistExternalSinkPositionsBeforeClear();
     void rememberExternalSourcePosition(const QString& sourceKey, const QPointF& pos, bool manual);
+    void rememberExternalSinkPosition(const QString& sinkKey, const QPointF& pos, bool manual);
     bool externalSourceStoredPosition(const QString& sourceKey, ExternalSourceStoredPosition* out) const;
+    bool externalSinkStoredPosition(const QString& sinkKey, ExternalSourceStoredPosition* out) const;
     void updateAllExternalLinkGeometry();
     void saveExternalSourcePositionsToSettings();
     void loadExternalSourcePositionsFromSettings();
+    void saveExternalSinkPositionsToSettings();
+    void loadExternalSinkPositionsFromSettings();
     QString externalSourcePositionKey(const QString& sourceKey) const;
+    QString externalSinkPositionKey(const QString& sinkKey) const;
     /// Node bounding boxes for link routing (excludes endpoints).
     QList<QRectF> routingObstacles(UModernDiagramNodeItem* excludeA,
                                    UModernDiagramNodeItem* excludeB) const;
@@ -239,6 +259,8 @@ private:
     bool appendExternalIncomingLinksFromXml(const std::string& linksXml,
                                             QHash<UModernDiagramNodeItem*, int>& stackCounter,
                                             QHash<QString, UModernDiagramLinkItem*>& aggregatedExternalLinks);
+    void processExternalOutgoingFromLinksList(const RDK::UStringLinksList& linkslist);
+    bool appendExternalOutgoingLinksFromXml(const std::string& linksXml);
     UModernDiagramNodeItem* resolveNodeOnDiagram(const QString& fullOrRelative) const;
     UModernDiagramNodeItem* resolveNodeByIdOnDiagram(const QString& id) const;
     UModernDiagramNodeItem* resolveDestinationNodeOnDiagram(const QString& connName,
@@ -256,6 +278,7 @@ private:
                                               const QString& connName,
                                               const QString& connId) const;
     bool isExternalLinkSource(const QString& itemName, const QString& itemId) const;
+    bool isExternalLinkConnector(const QString& connName, const QString& connId) const;
     QString normalizeConnectorNameForDst(UModernDiagramNodeItem* dstNode,
                                          const QString& connName,
                                          const QString& connIdStr) const;
@@ -306,6 +329,12 @@ private:
     QHash<QString, ExternalSourceStoredPosition> m_externalSourcePosCache;
     QSet<QString> m_externalSourceDirtyKeys;
     QTimer* m_externalSourceSaveTimer = nullptr;
+
+    QList<UModernDiagramExternalSinkItem*> m_externalSinks;
+    QHash<QString, UModernDiagramExternalSinkItem*> m_externalSinkByKey;
+    QHash<QString, ExternalSourceStoredPosition> m_externalSinkPosCache;
+    QSet<QString> m_externalSinkDirtyKeys;
+    QTimer* m_externalSinkSaveTimer = nullptr;
 
     // Защита от бесконечной рекурсии при выборе компонента
     // Cache manager

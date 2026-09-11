@@ -17,3 +17,19 @@ target_link_libraries(Test_UModernDiagramLinkRouter PRIVATE
 )
 
 add_test(NAME Test_UModernDiagramLinkRouter COMMAND Test_UModernDiagramLinkRouter)
+
+add_executable(Test_UModernDiagramScopePath
+    Test_UModernDiagramScopePath.cpp
+)
+
+target_include_directories(Test_UModernDiagramScopePath PRIVATE
+    ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt
+)
+
+target_link_libraries(Test_UModernDiagramScopePath PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+    Nmsdk::Qt::Core
+)
+
+add_test(NAME Test_UModernDiagramScopePath COMMAND Test_UModernDiagramScopePath)

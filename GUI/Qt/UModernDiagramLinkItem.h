@@ -11,6 +11,7 @@
 class UModernDiagramWidget;
 class UModernDiagramNodeItem;
 class UModernDiagramExternalSourceItem;
+class UModernDiagramExternalSinkItem;
 
 // PortCategory теперь в отдельном файле
 #include "UModernDiagramPort.h"
@@ -30,6 +31,11 @@ public:
                            UModernDiagramNodeItem* dst,
                            PortCategory dstCategory,
                            const QString& srcLabelForTooltip);
+    /// Stub from local node output to right-side virtual sink port.
+    UModernDiagramLinkItem(UModernDiagramNodeItem* src,
+                           UModernDiagramExternalSinkItem* externalSink,
+                           PortCategory srcCategory,
+                           const QString& sinkLabelForTooltip);
     // Временная линия до курсора
     UModernDiagramLinkItem(UModernDiagramNodeItem* src, const QPointF& tempEnd, const QPointF& startPos = QPointF());
 
@@ -56,8 +62,11 @@ public:
     bool useInput() const { return m_useInput; }
 
     bool isExternalIncoming() const { return m_isExternalIncoming; }
+    bool isExternalOutgoing() const { return m_isExternalOutgoing; }
     UModernDiagramExternalSourceItem* externalSource() const { return m_externalSrc; }
+    UModernDiagramExternalSinkItem* externalSink() const { return m_externalSink; }
     QString externalSourceLabel() const { return m_externalSrcLabel; }
+    QString externalSinkLabel() const { return m_externalSinkLabel; }
 
     int parallelCount() const { return m_parallelCount; }
     void setParallelCount(int count) { m_parallelCount = count > 0 ? count : 1; }
@@ -84,6 +93,9 @@ private:
     UModernDiagramExternalSourceItem* m_externalSrc = nullptr;
     QString m_externalSrcLabel;
     bool m_isExternalIncoming = false;
+    UModernDiagramExternalSinkItem* m_externalSink = nullptr;
+    QString m_externalSinkLabel;
+    bool m_isExternalOutgoing = false;
 };
 
 // Включаем полное определение UModernDiagramWidget после объявления класса
