@@ -8,6 +8,7 @@
 #include <QFontMetricsF>
 #include <QGraphicsSceneMouseEvent>
 #include <QtGlobal>
+#include <algorithm>
 #include <climits>
 
 UModernDiagramExternalSourceItem::UModernDiagramExternalSourceItem(UModernDiagramWidget* owner,
@@ -94,23 +95,32 @@ void UModernDiagramExternalSourceItem::layoutOptimal(const QRectF& nodesBounds,
     }
 
     QList<qreal> candidateYs;
-    candidateYs.reserve(targets.size() + 24);
+    candidateYs.reserve(targets.size() + 28);
     qreal targetSumY = 0.0;
     int targetCount = 0;
+    QList<qreal> targetCenterYs;
     for(const ExternalLayoutTarget& target : targets)
     {
         if(!target.dstNode)
             continue;
         const qreal centerY = target.dstNode->sceneBoundingRect().center().y();
         candidateYs.append(centerY);
+        targetCenterYs.append(centerY);
         targetSumY += centerY;
         ++targetCount;
     }
     const qreal avgTargetY = targetCount > 0 ? targetSumY / targetCount : nodesBounds.center().y();
+    if(targetCenterYs.size() >= 2)
+    {
+        std::sort(targetCenterYs.begin(), targetCenterYs.end());
+        candidateYs.append(targetCenterYs[targetCenterYs.size() / 2]); // median
+        // Span center — good shared bus for a tall column of synapses
+        candidateYs.append(0.5 * (targetCenterYs.first() + targetCenterYs.last()));
+    }
     for(int i = 0; i <= 15; ++i)
         candidateYs.append(nodesBounds.top() + nodesBounds.height() * i / 15.0);
 
-    // Outside-row candidates (preferred by layoutScore band penalty + corridor)
+    // Outside-row candidates (still useful when the port is NOT in the left pocket)
     const qreal gap = kGapFromNode;
     candidateYs.append(nodesBounds.top() - gap);
     candidateYs.append(nodesBounds.top() - gap * 2.0);

@@ -145,3 +145,40 @@ TEST(UModernDiagramLinkRouter, MidRowPort_WorseThanOutsideForDeep)
     EXPECT_EQ(outRr.obstacleHits, 0);
     EXPECT_LE(outRr.obstacleHits, midRr.obstacleHits);
 }
+
+TEST(UModernDiagramLinkRouter, LeftPocketFanOut_UsesVerticalBusNotEnvelope)
+{
+    // Tall column of tip targets (like 10 membrane synapses) + left virtual port
+    QList<QRectF> obstacles;
+    for(int i = 0; i < 10; ++i)
+        obstacles.append(QRectF(100, 40 + i * 50, 80, 36));
+    QRectF bounds = obstacles.first();
+    for(const QRectF& r : obstacles)
+        bounds = bounds.united(r);
+
+    const QPointF S(60, bounds.center().y());
+    int totalBends = 0;
+    int totalHits = 0;
+    for(int i = 0; i < 10; ++i)
+    {
+        const QPointF E(obstacles[i].left(), obstacles[i].center().y());
+        RouteRequest req;
+        req.start = S;
+        req.end = E;
+        req.obstacles = obstacles;
+        req.diagramBounds = bounds;
+        req.externalIncoming = true;
+        req.parallelIndex = i;
+        req.cornerRadius = 0.0;
+        const RouteResult rr = route(req, RouteMode::ExternalCorridor);
+        EXPECT_EQ(rr.modeUsed, RouteMode::ExternalCorridor);
+        EXPECT_EQ(rr.obstacleHits, 0) << "target " << i;
+        totalHits += rr.obstacleHits;
+        totalBends += rr.bendCount;
+        // Left-pocket bus: at most one bend (V then H), not full top/bottom envelope
+        EXPECT_LE(rr.bendCount, 2) << "target " << i;
+        EXPECT_TRUE(pathHasHorizontalPortEnds(rr.path));
+    }
+    EXPECT_EQ(totalHits, 0);
+    EXPECT_LE(totalBends, 20); // 10 links × ≤2 bends; envelopes would be ~30+
+}

@@ -382,16 +382,24 @@ RouteResult routeExternalCorridor(const RouteRequest& req)
     const qreal stubX = E.x() - stub;
     const qreal leftPocketX = bounds.left() - gap
                               - req.parallelIndex * req.parallelStep;
+    const bool inLeftPocket = S.x() <= bounds.left() - 1.0;
 
     const QList<QRectF> obstacles = inflateRects(
         filterEndpoints(req.obstacles, S, E), 0.0);
 
     QVector<QVector<QPointF>> candidates;
 
-    // Port already in left pocket — stem on S.x, no forced S.x - gap detour
-    if(S.x() <= bounds.left() - 1.0)
+    // Left-pocket bus: shared vertical stem at S.x, then short H into the target.
+    // Preferred for fan-out to a column of synapses (avoids full-bounds envelope).
+    if(inLeftPocket)
     {
         candidates.append({S, QPointF(S.x(), E.y()), E});
+        // Soft vertical offset lanes when several links share one port
+        if(req.parallelIndex > 0)
+        {
+            const qreal laneX = S.x() - req.parallelIndex * req.parallelStep;
+            candidates.append({S, QPointF(laneX, S.y()), QPointF(laneX, E.y()), E});
+        }
     }
     else
     {
@@ -401,7 +409,8 @@ RouteResult routeExternalCorridor(const RouteRequest& req)
                            E});
     }
 
-    // Outside envelope (preferred for deep targets)
+    // Outside envelope — only needed when the port is not already clear on the left
+    // (or left-stem is blocked). Heavily penalized via scoring when inLeftPocket.
     const qreal topY = bounds.top() - gap - req.parallelIndex * req.parallelStep;
     const qreal botY = bounds.bottom() + gap + req.parallelIndex * req.parallelStep;
     candidates.append({S, QPointF(S.x(), topY), QPointF(stubX, topY), QPointF(stubX, E.y()), E});
@@ -414,7 +423,17 @@ RouteResult routeExternalCorridor(const RouteRequest& req)
         QVector<QPointF> pts = normalizeCandidate(raw, S, E);
         if(pts.size() < 2)
             continue;
-        const qreal score = scorePolyline(pts, obstacles, bounds, gap, true);
+        qreal score = scorePolyline(pts, obstacles, bounds, gap, true);
+        // Prefer left-pocket bus over full envelope when the port is already clear left
+        if(inLeftPocket)
+        {
+            const bool looksLikeEnvelope = pts.size() >= 4
+                && (qAbs(pts[1].x() - S.x()) < kEps)
+                && (pts[1].y() < bounds.top() - gap * 0.5
+                    || pts[1].y() > bounds.bottom() + gap * 0.5);
+            if(looksLikeEnvelope)
+                score += 2500.0;
+        }
         if(score < bestScore)
         {
             bestScore = score;
