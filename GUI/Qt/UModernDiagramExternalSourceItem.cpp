@@ -94,7 +94,7 @@ void UModernDiagramExternalSourceItem::layoutOptimal(const QRectF& nodesBounds,
     }
 
     QList<qreal> candidateYs;
-    candidateYs.reserve(targets.size() + 16);
+    candidateYs.reserve(targets.size() + 24);
     qreal targetSumY = 0.0;
     int targetCount = 0;
     for(const ExternalLayoutTarget& target : targets)
@@ -109,6 +109,15 @@ void UModernDiagramExternalSourceItem::layoutOptimal(const QRectF& nodesBounds,
     const qreal avgTargetY = targetCount > 0 ? targetSumY / targetCount : nodesBounds.center().y();
     for(int i = 0; i <= 15; ++i)
         candidateYs.append(nodesBounds.top() + nodesBounds.height() * i / 15.0);
+
+    // Outside-row candidates (preferred by layoutScore band penalty + corridor)
+    const qreal gap = kGapFromNode;
+    candidateYs.append(nodesBounds.top() - gap);
+    candidateYs.append(nodesBounds.top() - gap * 2.0);
+    candidateYs.append(nodesBounds.top() - gap * 3.0);
+    candidateYs.append(nodesBounds.bottom() + gap);
+    candidateYs.append(nodesBounds.bottom() + gap * 2.0);
+    candidateYs.append(nodesBounds.bottom() + gap * 3.0);
 
     qreal bestLeftX = candidateLeftXs.first();
     qreal bestCenterY = avgTargetY + stackOffsetY;

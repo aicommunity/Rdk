@@ -118,7 +118,7 @@ void UModernDiagramLinkItem::updateGeometry(const QPointF& cursorOverride)
         req.start = start;
         req.end = end;
         req.externalIncoming = external;
-        req.parallelIndex = 0;
+        req.parallelIndex = m_routeParallelIndex;
         if(m_owner)
         {
             req.obstacles = m_owner->routingObstacles(m_dst, m_src);

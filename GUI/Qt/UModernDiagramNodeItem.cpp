@@ -1680,9 +1680,9 @@ bool UModernDiagramNodeItem::hasConnectionsToInputCategory(PortCategory category
     if(categoryPorts.isEmpty() && category != PortCategory::Own)
         return false;
 
-    // Получаем все связи компонента
+    // Boundary links only — avoid recursive nested feedback lighting Child ports on parents
     const std::string raw =
-        internalLinksXmlFromModelScope(Core_GetSelectedChannelIndex(), m_owner->m_componentName);
+        scopeChildBoundaryLinksXmlFromModelScope(Core_GetSelectedChannelIndex(), m_owner->m_componentName);
     if(raw.empty())
         return false;
 
@@ -2062,9 +2062,9 @@ bool UModernDiagramNodeItem::hasConnectionsToOutputCategory(PortCategory categor
     if(categoryPorts.isEmpty() && category != PortCategory::Own)
         return false;
 
-    // Получаем все связи компонента
+    // Boundary links only — avoid recursive nested feedback lighting Child ports on parents
     const std::string raw =
-        internalLinksXmlFromModelScope(Core_GetSelectedChannelIndex(), m_owner->m_componentName);
+        scopeChildBoundaryLinksXmlFromModelScope(Core_GetSelectedChannelIndex(), m_owner->m_componentName);
     if(raw.empty())
         return false;
 

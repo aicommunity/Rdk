@@ -828,8 +828,11 @@ void UModernDiagramWidget::buildLinks()
     if(m_mainView)
         m_mainView->setUpdatesEnabled(false);
 
+    // Boundary semantics (classic SaveComponentDrawInfo): only personal links of
+    // direct children — not recursive GetComponentInternalLinks (nested feedback
+    // would collapse to peer self-loops on the visible parent node).
     const std::string linksXml =
-        internalLinksXmlFromModelScope(Core_GetSelectedChannelIndex(), m_componentName);
+        scopeChildBoundaryLinksXmlFromModelScope(Core_GetSelectedChannelIndex(), m_componentName);
     if(linksXml.empty())
     {
         buildExternalIncomingLinks();
@@ -888,6 +891,20 @@ void UModernDiagramWidget::buildLinks()
 
             // Если srcNode не найден, пропускаем связь (не можем определить категорию источника)
             if(!srcNode)
+            {
+                skipped++;
+                continue;
+            }
+
+            // Safety-net: wholly-nested endpoints that collapsed to the same visible
+            // child (e.g. Neuron1.LTZone → Neuron1.…InputFeedbackSignal on Model).
+            if(srcNode && dstNode && srcNode == dstNode
+               && isWhollyNestedSelfLinkOnVisibleChild(
+                      srcNode,
+                      itemName,
+                      QString::fromStdString(itemId),
+                      connName,
+                      QString::fromStdString(connId)))
             {
                 skipped++;
                 continue;
@@ -2186,6 +2203,50 @@ bool UModernDiagramWidget::isConnectorNestedInsideVisibleChild(const QString& co
     return rest.contains(QLatin1Char('.'));
 }
 
+bool UModernDiagramWidget::isWhollyNestedSelfLinkOnVisibleChild(
+    UModernDiagramNodeItem* node,
+    const QString& itemName,
+    const QString& itemId,
+    const QString& connName,
+    const QString& connId) const
+{
+    if(!node)
+        return false;
+
+    const QString nodeName = node->nodeName;
+    auto stripToRelative = [this](QString path) -> QString {
+        if(path.isEmpty())
+            return path;
+        if(!m_componentName.isEmpty())
+        {
+            if(path == m_componentName)
+                return QString();
+            const QString scopePrefix = m_componentName + QLatin1Char('.');
+            if(path.startsWith(scopePrefix))
+                path = path.mid(scopePrefix.size());
+            else
+            {
+                const QString scopeShort = scopeShortName();
+                if(path.startsWith(scopeShort + QLatin1Char('.')))
+                    path = path.mid(scopeShort.size() + 1);
+            }
+        }
+        return path;
+    };
+
+    auto isNestedUnderNode = [&](const QString& path) -> bool {
+        const QString relative = stripToRelative(path);
+        if(relative.isEmpty())
+            return false;
+        if(relative == nodeName)
+            return false;
+        return relative.startsWith(nodeName + QLatin1Char('.'));
+    };
+
+    return isNestedUnderNode(itemId) || isNestedUnderNode(itemName)
+        || isNestedUnderNode(connId) || isNestedUnderNode(connName);
+}
+
 QString UModernDiagramWidget::normalizeConnectorNameForDst(UModernDiagramNodeItem* dstNode,
                                                            const QString& connName,
                                                            const QString& connIdStr) const
@@ -2416,6 +2477,30 @@ void UModernDiagramWidget::layoutExternalSources()
         }
 
         obstacleRects.append(ext->sceneBoundingRect().adjusted(-4, -4, 4, 4));
+    }
+
+    // Assign corridor lanes for fan-out from the same virtual port (stable by target Y)
+    QHash<UModernDiagramExternalSourceItem*, QList<UModernDiagramLinkItem*>> linksByExt;
+    for(UModernDiagramLinkItem* link : m_links)
+    {
+        if(!link || !link->isExternalIncoming() || !link->externalSource())
+            continue;
+        linksByExt[link->externalSource()].append(link);
+    }
+    for(auto it = linksByExt.begin(); it != linksByExt.end(); ++it)
+    {
+        QList<UModernDiagramLinkItem*>& group = it.value();
+        std::stable_sort(group.begin(), group.end(),
+                         [](UModernDiagramLinkItem* a, UModernDiagramLinkItem* b) {
+                             const qreal ya = a && a->dst() ? a->dst()->sceneBoundingRect().center().y() : 0.0;
+                             const qreal yb = b && b->dst() ? b->dst()->sceneBoundingRect().center().y() : 0.0;
+                             return ya < yb;
+                         });
+        for(int i = 0; i < group.size(); ++i)
+        {
+            if(group[i])
+                group[i]->setRouteParallelIndex(i);
+        }
     }
 
     updateAllExternalLinkGeometry();

@@ -14,8 +14,8 @@
 namespace UModernDiagramLinkRouter {
 
 enum class RouteMode {
-    Auto,              // reverse → OrthogonalAvoid; else cubic (incl. external dashed)
-    ExternalCorridor,  // optional outside-envelope (explicit mode only)
+    Auto,              // external → ExternalCorridor; reverse → OrthogonalAvoid; else cubic
+    ExternalCorridor,  // outside-envelope for dashed external incoming
     OrthogonalAvoid,   // H-ended Manhattan for reverse links only
     CubicFallback      // classic cubic Bezier
 };

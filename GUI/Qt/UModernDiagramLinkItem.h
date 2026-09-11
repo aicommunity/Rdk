@@ -63,6 +63,10 @@ public:
     void setParallelCount(int count) { m_parallelCount = count > 0 ? count : 1; }
     void incrementParallelCount() { ++m_parallelCount; }
 
+    /// Fan-out lane index for ExternalCorridor (vertical envelope offset).
+    int routeParallelIndex() const { return m_routeParallelIndex; }
+    void setRouteParallelIndex(int index) { m_routeParallelIndex = index >= 0 ? index : 0; }
+
 private:
     UModernDiagramWidget* m_owner;
     UModernDiagramNodeItem* m_src;
@@ -76,6 +80,7 @@ private:
     PortCategory m_dstCategory;   // Категория целевого порта (если известна)
     bool m_hasCategories;        // Флаг, указывающий, что категории заданы
     int m_parallelCount = 1;     // Число свёрнутых в одну линию connector'ов
+    int m_routeParallelIndex = 0; // Lane for corridor fan-out
     UModernDiagramExternalSourceItem* m_externalSrc = nullptr;
     QString m_externalSrcLabel;
     bool m_isExternalIncoming = false;

@@ -566,9 +566,12 @@ RouteResult route(const RouteRequest& req, RouteMode mode)
     RouteMode effective = mode;
     if(effective == RouteMode::Auto)
     {
-        // Manhattan / orthogonal is ONLY for reverse internal links.
-        // External dashed and forward links keep classic cubic (H tangents).
-        if(!req.externalIncoming && isReverseLink(req.start, req.end))
+        // Dashed external → corridor (avoid crossing the node row).
+        // Reverse internal → Manhattan from output (+X) to input (−X).
+        // Forward internal → classic cubic.
+        if(req.externalIncoming)
+            effective = RouteMode::ExternalCorridor;
+        else if(isReverseLink(req.start, req.end))
             effective = RouteMode::OrthogonalAvoid;
         else
             effective = RouteMode::CubicFallback;

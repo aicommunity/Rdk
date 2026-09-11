@@ -250,6 +250,11 @@ private:
     static QString formatExternalSourceLabel(const QString& itemId, const QString& itemName);
     bool isLinkEndpointInsideCurrentScope(const QString& path) const;
     bool isConnectorNestedInsideVisibleChild(const QString& connName, const QString& connId) const;
+    bool isWhollyNestedSelfLinkOnVisibleChild(UModernDiagramNodeItem* node,
+                                              const QString& itemName,
+                                              const QString& itemId,
+                                              const QString& connName,
+                                              const QString& connId) const;
     bool isExternalLinkSource(const QString& itemName, const QString& itemId) const;
     QString normalizeConnectorNameForDst(UModernDiagramNodeItem* dstNode,
                                          const QString& connName,

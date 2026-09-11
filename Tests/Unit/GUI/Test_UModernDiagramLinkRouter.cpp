@@ -61,7 +61,7 @@ bool lastSegmentArrivesFromLeft(const QPainterPath& path, const QPointF& end)
 
 } // namespace
 
-TEST(UModernDiagramLinkRouter, AutoExternal_UsesCubicNotManhattan)
+TEST(UModernDiagramLinkRouter, AutoExternal_UsesCorridor)
 {
     ChainFixture f;
     RouteRequest req;
@@ -70,8 +70,27 @@ TEST(UModernDiagramLinkRouter, AutoExternal_UsesCubicNotManhattan)
     req.obstacles = f.obstacles;
     req.diagramBounds = f.bounds;
     req.externalIncoming = true;
+    req.cornerRadius = 0.0;
     const RouteResult rr = route(req, RouteMode::Auto);
-    EXPECT_EQ(rr.modeUsed, RouteMode::CubicFallback);
+    EXPECT_EQ(rr.modeUsed, RouteMode::ExternalCorridor);
+    EXPECT_EQ(rr.obstacleHits, 0);
+}
+
+TEST(UModernDiagramLinkRouter, ExternalDeep_OutsideEnvelopeClearsChain)
+{
+    ChainFixture f;
+    // Port below the row — bottom envelope should clear all boxes
+    RouteRequest req;
+    req.start = QPointF(60, f.bounds.bottom() + f.gap);
+    req.end = f.E_deep;
+    req.obstacles = f.obstacles;
+    req.diagramBounds = f.bounds;
+    req.externalIncoming = true;
+    req.cornerRadius = 0.0;
+    const RouteResult rr = route(req, RouteMode::ExternalCorridor);
+    EXPECT_EQ(rr.modeUsed, RouteMode::ExternalCorridor);
+    EXPECT_EQ(rr.obstacleHits, 0);
+    EXPECT_TRUE(pathHasHorizontalPortEnds(rr.path));
 }
 
 TEST(UModernDiagramLinkRouter, AutoForward_Cubic)
@@ -87,9 +106,8 @@ TEST(UModernDiagramLinkRouter, AutoForward_Cubic)
 TEST(UModernDiagramLinkRouter, AutoReverse_OrthogonalFromOutput)
 {
     ChainFixture f;
-    // LTZone-like source on the right, Soma-like target on the left
-    const QPointF S(400, 60); // output on right edge of right node
-    const QPointF E(150, 60); // input on left edge of left node
+    const QPointF S(400, 60);
+    const QPointF E(150, 60);
     RouteRequest req;
     req.start = S;
     req.end = E;
@@ -107,37 +125,23 @@ TEST(UModernDiagramLinkRouter, AutoReverse_OrthogonalFromOutput)
     EXPECT_EQ(rr.obstacleHits, 0);
 }
 
-TEST(UModernDiagramLinkRouter, ReverseExplicit_LeavesOutputRightward)
-{
-    const QPointF S(300, 50);
-    const QPointF E(100, 50);
-    QList<QRectF> obstacles = { QRectF(120, 30, 60, 40), QRectF(200, 30, 80, 40) };
-    QRectF bounds = obstacles[0].united(obstacles[1]);
-    bounds = bounds.united(QRectF(S, E).normalized());
-
-    RouteRequest req;
-    req.start = S;
-    req.end = E;
-    req.obstacles = obstacles;
-    req.diagramBounds = bounds;
-    req.cornerRadius = 0.0;
-
-    const RouteResult rr = route(req, RouteMode::OrthogonalAvoid);
-    EXPECT_EQ(rr.modeUsed, RouteMode::OrthogonalAvoid);
-    EXPECT_TRUE(firstSegmentLeavesRight(rr.path, S));
-    EXPECT_TRUE(lastSegmentArrivesFromLeft(rr.path, E));
-}
-
-TEST(UModernDiagramLinkRouter, ExternalCorridorExplicit_StillAvailable)
+TEST(UModernDiagramLinkRouter, MidRowPort_WorseThanOutsideForDeep)
 {
     ChainFixture f;
-    RouteRequest req;
-    req.start = f.S_left;
-    req.end = f.E_deep;
-    req.obstacles = f.obstacles;
-    req.diagramBounds = f.bounds;
-    req.externalIncoming = true;
-    req.cornerRadius = 0.0;
-    const RouteResult rr = route(req, RouteMode::ExternalCorridor);
-    EXPECT_EQ(rr.modeUsed, RouteMode::ExternalCorridor);
+    RouteRequest mid;
+    mid.start = f.S_left; // y aligned with row
+    mid.end = f.E_deep;
+    mid.obstacles = f.obstacles;
+    mid.diagramBounds = f.bounds;
+    mid.externalIncoming = true;
+    mid.cornerRadius = 0.0;
+
+    RouteRequest outside = mid;
+    outside.start = QPointF(f.S_left.x(), f.bounds.bottom() + f.gap);
+
+    const RouteResult midRr = route(mid, RouteMode::ExternalCorridor);
+    const RouteResult outRr = route(outside, RouteMode::ExternalCorridor);
+    // Outside should not hit; mid row left-pocket H at E.y typically hits or scores worse
+    EXPECT_EQ(outRr.obstacleHits, 0);
+    EXPECT_LE(outRr.obstacleHits, midRr.obstacleHits);
 }

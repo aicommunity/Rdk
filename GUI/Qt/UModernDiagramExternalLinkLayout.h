@@ -22,6 +22,8 @@ struct ExternalSourceStoredPosition {
 
 namespace ExternalLinkLayout {
 
+/// Score a candidate virtual-port position. Uses ExternalCorridor (same as live Auto
+/// for dashed links) so obstacleHits/bends drive placement above/below the node row.
 inline int layoutScore(const QPointF& portScenePos,
                        const QList<ExternalLayoutTarget>& targets,
                        const QList<QRectF>& obstacles,
@@ -38,8 +40,16 @@ inline int layoutScore(const QPointF& portScenePos,
         }
     }
 
-    for(const ExternalLayoutTarget& t : targets)
+    // Prefer ports outside the horizontal node band (systemic bias, not "always below")
+    if(!nodesBounds.isNull() && !nodesBounds.isEmpty())
     {
+        if(portScenePos.y() >= nodesBounds.top() && portScenePos.y() <= nodesBounds.bottom())
+            score += 400;
+    }
+
+    for(int ti = 0; ti < targets.size(); ++ti)
+    {
+        const ExternalLayoutTarget& t = targets[ti];
         if(!t.dstNode)
             continue;
         const QPointF end = t.dstNode->scenePortPosByCategory(false, t.dstCategory);
@@ -50,9 +60,11 @@ inline int layoutScore(const QPointF& portScenePos,
         req.obstacles = obstacles;
         req.diagramBounds = nodesBounds;
         req.externalIncoming = true;
+        req.parallelIndex = ti;
 
         const UModernDiagramLinkRouter::RouteResult rr =
-            UModernDiagramLinkRouter::route(req, UModernDiagramLinkRouter::RouteMode::Auto);
+            UModernDiagramLinkRouter::route(
+                req, UModernDiagramLinkRouter::RouteMode::ExternalCorridor);
 
         score += rr.obstacleHits * 100;
         score += rr.bendCount * 10;
