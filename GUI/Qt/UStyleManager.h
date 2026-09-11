@@ -65,6 +65,7 @@ public:
     // Цвета связей (LinkItem)
     QColor getLinkColor() const { return m_linkSolid; }
     QColor getLinkTempColor() const { return m_linkDashed; }
+    QColor getLinkReverseColor() const { return m_linkReverse; }
     double getLinkWidth() const { return m_linkWidth; }
     
     // Цвета для старого виджета диаграмм (UDrawEngineImageWidget)
@@ -158,6 +159,7 @@ private:
     // Link colors
     QColor m_linkSolid;
     QColor m_linkDashed;
+    QColor m_linkReverse;
     double m_linkWidth;
     
     // Drag colors

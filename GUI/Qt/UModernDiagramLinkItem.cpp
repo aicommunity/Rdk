@@ -2,6 +2,7 @@
 #include "UModernDiagramWidget.h" // Для доступа к Port, PortCategory и UModernDiagramWidget
 #include "UModernDiagramNodeItem.h"
 #include "UModernDiagramExternalSourceItem.h"
+#include "UModernDiagramLinkRouter.h"
 #include "UModernDiagramTooltipGenerator.h"
 #include "UStyleManager.h"
 
@@ -112,16 +113,39 @@ UModernDiagramLinkItem::UModernDiagramLinkItem(UModernDiagramExternalSourceItem*
 
 void UModernDiagramLinkItem::updateGeometry(const QPointF& cursorOverride)
 {
+    auto applyRoute = [this](const QPointF& start, const QPointF& end, bool external) {
+        UModernDiagramLinkRouter::RouteRequest req;
+        req.start = start;
+        req.end = end;
+        req.externalIncoming = external;
+        req.parallelIndex = 0;
+        if(m_owner)
+        {
+            req.obstacles = m_owner->routingObstacles(m_dst, m_src);
+            req.diagramBounds = m_owner->routingNodesBounds();
+        }
+        const UModernDiagramLinkRouter::RouteResult result =
+            UModernDiagramLinkRouter::route(req, UModernDiagramLinkRouter::RouteMode::Auto);
+        prepareGeometryChange();
+        setPath(result.path);
+
+        // Reverse internal links use green stroke; external/temp keep ctor pen style
+        if(!external && !m_isTemp)
+        {
+            UStyleManager* style = UStyleManager::instance();
+            QPen p = pen();
+            const bool reverse = UModernDiagramLinkRouter::isReverseLink(start, end);
+            p.setColor(reverse ? style->getLinkReverseColor() : style->getLinkColor());
+            p.setStyle(Qt::SolidLine);
+            setPen(p);
+        }
+    };
+
     if(m_isExternalIncoming && m_externalSrc && m_dst)
     {
-        QPointF start = m_externalSrc->scenePortPos();
-        QPointF end = m_dst->scenePortPosByCategory(false, m_dstCategory);
-        QPainterPath path(start);
-        QPointF c1 = start + QPointF((end.x() - start.x()) * 0.4, 0);
-        QPointF c2 = end   - QPointF((end.x() - start.x()) * 0.4, 0);
-        path.cubicTo(c1, c2, end);
-        prepareGeometryChange();
-        setPath(path);
+        const QPointF start = m_externalSrc->scenePortPos();
+        const QPointF end = m_dst->scenePortPosByCategory(false, m_dstCategory);
+        applyRoute(start, end, true);
         return;
     }
 
@@ -168,13 +192,18 @@ void UModernDiagramLinkItem::updateGeometry(const QPointF& cursorOverride)
     else
     {
         end = cursorOverride.isNull() ? m_tempEnd : cursorOverride;
+        // Temporary rubber-band: keep lightweight cubic for responsiveness
+        QPainterPath path(start);
+        const qreal dx = end.x() - start.x();
+        path.cubicTo(start + QPointF(dx * 0.4, 0),
+                     end - QPointF(dx * 0.4, 0),
+                     end);
+        prepareGeometryChange();
+        setPath(path);
+        return;
     }
 
-    QPainterPath path(start);
-    QPointF c1 = start + QPointF((end.x() - start.x()) * 0.4, 0);
-    QPointF c2 = end   - QPointF((end.x() - start.x()) * 0.4, 0);
-    path.cubicTo(c1, c2, end);
-    setPath(path);
+    applyRoute(start, end, false);
 }
 
 QRectF UModernDiagramLinkItem::boundingRect() const

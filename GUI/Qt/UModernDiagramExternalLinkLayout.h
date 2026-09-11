@@ -3,6 +3,7 @@
 
 #include "UModernDiagramPort.h"
 #include "UModernDiagramNodeItem.h"
+#include "UModernDiagramLinkRouter.h"
 
 #include <QPainterPath>
 #include <QPointF>
@@ -21,37 +22,11 @@ struct ExternalSourceStoredPosition {
 
 namespace ExternalLinkLayout {
 
-inline QPainterPath cubicLinkPath(const QPointF& start, const QPointF& end)
-{
-    QPainterPath path(start);
-    const qreal dx = end.x() - start.x();
-    path.cubicTo(start + QPointF(dx * 0.4, 0),
-                 end - QPointF(dx * 0.4, 0),
-                 end);
-    return path;
-}
-
-inline int pathObstacleScore(const QPainterPath& path,
-                             const QList<QRectF>& obstacles,
-                             int samples = 12)
-{
-    int score = 0;
-    for(int i = 1; i <= samples; ++i)
-    {
-        const QPointF p = path.pointAtPercent(i / qreal(samples));
-        for(const QRectF& r : obstacles)
-        {
-            if(r.contains(p))
-                score += 100;
-        }
-    }
-    return score;
-}
-
 inline int layoutScore(const QPointF& portScenePos,
                        const QList<ExternalLayoutTarget>& targets,
                        const QList<QRectF>& obstacles,
-                       const QRectF& portRect)
+                       const QRectF& portRect,
+                       const QRectF& nodesBounds = QRectF())
 {
     int score = 0;
     if(!portRect.isEmpty())
@@ -68,7 +43,20 @@ inline int layoutScore(const QPointF& portScenePos,
         if(!t.dstNode)
             continue;
         const QPointF end = t.dstNode->scenePortPosByCategory(false, t.dstCategory);
-        score += pathObstacleScore(cubicLinkPath(portScenePos, end), obstacles);
+
+        UModernDiagramLinkRouter::RouteRequest req;
+        req.start = portScenePos;
+        req.end = end;
+        req.obstacles = obstacles;
+        req.diagramBounds = nodesBounds;
+        req.externalIncoming = true;
+
+        const UModernDiagramLinkRouter::RouteResult rr =
+            UModernDiagramLinkRouter::route(req, UModernDiagramLinkRouter::RouteMode::Auto);
+
+        score += rr.obstacleHits * 100;
+        score += rr.bendCount * 10;
+        score += static_cast<int>(rr.length * 0.05);
         score += static_cast<int>(qAbs(portScenePos.y() - end.y()) * 0.2);
     }
     return score;

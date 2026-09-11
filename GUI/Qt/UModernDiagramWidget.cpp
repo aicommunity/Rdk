@@ -1306,11 +1306,12 @@ void UModernDiagramWidget::updateTheme()
         }
     }
 
-    // Обновляем все связи
+    // Обновляем все связи (path + reverse/forward pen)
     for(auto* link : m_links)
     {
         if(link)
         {
+            link->updateGeometry();
             link->update();
         }
     }
@@ -2010,6 +2011,33 @@ void UModernDiagramWidget::updateAllExternalLinkGeometry()
             link->update();
         }
     }
+}
+
+QList<QRectF> UModernDiagramWidget::routingObstacles(UModernDiagramNodeItem* excludeA,
+                                                     UModernDiagramNodeItem* excludeB) const
+{
+    QList<QRectF> out;
+    out.reserve(m_nodes.size());
+    for(UModernDiagramNodeItem* node : m_nodes)
+    {
+        if(!node || node == excludeA || node == excludeB)
+            continue;
+        out.append(node->sceneBoundingRect().adjusted(-4.0, -4.0, 4.0, 4.0));
+    }
+    return out;
+}
+
+QRectF UModernDiagramWidget::routingNodesBounds() const
+{
+    QRectF bounds;
+    for(UModernDiagramNodeItem* node : m_nodes)
+    {
+        if(!node)
+            continue;
+        const QRectF r = node->sceneBoundingRect();
+        bounds = bounds.isNull() ? r : bounds.united(r);
+    }
+    return bounds;
 }
 
 void UModernDiagramWidget::onExternalSourceMoved(UModernDiagramExternalSourceItem* ext, bool manual)

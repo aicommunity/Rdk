@@ -72,7 +72,26 @@ void UModernDiagramExternalSourceItem::layoutOptimal(const QRectF& nodesBounds,
     const QRectF itemBounds = boundingRect();
     const qreal width = itemBounds.width();
     const qreal height = itemBounds.height();
-    const qreal leftX = nodesBounds.left() - kGapFromNode - width;
+
+    QList<qreal> candidateLeftXs;
+    candidateLeftXs.append(nodesBounds.left() - kGapFromNode - width);
+
+    qreal minTargetLeft = nodesBounds.left();
+    bool anyTarget = false;
+    for(const ExternalLayoutTarget& target : targets)
+    {
+        if(!target.dstNode)
+            continue;
+        const qreal tl = target.dstNode->sceneBoundingRect().left();
+        minTargetLeft = anyTarget ? qMin(minTargetLeft, tl) : tl;
+        anyTarget = true;
+    }
+    if(anyTarget)
+    {
+        const qreal leftOfTargets = minTargetLeft - kGapFromNode - width;
+        if(qAbs(leftOfTargets - candidateLeftXs.first()) > 1.0)
+            candidateLeftXs.append(leftOfTargets);
+    }
 
     QList<qreal> candidateYs;
     candidateYs.reserve(targets.size() + 16);
@@ -91,22 +110,29 @@ void UModernDiagramExternalSourceItem::layoutOptimal(const QRectF& nodesBounds,
     for(int i = 0; i <= 15; ++i)
         candidateYs.append(nodesBounds.top() + nodesBounds.height() * i / 15.0);
 
+    qreal bestLeftX = candidateLeftXs.first();
     qreal bestCenterY = avgTargetY + stackOffsetY;
     int bestScore = INT_MAX;
-    for(qreal centerY : candidateYs)
+    for(qreal leftX : candidateLeftXs)
     {
-        centerY += stackOffsetY;
-        const QRectF portRect(leftX, centerY - height / 2.0, width, height);
-        const QPointF portCenter(portRect.right() - kPortSize, portRect.center().y());
-        const int score = ExternalLinkLayout::layoutScore(portCenter, targets, obstacleRects, portRect);
-        if(score < bestScore)
+        for(qreal centerY : candidateYs)
         {
-            bestScore = score;
-            bestCenterY = centerY;
+            centerY += stackOffsetY;
+            const QRectF portRect(leftX, centerY - height / 2.0, width, height);
+            // Match live scenePortPos(): right edge of item, vertical center
+            const QPointF portCenter(portRect.right(), portRect.center().y());
+            const int score = ExternalLinkLayout::layoutScore(
+                portCenter, targets, obstacleRects, portRect, nodesBounds);
+            if(score < bestScore)
+            {
+                bestScore = score;
+                bestLeftX = leftX;
+                bestCenterY = centerY;
+            }
         }
     }
 
-    setPos(leftX, bestCenterY - height / 2.0);
+    setPos(bestLeftX, bestCenterY - height / 2.0);
 }
 
 QRectF UModernDiagramExternalSourceItem::boundingRect() const

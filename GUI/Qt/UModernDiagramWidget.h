@@ -227,6 +227,11 @@ private:
     void saveExternalSourcePositionsToSettings();
     void loadExternalSourcePositionsFromSettings();
     QString externalSourcePositionKey(const QString& sourceKey) const;
+    /// Node bounding boxes for link routing (excludes endpoints).
+    QList<QRectF> routingObstacles(UModernDiagramNodeItem* excludeA,
+                                   UModernDiagramNodeItem* excludeB) const;
+    /// United scene bounds of all diagram nodes.
+    QRectF routingNodesBounds() const;
     void processExternalIncomingFromLinksList(
         const RDK::UStringLinksList& linkslist,
         QHash<UModernDiagramNodeItem*, int>& stackCounter,

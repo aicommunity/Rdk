@@ -90,6 +90,7 @@ void UStyleManager::setDefaults()
     // Цвета связей
     m_linkSolid = QColor(80, 120, 200);           // #5078C8
     m_linkDashed = QColor(120, 160, 220);         // #78A0DC
+    m_linkReverse = QColor(5, 150, 105);          // #059669
     m_linkWidth = 2.0;
     
     // Цвета drag
@@ -216,6 +217,7 @@ bool UStyleManager::loadTheme(const QString& themeJsonPath)
         QJsonObject link = root["link"].toObject();
         m_linkSolid = parseColor(link, "solid", m_linkSolid);
         m_linkDashed = parseColor(link, "dashed", m_linkDashed);
+        m_linkReverse = parseColor(link, "reverse", m_linkReverse);
         m_linkWidth = parseDouble(link, "width", m_linkWidth);
     }
     
