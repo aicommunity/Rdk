@@ -1,6 +1,6 @@
 # Capability Pack template
 
-Skeleton steps for a new pack (TD-165). Normative contract: [Capability-Packs.md](../../Docs/Capability-Packs.md).
+Skeleton steps for a new pack (TD-165). Normative contract: [Capability-Packs.md](../../../Docs/Capability-Packs.md).
 
 ## Steps
 

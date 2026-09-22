@@ -1,5 +1,8 @@
 # Консольное приложение (Console Application)
 
+**NeuroModelerConsole, сверка 2026-09-22:** этот документ описывает инфраструктуру UConsoleEngine. CLI приложения находится отдельно в [main.cpp](../../App/NeuroModelerConsole/main.cpp): -t задаёт предел времени до запуска каналов, -S запрашивает SaveProject после IsCalcFinished всех каналов, -x — выход. Текущий таймер с -S без -x повторяет сохранение каждые 500 мс после завершения; settings-origin exitAfterCalcFlag не полностью эквивалентен явному CLI -x. Это открытые ошибки, [план исправления](../../Docs/Audit/TimeLearner-2026-09-22/README.md).
+
+
 ## RU
 
 ### Обзор

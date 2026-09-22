@@ -470,7 +470,7 @@ stateDiagram-v2
 - `Name` - имя контейнера (свойство)
 - `Id` - идентификатор контейнера (свойство)
 - `Activity` - флаг активности контейнера
-- `TimeStep` - шаг времени контейнера
+- `TimeStep` - частота расчёта контейнера (шагов/с); dt = 1/TimeStep
 
 **Основные методы:**
 - `AddComponent(component)` - добавление дочернего компонента
@@ -674,7 +674,7 @@ if (component) {
     
     // Установка параметров
     component->Activity = true;
-    component->TimeStep = 0.001; // 1 мс
+    component->TimeStep = 1000; // 1000 шагов/с: dt = 1 мс
     
     // Добавление в хранилище
     storage->AddObject(component);
