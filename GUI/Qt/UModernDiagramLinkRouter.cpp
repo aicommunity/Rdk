@@ -36,24 +36,33 @@ QList<QRectF> filterEndpoints(const QList<QRectF>& obstacles,
     return out;
 }
 
+bool segmentIntersectsRect(const QPointF& a, const QPointF& b, const QRectF& r)
+{
+    // Touching edges counts as a hit. Endpoints inside the rect also hit.
+    if(r.contains(a) || r.contains(b))
+        return true;
+    const QLineF seg(a, b);
+    const QPointF corners[4] = {
+        r.topLeft(), r.topRight(), r.bottomRight(), r.bottomLeft()
+    };
+    for(int i = 0; i < 4; ++i)
+    {
+        QLineF edge(corners[i], corners[(i + 1) % 4]);
+        QPointF unused;
+        if(seg.intersects(edge, &unused) == QLineF::BoundedIntersection)
+            return true;
+    }
+    return false;
+}
+
 int segmentHits(const QPointF& a, const QPointF& b,
-                const QList<QRectF>& obstacles, int samples)
+                const QList<QRectF>& obstacles, int /*samples*/)
 {
     int hits = 0;
-    const int n = qMax(1, samples);
-    for(int i = 1; i <= n; ++i)
+    for(const QRectF& r : obstacles)
     {
-        const qreal t = i / qreal(n);
-        const QPointF p(a.x() + (b.x() - a.x()) * t,
-                        a.y() + (b.y() - a.y()) * t);
-        for(const QRectF& r : obstacles)
-        {
-            if(r.contains(p))
-            {
-                ++hits;
-                break;
-            }
-        }
+        if(segmentIntersectsRect(a, b, r))
+            ++hits;
     }
     return hits;
 }
