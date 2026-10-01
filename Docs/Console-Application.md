@@ -2,6 +2,10 @@
 
 **NeuroModelerConsole, сверка 2026-09-26:** этот документ описывает инфраструктуру `UConsoleEngine`; CLI приложения находится отдельно в [main.cpp](../../App/NeuroModelerConsole/main.cpp). Опция проекта `ProjectAutoSaveModelTimeInterval` в узле `Project/General` включает периодические вызовы `UApplication::SaveProject()` в консоли. Значение — целое число секунд модельного времени; `0` выключает функцию и является значением для старых конфигов. GUI-приложение эту опцию пока не обрабатывает.
 
+### Совместимость Release DLL на Windows
+
+`NeuroModelerConsole` и `NeuroModeler` развёртывают runtime DLL в `Bin/Platform/Win`. Некоторые vcpkg-порты используют одинаковое имя DLL для Release и Debug, хотя Debug-вариант связан с Debug CRT. Скрипт `cmake/DeployVcpkgDlls.cmake` копирует Release DLL для всех конфигураций, а DLL из `debug/bin` — только при сборке `Debug`. Не копируйте Debug DLL вручную поверх Release-файлов: несовместимая `glog.dll` приводила к access violation `0xC0000005` при завершении Release-консоли.
+
 ### Снимки проекта во время расчёта
 
 ```xml
