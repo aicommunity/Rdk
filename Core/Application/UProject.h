@@ -103,6 +103,9 @@ std::string CreationTime;
 /// Флаг автоматического сохранения проекта при закрытии
 bool ProjectAutoSaveFlag;
 
+/// Интервал автоматического сохранения модели в консоли (секунды модельного времени; 0 — выключено)
+int ProjectAutoSaveModelTimeInterval;
+
 /// Флаг автоматического сохранения состояний моделей при закрытии
 bool ProjectAutoSaveStatesFlag;
 
@@ -311,4 +314,3 @@ bool DeleteChannel(int index);
 }
 
 #endif
-
