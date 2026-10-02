@@ -216,7 +216,10 @@ void UEngineControlThread::AfterCalculate(void)
  GetEngineControl()->AddMetadata(EngineIndex, GetEngineControl()->GetEngineThread(EngineIndex)->GetLastCalculationServerTimeStamp());
  AAfterCalculate();
  if(GetEnvironmentLock(EngineIndex)->IsCalcFinished())
-  GetEngineControl()->PauseChannel(EngineIndex);
+  // This callback runs on the calculation thread, before Calculate() signals
+  // CalculationNotInProgress. PauseChannel() waits for that signal, so calling
+  // it here makes the thread wait on itself until the timeout expires.
+  Pause();
 }
 
 void UEngineControlThread::AAfterCalculate(void)

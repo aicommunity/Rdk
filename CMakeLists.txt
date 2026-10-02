@@ -170,6 +170,12 @@ else()
   message(WARNING "glog not found. Logging will use fallback implementation.")
 endif()
 
+# UProjectDeployerQt uses libcurl; propagate so dependents (apps/tests) link it
+find_package(CURL QUIET)
+if(CURL_FOUND)
+  target_link_libraries(${TARGET_NAME} PUBLIC CURL::libcurl)
+endif()
+
 if (RDK_USE_OPENCV AND OpenCV_FOUND)
   target_link_libraries(${TARGET_NAME} PUBLIC ${OpenCV_LIBS})
 endif()
