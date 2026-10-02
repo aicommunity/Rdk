@@ -16,27 +16,21 @@ inline void nmsdkQtTextStreamSetCodec(QTextStream& stream, const char* codecName
         stream.setEncoding(QStringConverter::Utf8);
         return;
     }
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    // encodingForName returns std::optional since Qt 6.0 on some builds / 6.4+
     const auto encoding = QStringConverter::encodingForName(codecName);
-    stream.setEncoding(encoding.value_or(QStringConverter::Utf8));
-#else
-    stream.setEncoding(QStringConverter::encodingForName(codecName));
-#endif
+    if (encoding) {
+        stream.setEncoding(*encoding);
+    } else {
+        stream.setEncoding(QStringConverter::Utf8);
+    }
 }
 
 inline QString nmsdkQtDecodeFromCodec(const QByteArray& bytes, const char* codecName)
 {
-#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
-    const auto encoding = QStringConverter::encodingForName(codecName);
-    if (encoding) {
-        return QStringDecoder(*encoding)(bytes);
-    }
-#else
-    const QStringDecoder decoder(codecName);
+    QStringDecoder decoder(codecName);
     if (decoder.isValid()) {
         return decoder(bytes);
     }
-#endif
     return QString::fromUtf8(bytes);
 }
 
