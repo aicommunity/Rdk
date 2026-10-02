@@ -1,4 +1,8 @@
 #include "UComponentsListWidgetModern.h"
+#include "Plot/WatchPropertyDndPayload.h"
+#include <QDrag>
+#include <QMimeData>
+#include <QMouseEvent>
 #include "ui_UComponentsListWidgetModern.h"
 
 #include <QDebug>
@@ -499,7 +503,7 @@ UComponentsListWidgetModern::UComponentsListWidgetModern(QWidget *parent, RDK::U
     }
     filterLineEdit = new QLineEdit(this);
     filterLineEdit->setObjectName(QStringLiteral("componentsFilterLineEdit"));
-    filterLineEdit->setPlaceholderText(tr("Фильтр компонентов..."));
+    filterLineEdit->setPlaceholderText(tr("Filter components / properties / path…"));
     filterLineEdit->setClearButtonEnabled(true);
     connect(filterLineEdit, &QLineEdit::textChanged,
             this, &UComponentsListWidgetModern::handleFilterTextChanged);
@@ -2040,14 +2044,54 @@ void UComponentsListWidgetModern::handleSnapshotUpdated(NMSDK::UGuiSnapshotPtr s
 
 void UComponentsListWidgetModern::handleFilterTextChanged(const QString &text)
 {
-    if(!componentsTree)
-        return;
-
     componentFilterText = text.trimmed();
-    applyFilter(componentsTree->invisibleRootItem());
+    if(componentsTree)
+    {
+        applyFilter(componentsTree->invisibleRootItem());
+        componentsTree->update();
+    }
+    applyPropertyTreeFilter();
+}
 
-    // Обновляем виджет для отображения изменений
-    componentsTree->update();
+void UComponentsListWidgetModern::applyPropertyTreeFilter()
+{
+    auto filterTree = [this](QTreeWidget* tree) {
+        if(!tree)
+            return;
+        const bool hasFilter = !componentFilterText.isEmpty();
+        for(int g = 0; g < tree->topLevelItemCount(); ++g)
+        {
+            QTreeWidgetItem* group = tree->topLevelItem(g);
+            if(!group)
+                continue;
+            bool groupVisible = !hasFilter;
+            for(int i = 0; i < group->childCount(); ++i)
+            {
+                QTreeWidgetItem* item = group->child(i);
+                if(!item)
+                    continue;
+                const QString name = propertyNameForItem(item);
+                const QString typeCol = item->columnCount() > 2 ? item->text(2) : QString();
+                const bool match = !hasFilter
+                    || name.contains(componentFilterText, Qt::CaseInsensitive)
+                    || item->text(0).contains(componentFilterText, Qt::CaseInsensitive)
+                    || typeCol.contains(componentFilterText, Qt::CaseInsensitive);
+                item->setHidden(!match);
+                if(match)
+                    groupVisible = true;
+            }
+            group->setHidden(!groupVisible);
+            if(groupVisible && hasFilter)
+                group->setExpanded(true);
+        }
+    };
+
+    filterTree(ui->treeWidgetParameters);
+    filterTree(ui->treeWidgetState);
+    filterTree(ui->treeWidgetInputs);
+    filterTree(ui->treeWidgetOutputs);
+    filterTree(ui->treeWidgetFavorites);
+    filterTree(m_unifiedTree);
 }
 
 void UComponentsListWidgetModern::rebuildTreeFromSnapshot(const NMSDK::UGuiSnapshotPtr &snapshot)
@@ -3662,6 +3706,54 @@ bool UComponentsListWidgetModern::eventFilter(QObject *obj, QEvent *event)
         {
             if(handleBoolValueMouseEvent(tree, static_cast<QMouseEvent*>(event)))
                 return true;
+            if(event->type() == QEvent::MouseButtonPress)
+            {
+                auto* mouseEvent = static_cast<QMouseEvent*>(event);
+                if(mouseEvent->button() == Qt::LeftButton)
+                {
+                    m_propertyDragPressPos = mouseEvent->pos();
+                    m_propertyDragArmed = tree->itemAt(mouseEvent->pos()) != nullptr;
+                }
+            }
+        }
+    }
+
+    if(event->type() == QEvent::MouseButtonRelease)
+    {
+        if(propertyTreeFromFilterObject(obj))
+            m_propertyDragArmed = false;
+    }
+
+    if(event->type() == QEvent::MouseMove)
+    {
+        if(QTreeWidget* tree = propertyTreeFromFilterObject(obj))
+        {
+            auto* mouseEvent = static_cast<QMouseEvent*>(event);
+            if(m_propertyDragArmed && (mouseEvent->buttons() & Qt::LeftButton)
+               && (mouseEvent->pos() - m_propertyDragPressPos).manhattanLength() > 10)
+            {
+                m_propertyDragArmed = false;
+                QTreeWidgetItem* item = tree->itemAt(mouseEvent->pos());
+                if(!item)
+                    item = tree->itemAt(m_propertyDragPressPos);
+                if(item && item->parent())
+                {
+                    NMSDK::Plot::WatchPropertyDragRef ref;
+                    ref.component = propertyComponentForItem(item);
+                    ref.property = propertyNameForItem(item);
+                    ref.channel = getWorkChannelIndex();
+                    if(!ref.component.isEmpty() && !ref.property.isEmpty())
+                    {
+                        auto* mime = new QMimeData();
+                        mime->setData(NMSDK::Plot::WatchPropertyDndPayload::mimeType(),
+                                      NMSDK::Plot::WatchPropertyDndPayload::encode(ref));
+                        auto* drag = new QDrag(tree);
+                        drag->setMimeData(mime);
+                        drag->exec(Qt::CopyAction);
+                        return true;
+                    }
+                }
+            }
         }
     }
 

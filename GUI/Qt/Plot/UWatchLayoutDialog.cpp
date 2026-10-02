@@ -24,10 +24,11 @@ struct GridPreset
 
 const GridPreset kPresets[] = {
     {"1×1", 1, 1, false},
+    {"2×1 (wide)", 2, 1, false},
     {"1×2", 1, 2, false},
-    {"2×1", 2, 1, false},
     {"2×2", 2, 2, false},
-    {"2×3", 2, 3, false},
+    {"2×3 overview", 2, 3, false},
+    {"4×4 dense monitor", 4, 4, false},
     {"Custom", 0, 0, true},
 };
 

@@ -85,12 +85,13 @@ void UWatchSerie::applyBinding(const NMSDK::Plot::DataBinding& binding, NMSDK::P
 NMSDK::Plot::PlotSeries UWatchSerie::toPlotSeries() const
 {
     NMSDK::Plot::PlotSeries s;
+    s.id = NMSDK::Plot::makePlotObjectId(QStringLiteral("serie"));
     s.visual.displayName = name();
     s.visual.color = color();
     s.visual.width = pen().width();
     s.visual.penStyle = static_cast<int>(pen().style());
     s.yOffset = YShift;
-    s.enabled = isOnline;
+    s.enabled = isVisible() && isOnline;
     s.binding = toBinding();
     return s;
 }

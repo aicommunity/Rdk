@@ -120,6 +120,22 @@ void UWatch::on_actionQuick_save_triggered()
         return; // errors already shown when path missing
 }
 
+void UWatch::on_actionSave_watch_template_triggered()
+{
+    UWatchTab* current_tab = ensureCurrentTab();
+    if (!current_tab)
+        return;
+    current_tab->saveWatchTemplateDialog();
+}
+
+void UWatch::on_actionLoad_watch_template_triggered()
+{
+    UWatchTab* current_tab = ensureCurrentTab();
+    if (!current_tab)
+        return;
+    current_tab->loadWatchTemplateDialog();
+}
+
 void UWatch::createTab()
 {
     // пока что так

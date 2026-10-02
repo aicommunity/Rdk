@@ -4,12 +4,19 @@
 #include "../../Core/Serialize/USerStorageXML.h"
 #include "../../Core/Utilities/USupport.h"
 
+#include <QUuid>
 #include <string>
 
 namespace NMSDK
 {
 namespace Plot
 {
+
+QString makePlotObjectId(const QString& prefix)
+{
+    return prefix + QLatin1Char('_')
+           + QUuid::createUuid().toString(QUuid::WithoutBraces);
+}
 
 bool isWatchableLanguageType(const std::type_info& ti)
 {
@@ -76,6 +83,7 @@ void savePlotDocument(RDK::USerStorageXML& xml, const PlotDocument& doc)
     xml.WriteInteger("schemaVersion", doc.schemaVersion);
     xml.WriteInteger("GridColCount", doc.gridCols);
     xml.WriteInteger("GridRowCount", doc.gridRows);
+    xml.WriteInteger("DenseGrid", doc.denseGrid ? 1 : 0);
     xml.WriteInteger("GraphCount", doc.panels.size());
 
     xml.WriteInteger("ColSplitterCount", doc.colSplitterSizes.size());
@@ -96,6 +104,10 @@ void savePlotDocument(RDK::USerStorageXML& xml, const PlotDocument& doc)
         const PlotPanel& panel = doc.panels[graphIndex];
         xml.SelectNodeForce("graph_" + RDK::sntoa(graphIndex));
 
+        xml.WriteString("PanelId", panel.id.toStdString());
+        xml.WriteInteger("PanelVisible", panel.visible ? 1 : 0);
+        xml.WriteInteger("FixedYRange", panel.fixedYRange ? 1 : 0);
+        xml.WriteInteger("FixedXRange", panel.fixedXRange ? 1 : 0);
         xml.WriteString("VizKind", vizKindToString(panel.viz).toStdString());
         xml.WriteString("ChartTitle", panel.title.toStdString());
         xml.WriteString("AxisXName", panel.axisXName.toStdString());
@@ -117,6 +129,7 @@ void savePlotDocument(RDK::USerStorageXML& xml, const PlotDocument& doc)
             const PlotSeries& serie = panel.series[serieIndex];
             xml.SelectNodeForce("serie_" + RDK::sntoa(serieIndex));
 
+            xml.WriteString("SerieId", serie.id.toStdString());
             xml.WriteString("SerieName", serie.visual.displayName.toStdString());
             xml.WriteInteger("SerieWidth", serie.visual.width);
             xml.WriteInteger("SerieLineType", serie.visual.penStyle);
@@ -148,6 +161,7 @@ bool loadPlotDocument(RDK::USerStorageXML& xml, PlotDocument& doc)
     doc.schemaVersion = xml.ReadInteger("schemaVersion", 1);
     doc.gridCols = xml.ReadInteger("GridColCount", 1);
     doc.gridRows = xml.ReadInteger("GridRowCount", 1);
+    doc.denseGrid = xml.ReadInteger("DenseGrid", doc.gridRows * doc.gridCols > 1 ? 1 : 0) != 0;
 
     const int colSplitCount = xml.ReadInteger("ColSplitterCount", 0);
     for (int i = 0; i < colSplitCount; ++i)
@@ -171,7 +185,12 @@ bool loadPlotDocument(RDK::USerStorageXML& xml, PlotDocument& doc)
     {
         xml.SelectNodeForce("graph_" + RDK::sntoa(graphIndex));
         PlotPanel panel;
-        panel.id = QStringLiteral("graph_%1").arg(graphIndex);
+        const QString loadedId =
+            QString::fromStdString(xml.ReadString("PanelId", ""));
+        panel.id = loadedId.isEmpty() ? makePlotObjectId(QStringLiteral("panel")) : loadedId;
+        panel.visible = xml.ReadInteger("PanelVisible", 1) != 0;
+        panel.fixedYRange = xml.ReadInteger("FixedYRange", 0) != 0;
+        panel.fixedXRange = xml.ReadInteger("FixedXRange", 0) != 0;
         panel.viz = vizKindFromString(
             QString::fromStdString(xml.ReadString("VizKind", "TimeSeries")),
             VizKind::TimeSeries);
@@ -202,7 +221,11 @@ bool loadPlotDocument(RDK::USerStorageXML& xml, PlotDocument& doc)
         {
             xml.SelectNodeForce("serie_" + RDK::sntoa(serieIndex));
             PlotSeries serie;
-            serie.id = QStringLiteral("serie_%1_%2").arg(graphIndex).arg(serieIndex);
+            const QString loadedSerieId =
+                QString::fromStdString(xml.ReadString("SerieId", ""));
+            serie.id = loadedSerieId.isEmpty()
+                           ? makePlotObjectId(QStringLiteral("serie"))
+                           : loadedSerieId;
             serie.visual.displayName =
                 QString::fromStdString(xml.ReadString("SerieName", ""));
             serie.visual.width = xml.ReadInteger("SerieWidth", 2);

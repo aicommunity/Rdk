@@ -75,6 +75,8 @@ private slots:
     void on_actionSave_chart_triggered();
     void on_actionSave_all_charts_triggered();
     void on_actionQuick_save_triggered();
+    void on_actionSave_watch_template_triggered();
+    void on_actionLoad_watch_template_triggered();
     void on_tabWidget_tabCloseRequested(int index);
 
 

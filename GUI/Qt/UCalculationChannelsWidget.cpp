@@ -2,6 +2,9 @@
 #include "ui_UCalculationChannelsWidget.h"
 
 #include <rdk_init.h>
+#include <QMessageBox>
+#include <QToolBar>
+#include <QVBoxLayout>
 
 UCalculationChannelsWidget::UCalculationChannelsWidget(QWidget *parent, RDK::UApplication *app) :
     UVisualControllerWidget(parent, app),
@@ -12,6 +15,22 @@ UCalculationChannelsWidget::UCalculationChannelsWidget(QWidget *parent, RDK::UAp
   currentChannel = 0;
   CheckModelFlag =false;
   setAccessibleName("UCalculationChannelsWidget");
+
+  // Persistent compact toolbar (actions also remain in context menu).
+  if (auto* root = qobject_cast<QVBoxLayout*>(layout()))
+  {
+      auto* bar = new QToolBar(tr("Channels"), this);
+      bar->setIconSize(QSize(16, 16));
+      bar->addAction(ui->actionAddChannel);
+      bar->addAction(ui->actionInsertChannel);
+      bar->addAction(ui->actionDeleteSelectedChannel);
+      bar->addAction(ui->actionCloneChannel);
+      bar->addSeparator();
+      bar->addAction(ui->actionStartChannel);
+      bar->addAction(ui->actionPauseChannel);
+      bar->addAction(ui->actionResetChannel);
+      root->insertWidget(0, bar);
+  }
 
   //contextMenu
   QAction *actionSeparator1 = new QAction(this);
@@ -35,8 +54,6 @@ UCalculationChannelsWidget::UCalculationChannelsWidget(QWidget *parent, RDK::UAp
 
   connect(ui->listWidgetChannels, SIGNAL(itemSelectionChanged()), this, SLOT(channelSelectionChanged()));
 
-  //connect(ui->action, SIGNAL(triggered(bool)), this, SLOT(action));
-
   UpdateInterface(true);
 }
 
@@ -47,14 +64,16 @@ UCalculationChannelsWidget::~UCalculationChannelsWidget()
 
 void UCalculationChannelsWidget::AUpdateInterface()
 {
+  const int selected = currentChannel;
   ui->listWidgetChannels->clear();
   channelsCounter = Core_GetNumChannels();
   for(int i = 0; i < channelsCounter; i++)
   {
     QListWidgetItem *item = new QListWidgetItem(ui->listWidgetChannels);
-    item->setText(QString::number(i));
-//    item->setText(0, QString::number(i) + " ch.");
+    const bool active = (i == selected);
+    item->setText(active ? tr("Ch %1 ●").arg(i) : tr("Ch %1").arg(i));
     item->setData(Qt::UserRole, i);
+    item->setToolTip(tr("Calculation channel %1").arg(i));
     if(i == currentChannel) ui->listWidgetChannels->setCurrentItem(item);
   }
   emit updateVisibility();
@@ -125,7 +144,13 @@ void UCalculationChannelsWidget::actionDeleteSelectedChannel()
   if(!item)
       return;
 
-  application->DeleteChannel(item->data(Qt::UserRole).toInt());
+  const int ch = item->data(Qt::UserRole).toInt();
+  if (QMessageBox::question(this, tr("Delete channel"),
+                            tr("Delete channel %1?").arg(ch))
+      != QMessageBox::Yes)
+      return;
+
+  application->DeleteChannel(ch);
   UpdateInterface(true);
 }
 

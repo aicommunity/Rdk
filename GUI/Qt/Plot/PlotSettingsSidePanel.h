@@ -37,6 +37,9 @@ public:
 
     void showInspector(PlotInspectorPage page, int chartIndex);
 
+protected:
+    bool eventFilter(QObject* watched, QEvent* event) override;
+
 signals:
     void requestHide();
     void requestApply();
@@ -60,6 +63,8 @@ private:
     bool m_refreshing = false;
 
     QLabel* m_heroTitle = nullptr;
+    QComboBox* m_panelCombo = nullptr;
+    QPushButton* m_expandPanelBtn = nullptr;
     QPushButton* m_hideBtn = nullptr;
     QTabWidget* m_tabs = nullptr;
 
@@ -76,6 +81,17 @@ private:
     QCheckBox* m_trackLatest = nullptr;
     QCheckBox* m_legendVisible = nullptr;
     QCheckBox* m_titleVisible = nullptr;
+    QCheckBox* m_denseGrid = nullptr;
+    QCheckBox* m_fixedYRange = nullptr;
+    QCheckBox* m_fixedXRange = nullptr;
+    QPushButton* m_syncXBtn = nullptr;
+    QPushButton* m_resetViewBtn = nullptr;
+    QPushButton* m_autoScaleBtn = nullptr;
+    QPushButton* m_toggleLegendsBtn = nullptr;
+    QPushButton* m_saveTemplateBtn = nullptr;
+    QPushButton* m_loadTemplateBtn = nullptr;
+    QPushButton* m_panelUpBtn = nullptr;
+    QPushButton* m_panelDownBtn = nullptr;
     QComboBox* m_vizKind = nullptr;
 
     QWidget* m_seriesPage = nullptr;
@@ -84,7 +100,17 @@ private:
     QDoubleSpinBox* m_yShift = nullptr;
     QLabel* m_bindingLabel = nullptr;
     QPushButton* m_addSerieBtn = nullptr;
+    QPushButton* m_quickAddBtn = nullptr;
+    QPushButton* m_hideSerieBtn = nullptr;
+    QPushButton* m_showSerieBtn = nullptr;
+    QPushButton* m_dupSerieBtn = nullptr;
+    QPushButton* m_delSerieBtn = nullptr;
+    QPushButton* m_upSerieBtn = nullptr;
+    QPushButton* m_downSerieBtn = nullptr;
     class QSpinBox* m_channelSpin = nullptr;
+    class QSpinBox* m_lineWidth = nullptr;
+    QComboBox* m_lineStyle = nullptr;
+    QPushButton* m_gotoSourceBtn = nullptr;
     QButtonGroup* m_serieColorGroup = nullptr;
     int m_serieColorIndex = -1;
 

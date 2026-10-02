@@ -107,7 +107,7 @@ struct PlotSeries
 
 struct PlotPanel
 {
-    QString id;
+    QString id; ///< Stable UUID; persisted as PanelId (schema v3+).
     VizKind viz = VizKind::TimeSeries;
     QString title;
     QString axisXName = QStringLiteral("time, sec");
@@ -120,6 +120,11 @@ struct PlotPanel
     bool legendVisible = true;
     bool titleVisible = true;
     bool trackLatest = true;
+    /// When false, panel stays in the document but is not placed in the grid.
+    bool visible = true;
+    /// Fixed Y/X range editing (inspector); Auto uses track/extents.
+    bool fixedYRange = false;
+    bool fixedXRange = false;
     InteractionMode interaction = InteractionMode::TrackLatest;
     int updateIntervalMs = 200;
     QVector<PlotSeries> series;
@@ -127,15 +132,21 @@ struct PlotPanel
 
 struct PlotDocument
 {
-    static constexpr int CurrentSchemaVersion = 2;
+    /// v3: stable PanelId/SerieId, PanelVisible; layout geometry ≠ composition.
+    static constexpr int CurrentSchemaVersion = 3;
 
     int schemaVersion = CurrentSchemaVersion;
     int gridRows = 1;
     int gridCols = 1;
+    /// Dense chrome (shared tool strip, compact titles) preferred for multi-panel.
+    bool denseGrid = false;
     QList<int> colSplitterSizes;
     QVector<QList<int>> rowSplitterSizes;
     QVector<PlotPanel> panels;
 };
+
+/// Allocate a new stable panel/series id.
+QString makePlotObjectId(const QString& prefix = QStringLiteral("panel"));
 
 inline DataBinding makeTimeSeriesBinding(int channel,
                                          const QString& component,

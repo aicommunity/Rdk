@@ -29,6 +29,10 @@
 #include <QTabWidget>
 #include <QToolButton>
 #include <QVBoxLayout>
+#include <QApplication>
+#include <QClipboard>
+#include <QEvent>
+#include <QMouseEvent>
 
 namespace {
 
@@ -64,20 +68,40 @@ void PlotSettingsSidePanel::buildUi()
     root->setContentsMargins(10, 10, 10, 10);
     root->setSpacing(8);
 
-    // --- Hero identity (read-only; active chart is chosen by click in the grid) ---
-    auto* heroRow = new QHBoxLayout();
+    // --- Hero: path + panel selector ---
+    auto* heroCol = new QVBoxLayout();
     m_heroTitle = new QLabel(this);
     QFont heroFont = m_heroTitle->font();
-    heroFont.setPointSize(heroFont.pointSize() + 2);
+    heroFont.setPointSize(heroFont.pointSize() + 1);
     heroFont.setBold(true);
     m_heroTitle->setFont(heroFont);
     m_heroTitle->setWordWrap(true);
-    heroRow->addWidget(m_heroTitle, 1);
+    heroCol->addWidget(m_heroTitle);
+    m_panelCombo = new QComboBox(this);
+    m_panelCombo->setToolTip(tr("Select panel without clicking the grid"));
+    heroCol->addWidget(m_panelCombo);
+    auto* heroRow = new QHBoxLayout();
+    heroRow->addLayout(heroCol, 1);
+    m_expandPanelBtn = new QPushButton(tr("Expand"), this);
+    m_expandPanelBtn->setToolTip(tr("Expand active panel (double-click in list)"));
     m_hideBtn = new QPushButton(tr("Hide"), this);
     m_hideBtn->setFixedWidth(56);
+    heroRow->addWidget(m_expandPanelBtn, 0, Qt::AlignTop);
     heroRow->addWidget(m_hideBtn, 0, Qt::AlignTop);
+    connect(m_expandPanelBtn, &QPushButton::clicked, this, [this]() {
+        if (m_tab)
+            m_tab->toggleExpandChart(m_chartIndex);
+    });
     root->addLayout(heroRow);
     connect(m_hideBtn, &QPushButton::clicked, this, &PlotSettingsSidePanel::requestHide);
+    connect(m_panelCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int idx) {
+        if (m_refreshing || !m_tab || idx < 0)
+            return;
+        const int chartIdx = m_panelCombo->itemData(idx).toInt();
+        m_tab->setActiveChart(chartIdx);
+        setActiveChart(chartIdx);
+    });
+    m_panelCombo->installEventFilter(this);
 
     m_tabs = new QTabWidget(this);
     m_tabs->setDocumentMode(true);
@@ -99,6 +123,14 @@ void PlotSettingsSidePanel::buildUi()
     m_vizKind->addItem(tr("XY scatter"), static_cast<int>(NMSDK::Plot::VizKind::XYScatter));
     identityForm->addRow(tr("Title"), m_titleEdit);
     identityForm->addRow(tr("Viz kind"), m_vizKind);
+    auto* panelOrderRow = new QHBoxLayout();
+    m_panelUpBtn = new QPushButton(tr("Panel ↑"), identityBox);
+    m_panelDownBtn = new QPushButton(tr("Panel ↓"), identityBox);
+    m_panelUpBtn->setToolTip(tr("Move panel earlier in the document order"));
+    m_panelDownBtn->setToolTip(tr("Move panel later in the document order"));
+    panelOrderRow->addWidget(m_panelUpBtn);
+    panelOrderRow->addWidget(m_panelDownBtn);
+    identityForm->addRow(tr("Order"), panelOrderRow);
     chartLayout->addWidget(identityBox);
 
     auto* axesBox = new QGroupBox(tr("Axes"), m_chartPage);
@@ -133,23 +165,41 @@ void PlotSettingsSidePanel::buildUi()
     m_xRange->setDecimals(3);
     axesForm->addRow(tr("X axis"), m_axisXEdit);
     axesForm->addRow(tr("Y axis"), m_axisYEdit);
+    m_fixedYRange = new QCheckBox(tr("Fixed Y range"), axesBox);
+    m_fixedXRange = new QCheckBox(tr("Fixed X range (XY)"), axesBox);
+    axesForm->addRow(QString(), m_fixedYRange);
+    axesForm->addRow(QString(), m_fixedXRange);
     axesForm->addRow(tr("X min"), m_xMin);
     axesForm->addRow(tr("X max"), m_xMax);
     axesForm->addRow(tr("Y min"), m_yMin);
     axesForm->addRow(tr("Y max"), m_yMax);
-    axesForm->addRow(tr("X range"), m_xRange);
+    axesForm->addRow(tr("X range / window, s"), m_xRange);
     m_xRangeLabel = qobject_cast<QLabel*>(axesForm->labelForField(m_xRange));
     chartLayout->addWidget(axesBox);
 
     auto* displayBox = new QGroupBox(tr("Display"), m_chartPage);
     auto* displayLayout = new QVBoxLayout(displayBox);
     displayLayout->setContentsMargins(8, 8, 8, 8);
-    m_trackLatest = new QCheckBox(tr("Track latest"), displayBox);
+    m_trackLatest = new QCheckBox(tr("Track latest / follow last data"), displayBox);
     m_legendVisible = new QCheckBox(tr("Show legend"), displayBox);
     m_titleVisible = new QCheckBox(tr("Show title"), displayBox);
+    m_denseGrid = new QCheckBox(tr("Dense grid chrome"), displayBox);
+    m_syncXBtn = new QPushButton(tr("Sync X from active"), displayBox);
+    m_resetViewBtn = new QPushButton(tr("Reset view"), displayBox);
+    m_autoScaleBtn = new QPushButton(tr("Auto-scale Y"), displayBox);
+    m_toggleLegendsBtn = new QPushButton(tr("Toggle all legends"), displayBox);
     displayLayout->addWidget(m_trackLatest);
     displayLayout->addWidget(m_legendVisible);
     displayLayout->addWidget(m_titleVisible);
+    displayLayout->addWidget(m_denseGrid);
+    displayLayout->addWidget(m_syncXBtn);
+    displayLayout->addWidget(m_resetViewBtn);
+    displayLayout->addWidget(m_autoScaleBtn);
+    displayLayout->addWidget(m_toggleLegendsBtn);
+    m_saveTemplateBtn = new QPushButton(tr("Save Watch template…"), displayBox);
+    m_loadTemplateBtn = new QPushButton(tr("Load Watch template…"), displayBox);
+    displayLayout->addWidget(m_saveTemplateBtn);
+    displayLayout->addWidget(m_loadTemplateBtn);
     chartLayout->addWidget(displayBox);
     chartLayout->addStretch(1);
 
@@ -165,6 +215,20 @@ void PlotSettingsSidePanel::buildUi()
     m_seriesList = new QListWidget(listBox);
     m_seriesList->setMinimumHeight(120);
     listLayout->addWidget(m_seriesList);
+    auto* seriesActions = new QHBoxLayout();
+    m_hideSerieBtn = new QPushButton(tr("Hide"), listBox);
+    m_showSerieBtn = new QPushButton(tr("Show"), listBox);
+    m_dupSerieBtn = new QPushButton(tr("Dup"), listBox);
+    m_delSerieBtn = new QPushButton(tr("Delete"), listBox);
+    m_upSerieBtn = new QPushButton(tr("↑"), listBox);
+    m_downSerieBtn = new QPushButton(tr("↓"), listBox);
+    seriesActions->addWidget(m_hideSerieBtn);
+    seriesActions->addWidget(m_showSerieBtn);
+    seriesActions->addWidget(m_dupSerieBtn);
+    seriesActions->addWidget(m_delSerieBtn);
+    seriesActions->addWidget(m_upSerieBtn);
+    seriesActions->addWidget(m_downSerieBtn);
+    listLayout->addLayout(seriesActions);
     seriesLayout->addWidget(listBox, 1);
 
     auto* selectedBox = new QGroupBox(tr("Selected series"), m_seriesPage);
@@ -183,6 +247,17 @@ void PlotSettingsSidePanel::buildUi()
     selectedForm->addRow(tr("Channel"), m_channelSpin);
     selectedForm->addRow(tr("Y shift"), m_yShift);
     selectedForm->addRow(tr("Binding"), m_bindingLabel);
+    m_gotoSourceBtn = new QPushButton(tr("Copy source path"), selectedBox);
+    selectedForm->addRow(QString(), m_gotoSourceBtn);
+    m_lineWidth = new QSpinBox(selectedBox);
+    m_lineWidth->setRange(1, 8);
+    m_lineStyle = new QComboBox(selectedBox);
+    m_lineStyle->addItem(tr("Solid"), static_cast<int>(Qt::SolidLine));
+    m_lineStyle->addItem(tr("Dash"), static_cast<int>(Qt::DashLine));
+    m_lineStyle->addItem(tr("Dot"), static_cast<int>(Qt::DotLine));
+    m_lineStyle->addItem(tr("Dash dot"), static_cast<int>(Qt::DashDotLine));
+    selectedForm->addRow(tr("Line width"), m_lineWidth);
+    selectedForm->addRow(tr("Line style"), m_lineStyle);
 
     auto* colorRow = new QHBoxLayout();
     m_serieColorGroup = new QButtonGroup(selectedBox);
@@ -215,7 +290,9 @@ void PlotSettingsSidePanel::buildUi()
     seriesLayout->addWidget(selectedBox);
 
     m_addSerieBtn = new QPushButton(tr("Add series…"), m_seriesPage);
+    m_quickAddBtn = new QPushButton(tr("Quick add Y(t)…"), m_seriesPage);
     seriesLayout->addWidget(m_addSerieBtn);
+    seriesLayout->addWidget(m_quickAddBtn);
     connect(m_addSerieBtn, &QPushButton::clicked, this, [this]() {
         if (m_tab)
             m_tab->createSelectionDialog(m_chartIndex);
@@ -223,8 +300,87 @@ void PlotSettingsSidePanel::buildUi()
         if (m_tab)
             m_tab->syncDocumentFromCharts();
     });
+    connect(m_quickAddBtn, &QPushButton::clicked, this, [this]() {
+        if (m_tab)
+            m_tab->openQuickAddDialog(m_chartIndex);
+        refreshFromTab();
+    });
     connect(m_seriesList, &QListWidget::currentRowChanged,
             this, &PlotSettingsSidePanel::onSeriesSelectionChanged);
+    connect(m_hideSerieBtn, &QPushButton::clicked, this, [this]() {
+        if (!m_tab) return;
+        m_tab->pushSerieEnabledUndo(m_chartIndex, m_serieIndex, false);
+        refreshFromTab();
+    });
+    connect(m_showSerieBtn, &QPushButton::clicked, this, [this]() {
+        if (!m_tab) return;
+        m_tab->pushSerieEnabledUndo(m_chartIndex, m_serieIndex, true);
+        refreshFromTab();
+    });
+    connect(m_delSerieBtn, &QPushButton::clicked, this, [this]() {
+        if (!m_tab) return;
+        m_tab->pushSerieDeleteUndo(m_chartIndex, m_serieIndex);
+        refreshFromTab();
+    });
+    connect(m_dupSerieBtn, &QPushButton::clicked, this, [this]() {
+        if (!m_tab) return;
+        m_tab->pushSerieDuplicateUndo(m_chartIndex, m_serieIndex);
+        refreshFromTab();
+    });
+    connect(m_upSerieBtn, &QPushButton::clicked, this, [this]() {
+        if (!m_tab) return;
+        if (m_serieIndex > 0)
+        {
+            m_tab->pushSerieMoveUndo(m_chartIndex, m_serieIndex, m_serieIndex - 1);
+            --m_serieIndex;
+            refreshFromTab();
+        }
+    });
+    connect(m_gotoSourceBtn, &QPushButton::clicked, this, [this]() {
+        if (!m_tab) return;
+        UWatchChart* chart = m_tab->getChart(m_chartIndex);
+        if (!chart) return;
+        UWatchSerie* s = chart->getSerie(m_serieIndex);
+        if (!s) return;
+        const QString path = s->nameComponent + QLatin1Char('.') + s->nameProperty;
+        QApplication::clipboard()->setText(path);
+        m_bindingLabel->setToolTip(tr("Copied: %1").arg(path));
+    });
+    connect(m_lineWidth, QOverload<int>::of(&QSpinBox::valueChanged), this, &PlotSettingsSidePanel::applySeriesLive);
+    connect(m_lineStyle, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &PlotSettingsSidePanel::applySeriesLive);
+    connect(m_downSerieBtn, &QPushButton::clicked, this, [this]() {
+        if (!m_tab) return;
+        if (auto* c = m_tab->getChart(m_chartIndex)) {
+            if (m_serieIndex >= 0 && m_serieIndex + 1 < c->countSeries()) {
+                m_tab->pushSerieMoveUndo(m_chartIndex, m_serieIndex, m_serieIndex + 1);
+                ++m_serieIndex;
+                refreshFromTab();
+            }
+        }
+    });
+    connect(m_panelUpBtn, &QPushButton::clicked, this, [this]() {
+        if (!m_tab || m_chartIndex <= 0)
+            return;
+        m_tab->movePanel(m_chartIndex, m_chartIndex - 1);
+        m_chartIndex = qMax(0, m_chartIndex - 1);
+        refreshFromTab();
+    });
+    connect(m_panelDownBtn, &QPushButton::clicked, this, [this]() {
+        if (!m_tab || m_chartIndex + 1 >= m_tab->countGraphs())
+            return;
+        m_tab->movePanel(m_chartIndex, m_chartIndex + 1);
+        ++m_chartIndex;
+        refreshFromTab();
+    });
+    connect(m_saveTemplateBtn, &QPushButton::clicked, this, [this]() {
+        if (m_tab)
+            m_tab->saveWatchTemplateDialog();
+    });
+    connect(m_loadTemplateBtn, &QPushButton::clicked, this, [this]() {
+        if (m_tab)
+            m_tab->loadWatchTemplateDialog();
+        refreshFromTab();
+    });
 
     m_tabs->addTab(m_chartPage, tr("Chart"));
     m_tabs->addTab(m_seriesPage, tr("Series"));
@@ -252,6 +408,57 @@ void PlotSettingsSidePanel::connectLiveApply()
     connect(m_trackLatest, &QCheckBox::toggled, this, chartLive);
     connect(m_legendVisible, &QCheckBox::toggled, this, chartLive);
     connect(m_titleVisible, &QCheckBox::toggled, this, chartLive);
+    if (m_fixedYRange)
+        connect(m_fixedYRange, &QCheckBox::toggled, this, [this, chartLive]() {
+            updateAxesModeVisibility();
+            chartLive();
+        });
+    if (m_fixedXRange)
+        connect(m_fixedXRange, &QCheckBox::toggled, this, [this, chartLive]() {
+            updateAxesModeVisibility();
+            chartLive();
+        });
+    if (m_denseGrid)
+        connect(m_denseGrid, &QCheckBox::toggled, this, [this](bool on) {
+            if (m_refreshing || !m_tab)
+                return;
+            m_tab->setDenseMode(on);
+        });
+    if (m_syncXBtn)
+        connect(m_syncXBtn, &QPushButton::clicked, this, [this]() {
+            if (m_tab)
+                m_tab->syncTimeSeriesXRangeFromActive();
+        });
+    if (m_resetViewBtn)
+        connect(m_resetViewBtn, &QPushButton::clicked, this, [this]() {
+            if (!m_tab) return;
+            if (UWatchChart* c = m_tab->getChart(m_chartIndex))
+                c->resetViewport();
+        });
+    if (m_autoScaleBtn)
+        connect(m_autoScaleBtn, &QPushButton::clicked, this, [this]() {
+            if (!m_tab) return;
+            if (UWatchChart* c = m_tab->getChart(m_chartIndex))
+            {
+                c->restoreInitialAxesState();
+                m_tab->syncDocumentFromCharts();
+                refreshFromTab();
+            }
+        });
+    if (m_toggleLegendsBtn)
+        connect(m_toggleLegendsBtn, &QPushButton::clicked, this, [this]() {
+            if (!m_tab) return;
+            bool anyHidden = false;
+            for (int i = 0; i < m_tab->countGraphs(); ++i)
+            {
+                if (UWatchChart* c = m_tab->getChart(i))
+                {
+                    if (!c->isLegendVisible())
+                        anyHidden = true;
+                }
+            }
+            m_tab->setAllLegendsVisible(anyHidden);
+        });
 
     connect(m_serieName, &QLineEdit::editingFinished, this, seriesLive);
     connect(m_channelSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, seriesLive);
@@ -268,9 +475,36 @@ void PlotSettingsSidePanel::updateHero()
     if (!m_tab || m_tab->countGraphs() <= 0)
     {
         m_heroTitle->setText(tr("No chart"));
+        if (m_panelCombo)
+        {
+            QSignalBlocker b(m_panelCombo);
+            m_panelCombo->clear();
+        }
         return;
     }
-    m_heroTitle->setText(tr("Chart %1").arg(m_chartIndex + 1));
+    UWatchChart* chart = m_tab->getChart(m_chartIndex);
+    const QString title = chart ? chart->getChartTitle() : QString();
+    m_heroTitle->setText(tr("Watch / Tab / %1")
+                             .arg(title.isEmpty() ? tr("Chart %1").arg(m_chartIndex + 1) : title));
+    if (m_panelCombo)
+    {
+        QSignalBlocker b(m_panelCombo);
+        m_panelCombo->clear();
+        for (int i = 0; i < m_tab->countGraphs(); ++i)
+        {
+            UWatchChart* c = m_tab->getChart(i);
+            QString label = c ? c->getChartTitle() : QString();
+            if (label.isEmpty())
+                label = tr("Chart %1").arg(i + 1);
+            if (c && !c->isPanelVisible())
+                label += tr(" [hidden]");
+            label += tr(" · %1 series").arg(c ? c->countSeries() : 0);
+            m_panelCombo->addItem(label, i);
+        }
+        const int idx = m_panelCombo->findData(m_chartIndex);
+        if (idx >= 0)
+            m_panelCombo->setCurrentIndex(idx);
+    }
 }
 
 void PlotSettingsSidePanel::setActiveChart(int chartIndex)
@@ -309,10 +543,24 @@ void PlotSettingsSidePanel::updateAxesModeVisibility()
     const auto viz = static_cast<NMSDK::Plot::VizKind>(
         m_vizKind ? m_vizKind->currentData().toInt() : 0);
     const bool xy = NMSDK::Plot::isXYFamily(viz);
+    const bool fixedY = m_fixedYRange && m_fixedYRange->isChecked();
+    const bool fixedX = m_fixedXRange && m_fixedXRange->isChecked();
+    if (m_fixedXRange)
+        m_fixedXRange->setVisible(xy);
     if (m_xMin)
+    {
         m_xMin->setVisible(xy);
+        m_xMin->setEnabled(xy && fixedX);
+    }
     if (m_xMax)
+    {
         m_xMax->setVisible(xy);
+        m_xMax->setEnabled(xy && fixedX);
+    }
+    if (m_yMin)
+        m_yMin->setEnabled(fixedY);
+    if (m_yMax)
+        m_yMax->setEnabled(fixedY);
     if (m_xRange)
         m_xRange->setVisible(!xy);
     if (m_xRangeLabel)
@@ -383,6 +631,12 @@ void PlotSettingsSidePanel::refreshFromTab()
         m_trackLatest->setChecked(chart->getIsAxisXtrackable());
         m_legendVisible->setChecked(chart->isLegendVisible());
         m_titleVisible->setChecked(chart->isTitleVisible());
+        if (m_fixedYRange)
+            m_fixedYRange->setChecked(chart->isFixedYRange());
+        if (m_fixedXRange)
+            m_fixedXRange->setChecked(chart->isFixedXRange());
+        if (m_denseGrid)
+            m_denseGrid->setChecked(m_tab->isDenseMode());
 
         const int viz = static_cast<int>(chart->getVizKind());
         const int vizIdx = m_vizKind->findData(viz);
@@ -397,7 +651,12 @@ void PlotSettingsSidePanel::refreshFromTab()
         for (int i = 0; i < chart->countSeries(); ++i)
         {
             UWatchSerie* s = chart->getSerie(i);
-            m_seriesList->addItem(s ? s->name() : QStringLiteral("serie_%1").arg(i));
+            QString label = s ? s->name() : QStringLiteral("serie_%1").arg(i);
+            if (s && !s->isVisible())
+                label += tr(" [hidden]");
+            if (s && !s->isOnline)
+                label += tr(" [offline]");
+            m_seriesList->addItem(label);
         }
         if (chart->countSeries() > 0)
         {
@@ -431,6 +690,19 @@ void PlotSettingsSidePanel::onSeriesSelectionChanged()
     m_serieName->setText(s->name());
     m_channelSpin->setValue(s->indexChannel);
     m_yShift->setValue(s->YShift);
+    if (m_lineWidth)
+    {
+        QSignalBlocker bw(m_lineWidth);
+        m_lineWidth->setValue(chart->getSerieWidth(m_serieIndex));
+    }
+    if (m_lineStyle)
+    {
+        QSignalBlocker bs(m_lineStyle);
+        const int style = static_cast<int>(chart->getSerieLineType(m_serieIndex));
+        const int idx = m_lineStyle->findData(style);
+        if (idx >= 0)
+            m_lineStyle->setCurrentIndex(idx);
+    }
     QString binding = QStringLiteral("Y: %1.%2[%3,%4]")
                           .arg(s->nameComponent, s->nameProperty)
                           .arg(s->Jx)
@@ -504,8 +776,23 @@ void PlotSettingsSidePanel::applyChartLive()
     chart->setChartTitle(m_titleEdit->text());
     chart->setAxisXname(m_axisXEdit->text());
     chart->setAxisYname(m_axisYEdit->text());
-    chart->setAxisYmin(m_yMin->value());
-    chart->setAxisYmax(m_yMax->value());
+    if (m_fixedYRange)
+        chart->setFixedYRange(m_fixedYRange->isChecked());
+    if (m_fixedXRange)
+        chart->setFixedXRange(m_fixedXRange->isChecked());
+    if (m_yMin->value() >= m_yMax->value())
+    {
+        QSignalBlocker b1(m_yMin);
+        QSignalBlocker b2(m_yMax);
+        m_yMin->setValue(chart->getAxisYmin());
+        m_yMax->setValue(chart->getAxisYmax());
+        return;
+    }
+    if (!m_fixedYRange || m_fixedYRange->isChecked())
+    {
+        chart->setAxisYmin(m_yMin->value());
+        chart->setAxisYmax(m_yMax->value());
+    }
     const auto viz = static_cast<NMSDK::Plot::VizKind>(m_vizKind->currentData().toInt());
     if (chart->countSeries() > 0 && !NMSDK::Plot::sameVizFamily(chart->getVizKind(), viz))
     {
@@ -514,16 +801,21 @@ void PlotSettingsSidePanel::applyChartLive()
         if (idx >= 0)
             m_vizKind->setCurrentIndex(idx);
         updateAxesModeVisibility();
-        QMessageBox::warning(this, tr("Watch"),
-                             tr("Cannot switch between Time series and Y(x) while the chart has series. "
-                                "Clear series or use another chart."));
+        if (m_heroTitle)
+            m_heroTitle->setToolTip(
+                tr("Cannot switch Time series ↔ Y(x) while series exist. Clear series or use another chart."));
         return;
     }
     const bool xy = NMSDK::Plot::isXYFamily(viz);
     if (xy)
     {
-        chart->setAxisXmin(m_xMin->value());
-        chart->setAxisXmax(m_xMax->value());
+        if (m_fixedXRange && m_fixedXRange->isChecked())
+        {
+            if (m_xMin->value() >= m_xMax->value())
+                return;
+            chart->setAxisXmin(m_xMin->value());
+            chart->setAxisXmax(m_xMax->value());
+        }
         chart->isAxisXtrackable = false;
     }
     else
@@ -554,7 +846,12 @@ void PlotSettingsSidePanel::applySeriesLive()
         return;
     chart->setSerieName(m_serieIndex, m_serieName->text());
     s->indexChannel = m_channelSpin->value();
-    chart->setSerieYshift(m_serieIndex, static_cast<int>(m_yShift->value()));
+    chart->setSerieYshift(m_serieIndex, m_yShift->value());
+    if (m_lineWidth)
+        chart->setSerieWidth(m_serieIndex, m_lineWidth->value());
+    if (m_lineStyle)
+        chart->setSerieLineType(m_serieIndex,
+                                static_cast<Qt::PenStyle>(m_lineStyle->currentData().toInt()));
     m_tab->syncDocumentFromCharts();
     if (m_serieIndex >= 0 && m_serieIndex < m_seriesList->count())
     {
@@ -562,4 +859,15 @@ void PlotSettingsSidePanel::applySeriesLive()
         m_seriesList->item(m_serieIndex)->setText(m_serieName->text());
     }
     emit requestApply();
+}
+
+bool PlotSettingsSidePanel::eventFilter(QObject* watched, QEvent* event)
+{
+    if (watched == m_panelCombo && event->type() == QEvent::MouseButtonDblClick)
+    {
+        if (m_tab)
+            m_tab->toggleExpandChart(m_chartIndex);
+        return true;
+    }
+    return QWidget::eventFilter(watched, event);
 }

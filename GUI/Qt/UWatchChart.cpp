@@ -1,6 +1,7 @@
 #include "UWatchChart.h"
 #include "ui_UWatchChart.h"
 #include "UStyleManager.h"
+#include <QMargins>
 #include <QPainter>
 #include <QPaintEvent>
 #include <QPen>
@@ -16,6 +17,11 @@
 #include "UWatchTab.h"
 #include "UVisualControllerWidget.h"
 #include "Plot/WatchDebug.h"
+#include "Plot/WatchPropertyDndPayload.h"
+#include <QDragEnterEvent>
+#include <QDragMoveEvent>
+#include <QDropEvent>
+#include <QMimeData>
 #include <cstdio>
 #include <QFileInfo>
 #include <QPainter>
@@ -95,6 +101,17 @@ UWatchChart::UWatchChart(QWidget *parent) :
     chartView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(chartView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(slotCustomMenuRequested(QPoint)));
     connect(chartView, SIGNAL(updateChartAxes(double, double, double, double)), this, SLOT(updateAxes(double, double, double, double)));
+    setAcceptDrops(true);
+    if (chartView)
+    {
+        chartView->setAcceptDrops(true);
+        if (chartView->viewport())
+        {
+            chartView->viewport()->setAcceptDrops(true);
+            chartView->viewport()->installEventFilter(this);
+        }
+    }
+
     connect(chartView, &UWatchChartView::chartClicked, this, [this]() {
         emit chartActivated(chartIndex);
     });
@@ -227,9 +244,96 @@ void UWatchChart::setSerieStyle(int serieIndex, QColor color, int width, Qt::Pen
     series[serieIndex]->setPen(pen);
 }
 
-void UWatchChart::setSerieYshift(int serieIndex, int y_shift)
+void UWatchChart::setSerieYshift(int serieIndex, double y_shift)
 {
+    if (serieIndex < 0 || serieIndex >= series.size() || !series[serieIndex])
+        return;
     series[serieIndex]->YShift = y_shift;
+}
+
+void UWatchChart::setSerieEnabled(int serieIndex, bool enabled)
+{
+    if (serieIndex < 0 || serieIndex >= series.size() || !series[serieIndex])
+        return;
+    series[serieIndex]->setVisible(enabled);
+    emit UpdateTabGuiSignal(false);
+}
+
+bool UWatchChart::isSerieEnabled(int serieIndex) const
+{
+    if (serieIndex < 0 || serieIndex >= series.size() || !series[serieIndex])
+        return false;
+    return series[serieIndex]->isVisible();
+}
+
+bool UWatchChart::moveSerie(int fromIndex, int toIndex)
+{
+    if (fromIndex < 0 || toIndex < 0 || fromIndex >= series.size() || toIndex >= series.size()
+        || fromIndex == toIndex)
+        return false;
+    series.move(fromIndex, toIndex);
+    emit UpdateTabGuiSignal(false);
+    return true;
+}
+
+int UWatchChart::duplicateSerie(int serieIndex)
+{
+    if (serieIndex < 0 || serieIndex >= series.size() || !series[serieIndex])
+        return -1;
+    UWatchSerie* src = series[serieIndex];
+    const NMSDK::Plot::PlotSeries snap = src->toPlotSeries();
+    if (NMSDK::Plot::isXYFamily(src->vizKind))
+    {
+        createSerieXY(src->indexChannel,
+                      src->xNameComponent, src->xNameProperty, src->xJx, src->xJy,
+                      src->nameComponent, src->nameProperty, src->Jx, src->Jy,
+                      src->YShift, src->vizKind, src->xSlice, src->ySlice);
+    }
+    else
+    {
+        createSerie(src->indexChannel, src->nameComponent, src->nameProperty, QString(),
+                    src->Jx, src->Jy, axisXrange, src->YShift);
+    }
+    const int idx = countSeries() - 1;
+    if (idx < 0)
+        return -1;
+    if (!snap.visual.displayName.isEmpty())
+        setSerieName(idx, snap.visual.displayName + tr(" (copy)"));
+    setSerieWidth(idx, snap.visual.width);
+    setSerieLineType(idx, static_cast<Qt::PenStyle>(snap.visual.penStyle));
+    getSerie(idx)->setColor(snap.visual.color);
+    return idx;
+}
+
+void UWatchChart::ensurePanelId()
+{
+    if (m_panelId.isEmpty())
+        m_panelId = NMSDK::Plot::makePlotObjectId(QStringLiteral("panel"));
+}
+
+void UWatchChart::setPanelId(const QString& id)
+{
+    if (!id.isEmpty())
+        m_panelId = id;
+}
+
+void UWatchChart::setPanelVisible(bool visible)
+{
+    m_panelVisible = visible;
+}
+
+void UWatchChart::setDenseChrome(bool dense)
+{
+    m_denseChrome = dense;
+    if (modeBar)
+        modeBar->setVisible(!dense);
+    if (chart)
+    {
+        const int m = dense ? 4 : 10;
+        chart->setMargins(QMargins(m, dense ? 2 : 8, m, m));
+        if (chart->legend())
+            chart->legend()->setVisible(m_legendVisible);
+    }
 }
 
 void UWatchChart::fixInitialAxesState()
@@ -710,23 +814,43 @@ void UWatchChart::slotCustomMenuRequested(QPoint pos)
 {
     QMenu * menu = new QMenu(this);
 
-    QAction * addSeiesAction =      new QAction(tr("Add series"), this);
+    QAction * quickAddAction =      new QAction(tr("Quick add Y(t)…"), this);
+    QAction * addSeiesAction =      new QAction(tr("Add series (advanced)…"), this);
     QAction * seriesOptionAction =  new QAction(tr("Series settings"), this);
     QAction * chartOptionAction =   new QAction(tr("Chart settings"), this);
+    QAction * duplicateAction =     new QAction(tr("Duplicate panel"), this);
+    QAction * hideAction =          new QAction(tr("Hide panel"), this);
+    QAction * deleteAction =        new QAction(tr("Delete panel"), this);
+    QAction * expandAction =        new QAction(tr("Expand"), this);
     QAction * saveAsAction =        new QAction(tr("Save chart…"), this);
     QAction * quickSaveAction =     new QAction(tr("Quick save chart"), this);
     QAction * restoreAxesAction =   new QAction(tr("Restore Axes"), this);
 
+    connect(quickAddAction, &QAction::triggered, this, [this]() {
+        emit chartActivated(chartIndex);
+        if (WatchTab)
+            WatchTab->openQuickAddDialog(chartIndex);
+    });
     connect(addSeiesAction, &QAction::triggered, this, &UWatchChart::addSeriesSlot);
     connect(seriesOptionAction, &QAction::triggered, this, &UWatchChart::seriesOptionSlot);
     connect(chartOptionAction, &QAction::triggered, this, &UWatchChart::chartOptionSlot);
+    connect(duplicateAction, &QAction::triggered, this, [this]() { emit duplicatePanelRequested(chartIndex); });
+    connect(hideAction, &QAction::triggered, this, [this]() { emit hidePanelRequested(chartIndex); });
+    connect(deleteAction, &QAction::triggered, this, [this]() { emit deletePanelRequested(chartIndex); });
+    connect(expandAction, &QAction::triggered, this, &UWatchChart::onModeExpand);
     connect(saveAsAction, &QAction::triggered, this, &UWatchChart::saveChartAsSlot);
     connect(quickSaveAction, &QAction::triggered, this, &UWatchChart::quickSaveChartSlot);
     connect(restoreAxesAction, &QAction::triggered, this, &UWatchChart::restoreAxes);
 
+    menu->addAction(quickAddAction);
     menu->addAction(addSeiesAction);
     menu->addAction(seriesOptionAction);
     menu->addAction(chartOptionAction);
+    menu->addSeparator();
+    menu->addAction(duplicateAction);
+    menu->addAction(hideAction);
+    menu->addAction(deleteAction);
+    menu->addAction(expandAction);
     menu->addSeparator();
     menu->addAction(saveAsAction);
     menu->addAction(quickSaveAction);
@@ -766,6 +890,18 @@ void UWatchChart::setSelected(bool selected)
 void UWatchChart::paintEvent(QPaintEvent* event)
 {
     QWidget::paintEvent(event);
+
+    if (m_denseChrome && m_titleVisible && chart && !chart->title().isEmpty())
+    {
+        QPainter painter(this);
+        painter.setPen(palette().color(QPalette::WindowText));
+        QFont f = painter.font();
+        f.setPointSize(qMax(7, f.pointSize() - 1));
+        f.setBold(true);
+        painter.setFont(f);
+        const QRect headerRect(6, 2, width() - 12, 16);
+        painter.drawText(headerRect, Qt::AlignLeft | Qt::AlignVCenter, chart->title());
+    }
 
     const bool multiChart = WatchTab && WatchTab->countGraphs() > 1;
     if (!multiChart)
@@ -1028,7 +1164,10 @@ void UWatchChart::connectSerieTooltip(UWatchSerie* serie)
 NMSDK::Plot::PlotPanel UWatchChart::toPlotPanel() const
 {
     NMSDK::Plot::PlotPanel panel;
-    panel.id = QStringLiteral("graph_%1").arg(chartIndex);
+    panel.id = m_panelId.isEmpty()
+                   ? QStringLiteral("graph_%1").arg(chartIndex)
+                   : m_panelId;
+    panel.visible = m_panelVisible;
     panel.viz = vizKind;
     panel.title = chart ? chart->title() : QString();
     panel.axisXName = axisX ? axisX->titleText() : QString();
@@ -1040,6 +1179,8 @@ NMSDK::Plot::PlotPanel UWatchChart::toPlotPanel() const
     panel.axisXRange = axisXrange;
     panel.legendVisible = m_legendVisible;
     panel.titleVisible = m_titleVisible;
+    panel.fixedYRange = m_fixedYRange;
+    panel.fixedXRange = m_fixedXRange;
     panel.trackLatest = isAxisXtrackable;
     if (chartView && chartView->dragMode() == QGraphicsView::ScrollHandDrag)
         panel.interaction = NMSDK::Plot::InteractionMode::Pan;
@@ -1050,13 +1191,26 @@ NMSDK::Plot::PlotPanel UWatchChart::toPlotPanel() const
     for (int i = 0; i < series.size(); ++i)
     {
         if (series[i])
-            panel.series.push_back(series[i]->toPlotSeries());
+        {
+            NMSDK::Plot::PlotSeries ps = series[i]->toPlotSeries();
+            if (ps.id.isEmpty())
+                ps.id = NMSDK::Plot::makePlotObjectId(QStringLiteral("serie"));
+            ps.enabled = series[i]->isVisible();
+            panel.series.push_back(ps);
+        }
     }
     return panel;
 }
 
 void UWatchChart::applyPlotPanelMeta(const NMSDK::Plot::PlotPanel& panel)
 {
+    if (!panel.id.isEmpty())
+        m_panelId = panel.id;
+    else
+        ensurePanelId();
+    m_panelVisible = panel.visible;
+    m_fixedYRange = panel.fixedYRange;
+    m_fixedXRange = panel.fixedXRange;
     setVizKind(panel.viz);
     setChartTitle(panel.title);
     setAxisXname(panel.axisXName);
@@ -1081,5 +1235,90 @@ void UWatchChart::applyPlotPanelMeta(const NMSDK::Plot::PlotPanel& panel)
     if (actTrack)
         actTrack->setChecked(panel.trackLatest || panel.interaction == NMSDK::Plot::InteractionMode::TrackLatest);
     fixInitialAxesState();
+}
+
+void UWatchChart::triggerModePan()
+{
+    onModePan();
+}
+
+void UWatchChart::triggerModeBoxZoom()
+{
+    onModeBoxZoom();
+}
+
+void UWatchChart::triggerModeTrack()
+{
+    onModeTrack();
+}
+
+void UWatchChart::triggerModeReset()
+{
+    onModeReset();
+}
+
+void UWatchChart::triggerModeExpand()
+{
+    onModeExpand();
+}
+
+bool UWatchChart::isModePanChecked() const
+{
+    return actPan && actPan->isChecked();
+}
+
+bool UWatchChart::isModeBoxZoomChecked() const
+{
+    return actBoxZoom && actBoxZoom->isChecked();
+}
+
+bool UWatchChart::isModeTrackChecked() const
+{
+    return actTrack && actTrack->isChecked();
+}
+
+bool UWatchChart::eventFilter(QObject* watched, QEvent* event)
+{
+    if (chartView && watched == chartView->viewport())
+    {
+        if (event->type() == QEvent::DragEnter)
+        {
+            auto* e = static_cast<QDragEnterEvent*>(event);
+            if (e->mimeData()
+                && e->mimeData()->hasFormat(NMSDK::Plot::WatchPropertyDndPayload::mimeType()))
+            {
+                e->acceptProposedAction();
+                return true;
+            }
+        }
+        if (event->type() == QEvent::DragMove)
+        {
+            auto* e = static_cast<QDragMoveEvent*>(event);
+            if (e->mimeData()
+                && e->mimeData()->hasFormat(NMSDK::Plot::WatchPropertyDndPayload::mimeType()))
+            {
+                e->acceptProposedAction();
+                return true;
+            }
+        }
+        if (event->type() == QEvent::Drop)
+        {
+            auto* e = static_cast<QDropEvent*>(event);
+            NMSDK::Plot::WatchPropertyDragRef ref;
+            if (WatchTab && NMSDK::Plot::WatchPropertyDndPayload::decode(e->mimeData(), ref))
+            {
+                emit chartActivated(chartIndex);
+                WatchTab->quickAddTimeSeries(chartIndex,
+                                             ref.component,
+                                             ref.property,
+                                             ref.jx,
+                                             ref.jy,
+                                             ref.channel);
+                e->acceptProposedAction();
+                return true;
+            }
+        }
+    }
+    return QWidget::eventFilter(watched, event);
 }
 

@@ -25,6 +25,9 @@ QVector<QPointF> sampleTimeSeries(RDK::UEnvironment* env,
                                   const PlotSeries& series,
                                   double yOffset);
 
+/// Min/max envelope decimation for live refresh paths (same budget as sampleTimeSeries).
+QVector<QPointF> decimatePointsEnvelope(const QVector<QPointF>& points, int drawBudget = 8000);
+
 QVector<QPointF> samplePropertyPair(RDK::UEnvironment* env,
                                     const PlotSeries& series,
                                     double yOffset,

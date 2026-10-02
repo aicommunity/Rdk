@@ -38,6 +38,8 @@
 #include <QDir>
 #include <QDataStream>
 #include <QMimeData>
+#include <QShortcut>
+#include <QKeySequence>
 #include <QGraphicsSceneHoverEvent>
 #include <QShortcut>
 #include <QKeySequence>
@@ -115,6 +117,11 @@ UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
     mainLayout->addWidget(m_mainView);
     // Миникарта скрыта
     m_miniMap->hide();
+
+    // Fit model into view (keyboard).
+    auto* fitShortcut = new QShortcut(QKeySequence(tr("Ctrl+0")), this);
+    fitShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+    connect(fitShortcut, &QShortcut::activated, this, &UModernDiagramWidget::FitToView);
 
     // Кнопка «Описание проекта» слева от кнопки сброса масштаба
     m_viewportManager->createProjectDescriptionButton(this);

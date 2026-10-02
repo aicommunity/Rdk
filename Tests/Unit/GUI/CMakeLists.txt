@@ -33,3 +33,43 @@ target_link_libraries(Test_UModernDiagramScopePath PRIVATE
 )
 
 add_test(NAME Test_UModernDiagramScopePath COMMAND Test_UModernDiagramScopePath)
+
+add_executable(Test_WatchTemplateStore
+    Test_WatchTemplateStore.cpp
+    ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt/Plot/PlotDocument.cpp
+    ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt/Plot/WatchTemplateStore.cpp
+)
+
+target_include_directories(Test_WatchTemplateStore PRIVATE
+    ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt
+    ${CMAKE_SOURCE_DIR}/Rdk
+)
+
+target_link_libraries(Test_WatchTemplateStore PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+    Nmsdk::Qt::Core
+    rdk.static
+)
+
+add_test(NAME Test_WatchTemplateStore COMMAND Test_WatchTemplateStore)
+
+add_executable(Test_PlotDecimation
+    Test_PlotDecimation.cpp
+    ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt/Plot/PlotDataAdapter.cpp
+    ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt/Plot/PlotDocument.cpp
+)
+
+target_include_directories(Test_PlotDecimation PRIVATE
+    ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt
+    ${CMAKE_SOURCE_DIR}/Rdk
+)
+
+target_link_libraries(Test_PlotDecimation PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+    Nmsdk::Qt::Core
+    rdk.static
+)
+
+add_test(NAME Test_PlotDecimation COMMAND Test_PlotDecimation)

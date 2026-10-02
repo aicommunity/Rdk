@@ -12,6 +12,8 @@
 #include <QKeyEvent>
 #include <QMouseEvent>
 #include <QPaintEvent>
+#include <QDragEnterEvent>
+#include <QDropEvent>
 
 #include <QString>
 #include <QVector>
@@ -94,7 +96,11 @@ public:
     void setSerieLineType(int serieIndex, Qt::PenStyle lineType);
     void setSerieWidth(int serieIndex, int width);
     void setSerieStyle(int serieIndex, QColor color, int width, Qt::PenStyle lineType);
-    void setSerieYshift(int serieIndex, int y_shift);
+    void setSerieYshift(int serieIndex, double y_shift);
+    void setSerieEnabled(int serieIndex, bool enabled);
+    bool isSerieEnabled(int serieIndex) const;
+    bool moveSerie(int fromIndex, int toIndex);
+    int duplicateSerie(int serieIndex);
 
     void fixInitialAxesState();
     void restoreInitialAxesState();
@@ -146,6 +152,30 @@ public:
     NMSDK::Plot::PlotPanel toPlotPanel() const;
     void applyPlotPanelMeta(const NMSDK::Plot::PlotPanel& panel);
 
+    void ensurePanelId();
+    QString panelId() const { return m_panelId; }
+    void setPanelId(const QString& id);
+    bool isPanelVisible() const { return m_panelVisible; }
+    void setPanelVisible(bool visible);
+    void setDenseChrome(bool dense);
+    bool isDenseChrome() const { return m_denseChrome; }
+
+    bool isFixedYRange() const { return m_fixedYRange; }
+    void setFixedYRange(bool fixed) { m_fixedYRange = fixed; }
+    bool isFixedXRange() const { return m_fixedXRange; }
+    void setFixedXRange(bool fixed) { m_fixedXRange = fixed; }
+
+    void triggerModePan();
+    void triggerModeBoxZoom();
+    void triggerModeTrack();
+    void triggerModeReset();
+    void triggerModeExpand();
+    bool isModePanChecked() const;
+    bool isModeBoxZoomChecked() const;
+    bool isModeTrackChecked() const;
+
+    bool eventFilter(QObject* watched, QEvent* event) override;
+
     void setSelected(bool selected);
     bool isSelected() const { return m_selected; }
 
@@ -190,6 +220,11 @@ private:
     bool m_legendVisible = true;
     bool m_titleVisible = true;
     bool m_selected = false;
+    bool m_panelVisible = true;
+    bool m_denseChrome = false;
+    bool m_fixedYRange = false;
+    bool m_fixedXRange = false;
+    QString m_panelId;
 
  public:
     UWatchChartView *chartView;
@@ -239,6 +274,9 @@ signals:
     void expandToggleRequested(int chartIndex);
     void saveChartAsRequested(int chartIndex);
     void quickSaveChartRequested(int chartIndex);
+    void duplicatePanelRequested(int chartIndex);
+    void hidePanelRequested(int chartIndex);
+    void deletePanelRequested(int chartIndex);
 };
 
 #endif // UWATCHCHART_H

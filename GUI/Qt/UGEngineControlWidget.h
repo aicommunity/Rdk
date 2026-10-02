@@ -300,6 +300,9 @@ private:
 
     // Helper methods
     void createThemeMenu();
+    void createWorkspaceLayoutMenu();
+    void applyNamedWorkspace(const QString& key);
+    void captureNamedWorkspace(const QString& key);
     void updateThemeMenuState();
     void updateRecentConfigsMenu();
     void addToRecentConfigs(const QString& path);

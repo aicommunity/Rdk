@@ -69,9 +69,9 @@ QVector<QPointF> sampleTimeSeries(RDK::UEnvironment* env,
     if (n <= 0)
         return points;
 
-    // Draw-budget decimation only; always keep first and last samples.
+    // Draw-budget decimation with min/max envelope per bucket to preserve peaks.
     constexpr int kDrawBudget = 8000;
-    points.reserve(n > kDrawBudget ? kDrawBudget + 1 : n);
+    points.reserve(n > kDrawBudget ? kDrawBudget + 2 : n);
     if (n <= kDrawBudget)
     {
         auto itx = XData.begin();
@@ -81,17 +81,98 @@ QVector<QPointF> sampleTimeSeries(RDK::UEnvironment* env,
     }
     else
     {
-        const int step = (n + kDrawBudget - 1) / kDrawBudget;
-        auto itx = XData.begin();
-        auto ity = YData.begin();
-        for (int i = 0; i < n; ++i, ++itx, ++ity)
+        // Min/max envelope: two points per bucket preserve short peaks.
+        const int bucketCount = qMax(1, kDrawBudget / 2);
+        const int bucketSize = (n + bucketCount - 1) / bucketCount;
+        QVector<double> xs;
+        QVector<double> ys;
+        xs.reserve(n);
+        ys.reserve(n);
         {
-            if (i == 0 || i == n - 1 || (i % step) == 0)
-                points.push_back(QPointF(*itx, *ity + yOffset));
+            auto itx = XData.begin();
+            auto ity = YData.begin();
+            for (int i = 0; i < n; ++i, ++itx, ++ity)
+            {
+                xs.push_back(*itx);
+                ys.push_back(*ity + yOffset);
+            }
         }
-        if (points.size() >= 2 && points[points.size() - 2] == points.last())
-            points.remove(points.size() - 2);
+        for (int b = 0; b < bucketCount; ++b)
+        {
+            const int start = b * bucketSize;
+            if (start >= n)
+                break;
+            const int end = qMin(n, start + bucketSize);
+            int minIdx = start;
+            int maxIdx = start;
+            for (int i = start + 1; i < end; ++i)
+            {
+                if (ys[i] < ys[minIdx])
+                    minIdx = i;
+                if (ys[i] > ys[maxIdx])
+                    maxIdx = i;
+            }
+            if (minIdx <= maxIdx)
+            {
+                points.push_back(QPointF(xs[minIdx], ys[minIdx]));
+                if (maxIdx != minIdx)
+                    points.push_back(QPointF(xs[maxIdx], ys[maxIdx]));
+            }
+            else
+            {
+                points.push_back(QPointF(xs[maxIdx], ys[maxIdx]));
+                if (maxIdx != minIdx)
+                    points.push_back(QPointF(xs[minIdx], ys[minIdx]));
+            }
+        }
+        const QPointF last(xs.last(), ys.last());
+        if (points.isEmpty() || points.last() != last)
+            points.push_back(last);
     }
+    return points;
+}
+
+QVector<QPointF> decimatePointsEnvelope(const QVector<QPointF>& src, int drawBudget)
+{
+    const int n = src.size();
+    if (n <= drawBudget || drawBudget < 2)
+        return src;
+
+    QVector<QPointF> points;
+    points.reserve(drawBudget + 2);
+    const int bucketCount = qMax(1, drawBudget / 2);
+    const int bucketSize = (n + bucketCount - 1) / bucketCount;
+    for (int b = 0; b < bucketCount; ++b)
+    {
+        const int start = b * bucketSize;
+        if (start >= n)
+            break;
+        const int end = qMin(n, start + bucketSize);
+        int minIdx = start;
+        int maxIdx = start;
+        for (int i = start + 1; i < end; ++i)
+        {
+            if (src[i].y() < src[minIdx].y())
+                minIdx = i;
+            if (src[i].y() > src[maxIdx].y())
+                maxIdx = i;
+        }
+        if (minIdx <= maxIdx)
+        {
+            points.push_back(src[minIdx]);
+            if (maxIdx != minIdx)
+                points.push_back(src[maxIdx]);
+        }
+        else
+        {
+            points.push_back(src[maxIdx]);
+            if (maxIdx != minIdx)
+                points.push_back(src[minIdx]);
+        }
+    }
+    const QPointF last = src.last();
+    if (points.isEmpty() || points.last() != last)
+        points.push_back(last);
     return points;
 }
 

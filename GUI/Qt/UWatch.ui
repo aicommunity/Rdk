@@ -75,6 +75,9 @@
     <addaction name="actionSave_chart"/>
     <addaction name="actionSave_all_charts"/>
     <addaction name="actionQuick_save"/>
+    <addaction name="separator"/>
+    <addaction name="actionSave_watch_template"/>
+    <addaction name="actionLoad_watch_template"/>
    </widget>
    <addaction name="menu"/>
   </widget>
@@ -98,6 +101,9 @@
    <addaction name="actionSave_chart"/>
    <addaction name="actionSave_all_charts"/>
    <addaction name="actionQuick_save"/>
+   <addaction name="separator"/>
+   <addaction name="actionSave_watch_template"/>
+   <addaction name="actionLoad_watch_template"/>
    <addaction name="separator"/>
   </widget>
   <action name="actionCreate_tab">
@@ -151,6 +157,22 @@
    </property>
    <property name="toolTip">
     <string>Save into Project/SavedWatches/&lt;datetime&gt;/ (session folder)</string>
+   </property>
+  </action>
+  <action name="actionSave_watch_template">
+   <property name="text">
+    <string>Save Watch template…</string>
+   </property>
+   <property name="toolTip">
+    <string>Save grid, panels and series bindings as a reusable .watch.xml template</string>
+   </property>
+  </action>
+  <action name="actionLoad_watch_template">
+   <property name="text">
+    <string>Load Watch template…</string>
+   </property>
+   <property name="toolTip">
+    <string>Replace this tab layout from a .watch.xml template</string>
    </property>
   </action>
  </widget>

@@ -453,6 +453,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
 
     // Theme switcher menu
     createThemeMenu();
+    createWorkspaceLayoutMenu();
     QAction* componentGuiHostAction = ui->menuWindow->addAction(tr("Component GUI Tab Host..."));
     connect(componentGuiHostAction, &QAction::triggered, this, [this]() { promptAndOpenComponentGuiTabHost(); });
     QAction* componentGuiSecondaryHostAction = ui->menuWindow->addAction(tr("Component GUI Secondary Host..."));
@@ -3674,6 +3675,63 @@ void UGEngineControlWidget::createThemeMenu()
     // Update menu state based on current theme
     updateThemeMenuState();
     notifyShellMenusChanged();
+}
+
+void UGEngineControlWidget::captureNamedWorkspace(const QString& key)
+{
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope,
+                       QStringLiteral("NeuroModeler"), QStringLiteral("Workspaces"));
+    settings.setValue(key + QStringLiteral("/state"), saveState());
+    settings.setValue(key + QStringLiteral("/geometry"), saveGeometry());
+}
+
+void UGEngineControlWidget::applyNamedWorkspace(const QString& key)
+{
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope,
+                       QStringLiteral("NeuroModeler"), QStringLiteral("Workspaces"));
+    const QByteArray state = settings.value(key + QStringLiteral("/state")).toByteArray();
+    const QByteArray geometry = settings.value(key + QStringLiteral("/geometry")).toByteArray();
+    if (!geometry.isEmpty())
+        restoreGeometry(geometry);
+    if (!state.isEmpty())
+    {
+        restoreState(state);
+        ensureBreadcrumbsToolBarRow();
+    }
+}
+
+void UGEngineControlWidget::createWorkspaceLayoutMenu()
+{
+    if (!ui || !ui->menuWindow)
+        return;
+
+    QMenu* workspaceMenu = new QMenu(tr("Workspace layout"), this);
+    const struct Preset
+    {
+        const char* id;
+        const char* labelEn;
+    } presets[] = {
+        {"model", "Model"},
+        {"monitoring", "Monitoring"},
+        {"debug", "Debug"},
+    };
+    for (const Preset& p : presets)
+    {
+        const QString key = QString::fromUtf8(p.id);
+        const QString label = tr(p.labelEn);
+        QAction* apply = workspaceMenu->addAction(label);
+        connect(apply, &QAction::triggered, this, [this, key]() { applyNamedWorkspace(key); });
+        QAction* save = workspaceMenu->addAction(tr("Save as \"%1\"…").arg(label));
+        connect(save, &QAction::triggered, this, [this, key]() { captureNamedWorkspace(key); });
+    }
+    workspaceMenu->addSeparator();
+    QAction* reset = workspaceMenu->addAction(tr("Reset to factory layout"));
+    connect(reset, &QAction::triggered, this, [this]() { applyNamedWorkspace(QStringLiteral("factory")); });
+    QAction* captureFactory = workspaceMenu->addAction(tr("Capture factory layout"));
+    connect(captureFactory, &QAction::triggered, this, [this]() { captureNamedWorkspace(QStringLiteral("factory")); });
+
+    ui->menuWindow->addSeparator();
+    ui->menuWindow->addMenu(workspaceMenu);
 }
 
 void UGEngineControlWidget::updateThemeMenuState()

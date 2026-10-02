@@ -6,11 +6,16 @@
 #include "Plot/PlotSurface.h"
 #include "Plot/UWatchLayoutDialog.h"
 #include "Plot/UWatchSeriesWizard.h"
+#include "Plot/UWatchQuickAddDialog.h"
+#include "Plot/PlotWatchUndoCommands.h"
+#include "Plot/WatchPropertyDndPayload.h"
+#include "Plot/WatchTemplateStore.h"
 #include "Plot/WatchDebug.h"
 #include "../../Core/Serialize/USerStorageXML.h"
 #include "../../Core/Application/UApplication.h"
 
 #include <QHBoxLayout>
+#include <QVBoxLayout>
 #include <QElapsedTimer>
 #include <QShortcut>
 #include <QKeySequence>
@@ -18,6 +23,8 @@
 #include <QDir>
 #include <QDateTime>
 #include <QMessageBox>
+#include <QUndoStack>
+#include <QToolBar>
 #include <QtGlobal>
 #include <cstdio>
 
@@ -29,14 +36,20 @@ UWatchTab::UWatchTab(QWidget *parent, RDK::UApplication* app) :
 {
     ui->setupUi(this);
     colSplitter = nullptr;
+    m_undoStack = new QUndoStack(this);
 
     mainSplitter = new QSplitter(Qt::Horizontal, this);
-    chartsHost = new QWidget(mainSplitter);
+    chartsColumn = new QWidget(mainSplitter);
+    auto* columnLayout = new QVBoxLayout(chartsColumn);
+    columnLayout->setContentsMargins(0, 0, 0, 0);
+    columnLayout->setSpacing(0);
+    chartsHost = new QWidget(chartsColumn);
     auto* chartsLayout = new QHBoxLayout(chartsHost);
     chartsLayout->setContentsMargins(0, 0, 0, 0);
     chartsLayout->setSpacing(0);
-    // Move existing horizontalLayout content hosting into chartsHost via reparent:
-    // createSplitterGrid adds colSplitter into chartsHost layout.
+    columnLayout->addWidget(chartsHost, 1);
+    ensureSharedModeBar();
+    mainSplitter->addWidget(chartsColumn);
     ui->horizontalLayout->addWidget(mainSplitter);
 
     createGridLayout(1,1);
@@ -53,6 +66,12 @@ UWatchTab::UWatchTab(QWidget *parent, RDK::UApplication* app) :
         if (m_expandedIndex >= 0)
             collapseExpandedChart();
     });
+    auto* undoShortcut = new QShortcut(QKeySequence::Undo, this);
+    undoShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+    connect(undoShortcut, &QShortcut::activated, m_undoStack, &QUndoStack::undo);
+    auto* redoShortcut = new QShortcut(QKeySequence::Redo, this);
+    redoShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+    connect(redoShortcut, &QShortcut::activated, m_undoStack, &QUndoStack::redo);
 }
 
 UWatchTab::~UWatchTab()
@@ -64,6 +83,7 @@ void UWatchTab::createGraph()
 {
     graph.push_back(new NMSDK::Plot::PlotSurface(this));
     graph.last()->setChartIndex(graph.count()-1);
+    graph.last()->ensurePanelId();
 
     connect(graph.last(), SIGNAL(addSerieSignal(int)), this, SLOT(createSelectionDialogSlot(int)));
     connect(graph.last(), SIGNAL(openSettingsPanel(int,bool)), this, SLOT(openSettingsPanelSlot(int,bool)));
@@ -71,6 +91,9 @@ void UWatchTab::createGraph()
     connect(graph.last(), &UWatchChart::expandToggleRequested, this, &UWatchTab::onExpandToggleRequested);
     connect(graph.last(), &UWatchChart::saveChartAsRequested, this, &UWatchTab::onSaveChartAsRequested);
     connect(graph.last(), &UWatchChart::quickSaveChartRequested, this, &UWatchTab::onQuickSaveChartRequested);
+    connect(graph.last(), &UWatchChart::duplicatePanelRequested, this, &UWatchTab::onDuplicatePanelRequested);
+    connect(graph.last(), &UWatchChart::hidePanelRequested, this, &UWatchTab::onHidePanelRequested);
+    connect(graph.last(), &UWatchChart::deletePanelRequested, this, &UWatchTab::onDeletePanelRequested);
 }
 
 void UWatchTab::deleteGraph(int index)
@@ -216,16 +239,8 @@ void UWatchTab::AUpdateInterface()
                     {
                         const int decimationThreshold = 8000;
                         if (newCount > decimationThreshold)
-                        {
-                            QVector<QPointF> decimated;
-                            const int step = (newCount + decimationThreshold - 1) / decimationThreshold;
-                            decimated.reserve(newCount / step + 1);
-                            for (int p = 0; p < newCount; p += step)
-                                decimated.push_back(samplePoints.at(p));
-                            if (decimated.last() != samplePoints.last())
-                                decimated.push_back(samplePoints.last());
-                            current_serie->replace(decimated);
-                        }
+                            current_serie->replace(
+                                NMSDK::Plot::decimatePointsEnvelope(samplePoints, decimationThreshold));
                         else
                         {
                             current_serie->replace(samplePoints);
@@ -284,19 +299,21 @@ void UWatchTab::AUpdateInterface()
             }
             else
             {
-                // XY: follow sample extents even when TrackLatest is off (manual pan
-                // still protected by checkZoomed above).
-                if (!(x_max > x_min))
+                // XY: follow sample extents unless Fixed X range is enabled.
+                if (!graph[graphIndex]->isFixedXRange())
                 {
-                    const double pad = qMax(0.5, qAbs(x_min) * 0.01);
-                    x_min -= pad;
-                    x_max += pad;
+                    if (!(x_max > x_min))
+                    {
+                        const double pad = qMax(0.5, qAbs(x_min) * 0.01);
+                        x_min -= pad;
+                        x_max += pad;
+                    }
+                    lo = x_min;
+                    hi = x_max;
+                    graph[graphIndex]->setAxisXRange(x_min, x_max);
+                    graph[graphIndex]->fixInitialAxesState();
+                    trackApplied = true;
                 }
-                lo = x_min;
-                hi = x_max;
-                graph[graphIndex]->setAxisXRange(x_min, x_max);
-                graph[graphIndex]->fixInitialAxesState();
-                trackApplied = true;
             }
         }
 
@@ -438,6 +455,7 @@ void UWatchTab::setActiveChart(int index)
     }
     if (settingsPanel && settingsPanel->isVisible())
         settingsPanel->setActiveChart(m_activeChartIndex);
+    syncSharedModeBarFromActive();
 }
 
 void UWatchTab::onChartActivated(int chartIndex)
@@ -785,28 +803,24 @@ void UWatchTab::createSplitterGrid(int rowNumber)
         ui->horizontalLayout->addWidget(colSplitter);
 }
 
-void UWatchTab::deleteGraphs(int new_graph_count)
+void UWatchTab::tearDownSplitterLayout()
 {
-    int graphs_to_remove = countGraphs() - new_graph_count;
-
-    if(graphs_to_remove < 0)
+    // Detach chart widgets from splitters without destroying panels/series.
+    for (int i = tabRowNumber - 1; i >= 0; --i)
     {
-        graphs_to_remove = 0;
-    }
-
-    for(int i=0; i < graphs_to_remove; i++)
-        delete graph.takeLast();
-
-    for (int i = tabRowNumber-1; i >= 0; --i)
-    {
-        int widget_count = rowSplitter[i]->count();
-        for(int j = 0; j < widget_count; j++)
-            rowSplitter[i]->widget(0)->setParent(nullptr);
-
+        if (i >= rowSplitter.size() || !rowSplitter[i])
+            continue;
+        while (rowSplitter[i]->count() > 0)
+        {
+            QWidget* w = rowSplitter[i]->widget(0);
+            if (w)
+                w->setParent(nullptr);
+        }
         delete rowSplitter.takeLast();
     }
+    tabRowNumber = 0;
 
-    if (colSplitter !=nullptr)
+    if (colSplitter != nullptr)
     {
         if (chartsHost && chartsHost->layout())
             chartsHost->layout()->removeWidget(colSplitter);
@@ -817,44 +831,131 @@ void UWatchTab::deleteGraphs(int new_graph_count)
     }
 }
 
+void UWatchTab::deleteGraphs(int new_graph_count)
+{
+    // Legacy helper: used only when explicitly shrinking the document composition.
+    // Layout changes must call createGridLayout (non-destructive) instead.
+    int graphs_to_remove = countGraphs() - new_graph_count;
+    if (graphs_to_remove < 0)
+        graphs_to_remove = 0;
 
+    tearDownSplitterLayout();
+
+    for (int i = 0; i < graphs_to_remove; ++i)
+    {
+        if (graph.isEmpty())
+            break;
+        delete graph.takeLast();
+    }
+}
 
 void UWatchTab::createGridLayout(int rowNumber, int colNumber)
 {
     collapseExpandedChart();
 
-    // Очистка лишних графиков (в функцию передается новое кол-во графиков)
-    deleteGraphs(rowNumber*colNumber);
+    if (rowNumber < 1)
+        rowNumber = 1;
+    if (colNumber < 1)
+        colNumber = 1;
 
-    tabColNumber=colNumber;
-    tabRowNumber=rowNumber;
+    // Layout ≠ composition: rebuild geometry only; never delete surplus panels.
+    tearDownSplitterLayout();
 
+    tabColNumber = colNumber;
+    tabRowNumber = rowNumber;
     createSplitterGrid(rowNumber);
 
+    const int gridSlots = tabColNumber * tabRowNumber;
+    while (countGraphs() < gridSlots)
+        createGraph();
 
-    // create graphs if needed
-    while(countGraphs() < tabColNumber*tabRowNumber)
+    // Visible panels fill gridSlots first; overflow panels stay in the document but hidden.
+    QVector<UWatchChart*> visibleCharts;
+    QVector<UWatchChart*> overflowCharts;
+    visibleCharts.reserve(graph.size());
+    for (UWatchChart* c : graph)
+    {
+        if (!c)
+            continue;
+        if (c->isPanelVisible())
+            visibleCharts.push_back(c);
+        else
+            overflowCharts.push_back(c);
+    }
+
+    // Revive hidden panels before creating new ones when grid grows.
+    while (static_cast<int>(visibleCharts.size()) < gridSlots && !overflowCharts.isEmpty())
+    {
+        UWatchChart* c = overflowCharts.takeFirst();
+        c->setPanelVisible(true);
+        visibleCharts.push_back(c);
+    }
+    while (static_cast<int>(visibleCharts.size()) < gridSlots)
     {
         createGraph();
+        UWatchChart* c = graph.last();
+        c->setPanelVisible(true);
+        visibleCharts.push_back(c);
     }
-    int width = this->width();
+
+    // Charts beyond slot count stay hidden (not destroyed).
+    for (int i = gridSlots; i < visibleCharts.size(); ++i)
+    {
+        visibleCharts[i]->setPanelVisible(false);
+        visibleCharts[i]->hide();
+        overflowCharts.push_back(visibleCharts[i]);
+    }
+    visibleCharts.resize(gridSlots);
+
+    for (UWatchChart* c : overflowCharts)
+    {
+        if (c)
+            c->hide();
+    }
+
+    const int width = qMax(this->width(), 100);
     int k = 0;
-    for(int i=0; i < rowNumber;i++)
+    for (int i = 0; i < rowNumber; ++i)
     {
         QList<int> sizes;
-        for(int j=0; j < colNumber; j++)
+        for (int j = 0; j < colNumber; ++j)
         {
-            //createGraph();
-            graph[k]->setChartTitle(QString("Grid graph %1").arg(QString::number((i)*colNumber+j+1)));
-
-            rowSplitter[i]->addWidget(graph[k]);
-            sizes.push_back(width/colNumber);
-            k++;
+            UWatchChart* cell = visibleCharts[k];
+            cell->show();
+            cell->setPanelVisible(true);
+            // Do not overwrite user titles on layout change.
+            if (cell->getChartTitle().trimmed().isEmpty())
+                cell->setChartTitle(tr("Chart %1").arg(k + 1));
+            rowSplitter[i]->addWidget(cell);
+            sizes.push_back(width / colNumber);
+            ++k;
         }
         rowSplitter[i]->setSizes(sizes);
     }
+
+    // Keep graph vector order: visible slot order, then overflow.
+    graph.clear();
+    for (UWatchChart* c : visibleCharts)
+        graph.push_back(c);
+    for (UWatchChart* c : overflowCharts)
+    {
+        if (!graph.contains(c))
+            graph.push_back(c);
+    }
+    for (int i = 0; i < graph.size(); ++i)
+    {
+        if (graph[i])
+            graph[i]->setChartIndex(i);
+    }
+
+    applyDenseMode(gridSlots > 1 || m_document.denseGrid);
+    if (m_activeChartIndex < 0 || m_activeChartIndex >= gridSlots)
+        m_activeChartIndex = 0;
     setActiveChart(m_activeChartIndex);
     updateExpandActionsVisibility();
+    syncDocumentFromCharts();
+    if (settingsPanel)
+        settingsPanel->refreshFromTab();
 }
 
 UWatchChart *UWatchTab::getChart(int index)
@@ -932,6 +1033,7 @@ NMSDK::Plot::PlotDocument UWatchTab::capturePlotDocument() const
     doc.schemaVersion = NMSDK::Plot::PlotDocument::CurrentSchemaVersion;
     doc.gridCols = tabColNumber;
     doc.gridRows = tabRowNumber;
+    doc.denseGrid = m_denseMode;
     doc.colSplitterSizes = captureColSplitterSizes();
     doc.rowSplitterSizes = captureRowSplitterSizes();
     for (int i = 0; i < graph.count(); ++i)
@@ -1063,11 +1165,13 @@ void UWatchTab::applyPlotDocument(const NMSDK::Plot::PlotDocument& doc)
             chart->getSerie(idx)->windowSize = serie.binding.windowSize;
             chart->getSerie(idx)->xyMinIntervalMs = serie.binding.xyMinIntervalMs;
             chart->getSerie(idx)->xyMinDistance = serie.binding.xyMinDistance;
+            chart->setSerieEnabled(idx, serie.enabled);
         }
     }
     applySplitterSizes(doc);
     m_document = doc;
     m_document.schemaVersion = NMSDK::Plot::PlotDocument::CurrentSchemaVersion;
+    applyDenseMode(doc.denseGrid || (doc.gridRows * doc.gridCols > 1));
     updateExpandActionsVisibility();
 }
 
@@ -1082,4 +1186,536 @@ void UWatchTab::ALoadParameters(RDK::USerStorageXML &xml)
         return;
     }
     applyPlotDocument(doc);
+}
+
+void UWatchTab::setDenseMode(bool dense)
+{
+    applyDenseMode(dense);
+    syncDocumentFromCharts();
+}
+
+void UWatchTab::applyDenseMode(bool dense)
+{
+    m_denseMode = dense;
+    m_document.denseGrid = dense;
+    for (UWatchChart* c : graph)
+    {
+        if (c)
+            c->setDenseChrome(dense);
+    }
+    if (m_sharedModeBar)
+        m_sharedModeBar->setVisible(dense && countGraphs() > 0);
+    syncSharedModeBarFromActive();
+}
+
+void UWatchTab::ensureSharedModeBar()
+{
+    if (m_sharedModeBar || !chartsColumn)
+        return;
+    auto* columnLayout = qobject_cast<QVBoxLayout*>(chartsColumn->layout());
+    if (!columnLayout)
+        return;
+
+    m_sharedModeBar = new QToolBar(tr("Active chart tools"), chartsColumn);
+    m_sharedModeBar->setObjectName(QStringLiteral("watchSharedModeBar"));
+    m_sharedModeBar->setIconSize(QSize(16, 16));
+    m_sharedModeBar->setMovable(false);
+    m_sharedPan = m_sharedModeBar->addAction(tr("Pan"));
+    m_sharedBoxZoom = m_sharedModeBar->addAction(tr("Box zoom"));
+    m_sharedTrack = m_sharedModeBar->addAction(tr("Track"));
+    m_sharedReset = m_sharedModeBar->addAction(tr("Reset"));
+    m_sharedExpand = m_sharedModeBar->addAction(tr("Expand"));
+    for (QAction* a : {m_sharedPan, m_sharedBoxZoom, m_sharedTrack})
+    {
+        if (a)
+            a->setCheckable(true);
+    }
+    if (m_sharedExpand)
+        m_sharedExpand->setCheckable(true);
+
+    connect(m_sharedPan, &QAction::triggered, this, [this]() {
+        if (UWatchChart* c = getChart(m_activeChartIndex))
+            c->triggerModePan();
+        syncSharedModeBarFromActive();
+    });
+    connect(m_sharedBoxZoom, &QAction::triggered, this, [this]() {
+        if (UWatchChart* c = getChart(m_activeChartIndex))
+            c->triggerModeBoxZoom();
+        syncSharedModeBarFromActive();
+    });
+    connect(m_sharedTrack, &QAction::triggered, this, [this]() {
+        if (UWatchChart* c = getChart(m_activeChartIndex))
+            c->triggerModeTrack();
+        syncSharedModeBarFromActive();
+    });
+    connect(m_sharedReset, &QAction::triggered, this, [this]() {
+        if (UWatchChart* c = getChart(m_activeChartIndex))
+            c->triggerModeReset();
+    });
+    connect(m_sharedExpand, &QAction::triggered, this, [this]() {
+        toggleExpandChart(m_activeChartIndex);
+        syncSharedModeBarFromActive();
+    });
+
+    columnLayout->insertWidget(0, m_sharedModeBar);
+    m_sharedModeBar->hide();
+}
+
+void UWatchTab::syncSharedModeBarFromActive()
+{
+    if (!m_sharedModeBar || !m_sharedModeBar->isVisible())
+        return;
+    UWatchChart* c = getChart(m_activeChartIndex);
+    if (!c)
+        return;
+    QSignalBlocker b1(m_sharedPan);
+    QSignalBlocker b2(m_sharedBoxZoom);
+    QSignalBlocker b3(m_sharedTrack);
+    QSignalBlocker b4(m_sharedExpand);
+    if (m_sharedPan)
+        m_sharedPan->setChecked(c->isModePanChecked());
+    if (m_sharedBoxZoom)
+        m_sharedBoxZoom->setChecked(c->isModeBoxZoomChecked());
+    if (m_sharedTrack)
+        m_sharedTrack->setChecked(c->isModeTrackChecked());
+    if (m_sharedExpand)
+    {
+        m_sharedExpand->setVisible(countGraphs() > 1);
+        m_sharedExpand->setChecked(isChartExpanded() && m_expandedIndex == m_activeChartIndex);
+        m_sharedExpand->setText(m_sharedExpand->isChecked() ? tr("Restore") : tr("Expand"));
+    }
+}
+
+void UWatchTab::setAllLegendsVisible(bool visible)
+{
+    for (UWatchChart* c : graph)
+    {
+        if (c)
+            c->setLegendVisible(visible);
+    }
+    syncDocumentFromCharts();
+    if (settingsPanel)
+        settingsPanel->refreshFromTab();
+}
+
+bool UWatchTab::hidePanel(int chartIndex)
+{
+    if (chartIndex < 0 || chartIndex >= graph.size() || !graph[chartIndex])
+        return false;
+    if (visibleSlotCount() <= 1)
+        return false;
+    graph[chartIndex]->setPanelVisible(false);
+    graph[chartIndex]->hide();
+    createGridLayout(tabRowNumber, tabColNumber);
+    return true;
+}
+
+bool UWatchTab::showPanel(int chartIndex)
+{
+    if (chartIndex < 0 || chartIndex >= graph.size() || !graph[chartIndex])
+        return false;
+    graph[chartIndex]->setPanelVisible(true);
+    createGridLayout(tabRowNumber, tabColNumber);
+    return true;
+}
+
+bool UWatchTab::duplicatePanel(int chartIndex)
+{
+    if (chartIndex < 0 || chartIndex >= graph.size() || !graph[chartIndex])
+        return false;
+    const NMSDK::Plot::PlotPanel snap = graph[chartIndex]->toPlotPanel();
+    createGraph();
+    UWatchChart* dst = graph.last();
+    dst->ensurePanelId();
+    NMSDK::Plot::PlotPanel copy = snap;
+    copy.id = dst->panelId();
+    copy.title = snap.title.isEmpty() ? tr("Chart copy") : (snap.title + tr(" (copy)"));
+    dst->applyPlotPanelMeta(copy);
+    for (const NMSDK::Plot::PlotSeries& serie : snap.series)
+    {
+        const bool serieIsXY = serie.binding.x.kind == NMSDK::Plot::DataRoleKind::Property;
+        if (serieIsXY)
+        {
+            dst->createSerieXY(serie.binding.channel,
+                               serie.binding.x.prop.component, serie.binding.x.prop.property,
+                               serie.binding.x.prop.jx, serie.binding.x.prop.jy,
+                               serie.binding.y.prop.component, serie.binding.y.prop.property,
+                               serie.binding.y.prop.jx, serie.binding.y.prop.jy,
+                               serie.yOffset, snap.viz,
+                               serie.binding.x.prop.slice, serie.binding.y.prop.slice);
+        }
+        else
+        {
+            dst->createSerie(serie.binding.channel, serie.binding.y.prop.component,
+                             serie.binding.y.prop.property, QString(),
+                             serie.binding.y.prop.jx < 0 ? 0 : serie.binding.y.prop.jx,
+                             serie.binding.y.prop.jy < 0 ? 0 : serie.binding.y.prop.jy,
+                             snap.axisXRange, serie.yOffset);
+        }
+    }
+    // Expand grid if needed to show the new panel.
+    const int need = countGraphs();
+    int cols = tabColNumber > 0 ? tabColNumber : 1;
+    int rows = (need + cols - 1) / cols;
+    createGridLayout(rows, cols);
+    setActiveChart(countGraphs() - 1);
+    return true;
+}
+
+bool UWatchTab::deletePanel(int chartIndex, bool confirm)
+{
+    if (chartIndex < 0 || chartIndex >= graph.size() || !graph[chartIndex])
+        return false;
+    if (countGraphs() <= 1)
+        return false;
+    UWatchChart* chart = graph[chartIndex];
+    const int seriesCount = chart->countSeries();
+    if (confirm)
+    {
+        const QString msg = tr("Delete panel \"%1\" with %2 series?\nUse Undo (Ctrl+Z) to restore.")
+                                .arg(chart->getChartTitle())
+                                .arg(seriesCount);
+        if (QMessageBox::question(this, tr("Delete panel"), msg) != QMessageBox::Yes)
+            return false;
+        if (m_undoStack)
+        {
+            m_undoStack->push(new WatchDeletePanelCommand(this, chartIndex, chart->getChartTitle()));
+            return true;
+        }
+    }
+    return deletePanelImpl(chartIndex);
+}
+
+bool UWatchTab::deletePanelImpl(int chartIndex)
+{
+    if (chartIndex < 0 || chartIndex >= graph.size() || !graph[chartIndex])
+        return false;
+    deleteGraph(chartIndex);
+    for (int i = 0; i < graph.size(); ++i)
+    {
+        if (graph[i])
+            graph[i]->setChartIndex(i);
+    }
+    int cols = tabColNumber > 0 ? tabColNumber : 1;
+    int rows = qMax(1, (countGraphs() + cols - 1) / cols);
+    if (rows * cols < countGraphs())
+        rows = (countGraphs() + cols - 1) / cols;
+    createGridLayout(qMin(rows, countGraphs()), cols);
+    refreshInspectorIfOpen();
+    return true;
+}
+
+void UWatchTab::onDuplicatePanelRequested(int chartIndex)
+{
+    duplicatePanel(chartIndex);
+}
+
+void UWatchTab::onHidePanelRequested(int chartIndex)
+{
+    hidePanel(chartIndex);
+}
+
+void UWatchTab::onDeletePanelRequested(int chartIndex)
+{
+    deletePanel(chartIndex, true);
+}
+
+bool UWatchTab::quickAddTimeSeries(int chartIndex,
+                                   const QString& component,
+                                   const QString& property,
+                                   int jx,
+                                   int jy,
+                                   int channel)
+{
+    if (chartIndex < 0 || chartIndex >= graph.size() || !graph[chartIndex])
+        return false;
+    UWatchChart* chart = graph[chartIndex];
+    if (!chart->canAddVizKind(NMSDK::Plot::VizKind::TimeSeries))
+        return false;
+    chart->createSerie(channel, component, property, QString(), jx, jy,
+                       chart->getAxisXrange(), 0.0);
+    syncDocumentFromCharts();
+    if (settingsPanel)
+        settingsPanel->refreshFromTab();
+    return true;
+}
+
+void UWatchTab::applyPanelBinding(UWatchChart* chart, const NMSDK::Plot::PlotPanel& panel)
+{
+    if (!chart)
+        return;
+    while (chart->countSeries() > 0)
+        chart->deleteSerie(0);
+    chart->applyPlotPanelMeta(panel);
+    for (const NMSDK::Plot::PlotSeries& serie : panel.series)
+    {
+        const double time_interval = panel.axisXRange > 0 ? panel.axisXRange : chart->getAxisXrange();
+        const bool serieIsXY = serie.binding.x.kind == NMSDK::Plot::DataRoleKind::Property;
+        const NMSDK::Plot::VizKind wantViz = serieIsXY
+            ? (NMSDK::Plot::isXYFamily(panel.viz) ? panel.viz : NMSDK::Plot::VizKind::XYLine)
+            : NMSDK::Plot::VizKind::TimeSeries;
+        if (!chart->canAddVizKind(wantViz))
+            continue;
+        if (serieIsXY)
+        {
+            chart->createSerieXY(
+                serie.binding.channel,
+                serie.binding.x.prop.component,
+                serie.binding.x.prop.property,
+                serie.binding.x.prop.jx,
+                serie.binding.x.prop.jy,
+                serie.binding.y.prop.component,
+                serie.binding.y.prop.property,
+                serie.binding.y.prop.jx,
+                serie.binding.y.prop.jy,
+                serie.yOffset,
+                wantViz,
+                serie.binding.x.prop.slice,
+                serie.binding.y.prop.slice);
+        }
+        else
+        {
+            chart->createSerie(
+                serie.binding.channel,
+                serie.binding.y.prop.component,
+                serie.binding.y.prop.property,
+                QString(),
+                serie.binding.y.prop.jx < 0 ? 0 : serie.binding.y.prop.jx,
+                serie.binding.y.prop.jy < 0 ? 0 : serie.binding.y.prop.jy,
+                time_interval,
+                serie.yOffset);
+        }
+        const int idx = chart->countSeries() - 1;
+        if (idx < 0)
+            continue;
+        if (!serie.visual.displayName.isEmpty())
+            chart->setSerieName(idx, serie.visual.displayName);
+        chart->setSerieWidth(idx, serie.visual.width);
+        chart->setSerieLineType(idx, static_cast<Qt::PenStyle>(serie.visual.penStyle));
+        chart->getSerie(idx)->setColor(serie.visual.color);
+        chart->getSerie(idx)->windowSize = serie.binding.windowSize;
+        chart->getSerie(idx)->xyMinIntervalMs = serie.binding.xyMinIntervalMs;
+        chart->getSerie(idx)->xyMinDistance = serie.binding.xyMinDistance;
+        chart->setSerieEnabled(idx, serie.enabled);
+    }
+}
+
+bool UWatchTab::restorePanelSnapshot(int insertIndex, const NMSDK::Plot::PlotPanel& panel)
+{
+    createGraph();
+    const int idx = countGraphs() - 1;
+    UWatchChart* chart = getChart(idx);
+    if (!chart)
+        return false;
+    NMSDK::Plot::PlotPanel copy = panel;
+    copy.id = chart->panelId();
+    applyPanelBinding(chart, copy);
+    if (!panel.title.isEmpty())
+        chart->setChartTitle(panel.title);
+    chart->setPanelVisible(true);
+
+    if (insertIndex >= 0 && insertIndex < graph.size() - 1)
+    {
+        graph.move(graph.size() - 1, insertIndex);
+        for (int i = 0; i < graph.size(); ++i)
+        {
+            if (graph[i])
+                graph[i]->setChartIndex(i);
+        }
+    }
+    int cols = tabColNumber > 0 ? tabColNumber : 1;
+    int rows = qMax(1, (countGraphs() + cols - 1) / cols);
+    createGridLayout(rows, cols);
+    setActiveChart(qBound(0, insertIndex, countGraphs() - 1));
+    syncDocumentFromCharts();
+    return true;
+}
+
+void UWatchTab::openQuickAddDialog(int chartIndex)
+{
+    if (chartIndex < 0 || chartIndex >= graph.count() || !graph[chartIndex])
+        return;
+    UWatchQuickAddDialog dlg(application, this);
+    if (dlg.exec() != QDialog::Accepted || !dlg.selectionComplete())
+        return;
+    quickAddTimeSeries(chartIndex,
+                       dlg.componentLongName(),
+                       dlg.propertyName(),
+                       dlg.matrixJx(),
+                       dlg.matrixJy(),
+                       dlg.channelIndex());
+}
+
+void UWatchTab::refreshInspectorIfOpen()
+{
+    if (settingsPanel && settingsPanel->isVisible())
+        settingsPanel->refreshFromTab();
+}
+
+void UWatchTab::pushSerieEnabledUndo(int chartIndex, int serieIndex, bool enabled)
+{
+    if (!m_undoStack)
+        return;
+    UWatchChart* chart = getChart(chartIndex);
+    if (!chart || serieIndex < 0 || serieIndex >= chart->countSeries())
+        return;
+    if (chart->isSerieEnabled(serieIndex) == enabled)
+        return;
+    m_undoStack->push(new WatchSerieEnabledCommand(this, chartIndex, serieIndex, enabled));
+}
+
+void UWatchTab::pushSerieDeleteUndo(int chartIndex, int serieIndex)
+{
+    if (!m_undoStack)
+        return;
+    UWatchChart* chart = getChart(chartIndex);
+    if (!chart || serieIndex < 0 || serieIndex >= chart->countSeries())
+        return;
+    m_undoStack->push(new WatchSerieDeleteCommand(this, chartIndex, serieIndex));
+}
+
+void UWatchTab::pushSerieDuplicateUndo(int chartIndex, int serieIndex)
+{
+    if (!m_undoStack)
+        return;
+    UWatchChart* chart = getChart(chartIndex);
+    if (!chart || serieIndex < 0 || serieIndex >= chart->countSeries())
+        return;
+    m_undoStack->push(new WatchSerieDuplicateCommand(this, chartIndex, serieIndex));
+}
+
+void UWatchTab::pushSerieMoveUndo(int chartIndex, int fromIndex, int toIndex)
+{
+    if (!m_undoStack || fromIndex == toIndex)
+        return;
+    UWatchChart* chart = getChart(chartIndex);
+    if (!chart || fromIndex < 0 || toIndex < 0
+        || fromIndex >= chart->countSeries() || toIndex >= chart->countSeries())
+        return;
+    m_undoStack->push(new WatchSerieMoveCommand(this, chartIndex, fromIndex, toIndex));
+}
+
+bool UWatchTab::movePanel(int fromIndex, int toIndex)
+{
+    if (fromIndex < 0 || toIndex < 0 || fromIndex >= graph.size() || toIndex >= graph.size()
+        || fromIndex == toIndex)
+        return false;
+    graph.move(fromIndex, toIndex);
+    for (int i = 0; i < graph.size(); ++i)
+    {
+        if (graph[i])
+            graph[i]->setChartIndex(i);
+    }
+    createGridLayout(tabRowNumber, tabColNumber);
+    setActiveChart(toIndex);
+    syncDocumentFromCharts();
+    refreshInspectorIfOpen();
+    return true;
+}
+
+bool UWatchTab::renamePanel(int chartIndex, const QString& title)
+{
+    if (chartIndex < 0 || chartIndex >= graph.size() || !graph[chartIndex])
+        return false;
+    graph[chartIndex]->setChartTitle(title);
+    syncDocumentFromCharts();
+    refreshInspectorIfOpen();
+    return true;
+}
+
+QString UWatchTab::watchTemplatesDir() const
+{
+    const QString projectDir = NMSDK::Plot::watchTemplatesRoot(application);
+    if (!projectDir.isEmpty())
+    {
+        QDir().mkpath(projectDir);
+        return projectDir;
+    }
+    return NMSDK::Plot::sharedWatchTemplatesRoot();
+}
+
+bool UWatchTab::saveWatchTemplateAs(const QString& filePath)
+{
+    syncDocumentFromCharts();
+    QString err;
+    if (!NMSDK::Plot::saveWatchTemplateFile(filePath, m_document, &err))
+    {
+        QMessageBox::warning(this, tr("Save Watch template"), err);
+        return false;
+    }
+    return true;
+}
+
+bool UWatchTab::loadWatchTemplateFrom(const QString& filePath, bool reassignIds)
+{
+    NMSDK::Plot::PlotDocument doc;
+    QString err;
+    if (!NMSDK::Plot::loadWatchTemplateFile(filePath, doc, &err))
+    {
+        QMessageBox::warning(this, tr("Load Watch template"), err);
+        return false;
+    }
+    if (reassignIds)
+        NMSDK::Plot::reassignPlotObjectIds(doc);
+    applyPlotDocument(doc);
+    syncDocumentFromCharts();
+    refreshInspectorIfOpen();
+    return true;
+}
+
+void UWatchTab::saveWatchTemplateDialog()
+{
+    QString startDir = watchTemplatesDir();
+    if (startDir.isEmpty())
+        startDir = QDir::homePath();
+    QDir().mkpath(startDir);
+    const QString path = QFileDialog::getSaveFileName(
+        this,
+        tr("Save Watch template"),
+        startDir + QStringLiteral("layout.watch.xml"),
+        tr("Watch template (*.watch.xml);;XML (*.xml)"));
+    if (path.isEmpty())
+        return;
+    QString out = path;
+    if (!out.endsWith(QStringLiteral(".watch.xml"), Qt::CaseInsensitive)
+        && !out.endsWith(QStringLiteral(".xml"), Qt::CaseInsensitive))
+        out += QStringLiteral(".watch.xml");
+    saveWatchTemplateAs(out);
+}
+
+void UWatchTab::loadWatchTemplateDialog()
+{
+    QString startDir = watchTemplatesDir();
+    if (startDir.isEmpty())
+        startDir = QDir::homePath();
+    const QString path = QFileDialog::getOpenFileName(
+        this,
+        tr("Load Watch template"),
+        startDir,
+        tr("Watch template (*.watch.xml);;XML (*.xml);;All (*)"));
+    if (path.isEmpty())
+        return;
+    loadWatchTemplateFrom(path, true);
+}
+
+void UWatchTab::syncTimeSeriesXRangeFromActive()
+{
+    // Multi-panel X sync for TimeSeries: copy axisXrange + track state from active chart.
+    if (m_activeChartIndex < 0 || m_activeChartIndex >= graph.size() || !graph[m_activeChartIndex])
+        return;
+    UWatchChart* src = graph[m_activeChartIndex];
+    if (NMSDK::Plot::isXYFamily(src->getVizKind()))
+        return;
+    const double range = src->getAxisXrange();
+    const bool track = src->getIsAxisXtrackable();
+    for (int i = 0; i < graph.size(); ++i)
+    {
+        if (i == m_activeChartIndex || !graph[i])
+            continue;
+        if (NMSDK::Plot::isXYFamily(graph[i]->getVizKind()))
+            continue;
+        graph[i]->updateTimeIntervals(range);
+        graph[i]->isAxisXtrackable = track;
+    }
+    syncDocumentFromCharts();
 }

@@ -30,6 +30,7 @@ class UContainerDescription;
 #include <QVector>
 #include <QStringList>
 #include <QPointer>
+#include <QPoint>
 
 class UPropertyXMLWidget;
 
@@ -329,6 +330,8 @@ private:
                                  RDK::UContainerDescription* class_desc);
 
     bool m_syncingColumnWidths = false;
+    QPoint m_propertyDragPressPos;
+    bool m_propertyDragArmed = false;
 
     QAction* m_actionEditProperty = nullptr;
     QAction* m_actionShowPropertyXml = nullptr;
@@ -360,6 +363,7 @@ private:
 
     void rebuildTreeFromSnapshot(const NMSDK::UGuiSnapshotPtr &snapshot);
     bool applyFilter(QTreeWidgetItem *item);
+    void applyPropertyTreeFilter();
     void restoreTreeSelection(const QString& oldRootItem, const QString& oldSelectedItem);
     void schedulePropertyReloadRetry();
     void scheduleTreeRebuildRetry();
