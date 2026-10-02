@@ -11,6 +11,8 @@
 #include <QToolBar>
 #include <QVBoxLayout>
 #include <QTimer>
+#include <QVector>
+#include <QPair>
 
 class ULoggerWidget : public UVisualControllerWidget
 {
@@ -29,6 +31,9 @@ private slots:
 
 private:
     void AddString(int log_level, const QString &string);
+    void appendVisibleString(int log_level, const QString& text,
+                             bool countAsNew, bool scrollToEnd = true);
+    void rebuildFilteredLog();
     bool passesFilters(int log_level, const QString& text) const;
 
     QVBoxLayout *layout = nullptr;
@@ -42,6 +47,7 @@ private:
     QTimer *updateTimer = nullptr;
     int m_maxBlocks = 2000;
     int m_pendingWhilePaused = 0;
+    QVector<QPair<int, QString>> m_history;
 };
 
 #endif // ULOGGERWIDGET_H

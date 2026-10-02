@@ -3679,18 +3679,18 @@ void UGEngineControlWidget::createThemeMenu()
 
 void UGEngineControlWidget::captureNamedWorkspace(const QString& key)
 {
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope,
-                       QStringLiteral("NeuroModeler"), QStringLiteral("Workspaces"));
-    settings.setValue(key + QStringLiteral("/state"), saveState());
-    settings.setValue(key + QStringLiteral("/geometry"), saveGeometry());
+    QSettings workspaceSettings(QSettings::IniFormat, QSettings::UserScope,
+                                QStringLiteral("NeuroModeler"), QStringLiteral("Workspaces"));
+    workspaceSettings.setValue(key + QStringLiteral("/state"), saveState());
+    workspaceSettings.setValue(key + QStringLiteral("/geometry"), saveGeometry());
 }
 
 void UGEngineControlWidget::applyNamedWorkspace(const QString& key)
 {
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope,
-                       QStringLiteral("NeuroModeler"), QStringLiteral("Workspaces"));
-    const QByteArray state = settings.value(key + QStringLiteral("/state")).toByteArray();
-    const QByteArray geometry = settings.value(key + QStringLiteral("/geometry")).toByteArray();
+    QSettings workspaceSettings(QSettings::IniFormat, QSettings::UserScope,
+                                QStringLiteral("NeuroModeler"), QStringLiteral("Workspaces"));
+    const QByteArray state = workspaceSettings.value(key + QStringLiteral("/state")).toByteArray();
+    const QByteArray geometry = workspaceSettings.value(key + QStringLiteral("/geometry")).toByteArray();
     if (!geometry.isEmpty())
         restoreGeometry(geometry);
     if (!state.isEmpty())
@@ -3901,4 +3901,3 @@ void SubWindowCloseIgnore::keyPressEvent(QKeyEvent *event)
     }
     QMdiSubWindow::keyPressEvent(event);
 }
-

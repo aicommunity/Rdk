@@ -42,6 +42,59 @@ UWatchTab *UWatch::ensureCurrentTab()
     return getCurrentTab();
 }
 
+int UWatch::watchTabCount() const
+{
+    return ui && ui->tabWidget ? ui->tabWidget->count() : 0;
+}
+
+UWatchTab *UWatch::watchTabAt(int index) const
+{
+    if (!ui || !ui->tabWidget || index < 0 || index >= ui->tabWidget->count())
+        return nullptr;
+    return qobject_cast<UWatchTab*>(ui->tabWidget->widget(index));
+}
+
+QString UWatch::watchTabTitle(int index) const
+{
+    if (!ui || !ui->tabWidget || index < 0 || index >= ui->tabWidget->count())
+        return QString();
+    QString title = ui->tabWidget->tabText(index).trimmed();
+    if (title.isEmpty())
+        title = tr("Watch %1").arg(index + 1);
+    return title;
+}
+
+int UWatch::indexOfWatchTab(const UWatchTab *watchTab) const
+{
+    return ui && ui->tabWidget ? ui->tabWidget->indexOf(const_cast<UWatchTab*>(watchTab)) : -1;
+}
+
+bool UWatch::movePanelBetweenTabs(UWatchTab *source, int panelIndex, int destinationTabIndex)
+{
+    if (!source || !ui || !ui->tabWidget || destinationTabIndex < 0
+        || destinationTabIndex >= ui->tabWidget->count())
+        return false;
+    UWatchTab* destination = watchTabAt(destinationTabIndex);
+    if (panelIndex < 0 || panelIndex >= source->countGraphs())
+        return false;
+    UWatchChart* chart = source->getChart(panelIndex);
+    if (!destination || destination == source || !chart)
+        return false;
+
+    chart->ensurePanelId();
+    const NMSDK::Plot::PlotPanel snapshot = chart->toPlotPanel();
+    if (!destination->restorePanelSnapshot(destination->countGraphs(), snapshot, true))
+        return false;
+    if (!source->deletePanelImpl(panelIndex))
+    {
+        destination->deletePanelImpl(destination->countGraphs() - 1);
+        return false;
+    }
+
+    ui->tabWidget->setCurrentWidget(destination);
+    return true;
+}
+
 
 void UWatch::on_actionCreate_tab_triggered()
 {
@@ -315,4 +368,3 @@ void UWatch::updateTheme()
         }
     }
 }
-

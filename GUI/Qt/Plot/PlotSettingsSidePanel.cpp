@@ -1,6 +1,7 @@
 #include "PlotSettingsSidePanel.h"
 
 #include "../UWatchTab.h"
+#include "../UWatch.h"
 #include "../UWatchChart.h"
 #include "../UWatchSerie.h"
 #include "../UStyleManager.h"
@@ -31,8 +32,10 @@
 #include <QVBoxLayout>
 #include <QApplication>
 #include <QClipboard>
-#include <QEvent>
-#include <QMouseEvent>
+#include <QMenu>
+#include <QInputDialog>
+#include <QScrollArea>
+#include <QFrame>
 
 namespace {
 
@@ -68,7 +71,7 @@ void PlotSettingsSidePanel::buildUi()
     root->setContentsMargins(10, 10, 10, 10);
     root->setSpacing(8);
 
-    // --- Hero: path + panel selector ---
+    // --- Compact panel browser ---
     auto* heroCol = new QVBoxLayout();
     m_heroTitle = new QLabel(this);
     QFont heroFont = m_heroTitle->font();
@@ -77,31 +80,93 @@ void PlotSettingsSidePanel::buildUi()
     m_heroTitle->setFont(heroFont);
     m_heroTitle->setWordWrap(true);
     heroCol->addWidget(m_heroTitle);
-    m_panelCombo = new QComboBox(this);
-    m_panelCombo->setToolTip(tr("Select panel without clicking the grid"));
-    heroCol->addWidget(m_panelCombo);
     auto* heroRow = new QHBoxLayout();
     heroRow->addLayout(heroCol, 1);
     m_expandPanelBtn = new QPushButton(tr("Expand"), this);
-    m_expandPanelBtn->setToolTip(tr("Expand active panel (double-click in list)"));
-    m_hideBtn = new QPushButton(tr("Hide"), this);
-    m_hideBtn->setFixedWidth(56);
+    m_expandPanelBtn->setToolTip(tr("Expand the selected panel (double-click a panel to expand it)"));
+    m_expandPanelBtn->setAccessibleName(tr("Expand selected Watch panel"));
+    m_panelActionsBtn = new QToolButton(this);
+    m_panelActionsBtn->setText(tr("⋯"));
+    m_panelActionsBtn->setToolTip(tr("Panel actions"));
+    m_panelActionsBtn->setAccessibleName(tr("Watch panel actions"));
     heroRow->addWidget(m_expandPanelBtn, 0, Qt::AlignTop);
-    heroRow->addWidget(m_hideBtn, 0, Qt::AlignTop);
+    heroRow->addWidget(m_panelActionsBtn, 0, Qt::AlignTop);
     connect(m_expandPanelBtn, &QPushButton::clicked, this, [this]() {
-        if (m_tab)
-            m_tab->toggleExpandChart(m_chartIndex);
+        if (!m_tab)
+            return;
+        UWatchChart* chart = m_tab->getChart(m_chartIndex);
+        if (!chart)
+            return;
+        if (!chart->isPanelVisible() || !chart->isInGrid())
+            m_tab->showPanel(chart->chartIndex);
+        m_tab->setActiveChart(chart->chartIndex);
+        m_tab->toggleExpandChart(chart->chartIndex);
     });
     root->addLayout(heroRow);
-    connect(m_hideBtn, &QPushButton::clicked, this, &PlotSettingsSidePanel::requestHide);
-    connect(m_panelCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, [this](int idx) {
-        if (m_refreshing || !m_tab || idx < 0)
-            return;
-        const int chartIdx = m_panelCombo->itemData(idx).toInt();
-        m_tab->setActiveChart(chartIdx);
-        setActiveChart(chartIdx);
+    m_panelFilter = new QLineEdit(this);
+    m_panelFilter->setPlaceholderText(tr("Find a panel…"));
+    m_panelFilter->setClearButtonEnabled(true);
+    m_panelFilter->setToolTip(tr("Filter panels by name or source"));
+    m_panelFilter->setAccessibleName(tr("Filter Watch panels"));
+    root->addWidget(m_panelFilter);
+    m_panelList = new QListWidget(this);
+    m_panelList->setMinimumHeight(64);
+    m_panelList->setMaximumHeight(104);
+    m_panelList->setSelectionMode(QAbstractItemView::SingleSelection);
+    m_panelList->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    m_panelList->setToolTip(tr("Select a panel without clicking its plot"));
+    m_panelList->setAccessibleName(tr("Watch panels"));
+    root->addWidget(m_panelList);
+    connect(m_panelFilter, &QLineEdit::textChanged, this, [this](const QString& text) {
+        const QString needle = text.trimmed();
+        for (int i = 0; i < m_panelList->count(); ++i) {
+            QListWidgetItem* item = m_panelList->item(i);
+            item->setHidden(!needle.isEmpty()
+                            && !item->text().contains(needle, Qt::CaseInsensitive)
+                            && !item->toolTip().contains(needle, Qt::CaseInsensitive));
+        }
     });
-    m_panelCombo->installEventFilter(this);
+    connect(m_panelList, &QListWidget::currentRowChanged, this, [this](int row) {
+        if (!m_refreshing && m_tab && row >= 0)
+            m_tab->setActiveChart(row);
+    });
+    connect(m_panelList, &QListWidget::itemDoubleClicked, this,
+            [this](QListWidgetItem* item) {
+        if (!m_tab || !item)
+            return;
+        const int index = m_panelList->row(item);
+        if (UWatchChart* chart = m_tab->getChart(index)) {
+            if (!chart->isPanelVisible() || !chart->isInGrid()) {
+                m_tab->showPanel(index);
+            }
+            const int currentIndex = chart->chartIndex;
+            m_tab->setActiveChart(currentIndex);
+            m_tab->toggleExpandChart(currentIndex);
+        }
+    });
+    connect(m_panelActionsBtn, &QToolButton::clicked,
+            this, &PlotSettingsSidePanel::openPanelActionsMenu);
+    auto* renameShortcut = new QShortcut(QKeySequence(Qt::Key_F2), m_panelList);
+    renameShortcut->setContext(Qt::WidgetShortcut);
+    connect(renameShortcut, &QShortcut::activated, this, [this]() {
+        const int index = selectedPanelIndex();
+        UWatchChart* chart = m_tab ? m_tab->getChart(index) : nullptr;
+        if (!chart)
+            return;
+        bool accepted = false;
+        const QString title = QInputDialog::getText(this, tr("Rename panel"), tr("Panel name"),
+                                                     QLineEdit::Normal, chart->getChartTitle(),
+                                                     &accepted).trimmed();
+        if (accepted && !title.isEmpty())
+            m_tab->renamePanel(index, title);
+    });
+    auto* deleteShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), m_panelList);
+    deleteShortcut->setContext(Qt::WidgetShortcut);
+    connect(deleteShortcut, &QShortcut::activated, this, [this]() {
+        if (m_tab)
+            m_tab->deletePanel(selectedPanelIndex(), true);
+        refreshFromTab();
+    });
 
     m_tabs = new QTabWidget(this);
     m_tabs->setDocumentMode(true);
@@ -123,14 +188,6 @@ void PlotSettingsSidePanel::buildUi()
     m_vizKind->addItem(tr("XY scatter"), static_cast<int>(NMSDK::Plot::VizKind::XYScatter));
     identityForm->addRow(tr("Title"), m_titleEdit);
     identityForm->addRow(tr("Viz kind"), m_vizKind);
-    auto* panelOrderRow = new QHBoxLayout();
-    m_panelUpBtn = new QPushButton(tr("Panel ↑"), identityBox);
-    m_panelDownBtn = new QPushButton(tr("Panel ↓"), identityBox);
-    m_panelUpBtn->setToolTip(tr("Move panel earlier in the document order"));
-    m_panelDownBtn->setToolTip(tr("Move panel later in the document order"));
-    panelOrderRow->addWidget(m_panelUpBtn);
-    panelOrderRow->addWidget(m_panelDownBtn);
-    identityForm->addRow(tr("Order"), panelOrderRow);
     chartLayout->addWidget(identityBox);
 
     auto* axesBox = new QGroupBox(tr("Axes"), m_chartPage);
@@ -358,20 +415,6 @@ void PlotSettingsSidePanel::buildUi()
             }
         }
     });
-    connect(m_panelUpBtn, &QPushButton::clicked, this, [this]() {
-        if (!m_tab || m_chartIndex <= 0)
-            return;
-        m_tab->movePanel(m_chartIndex, m_chartIndex - 1);
-        m_chartIndex = qMax(0, m_chartIndex - 1);
-        refreshFromTab();
-    });
-    connect(m_panelDownBtn, &QPushButton::clicked, this, [this]() {
-        if (!m_tab || m_chartIndex + 1 >= m_tab->countGraphs())
-            return;
-        m_tab->movePanel(m_chartIndex, m_chartIndex + 1);
-        ++m_chartIndex;
-        refreshFromTab();
-    });
     connect(m_saveTemplateBtn, &QPushButton::clicked, this, [this]() {
         if (m_tab)
             m_tab->saveWatchTemplateDialog();
@@ -385,7 +428,11 @@ void PlotSettingsSidePanel::buildUi()
     m_tabs->addTab(m_chartPage, tr("Chart"));
     m_tabs->addTab(m_seriesPage, tr("Series"));
     connect(m_tabs, &QTabWidget::currentChanged, this, &PlotSettingsSidePanel::onTabChanged);
-    root->addWidget(m_tabs, 1);
+    auto* inspectorScroll = new QScrollArea(this);
+    inspectorScroll->setWidgetResizable(true);
+    inspectorScroll->setFrameShape(QFrame::NoFrame);
+    inspectorScroll->setWidget(m_tabs);
+    root->addWidget(inspectorScroll, 1);
 }
 
 void PlotSettingsSidePanel::connectLiveApply()
@@ -470,41 +517,205 @@ void PlotSettingsSidePanel::connectLiveApply()
     }
 }
 
+int PlotSettingsSidePanel::selectedPanelIndex() const
+{
+    const int row = m_panelList ? m_panelList->currentRow() : -1;
+    return row >= 0 ? row : m_chartIndex;
+}
+
+void PlotSettingsSidePanel::updatePanelBrowser()
+{
+    if (!m_panelList)
+        return;
+
+    const QSignalBlocker blocker(m_panelList);
+    const QString needle = m_panelFilter ? m_panelFilter->text().trimmed() : QString();
+    m_panelList->clear();
+    if (!m_tab)
+        return;
+
+    for (int i = 0; i < m_tab->countGraphs(); ++i)
+    {
+        UWatchChart* chart = m_tab->getChart(i);
+        if (!chart)
+            continue;
+
+        const QString title = chart->getChartTitle().trimmed().isEmpty()
+                                  ? tr("Chart %1").arg(i + 1)
+                                  : chart->getChartTitle().trimmed();
+        QStringList sourcePaths;
+        bool hasOffline = false;
+        for (int seriesIndex = 0; seriesIndex < chart->countSeries(); ++seriesIndex)
+        {
+            UWatchSerie* serie = chart->getSerie(seriesIndex);
+            if (!serie)
+                continue;
+            if (!serie->isOnline)
+                hasOffline = true;
+            QString path = serie->nameComponent + QLatin1Char('.') + serie->nameProperty;
+            if (!serie->xNameProperty.isEmpty())
+                path = serie->xNameComponent + QLatin1Char('.') + serie->xNameProperty
+                       + QStringLiteral(" → ") + path;
+            if (serie->Jx >= 0 || serie->Jy >= 0)
+                path += QStringLiteral("[%1,%2]").arg(serie->Jx).arg(serie->Jy);
+            sourcePaths.push_back(path);
+        }
+
+        const QString kind = NMSDK::Plot::vizKindToString(chart->getVizKind());
+        const QString state = !chart->isPanelVisible()
+                                  ? tr("hidden")
+                                  : (!chart->isInGrid()
+                                         ? tr("outside grid")
+                                         : (chart->countSeries() == 0
+                                                ? tr("empty")
+                                                : (hasOffline ? tr("offline source") : tr("online"))));
+        auto* item = new QListWidgetItem(
+            tr("%1 · %2 · %3 series · %4")
+                .arg(title, kind)
+                .arg(chart->countSeries())
+                .arg(state),
+            m_panelList);
+        item->setData(Qt::UserRole, i);
+        item->setToolTip(sourcePaths.isEmpty() ? title : sourcePaths.join(QLatin1Char('\n')));
+        item->setHidden(!needle.isEmpty()
+                        && !item->text().contains(needle, Qt::CaseInsensitive)
+                        && !item->toolTip().contains(needle, Qt::CaseInsensitive));
+    }
+
+    if (m_chartIndex >= 0 && m_chartIndex < m_panelList->count())
+        m_panelList->setCurrentRow(m_chartIndex);
+}
+
+void PlotSettingsSidePanel::openPanelActionsMenu()
+{
+    const int index = selectedPanelIndex();
+    UWatchChart* chart = m_tab ? m_tab->getChart(index) : nullptr;
+    if (!chart || !m_panelActionsBtn)
+        return;
+
+    QMenu menu(this);
+    QAction* rename = menu.addAction(tr("Rename…"));
+    connect(rename, &QAction::triggered, this, [this, index, chart]() {
+        bool accepted = false;
+        const QString title = QInputDialog::getText(this, tr("Rename panel"), tr("Panel name"),
+                                                     QLineEdit::Normal, chart->getChartTitle(),
+                                                     &accepted).trimmed();
+        if (accepted && !title.isEmpty())
+            m_tab->renamePanel(index, title);
+    });
+    QAction* duplicate = menu.addAction(tr("Duplicate"));
+    connect(duplicate, &QAction::triggered, this, [this, index]() {
+        if (m_tab)
+            m_tab->duplicatePanel(index);
+    });
+    QAction* moveUp = menu.addAction(tr("Move earlier"));
+    moveUp->setEnabled(index > 0);
+    connect(moveUp, &QAction::triggered, this, [this, index]() {
+        if (m_tab && index > 0) {
+            m_tab->pushPanelMoveUndo(index, index - 1);
+            m_chartIndex = index - 1;
+            refreshFromTab();
+        }
+    });
+    QAction* moveDown = menu.addAction(tr("Move later"));
+    moveDown->setEnabled(m_tab && index + 1 < m_tab->countGraphs());
+    connect(moveDown, &QAction::triggered, this, [this, index]() {
+        if (m_tab && index + 1 < m_tab->countGraphs()) {
+            m_tab->pushPanelMoveUndo(index, index + 1);
+            m_chartIndex = index + 1;
+            refreshFromTab();
+        }
+    });
+    QAction* toggleVisible = menu.addAction(chart->isPanelVisible() ? tr("Hide") : tr("Show"));
+    connect(toggleVisible, &QAction::triggered, this, [this, index, visible = chart->isPanelVisible()]() {
+        if (!m_tab)
+            return;
+        UWatchChart* selected = m_tab->getChart(index);
+        if (!selected)
+            return;
+        if (visible)
+            m_tab->hidePanel(index);
+        else
+            m_tab->showPanel(selected->chartIndex);
+        m_chartIndex = selected->chartIndex;
+        refreshFromTab();
+    });
+    if (!chart->isInGrid())
+    {
+        QAction* bringIntoGrid = menu.addAction(tr("Bring into grid"));
+        connect(bringIntoGrid, &QAction::triggered, this, [this, index]() {
+            if (!m_tab)
+                return;
+            UWatchChart* selected = m_tab->getChart(index);
+            if (selected) {
+                m_tab->bringPanelIntoGrid(selected->chartIndex);
+                m_chartIndex = selected->chartIndex;
+            }
+            refreshFromTab();
+        });
+    }
+    QAction* remove = menu.addAction(tr("Delete…"));
+    remove->setEnabled(m_tab->countGraphs() > 1);
+    connect(remove, &QAction::triggered, this, [this, index]() {
+        if (m_tab)
+            m_tab->deletePanel(index, true);
+        refreshFromTab();
+    });
+    QAction* expand = menu.addAction(tr("Expand"));
+    connect(expand, &QAction::triggered, this, [this, index]() {
+        if (!m_tab)
+            return;
+        UWatchChart* selected = m_tab->getChart(index);
+        if (!selected)
+            return;
+        if (!selected->isPanelVisible() || !selected->isInGrid())
+            m_tab->showPanel(selected->chartIndex);
+        m_tab->setActiveChart(selected->chartIndex);
+        m_tab->toggleExpandChart(selected->chartIndex);
+    });
+
+    UWatch* watch = qobject_cast<UWatch*>(window());
+    const int currentTabIndex = watch ? watch->indexOfWatchTab(m_tab) : -1;
+    if (watch && watch->watchTabCount() > 1)
+    {
+        QMenu* moveMenu = menu.addMenu(tr("Move to Watch tab"));
+        for (int tabIndex = 0; tabIndex < watch->watchTabCount(); ++tabIndex)
+        {
+            if (tabIndex == currentTabIndex)
+                continue;
+            QAction* action = moveMenu->addAction(watch->watchTabTitle(tabIndex));
+            action->setToolTip(tr("Moves the panel definition; live sample buffers start filling again after the move."));
+            connect(action, &QAction::triggered, this, [this, index, tabIndex]() {
+                if (m_tab)
+                    m_tab->movePanelToWatchTab(index, tabIndex);
+                refreshFromTab();
+            });
+        }
+    }
+
+    menu.exec(m_panelActionsBtn->mapToGlobal(QPoint(0, m_panelActionsBtn->height())));
+}
+
 void PlotSettingsSidePanel::updateHero()
 {
     if (!m_tab || m_tab->countGraphs() <= 0)
     {
         m_heroTitle->setText(tr("No chart"));
-        if (m_panelCombo)
-        {
-            QSignalBlocker b(m_panelCombo);
-            m_panelCombo->clear();
-        }
+        updatePanelBrowser();
         return;
     }
     UWatchChart* chart = m_tab->getChart(m_chartIndex);
     const QString title = chart ? chart->getChartTitle() : QString();
-    m_heroTitle->setText(tr("Watch / Tab / %1")
-                             .arg(title.isEmpty() ? tr("Chart %1").arg(m_chartIndex + 1) : title));
-    if (m_panelCombo)
+    QString tabTitle = tr("Tab");
+    if (UWatch* watch = qobject_cast<UWatch*>(window()))
     {
-        QSignalBlocker b(m_panelCombo);
-        m_panelCombo->clear();
-        for (int i = 0; i < m_tab->countGraphs(); ++i)
-        {
-            UWatchChart* c = m_tab->getChart(i);
-            QString label = c ? c->getChartTitle() : QString();
-            if (label.isEmpty())
-                label = tr("Chart %1").arg(i + 1);
-            if (c && !c->isPanelVisible())
-                label += tr(" [hidden]");
-            label += tr(" · %1 series").arg(c ? c->countSeries() : 0);
-            m_panelCombo->addItem(label, i);
-        }
-        const int idx = m_panelCombo->findData(m_chartIndex);
-        if (idx >= 0)
-            m_panelCombo->setCurrentIndex(idx);
+        const int tabIndex = watch->indexOfWatchTab(m_tab);
+        if (tabIndex >= 0)
+            tabTitle = watch->watchTabTitle(tabIndex);
     }
+    m_heroTitle->setText(tr("Watch / %1 / %2")
+                             .arg(tabTitle, title.isEmpty() ? tr("Chart %1").arg(m_chartIndex + 1) : title));
+    updatePanelBrowser();
 }
 
 void PlotSettingsSidePanel::setActiveChart(int chartIndex)
@@ -530,6 +741,14 @@ void PlotSettingsSidePanel::showInspector(PlotInspectorPage page, int chartIndex
     showPage(page);
     show();
     raise();
+}
+
+void PlotSettingsSidePanel::focusPanelSearch()
+{
+    if (!m_panelFilter)
+        return;
+    m_panelFilter->setFocus(Qt::ShortcutFocusReason);
+    m_panelFilter->selectAll();
 }
 
 void PlotSettingsSidePanel::onTabChanged(int)
@@ -859,15 +1078,4 @@ void PlotSettingsSidePanel::applySeriesLive()
         m_seriesList->item(m_serieIndex)->setText(m_serieName->text());
     }
     emit requestApply();
-}
-
-bool PlotSettingsSidePanel::eventFilter(QObject* watched, QEvent* event)
-{
-    if (watched == m_panelCombo && event->type() == QEvent::MouseButtonDblClick)
-    {
-        if (m_tab)
-            m_tab->toggleExpandChart(m_chartIndex);
-        return true;
-    }
-    return QWidget::eventFilter(watched, event);
 }

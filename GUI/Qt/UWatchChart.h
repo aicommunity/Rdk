@@ -157,6 +157,8 @@ public:
     void setPanelId(const QString& id);
     bool isPanelVisible() const { return m_panelVisible; }
     void setPanelVisible(bool visible);
+    bool isInGrid() const { return m_inGrid; }
+    void setInGrid(bool inGrid) { m_inGrid = inGrid; }
     void setDenseChrome(bool dense);
     bool isDenseChrome() const { return m_denseChrome; }
 
@@ -221,6 +223,7 @@ private:
     bool m_titleVisible = true;
     bool m_selected = false;
     bool m_panelVisible = true;
+    bool m_inGrid = false;
     bool m_denseChrome = false;
     bool m_fixedYRange = false;
     bool m_fixedXRange = false;

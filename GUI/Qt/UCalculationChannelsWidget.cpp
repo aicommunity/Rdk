@@ -3,6 +3,8 @@
 
 #include <rdk_init.h>
 #include <QMessageBox>
+#include <QKeySequence>
+#include <QSignalBlocker>
 #include <QToolBar>
 #include <QVBoxLayout>
 
@@ -51,6 +53,12 @@ UCalculationChannelsWidget::UCalculationChannelsWidget(QWidget *parent, RDK::UAp
   connect(ui->actionStartChannel, SIGNAL(triggered(bool)), this, SLOT(actionStartChannel()));
   connect(ui->actionPauseChannel, SIGNAL(triggered(bool)), this, SLOT(actionPauseChannel()));
   connect(ui->actionResetChannel, SIGNAL(triggered(bool)), this, SLOT(actionResetChannel()));
+  ui->actionStartChannel->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+S")));
+  ui->actionStartChannel->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+  ui->actionPauseChannel->setShortcut(QKeySequence(QStringLiteral("Ctrl+Shift+P")));
+  ui->actionPauseChannel->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+  ui->actionStartChannel->setObjectName(QStringLiteral("startSelectedChannelAction"));
+  ui->actionPauseChannel->setObjectName(QStringLiteral("pauseSelectedChannelAction"));
 
   connect(ui->listWidgetChannels, SIGNAL(itemSelectionChanged()), this, SLOT(channelSelectionChanged()));
 
@@ -64,18 +72,32 @@ UCalculationChannelsWidget::~UCalculationChannelsWidget()
 
 void UCalculationChannelsWidget::AUpdateInterface()
 {
-  const int selected = currentChannel;
-  ui->listWidgetChannels->clear();
-  channelsCounter = Core_GetNumChannels();
+  const int newCount = qMax(0, Core_GetNumChannels());
+  const QSignalBlocker blocker(ui->listWidgetChannels);
+  ui->listWidgetChannels->setUpdatesEnabled(false);
+
+  while(ui->listWidgetChannels->count() > newCount)
+      delete ui->listWidgetChannels->takeItem(ui->listWidgetChannels->count() - 1);
+  while(ui->listWidgetChannels->count() < newCount)
+      new QListWidgetItem(ui->listWidgetChannels);
+
+  channelsCounter = newCount;
+  if(channelsCounter > 0)
+      currentChannel = qBound(0, currentChannel, channelsCounter - 1);
+  else
+      currentChannel = 0;
+
   for(int i = 0; i < channelsCounter; i++)
   {
-    QListWidgetItem *item = new QListWidgetItem(ui->listWidgetChannels);
-    const bool active = (i == selected);
+    QListWidgetItem *item = ui->listWidgetChannels->item(i);
+    const bool active = (i == currentChannel);
     item->setText(active ? tr("Ch %1 ●").arg(i) : tr("Ch %1").arg(i));
     item->setData(Qt::UserRole, i);
     item->setToolTip(tr("Calculation channel %1").arg(i));
-    if(i == currentChannel) ui->listWidgetChannels->setCurrentItem(item);
   }
+  ui->listWidgetChannels->setCurrentRow(channelsCounter > 0 ? currentChannel : -1);
+  ui->listWidgetChannels->setUpdatesEnabled(true);
+  ui->listWidgetChannels->viewport()->update();
   emit updateVisibility();
 }
 

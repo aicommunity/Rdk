@@ -8,6 +8,8 @@
 #include <QFile>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QScrollBar>
+#include <QSignalBlocker>
 #include <QTextStream>
 
 #ifdef RDK_USE_GLOG
@@ -41,6 +43,7 @@ ULoggerWidget::ULoggerWidget(QWidget *parent, RDK::UApplication *app):
     searchEdit->setClearButtonEnabled(true);
     toolBar->addWidget(searchEdit);
     pauseScroll = new QCheckBox(tr("Pause scroll"), toolBar);
+    pauseScroll->setAccessibleName(tr("Pause automatic scrolling"));
     toolBar->addWidget(pauseScroll);
     clearBtn = new QPushButton(tr("Clear"), toolBar);
     exportBtn = new QPushButton(tr("Export…"), toolBar);
@@ -50,11 +53,27 @@ ULoggerWidget::ULoggerWidget(QWidget *parent, RDK::UApplication *app):
 
     textEdit = new QPlainTextEdit(this);
     textEdit->clear();
+    textEdit->setReadOnly(true);
     textEdit->setMaximumBlockCount(m_maxBlocks);
     layout->addWidget(textEdit);
 
     connect(clearBtn, &QPushButton::clicked, this, &ULoggerWidget::clearLog);
     connect(exportBtn, &QPushButton::clicked, this, &ULoggerWidget::exportLog);
+    connect(levelFilter, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &ULoggerWidget::rebuildFilteredLog);
+    connect(searchEdit, &QLineEdit::textChanged,
+            this, &ULoggerWidget::rebuildFilteredLog);
+    connect(pauseScroll, &QCheckBox::toggled, this, [this](bool paused) {
+        if (paused)
+            return;
+        m_pendingWhilePaused = 0;
+        pauseScroll->setText(tr("Pause scroll"));
+        if (textEdit) {
+            QTextCursor cursor = textEdit->textCursor();
+            cursor.movePosition(QTextCursor::End);
+            textEdit->setTextCursor(cursor);
+        }
+    });
     RDK::UGlogGuiSink::Instance().SetMaxMessages(m_maxBlocks);
 
     updateTimer = new QTimer(this);
@@ -141,6 +160,7 @@ void ULoggerWidget::onUpdateTimer()
 
 void ULoggerWidget::clearLog()
 {
+    m_history.clear();
     if (textEdit)
         textEdit->clear();
     m_pendingWhilePaused = 0;
@@ -163,10 +183,47 @@ void ULoggerWidget::exportLog()
 
 void ULoggerWidget::AddString(int log_level, const QString &string)
 {
+ m_history.push_back(qMakePair(log_level, string));
+ if (m_history.size() > m_maxBlocks)
+  m_history.remove(0, m_history.size() - m_maxBlocks);
  if (!passesFilters(log_level, string))
   return;
 
- if (pauseScroll && pauseScroll->isChecked())
+ appendVisibleString(log_level, string, true);
+}
+
+void ULoggerWidget::rebuildFilteredLog()
+{
+    if (!textEdit)
+        return;
+
+    QScrollBar* scrollBar = textEdit->verticalScrollBar();
+    const int oldScrollValue = scrollBar ? scrollBar->value() : 0;
+    const int pendingCount = m_pendingWhilePaused;
+    const QSignalBlocker blocker(textEdit);
+    textEdit->clear();
+    for (const auto& entry : m_history)
+        if (passesFilters(entry.first, entry.second))
+            appendVisibleString(entry.first, entry.second, false, false);
+
+    m_pendingWhilePaused = pendingCount;
+    if (pauseScroll && pauseScroll->isChecked())
+    {
+        if (m_pendingWhilePaused > 0)
+            pauseScroll->setText(tr("Pause scroll (%1 new)").arg(m_pendingWhilePaused));
+        if (scrollBar)
+            scrollBar->setValue(qMin(oldScrollValue, scrollBar->maximum()));
+    }
+    else if (scrollBar)
+    {
+        scrollBar->setValue(scrollBar->maximum());
+    }
+}
+
+void ULoggerWidget::appendVisibleString(int log_level, const QString& string,
+                                       bool countAsNew, bool scrollToEnd)
+{
+ if (pauseScroll && pauseScroll->isChecked() && countAsNew)
  {
   ++m_pendingWhilePaused;
   pauseScroll->setText(tr("Pause scroll (%1 new)").arg(m_pendingWhilePaused));
@@ -204,7 +261,7 @@ void ULoggerWidget::AddString(int log_level, const QString &string)
  textEdit->setCurrentCharFormat(tf);
  textEdit->appendPlainText(string);
 
- if (pauseScroll && !pauseScroll->isChecked())
+ if (pauseScroll && !pauseScroll->isChecked() && scrollToEnd)
  {
   m_pendingWhilePaused = 0;
   pauseScroll->setText(tr("Pause scroll"));

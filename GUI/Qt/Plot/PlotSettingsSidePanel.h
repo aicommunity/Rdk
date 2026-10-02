@@ -11,10 +11,12 @@ class QLineEdit;
 class QDoubleSpinBox;
 class QCheckBox;
 class QListWidget;
+class QListWidgetItem;
 class QLabel;
 class QPushButton;
 class QTabWidget;
 class QButtonGroup;
+class QToolButton;
 
 enum class PlotInspectorPage
 {
@@ -36,9 +38,7 @@ public:
     void refreshFromTab();
 
     void showInspector(PlotInspectorPage page, int chartIndex);
-
-protected:
-    bool eventFilter(QObject* watched, QEvent* event) override;
+    void focusPanelSearch();
 
 signals:
     void requestHide();
@@ -54,6 +54,9 @@ private slots:
 private:
     void buildUi();
     void updateHero();
+    void updatePanelBrowser();
+    void openPanelActionsMenu();
+    int selectedPanelIndex() const;
     void connectLiveApply();
     void updateAxesModeVisibility();
 
@@ -63,9 +66,10 @@ private:
     bool m_refreshing = false;
 
     QLabel* m_heroTitle = nullptr;
-    QComboBox* m_panelCombo = nullptr;
+    QLineEdit* m_panelFilter = nullptr;
+    QListWidget* m_panelList = nullptr;
+    QToolButton* m_panelActionsBtn = nullptr;
     QPushButton* m_expandPanelBtn = nullptr;
-    QPushButton* m_hideBtn = nullptr;
     QTabWidget* m_tabs = nullptr;
 
     QWidget* m_chartPage = nullptr;
@@ -90,8 +94,6 @@ private:
     QPushButton* m_toggleLegendsBtn = nullptr;
     QPushButton* m_saveTemplateBtn = nullptr;
     QPushButton* m_loadTemplateBtn = nullptr;
-    QPushButton* m_panelUpBtn = nullptr;
-    QPushButton* m_panelDownBtn = nullptr;
     QComboBox* m_vizKind = nullptr;
 
     QWidget* m_seriesPage = nullptr;

@@ -40,6 +40,8 @@
 #include <QMimeData>
 #include <QShortcut>
 #include <QKeySequence>
+#include <QLineEdit>
+#include <QLabel>
 #include <QGraphicsSceneHoverEvent>
 #include <QShortcut>
 #include <QKeySequence>
@@ -114,6 +116,15 @@ UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
 
     auto* mainLayout = new QVBoxLayout(this);
     mainLayout->setContentsMargins(0,0,0,0);
+    auto* searchRow = new QHBoxLayout();
+    searchRow->setContentsMargins(6, 4, 6, 4);
+    searchRow->addWidget(new QLabel(tr("Find component"), this));
+    m_nodeSearchEdit = new QLineEdit(this);
+    m_nodeSearchEdit->setClearButtonEnabled(true);
+    m_nodeSearchEdit->setPlaceholderText(tr("Name or full component path…"));
+    m_nodeSearchEdit->setAccessibleName(tr("Search diagram components"));
+    searchRow->addWidget(m_nodeSearchEdit, 1);
+    mainLayout->addLayout(searchRow);
     mainLayout->addWidget(m_mainView);
     // Миникарта скрыта
     m_miniMap->hide();
@@ -122,6 +133,37 @@ UModernDiagramWidget::UModernDiagramWidget(QWidget *parent)
     auto* fitShortcut = new QShortcut(QKeySequence(tr("Ctrl+0")), this);
     fitShortcut->setContext(Qt::WidgetWithChildrenShortcut);
     connect(fitShortcut, &QShortcut::activated, this, &UModernDiagramWidget::FitToView);
+    auto* searchShortcut = new QShortcut(QKeySequence(QStringLiteral("Ctrl+F")), this);
+    searchShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+    connect(searchShortcut, &QShortcut::activated, this, [this]() {
+        if (m_nodeSearchEdit) {
+            m_nodeSearchEdit->setFocus(Qt::ShortcutFocusReason);
+            m_nodeSearchEdit->selectAll();
+        }
+    });
+    connect(m_nodeSearchEdit, &QLineEdit::returnPressed, this, [this]() {
+        if (!m_nodeSearchEdit || !m_mainView || m_nodeSearchEdit->text().trimmed().isEmpty())
+            return;
+        const QString query = m_nodeSearchEdit->text().trimmed();
+        UModernDiagramNodeItem* match = nullptr;
+        auto exact = m_nodeByName.constFind(query);
+        if (exact != m_nodeByName.cend())
+            match = exact.value();
+        if (!match) {
+            for (auto it = m_nodeByName.cbegin(); it != m_nodeByName.cend(); ++it) {
+                if (it.key().contains(query, Qt::CaseInsensitive)) {
+                    match = it.value();
+                    break;
+                }
+            }
+        }
+        if (!match)
+            return;
+        m_scene->clearSelection();
+        match->setSelected(true);
+        m_mainView->ensureVisible(match->sceneBoundingRect(), 24, 24);
+        m_mainView->setFocus(Qt::ShortcutFocusReason);
+    });
 
     // Кнопка «Описание проекта» слева от кнопки сброса масштаба
     m_viewportManager->createProjectDescriptionButton(this);
@@ -2928,5 +2970,3 @@ void UModernDiagramWidget::buildExternalOutgoingLinks()
 }
 
 // --------------------------- ComponentCache ---------------------------
-
-

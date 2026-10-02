@@ -22,6 +22,20 @@ private:
     QString m_title;
 };
 
+class WatchPanelMoveCommand : public QUndoCommand
+{
+public:
+    WatchPanelMoveCommand(UWatchTab* tab, int fromIndex, int toIndex);
+
+    void undo() override;
+    void redo() override;
+
+private:
+    UWatchTab* m_tab = nullptr;
+    int m_from = -1;
+    int m_to = -1;
+};
+
 class WatchSerieEnabledCommand : public QUndoCommand
 {
 public:
@@ -81,6 +95,7 @@ private:
     int m_chartIndex = -1;
     int m_serieIndex = -1;
     int m_createdIndex = -1;
+    QString m_createdSerieId;
 };
 
 #endif // PLOT_WATCH_UNDO_COMMANDS_H

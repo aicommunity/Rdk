@@ -302,6 +302,10 @@ int UWatchChart::duplicateSerie(int serieIndex)
     setSerieWidth(idx, snap.visual.width);
     setSerieLineType(idx, static_cast<Qt::PenStyle>(snap.visual.penStyle));
     getSerie(idx)->setColor(snap.visual.color);
+    getSerie(idx)->windowSize = snap.binding.windowSize;
+    getSerie(idx)->xyMinIntervalMs = snap.binding.xyMinIntervalMs;
+    getSerie(idx)->xyMinDistance = snap.binding.xyMinDistance;
+    setSerieEnabled(idx, snap.enabled);
     return idx;
 }
 
@@ -1321,4 +1325,3 @@ bool UWatchChart::eventFilter(QObject* watched, QEvent* event)
     }
     return QWidget::eventFilter(watched, event);
 }
-

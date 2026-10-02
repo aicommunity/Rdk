@@ -28,7 +28,27 @@ void WatchDeletePanelCommand::undo()
 {
     if (!m_tab)
         return;
-    m_tab->restorePanelSnapshot(m_index, m_panel);
+    m_tab->restorePanelSnapshot(m_index, m_panel, true);
+}
+
+WatchPanelMoveCommand::WatchPanelMoveCommand(UWatchTab* tab, int fromIndex, int toIndex)
+    : m_tab(tab)
+    , m_from(fromIndex)
+    , m_to(toIndex)
+{
+    setText(QObject::tr("Reorder Watch panel"));
+}
+
+void WatchPanelMoveCommand::undo()
+{
+    if (m_tab)
+        m_tab->movePanel(m_to, m_from);
+}
+
+void WatchPanelMoveCommand::redo()
+{
+    if (m_tab)
+        m_tab->movePanel(m_from, m_to);
 }
 
 WatchSerieEnabledCommand::WatchSerieEnabledCommand(UWatchTab* tab,
@@ -132,6 +152,8 @@ void WatchSerieDeleteCommand::undo()
     const int idx = c->countSeries() - 1;
     if (idx < 0)
         return;
+    if (c->getSerie(idx))
+        c->getSerie(idx)->setPlotSeriesId(m_serie.id);
     if (!m_serie.visual.displayName.isEmpty())
         c->setSerieName(idx, m_serie.visual.displayName);
     c->setSerieWidth(idx, m_serie.visual.width);
@@ -193,6 +215,13 @@ void WatchSerieDuplicateCommand::redo()
     if (UWatchChart* c = m_tab->getChart(m_chartIndex))
     {
         m_createdIndex = c->duplicateSerie(m_serieIndex);
+        if (UWatchSerie* created = c->getSerie(m_createdIndex))
+        {
+            if (m_createdSerieId.isEmpty())
+                m_createdSerieId = created->plotSeriesId();
+            else
+                created->setPlotSeriesId(m_createdSerieId);
+        }
         m_tab->syncDocumentFromCharts();
         m_tab->refreshInspectorIfOpen();
     }

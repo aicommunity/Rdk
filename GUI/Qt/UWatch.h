@@ -33,6 +33,11 @@ public:
     UWatchTab *getCurrentTab();
     /// Create first tab if empty (LLM / host helpers).
     UWatchTab *ensureCurrentTab();
+    int watchTabCount() const;
+    UWatchTab *watchTabAt(int index) const;
+    QString watchTabTitle(int index) const;
+    int indexOfWatchTab(const UWatchTab *tab) const;
+    bool movePanelBetweenTabs(UWatchTab *source, int panelIndex, int destinationTabIndex);
 
     // Обновление интерфейса
     virtual void AUpdateInterface(void);

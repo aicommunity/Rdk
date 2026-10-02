@@ -18,6 +18,7 @@
 #include <QSignalBlocker>
 #include <QVBoxLayout>
 #include <QSet>
+#include <QHash>
 #include <QTimer>
 #include <QMouseEvent>
 #include <QKeyEvent>
@@ -48,6 +49,8 @@
 #include <QAbstractItemView>
 #include <QListView>
 #include <QHeaderView>
+
+#include <functional>
 
 #include "../../Deploy/Include/rdk_error_codes.h"
 #include "../../Core/Utilities/USupport.h"
@@ -2102,43 +2105,113 @@ void UComponentsListWidgetModern::rebuildTreeFromSnapshot(const NMSDK::UGuiSnaps
     const int scrollMax = componentsTree->verticalScrollBar()->maximum();
     const int scrollPos = componentsTree->verticalScrollBar()->value();
 
-    QSignalBlocker blocker(componentsTree);
-    componentsTree->clear();
-
-    auto *rootItem = new QTreeWidgetItem(componentsTree);
+    componentsTree->setUpdatesEnabled(false);
+    const QSignalBlocker blocker(componentsTree);
+    QTreeWidgetItem* rootItem = componentsTree->topLevelItem(0);
+    if (!rootItem)
+        rootItem = new QTreeWidgetItem(componentsTree);
+    while (componentsTree->topLevelItemCount() > 1)
+        delete componentsTree->takeTopLevelItem(componentsTree->topLevelItemCount() - 1);
     rootItem->setText(0, tr("Model"));
     rootItem->setData(0, Qt::UserRole, QString());
     rootItem->setExpanded(true);
 
+    const auto& componentNames = snapshot->ComponentOrder;
+    QSet<QString> presentNames;
+    for (const QString& name : componentNames)
+    {
+        const auto summary = snapshot->Components.value(name);
+        if (!summary.LongName.isEmpty())
+            presentNames.insert(summary.LongName);
+    }
+
+    // Remove only deleted branches; existing items keep their identity, expansion and selection.
+    std::function<void(QTreeWidgetItem*)> pruneDeleted = [&](QTreeWidgetItem* parent) {
+        if (!parent)
+            return;
+        for (int i = parent->childCount() - 1; i >= 0; --i)
+        {
+            QTreeWidgetItem* child = parent->child(i);
+            const QString name = child->data(0, Qt::UserRole).toString();
+            if (name.isEmpty() || !presentNames.contains(name))
+                delete parent->takeChild(i);
+            else
+                pruneDeleted(child);
+        }
+    };
+    pruneDeleted(rootItem);
+
     QHash<QString, QTreeWidgetItem*> items;
     items.insert(QString(), rootItem);
+    std::function<void(QTreeWidgetItem*)> indexItems = [&](QTreeWidgetItem* parent) {
+        if (!parent)
+            return;
+        for (int i = 0; i < parent->childCount(); ++i)
+        {
+            QTreeWidgetItem* child = parent->child(i);
+            const QString name = child->data(0, Qt::UserRole).toString();
+            if (!name.isEmpty())
+                items.insert(name, child);
+            indexItems(child);
+        }
+    };
+    indexItems(rootItem);
 
-    // Pass 1: create items detached; order from ComponentOrder (model DFS), not QHash::keys().
-    const auto& componentNames = snapshot->ComponentOrder;
-    for (const QString &name : componentNames) {
+    QHash<QString, QStringList> orderedChildren;
+    for (const QString& name : componentNames)
+    {
         const auto summary = snapshot->Components.value(name);
-        auto *item = new QTreeWidgetItem();
+        if (summary.LongName.isEmpty())
+            continue;
+        QTreeWidgetItem* item = items.value(summary.LongName, nullptr);
+        if (!item)
+            item = new QTreeWidgetItem();
         item->setText(0, summary.ShortName);
         item->setToolTip(0, summary.LongName + QStringLiteral("\n") + summary.ClassName);
         item->setData(0, Qt::UserRole, summary.LongName);
         items.insert(summary.LongName, item);
+
+        const QString parentName = items.contains(summary.ParentName)
+                                       ? summary.ParentName : QString();
+        orderedChildren[parentName].push_back(summary.LongName);
     }
 
-    // Pass 2: attach under parent (or Model root).
-    for (const QString &name : componentNames) {
-        const auto summary = snapshot->Components.value(name);
-        QTreeWidgetItem *item = items.value(summary.LongName);
-        if (!item || item == rootItem)
-            continue;
-        QTreeWidgetItem *parent = items.value(summary.ParentName, rootItem);
+    // Move changed nodes in place and reorder siblings to match the model DFS order.
+    for (auto it = orderedChildren.cbegin(); it != orderedChildren.cend(); ++it)
+    {
+        QTreeWidgetItem* parent = items.value(it.key(), rootItem);
         if (!parent)
             parent = rootItem;
-        parent->addChild(item);
+        const QStringList& names = it.value();
+        for (int targetIndex = 0; targetIndex < names.size(); ++targetIndex)
+        {
+            QTreeWidgetItem* child = items.value(names.at(targetIndex), nullptr);
+            if (!child)
+                continue;
+            QTreeWidgetItem* oldParent = child->parent();
+            if (oldParent != parent)
+            {
+                if (oldParent)
+                    oldParent->removeChild(child);
+                parent->insertChild(targetIndex, child);
+            }
+            else
+            {
+                const int oldIndex = parent->indexOfChild(child);
+                if (oldIndex != targetIndex)
+                {
+                    QTreeWidgetItem* moved = parent->takeChild(oldIndex);
+                    parent->insertChild(targetIndex, moved);
+                }
+            }
+        }
     }
 
     applyFilter(rootItem);
     componentsTree->verticalScrollBar()->setMaximum(scrollMax);
     componentsTree->verticalScrollBar()->setValue(scrollPos);
+    componentsTree->setUpdatesEnabled(true);
+    componentsTree->viewport()->update();
 
     if(channelsSelectionVisible)
     {

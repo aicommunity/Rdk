@@ -64,6 +64,7 @@ class UModernDiagramContextMenu;
 // Forward declarations for extracted classes
 class UModernDiagramScene;
 class UModernDiagramView;
+class QLineEdit;
 
 /// Простой современный виджет диаграммы на основе QGraphicsView/QGraphicsScene.
 /// Отображает компоненты как узлы с портами, поддерживает drag&drop связей и миникарту.
@@ -307,6 +308,7 @@ private:
     UModernDiagramScene* m_scene;
     UModernDiagramView* m_mainView;
     QGraphicsView* m_miniMap;
+    QLineEdit* m_nodeSearchEdit = nullptr;
 
     // Temporary link during drag
     UModernDiagramLinkItem* m_tempLink;
@@ -430,4 +432,3 @@ typedef UModernDiagramLinkItem LinkItem;
 typedef UModernDiagramNodeItem NodeItem;
 
 #endif // UMODERNDIAGRAMWIDGET_H
-

@@ -18,6 +18,10 @@ class UWatchSerie: public NMSDK_QT_CHARTS_BASE(QLineSeries)
 public:
     UWatchSerie();
 
+    /// Stable identity persisted in PlotDocument and retained across capture/restore.
+    const QString& plotSeriesId() const { return m_plotSeriesId; }
+    void setPlotSeriesId(const QString& id);
+
     // Y (and TimeSeries) source
     int indexChannel = 0;
     QString nameComponent;
@@ -63,6 +67,9 @@ public:
     NMSDK::Plot::DataBinding toBinding() const;
     void applyBinding(const NMSDK::Plot::DataBinding& binding, NMSDK::Plot::VizKind viz);
     NMSDK::Plot::PlotSeries toPlotSeries() const;
+
+private:
+    QString m_plotSeriesId;
 };
 
 #endif // UWATCHSERIE_H

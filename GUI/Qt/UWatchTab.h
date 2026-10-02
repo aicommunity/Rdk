@@ -46,7 +46,9 @@ public:
 
     void createSelectionDialog(int chartIndex);
     void openQuickAddDialog(int chartIndex);
-    bool restorePanelSnapshot(int insertIndex, const NMSDK::Plot::PlotPanel& panel);
+    bool restorePanelSnapshot(int insertIndex, const NMSDK::Plot::PlotPanel& panel,
+                              bool preservePanelId = false);
+    bool movePanelToWatchTab(int chartIndex, int destinationTabIndex);
     void pushSerieEnabledUndo(int chartIndex, int serieIndex, bool enabled);
     void refreshInspectorIfOpen();
 
@@ -74,6 +76,7 @@ public:
     void showInspector(PlotInspectorPage page, int chartIndex = -1);
     void hideInspector();
     bool isInspectorVisible() const;
+    void focusPanelSearch();
 
     void toggleExpandChart(int chartIndex);
     void collapseExpandedChart();
@@ -88,11 +91,13 @@ public:
 
     bool hidePanel(int chartIndex);
     bool showPanel(int chartIndex);
+    bool bringPanelIntoGrid(int chartIndex);
     bool duplicatePanel(int chartIndex);
     bool deletePanel(int chartIndex, bool confirm = true);
     bool deletePanelImpl(int chartIndex);
     bool movePanel(int fromIndex, int toIndex);
     bool renamePanel(int chartIndex, const QString& title);
+    void pushPanelMoveUndo(int fromIndex, int toIndex);
     void pushSerieDeleteUndo(int chartIndex, int serieIndex);
     void pushSerieDuplicateUndo(int chartIndex, int serieIndex);
     void pushSerieMoveUndo(int chartIndex, int fromIndex, int toIndex);

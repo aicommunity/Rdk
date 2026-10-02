@@ -5,6 +5,14 @@
 UWatchSerie::UWatchSerie()
 {
     isOnline = true;
+    m_plotSeriesId = NMSDK::Plot::makePlotObjectId(QStringLiteral("serie"));
+}
+
+void UWatchSerie::setPlotSeriesId(const QString& id)
+{
+    m_plotSeriesId = id.isEmpty()
+                         ? NMSDK::Plot::makePlotObjectId(QStringLiteral("serie"))
+                         : id;
 }
 
 void UWatchSerie::setOnlineStatus(bool online)
@@ -85,7 +93,7 @@ void UWatchSerie::applyBinding(const NMSDK::Plot::DataBinding& binding, NMSDK::P
 NMSDK::Plot::PlotSeries UWatchSerie::toPlotSeries() const
 {
     NMSDK::Plot::PlotSeries s;
-    s.id = NMSDK::Plot::makePlotObjectId(QStringLiteral("serie"));
+    s.id = m_plotSeriesId;
     s.visual.displayName = name();
     s.visual.color = color();
     s.visual.width = pen().width();
