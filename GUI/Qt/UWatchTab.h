@@ -76,6 +76,7 @@ public:
     void showInspector(PlotInspectorPage page, int chartIndex = -1);
     void hideInspector();
     bool isInspectorVisible() const;
+    PlotInspectorPage currentInspectorPage() const;
     void focusPanelSearch();
 
     void toggleExpandChart(int chartIndex);
@@ -175,6 +176,9 @@ private:
     virtual void AUpdateInterface();
     virtual void AClearInterface();
     virtual void ReadSeriesDataSafe(int graphIndex, int serieIndex, std::list<double> &xdata, std::list<double> &ydata);
+
+signals:
+    void inspectorStateChanged();
 
 public slots:
     void createSelectionDialogSlot(int index);

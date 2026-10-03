@@ -24,6 +24,8 @@
 #include <QDir>
 #include <QDateTime>
 #include <QMessageBox>
+#include <QCursor>
+#include <QToolTip>
 #include <QUndoStack>
 #include <QToolBar>
 #include <QtGlobal>
@@ -485,6 +487,8 @@ void UWatchTab::updateExpandActionsVisibility()
         graph[i]->setExpandActionVisible(multi);
         graph[i]->setExpandChecked(multi && i == m_expandedIndex);
     }
+    if (settingsPanel)
+        settingsPanel->refreshExpandControl();
 }
 
 void UWatchTab::restoreExpandedSplitterSizes()
@@ -722,9 +726,16 @@ void UWatchTab::showInspector(PlotInspectorPage page, int chartIndex)
         return;
     if (chartIndex < 0)
         chartIndex = m_activeChartIndex;
+    if (isInspectorVisible() && m_activeChartIndex == chartIndex
+        && settingsPanel->currentPage() == page)
+    {
+        hideInspector();
+        return;
+    }
     setActiveChart(chartIndex);
     settingsPanel->showInspector(page, m_activeChartIndex);
     updateInspectorSplitterSizes(true);
+    emit inspectorStateChanged();
 }
 
 void UWatchTab::hideInspector()
@@ -733,11 +744,17 @@ void UWatchTab::hideInspector()
         return;
     settingsPanel->hide();
     updateInspectorSplitterSizes(false);
+    emit inspectorStateChanged();
 }
 
 bool UWatchTab::isInspectorVisible() const
 {
     return settingsPanel && settingsPanel->isVisible();
+}
+
+PlotInspectorPage UWatchTab::currentInspectorPage() const
+{
+    return settingsPanel ? settingsPanel->currentPage() : PlotInspectorPage::Chart;
 }
 
 void UWatchTab::focusPanelSearch()
@@ -746,7 +763,9 @@ void UWatchTab::focusPanelSearch()
     if (!settingsPanel)
         return;
     settingsPanel->showInspector(PlotInspectorPage::Chart, m_activeChartIndex);
+    updateInspectorSplitterSizes(true);
     settingsPanel->focusPanelSearch();
+    emit inspectorStateChanged();
 }
 
 void UWatchTab::updateInspectorSplitterSizes(bool show)
@@ -799,6 +818,8 @@ void UWatchTab::ensureSettingsPanel()
     mainSplitter->setStretchFactor(1, 0);
     mainSplitter->setCollapsible(1, true);
     connect(settingsPanel, &PlotSettingsSidePanel::requestHide, this, &UWatchTab::hideInspector);
+    connect(settingsPanel, &PlotSettingsSidePanel::pageChanged, this,
+            [this](PlotInspectorPage) { emit inspectorStateChanged(); });
     settingsPanel->hide();
     updateInspectorSplitterSizes(false);
 }
@@ -1746,6 +1767,9 @@ bool UWatchTab::saveWatchTemplateAs(const QString& filePath)
 
 bool UWatchTab::loadWatchTemplateFrom(const QString& filePath, bool reassignIds)
 {
+    if (CalculationModeFlag.Get())
+        return false;
+
     NMSDK::Plot::PlotDocument doc;
     QString err;
     if (!NMSDK::Plot::loadWatchTemplateFile(filePath, doc, &err))
@@ -1755,6 +1779,10 @@ bool UWatchTab::loadWatchTemplateFrom(const QString& filePath, bool reassignIds)
     }
     if (reassignIds)
         NMSDK::Plot::reassignPlotObjectIds(doc);
+    // The calculation may have started while the file chooser was open.
+    // Creating series registers readers and needs the environment lock.
+    if (CalculationModeFlag.Get())
+        return false;
     applyPlotDocument(doc);
     syncDocumentFromCharts();
     refreshInspectorIfOpen();
@@ -1783,6 +1811,14 @@ void UWatchTab::saveWatchTemplateDialog()
 
 void UWatchTab::loadWatchTemplateDialog()
 {
+    if (CalculationModeFlag.Get())
+    {
+        QToolTip::showText(QCursor::pos(),
+                           tr("Pause the calculation before loading a Watch template"),
+                           this);
+        return;
+    }
+
     QString startDir = watchTemplatesDir();
     if (startDir.isEmpty())
         startDir = QDir::homePath();
@@ -1793,7 +1829,12 @@ void UWatchTab::loadWatchTemplateDialog()
         tr("Watch template (*.watch.xml);;XML (*.xml);;All (*)"));
     if (path.isEmpty())
         return;
-    loadWatchTemplateFrom(path, true);
+    if (!loadWatchTemplateFrom(path, true) && CalculationModeFlag.Get())
+    {
+        QToolTip::showText(QCursor::pos(),
+                           tr("Pause the calculation before loading a Watch template"),
+                           this);
+    }
 }
 
 void UWatchTab::syncTimeSeriesXRangeFromActive()

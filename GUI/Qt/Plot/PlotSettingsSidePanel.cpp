@@ -36,6 +36,7 @@
 #include <QInputDialog>
 #include <QScrollArea>
 #include <QFrame>
+#include <QTimer>
 
 namespace {
 
@@ -59,6 +60,12 @@ PlotSettingsSidePanel::PlotSettingsSidePanel(UWatchTab* tab, QWidget* parent)
     setMaximumWidth(420);
     buildUi();
     connectLiveApply();
+    m_calculationStateTimer = new QTimer(this);
+    m_calculationStateTimer->setInterval(150);
+    connect(m_calculationStateTimer, &QTimer::timeout,
+            this, &PlotSettingsSidePanel::updateTemplateLoadAvailability);
+    updateTemplateLoadAvailability();
+    m_calculationStateTimer->start();
     auto* esc = new QShortcut(QKeySequence(Qt::Key_Escape), this);
     esc->setContext(Qt::WidgetWithChildrenShortcut);
     connect(esc, &QShortcut::activated, this, &PlotSettingsSidePanel::requestHide);
@@ -698,6 +705,7 @@ void PlotSettingsSidePanel::openPanelActionsMenu()
 
 void PlotSettingsSidePanel::updateHero()
 {
+    refreshExpandControl();
     if (!m_tab || m_tab->countGraphs() <= 0)
     {
         m_heroTitle->setText(tr("No chart"));
@@ -718,6 +726,36 @@ void PlotSettingsSidePanel::updateHero()
     updatePanelBrowser();
 }
 
+void PlotSettingsSidePanel::refreshExpandControl()
+{
+    if (!m_expandPanelBtn)
+        return;
+
+    UWatchChart* chart = m_tab ? m_tab->getChart(m_chartIndex) : nullptr;
+    const bool expanded = chart && m_tab->isChartExpanded()
+                          && m_tab->expandedChartIndex() == chart->chartIndex;
+    m_expandPanelBtn->setText(expanded ? tr("Collapse") : tr("Expand"));
+    m_expandPanelBtn->setToolTip(expanded
+                                     ? tr("Collapse the selected Watch panel and restore the grid")
+                                     : tr("Expand the selected panel to fill the grid"));
+    m_expandPanelBtn->setAccessibleName(expanded
+                                            ? tr("Collapse selected Watch panel")
+                                            : tr("Expand selected Watch panel"));
+}
+
+void PlotSettingsSidePanel::updateTemplateLoadAvailability()
+{
+    if (!m_loadTemplateBtn)
+        return;
+
+    const bool calculationRunning = UWatchTab::CalculationModeFlag.Get();
+    m_loadTemplateBtn->setEnabled(!calculationRunning);
+    m_loadTemplateBtn->setToolTip(
+        calculationRunning
+            ? tr("Pause the calculation before loading a Watch template")
+            : tr("Load a saved Watch layout and its chart series"));
+}
+
 void PlotSettingsSidePanel::setActiveChart(int chartIndex)
 {
     m_chartIndex = chartIndex;
@@ -732,6 +770,13 @@ void PlotSettingsSidePanel::showPage(PlotInspectorPage page)
     if (idx >= 0 && idx < m_tabs->count())
         m_tabs->setCurrentIndex(idx);
     updateHero();
+}
+
+PlotInspectorPage PlotSettingsSidePanel::currentPage() const
+{
+    return m_tabs && m_tabs->currentIndex() == static_cast<int>(PlotInspectorPage::Series)
+               ? PlotInspectorPage::Series
+               : PlotInspectorPage::Chart;
 }
 
 void PlotSettingsSidePanel::showInspector(PlotInspectorPage page, int chartIndex)
@@ -755,6 +800,7 @@ void PlotSettingsSidePanel::onTabChanged(int)
 {
     refreshFromTab();
     updateHero();
+    emit pageChanged(currentPage());
 }
 
 void PlotSettingsSidePanel::updateAxesModeVisibility()

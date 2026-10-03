@@ -822,6 +822,15 @@ void UWatchChart::slotCustomMenuRequested(QPoint pos)
     QAction * addSeiesAction =      new QAction(tr("Add series (advanced)…"), this);
     QAction * seriesOptionAction =  new QAction(tr("Series settings"), this);
     QAction * chartOptionAction =   new QAction(tr("Chart settings"), this);
+    seriesOptionAction->setCheckable(true);
+    chartOptionAction->setCheckable(true);
+    if (WatchTab && WatchTab->isInspectorVisible())
+    {
+        seriesOptionAction->setChecked(
+            WatchTab->currentInspectorPage() == PlotInspectorPage::Series);
+        chartOptionAction->setChecked(
+            WatchTab->currentInspectorPage() == PlotInspectorPage::Chart);
+    }
     QAction * duplicateAction =     new QAction(tr("Duplicate panel"), this);
     QAction * hideAction =          new QAction(tr("Hide panel"), this);
     QAction * deleteAction =        new QAction(tr("Delete panel"), this);
@@ -870,13 +879,11 @@ void UWatchChart::addSeriesSlot()
 
 void UWatchChart::seriesOptionSlot()
 {
-    emit chartActivated(chartIndex);
     emit openSettingsPanel(chartIndex, true);
 }
 
 void UWatchChart::chartOptionSlot()
 {
-    emit chartActivated(chartIndex);
     emit openSettingsPanel(chartIndex, false);
 }
 

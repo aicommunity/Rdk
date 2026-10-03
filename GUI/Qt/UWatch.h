@@ -93,6 +93,7 @@ private:
 
     void createTab();
     void deleteTab(int index);
+    void syncInspectorActions();
 
     Ui::UWatch *ui;
 };

@@ -14,6 +14,10 @@ UWatch::UWatch(QWidget *parent, RDK::UApplication* app)
 {
     ui->setupUi(this);
     setAccessibleName("UWatch");
+    ui->actionChart_settings->setCheckable(true);
+    ui->actionSeries_settings->setCheckable(true);
+    connect(ui->tabWidget, &QTabWidget::currentChanged, this,
+            [this](int) { syncInspectorActions(); });
     
     // Стили для табов теперь применяются через глобальные стили из QSS
     // Это позволяет правильно работать с темной и светлой темами
@@ -202,9 +206,16 @@ void UWatch::createTab()
     // accessibleName задаём сразу: CalcFullName() → ключ XML Interface.xml
     tab.push_back(new UWatchTab(this));
     tab.last()->setAccessibleName(tabKey);
+    UWatchTab* createdTab = tab.last();
+    connect(createdTab, &UWatchTab::inspectorStateChanged, this,
+            [this, createdTab]() {
+                if (getCurrentTab() == createdTab)
+                    syncInspectorActions();
+            });
 
     ui->tabWidget->addTab(tab.last(), tabKey);
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
+    syncInspectorActions();
 
     // Обновляем стили табов после создания новой вкладки
     QTimer::singleShot(0, this, [this]() {
@@ -341,6 +352,17 @@ void UWatch::on_tabWidget_currentChanged(int index)
 {
  if(index >=0 && index<tab.size())
   tab[index]->UpdateInterface();
+ syncInspectorActions();
+}
+
+void UWatch::syncInspectorActions()
+{
+    UWatchTab* current = getCurrentTab();
+    const bool visible = current && current->isInspectorVisible();
+    const PlotInspectorPage page = visible ? current->currentInspectorPage()
+                                           : PlotInspectorPage::Chart;
+    ui->actionChart_settings->setChecked(visible && page == PlotInspectorPage::Chart);
+    ui->actionSeries_settings->setChecked(visible && page == PlotInspectorPage::Series);
 }
 
 void UWatch::updateTheme()

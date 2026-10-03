@@ -17,6 +17,7 @@ class QPushButton;
 class QTabWidget;
 class QButtonGroup;
 class QToolButton;
+class QTimer;
 
 enum class PlotInspectorPage
 {
@@ -35,7 +36,9 @@ public:
     void showPage(PlotInspectorPage page);
     void showChartPage() { showPage(PlotInspectorPage::Chart); }
     void showSeriesPage() { showPage(PlotInspectorPage::Series); }
+    PlotInspectorPage currentPage() const;
     void refreshFromTab();
+    void refreshExpandControl();
 
     void showInspector(PlotInspectorPage page, int chartIndex);
     void focusPanelSearch();
@@ -43,6 +46,7 @@ public:
 signals:
     void requestHide();
     void requestApply();
+    void pageChanged(PlotInspectorPage page);
 
 private slots:
     void onTabChanged(int index);
@@ -54,6 +58,7 @@ private slots:
 private:
     void buildUi();
     void updateHero();
+    void updateTemplateLoadAvailability();
     void updatePanelBrowser();
     void openPanelActionsMenu();
     int selectedPanelIndex() const;
@@ -71,6 +76,7 @@ private:
     QToolButton* m_panelActionsBtn = nullptr;
     QPushButton* m_expandPanelBtn = nullptr;
     QTabWidget* m_tabs = nullptr;
+    QTimer* m_calculationStateTimer = nullptr;
 
     QWidget* m_chartPage = nullptr;
     QLineEdit* m_titleEdit = nullptr;
