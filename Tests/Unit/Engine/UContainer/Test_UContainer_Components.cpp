@@ -70,9 +70,12 @@ protected:
 
 TEST(UContainerCopyLifecycle, ReplacesInitializedGraphThroughNativeReinitialization)
 {
-    UEPtr<TestContainer> source(new TestContainer), target(new TestContainer);
-    source->Default(); target->Default();
-    source->Activity = true; target->Activity = true;
+    UEPtr<UStorage> storage(new UStorage);
+    storage->AddClass(new UComponentFactoryMethod(storage,
+        +[]() -> UComponent* { return new TestContainer; }, "CopyFixture"), "CopyFixture");
+    auto source = dynamic_pointer_cast<TestContainer>(storage->TakeObject("CopyFixture"));
+    auto target = dynamic_pointer_cast<TestContainer>(storage->TakeObject("CopyFixture"));
+    ASSERT_TRUE(source); ASSERT_TRUE(target);
     source->Init(); target->Init();
     ASSERT_TRUE(source->IsInit()); ASSERT_TRUE(target->IsInit());
     const int buildsBefore = target->buildCalls;
@@ -86,6 +89,7 @@ TEST(UContainerCopyLifecycle, ReplacesInitializedGraphThroughNativeReinitializat
     EXPECT_EQ(target->initCalls, 2);
     EXPECT_GT(target->buildCalls, buildsBefore);
     EXPECT_TRUE(source->IsInit());
+    storage->ReturnObject(target); storage->ReturnObject(source);
 }
 
 TEST(UContainerCompat, BasicLifecycleAndName)
