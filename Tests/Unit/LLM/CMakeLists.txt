@@ -288,11 +288,7 @@ target_include_directories(Test_LLM_WriteToolsEngine PRIVATE
 target_compile_definitions(Test_LLM_WriteToolsEngine PRIVATE
   CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}" RDK_LIB_TYPE= RDK_CALL=)
 add_test(NAME Test_LLM_WriteToolsEngine COMMAND Test_LLM_WriteToolsEngine)
-if(WIN32)
-  set(_LLM_ENGINE_TEST_CWD "${CMAKE_SOURCE_DIR}/Bin/Platform/Win")
-else()
-  set(_LLM_ENGINE_TEST_CWD "${CMAKE_SOURCE_DIR}/Bin/Platform/Linux")
-endif()
+set(_LLM_ENGINE_TEST_CWD "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 set_tests_properties(Test_LLM_WriteToolsEngine PROPERTIES
   WORKING_DIRECTORY "${_LLM_ENGINE_TEST_CWD}")
 set_target_properties(Test_LLM_WriteToolsEngine PROPERTIES
