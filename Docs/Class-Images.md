@@ -1,0 +1,56 @@
+# Проверяемая регистрация образов компонентов
+
+`Core/Engine/UClassImageRegistry.h` добавляет отдельный opt-in путь
+`RegisterClassImage(storage, name, prototype)`. Старый UploadClass не меняется.
+Вызывается при подготовке storage до создания/запуска экспериментальных моделей;
+параллельное изменение storage или графа не поддерживается.
+
+1. Вход — отдельный готовый экземпляр зарегистрированного базового класса,
+   принадлежащий тому же storage и не прикреплённый к родителю.
+2. Снимаются зарегистрированные параметры всех групп, классы и порядок детей,
+   внутренние property bindings с их слотами. Имя/Id корня и динамические
+   состояния не определяют физический образ. Числовые double, vector<double>,
+   MDMatrix<double> параметры проверяются на finite. Неизвестные connected
+   свойства и ссылки за пределы графа запрещены.
+3. Для нового имени создаётся отдельная native Alloc/Copy параметров и графа,
+   затем выполняется native Init. Исходник не получает Default/Build/Reset.
+   После инициализации описание должно совпасть; общих объектов детей быть
+   не должно. Противоречие parent defaults и индивидуальных значений запрещает
+   регистрацию вместо молчаливого стирания физики.
+4. Отдельная копия передаётся штатной UVirtualMethodFactory/AddClass. Исходный
+   экземпляр можно вернуть в storage; он не является зарегистрированным образом.
+5. Если имя занято, описания сравниваются с read-only prototype существующей
+   UVirtualMethodFactory. Совпадение даёт created=false; различие —
+   ClassImageError(code=image_name_collision). Неподдерживаемая фабрика также
+   отклоняется. Существующие образы и работающие экземпляры не обновляются.
+
+```cpp
+auto image = RDK::dynamic_pointer_cast<RDK::UContainer>(storage->TakeObject(baseClass));
+// Configure physical parameters / native structural class names here.
+// Build explicitly after structural edits; set frequency before final Init.
+image->SetEnvironment(environment);
+image->Build();
+const auto registration = RDK::RegisterClassImage(storage, newClassName, image);
+storage->ReturnObject(image);
+auto instance = storage->TakeObject(newClassName);
+```
+
+Зарегистрированный prototype дальше неизменяем по контракту: не получать его
+через factory для записи, не возвращать его в pool и не менять параметры при
+работающих экземплярах. Изменённая физика получает новое имя образа. Регистрируют
+снизу вверх: канал/синапс → мембрана → нейрон. Уже существующие индивидуальные
+обученные параметры относятся к learned state, а не к переписыванию prototype.
+
+`DescribeClassImage` возвращает точное length-prefixed описание для сравнения
+внутри одного runtime. Оно содержит native C++ type names и native сериализацию:
+это **не portable scientific fingerprint**, не ConditionSpec и не model export.
+Версии кода/компилятора/базовых образов учитывает внешний runtime manifest.
+Скрытая динамика/контроллер и численная устойчивость интегратора здесь не
+сертифицируются. Совместимость конкретного класса подтверждают native fixtures.
+
+ClassImageError сообщает отдельный код ошибки подготовки. Lifecycle bool не
+используется как механизм передачи ошибок. Alloc/Copy/Init здесь строят новый
+образ параметров; они не объявляются checkpoint незавершённой пробы.
+
+Native проверки PulseLib находятся в корневом репозитории:
+`Tests/Integration/Libraries/Test_PulseLib_ClassImages.cpp`.

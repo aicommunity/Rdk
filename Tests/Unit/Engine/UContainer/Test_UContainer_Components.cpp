@@ -10,7 +10,12 @@ using namespace RDK;
 class TestContainer : public UNet
 {
 public:
+    int initCalls = 0, uninitCalls = 0, buildCalls = 0;
     TestContainer* New(void) override { return new TestContainer(); }
+protected:
+    void AInit() override { ++initCalls; }
+    void AUnInit() override { ++uninitCalls; }
+public:
 
     void ForceUpdateActiveCache() { UpdateActiveComponentsCache(); }
     bool IsActiveCacheValid() const { return ActiveComponentsCacheValid; }
@@ -58,10 +63,35 @@ public:
 
 protected:
     bool ADefault(void) override { return true; }
-    bool ABuild(void) override { return true; }
+    bool ABuild(void) override { ++buildCalls; return true; }
     bool AReset(void) override { return true; }
     bool ACalculate(void) override { return true; }
 };
+
+TEST(UContainerCopyLifecycle, ReplacesInitializedGraphThroughNativeReinitialization)
+{
+    UEPtr<UStorage> storage(new UStorage);
+    storage->AddClass(new UComponentFactoryMethod(storage,
+        +[]() -> UComponent* { return new TestContainer; }, "CopyFixture"), "CopyFixture");
+    auto source = dynamic_pointer_cast<TestContainer>(storage->TakeObject("CopyFixture"));
+    auto target = dynamic_pointer_cast<TestContainer>(storage->TakeObject("CopyFixture"));
+    ASSERT_TRUE(source); ASSERT_TRUE(target);
+    source->Init(); target->Init();
+    ASSERT_TRUE(source->IsInit()); ASSERT_TRUE(target->IsInit());
+    const int buildsBefore = target->buildCalls;
+    ASSERT_TRUE(source->Copy(target));
+    EXPECT_FALSE(target->IsInit());
+    // UNet restores links after the base copy; DisconnectAll can Build during
+    // that native path, so Ready is not required to remain false here.
+    EXPECT_EQ(target->uninitCalls, 1);
+    target->Init();
+    EXPECT_TRUE(target->IsInit());
+    EXPECT_TRUE(target->IsReady());
+    EXPECT_EQ(target->initCalls, 2);
+    EXPECT_GT(target->buildCalls, buildsBefore);
+    EXPECT_TRUE(source->IsInit());
+    storage->ReturnObject(target); storage->ReturnObject(source);
+}
 
 TEST(UContainerCompat, BasicLifecycleAndName)
 {

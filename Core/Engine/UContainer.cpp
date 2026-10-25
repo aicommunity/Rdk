@@ -1045,6 +1045,9 @@ UEPtr<UContainer> UContainer::Alloc(UEPtr<UStorage> stor, bool copystate)
 // и значений параметров
 bool UContainer::Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor, bool copystate) const
 {
+ // The destination's initialized state belongs to its previous graph. Copy
+ // replaces that graph; keep native Init/Build responsible for the new one.
+ target->UnInit();
  // КРИТИЧНО: Сохраняем ClassId объекта-получателя перед копированием
  // чтобы он не был перезаписан неправильным значением из источника
  UId target_class_id = target->GetClass();
@@ -1056,6 +1059,7 @@ bool UContainer::Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor, bool copys
   CopyProperties(target, ptState);
 
  CopyComponents(target,stor);
+ target->Ready=false;
  
  // КРИТИЧНО: Восстанавливаем ClassId объекта-получателя после копирования
  // чтобы он не был изменен операциями копирования
