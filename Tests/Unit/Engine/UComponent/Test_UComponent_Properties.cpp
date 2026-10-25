@@ -105,6 +105,7 @@ TEST(UComponentPropertiesCompat, XmlAppliesSettersInRegistrationOrder)
     USerStorageXML xml;
     ASSERT_TRUE(xml.Create("OrderedParameters"));
     ASSERT_TRUE(source.GetComponentProperties(&xml, ptPubParameter));
+    restored.AValue = 9; // ensure the mode changes it; equal writes skip setters
     restored.writes.clear();
     ASSERT_EQ(restored.SetComponentProperties(&xml), 0);
     EXPECT_EQ(restored.ZMode.GetData(), 1);
