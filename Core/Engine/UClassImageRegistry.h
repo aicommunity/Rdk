@@ -7,7 +7,7 @@
 
 namespace RDK {
 
-class ClassImageError : public std::runtime_error
+class RDK_LIB_TYPE ClassImageError : public std::runtime_error
 {
 public:
  const std::string code;

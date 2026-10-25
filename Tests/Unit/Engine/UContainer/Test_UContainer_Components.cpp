@@ -10,7 +10,13 @@ using namespace RDK;
 class TestContainer : public UNet
 {
 public:
+    int initCalls = 0, uninitCalls = 0, buildCalls = 0;
     TestContainer* New(void) override { return new TestContainer(); }
+protected:
+    void AInit() override { ++initCalls; }
+    void AUnInit() override { ++uninitCalls; }
+    bool ABuild() override { ++buildCalls; return true; }
+public:
 
     void ForceUpdateActiveCache() { UpdateActiveComponentsCache(); }
     bool IsActiveCacheValid() const { return ActiveComponentsCacheValid; }
@@ -62,6 +68,26 @@ protected:
     bool AReset(void) override { return true; }
     bool ACalculate(void) override { return true; }
 };
+
+TEST(UContainerCopyLifecycle, ReplacesInitializedGraphThroughNativeReinitialization)
+{
+    UEPtr<TestContainer> source(new TestContainer), target(new TestContainer);
+    source->Default(); target->Default();
+    source->Activity = true; target->Activity = true;
+    source->Init(); target->Init();
+    ASSERT_TRUE(source->IsInit()); ASSERT_TRUE(target->IsInit());
+    const int buildsBefore = target->buildCalls;
+    ASSERT_TRUE(source->Copy(target));
+    EXPECT_FALSE(target->IsInit());
+    EXPECT_FALSE(target->IsReady());
+    EXPECT_EQ(target->uninitCalls, 1);
+    target->Init();
+    EXPECT_TRUE(target->IsInit());
+    EXPECT_TRUE(target->IsReady());
+    EXPECT_EQ(target->initCalls, 2);
+    EXPECT_GT(target->buildCalls, buildsBefore);
+    EXPECT_TRUE(source->IsInit());
+}
 
 TEST(UContainerCompat, BasicLifecycleAndName)
 {
