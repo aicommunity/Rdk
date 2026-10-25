@@ -93,6 +93,36 @@ TEST(UContainerCopyLifecycle, ReplacesInitializedGraphThroughNativeReinitializat
     storage->ReturnObject(target); storage->ReturnObject(source);
 }
 
+class StorageFreeCounter : public TestContainer
+{
+public:
+    std::vector<std::string>* calls = nullptr;
+    StorageFreeCounter* New(void) override { return new StorageFreeCounter; }
+    void Free(void) override
+    {
+        if(calls) calls->push_back(GetName());
+        UNet::Free();
+    }
+};
+
+TEST(UContainerStorageLifecycle, ClearFreesOwnershipForestOnceFromRoots)
+{
+    std::vector<std::string> calls;
+    UEPtr<UStorage> storage(new UStorage);
+    storage->AddClass(new UComponentFactoryMethod(storage,
+        +[]() -> UComponent* { return new StorageFreeCounter; }, "FreeFixture"), "FreeFixture");
+    auto parent = dynamic_pointer_cast<StorageFreeCounter>(storage->TakeObject("FreeFixture"));
+    auto child = dynamic_pointer_cast<StorageFreeCounter>(storage->TakeObject("FreeFixture"));
+    ASSERT_TRUE(parent); ASSERT_TRUE(child);
+    parent->Name = "Parent"; child->Name = "Child";
+    parent->calls = &calls; child->calls = &calls;
+    ASSERT_NE(parent->AddComponent(child), ForbiddenId);
+    parent->Init();
+    storage->ClearObjectsStorage(true);
+    // Pointers have been destroyed; inspect only the external event log.
+    EXPECT_EQ(calls, (std::vector<std::string>{"Parent", "Child"}));
+}
+
 TEST(UContainerCompat, BasicLifecycleAndName)
 {
     TestContainer root;
