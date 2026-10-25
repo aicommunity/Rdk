@@ -88,6 +88,13 @@ DisconnectAll может косвенно вызвать Build уже разоб
 корнями очистки. Очистка всего storage требует остановки расчёта; она не служит
 сбросом физической динамики или операцией learner Reset.
 
+При уничтожении канала URdkCoreManager сначала освобождает текущую модель и
+её ссылки в Environment. Затем уничтожает storage, пока Environment и logger
+ещё живы, и только после этого Environment и logger. Даже неиспользуемые pooled
+экземпляры могут обратиться к времени среды из native Reset во время очистки.
+Прежний порядок Environment → storage давал подтверждённый ASan
+heap-use-after-free в NPulseGenerator::AReset при завершении приложения.
+
 ## EN
 
 Use native `UNet::SaveComponent/LoadComponent` with `USerStorageXML` for complete
