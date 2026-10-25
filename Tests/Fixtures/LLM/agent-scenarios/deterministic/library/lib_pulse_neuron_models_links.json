@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "id": "lib_pulse_neuron_models_links",
+  "tier": "deterministic",
+  "suite": "library",
+  "registry_profile": "full",
+  "user_text": "расскажи какие доступны модели нейронов. дай ссылки на документацию",
+  "session": {
+    "project_loaded": false,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "list_pulse_component_classes",
+          "arguments": {}
+        }
+      ]
+    },
+    {
+      "tool_calls": [
+        {
+          "name": "search_pulse_docs",
+          "arguments": {
+            "query": "neuron models CSNM iaF Izhikevich"
+          }
+        }
+      ]
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": [
+      "list_pulse_component_classes",
+      "search_pulse_docs",
+      "list_registered_classes",
+      "search_project_docs"
+    ]
+  }
+}

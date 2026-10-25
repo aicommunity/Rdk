@@ -1,0 +1,438 @@
+#include "WatchPresetCatalog.h"
+
+#include "../UEngineSelectionSync.h"
+
+#include "rdk.h"
+#include <rdk_application.h>
+#include "../../Core/Engine/UContainer.h"
+#include "../../Core/Math/UWatchablePropertyTypes.h"
+
+#include <QDir>
+#include <QFile>
+#include <QJsonArray>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QObject>
+#include <QSet>
+#include <QDebug>
+#include <utility>
+
+WatchPresetCatalog& WatchPresetCatalog::instance()
+{
+    static WatchPresetCatalog cat;
+    return cat;
+}
+
+void WatchPresetCatalog::setRootPath(const QString& absoluteOrRelativePath)
+{
+    m_rootPath = absoluteOrRelativePath;
+}
+
+NMSDK::Plot::VizKind WatchPresetCatalog::vizFromString(const QString& s)
+{
+    if (s.compare(QStringLiteral("XYLine"), Qt::CaseInsensitive) == 0)
+        return NMSDK::Plot::VizKind::XYLine;
+    if (s.compare(QStringLiteral("XYScatter"), Qt::CaseInsensitive) == 0)
+        return NMSDK::Plot::VizKind::XYScatter;
+    return NMSDK::Plot::VizKind::TimeSeries;
+}
+
+bool WatchPresetCatalog::loadFile(const QString& filePath)
+{
+    QFile f(filePath);
+    if (!f.open(QIODevice::ReadOnly))
+        return false;
+    QJsonParseError err{};
+    const QJsonDocument doc = QJsonDocument::fromJson(f.readAll(), &err);
+    if (err.error != QJsonParseError::NoError || !doc.isObject())
+    {
+        qWarning() << "WatchPresetCatalog: invalid JSON" << filePath << err.errorString();
+        return false;
+    }
+    const QJsonObject root = doc.object();
+    const int schema = root.value(QStringLiteral("schemaVersion")).toInt(0);
+    if (schema != 1)
+    {
+        qWarning() << "WatchPresetCatalog: unsupported schemaVersion" << schema << filePath;
+        return false;
+    }
+    const QString className = root.value(QStringLiteral("className")).toString();
+    if (className.isEmpty())
+        return false;
+    const QString library = root.value(QStringLiteral("library")).toString();
+    QVector<WatchPreset> list;
+    const QJsonArray presets = root.value(QStringLiteral("presets")).toArray();
+    for (const QJsonValue& pv : presets)
+    {
+        if (!pv.isObject())
+            continue;
+        const QJsonObject po = pv.toObject();
+        WatchPreset p;
+        p.id = po.value(QStringLiteral("id")).toString();
+        p.title = po.value(QStringLiteral("title")).toString();
+        p.description = po.value(QStringLiteral("description")).toString();
+        p.vizKind = vizFromString(po.value(QStringLiteral("vizKind")).toString());
+        p.className = className;
+        p.library = library;
+        if (p.id.isEmpty())
+            continue;
+        const QJsonArray series = po.value(QStringLiteral("series")).toArray();
+        for (const QJsonValue& sv : series)
+        {
+            if (!sv.isObject())
+                continue;
+            const QJsonObject so = sv.toObject();
+            WatchPresetSeriesRef ref;
+            ref.path = so.value(QStringLiteral("path")).toString();
+            ref.property = so.value(QStringLiteral("property")).toString();
+            ref.jx = so.value(QStringLiteral("jx")).toInt(0);
+            ref.jy = so.value(QStringLiteral("jy")).toInt(0);
+            if (ref.property.isEmpty())
+                continue;
+            p.series.push_back(ref);
+        }
+        if (p.series.isEmpty())
+            continue;
+        list.push_back(p);
+    }
+    if (list.isEmpty())
+        return false;
+    m_byClass[className] = list;
+    return true;
+}
+
+bool WatchPresetCatalog::loadComposition(const QString& filePath)
+{
+    m_parentSlots.clear();
+    m_membraneSlots.clear();
+    m_families.clear();
+
+    QFile f(filePath);
+    if (!f.open(QIODevice::ReadOnly))
+        return false;
+    QJsonParseError err{};
+    const QJsonDocument doc = QJsonDocument::fromJson(f.readAll(), &err);
+    if (err.error != QJsonParseError::NoError || !doc.isObject())
+    {
+        qWarning() << "WatchPresetCatalog: invalid composition" << filePath << err.errorString();
+        return false;
+    }
+    const QJsonObject root = doc.object();
+
+    auto loadSlotsMap = [](const QJsonObject& obj, QHash<QString, QVector<WatchCompositionSlot>>& dest) {
+        for (auto it = obj.begin(); it != obj.end(); ++it)
+        {
+            if (!it.value().isArray())
+                continue;
+            QVector<WatchCompositionSlot> entries;
+            for (const QJsonValue& v : it.value().toArray())
+            {
+                if (!v.isObject())
+                    continue;
+                const QJsonObject so = v.toObject();
+                WatchCompositionSlot entry;
+                entry.slot = so.value(QStringLiteral("slot")).toString();
+                entry.childClass = so.value(QStringLiteral("childClass")).toString();
+                if (!entry.slot.isEmpty() && !entry.childClass.isEmpty())
+                    entries.push_back(entry);
+            }
+            if (!entries.isEmpty())
+                dest.insert(it.key(), entries);
+        }
+    };
+
+    loadSlotsMap(root.value(QStringLiteral("parents")).toObject(), m_parentSlots);
+    loadSlotsMap(root.value(QStringLiteral("membraneChildren")).toObject(), m_membraneSlots);
+
+    const QJsonObject families = root.value(QStringLiteral("families")).toObject();
+    for (auto it = families.begin(); it != families.end(); ++it)
+    {
+        if (!it.value().isArray())
+            continue;
+        QStringList members;
+        for (const QJsonValue& v : it.value().toArray())
+        {
+            const QString m = v.toString();
+            if (!m.isEmpty())
+                members << m;
+        }
+        for (const QString& m : members)
+            m_families.insert(m, members);
+    }
+    return true;
+}
+
+bool WatchPresetCatalog::reload()
+{
+    m_byClass.clear();
+    m_parentSlots.clear();
+    m_membraneSlots.clear();
+    m_families.clear();
+    if (m_rootPath.isEmpty())
+        return false;
+    QDir root(m_rootPath);
+    if (!root.exists())
+    {
+        qWarning() << "WatchPresetCatalog: root missing" << m_rootPath;
+        return false;
+    }
+
+    loadComposition(root.filePath(QStringLiteral("composition.json")));
+
+    static const QStringList kSkip = {
+        QStringLiteral("meta"),
+        QStringLiteral("draft"),
+    };
+
+    int loaded = 0;
+    for (const QFileInfo& libInfo : root.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot))
+    {
+        if (kSkip.contains(libInfo.fileName()))
+            continue;
+        QDir libDir(libInfo.absoluteFilePath());
+        for (const QFileInfo& fi : libDir.entryInfoList({QStringLiteral("*.json")}, QDir::Files))
+        {
+            if (loadFile(fi.absoluteFilePath()))
+                ++loaded;
+        }
+    }
+    return loaded > 0;
+}
+
+WatchPreset WatchPresetCatalog::rewritePresetPath(const WatchPreset& src,
+                                                 const QString& slotPrefix,
+                                                 const QString& newId)
+{
+    WatchPreset p = src;
+    p.id = newId;
+    for (WatchPresetSeriesRef& s : p.series)
+    {
+        if (s.path.isEmpty())
+            s.path = slotPrefix;
+        else
+            s.path = slotPrefix + QLatin1Char('.') + s.path;
+    }
+    return p;
+}
+
+QVector<WatchPreset> WatchPresetCatalog::ownPresetsForClass(const QString& className) const
+{
+    return m_byClass.value(className);
+}
+
+QVector<WatchPreset> WatchPresetCatalog::presetsForClass(const QString& className) const
+{
+    QVector<WatchPreset> out;
+    QSet<QString> seenIds;
+    QSet<QString> seenSignatures;
+
+    auto seriesSignature = [](const WatchPreset& p) -> QString {
+        QStringList keys;
+        keys.reserve(p.series.size());
+        for (const WatchPresetSeriesRef& s : p.series)
+        {
+            keys << QStringLiteral("%1|%2|%3|%4")
+                        .arg(s.path, s.property)
+                        .arg(s.jx)
+                        .arg(s.jy);
+        }
+        keys.sort();
+        return keys.join(QLatin1Char(';'));
+    };
+
+    auto hasWildcardOrBadPath = [](const WatchPreset& p) -> bool {
+        if (p.id.contains(QLatin1Char('*')) || p.title.contains(QLatin1Char('*')))
+            return true;
+        for (const WatchPresetSeriesRef& s : p.series)
+        {
+            if (s.path.contains(QLatin1Char('*')) || s.property.contains(QLatin1Char('*')))
+                return true;
+        }
+        return false;
+    };
+
+    // Variable neuron structure must not appear as root-neuron presets.
+    const bool isNeuronParent = m_parentSlots.contains(className);
+    auto isVariableNeuronPath = [](const QString& path) -> bool {
+        if (path.isEmpty())
+            return false;
+        if (path.contains(QLatin1Char('*')))
+            return true;
+        if (path == QStringLiteral("LTZone") || path.startsWith(QStringLiteral("LTZone.")))
+            return false;
+        if (path == QStringLiteral("Soma1"))
+            return false;
+        if (path.startsWith(QStringLiteral("Soma1.")))
+            return true; // channels/synapses under soma — select membrane/channel instance
+        const QString head = path.section(QLatin1Char('.'), 0, 0);
+        if (head.startsWith(QStringLiteral("Dendrite")))
+            return true;
+        if (head.startsWith(QStringLiteral("Soma")))
+        {
+            bool ok = false;
+            head.mid(4).toInt(&ok);
+            if (ok)
+                return true;
+        }
+        if (path.contains(QStringLiteral("ExcSynapse")) || path.contains(QStringLiteral("InhSynapse")))
+            return true;
+        if (path.endsWith(QStringLiteral("ExcChannel")) || path.endsWith(QStringLiteral("InhChannel")))
+            return true;
+        return false;
+    };
+
+    auto appendUnique = [&](WatchPreset p) {
+        if (p.id.isEmpty() || seenIds.contains(p.id))
+            return;
+        if (hasWildcardOrBadPath(p))
+            return;
+        if (isNeuronParent)
+        {
+            for (const WatchPresetSeriesRef& s : p.series)
+            {
+                if (isVariableNeuronPath(s.path))
+                    return;
+            }
+        }
+        const QString sig = seriesSignature(p);
+        if (sig.isEmpty() || seenSignatures.contains(sig))
+            return;
+        seenIds.insert(p.id);
+        seenSignatures.insert(sig);
+        out.push_back(std::move(p));
+    };
+
+    for (const WatchPreset& p : ownPresetsForClass(className))
+        appendUnique(p);
+
+    auto inheritEntries = [&](const QVector<WatchCompositionSlot>& entries) {
+        for (const WatchCompositionSlot& entry : entries)
+        {
+            for (const WatchPreset& childP : ownPresetsForClass(entry.childClass))
+            {
+                WatchPreset inh = rewritePresetPath(
+                    childP, entry.slot,
+                    QStringLiteral("inherited:%1:%2").arg(entry.slot, childP.id));
+                inh.sourceClass = entry.childClass;
+                inh.viaSlot = entry.slot;
+                inh.className = className;
+                appendUnique(std::move(inh));
+            }
+        }
+    };
+
+    inheritEntries(m_parentSlots.value(className));
+    inheritEntries(m_membraneSlots.value(className));
+
+    const QStringList family = m_families.value(className);
+    for (const QString& sib : family)
+    {
+        if (sib == className)
+            continue;
+        for (const WatchPreset& sibP : ownPresetsForClass(sib))
+        {
+            WatchPreset fp = sibP;
+            fp.id = QStringLiteral("family:%1:%2").arg(sib, sibP.id);
+            fp.sourceClass = sib;
+            fp.viaFamily = true;
+            fp.className = className;
+            appendUnique(std::move(fp));
+        }
+    }
+
+    return out;
+}
+
+WatchPreset WatchPresetCatalog::presetById(const QString& className, const QString& presetId) const
+{
+    for (const WatchPreset& p : presetsForClass(className))
+    {
+        if (p.id == presetId)
+            return p;
+    }
+    return {};
+}
+
+QVector<NMSDK::Plot::PropertyRef> WatchPresetCatalog::resolve(const WatchPreset& preset,
+                                                              const QString& rootLongName,
+                                                              int channel,
+                                                              QString* errorOut) const
+{
+    QVector<NMSDK::Plot::PropertyRef> out;
+    if (rootLongName.isEmpty() || preset.series.isEmpty())
+    {
+        if (errorOut)
+            *errorOut = QObject::tr("Missing component or empty preset.");
+        return {};
+    }
+
+    RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock<RDK::UContainer>(channel);
+    if (!model)
+    {
+        if (errorOut)
+            *errorOut = QObject::tr("Model not available for channel %1.").arg(channel);
+        return {};
+    }
+
+    QStringList failures;
+    for (const WatchPresetSeriesRef& s : preset.series)
+    {
+        QString full = rootLongName;
+        if (!s.path.isEmpty())
+            full = rootLongName + QLatin1Char('.') + s.path;
+
+        RDK::UEPtr<RDK::UContainer> cont = model->GetComponentL(full.toStdString(), true);
+        if (!cont)
+        {
+            failures << QObject::tr("%1 (component missing)").arg(full);
+            continue;
+        }
+        RDK::UEPtr<RDK::UIProperty> prop = cont->FindProperty(s.property.toStdString());
+        if (!prop)
+        {
+            failures << QObject::tr("%1.%2 (property missing)").arg(full, s.property);
+            continue;
+        }
+        if (!RDK::isWatchableLanguageType(prop->GetLanguageType()))
+        {
+            failures << QObject::tr("%1.%2 (not watchable)").arg(full, s.property);
+            continue;
+        }
+        NMSDK::Plot::PropertyRef ref;
+        ref.component = full;
+        ref.property = s.property;
+        ref.jx = s.jx;
+        ref.jy = s.jy;
+        ref.slice = NMSDK::Plot::SliceKind::Cell;
+        out.push_back(ref);
+    }
+
+    if (!failures.isEmpty())
+    {
+        if (errorOut)
+            *errorOut = QObject::tr("Could not resolve preset series:\n%1")
+                            .arg(failures.join(QLatin1Char('\n')));
+        return {};
+    }
+    if (out.size() != preset.series.size())
+    {
+        if (errorOut)
+            *errorOut = QObject::tr("Failed to resolve all preset series.");
+        return {};
+    }
+    return out;
+}
+
+QString defaultWatchPresetsPath(RDK::UApplication* app)
+{
+    if (app && !app->GetWatchPresetsPath().empty())
+        return QString::fromStdString(app->GetWatchPresetsPath());
+    // Sibling of typical ClDescPath ../../ClDesc/ → ../../WatchPresets/
+    if (app && !app->GetClDescPath().empty())
+    {
+        QString cl = QString::fromStdString(app->GetClDescPath());
+        if (cl.contains(QStringLiteral("ClDesc")))
+            return cl.replace(QStringLiteral("ClDesc"), QStringLiteral("WatchPresets"));
+    }
+    return QStringLiteral("../../WatchPresets/");
+}

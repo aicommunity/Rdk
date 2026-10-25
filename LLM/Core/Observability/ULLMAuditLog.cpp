@@ -26,7 +26,8 @@ std::string ULLMAuditLog::computeEventHash(const std::string& prev_hash, const n
     nlohmann::json payload = event;
     payload.erase("prev_hash");
     payload.erase("curr_hash");
-    return sha256_hex(prev_hash + payload.dump());
+    return sha256_hex(prev_hash
+                      + payload.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace));
 }
 
 void ULLMAuditLog::setLogDirectory(const std::string& path)
@@ -56,7 +57,7 @@ void ULLMAuditLog::append(const std::string& event_type, const nlohmann::json& d
     const std::string file = m_log_dir + "/audit.jsonl";
     std::ofstream out(file, std::ios::app);
     if(out)
-        out << event.dump() << '\n';
+        out << event.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace) << '\n';
 }
 
 AuditVerifyReport ULLMAuditLog::verifyJsonlFile(const std::string& path)

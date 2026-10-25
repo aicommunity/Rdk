@@ -439,13 +439,13 @@ bool UNet::GetComponentProperties(RDK::USerStorageXML *serstorage, unsigned int 
    return false;
 
   const RDK::UContainer::VariableMapT &props=GetPropertiesList();
+  const std::vector<NameT>& order = GetPropertiesOrder();
 
-  RDK::UContainer::VariableMapCIteratorT I,J;
-
-  I=props.begin();
-  J=props.end();
-  while(I != J)
+  for(size_t oi = 0; oi < order.size(); ++oi)
   {
+   RDK::UContainer::VariableMapCIteratorT I = props.find(order[oi]);
+   if(I == props.end())
+    continue;
    if(I->second.CheckMask(type_mask))
    {
 	try
@@ -465,7 +465,6 @@ bool UNet::GetComponentProperties(RDK::USerStorageXML *serstorage, unsigned int 
      serstorage->SelectUp();
 	}
    }
-   ++I;
   }
 
  return true;
@@ -489,16 +488,15 @@ bool UNet::GetComponentPropertiesEx(RDK::USerStorageXML *serstorage, unsigned in
    return false;
 
   const RDK::UContainer::VariableMapT &props=GetPropertiesList();
-
-  RDK::UContainer::VariableMapCIteratorT I,J;
+  const std::vector<NameT>& order = GetPropertiesOrder();
 
   UEPtr<UContainerDescription> descr=dynamic_pointer_cast<UContainerDescription>(Storage->GetClassDescription(Storage->FindClassName(GetClass()),true));
 
-
-  I=props.begin();
-  J=props.end();
-  while(I != J)
+  for(size_t oi = 0; oi < order.size(); ++oi)
   {
+   RDK::UContainer::VariableMapCIteratorT I = props.find(order[oi]);
+   if(I == props.end())
+    continue;
    if(I->second.CheckMask(type_mask))
    {
 	try
@@ -522,7 +520,6 @@ bool UNet::GetComponentPropertiesEx(RDK::USerStorageXML *serstorage, unsigned in
 	 serstorage->SelectUp();
 	}
    }
-   ++I;
   }
 
  return true;

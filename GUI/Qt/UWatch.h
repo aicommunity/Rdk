@@ -31,6 +31,13 @@ public:
     UWatch(QWidget *parent = nullptr, RDK::UApplication* app = NULL);
     ~UWatch();
     UWatchTab *getCurrentTab();
+    /// Create first tab if empty (LLM / host helpers).
+    UWatchTab *ensureCurrentTab();
+    int watchTabCount() const;
+    UWatchTab *watchTabAt(int index) const;
+    QString watchTabTitle(int index) const;
+    int indexOfWatchTab(const UWatchTab *tab) const;
+    bool movePanelBetweenTabs(UWatchTab *source, int panelIndex, int destinationTabIndex);
 
     // Обновление интерфейса
     virtual void AUpdateInterface(void);
@@ -67,8 +74,14 @@ public:
 
 private slots:
     void on_actionCreate_tab_triggered();
-    void on_actionSeries_option_triggered();
-    void on_actionCharts_option_triggered();
+    void on_actionLayout_settings_triggered();
+    void on_actionChart_settings_triggered();
+    void on_actionSeries_settings_triggered();
+    void on_actionSave_chart_triggered();
+    void on_actionSave_all_charts_triggered();
+    void on_actionQuick_save_triggered();
+    void on_actionSave_watch_template_triggered();
+    void on_actionLoad_watch_template_triggered();
     void on_tabWidget_tabCloseRequested(int index);
 
 
@@ -80,6 +93,7 @@ private:
 
     void createTab();
     void deleteTab(int index);
+    void syncInspectorActions();
 
     Ui::UWatch *ui;
 };

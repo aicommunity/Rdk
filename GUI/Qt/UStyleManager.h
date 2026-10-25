@@ -1,12 +1,17 @@
 #ifndef USTYLEMANAGER_H
 #define USTYLEMANAGER_H
 
+#include <QObject>
 #include <QColor>
 #include <QString>
 #include <QApplication>
+#include <QFont>
 #include <QJsonObject>
 #include <QVector>
 #include <QLinearGradient>
+#include <QPointer>
+
+class QWidget;
 
 /**
  * @brief Синглтон для централизованного управления стилями приложения.
@@ -14,8 +19,9 @@
  * Загружает цвета из theme.json для кастомной отрисовки (QPainter)
  * и применяет .qss стили к Qt виджетам.
  */
-class UStyleManager
+class UStyleManager : public QObject
 {
+    Q_OBJECT
 public:
     static UStyleManager* instance();
     
@@ -23,6 +29,14 @@ public:
     bool loadTheme(const QString& themeJsonPath);
     bool loadStyleSheet(const QString& qssPath);
     void applyGlobalStyleSheet(QApplication* app);
+
+    /// Sync QApplication font with the desktop UI font and polish dock/MDI titles.
+    void applySystemUiFonts(QApplication* app);
+    QFont titleBarFont() const;
+    void applyTitleBarFont(QWidget* titleHost) const;
+
+    /// Density spacing from current UI font metrics (n * height/4, min 1).
+    static int densitySpace(int units);
     
     // Переключение темы
     bool switchTheme(const QString& themeName, QApplication* app);
@@ -51,6 +65,7 @@ public:
     // Цвета связей (LinkItem)
     QColor getLinkColor() const { return m_linkSolid; }
     QColor getLinkTempColor() const { return m_linkDashed; }
+    QColor getLinkReverseColor() const { return m_linkReverse; }
     double getLinkWidth() const { return m_linkWidth; }
     
     // Цвета для старого виджета диаграмм (UDrawEngineImageWidget)
@@ -106,10 +121,13 @@ public:
     
     // Имя текущей темы
     QString getThemeName() const { return m_themeName; }
+
+signals:
+    void themeChanged();
     
 private:
     UStyleManager();
-    ~UStyleManager() = default;
+    ~UStyleManager() override = default;
     UStyleManager(const UStyleManager&) = delete;
     UStyleManager& operator=(const UStyleManager&) = delete;
     
@@ -141,6 +159,7 @@ private:
     // Link colors
     QColor m_linkSolid;
     QColor m_linkDashed;
+    QColor m_linkReverse;
     double m_linkWidth;
     
     // Drag colors
@@ -197,6 +216,8 @@ private:
     // Theme name and paths
     QString m_themeName;
     QString m_stylesPath;
+
+    QPointer<QObject> m_titleFontPolisher;
 };
 
 #endif // USTYLEMANAGER_H

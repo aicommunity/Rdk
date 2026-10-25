@@ -32,7 +32,8 @@ std::string assistantMessageTextForPrompt(const LLMMessage& message);
 std::string formatPromptWithTemplate(OllamaChatTemplateFamily family,
                                      const std::vector<LLMMessage>& messages);
 
-nlohmann::json buildOpenAiChatMessagesJson(const std::vector<LLMMessage>& messages);
+nlohmann::json buildOpenAiChatMessagesJson(const std::vector<LLMMessage>& messages,
+                                           bool tool_arguments_as_object = false);
 
 } // namespace RDK::LLM
 

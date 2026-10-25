@@ -69,6 +69,8 @@ struct UGuiSnapshot
     quint64 Version = 0;
     QDateTime Timestamp;
     QHash<QString, UGuiComponentSummary> Components;
+    /// DFS preorder of LongName matching CollectComponent / GetComponentsList order.
+    QStringList ComponentOrder;
     QHash<UGuiPropertyKey, UGuiPropertyValue> PropertyValues;
 };
 

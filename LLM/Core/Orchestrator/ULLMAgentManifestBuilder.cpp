@@ -21,7 +21,8 @@ std::string buildAgentManifest(const ULLMToolRegistry& registry, const ToolFilte
         oss << "## Response language\n"
             << "- Always respond to the user in "
             << responseLanguageDisplayName(response_language) << " (code: " << response_language
-            << "). Tool arguments may stay in English.\n";
+            << "). Tool arguments may stay in English.\n"
+            << "- Product identity: NeuroModeler (RDK). Do not invent alternate product names.\n";
     }
 
     oss << libraryScopeHintManifestSection(detectLibraryScopeFromUserText(user_text));
@@ -31,10 +32,15 @@ std::string buildAgentManifest(const ULLMToolRegistry& registry, const ToolFilte
         oss << "## Connect vs Add\n"
             << "- User wants a **link** (connect, link, подключи, связь, соедини): use "
                "connect_components only — never add_component.\n"
+            << "- Named names are **subtree anchors**: wiring often uses nested published "
+               "ports under those components.\n"
+            << "- Inspect first: list_model_links (component/from/to filters) and "
+               "get_component_ports (include_nested) before guessing topology.\n"
             << "- connect_components needs from_long_name, from_property (published output), "
                "to_long_name, to_property (published input). Same API as GUI "
                "Model_CreateLinkByName.\n"
-            << "- Use get_component_properties when port names are unknown.\n";
+            << "- For “same as connected to X”, list links involving X, then replicate ports "
+               "onto peer targets with nested long_name prefix rewrite.\n";
     }
     else if(!user_text.empty())
     {
@@ -55,6 +61,8 @@ std::string buildAgentManifest(const ULLMToolRegistry& registry, const ToolFilte
     }
 
     oss << "## Tools (" << tools.size() << " available)\n";
+    oss << "- Prefer tools that match the user goal; call search_tools when a needed capability "
+           "is missing from this list (it unlocks additional tools for later rounds).\n";
     for(const LLMToolDefinition& tool : tools)
     {
         oss << "- " << tool.name << " [" << (tool.kind == LLMToolKind::Write ? "write" : "read");
@@ -64,7 +72,14 @@ std::string buildAgentManifest(const ULLMToolRegistry& registry, const ToolFilte
     }
 
     oss << "## Knowledge\n";
-    oss << "- search_project_docs(scope=docs|sources|all) for product docs and implementation.\n";
+    oss << "- Live project graph (components/links on the open configuration): get_net_snapshot, "
+           "find_component, get_component_properties — not search_project_docs.\n";
+    oss << "- Product docs / how-to / class ClDesc: search_project_docs(scope=docs|sources|all), "
+           "library search_*_docs, describe_class.\n";
+    oss << "- Docs Q&A: after search, if >=2 hits, final answer MUST list markdown links using each "
+           "snippet.doc_uri (nmsdk-doc:...) or nmsdk-help:/nmsdk-class: when relevant. Cite title/path.\n";
+    oss << "- Open help / markdown Docs / class description in GUI: open_help, open_documentation, "
+           "open_class_docs (do not only describe in prose). list_help_topics lists Help HTML pages.\n";
     oss << "## Rules\n";
     oss << "- Use write tools only for explicit mutate requests.\n";
     oss << "- Graph mutations: add_component, set_property, connect_components (and disconnect_components) as requested.\n";

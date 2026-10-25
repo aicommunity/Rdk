@@ -1,7 +1,5 @@
 #include "ULlmGuiContextBridge.h"
 
-#include "../UEngineSelectionSync.h"
-
 #include <rdk_application.h>
 #include <rdk_init.h>
 
@@ -29,7 +27,7 @@ void ULlmGuiContextBridge::onDiagramSelectionChanged(const UComponentGuiContext&
     m_ctx.focused_class_name = ctx.componentClassName;
     if(ctx.channelIndex >= 0)
         m_ctx.channel_index = ctx.channelIndex;
-    syncEngineCurrentComponent(ctx.componentLongName);
+    // Do not Env_Select on focus (TD-111 reverted): Model_* paths stay relative to Model.
     emitIfChanged();
 }
 

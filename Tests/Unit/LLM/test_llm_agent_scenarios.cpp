@@ -83,6 +83,17 @@ protected:
 TEST_P(AgentE2e, FromFixtures)
 {
     const AgentScenarioCase scenario = GetParam();
+    if(scenario.e2e && scenario.e2e->use_thinking_profile)
+    {
+        // Env from fixture is applied inside runE2eScenario before rebind; probe uses
+        // NMSDK_LLM_OLLAMA_THINKING_MODEL if already set in the process.
+        for(const auto& [key, value] : scenario.env)
+        {
+            if(!value.empty())
+                setenv(key.c_str(), value.c_str(), 1);
+        }
+        RDK_LLM_SKIP_IF_LAB_THINKING_MODEL_MISSING();
+    }
     E2eLab::Harness lab;
     const AgentScenarioRun run = runE2eScenario(lab, scenario);
 

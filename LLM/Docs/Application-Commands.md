@@ -34,7 +34,25 @@ Aliases: `load_project`, `save_project` (deprecated names, same handlers).
 
 ## Phase 2b (channels)
 
-`start_channel_calculation`, `pause_channel_calculation`, `reset_channel_calculation`, `step_channel_calculation` — `channel_index: -1` = all channels.
+`start_channel_calculation`, `pause_channel_calculation`, `reset_channel_calculation`, `step_channel_calculation`, `run_n_steps` — `channel_index: -1` = all channels (`run_n_steps` also requires `steps` in `[1, 10000]`).
+
+Channel CRUD: `add_channel`, `delete_channel` (not channel 0), `clone_channel`.
+
+**DD-CALC-001 FastPath (packs):** user phrases «запусти расчет» / `start calculation` (also pause/reset/step + RU/EN synonyms) are handled via Capability Pack `channel_calc` `tryRecorded` → `recordedToolInvoke` (`ULLMChannelCalcCommand`), before TaskPath/ReAct. Reply and Tools block show the outcome; if no configuration is open, the tool error is shown (not an LLM essay). Autonomous whitelist includes these tools and `ask_user`.
+
+### Graph / component tools (domain)
+
+Registered in `RegisterCoreRdkTools.cpp` via `URdkDomainAccess`:
+
+| Tool | Domain / C-API |
+|------|----------------|
+| `clone_component` | clone under same parent |
+| `move_component` | `Model_MoveComponent` |
+| `rename_component` | `UContainer::SetName` |
+| `reorder_component` | `Model_ChangeComponentPosition` (`step` ±1) |
+| `export_component` / `import_component` | `Model_Save/LoadComponentTo/FromFile` + path policy |
+| `calculate_component` / `reset_component` / `default_component` | `Env_Calculate` / `Env_Reset` / `Env_Default` |
+| `select_component` | `ILLMPresentationSink::navigateToDiagramScope` (not `Env_Select`) |
 
 ## Recent configurations and UI panels (phases D/E)
 
@@ -44,6 +62,44 @@ These tools are registered in `RegisterApplicationTools.cpp`:
 - After `list_recent_configurations`, the orchestrator stores `pending_tool_arguments` for `open_recent_configuration`. Follow-up messages such as `10` or `open` invoke the write tool directly (no spurious LLM `Done.`).
 - `list_ui_panels` returns `{id,title,visible}` based on the GUI host (`UGEngineControlWidget`).
 - `show_ui_panel` / `open_component_gui_tab` do not call Qt directly from tool handlers; instead they request a GUI action via `LLMPresentationEvent.show_panel`, applied by `ULlmQtPresentationSink` on the GUI thread.
+
+### Watch series and MDI (DD-WATCH-001)
+
+Registered in `RegisterApplicationTools.cpp` via `invokeApplicationTool` → `ILLMPresentationSink::watch*` → `UGEngineControlWidget::llmWatch*` (GUI thread only; no Qt in `URdkApplicationCommands`).
+
+### Documentation open (DD-DOC-001)
+
+Registered in `RegisterDocumentationTools.cpp`. Sink methods:
+
+| Sink API | Host |
+|----------|------|
+| `openHelpTopic(topic)` | `UGEngineControlWidget::openHelpWindow(topic)` → `UHelpWindow::showHelp` |
+| `openClassDescription(name)` | `openClassDescriptionWindow` → `UClassDescriptionDisplay` |
+| `openMarkdownDocument(path, title)` | `openMarkdownDocWindow` → `UMarkdownDocWindow` |
+
+Chat: `ULlmChatHistoryPanel` `anchorClicked` → same sink (schemes `nmsdk-doc|help|class`).
+
+| Tool | Notes |
+|------|-------|
+| `list_help_topics` | Scan `Bin/Help/{locale}` |
+| `open_help` / `open_class_docs` / `open_documentation` | Read tools; autonomous UI whitelist |
+
+See [Agent-Documentation.md](Agent-Documentation.md).
+
+| Tool | Kind | Host |
+|------|------|------|
+| `add_watch_series` | Write | `llmWatchAddSeries` (`surface=window\|mdi`) |
+| `set_panel_viz_kind` | Write | `llmWatchSetPanelVizKind` (`TimeSeries\|XYLine\|XYScatter`) |
+| `set_series_binding` | Write | `llmWatchSetSeriesBinding` (Y required; X enables XY) |
+| `list_watch_series` | Read | `llmWatchListSeries` |
+| `remove_watch_series` / `clear_watch_series` | Write | remove/clear |
+| `list_watch_mdi` / `create_watch_mdi` / `focus_watch_mdi` / `close_watch_mdi` | Read/Write | MDI `Watches_N` |
+
+`add_watch_series` calls `URdkDomainAccess::validateWatchProperty` (exists + int/double/MDMatrix|MDVector) before host `createSerie` — DomainError path, no Qt.
+
+FastPath: «на график выход X и Y» → `add_watch_series`×N (`ULLMWatchPlotGoal`). Nested («ltzone pneuron», «низкопороговой зоны … PNeuron») → `resolveNestedWatchTarget` → `PNeuron.LTZone` + `Output` (DD-WATCH-002). Spaced `long_name` / `Child.Property` normalized in `normalizeWriteToolArguments`. Autonomous whitelist treats UI/watch tools like `ask_user` (no write-step burn).
+
+**Chat name autocomplete:** `ULlmChatInputCompleter` on assistant input — dictionary from `listNetSnapshot` long_names (all nesting), `listRegisteredClasses` (ClassesList), and property names. Popup opens/refines while typing (token length ≥ 2 or scoped `.`/`:`). **Tab** or **Enter** accepts the highlighted item; **Shift+Tab** / ↑↓ cycle; **Escape** dismisses.
 
 ## Policy
 
@@ -67,6 +123,7 @@ Call `LLMServices::initialize(app, ctx)` without `setPresentationSink` — comma
 |--------|---------|
 | `Test_LLM_ApplicationFixtures` | JSON fixtures, policy path deny, registry tools |
 | `Test_LLM_PresentationSink` | FullShell vs None, audit field attachment |
+| `Test_LLM_WatchTools` | Watch/MDI schema registration + sink mock |
 | `Test_LLM_OllamaLabIntegration` | HTTP/chat to `http://10.245.1.12:11434` — **skipped** if host down (`GTEST_SKIP`) |
 | `Test_LLM_E2eLabCommands` | Orchestrator E2E: user → lab Ollama → tool calls (`validate_configuration`, `load_configuration`, …) — **skipped** if Ollama down |
 | `Test_LLM_E2eScenarios` | Parameterized NL E2E: fuzzy RU/EN prompts incl. `создай новый проект` — **skipped** if Ollama down |
@@ -130,7 +187,25 @@ Aliases: `load_project`, `save_project` (deprecated names, same handlers).
 
 ## Phase 2b (channels)
 
-`start_channel_calculation`, `pause_channel_calculation`, `reset_channel_calculation`, `step_channel_calculation` — `channel_index: -1` = all channels.
+`start_channel_calculation`, `pause_channel_calculation`, `reset_channel_calculation`, `step_channel_calculation`, `run_n_steps` — `channel_index: -1` = all channels (`run_n_steps` also requires `steps` in `[1, 10000]`).
+
+Channel CRUD: `add_channel`, `delete_channel` (not channel 0), `clone_channel`.
+
+**DD-CALC-001 FastPath (packs):** user phrases «запусти расчет» / `start calculation` (also pause/reset/step + RU/EN synonyms) are handled via Capability Pack `channel_calc` `tryRecorded` → `recordedToolInvoke` (`ULLMChannelCalcCommand`), before TaskPath/ReAct. Reply and Tools block show the outcome; if no configuration is open, the tool error is shown (not an LLM essay). Autonomous whitelist includes these tools and `ask_user`.
+
+### Graph / component tools (domain)
+
+Registered in `RegisterCoreRdkTools.cpp` via `URdkDomainAccess`:
+
+| Tool | Domain / C-API |
+|------|----------------|
+| `clone_component` | clone under same parent |
+| `move_component` | `Model_MoveComponent` |
+| `rename_component` | `UContainer::SetName` |
+| `reorder_component` | `Model_ChangeComponentPosition` (`step` ±1) |
+| `export_component` / `import_component` | `Model_Save/LoadComponentTo/FromFile` + path policy |
+| `calculate_component` / `reset_component` / `default_component` | `Env_Calculate` / `Env_Reset` / `Env_Default` |
+| `select_component` | `ILLMPresentationSink::navigateToDiagramScope` (not `Env_Select`) |
 
 ## Recent configurations and UI panels (phases D/E)
 
@@ -140,6 +215,14 @@ These tools are registered in `RegisterApplicationTools.cpp`:
 - After `list_recent_configurations`, the orchestrator stores `pending_tool_arguments` for `open_recent_configuration`. Follow-up messages such as `10` or `open` invoke the write tool directly (no spurious LLM `Done.`).
 - `list_ui_panels` returns `{id,title,visible}` based on the GUI host (`UGEngineControlWidget`).
 - `show_ui_panel` / `open_component_gui_tab` do not call Qt directly from tool handlers; instead they request a GUI action via `LLMPresentationEvent.show_panel`, applied by `ULlmQtPresentationSink` on the GUI thread.
+
+### Watch series and MDI (DD-WATCH-001)
+
+Same as RU section: `add/list/remove/clear_watch_series`, `set_panel_viz_kind`, `set_series_binding`, `list/create/focus/close_watch_mdi` via presentation sink → `UGEngineControlWidget::llmWatch*` (GUI thread). `set_series_binding` accepts optional `x_long_name`/`x_property_name` for XY plots.
+
+### Documentation open (DD-DOC-001)
+
+Same as RU: `open_help` / `open_class_docs` / `open_documentation` / `list_help_topics` via `ILLMPresentationSink::open*` and chat `nmsdk-*` anchors. See [Agent-Documentation.md](Agent-Documentation.md).
 
 ## Policy
 
@@ -163,6 +246,7 @@ Call `LLMServices::initialize(app, ctx)` without `setPresentationSink` — comma
 |--------|---------|
 | `Test_LLM_ApplicationFixtures` | JSON fixtures, policy path deny, registry tools |
 | `Test_LLM_PresentationSink` | FullShell vs None, audit field attachment |
+| `Test_LLM_WatchTools` | Watch/MDI schema registration + sink mock |
 | `Test_LLM_OllamaLabIntegration` | HTTP/chat to `http://10.245.1.12:11434` — **skipped** if host down (`GTEST_SKIP`) |
 | `Test_LLM_E2eLabCommands` | Orchestrator E2E: user → lab Ollama → tool calls (`validate_configuration`, `load_configuration`, …) — **skipped** if Ollama down |
 | `Test_LLM_E2eScenarios` | Parameterized NL E2E: fuzzy RU/EN prompts incl. `create new проект` — **skipped** if Ollama down |

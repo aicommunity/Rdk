@@ -1,5 +1,7 @@
 #include "ULLMLibraryScopeHint.h"
 
+#include "../Domain/ULLMFuzzyMatch.h"
+
 #include <algorithm>
 #include <cctype>
 #include <vector>
@@ -18,31 +20,6 @@ std::string toLower(std::string s)
 bool containsToken(const std::string& hay_lower, const char* needle)
 {
     return hay_lower.find(needle) != std::string::npos;
-}
-
-int levenshteinDistance(const std::string& a, const std::string& b)
-{
-    const size_t n = a.size();
-    const size_t m = b.size();
-    if(n == 0)
-        return static_cast<int>(m);
-    if(m == 0)
-        return static_cast<int>(n);
-    std::vector<int> prev(m + 1);
-    std::vector<int> cur(m + 1);
-    for(size_t j = 0; j <= m; ++j)
-        prev[j] = static_cast<int>(j);
-    for(size_t i = 1; i <= n; ++i)
-    {
-        cur[0] = static_cast<int>(i);
-        for(size_t j = 1; j <= m; ++j)
-        {
-            const int cost = a[i - 1] == b[j - 1] ? 0 : 1;
-            cur[j] = std::min({cur[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost});
-        }
-        prev.swap(cur);
-    }
-    return prev[m];
 }
 
 const std::unordered_set<std::string>& pulseClasses()
@@ -69,21 +46,9 @@ std::string resolveInAllowlist(const std::string& query, const std::unordered_se
     if(allowed.count(trimmed) > 0)
         return trimmed;
 
-    std::string best = trimmed;
-    int best_dist = 999;
-    const std::string qlower = toLower(trimmed);
-    for(const std::string& candidate : allowed)
-    {
-        const int d = levenshteinDistance(qlower, toLower(candidate));
-        if(d < best_dist)
-        {
-            best_dist = d;
-            best = candidate;
-        }
-    }
-    if(best_dist <= 3)
-        return best;
-    return trimmed;
+    std::vector<std::string> candidates(allowed.begin(), allowed.end());
+    const std::string best = bestFuzzyWithinDistance(trimmed, candidates, 3);
+    return best.empty() ? trimmed : best;
 }
 
 std::string resolveAcrossLibraryAllowlists(const std::string& query)
@@ -92,25 +57,14 @@ std::string resolveAcrossLibraryAllowlists(const std::string& query)
     if(aliased != query)
         return aliased;
 
-    std::string best = query;
-    int best_dist = 999;
-    const std::string qlower = toLower(query);
-    for(const std::unordered_set<std::string>* allow :
-        {&pulseClasses(), &motionClasses()})
-    {
-        for(const std::string& candidate : *allow)
-        {
-            const int d = levenshteinDistance(qlower, toLower(candidate));
-            if(d < best_dist)
-            {
-                best_dist = d;
-                best = candidate;
-            }
-        }
-    }
-    if(best_dist <= 3)
-        return best;
-    return query;
+    std::vector<std::string> candidates;
+    candidates.reserve(pulseClasses().size() + motionClasses().size());
+    for(const std::string& c : pulseClasses())
+        candidates.push_back(c);
+    for(const std::string& c : motionClasses())
+        candidates.push_back(c);
+    const std::string best = bestFuzzyWithinDistance(query, candidates, 3);
+    return best.empty() ? query : best;
 }
 
 } // namespace

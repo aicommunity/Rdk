@@ -171,7 +171,7 @@ RDK::LLM::LLMRuntimeProviderSettings ULlmQtProviderSettingsSource::load() const
     QSettings settings = makeAppSettings();
     RDK::LLM::LLMRuntimeProviderSettings runtime;
     runtime.active_profile_id =
-        settings.value(QStringLiteral("LLM/active_profile_id"), QStringLiteral("ollama-local"))
+        settings.value(QStringLiteral("LLM/active_profile_id"), QStringLiteral("ollama-thinking"))
             .toString()
             .toStdString();
     runtime.allow_cloud_providers =
@@ -216,6 +216,9 @@ RDK::LLM::LLMRuntimeProviderSettings ULlmQtProviderSettingsSource::load() const
     runtime.context_acquisition_mode =
         acquisition == QStringLiteral("minimal") ? RDK::LLM::LLMContextAcquisitionMode::Minimal
                                                : RDK::LLM::LLMContextAcquisitionMode::Auto;
+
+    runtime.enable_ollama_thinking =
+        settings.value(QStringLiteral("LLM/enable_ollama_thinking"), true).toBool();
 
     for(const RDK::LLM::LLMProviderProfile& profile : RDK::LLM::ULLMProviderCatalog::builtInProfiles())
         loadProfileKeys(settings, runtime, profile);
@@ -263,6 +266,7 @@ void ULlmQtProviderSettingsSource::save(const RDK::LLM::LLMRuntimeProviderSettin
                        settings.context_acquisition_mode == RDK::LLM::LLMContextAcquisitionMode::Minimal
                            ? QStringLiteral("minimal")
                            : QStringLiteral("auto"));
+    qsettings.setValue(QStringLiteral("LLM/enable_ollama_thinking"), settings.enable_ollama_thinking);
 
     for(const auto& entry : settings.api_keys_by_profile_id)
     {

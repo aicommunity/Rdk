@@ -1,5 +1,6 @@
 #include "ULLMToolTrace.h"
 
+#include "../Context/ULLMDocCatalogHelpers.h"
 #include "../Session/ULLMConversationStore.h"
 
 #include <cctype>
@@ -22,9 +23,12 @@ bool isSensitiveFieldName(const std::string& key)
 
 bool schemaMarksSensitive(const nlohmann::json& input_schema, const std::string& key)
 {
-    if(!input_schema.contains("properties") || !input_schema["properties"].is_object())
+    if(!input_schema.is_object() || !input_schema.contains("properties")
+       || !input_schema["properties"].is_object())
         return false;
     const nlohmann::json& prop = input_schema["properties"].value(key, nlohmann::json{});
+    if(!prop.is_object())
+        return false;
     if(prop.value("x-llm-sensitive", false))
         return true;
     const std::string format = prop.value("format", "");
@@ -140,6 +144,8 @@ void recordTurnToolInvocation(ConversationState& state, const std::string& tool_
     view.message = result.message;
     view.duration_ms = duration_ms;
     view.pending_confirmation = result.pending_confirmation;
+    if(result.ok)
+        extractDocLinksFromToolResult(result.result, view.doc_links);
     state.current_turn_tool_trace.push_back(std::move(view));
 }
 

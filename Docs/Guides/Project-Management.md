@@ -256,8 +256,8 @@ classDiagram
 - `ClassName` - имя класса компонента модели
 
 **Настройки расчета:**
-- `GlobalTimeStep` - глобальный шаг счета (мс)
-- `DefaultTimeStep` - шаг счета по умолчанию (мс)
+- `GlobalTimeStep` - глобальная частота расчёта (шагов/с; dt = 1/GlobalTimeStep)
+- `DefaultTimeStep` - частота расчёта компонентов по умолчанию (шагов/с)
 - `CalculationMode` - режим расчета
 - `MinInterstepsInterval` - минимальный интервал между шагами расчета (мс)
 - `MaxCalculationModelTime` - максимально допустимое время расчета модели
@@ -1005,8 +1005,8 @@ The project supports three XML format versions:
 - `ClassName` - model component class name
 
 **Calculation Settings:**
-- `GlobalTimeStep` - global calculation step (ms)
-- `DefaultTimeStep` - default calculation step (ms)
+- `GlobalTimeStep` - global calculation frequency (steps/s; dt = 1/GlobalTimeStep)
+- `DefaultTimeStep` - default component calculation frequency (steps/s)
 - `CalculationMode` - calculation mode
 - `MinInterstepsInterval` - minimum interval between calculation steps (ms)
 - `MaxCalculationModelTime` - maximum allowed model calculation time

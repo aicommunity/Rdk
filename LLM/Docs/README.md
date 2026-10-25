@@ -26,5 +26,8 @@
 | **ClassName** | Имя class RDK (`ArduinoBoard`, `NModel`, …) из `UStorage` / ClDesc |
 | **HITL** | Human-in-the-loop — preview + Confirm before write |
 | **Plan / Execute** | LLM builds plan; execution only after policy и (для write) confirmation |
+| **Capability Pack** | Extensibility unit: match + hints + optional Recorded strategy — [Capability-Packs.md](Capability-Packs.md) |
+
+**Agent spine roadmap:** [Capability-Packs.md](Capability-Packs.md) (DD-PACK-001); tech debt TD-158…TD-165 in [TECH-DEBT.md](../TECH-DEBT.md).
 
 ---

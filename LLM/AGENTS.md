@@ -9,7 +9,7 @@
 - Единый контракт хода: [Docs/Unified-Turn-Contract.md](Docs/Unified-Turn-Contract.md) (`TurnTerminal`, workflow phases).
 - Взаимодействие и HITL: [Docs/Agent-Interaction.md](Docs/Agent-Interaction.md) (`ask_user`, `propose_plan`, task path `HintOnly` по умолчанию).
 - Миграция с v1: [Docs/Migration-Agent-V2.md](Docs/Migration-Agent-V2.md).
-- Lifecycle: подсказки в ephemeral context; прямой вызов до LLM — `NMSDK_LLM_LIFECYCLE_DIRECT=1`; принудительный `tool_choice` — `NMSDK_LLM_LIFECYCLE_FORCE_TOOL_CHOICE=1`.
+- Lifecycle: подсказки в ephemeral context; прямой `load` до LLM — `NMSDK_LLM_LIFECYCLE_DIRECT=1`; принудительный `tool_choice` — `NMSDK_LLM_LIFECYCLE_FORCE_TOOL_CHOICE=1`. Always-on direct allowlist (add explicit class / open_recent / pending resume) — через `RecordedToolInvoke` ([Docs/Unified-Turn-Contract.md](Docs/Unified-Turn-Contract.md), TD-150).
 
 ## Workflow (обязательно)
 
@@ -22,15 +22,18 @@
 3. Действия — только `ULLMToolGateway`, не прямой engine.
 4. `RDK_USE_LLM=OFF` — не компилировать `Rdk/LLM` и `Rdk/GUI/Qt/Llm`.
 5. MVP: read tools (фаза 1) → write + HITL (фаза 2).
+6. Расширение сценариев — **packs-first** ([Docs/Extension-Guide.md](Docs/Extension-Guide.md), [Docs/Capability-Packs.md](Docs/Capability-Packs.md)); сырой `registerTool` — вторичный путь.
 
 ## Карта задач → документ
 
 | Задача | Документ |
 |--------|----------|
 | Новый tool | [Tools-Contracts.md](Docs/Tools-Contracts.md) + [Tool-Gateway-and-Registry.md](Docs/Tool-Gateway-and-Registry.md) |
+| Новый capability pack | [Extension-Guide.md](Docs/Extension-Guide.md) + [Capability-Packs.md](Docs/Capability-Packs.md) + `Core/Packs/Template/` |
 | Policy / HITL | [Policy-and-Safety.md](Docs/Policy-and-Safety.md) |
 | Qt dock | [GUI-Integration.md](Docs/GUI-Integration.md) |
 | Orchestrator / turn loop | [Orchestrator.md](Docs/Orchestrator.md), [Unified-Turn-Contract.md](Docs/Unified-Turn-Contract.md) |
+| Capability packs / spine | [Capability-Packs.md](Docs/Capability-Packs.md) |
 | NMSDK paths | [Project-Context-NMSDK.md](Docs/Project-Context-NMSDK.md) |
 | CMake | [Build.md](Docs/Build.md) |
 | Сборка OFF | [Build.md](Docs/Build.md) §5 |
@@ -48,7 +51,7 @@ When working with the LLM subsystem, **first** open [Docs/README.md](Docs/README
 - Unified turn contract: [Docs/Unified-Turn-Contract.md](Docs/Unified-Turn-Contract.md) (`TurnTerminal`, workflow phases).
 - Interaction and HITL: [Docs/Agent-Interaction.md](Docs/Agent-Interaction.md) (`ask_user`, `propose_plan`, task path `HintOnly` by default).
 - Migration from v1: [Docs/Migration-Agent-V2.md](Docs/Migration-Agent-V2.md).
-- Lifecycle: hints in ephemeral context; direct call before LLM — `NMSDK_LLM_LIFECYCLE_DIRECT=1`; forced `tool_choice` — `NMSDK_LLM_LIFECYCLE_FORCE_TOOL_CHOICE=1`.
+- Lifecycle: hints in ephemeral context; direct `load` before LLM — `NMSDK_LLM_LIFECYCLE_DIRECT=1`; forced `tool_choice` — `NMSDK_LLM_LIFECYCLE_FORCE_TOOL_CHOICE=1`. Always-on direct allowlist (explicit-class add / open_recent / pending resume) via `RecordedToolInvoke` ([Docs/Unified-Turn-Contract.md](Docs/Unified-Turn-Contract.md), TD-150).
 
 ## Workflow (required)
 
@@ -61,15 +64,18 @@ After **each phase** 0–4: [Development-Workflow.md](Docs/Development-Workflow.
 3. Actions — only `ULLMToolGateway`, not direct engine access.
 4. `RDK_USE_LLM=OFF` — do not compile `Rdk/LLM` and `Rdk/GUI/Qt/Llm`.
 5. MVP: read tools (phase 1) → write + HITL (phase 2).
+6. Extend scenarios **packs-first** ([Docs/Extension-Guide.md](Docs/Extension-Guide.md), [Docs/Capability-Packs.md](Docs/Capability-Packs.md)); raw `registerTool` is secondary.
 
 ## Task map → document
 
 | Task | Document |
 |--------|----------|
 | New tool | [Tools-Contracts.md](Docs/Tools-Contracts.md) + [Tool-Gateway-and-Registry.md](Docs/Tool-Gateway-and-Registry.md) |
+| New capability pack | [Extension-Guide.md](Docs/Extension-Guide.md) + [Capability-Packs.md](Docs/Capability-Packs.md) + `Core/Packs/Template/` |
 | Policy / HITL | [Policy-and-Safety.md](Docs/Policy-and-Safety.md) |
 | Qt dock | [GUI-Integration.md](Docs/GUI-Integration.md) |
 | Orchestrator / turn loop | [Orchestrator.md](Docs/Orchestrator.md), [Unified-Turn-Contract.md](Docs/Unified-Turn-Contract.md) |
+| Capability packs / spine | [Capability-Packs.md](Docs/Capability-Packs.md) |
 | NMSDK paths | [Project-Context-NMSDK.md](Docs/Project-Context-NMSDK.md) |
 | CMake | [Build.md](Docs/Build.md) |
 | OFF build | [Build.md](Docs/Build.md) §5 |

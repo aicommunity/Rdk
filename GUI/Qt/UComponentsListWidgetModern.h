@@ -5,6 +5,12 @@
 #include "UDrawEngineImageWidget.h"
 #include "UGuiModelSnapshot.h"
 #include "UComponentGuiContext.h"
+#include "UPropertyListOptions.h"
+#include "../../Core/Engine/UComponent.h"
+
+namespace RDK {
+class UContainerDescription;
+}
 
 #include <QLineEdit>
 #include <QTreeWidgetItem>
@@ -21,6 +27,12 @@
 #include <QVBoxLayout>
 #include <QKeyEvent>
 #include <QSet>
+#include <QVector>
+#include <QStringList>
+#include <QPointer>
+#include <QPoint>
+
+class UPropertyXMLWidget;
 
 namespace Ui {
 class UComponentsListWidgetModern;
@@ -108,6 +120,9 @@ public:
     /// Возвращает индекс текущего окна
     int currentTabIndex();
 
+    /// Mask for UPropertyXMLWidget (ptPubParameter / State / Input / Output).
+    int currentPropertyXmlMask() const;
+
     /// Возвращает имя выбранного Property
     QString getSelectedPropertyName();
 
@@ -128,6 +143,29 @@ public:
 
     /// Устанавливает режим видимости для виджета выбора канала расчёта
     void setChannelsListVisible(bool value);
+
+    /// Дерево компонентов: false = компактный popup (☰), true = встроенное как в legacy picker
+    void setComponentTreeEmbedded(bool embedded);
+    bool isComponentTreeEmbedded() const { return m_componentTreeEmbedded; }
+
+    /// Пресет компоновки (Inspector — главная форма; PropertyPicker — мастер выбора свойства)
+    void setLayoutPreset(ComponentsListLayoutPreset preset);
+    ComponentsListLayoutPreset layoutPreset() const { return m_layoutPreset; }
+
+    /// Опции списка свойств (Tabbed / UnifiedGrouped + фильтры)
+    void setPropertyListOptions(const PropertyListOptions& opt);
+    PropertyListOptions propertyListOptions() const { return m_propertyListOptions; }
+
+    void setPropertyListPresentation(PropertyListPresentation mode);
+    void setVisiblePropertyGroups(PropertyGroupFlags flags);
+    void setWatchablePropertiesOnly(bool on);
+    void setPropertySubtitleMode(PropertySubtitleMode mode);
+    void setPropertyInlineEditEnabled(bool on);
+    void setPropertyValueColumnVisible(bool on);
+    void setExpandPropertyGroups(bool on);
+
+    /// Применить значение из inline-редактора (вызывается delegate)
+    bool applyPropertyValueFromEditor(QTreeWidgetItem* item, const QString& value);
 
 signals:
     void componentSelected(QString name); //single click
@@ -153,9 +191,14 @@ public slots:
     void inputsListSelectionChanged();
     void outputsListSelectionChanged();
     void favoritesListSelectionChanged();
+    void unifiedListSelectionChanged();
 
     void parametersListItemChanged(QTreeWidgetItem *item, int column);
     void favoritesListItemChanged(QTreeWidgetItem *item, int column);
+    void unifiedListItemChanged(QTreeWidgetItem *item, int column);
+    void stateListItemChanged(QTreeWidgetItem *item, int column);
+    void inputsListItemChanged(QTreeWidgetItem *item, int column);
+    void outputsListItemChanged(QTreeWidgetItem *item, int column);
     void handleSnapshotUpdated(NMSDK::UGuiSnapshotPtr snapshot,
                                const QStringList &added,
                                const QStringList &removed,
@@ -188,6 +231,8 @@ public slots:
     void propertyCopyNameToClipboard();
     void propertyCopyValueToClipboard();
     void propertyPasteValueFromClipboard();
+    void propertyEditValue();
+    void propertyShowXml();
 
 private slots:
     void on_actionReloadTree_triggered();
@@ -195,6 +240,10 @@ private slots:
     void on_tabWidgetComponentInfo_currentChanged(int index);
 
     void on_actionDefaultAllParameters_triggered();
+
+    void onPropertyItemDoubleClicked(QTreeWidgetItem* item, int column);
+    void onPropertyHeaderSectionResized(int logicalIndex, int oldSize, int newSize);
+    void onFavoritesShowInAllSectionsToggled(bool checked);
 
 private:
     /// Удаляет из переданных данных лидирующие переводы строк
@@ -206,6 +255,31 @@ private:
     /// Если в переданных данных есть хотя бы один перевод строки, то заменяет текст
     /// на "[SEE BELOW]"
     std::string& PreparePropertyValueToListView(std::string &value);
+
+    void setupPropertyEditing();
+    void setupColumnWidthSync();
+    void syncPropertyColumnWidths(QTreeWidget* sourceTree, int logicalIndex, int newSize);
+    void applySharedColumnWidths(int nameWidth, int valueWidth, int typeWidth);
+
+    bool isMultilinePropertyValue(const QString& rawValue, const QString& displayValue) const;
+    bool beginPropertyValueEdit(QTreeWidgetItem* item);
+    bool commitPropertyValue(const QString& componentLongName, const QString& propertyName, const QString& value);
+    QString propertyComponentForItem(QTreeWidgetItem* item) const;
+    QString propertyNameForItem(QTreeWidgetItem* item) const;
+    QTreeWidget* currentPropertyTree() const;
+    QTreeWidgetItem* currentPropertyItem() const;
+
+    void updatePropertyItemDisplay(QTreeWidgetItem* item, const QString& rawValue);
+    void applyBoolCheckFlags(QTreeWidgetItem* item, bool checked);
+    bool parseBoolPropertyValue(const QString& raw) const;
+    bool commitBoolPropertyFromItem(QTreeWidgetItem* item,
+                                    const QString& componentLongName,
+                                    const QString& propertyName);
+    void refreshAfterComponentMutation(const QString& longName);
+    bool toggleBoolPropertyItem(QTreeWidgetItem* item);
+    QTreeWidget* propertyTreeFromFilterObject(QObject* obj) const;
+    bool handleBoolValueMouseEvent(QTreeWidget* tree, QMouseEvent* mouseEvent);
+
 private:
 
     /// Имя компонента, чьи проперти отображены
@@ -225,6 +299,44 @@ private:
     QString selectedInputName;
     QString selectedOutputName;
     QString selectedFavName;
+    QString selectedUnifiedName;
+
+    /// Показывать favorite сразу в нескольких группах ролей (default true)
+    bool m_favoritesShowInAllSections = true;
+
+    PropertyListOptions m_propertyListOptions;
+    bool m_componentTreeEmbedded = false;
+    ComponentsListLayoutPreset m_layoutPreset = ComponentsListLayoutPreset::Inspector;
+    bool m_pickerLayoutApplied = false;
+    QWidget* m_unifiedPage = nullptr;
+    QTreeWidget* m_unifiedTree = nullptr;
+    int m_unifiedTabIndex = -1;
+    QVector<QWidget*> m_savedPropertyTabs;
+    QStringList m_savedPropertyTabLabels;
+
+    void applyPropertyListPresentationUi();
+    void ensureUnifiedPropertyPage();
+    void applyLayoutPresetUi();
+    void applyPropertyColumnLayout();
+    QString buildPropertySubtitle(const QString& propName,
+                                  const QString& typeName,
+                                  const QString& componentLongName) const;
+    void fillUnifiedPropertyTree(RDK::UContainer* cont,
+                                 const RDK::UComponent::VariableMapT& varMap,
+                                 const std::vector<RDK::NameT>& propOrder,
+                                 bool is_new_inputs,
+                                 bool is_new_outputs,
+                                 const std::map<std::string, std::string>& favorites,
+                                 RDK::UContainerDescription* class_desc);
+
+    bool m_syncingColumnWidths = false;
+    QPoint m_propertyDragPressPos;
+    bool m_propertyDragArmed = false;
+
+    QAction* m_actionEditProperty = nullptr;
+    QAction* m_actionShowPropertyXml = nullptr;
+    QAction* m_actionFavoritesShowInAllSections = nullptr;
+    QPointer<UPropertyXMLWidget> m_propertyXmlDialog;
 
     /// Текущий канал для виджета
     int currentChannel;
@@ -251,6 +363,7 @@ private:
 
     void rebuildTreeFromSnapshot(const NMSDK::UGuiSnapshotPtr &snapshot);
     bool applyFilter(QTreeWidgetItem *item);
+    void applyPropertyTreeFilter();
     void restoreTreeSelection(const QString& oldRootItem, const QString& oldSelectedItem);
     void schedulePropertyReloadRetry();
     void scheduleTreeRebuildRetry();
@@ -280,6 +393,13 @@ private:
     /// Показывает/скрывает popup окно с деревом
     void showTreePopup();
     void hideTreePopup();
+
+    /// Показать/скрыть вкладку Favorites и при необходимости сделать её первой и активной
+    void updateFavoritesTabVisibility(bool hasFavorites, bool selectFavorites);
+
+    /// Логический индекс вкладки свойств (0 Parameters .. 3 Outputs, 4 Favorites), независимо от порядка вкладок
+    int logicalTabIndexFromWidget(QWidget* tab) const;
+    QWidget* widgetFromLogicalTabIndex(int logicalIndex) const;
 
 protected:
     /// Обработка клавиши Esc для закрытия popup

@@ -49,6 +49,13 @@ UComponentGuiTabHostWidget::UComponentGuiTabHostWidget(const QString& hostId,
         closeTabAtIndex(index);
     });
     connect(m_tabWidget, &QTabWidget::currentChanged, this, [this](int) { syncCurrentTabState(); });
+    if(QTabBar* bar = m_tabWidget->tabBar())
+    {
+        connect(bar, &QTabBar::tabMoved, this, [this](int, int) {
+            // Persistable order is captured via saveState() / layout OrderIndex.
+            syncCurrentTabState();
+        });
+    }
 
     layout->addWidget(m_tabWidget);
 }
@@ -233,15 +240,55 @@ QByteArray UComponentGuiTabHostWidget::saveState() const
 {
     if(!m_tabWidget || !m_tabWidget->tabBar())
         return QByteArray();
-    return QByteArray::number(m_tabWidget->currentIndex());
+    // Schema: v2|currentIndex|key0|key1|...
+    QStringList parts;
+    parts << QStringLiteral("v2");
+    parts << QString::number(m_tabWidget->currentIndex());
+    for(int i = 0; i < m_tabWidget->count(); ++i)
+        parts << m_tabWidget->tabBar()->tabData(i).toString();
+    return parts.join(QLatin1Char('\n')).toUtf8();
 }
 
 void UComponentGuiTabHostWidget::restoreState(const QByteArray& state)
 {
     if(!m_tabWidget || state.isEmpty())
         return;
+
+    const QString text = QString::fromUtf8(state);
+    if(text.startsWith(QStringLiteral("v2\n")))
+    {
+        const QStringList parts = text.split(QLatin1Char('\n'));
+        if(parts.size() < 2)
+            return;
+        // Reorder tabs to match saved keys when all keys are present.
+        // Keys themselves may contain '|' (class|longName|channel).
+        QStringList desiredKeys = parts.mid(2);
+        for(int target = 0; target < desiredKeys.size(); ++target)
+        {
+            const QString& key = desiredKeys[target];
+            if(key.isEmpty())
+                continue;
+            int found = -1;
+            for(int i = 0; i < m_tabWidget->count(); ++i)
+            {
+                if(m_tabWidget->tabBar()->tabData(i).toString() == key)
+                {
+                    found = i;
+                    break;
+                }
+            }
+            if(found >= 0 && found != target && target < m_tabWidget->count())
+                m_tabWidget->tabBar()->moveTab(found, target);
+        }
+        bool ok = false;
+        const int index = parts.value(1).toInt(&ok);
+        if(ok && index >= 0 && index < m_tabWidget->count())
+            m_tabWidget->setCurrentIndex(index);
+        return;
+    }
+
     bool ok = false;
-    const int index = QString::fromUtf8(state).toInt(&ok);
+    const int index = text.toInt(&ok);
     if(ok && index >= 0 && index < m_tabWidget->count())
         m_tabWidget->setCurrentIndex(index);
 }

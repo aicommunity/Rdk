@@ -1,6 +1,8 @@
 #include "UModernDiagramTooltipGenerator.h"
 #include "UModernDiagramNodeItem.h"
 #include "UModernDiagramLinkItem.h"
+#include "UModernDiagramExternalSourceItem.h"
+#include "UModernDiagramExternalSinkItem.h"
 #include "UModernDiagramPort.h"
 
 #include <QCoreApplication>
@@ -69,7 +71,66 @@ QString UModernDiagramTooltipGenerator::generatePortTooltip(const UModernDiagram
 
 QString UModernDiagramTooltipGenerator::generateLinkTooltip(const UModernDiagramLinkItem* link)
 {
-    if(!link || !link->getSourceNode())
+    if(!link)
+        return QString();
+
+    if(link->isExternalIncoming())
+    {
+        const UModernDiagramNodeItem* dstNode = link->getDestinationNode();
+        QString dstName = dstNode ? dstNode->nodeName : QCoreApplication::translate("UModernDiagramTooltipGenerator", "(unknown)");
+        QString categoryName;
+        switch(link->dstCategory())
+        {
+        case PortCategory::Own: categoryName = QCoreApplication::translate("UModernDiagramTooltipGenerator", "Own"); break;
+        case PortCategory::Child: categoryName = QCoreApplication::translate("UModernDiagramTooltipGenerator", "Child"); break;
+        case PortCategory::Alias: categoryName = QCoreApplication::translate("UModernDiagramTooltipGenerator", "Alias"); break;
+        }
+        const UModernDiagramExternalSourceItem* ext = link->externalSource();
+        const QString shortLabel = ext ? ext->displayLabel() : link->externalSourceLabel();
+        const QString fullLabel = ext ? ext->outputFullId() : link->externalSourceLabel();
+        QString tooltip = QCoreApplication::translate("UModernDiagramTooltipGenerator",
+            "<b>External connection</b><br/>"
+            "From: %1<br/>"
+            "<small>%2</small><br/>"
+            "To: %3 (%4)<br/><br/>"
+            "<b>Actions:</b><br/>"
+            "• Drag source port to reposition<br/>"
+            "• Right Click - Context menu"
+        ).arg(shortLabel, fullLabel, dstName, categoryName);
+        if(link->parallelCount() > 1)
+        {
+            tooltip += QCoreApplication::translate("UModernDiagramTooltipGenerator",
+                "<br/><br/>links: %1").arg(link->parallelCount());
+        }
+        return tooltip;
+    }
+
+    if(link->isExternalOutgoing())
+    {
+        QString srcName = link->getSourceNode() ? link->getSourceNode()->nodeName
+            : QCoreApplication::translate("UModernDiagramTooltipGenerator", "(unknown)");
+        QString categoryName;
+        switch(link->srcCategory())
+        {
+        case PortCategory::Own: categoryName = QCoreApplication::translate("UModernDiagramTooltipGenerator", "Own"); break;
+        case PortCategory::Child: categoryName = QCoreApplication::translate("UModernDiagramTooltipGenerator", "Child"); break;
+        case PortCategory::Alias: categoryName = QCoreApplication::translate("UModernDiagramTooltipGenerator", "Alias"); break;
+        }
+        const UModernDiagramExternalSinkItem* sink = link->externalSink();
+        const QString shortLabel = sink ? sink->displayLabel() : link->externalSinkLabel();
+        const QString fullLabel = sink ? sink->outputFullId() : link->externalSinkLabel();
+        return QCoreApplication::translate("UModernDiagramTooltipGenerator",
+            "<b>External output</b><br/>"
+            "From: %1 (%2)<br/>"
+            "Export: %3<br/>"
+            "<small>%4</small><br/><br/>"
+            "<b>Actions:</b><br/>"
+            "• Drag sink port to reposition<br/>"
+            "• Right Click - Context menu"
+        ).arg(srcName, categoryName, shortLabel, fullLabel);
+    }
+
+    if(!link->getSourceNode())
         return QString();
 
     QString srcName = link->getSourceNode()->nodeName;
@@ -84,6 +145,12 @@ QString UModernDiagramTooltipGenerator::generateLinkTooltip(const UModernDiagram
         "• Right Click - Context menu"
     ).arg(srcName, dstName);
 
+    if(link->parallelCount() > 1)
+    {
+        tooltip += QCoreApplication::translate("UModernDiagramTooltipGenerator",
+            "<br/><br/>links: %1").arg(link->parallelCount());
+    }
+
     return tooltip;
 }
 
@@ -96,7 +163,7 @@ QString UModernDiagramTooltipGenerator::generateCanvasTooltip()
         "• Shift + Left Click + Drag - Add to selection<br/><br/>"
         "<b>Navigation:</b><br/>"
         "• Ctrl + Left Click + Drag - Pan canvas<br/>"
-        "• Mouse Wheel - Zoom<br/>"
+        "• Ctrl + Mouse Wheel - Zoom<br/>"
         "• Double Right Click - Go up level<br/><br/>"
         "<b>Connections:</b><br/>"
         "• Right Click - Cancel connection"

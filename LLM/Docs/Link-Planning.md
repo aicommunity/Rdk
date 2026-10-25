@@ -49,6 +49,7 @@ The snapshot may set `links_truncated: true` when the max link limit is reached.
    - count-only: `link 3 pairs`
    - remaining: `remaining/rest/оставшиеся`
    - analogous: `like previous/как предыдущий/по аналогии`
+   - **live analogous (TD-151):** `как подключен к PNeuron` / `same way … to X` → `analogous_ref_token`; hub from `подключи Hub`; peer fan-out to same-class siblings
 3. Resolve endpoint tokens to component `long_name`:
    - direct long_name (contains `/`) → `findComponentByLongName`
    - resolved entity store
@@ -56,6 +57,9 @@ The snapshot may set `links_truncated: true` when the max link limit is reached.
 4. Infer ports (or ask for clarification) using published ports and the link pattern catalog.
    When the user asks to connect «like previous», reuse `last_template` ports when component
    classes match (fallback to catalog inference otherwise).
+   When `analogous_ref_token` is set, load **live** template links between hub and ref **subtrees**
+   (nested endpoints count), then map ref-subtree long_names onto each same-class peer target.
+   Fail with `no_template_links` if none found.
 5. For each target link quad:
    - if it is already present in snapshot `links[]`, skip creating a write step
    - otherwise, add a `connect_components` plan step with `success=link_exists`
@@ -68,6 +72,10 @@ The snapshot may set `links_truncated: true` when the max link limit is reached.
 ## Idempotent connect tool behavior
 
 `connect_components` is idempotent with respect to the strict 4-tuple. If the link already exists, it returns `ok=true` and adds `already_existed: true`.
+
+## FastPath UX (visible success)
+
+When ConnectPlan executes via Task FastPath, the assistant reply must list created links (`From.Port → To.Port`) and the turn Tools block must include each `connect_components` 4-tuple — same observability as direct `add_component`. See [Unified-Turn-Contract.md](Unified-Turn-Contract.md) § Recorded bypass.
 
 ## Remaining scope (TD-092)
 
@@ -99,6 +107,10 @@ Users often mean **published ports on components** (for example `LTZone` → `So
 ## Connect semantics (TD-096)
 
 Port inference prefers machine index `connect-semantics.json` (see `Connect-Semantics.md`) over generic `Output`/`Input` when connecting neurons. Ephemeral system hint is injected for connect goals via `ULLMContextAssembler`.
+
+## Live analogous + subtree anchors (TD-151 / DD-CONN-001)
+
+Connect naming treats user tokens as **subtree anchors**: links between `PGenerator` and `PNeuron` often terminate on nested ports (`PNeuron.Soma1.…`). `list_model_links` filters and live-analogous planning use `endpointInSubtree`. Ephemeral `buildConnectInspectHintBlock` steers ReAct to inspect before inventing topology.
 
 ## Optional LLM fallback
 
@@ -157,6 +169,7 @@ The snapshot may set `links_truncated: true` when the max link limit is reached.
    - count-only: `link 3 pairs`
    - remaining: `remaining/rest/оставшиеся`
    - analogous: `like previous/как предыдущий/по аналогии`
+   - **live analogous (TD-151):** `как подключен к PNeuron` / `same way … to X` → `analogous_ref_token`; hub from `подключи Hub`; peer fan-out to same-class siblings
 3. Resolve endpoint tokens to component `long_name`:
    - direct long_name (contains `/`) → `findComponentByLongName`
    - resolved entity store
@@ -164,6 +177,9 @@ The snapshot may set `links_truncated: true` when the max link limit is reached.
 4. Infer ports (or ask for clarification) using published ports and the link pattern catalog.
    When the user asks to connect «like previous», reuse `last_template` ports when component
    classes match (fallback to catalog inference otherwise).
+   When `analogous_ref_token` is set, load **live** template links between hub and ref **subtrees**
+   (nested endpoints count), then map ref-subtree long_names onto each same-class peer target.
+   Fail with `no_template_links` if none found.
 5. For each target link quad:
    - if it is already present in snapshot `links[]`, skip creating a write step
    - otherwise, add a `connect_components` plan step with `success=link_exists`
@@ -176,6 +192,10 @@ The snapshot may set `links_truncated: true` when the max link limit is reached.
 ## Idempotent connect tool behavior
 
 `connect_components` is idempotent with respect to the strict 4-tuple. If the link already exists, it returns `ok=true` and adds `already_existed: true`.
+
+## FastPath UX (visible success)
+
+When ConnectPlan executes via Task FastPath, the assistant reply must list created links (`From.Port → To.Port`) and the turn Tools block must include each `connect_components` 4-tuple — same observability as direct `add_component`. See [Unified-Turn-Contract.md](Unified-Turn-Contract.md) § Recorded bypass.
 
 ## Remaining scope (TD-092)
 

@@ -12,6 +12,8 @@ UQuickLinkDialog::UQuickLinkDialog(QWidget *parent, const QString& componentName
 
     // Создаем основной layout
     QVBoxLayout* mainLayout = new QVBoxLayout(this);
+    mainLayout->setContentsMargins(6, 6, 6, 6);
+    mainLayout->setSpacing(4);
 
     // Заголовок
     QLabel* headerLabel = new QLabel(tr("Select output (source) and input (target) to create a link:"));

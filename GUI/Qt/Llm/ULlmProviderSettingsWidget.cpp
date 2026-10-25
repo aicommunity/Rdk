@@ -2,7 +2,9 @@
 
 #include <QComboBox>
 #include <QFormLayout>
+#include <QHBoxLayout>
 #include <QLabel>
+#include <QSizePolicy>
 #include <QVBoxLayout>
 #include <QtConcurrent/QtConcurrent>
 
@@ -11,23 +13,48 @@
 #include "../../../LLM/Core/Providers/ULLMProviderFactory.h"
 #include "../../../LLM/Core/Settings/ULLMProviderAuth.h"
 #include "../../../LLM/Core/Settings/ULLMProviderCatalog.h"
-#include "../../../LLM/Core/Settings/ULLMResponseLanguage.h"
-#include "ULlmGuiLocale.h"
+
+namespace {
+
+void configureCompactForm(QFormLayout* form)
+{
+    form->setContentsMargins(0, 0, 0, 0);
+    form->setHorizontalSpacing(8);
+    form->setVerticalSpacing(4);
+}
+
+} // namespace
 
 ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UApplication* app)
     : QDialog(parent)
     , m_app(app)
 {
     setWindowTitle(tr("AI Assistant Settings"));
-    setMinimumWidth(480);
+    setMinimumWidth(760);
 
-    auto* layout = new QVBoxLayout(this);
+    auto* root = new QVBoxLayout(this);
+    root->setContentsMargins(4, 4, 4, 4);
+    root->setSpacing(4);
 
-    layout->addWidget(new QLabel(tr("Provider profile:"), this));
+    auto* columns = new QHBoxLayout();
+    columns->setContentsMargins(0, 0, 0, 0);
+    columns->setSpacing(12);
+
+    // --- Left: Connection ---
+    auto* left = new QVBoxLayout();
+    left->setContentsMargins(0, 0, 0, 0);
+    left->setSpacing(4);
+
+    left->addWidget(new QLabel(tr("<b>Connection</b>"), this));
+
+    auto* provider_form = new QFormLayout();
+    configureCompactForm(provider_form);
     m_profiles = new QComboBox(this);
-    layout->addWidget(m_profiles);
+    provider_form->addRow(tr("Provider profile:"), m_profiles);
+    left->addLayout(provider_form);
 
     auto* endpoint_form = new QFormLayout();
+    configureCompactForm(endpoint_form);
     m_base_url = new QLineEdit(this);
     m_base_url->setPlaceholderText(tr("e.g. http://127.0.0.1:11434/v1"));
     m_model = new QComboBox(this);
@@ -35,77 +62,85 @@ ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UAp
     m_model->lineEdit()->setPlaceholderText(tr("e.g. qwen2.5:7b"));
     endpoint_form->addRow(tr("Base URL:"), m_base_url);
     endpoint_form->addRow(tr("Model:"), m_model);
-    layout->addLayout(endpoint_form);
+    left->addLayout(endpoint_form);
 
     m_refresh_ollama_models = new QPushButton(tr("Refresh Ollama model list"), this);
-    layout->addWidget(m_refresh_ollama_models);
+    left->addWidget(m_refresh_ollama_models);
 
     auto* reset_btn = new QPushButton(tr("Reset URL and model to defaults"), this);
-    layout->addWidget(reset_btn);
+    left->addWidget(reset_btn);
 
-    layout->addWidget(new QLabel(tr("API key (stored locally, not in project files):"), this));
+    auto* auth_form = new QFormLayout();
+    configureCompactForm(auth_form);
     m_api_key = new QLineEdit(this);
     m_api_key->setEchoMode(QLineEdit::Password);
-    layout->addWidget(m_api_key);
+    m_api_key->setPlaceholderText(tr("Stored locally, not in project files"));
+    auth_form->addRow(tr("API key:"), m_api_key);
+    left->addLayout(auth_form);
 
     m_allow_cloud = new QCheckBox(tr("Allow cloud providers (DeepSeek, OpenAI)"), this);
-    layout->addWidget(m_allow_cloud);
+    left->addWidget(m_allow_cloud);
+
+    // Profile/model help stays in the Connection column (always visible).
+    m_status = new QLabel(this);
+    m_status->setWordWrap(true);
+    m_status->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    m_status->setAlignment(Qt::AlignLeft | Qt::AlignTop);
+    m_status->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    m_status->setMinimumHeight(fontMetrics().lineSpacing() * 3 + 8);
+    left->addWidget(m_status);
+    left->addStretch(1);
+
+    // --- Right: Agent ---
+    auto* right = new QVBoxLayout();
+    right->setContentsMargins(0, 0, 0, 0);
+    right->setSpacing(4);
+
+    right->addWidget(new QLabel(tr("<b>Agent</b>"), this));
 
     m_allow_write = new QCheckBox(
         tr("Allow LLM write tools (create/load/save configuration, add/set components)"), this);
-    layout->addWidget(m_allow_write);
+    right->addWidget(m_allow_write);
 
     m_auto_apply_writes = new QCheckBox(
         tr("Apply write tools automatically (no confirmation step for each tool call)"), this);
-    layout->addWidget(m_auto_apply_writes);
+    right->addWidget(m_auto_apply_writes);
 
     connect(m_allow_write, &QCheckBox::toggled, m_auto_apply_writes, &QWidget::setEnabled);
 
-    auto* autonomous_form = new QFormLayout();
+    auto* agent_form = new QFormLayout();
+    configureCompactForm(agent_form);
     m_autonomous_mode = new QComboBox(this);
     m_autonomous_mode->addItem(tr("Off"), QStringLiteral("off"));
     m_autonomous_mode->addItem(tr("Strict (confirm each step)"), QStringLiteral("strict"));
     m_autonomous_mode->addItem(tr("Semi-auto (auto-apply writes)"), QStringLiteral("semi_auto"));
-    autonomous_form->addRow(tr("Autonomous mode:"), m_autonomous_mode);
+    agent_form->addRow(tr("Autonomous mode:"), m_autonomous_mode);
 
     m_max_autonomous_steps = new QSpinBox(this);
     m_max_autonomous_steps->setRange(1, 50);
     m_max_autonomous_steps->setValue(3);
-    autonomous_form->addRow(tr("Max autonomous steps:"), m_max_autonomous_steps);
-
-    layout->addLayout(autonomous_form);
+    agent_form->addRow(tr("Max autonomous steps:"), m_max_autonomous_steps);
 
     m_task_path_mode = new QComboBox(this);
     m_task_path_mode->addItem(tr("Hint only (agent ReAct fallback)"), QStringLiteral("hint_only"));
     m_task_path_mode->addItem(tr("Fast path (deterministic task executor)"),
                               QStringLiteral("fast_path"));
-    auto* task_path_label = new QLabel(tr("Task path mode:"), this);
-    task_path_label->setToolTip(
+    m_task_path_mode->setToolTip(
         tr("Hint only: deterministic task planner suggests steps; the agent ReAct loop still runs. "
            "Fast path: execute task plan immediately when confidence is high (strict: env "
            "NMSDK_LLM_TASK_PATH_STRICT=1)."));
-    layout->addWidget(task_path_label);
-    m_task_path_mode->setToolTip(task_path_label->toolTip());
-    layout->addWidget(m_task_path_mode);
+    agent_form->addRow(tr("Task path mode:"), m_task_path_mode);
 
     m_context_acquisition_mode = new QComboBox(this);
     m_context_acquisition_mode->addItem(
         tr("Auto (link hints, snapshot, doc prefetch on mutate)"), QStringLiteral("auto"));
     m_context_acquisition_mode->addItem(
         tr("Minimal (bootstrap only, lower token use)"), QStringLiteral("minimal"));
-    auto* acquisition_label = new QLabel(tr("Context acquisition:"), this);
-    acquisition_label->setToolTip(
+    m_context_acquisition_mode->setToolTip(
         tr("Auto injects index-backed connect hints and may prefetch documentation snippets "
            "before mutate turns. Minimal keeps only session bootstrap."));
-    layout->addWidget(acquisition_label);
-    m_context_acquisition_mode->setToolTip(acquisition_label->toolTip());
-    layout->addWidget(m_context_acquisition_mode);
+    agent_form->addRow(tr("Context acquisition:"), m_context_acquisition_mode);
 
-    m_translate_queries_to_en =
-        new QCheckBox(tr("Translate non-English requests to English (planning only)"), this);
-    layout->addWidget(m_translate_queries_to_en);
-
-    auto* lang_form = new QFormLayout();
     m_response_language = new QComboBox(this);
     m_response_language->addItem(tr("Auto (system)"), QString());
     m_response_language->addItem(tr("English"), QStringLiteral("en"));
@@ -113,22 +148,39 @@ ULlmProviderSettingsWidget::ULlmProviderSettingsWidget(QWidget* parent, RDK::UAp
     m_response_language->addItem(tr("German"), QStringLiteral("de"));
     m_response_language->addItem(tr("French"), QStringLiteral("fr"));
     m_response_language->addItem(tr("Chinese (Simplified)"), QStringLiteral("zh"));
-    lang_form->addRow(tr("Response language:"), m_response_language);
+    agent_form->addRow(tr("Response language:"), m_response_language);
 
     m_send_shortcut = new QComboBox(this);
     m_send_shortcut->addItem(tr("Ctrl+Enter"), QStringLiteral("ctrl_enter"));
     m_send_shortcut->addItem(tr("Enter"), QStringLiteral("enter"));
-    lang_form->addRow(tr("Send message:"), m_send_shortcut);
-    layout->addLayout(lang_form);
+    agent_form->addRow(tr("Send message:"), m_send_shortcut);
+    right->addLayout(agent_form);
 
-    m_status = new QLabel(this);
-    m_status->setWordWrap(true);
-    layout->addWidget(m_status);
+    m_translate_queries_to_en =
+        new QCheckBox(tr("Translate non-English requests to English (planning only)"), this);
+    right->addWidget(m_translate_queries_to_en);
 
+    m_enable_ollama_thinking = new QCheckBox(
+        tr("Enable Ollama thinking mode (Cortex reasons before tool calls)"), this);
+    m_enable_ollama_thinking->setToolTip(
+        tr("When on, Cortex sends think=true to Ollama thinking models (e.g. qwen3) and keeps "
+           "reasoning separate from the answer. Forced tool_choice is disabled while thinking."));
+    right->addWidget(m_enable_ollama_thinking);
+    right->addStretch(1);
+
+    columns->addLayout(left, 1);
+    columns->addLayout(right, 1);
+    root->addLayout(columns, 0);
+
+    auto* buttons = new QHBoxLayout();
+    buttons->setContentsMargins(0, 0, 0, 0);
+    buttons->setSpacing(8);
     auto* test_btn = new QPushButton(tr("Test connection"), this);
     auto* save_btn = new QPushButton(tr("Save and apply"), this);
-    layout->addWidget(test_btn);
-    layout->addWidget(save_btn);
+    buttons->addWidget(test_btn);
+    buttons->addStretch(1);
+    buttons->addWidget(save_btn);
+    root->addLayout(buttons);
 
     connect(m_profiles, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
             &ULlmProviderSettingsWidget::onProfileChanged);
@@ -176,6 +228,7 @@ void ULlmProviderSettingsWidget::loadFromStore()
     }
     m_max_autonomous_steps->setValue(store.runtime().max_autonomous_steps);
     m_translate_queries_to_en->setChecked(store.runtime().translate_queries_to_en);
+    m_enable_ollama_thinking->setChecked(store.runtime().enable_ollama_thinking);
 
     const QString lang =
         QString::fromStdString(store.runtime().preferred_response_language);
@@ -244,39 +297,35 @@ void ULlmProviderSettingsWidget::onProfileChanged(int index)
 
     updateOllamaModelRefreshVisibility();
 
+    // Compact hints under Connection; longer env notes in tooltip.
     QString hint;
+    QString tip;
     if(preset.kind == RDK::LLM::LLMProviderKind::EmbeddedLlama)
     {
         hint = tr("Offline GGUF. Env: NMSDK_LLM_GGUF_PATH, NMSDK_LLM_CTX, NMSDK_LLM_GPU_LAYERS");
+        tip = hint;
     }
     else if(preset.kind == RDK::LLM::LLMProviderKind::OllamaOpenAICompat
             || preset.kind == RDK::LLM::LLMProviderKind::OllamaNative)
     {
-        hint = tr("Ollama: chat template auto (qwen/llama3/mistral). Tools need Ollama 0.3+.");
-        hint += tr("\nDefaults: %1 · %2")
-                    .arg(QString::fromStdString(preset.base_url))
-                    .arg(QString::fromStdString(preset.model));
-        hint += tr("\nEnv: NMSDK_LLM_OLLAMA_BASE_URL, NMSDK_LLM_OLLAMA_MODEL");
+        hint = tr("Ollama defaults: %1\nModel: %2")
+                   .arg(QString::fromStdString(preset.base_url))
+                   .arg(QString::fromStdString(preset.model));
+        tip = tr("Chat template auto (qwen/llama3/mistral). Tools need Ollama 0.3+.\n"
+                 "Env: NMSDK_LLM_OLLAMA_BASE_URL, NMSDK_LLM_OLLAMA_MODEL");
     }
     else
     {
+        hint = tr("Defaults: %1\nModel: %2")
+                   .arg(QString::fromStdString(preset.base_url))
+                   .arg(QString::fromStdString(preset.model));
         if(!preset.api_key_env.empty())
-            hint = tr("Env fallback: %1").arg(QString::fromStdString(preset.api_key_env));
-        hint += tr("\nDefaults: %1 · %2")
-                    .arg(QString::fromStdString(preset.base_url))
-                    .arg(QString::fromStdString(preset.model));
+            tip = tr("Env fallback: %1").arg(QString::fromStdString(preset.api_key_env));
     }
-    const std::string configured =
-        m_response_language->currentData().toString().toStdString();
-    const std::string effective = RDK::LLM::resolveResponseLanguage(
-        configured, LlmGui::systemResponseLanguageCode().toStdString());
-    hint += tr("\nResponse language: %1")
-                .arg(QString::fromStdString(
-                    RDK::LLM::responseLanguageDisplayName(effective)));
-    if(configured.empty())
-        hint += tr(" (from system)");
 
     m_status->setText(hint.trimmed());
+    m_status->setToolTip(tip);
+    m_status->setVisible(true);
 
     if(m_refresh_ollama_models->isVisible())
         onRefreshOllamaModelsClicked();
@@ -376,6 +425,7 @@ void ULlmProviderSettingsWidget::saveToStore()
         store.setAutonomousMode(RDK::LLM::LLMAutonomousMode::Off);
     store.setMaxAutonomousSteps(m_max_autonomous_steps->value());
     store.setTranslateQueriesToEn(m_translate_queries_to_en->isChecked());
+    store.setEnableOllamaThinking(m_enable_ollama_thinking->isChecked());
     store.setPreferredResponseLanguage(m_response_language->currentData().toString().toStdString());
     store.setSendShortcut(m_send_shortcut->currentData().toString() == QStringLiteral("enter")
                               ? RDK::LLM::LLMSendShortcutMode::Enter

@@ -1577,6 +1577,9 @@ bool UContainer::ChangeComponentPosition(int index, int step)
   PComponents[result]=comp;
  }
 
+ // Reorder invalidates calc-order cache and id→index map (UpdateComputationOrder path).
+ InvalidateActiveComponentsCache();
+ RebuildComponentsIdIndex();
  return true;
 }
 
@@ -2237,6 +2240,8 @@ bool UContainer::Build(void)
 
    AfterBuild();
    UpdateComputationOrder();
+   // Defense in depth: UCO reorders PComponents; ActiveComponents must not stay stale.
+   InvalidateActiveComponentsCache();
    build_success = true;
   }
   catch(UException &exception)
@@ -3109,17 +3114,22 @@ void UContainer::RemoveFromActiveCache(UEPtr<UContainer> comp)
  if(!comp)
   return;
  
- // Remove from cache if present
+ // Remove from cache if present; erase (not swap-with-last) to preserve calc order.
  for(size_t i = 0; i < ActiveComponents.size(); i++)
  {
   if(ActiveComponents[i] == comp)
   {
-   // Swap with last element and pop (O(1) instead of O(n))
-   ActiveComponents[i] = ActiveComponents.back();
-   ActiveComponents.pop_back();
+   ActiveComponents.erase(ActiveComponents.begin() + static_cast<std::ptrdiff_t>(i));
    return;
   }
  }
+}
+
+void UContainer::RebuildComponentsIdIndex(void)
+{
+ ComponentsIdIndex.clear();
+ for(int i = 0; i < NumComponents; ++i)
+  ComponentsIdIndex[PComponents[i]->Id] = static_cast<size_t>(i);
 }
 
 // Скрытые методы управления таблицей компонент

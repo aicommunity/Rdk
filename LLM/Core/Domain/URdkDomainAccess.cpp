@@ -3,9 +3,11 @@
 #include "ULLMModelLinkWalker.h"
 #include "URdkApplicationCommands.h"
 #include "../Gui/ILLMPresentationSink.h"
+#include "../Policy/ULLMPathPolicy.h"
 #include "../Tools/ApplicationToolHelpers.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cstdlib>
 #include <sstream>
 #include <unordered_map>
@@ -22,8 +24,12 @@
 #include "../../Core/Engine/UContainer.h"
 #include "../../Core/Engine/UNet.h"
 #include "../../Core/Engine/UEnvSupport.h"
+#include "../../Core/Math/MDMatrix.h"
+#include "../../Core/Math/MDVector.h"
+#include "../../Core/Math/UWatchablePropertyTypes.h"
 
 #include <regex>
+#include <typeinfo>
 
 namespace RDK::LLM {
 
@@ -249,7 +255,7 @@ DomainStatus URdkDomainAccess::listNetSnapshot(nlohmann::json& out, int channel_
 
 DomainStatus URdkDomainAccess::listModelLinks(nlohmann::json& out, int channel_index,
                                               const std::string& root_long_name, int offset,
-                                              int limit) const
+                                              int limit, const ModelLinkListFilters& filters) const
 {
     out = nlohmann::json::object();
     URdkDomainAccess* self = const_cast<URdkDomainAccess*>(this);
@@ -271,6 +277,9 @@ DomainStatus URdkDomainAccess::listModelLinks(nlohmann::json& out, int channel_i
     opts.offset = std::max(0, offset);
     opts.limit = effective_limit;
     opts.count_all = true;
+    if(!filters.component_long_name.empty() || !filters.from_long_name.empty()
+       || !filters.to_long_name.empty())
+        opts.subtree_filters = filters;
     const ModelLinkWalkResult walk = walkModelLinks(walk_root, model_root, opts);
 
     nlohmann::json links = nlohmann::json::array();
@@ -280,10 +289,18 @@ DomainStatus URdkDomainAccess::listModelLinks(nlohmann::json& out, int channel_i
     out["channel_index"] = channel_index;
     if(!root_long_name.empty())
         out["root_long_name"] = root_long_name;
+    if(!filters.component_long_name.empty())
+        out["component_long_name"] = filters.component_long_name;
+    if(!filters.from_long_name.empty())
+        out["from_long_name"] = filters.from_long_name;
+    if(!filters.to_long_name.empty())
+        out["to_long_name"] = filters.to_long_name;
     out["offset"] = opts.offset;
     out["limit"] = effective_limit;
     out["returned_count"] = static_cast<int>(walk.links.size());
     out["total_links_seen"] = walk.total_quads_seen;
+    out["total_matching"] = walk.total_matching;
+    out["no_matching_links"] = walk.total_matching == 0;
     out["truncated"] = walk.truncated;
     out["next_offset"] = walk.next_offset;
     out["links"] = std::move(links);
@@ -344,6 +361,38 @@ DomainStatus URdkDomainAccess::listRegisteredClasses(nlohmann::json& out,
     if(!st.ok())
         return st;
 
+    auto canonicalizeLibraryFilter = [](std::string filter) -> std::string {
+        if(filter.empty())
+            return filter;
+        // Common short / folder-style aliases → ULibrary::GetName().
+        static const std::pair<const char*, const char*> kAliases[] = {
+            {"PulseLib", "PulseLibrary"},
+            {"Nmsdk-PulseLib", "PulseLibrary"},
+            {"Pulse", "PulseLibrary"},
+            {"HardwareLib", "HardwareLibrary"},
+            {"Rdk-HardwareLib", "HardwareLibrary"},
+            {"Hardware", "HardwareLibrary"},
+            {"MotionControlLib", "MotionControlLibrary"},
+            {"Nmsdk-MotionControlLib", "MotionControlLibrary"},
+            {"Motion", "MotionControlLibrary"},
+            {"Rdk-BasicLib", "BasicLib"},
+            {"BasicLibrary", "BasicLib"},
+            {"Basic", "BasicLib"},
+            {"Rdk-CvBasicLib", "CvBasicLib"},
+            {"CvBasicLibrary", "CvBasicLib"},
+            {"CvBasic", "CvBasicLib"},
+            {"CRLibrary", "CvBasicLib"},
+            {nullptr, nullptr},
+        };
+        for(const auto* p = kAliases; p->first; ++p)
+        {
+            if(filter == p->first)
+                return p->second;
+        }
+        return filter;
+    };
+    const std::string filter = canonicalizeLibraryFilter(library_filter);
+
     RDK::UELockPtr<RDK::UStorage> storage_lock = RDK::GetStorageLock();
     RDK::UStorage* storage = storage_lock.Get();
 
@@ -357,7 +406,7 @@ DomainStatus URdkDomainAccess::listRegisteredClasses(nlohmann::json& out,
             if(lib)
                 library = lib->GetName();
         }
-        if(!library_filter.empty() && library != library_filter)
+        if(!filter.empty() && library != filter)
             continue;
         nlohmann::json item = {{"class_name", class_name}};
         if(!library.empty())
@@ -365,6 +414,8 @@ DomainStatus URdkDomainAccess::listRegisteredClasses(nlohmann::json& out,
         classes.push_back(std::move(item));
     }
     out["classes"] = classes;
+    if(!library_filter.empty() && filter != library_filter)
+        out["library_filter_resolved"] = filter;
     return {};
 }
 
@@ -392,17 +443,41 @@ DomainStatus URdkDomainAccess::findComponentByLongName(const std::string& long_n
 
 namespace {
 
+bool equalsCiAscii(const std::string& a, const std::string& b)
+{
+    if(a.size() != b.size())
+        return false;
+    for(size_t i = 0; i < a.size(); ++i)
+    {
+        const char ca = static_cast<char>(std::tolower(static_cast<unsigned char>(a[i])));
+        const char cb = static_cast<char>(std::tolower(static_cast<unsigned char>(b[i])));
+        if(ca != cb)
+            return false;
+    }
+    return true;
+}
+
+bool endsWithCi(const std::string& s, const std::string& suffix)
+{
+    if(suffix.empty() || s.size() < suffix.size())
+        return false;
+    return equalsCiAscii(s.substr(s.size() - suffix.size()), suffix);
+}
+
 bool componentMatchesHint(const nlohmann::json& component, const std::string& hint)
 {
     if(!component.is_object() || hint.empty())
         return false;
     const std::string ln = component.value("long_name", "");
     const std::string sn = component.value("short_name", "");
-    if(sn == hint || ln == hint)
+    if(sn == hint || ln == hint || equalsCiAscii(sn, hint) || equalsCiAscii(ln, hint))
         return true;
-    const std::string suffix = "/" + hint;
-    return !ln.empty() && ln.size() >= suffix.size()
-           && ln.compare(ln.size() - suffix.size(), suffix.size(), suffix) == 0;
+    const std::string slash_suffix = "/" + hint;
+    const std::string dot_suffix = "." + hint;
+    if(!ln.empty() && ln.size() >= slash_suffix.size()
+       && ln.compare(ln.size() - slash_suffix.size(), slash_suffix.size(), slash_suffix) == 0)
+        return true;
+    return endsWithCi(ln, dot_suffix);
 }
 
 } // namespace
@@ -450,6 +525,68 @@ DomainStatus URdkDomainAccess::resolveComponentLongName(const std::string& hint,
     }
     out_long_name = (*best)["long_name"].get<std::string>();
     return {};
+}
+
+DomainStatus URdkDomainAccess::resolveNestedWatchTarget(const std::string& parent_hint,
+                                                        const std::string& nested_hint,
+                                                        int channel_index,
+                                                        std::string& out_long_name) const
+{
+    out_long_name.clear();
+    if(parent_hint.empty() || nested_hint.empty())
+    {
+        return {DomainStatusCode::ComponentNotFound,
+                "resolveNestedWatchTarget requires parent_hint and nested_hint"};
+    }
+
+    std::string parent_ln;
+    const DomainStatus pst =
+        resolveComponentLongName(parent_hint, channel_index, parent_ln);
+    if(!pst.ok() || parent_ln.empty())
+        return pst;
+
+    const std::string dotted = parent_ln + "." + nested_hint;
+    nlohmann::json direct;
+    if(findComponentByLongName(dotted, direct, channel_index).ok()
+       && direct.contains("long_name"))
+    {
+        out_long_name = direct["long_name"].get<std::string>();
+        return {};
+    }
+
+    nlohmann::json snap;
+    const DomainStatus st = listNetSnapshot(snap, channel_index, 5000, parent_ln);
+    if(!st.ok())
+        return st;
+
+    const nlohmann::json* best = nullptr;
+    for(const auto& component : snap.value("components", nlohmann::json::array()))
+    {
+        if(!componentMatchesHint(component, nested_hint))
+            continue;
+        if(!best)
+            best = &component;
+        else
+        {
+            const std::string ln = component.value("long_name", "");
+            if(ln.size() < best->value("long_name", "").size())
+                best = &component; // prefer closer / shorter path under parent
+        }
+    }
+    if(best && best->contains("long_name"))
+    {
+        out_long_name = (*best)["long_name"].get<std::string>();
+        return {};
+    }
+
+    // Last resort: accept dotted path even if not yet built (caller may fail validate later).
+    out_long_name = dotted;
+    nlohmann::json check;
+    if(findComponentByLongName(out_long_name, check, channel_index).ok())
+        return {};
+    out_long_name.clear();
+    return {DomainStatusCode::ComponentNotFound,
+            "Nested component not found under \"" + parent_ln + "\": " + nested_hint};
 }
 
 DomainStatus URdkDomainAccess::getComponentProperties(const std::string& long_name,
@@ -722,6 +859,312 @@ DomainStatus URdkDomainAccess::setProperty(const std::string& long_name,
     return {};
 }
 
+DomainStatus URdkDomainAccess::cloneComponent(const std::string& long_name,
+                                              const std::string& new_short_name,
+                                              int channel_index,
+                                              std::string& out_long_name)
+{
+    out_long_name.clear();
+    const DomainSessionInfo session = sessionInfo();
+    if(!session.engine_ready)
+        return {DomainStatusCode::NotInitialized, "Engine not ready"};
+    if(m_app && !session.project_loaded)
+        return {DomainStatusCode::ProjectNotLoaded, "No configuration is open"};
+    if(long_name.empty())
+        return {DomainStatusCode::ComponentNotFound, "clone_component: long_name is required"};
+
+    {
+        RDK::UELockPtr<RDK::UEngine> eng = RDK::GetEngineLock(channel_index);
+        if(!eng)
+            return {DomainStatusCode::NotInitialized, "Engine lock unavailable"};
+        RDK::UELockPtr<RDK::UStorage> storLock = RDK::GetStorageLock(channel_index);
+        if(!storLock)
+            return {DomainStatusCode::NotInitialized, "Storage lock unavailable"};
+        RDK::UEnvironment* env = eng->GetEnvironment();
+        if(!env)
+            return {DomainStatusCode::NotInitialized, "Environment not available"};
+        RDK::UEPtr<RDK::UContainer> model = env->GetModel();
+        if(!model)
+            return {DomainStatusCode::ProjectNotLoaded, "Model not loaded on channel"};
+
+        RDK::UEPtr<RDK::UNet> component =
+            RDK::dynamic_pointer_cast<RDK::UNet>(model->GetComponentL(long_name.c_str(), true));
+        if(!component)
+            return {DomainStatusCode::ComponentNotFound,
+                    "clone_component: component not found: " + long_name};
+
+        RDK::UEPtr<RDK::UNet> owner = RDK::dynamic_pointer_cast<RDK::UNet>(component->GetOwner());
+        if(!owner)
+            return {DomainStatusCode::LinkFailed, "clone_component: owner not found"};
+
+        RDK::UStorage* stor = storLock.Get();
+        RDK::UEPtr<RDK::UNet> new_component = RDK::dynamic_pointer_cast<RDK::UNet>(
+            stor->TakeObject(component->GetClass(), component.Get()));
+        if(!new_component)
+            return {DomainStatusCode::LinkFailed, "clone_component: TakeObject failed"};
+
+        if(new_short_name.empty())
+            new_component->Name = component->GetName();
+        else
+            new_component->Name = new_short_name;
+
+        if(!owner->AddComponent(new_component))
+        {
+            stor->ReturnObject(new_component);
+            return {DomainStatusCode::LinkFailed, "clone_component: AddComponent failed"};
+        }
+
+        RDK::MVector<double, 3> coord = new_component->GetCoord();
+        coord(0) += 1;
+        coord(1) += 1;
+        new_component->Coord = coord;
+
+        std::string buffer;
+        out_long_name = new_component->GetLongName(model.Get(), buffer);
+    }
+    refreshDiagramPresentation(m_sink);
+    return {};
+}
+
+DomainStatus URdkDomainAccess::moveComponent(const std::string& long_name,
+                                             const std::string& target_parent_long_name,
+                                             int channel_index)
+{
+    const DomainSessionInfo session = sessionInfo();
+    if(!session.engine_ready)
+        return {DomainStatusCode::NotInitialized, "Engine not ready"};
+    if(m_app && !session.project_loaded)
+        return {DomainStatusCode::ProjectNotLoaded, "No configuration is open"};
+    if(long_name.empty() || target_parent_long_name.empty())
+        return {DomainStatusCode::InvalidPropertyValue,
+                "move_component requires long_name and target_parent_long_name"};
+
+    const int rc = MModel_MoveComponent(channel_index, long_name.c_str(),
+                                        target_parent_long_name.c_str());
+    if(rc != 0)
+        return {DomainStatusCode::LinkFailed,
+                "move_component failed (code " + std::to_string(rc) + ")"};
+    refreshDiagramPresentation(m_sink);
+    return {};
+}
+
+DomainStatus URdkDomainAccess::renameComponent(const std::string& long_name,
+                                               const std::string& new_short_name,
+                                               int channel_index,
+                                               std::string& out_long_name)
+{
+    out_long_name.clear();
+    const DomainSessionInfo session = sessionInfo();
+    if(!session.engine_ready)
+        return {DomainStatusCode::NotInitialized, "Engine not ready"};
+    if(m_app && !session.project_loaded)
+        return {DomainStatusCode::ProjectNotLoaded, "No configuration is open"};
+    if(long_name.empty())
+        return {DomainStatusCode::ComponentNotFound, "rename_component: long_name is required"};
+    if(new_short_name.empty())
+        return {DomainStatusCode::InvalidPropertyValue, "rename_component: new_short_name is required"};
+
+    {
+        RDK::UELockPtr<RDK::UEngine> eng = RDK::GetEngineLock(channel_index);
+        if(!eng)
+            return {DomainStatusCode::NotInitialized, "Engine lock unavailable"};
+        RDK::UEnvironment* env = eng->GetEnvironment();
+        if(!env)
+            return {DomainStatusCode::NotInitialized, "Environment not available"};
+        RDK::UEPtr<RDK::UContainer> model = env->GetModel();
+        if(!model)
+            return {DomainStatusCode::ProjectNotLoaded, "Model not loaded on channel"};
+
+        RDK::UEPtr<RDK::UContainer> comp = model->GetComponentL(long_name.c_str(), true);
+        if(!comp)
+            return {DomainStatusCode::ComponentNotFound,
+                    "rename_component: component not found: " + long_name};
+
+        try
+        {
+            if(!comp->SetName(new_short_name.c_str()))
+                return {DomainStatusCode::InvalidPropertyValue, "rename_component: SetName failed"};
+        }
+        catch(const RDK::UException& ex)
+        {
+            return {DomainStatusCode::InvalidPropertyValue,
+                    std::string("rename_component: ") + ex.what()};
+        }
+        catch(const std::exception& ex)
+        {
+            return {DomainStatusCode::InvalidPropertyValue,
+                    std::string("rename_component: ") + ex.what()};
+        }
+
+        std::string buffer;
+        out_long_name = comp->GetLongName(model.Get(), buffer);
+    }
+    refreshDiagramPresentation(m_sink);
+    return {};
+}
+
+DomainStatus URdkDomainAccess::reorderComponent(const std::string& long_name, int step,
+                                                int channel_index)
+{
+    const DomainSessionInfo session = sessionInfo();
+    if(!session.engine_ready)
+        return {DomainStatusCode::NotInitialized, "Engine not ready"};
+    if(m_app && !session.project_loaded)
+        return {DomainStatusCode::ProjectNotLoaded, "No configuration is open"};
+    if(long_name.empty())
+        return {DomainStatusCode::ComponentNotFound, "reorder_component: long_name is required"};
+    if(step == 0)
+        return {DomainStatusCode::InvalidPropertyValue, "reorder_component: step must be non-zero"};
+
+    const int rc = MModel_ChangeComponentPosition(channel_index, long_name.c_str(), step);
+    if(rc != 0)
+        return {DomainStatusCode::LinkFailed,
+                "reorder_component failed (code " + std::to_string(rc) + ")"};
+    refreshDiagramPresentation(m_sink);
+    return {};
+}
+
+DomainStatus URdkDomainAccess::exportComponentToFile(const std::string& long_name,
+                                                     const std::string& file_path,
+                                                     int channel_index)
+{
+    const DomainSessionInfo session = sessionInfo();
+    if(!session.engine_ready)
+        return {DomainStatusCode::NotInitialized, "Engine not ready"};
+    if(m_app && !session.project_loaded)
+        return {DomainStatusCode::ProjectNotLoaded, "No configuration is open"};
+    if(long_name.empty())
+        return {DomainStatusCode::ComponentNotFound, "export_component: long_name is required"};
+    if(file_path.empty())
+        return {DomainStatusCode::InvalidPropertyValue, "export_component: file_path is required"};
+
+    std::string path_err;
+    if(!ULLMPathPolicy::isAllowed(file_path, m_app, path_err))
+        return {DomainStatusCode::PolicyDenied, path_err};
+
+    const int rc =
+        MModel_SaveComponentToFile(channel_index, long_name.c_str(), file_path.c_str(), 0xFFFFFFFFu);
+    if(rc != 0)
+        return {DomainStatusCode::IOError,
+                "export_component failed (code " + std::to_string(rc) + ")"};
+    return {};
+}
+
+DomainStatus URdkDomainAccess::importComponentFromFile(const std::string& parent_long_name,
+                                                       const std::string& file_path,
+                                                       int channel_index)
+{
+    const DomainSessionInfo session = sessionInfo();
+    if(!session.engine_ready)
+        return {DomainStatusCode::NotInitialized, "Engine not ready"};
+    if(m_app && !session.project_loaded)
+        return {DomainStatusCode::ProjectNotLoaded, "No configuration is open"};
+    if(file_path.empty())
+        return {DomainStatusCode::InvalidPropertyValue, "import_component: file_path is required"};
+
+    std::string path_err;
+    if(!ULLMPathPolicy::isAllowed(file_path, m_app, path_err))
+        return {DomainStatusCode::PolicyDenied, path_err};
+
+    const int rc =
+        MModel_LoadComponentFromFile(channel_index, parent_long_name.c_str(), file_path.c_str());
+    if(rc != 0)
+        return {DomainStatusCode::IOError,
+                "import_component failed (code " + std::to_string(rc) + ")"};
+    refreshDiagramPresentation(m_sink);
+    return {};
+}
+
+DomainStatus URdkDomainAccess::calculateComponent(const std::string& long_name, int channel_index)
+{
+    const DomainSessionInfo session = sessionInfo();
+    if(!session.engine_ready)
+        return {DomainStatusCode::NotInitialized, "Engine not ready"};
+    if(m_app && !session.project_loaded)
+        return {DomainStatusCode::ProjectNotLoaded, "No configuration is open"};
+    if(long_name.empty())
+        return {DomainStatusCode::ComponentNotFound, "calculate_component: long_name is required"};
+
+    const int rc = MEnv_Calculate(channel_index, long_name.c_str());
+    if(rc != 0)
+        return {DomainStatusCode::LinkFailed,
+                "calculate_component failed (code " + std::to_string(rc) + ")"};
+    refreshDiagramPresentation(m_sink);
+    return {};
+}
+
+DomainStatus URdkDomainAccess::resetComponent(const std::string& long_name, int channel_index)
+{
+    const DomainSessionInfo session = sessionInfo();
+    if(!session.engine_ready)
+        return {DomainStatusCode::NotInitialized, "Engine not ready"};
+    if(m_app && !session.project_loaded)
+        return {DomainStatusCode::ProjectNotLoaded, "No configuration is open"};
+    if(long_name.empty())
+        return {DomainStatusCode::ComponentNotFound, "reset_component: long_name is required"};
+
+    const int rc = MEnv_Reset(channel_index, long_name.c_str());
+    if(rc != 0)
+        return {DomainStatusCode::LinkFailed,
+                "reset_component failed (code " + std::to_string(rc) + ")"};
+    refreshDiagramPresentation(m_sink);
+    return {};
+}
+
+DomainStatus URdkDomainAccess::defaultComponent(const std::string& long_name,
+                                                bool include_subcomponents, int channel_index)
+{
+    const DomainSessionInfo session = sessionInfo();
+    if(!session.engine_ready)
+        return {DomainStatusCode::NotInitialized, "Engine not ready"};
+    if(m_app && !session.project_loaded)
+        return {DomainStatusCode::ProjectNotLoaded, "No configuration is open"};
+    if(long_name.empty())
+        return {DomainStatusCode::ComponentNotFound, "default_component: long_name is required"};
+
+    const int rc = MEnv_Default(channel_index, long_name.c_str(), include_subcomponents);
+    if(rc != 0)
+        return {DomainStatusCode::LinkFailed,
+                "default_component failed (code " + std::to_string(rc) + ")"};
+    refreshDiagramPresentation(m_sink);
+    return {};
+}
+
+DomainStatus URdkDomainAccess::selectComponent(const std::string& long_name, int channel_index,
+                                               bool navigate_parent)
+{
+    const DomainSessionInfo session = sessionInfo();
+    if(!session.engine_ready)
+        return {DomainStatusCode::NotInitialized, "Engine not ready"};
+    if(m_app && !session.project_loaded)
+        return {DomainStatusCode::ProjectNotLoaded, "No configuration is open"};
+    if(long_name.empty())
+        return {DomainStatusCode::ComponentNotFound, "select_component: long_name is required"};
+
+    std::string scope = long_name;
+    if(navigate_parent)
+    {
+        const size_t dot = scope.find_last_of('.');
+        if(dot == std::string::npos)
+            return {DomainStatusCode::InvalidPropertyValue,
+                    "select_component: component has no parent scope"};
+        scope = scope.substr(0, dot);
+    }
+
+    nlohmann::json found;
+    if(!findComponentByLongName(scope, found, channel_index).ok() && scope != "Model")
+    {
+        // Allow navigating to Model / empty root even if find fails on synthetic names.
+        if(!scope.empty())
+            return {DomainStatusCode::ComponentNotFound,
+                    "select_component: component not found: " + scope};
+    }
+
+    if(m_sink)
+        m_sink->navigateToDiagramScope(scope, channel_index);
+    return {};
+}
+
 DomainStatus URdkDomainAccess::connectComponents(const std::string& from_long_name,
                                                  const std::string& from_property,
                                                  const std::string& to_long_name,
@@ -793,6 +1236,74 @@ DomainStatus URdkDomainAccess::getComponentClassName(const std::string& long_nam
     if(out_class_name.empty())
         return {DomainStatusCode::ClassNotFound,
                 "Class name is not available for component " + long_name};
+    return {};
+}
+
+DomainStatus URdkDomainAccess::validateWatchProperty(const std::string& long_name,
+                                                     const std::string& property_name,
+                                                     int channel_index, int jx, int jy) const
+{
+    if(long_name.empty())
+        return {DomainStatusCode::ComponentNotFound, "add_watch_series: long_name is required"};
+    if(property_name.empty())
+        return {DomainStatusCode::PropertyNotFound, "add_watch_series: property_name is required"};
+    if(jx < 0 || jy < 0)
+    {
+        return {DomainStatusCode::InvalidPropertyValue,
+                "add_watch_series: jx/jy must be >= 0 (matrix/vector cell indices)"};
+    }
+
+    const DomainSessionInfo session = sessionInfo();
+    if(!session.engine_ready)
+        return {DomainStatusCode::NotInitialized, "Engine not ready"};
+    if(m_app && !session.project_loaded)
+        return {DomainStatusCode::ProjectNotLoaded, "No configuration is open"};
+
+    RDK::UELockPtr<RDK::UEngine> eng = RDK::GetEngineLockTimeout(channel_index, 500);
+    if(!eng)
+        return {DomainStatusCode::NotInitialized, "Engine lock unavailable"};
+
+    RDK::UEnvironment* env = eng->GetEnvironment();
+    if(!env)
+        return {DomainStatusCode::NotInitialized, "Environment not available"};
+    RDK::UEPtr<RDK::UContainer> model = env->GetModel();
+    if(!model)
+        return {DomainStatusCode::ProjectNotLoaded, "Model not loaded on channel"};
+
+    RDK::UEPtr<RDK::UContainer> cont = model->GetComponentL(long_name.c_str(), true);
+    if(!cont)
+        return {DomainStatusCode::ComponentNotFound, "Component not found: " + long_name};
+
+    RDK::UEPtr<RDK::UIProperty> prop = cont->FindProperty(property_name);
+    if(!prop)
+    {
+        // Fallback: published lookup lists (same catalog as set_property).
+        if(!componentHasProperty(eng.Get(), long_name, property_name))
+        {
+            return {DomainStatusCode::PropertyNotFound,
+                    "Unknown property_name \"" + property_name + "\" for component " + long_name
+                        + ". Use get_component_properties / get_component_ports."};
+        }
+        // Property is published but FindProperty failed — still reject for Watch (need type).
+        return {DomainStatusCode::InvalidPropertyValue,
+                "Property \"" + property_name + "\" on " + long_name
+                    + " is not accessible for Watch series (FindProperty failed)."};
+    }
+
+    const std::type_info& ti = prop->GetLanguageType();
+    if(!RDK::isWatchableLanguageType(ti))
+    {
+        return {DomainStatusCode::InvalidPropertyValue,
+                "Property \"" + property_name + "\" on " + long_name
+                    + " is not numeric/matrix Watch-compatible (need int, double, "
+                      "MDMatrix/MDVector of int|double)."};
+    }
+    if(RDK::isScalarWatchableLanguageType(ti) && (jx != 0 || jy != 0))
+    {
+        return {DomainStatusCode::InvalidPropertyValue,
+                "Property \"" + property_name + "\" is scalar; use jx=0, jy=0"};
+    }
+    (void)jy;
     return {};
 }
 

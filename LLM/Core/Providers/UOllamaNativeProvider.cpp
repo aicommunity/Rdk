@@ -1,6 +1,7 @@
 #include "UOllamaNativeProvider.h"
 
 #include "../Http/ULLMHttpRetry.h"
+#include "ULLMThinkingParse.h"
 #include "UOllamaChatTemplate.h"
 
 #include <chrono>
@@ -28,6 +29,7 @@ LLMProviderCapabilities UOllamaNativeProvider::capabilities() const
     c.supports_tool_calling = true;
     c.supports_streaming = false;
     c.requires_network = true;
+    c.supports_thinking = true;
     return c;
 }
 
@@ -60,7 +62,13 @@ LLMCompletionResult UOllamaNativeProvider::parseResponse(const std::string& body
         {
             const auto& message = j["message"];
             if(message.contains("content") && !message["content"].is_null())
-                result.text = message["content"].get<std::string>();
+            {
+                if(message["content"].is_string())
+                    result.text = message["content"].get<std::string>();
+                else
+                    result.text = message["content"].dump();
+            }
+            extractThinkingFields(message, result.thinking);
             if(message.contains("tool_calls"))
             {
                 for(const auto& tc : message["tool_calls"])
@@ -70,13 +78,13 @@ LLMCompletionResult UOllamaNativeProvider::parseResponse(const std::string& body
                     if(tc.contains("function"))
                     {
                         call.name = tc["function"].value("name", "");
-                        const std::string args_str = tc["function"].value("arguments", "{}");
-                        call.arguments = nlohmann::json::parse(args_str);
+                        call.arguments = parseToolCallArgumentsJson(tc["function"]);
                     }
                     result.tool_calls.push_back(call);
                 }
             }
         }
+        finalizeThinkingResult(result);
         result.ok = true;
     }
     catch(const std::exception& ex)
@@ -97,9 +105,12 @@ LLMCompletionResult UOllamaNativeProvider::chat(const std::vector<LLMMessage>& m
         prepareMessagesForOllama(m_profile, messages, lang);
 
     nlohmann::json body;
-    body["model"] = m_profile.model;
+    body["model"] =
+        opts.model_override && !opts.model_override->empty() ? *opts.model_override : m_profile.model;
     body["stream"] = false;
-    body["messages"] = buildOpenAiChatMessagesJson(prepared);
+    body["messages"] = buildOpenAiChatMessagesJson(prepared, /*tool_arguments_as_object=*/true);
+    if(shouldSendThinkTrue(opts, capabilities()))
+        body["think"] = true;
     if(opts.max_tokens > 0)
         body["options"] = {{"num_predict", opts.max_tokens}};
     if(!opts.tools_for_api.empty())
@@ -112,10 +123,12 @@ LLMCompletionResult UOllamaNativeProvider::chat(const std::vector<LLMMessage>& m
     }
 
     const std::string url = ollamaHost() + "/api/chat";
+    const std::string body_str =
+        body.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace);
     constexpr int kMaxAttempts = 3;
     for(int attempt = 0; attempt < kMaxAttempts; ++attempt)
     {
-        auto resp = m_http.postJson(url, body.dump(), m_profile.api_key);
+        auto resp = m_http.postJson(url, body_str, m_profile.api_key);
         if(!resp.error.empty())
         {
             result.ok = false;

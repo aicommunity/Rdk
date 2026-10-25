@@ -108,7 +108,7 @@ XML файлы с метаданными о компонентах.
 **Чтение:**
 - Через `UStorage::LoadClassesDescription()` - автоматическая загрузка при загрузке библиотек
 
-**См. также:** [Bin/Docs/Examples/ClDesc-Example.md](../../Bin/Docs/Examples/ClDesc-Example.md) - примеры ClDesc
+**См. также:** [Bin/Docs/Examples/ClDesc-Example.md](../../Bin/Docs/Examples/ClDesc-Example.md) — реальная схема ClDesc; корневой `Docs/ClDesc-Detailed-Methodology.md` — DETAILED / Favorites.
 
 ### Процесс чтения конфигураций
 
@@ -339,7 +339,7 @@ XML files with component metadata.
 **Reading:**
 - Via `UStorage::LoadClassesDescription()` - automatic loading when loading libraries
 
-**See Also:** [Bin/Docs/Examples/ClDesc-Example.md](../../Bin/Docs/Examples/ClDesc-Example.md) - ClDesc examples
+**See Also:** [Bin/Docs/Examples/ClDesc-Example.md](../../Bin/Docs/Examples/ClDesc-Example.md) — real ClDesc schema; root `Docs/ClDesc-Detailed-Methodology.md` — DETAILED / Favorites.
 
 ### Configuration Reading Process
 

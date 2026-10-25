@@ -22,6 +22,7 @@ struct ContextAcquisitionPlan {
     bool bootstrap_session = true;
     bool prefetch_snapshot = false;
     bool prefetch_docs = false;
+    bool prefetch_class_schema = false;
     bool inject_link_patterns = false;
     bool inject_connect_semantics = false;
     int link_pattern_top_k = 3;

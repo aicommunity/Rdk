@@ -97,6 +97,22 @@ flowchart TB
 
 См. **[Developer-Architecture.md §4](Developer-Architecture.md#4-request-flow-current)** (worker thread, optional HITL, auto-apply, GUI-thread lifecycle tools, plans).
 
+### 4.1 Thinking-first Cortex (Ollama)
+
+Каждый ReAct-раунд Cortex (профиль `ollama-thinking`, модель по умолчанию **`qwen3:14b`**):
+
+1. Ephemeral capability catalog + `tools` schemas для текущего allowlist  
+2. `think: true` (если `LLM/enable_ollama_thinking` и `supports_thinking`)  
+3. Primary transport — native `/api/chat` (`UOllamaNativeProvider`)  
+4. `message.thinking` сохраняется на assistant turns с `tool_calls` (без mid-loop rewrite)  
+5. После Observe следующий round снова с think ON  
+6. При think ON нет forced `tool_choice`  
+7. `search_tools` расширяет allowlist на следующие раунды (progressive disclosure)
+
+User-facing ответ не содержит raw thinking; GUI показывает collapsible **Reasoning** (`on_thinking_token` / `final.thinking`).
+
+См. [Providers.md](Providers.md), [Model-Capability-Matrix.md](Model-Capability-Matrix.md), [Agent-Interaction.md](Agent-Interaction.md).
+
 ---
 
 ## 5. Сценарии зрелости
@@ -247,6 +263,22 @@ flowchart TB
 ## 4. Flow of a single user request
 
 See **[Developer-Architecture.md §4](Developer-Architecture.md#4-request-flow-current)** (worker thread, optional HITL, auto-apply, GUI-thread lifecycle tools, plans).
+
+### 4.1 Thinking-first Cortex (Ollama)
+
+Each Cortex ReAct round (profile `ollama-thinking`, default model **`qwen3:14b`**):
+
+1. Ephemeral capability catalog + `tools` schemas for the current allowlist  
+2. `think: true` when `LLM/enable_ollama_thinking` and `supports_thinking`  
+3. Primary transport — native `/api/chat` (`UOllamaNativeProvider`)  
+4. Preserve `message.thinking` on assistant turns with `tool_calls`  
+5. After Observe, the next round thinks again  
+6. No forced `tool_choice` while thinking is on  
+7. `search_tools` expands the allowlist for later rounds  
+
+User-facing answers omit raw thinking; the GUI shows a collapsible **Reasoning** block.
+
+See [Providers.md](Providers.md), [Model-Capability-Matrix.md](Model-Capability-Matrix.md), [Agent-Interaction.md](Agent-Interaction.md).
 
 ---
 

@@ -19,6 +19,13 @@ bool isPathPolicyTool(const std::string& name)
                                    "copy_configuration",
                                    "rename_configuration",
                                    "validate_configuration",
+                                   "export_component",
+                                   "import_component",
+                                   "inspect_configuration",
+                                   "search_configuration_links",
+                                   "list_project_files",
+                                   "read_text_artifact",
+                                   "stat_project_file",
                                    nullptr};
     for(const char** p = kTools; *p; ++p)
     {
@@ -41,6 +48,30 @@ std::string extractPathArg(const std::string& tool_name, const nlohmann::json& a
         return args.at("new_directory_path").get<std::string>();
     if(tool_name == "copy_configuration" && args.contains("destination_directory"))
         return args.at("destination_directory").get<std::string>();
+    if(tool_name == "export_component" || tool_name == "import_component")
+    {
+        if(args.contains("file_path") && args.at("file_path").is_string())
+            return args.at("file_path").get<std::string>();
+        return {};
+    }
+    if(tool_name == "inspect_configuration" || tool_name == "search_configuration_links")
+    {
+        if(args.contains("configuration_path") && args.at("configuration_path").is_string())
+            return args.at("configuration_path").get<std::string>();
+        return {};
+    }
+    if(tool_name == "list_project_files")
+    {
+        if(args.contains("root_path") && args.at("root_path").is_string())
+            return args.at("root_path").get<std::string>();
+        return {};
+    }
+    if(tool_name == "read_text_artifact" || tool_name == "stat_project_file")
+    {
+        if(args.contains("path") && args.at("path").is_string())
+            return args.at("path").get<std::string>();
+        return {};
+    }
     if(tool_name == "create_configuration")
     {
         std::string err;
@@ -88,7 +119,8 @@ PolicyDecision ULLMPolicyEngine::checkToolInvoke(const ToolInvokeRequest& req,
     }
     if(isPathPolicyTool(tool.name))
     {
-        const std::string path = extractPathArg(tool.name, req.arguments, domain.application());
+        std::string path = extractPathArg(tool.name, req.arguments, domain.application());
+        path = ULLMPathPolicy::rewriteRelativeConfigPath(path, domain.application());
         if(!path.empty())
         {
             std::string path_err;

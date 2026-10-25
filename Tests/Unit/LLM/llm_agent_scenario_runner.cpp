@@ -340,6 +340,13 @@ AgentScenarioRun runE2eScenario(E2eLab::Harness& lab, const AgentScenarioCase& s
     applyEnv(scenario.env, env_restore);
     setenv("NMSDK_LLM_PATH_POLICY_STRICT", "0", 1);
 
+    const bool use_thinking =
+        scenario.e2e && scenario.e2e->use_thinking_profile;
+    if(use_thinking)
+        lab.rebindProvider(E2eLab::thinkingLabNativeProfile());
+    else
+        lab.rebindProvider(E2eLab::defaultLabCompatProfile());
+
     const std::string session_id = "agent-e2e-" + scenario.id;
     LLMSessionContext session = sessionFromSpec(scenario.session, session_id);
 

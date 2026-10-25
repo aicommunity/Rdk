@@ -1,5 +1,10 @@
 #include "ULLMIntentParser.h"
 
+#include "ULLMChannelCalcCommand.h"
+#include "ULLMComponentStructureGoal.h"
+#include "ULLMConnectPlanParsing.h"
+#include "ULLMWatchPlotGoal.h"
+
 #include <cctype>
 #include <cstdlib>
 #include <algorithm>
@@ -28,19 +33,28 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
         c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
 
     const float plan_s = scoreKeywords(lower, {"план", "спланируй", "шаги", "plan ", "steps", "roadmap", "сначала"}, 1.2f);
+    // Do not use bare "проект"/"project" — they fire on «расскажи о проекте» (chat 17-11-11).
+    // Lifecycle uses explicit phrases below.
     const float mutate_s =
         scoreKeywords(lower,
-                      {"добав", "создай", "удали", "измени", "сохран", "загруз", "открой", "закрой", "конфиг",
-                       "конфигурац", "проект", "configuration", "project", "project.ini", "скопируй",
-                       "переимен", "запусти расч", "останови расч",
+                      {"добав", "создай", "удали", "измени", "обнови", "обнов", "запиш", "сохран", "загруз", "открой", "закрой", "конфиг",
+                       "конфигурац", "configuration", "project.ini", "скопируй",
+                       "создай проект", "новый проект", "открой проект", "сохрани проект", "закрой проект",
+                       "create project", "new project", "open project", "save project", "close project",
+                       "обнови описание", "update description", "update project description",
+                       "переимен", "запусти расч", "останови расч", "расчёт", "расчет",
+                       "start calc", "run calculation", "pause calculation", "reset calculation",
+                       "start calculation", "stop calculation",
+                       "дендрит", "numsoma", "numdendrite", "membrane parts",
+                       "график", "watch", "plot",
                        "add ", "create ", "create config", "new config", "new configuration", "remove ", "delete ",
-                       "save ", "load ", "set ", "connect ", "open config", "close config", "copy config",
+                       "save ", "load ", "set ", "connect ", "update ", "open config", "close config", "copy config",
                        "rename config", "создай конфиг", "новый конфиг", "новая конфигурация"},
                       1.0f);
 
-    // Russian graph-mutation verbs: "соедини", "соединить", "связать", etc.
-    // The intent parser relies on keyword substring scoring; add broad stems to avoid missing tool-calls.
-    const float connect_kw_s = scoreKeywords(lower, {"соедин", "связ"}, 1.0f);
+    // Russian graph-mutation verbs: "соедини", "подключи", "связать", etc.
+    const float connect_kw_s =
+        scoreKeywords(lower, {"соедин", "связ", "подключ", "линк", "link "}, 1.0f);
     const float mutate_s_with_connect = std::max(mutate_s, connect_kw_s);
     const float explain_s =
         scoreKeywords(lower, {"почему", "объясни", "explain", "why ", "как работает", "how does"}, 1.0f);
@@ -48,7 +62,8 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
         scoreKeywords(lower,
                       {"arduino", "firmware", "hardware", "датчик", "плата", "что", "какие", "покажи",
                        "список", "опиши", "найди", "валидируй", "проверь конфиг", "validate configuration", "what",
-                       "list", "show", "describe", "search", "find ", "tool", "tools", "имена инструментов"},
+                       "list", "show", "describe", "search", "find ", "tool", "tools", "имена инструментов",
+                       "расскаж", "tell ", "about the", "о проекте", "о этом проект"},
                       1.2f);
 
     IntentParseResult result;
@@ -77,7 +92,54 @@ IntentParseResult ULLMIntentParser::parseDetailed(const std::string& user_text) 
         result.kind = LLMIntentKind::Query;
     }
 
-    const float total = plan_s + mutate_s + explain_s + query_s + 0.01f;
+    // Connect/link phrasing must mutate even when stem scoring missed (e.g. past tense).
+    if(isConnectGoalText(user_text) || isDisconnectGoalText(user_text))
+    {
+        result.kind = LLMIntentKind::Mutate;
+        best = std::max(best, 1.0f);
+    }
+
+    // Channel calc verbs (запусти расчет / start calculation) — always Mutate.
+    if(isChannelCalcGoalText(user_text))
+    {
+        result.kind = LLMIntentKind::Mutate;
+        best = std::max(best, 1.0f);
+    }
+
+    if(isComponentStructureGoal(user_text) || isWatchPlotGoal(user_text))
+    {
+        result.kind = LLMIntentKind::Mutate;
+        best = std::max(best, 1.0f);
+    }
+
+    // Update/write verbs beat Query stems in dual goals («расскажи … и обнови/запиши/создай описание»).
+    const bool write_description =
+        (lower.find("обнови") != std::string::npos || lower.find("запиш") != std::string::npos
+         || lower.find("записать") != std::string::npos || lower.find("write ") != std::string::npos
+         || lower.find("созда") != std::string::npos || lower.find("сгенерир") != std::string::npos
+         || lower.find("update description") != std::string::npos
+         || lower.find("update project description") != std::string::npos
+         || lower.find("create description") != std::string::npos
+         || (lower.find("update ") != std::string::npos
+             && (lower.find("description") != std::string::npos
+                 || lower.find("project") != std::string::npos
+                 || lower.find("config") != std::string::npos))
+         || (lower.find("create ") != std::string::npos
+             && lower.find("description") != std::string::npos))
+        && (lower.find("описан") != std::string::npos || lower.find("description") != std::string::npos
+            || lower.find("project_description") != std::string::npos
+            || lower.find("project description") != std::string::npos);
+    if(write_description || lower.find("обнови") != std::string::npos
+       || lower.find("update description") != std::string::npos
+       || lower.find("update project description") != std::string::npos
+       || (lower.find("update ") != std::string::npos
+           && (lower.find("description") != std::string::npos || lower.find("project") != std::string::npos)))
+    {
+        result.kind = LLMIntentKind::Mutate;
+        best = std::max(best, 1.0f);
+    }
+
+    const float total = plan_s + mutate_s + explain_s + query_s + connect_kw_s + 0.01f;
     result.confidence = std::min(1.f, best / total);
     return result;
 }

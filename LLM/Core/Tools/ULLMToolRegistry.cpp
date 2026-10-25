@@ -23,11 +23,8 @@ std::vector<LLMToolDefinition> ULLMToolRegistry::listForLlmApi(const ToolFilter&
         const LLMToolDefinition& d = kv.second.def;
         if(d.name == "disconnect_components")
             continue;
+        // Writes gated solely by include_write (packs may force it under Query intent).
         if(!filter.include_write && d.kind == LLMToolKind::Write)
-            continue;
-        if((filter.intent == LLMIntentKind::Query || filter.intent == LLMIntentKind::Plan
-            || filter.intent == LLMIntentKind::Explain)
-           && d.kind == LLMToolKind::Write)
             continue;
         if(filter.allowed_tool_names && filter.allowed_tool_names->count(d.name) == 0)
             continue;

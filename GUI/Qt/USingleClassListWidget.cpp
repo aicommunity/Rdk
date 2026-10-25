@@ -168,11 +168,15 @@ void USingleClassListWidget::reloadPropertys()
             UpdateInterfaceFlag=false;
             return;
         }
-        RDK::UComponent::VariableMapT varMap = cont->GetPropertiesList();
+        const RDK::UComponent::VariableMapT& varMap = cont->GetPropertiesList();
+        const std::vector<RDK::NameT>& propOrder = cont->GetPropertiesOrder();
         std::string buffer;
 
-        for(RDK::UComponent::VariableMapIteratorT i = varMap.begin(); i != varMap.end(); ++i)
+        for(size_t oi = 0; oi < propOrder.size(); ++oi)
         {
+            RDK::UComponent::VariableMapCIteratorT i = varMap.find(propOrder[oi]);
+            if(i == varMap.end())
+             continue;
             if(i->second.CheckMask(ptPubParameter))
             {
                 QTreeWidgetItem* parametersItem = new QTreeWidgetItem(ui->treeWidgetParameters);

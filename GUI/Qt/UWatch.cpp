@@ -1,14 +1,23 @@
 #include "UWatch.h"
 #include "ui_UWatch.h"
 #include <QDebug>
+#include <QStringList>
+#include <QStyle>
 #include <QTabBar>
 #include <QTimer>
+#include <QFileDialog>
+#include <QDir>
+#include <QMessageBox>
 
 UWatch::UWatch(QWidget *parent, RDK::UApplication* app)
     : UVisualControllerMainWidget(parent, app), ui(new Ui::UWatch)
 {
     ui->setupUi(this);
     setAccessibleName("UWatch");
+    ui->actionChart_settings->setCheckable(true);
+    ui->actionSeries_settings->setCheckable(true);
+    connect(ui->tabWidget, &QTabWidget::currentChanged, this,
+            [this](int) { syncInspectorActions(); });
     
     // Стили для табов теперь применяются через глобальные стили из QSS
     // Это позволяет правильно работать с темной и светлой темами
@@ -29,13 +38,92 @@ UWatchTab *UWatch::getCurrentTab()
  return tab[ui->tabWidget->currentIndex()];
 }
 
+UWatchTab *UWatch::ensureCurrentTab()
+{
+    if(UWatchTab* cur = getCurrentTab())
+        return cur;
+    createTab();
+    return getCurrentTab();
+}
+
+int UWatch::watchTabCount() const
+{
+    return ui && ui->tabWidget ? ui->tabWidget->count() : 0;
+}
+
+UWatchTab *UWatch::watchTabAt(int index) const
+{
+    if (!ui || !ui->tabWidget || index < 0 || index >= ui->tabWidget->count())
+        return nullptr;
+    return qobject_cast<UWatchTab*>(ui->tabWidget->widget(index));
+}
+
+QString UWatch::watchTabTitle(int index) const
+{
+    if (!ui || !ui->tabWidget || index < 0 || index >= ui->tabWidget->count())
+        return QString();
+    QString title = ui->tabWidget->tabText(index).trimmed();
+    if (title.isEmpty())
+        title = tr("Watch %1").arg(index + 1);
+    return title;
+}
+
+int UWatch::indexOfWatchTab(const UWatchTab *watchTab) const
+{
+    return ui && ui->tabWidget ? ui->tabWidget->indexOf(const_cast<UWatchTab*>(watchTab)) : -1;
+}
+
+bool UWatch::movePanelBetweenTabs(UWatchTab *source, int panelIndex, int destinationTabIndex)
+{
+    if (!source || !ui || !ui->tabWidget || destinationTabIndex < 0
+        || destinationTabIndex >= ui->tabWidget->count())
+        return false;
+    UWatchTab* destination = watchTabAt(destinationTabIndex);
+    if (panelIndex < 0 || panelIndex >= source->countGraphs())
+        return false;
+    UWatchChart* chart = source->getChart(panelIndex);
+    if (!destination || destination == source || !chart)
+        return false;
+
+    chart->ensurePanelId();
+    const NMSDK::Plot::PlotPanel snapshot = chart->toPlotPanel();
+    if (!destination->restorePanelSnapshot(destination->countGraphs(), snapshot, true))
+        return false;
+    if (!source->deletePanelImpl(panelIndex))
+    {
+        destination->deletePanelImpl(destination->countGraphs() - 1);
+        return false;
+    }
+
+    ui->tabWidget->setCurrentWidget(destination);
+    return true;
+}
+
 
 void UWatch::on_actionCreate_tab_triggered()
 {
     createTab();
 }
 
-void UWatch::on_actionSeries_option_triggered()
+void UWatch::on_actionLayout_settings_triggered()
+{
+    UWatchTab* current_tab = getCurrentTab();
+    if(!current_tab)
+     return;
+
+    current_tab->layoutOptionTriggered();
+}
+
+void UWatch::on_actionChart_settings_triggered()
+{
+    UWatchTab* current_tab = getCurrentTab();
+    if(!current_tab)
+     return;
+
+    current_tab->chartsOptionTriggered();
+}
+
+void UWatch::on_actionSeries_settings_triggered()
 {
     UWatchTab* current_tab = getCurrentTab();
     if(!current_tab)
@@ -44,13 +132,65 @@ void UWatch::on_actionSeries_option_triggered()
     current_tab->seriesOptionTriggered();
 }
 
-void UWatch::on_actionCharts_option_triggered()
+void UWatch::on_actionSave_chart_triggered()
 {
     UWatchTab* current_tab = getCurrentTab();
-    if(!current_tab)
-     return;
+    if (!current_tab || current_tab->countGraphs() <= 0)
+        return;
+    current_tab->onSaveChartAsRequested(current_tab->activeChartIndex());
+}
 
-    current_tab->chartsOptionTriggered();
+void UWatch::on_actionSave_all_charts_triggered()
+{
+    UWatchTab* current_tab = getCurrentTab();
+    if (!current_tab || current_tab->countGraphs() <= 0)
+        return;
+
+    QString startDir = current_tab->savedWatchesRoot();
+    if (startDir.isEmpty())
+    {
+        QMessageBox::warning(this, tr("Save all charts"),
+                             tr("Open a project first so charts can be saved under the configuration folder."));
+        return;
+    }
+    QDir().mkpath(startDir);
+    const QString dir = QFileDialog::getExistingDirectory(
+        this,
+        tr("Save all charts"),
+        startDir,
+        QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    if (dir.isEmpty())
+        return;
+
+    const int n = current_tab->exportAllChartsToDirectory(dir, QStringLiteral("png"));
+    if (n <= 0)
+        QMessageBox::warning(this, tr("Save all charts"), tr("No charts were saved."));
+}
+
+void UWatch::on_actionQuick_save_triggered()
+{
+    UWatchTab* current_tab = getCurrentTab();
+    if (!current_tab || current_tab->countGraphs() <= 0)
+        return;
+    const int n = current_tab->quickSaveAllCharts();
+    if (n <= 0)
+        return; // errors already shown when path missing
+}
+
+void UWatch::on_actionSave_watch_template_triggered()
+{
+    UWatchTab* current_tab = ensureCurrentTab();
+    if (!current_tab)
+        return;
+    current_tab->saveWatchTemplateDialog();
+}
+
+void UWatch::on_actionLoad_watch_template_triggered()
+{
+    UWatchTab* current_tab = ensureCurrentTab();
+    if (!current_tab)
+        return;
+    current_tab->loadWatchTemplateDialog();
 }
 
 void UWatch::createTab()
@@ -60,14 +200,23 @@ void UWatch::createTab()
     if(!tab.empty())
         index = tab.last()->accessibleName().replace("tab_","").toInt()+1;
 
+    const QString tabKey = QString("tab_%0").arg(index);
+
     //создаем каждую новую вкладку с именем tab + номер
+    // accessibleName задаём сразу: CalcFullName() → ключ XML Interface.xml
     tab.push_back(new UWatchTab(this));
+    tab.last()->setAccessibleName(tabKey);
+    UWatchTab* createdTab = tab.last();
+    connect(createdTab, &UWatchTab::inspectorStateChanged, this,
+            [this, createdTab]() {
+                if (getCurrentTab() == createdTab)
+                    syncInspectorActions();
+            });
 
-
-    ui->tabWidget->addTab(tab.last(), QString("tab_%0").arg(index));
+    ui->tabWidget->addTab(tab.last(), tabKey);
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
-    tab.last()->setAccessibleName(QString("tab_%0").arg(index));
-    
+    syncInspectorActions();
+
     // Обновляем стили табов после создания новой вкладки
     QTimer::singleShot(0, this, [this]() {
         if(ui && ui->tabWidget)
@@ -145,15 +294,21 @@ void UWatch::AAfterCalculate(void){}
 // Сохраняет параметры интерфейса в xml
 void UWatch::ASaveParameters(RDK::USerStorageXML &xml)
 {
+    // Штатно: родитель пишет только реестр вкладок.
+    // Тело (сетка/серии) сохраняет каждый UWatchTab через
+    // UIVisualControllerStorage → SaveParameters → ASaveParameters.
     xml.WriteInteger("TabCount", tab.count());
     xml.SelectNodeForce("Tabs");
 
     for(int i=0; i < tab.count(); i++)
     {
-        if(ui->tabWidget->indexOf(tab.at(i)) == -1)
+        if(!tab.at(i) || ui->tabWidget->indexOf(tab.at(i)) == -1)
             continue;
-        QString tab_name = ui->tabWidget->tabText(ui->tabWidget->indexOf(tab.at(i)));
-        xml.WriteString("name_"+RDK::sntoa(i+1), tab_name.toStdString().c_str());
+        // Ключ XML = accessibleName (CalcFullName у вкладки).
+        QString tab_key = tab.at(i)->accessibleName();
+        if(tab_key.isEmpty())
+            tab_key = ui->tabWidget->tabText(ui->tabWidget->indexOf(tab.at(i)));
+        xml.WriteString("name_"+RDK::sntoa(i+1), tab_key.toStdString().c_str());
     }
     xml.SelectUp();
 }
@@ -161,7 +316,9 @@ void UWatch::ASaveParameters(RDK::USerStorageXML &xml)
 // Загружает параметры интерфейса из xml
 void UWatch::ALoadParameters(RDK::USerStorageXML &xml)
 {
-    // Очистка существующих табов
+    // Штатно: пересоздаём вкладки и выставляем accessibleName.
+    // PlotDocument каждой вкладки подтянет storage на следующем проходе
+    // (см. UIVisualControllerStorage::LoadParameters).
     int tab_size = tab.size();
     for(int i=0; i < tab_size; i++)
     {
@@ -172,23 +329,40 @@ void UWatch::ALoadParameters(RDK::USerStorageXML &xml)
 
     int count=xml.ReadInteger("TabCount", 0);
 
-    for(int i=0; i < count; i++)
-        createTab();
-
     xml.SelectNodeForce("Tabs");
-    for(int i=0; i < tab.count(); i++)
+    QStringList names;
+    names.reserve(count);
+    for(int i=0; i < count; i++)
     {
-        QString tab_name = xml.ReadString("name_"+RDK::sntoa(i+1), "tab_" + RDK::sntoa(i+1)).c_str();
-        ui->tabWidget->setTabText(i, tab_name);
-        tab.at(i)->setAccessibleName(tab_name);
+        names << QString::fromStdString(
+            xml.ReadString("name_"+RDK::sntoa(i+1), "tab_" + RDK::sntoa(i+1)));
     }
     xml.SelectUp();
+
+    for(int i=0; i < count; i++)
+    {
+        createTab();
+        const QString& tab_key = names.at(i);
+        ui->tabWidget->setTabText(i, tab_key);
+        tab.at(i)->setAccessibleName(tab_key);
+    }
 }
 
 void UWatch::on_tabWidget_currentChanged(int index)
 {
  if(index >=0 && index<tab.size())
   tab[index]->UpdateInterface();
+ syncInspectorActions();
+}
+
+void UWatch::syncInspectorActions()
+{
+    UWatchTab* current = getCurrentTab();
+    const bool visible = current && current->isInspectorVisible();
+    const PlotInspectorPage page = visible ? current->currentInspectorPage()
+                                           : PlotInspectorPage::Chart;
+    ui->actionChart_settings->setChecked(visible && page == PlotInspectorPage::Chart);
+    ui->actionSeries_settings->setChecked(visible && page == PlotInspectorPage::Series);
 }
 
 void UWatch::updateTheme()
@@ -216,4 +390,3 @@ void UWatch::updateTheme()
         }
     }
 }
-

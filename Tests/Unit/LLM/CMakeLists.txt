@@ -36,6 +36,7 @@ _add_llm_unit_test(Test_LLM_QuantityParser test_llm_quantity_parser.cpp)
 _add_llm_unit_test(Test_LLM_QuantityResolver test_llm_quantity_resolver.cpp)
 _add_llm_unit_test(Test_LLM_TaskPlanParsing test_llm_task_plan_parsing.cpp)
 _add_llm_unit_test(Test_LLM_TaskPlanner test_llm_task_planner.cpp)
+_add_llm_unit_test(Test_LLM_TaskOutcomeSummary test_llm_task_outcome_summary.cpp)
 _add_llm_unit_test(Test_LLM_LinkIdentity test_llm_link_identity.cpp)
 _add_llm_unit_test(Test_LLM_ModelLinkWalker test_llm_model_link_walker.cpp)
 _add_llm_unit_test(Test_LLM_ConnectSemanticsCatalog test_llm_connect_semantics_catalog.cpp)
@@ -44,6 +45,16 @@ _add_llm_unit_test(Test_LLM_ConnectEndpoints test_llm_connect_endpoints.cpp)
 _add_llm_unit_test(Test_LLM_ConnectPairing test_llm_connect_pairing.cpp)
 _add_llm_unit_test(Test_LLM_DomainSnapshotLinks test_llm_domain_snapshot_links.cpp)
 _add_llm_unit_test(Test_LLM_ConnectPlanParsing test_llm_connect_plan_parsing.cpp)
+_add_llm_unit_test(Test_LLM_ActOrClarifyGate test_llm_act_or_clarify_gate.cpp)
+_add_llm_unit_test(Test_LLM_CapabilityRiskGate test_llm_capability_risk_gate.cpp)
+_add_llm_unit_test(Test_LLM_DocOpenPolicy test_llm_doc_open_policy.cpp)
+_add_llm_unit_test(Test_LLM_DocCatalogHelpers test_llm_doc_catalog_helpers.cpp)
+_add_llm_unit_test(Test_LLM_DocumentationTools test_llm_documentation_tools.cpp)
+_add_llm_unit_test(Test_LLM_ChannelCalcCommand test_llm_channel_calc_command.cpp)
+_add_llm_unit_test(Test_LLM_CompoundGoal test_llm_compound_goal.cpp)
+_add_llm_unit_test(Test_LLM_ComponentStructureGoal test_llm_component_structure_goal.cpp)
+_add_llm_unit_test(Test_LLM_WatchTools test_llm_watch_tools.cpp)
+_add_llm_unit_test(Test_LLM_ChatNameCompletion test_llm_chat_name_completion.cpp)
 _add_llm_unit_test(Test_LLM_DialogSlotMerge test_llm_dialog_slot_merge.cpp)
 _add_llm_unit_test(Test_LLM_AgentManifest test_llm_agent_manifest.cpp)
 _add_llm_unit_test(Test_LLM_ConnectPlanBuilder test_llm_connect_plan_builder.cpp)
@@ -73,8 +84,13 @@ _add_llm_unit_test(Test_LLM_ToolGateway test_llm_tool_gateway.cpp)
 _add_llm_unit_test(Test_LLM_ToolTrace test_llm_tool_trace.cpp)
 _add_llm_unit_test(Test_LLM_GuiTurnPin test_llm_gui_turn_pin.cpp)
 _add_llm_unit_test(Test_LLM_AddParentResolution test_llm_add_parent_resolution.cpp)
+_add_llm_unit_test(Test_LLM_ClarificationFormat test_llm_clarification_format.cpp)
+_add_llm_unit_test(Test_LLM_DirectAddFollowup test_llm_direct_add_followup.cpp)
+_add_llm_unit_test(Test_LLM_RecordedToolInvoke test_llm_recorded_tool_invoke.cpp)
 _add_llm_unit_test(Test_LLM_EntityPathCanonicalizer test_llm_entity_path_canonicalizer.cpp)
 _add_llm_unit_test(Test_LLM_Orchestrator test_llm_orchestrator.cpp)
+_add_llm_unit_test(Test_LLM_OrchestratorThinking test_llm_orchestrator_thinking.cpp
+  llm_test_ollama_lab.cpp)
 _add_llm_unit_test(Test_LLM_ProviderAuth test_llm_provider_auth.cpp)
 _add_llm_unit_test(Test_LLM_EntityResolver test_llm_entity_resolver.cpp)
 _add_llm_unit_test(Test_LLM_AuditChain test_llm_audit_chain.cpp)
@@ -97,6 +113,19 @@ _add_llm_unit_test(Test_LLM_ChatHistoryArchive
   ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt/Llm/ULlmChatHistoryArchive.cpp)
 target_include_directories(Test_LLM_ChatHistoryArchive PRIVATE
   ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt/Llm)
+_add_llm_unit_test(Test_LLM_ChatMarkdown
+  test_llm_chat_markdown.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt/Llm/ULlmChatMarkdown.cpp)
+target_include_directories(Test_LLM_ChatMarkdown PRIVATE
+  ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt/Llm)
+find_package(Qt5 COMPONENTS Gui REQUIRED)
+target_link_libraries(Test_LLM_ChatMarkdown PRIVATE Qt5::Gui)
+_add_llm_unit_test(Test_LLM_DetailsHtml
+  test_llm_details_html.cpp
+  ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt/Llm/ULlmDetailsHtml.cpp)
+target_include_directories(Test_LLM_DetailsHtml PRIVATE
+  ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt/Llm)
+target_link_libraries(Test_LLM_DetailsHtml PRIVATE Qt5::Core)
 _add_llm_unit_test(Test_LLM_DocSearch test_llm_doc_search.cpp)
 _add_llm_unit_test(Test_LLM_Workflow test_llm_workflow.cpp)
 _add_llm_unit_test(Test_LLM_UnifiedTurnContract test_llm_unified_turn_contract.cpp)
@@ -106,6 +135,8 @@ target_compile_definitions(Test_LLM_FreeDialogueCorpus PRIVATE
 _add_llm_unit_test(Test_LLM_AskUserProtocol test_llm_ask_user_protocol.cpp)
 _add_llm_unit_test(Test_LLM_LifecycleSoftAndTerminal test_llm_lifecycle_soft_and_terminal.cpp)
 _add_llm_unit_test(Test_LLM_SearchTools test_llm_search_tools.cpp)
+_add_llm_unit_test(Test_LLM_Thinking test_llm_thinking.cpp)
+_add_llm_unit_test(Test_LLM_ThinkingLab test_llm_thinking_lab.cpp llm_test_ollama_lab.cpp)
 _add_llm_unit_test(Test_LLM_SubagentRunner test_llm_subagent_runner.cpp)
 _add_llm_unit_test(Test_LLM_InputUnderstanding test_llm_input_understanding.cpp)
 _add_llm_unit_test(Test_LLM_ModelRouter test_llm_model_router.cpp)
@@ -158,7 +189,11 @@ set(_LLM_AGENT_SCENARIO_SOURCES
   llm_test_ollama_lab.cpp
   ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-PulseLib/Llm/RegisterPulseLibLlmTools.cpp
   ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-MotionControlLib/Llm/RegisterMotionControlLibLlmTools.cpp
-  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-HardwareLib/Llm/RegisterHardwareLibLlmTools.cpp)
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-HardwareLib/Llm/RegisterHardwareLibLlmTools.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-BasicLib/Llm/RegisterBasicLibLlmTools.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-BasicLib/Llm/UPackBasicDocs.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-CvBasicLib/Llm/RegisterCvBasicLibLlmTools.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-CvBasicLib/Llm/UPackCvBasicDocs.cpp)
 _add_llm_unit_test(Test_LLM_AgentScenarios ${_LLM_AGENT_SCENARIO_SOURCES})
 target_compile_definitions(Test_LLM_AgentScenarios PRIVATE
   RDK_LLM_AGENT_SCENARIOS_DIR="${RDK_LLM_AGENT_SCENARIOS_DIR}"
@@ -166,7 +201,9 @@ target_compile_definitions(Test_LLM_AgentScenarios PRIVATE
 target_include_directories(Test_LLM_AgentScenarios PRIVATE
   ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-PulseLib/Llm
   ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-MotionControlLib/Llm
-  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-HardwareLib/Llm)
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-HardwareLib/Llm
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-BasicLib/Llm
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-CvBasicLib/Llm)
 
 set(_LLM_AGENT_SCENARIO_RUNNER_SOURCES
   llm_agent_scenario_loader.cpp
@@ -177,7 +214,11 @@ set(_LLM_AGENT_SCENARIO_RUNNER_SOURCES
   llm_test_ollama_lab.cpp
   ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-PulseLib/Llm/RegisterPulseLibLlmTools.cpp
   ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-MotionControlLib/Llm/RegisterMotionControlLibLlmTools.cpp
-  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-HardwareLib/Llm/RegisterHardwareLibLlmTools.cpp)
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-HardwareLib/Llm/RegisterHardwareLibLlmTools.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-BasicLib/Llm/RegisterBasicLibLlmTools.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-BasicLib/Llm/UPackBasicDocs.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-CvBasicLib/Llm/RegisterCvBasicLibLlmTools.cpp
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-CvBasicLib/Llm/UPackCvBasicDocs.cpp)
 add_executable(llm_scenario_runner
   llm_scenario_runner_main.cpp
   ${_LLM_AGENT_SCENARIO_RUNNER_SOURCES}
@@ -189,7 +230,9 @@ target_include_directories(llm_scenario_runner PRIVATE
   ${CMAKE_SOURCE_DIR}/Rdk/Core
   ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-PulseLib/Llm
   ${CMAKE_SOURCE_DIR}/Libraries/Nmsdk-MotionControlLib/Llm
-  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-HardwareLib/Llm)
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-HardwareLib/Llm
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-BasicLib/Llm
+  ${CMAKE_SOURCE_DIR}/Libraries/Rdk-CvBasicLib/Llm)
 target_compile_definitions(llm_scenario_runner PRIVATE
   RDK_LLM_AGENT_SCENARIOS_DIR="${RDK_LLM_AGENT_SCENARIOS_DIR}"
   CMAKE_SOURCE_DIR="${CMAKE_SOURCE_DIR}"

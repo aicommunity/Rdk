@@ -35,11 +35,27 @@ ConfigurationLifecycleAction detectConfigurationLifecycleAction(const std::strin
                || contains(lower, "check if"))))
         return ConfigurationLifecycleAction::Validate;
 
+    // «создай описание» / create description — not create-on-disk (chat 18-19-54).
+    const bool description_goal =
+        contains(lower, "описан") || contains(lower, "project description")
+        || contains(lower, "project_description") || contains(lower, "configuration description");
+    const bool explicit_create_on_disk =
+        contains(lower, "создай проект") || contains(lower, "создай конфиг")
+        || contains(lower, "создай конфигурац") || contains(lower, "новый конфиг")
+        || contains(lower, "новая конфигурац") || contains(lower, "новый проект")
+        || contains(lower, "create project") || contains(lower, "create config")
+        || contains(lower, "create configuration") || contains(lower, "new config")
+        || contains(lower, "new configuration") || contains(lower, "new project");
+
     if((contains(lower, "create") || contains(lower, "созда") || contains(lower, "new "))
        && (contains(lower, "config") || contains(lower, "configuration") || contains(lower, "конфиг")
            || contains(lower, "конфигурац") || contains(lower, "project")
            || contains(lower, "проект")))
+    {
+        if(description_goal && !explicit_create_on_disk)
+            return ConfigurationLifecycleAction::None;
         return ConfigurationLifecycleAction::Create;
+    }
 
     if((contains(lower, "load") || contains(lower, "open") || contains(lower, "открой")
         || contains(lower, "загруз"))

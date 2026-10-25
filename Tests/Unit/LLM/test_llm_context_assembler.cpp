@@ -91,6 +91,60 @@ TEST(LLMContextAssembler, QueryPrefetchBlockPrepended)
     EXPECT_TRUE(found_query_hint);
 }
 
+TEST(LLMContextAssembler, QueryHintPrefersLiveGraphSnapshot)
+{
+    std::vector<LLMMessage> messages;
+    messages.push_back({LLMMessage::Role::User, "дай информацию о текущей модели"});
+
+    ConversationState conv;
+    EphemeralContextInput input{conv,
+                                LLMSessionContext{},
+                                LLMGuiContextSnapshot{},
+                                LLMIntentKind::Query,
+                                ConfigurationLifecycleAction::None,
+                                true};
+    prependEphemeralSystemMessages(messages, input);
+
+    bool found_live = false;
+    bool found_docs = false;
+    for(const LLMMessage& m : messages)
+    {
+        if(m.role != LLMMessage::Role::System)
+            continue;
+        if(m.content.find("get_net_snapshot") != std::string::npos
+           && m.content.find("Inspect live project") != std::string::npos)
+            found_live = true;
+        if(m.content.find("search_project_docs") != std::string::npos)
+            found_docs = true;
+    }
+    EXPECT_TRUE(found_live);
+    EXPECT_TRUE(found_docs);
+}
+
+TEST(LLMContextAssembler, ExplainHintIncludesDecisionTree)
+{
+    std::vector<LLMMessage> messages;
+    messages.push_back({LLMMessage::Role::User, "how does the current model work"});
+
+    ConversationState conv;
+    EphemeralContextInput input{conv,
+                                LLMSessionContext{},
+                                LLMGuiContextSnapshot{},
+                                LLMIntentKind::Explain,
+                                ConfigurationLifecycleAction::None,
+                                true};
+    prependEphemeralSystemMessages(messages, input);
+
+    bool found = false;
+    for(const LLMMessage& m : messages)
+    {
+        if(m.role == LLMMessage::Role::System
+           && m.content.find("get_net_snapshot") != std::string::npos)
+            found = true;
+    }
+    EXPECT_TRUE(found);
+}
+
 TEST(LLMContextAssembler, NoHardcodedLtZoneConnectParagraph)
 {
     std::vector<LLMMessage> messages;
@@ -138,6 +192,58 @@ TEST(LLMContextAssembler, InjectsCatalogConnectBlocks)
     {
         if(m.role == LLMMessage::Role::System
            && m.content.find("Connect semantics (index)") != std::string::npos)
+            found = true;
+    }
+    EXPECT_TRUE(found);
+}
+
+TEST(LLMContextAssembler, SessionGraphIncludesLastAddedClass)
+{
+    std::vector<LLMMessage> messages;
+    messages.push_back({LLMMessage::Role::User, "add more"});
+
+    ConversationState conv;
+    conv.session_graph.added_long_names = {"PNeuronGen"};
+    conv.session_graph.last_add = LastAddComponentMemory{"NSPNeuronGen", "Model", "PNeuronGen"};
+    EphemeralContextInput input{conv,
+                                LLMSessionContext{},
+                                LLMGuiContextSnapshot{},
+                                LLMIntentKind::Mutate,
+                                ConfigurationLifecycleAction::None,
+                                true};
+
+    prependEphemeralSystemMessages(messages, input);
+    bool found = false;
+    for(const LLMMessage& m : messages)
+    {
+        if(m.role == LLMMessage::Role::System
+           && m.content.find("last_added_class: NSPNeuronGen") != std::string::npos)
+            found = true;
+    }
+    EXPECT_TRUE(found);
+}
+
+TEST(LLMContextAssembler, PackHintsBlockPrepended)
+{
+    std::vector<LLMMessage> messages;
+    messages.push_back({LLMMessage::Role::User, "start calc"});
+
+    ConversationState conv;
+    EphemeralContextInput input{conv,
+                                LLMSessionContext{},
+                                LLMGuiContextSnapshot{},
+                                LLMIntentKind::Mutate,
+                                ConfigurationLifecycleAction::None,
+                                true};
+    input.pack_hints_block = "- Prefer start_channel_calculation for channel calc goals.\n";
+
+    prependEphemeralSystemMessages(messages, input);
+    bool found = false;
+    for(const LLMMessage& m : messages)
+    {
+        if(m.role == LLMMessage::Role::System
+           && m.content.find("## Capability pack hints") != std::string::npos
+           && m.content.find("start_channel_calculation") != std::string::npos)
             found = true;
     }
     EXPECT_TRUE(found);

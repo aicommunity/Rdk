@@ -68,15 +68,11 @@ USerStorageXML& operator << (USerStorageXML& storage, const MMatrix<T,Rows,Cols>
  storage.SetNodeAttribute("Rows",sntoa(Rows));
  storage.SetNodeAttribute("Cols",sntoa(Cols));
 
- stream<<endl;
  for(unsigned i=0;i<Rows;i++)
  {
-  for(unsigned j=0;j<Cols;j++)
-  {
-   stream<<data.Data[i][j]<<"\t";
-  }
-  if(i<Rows-1)
-   stream<<endl;
+  AppendMatrixTextRow(stream, (int)Cols, [&](unsigned j) { stream << data.Data[i][j]; });
+  if(i+1<Rows)
+   stream<<'\n';
  }
 
  storage.SetNodeText(stream.str());
@@ -87,8 +83,9 @@ USerStorageXML& operator << (USerStorageXML& storage, const MMatrix<T,Rows,Cols>
 template<typename T, unsigned Rows, unsigned Cols>
 USerStorageXML& operator >> (USerStorageXML& storage, MMatrix<T,Rows,Cols> &data)
 {
-// std::string rvalue=storage.GetNodeText();
- std::stringstream stream(storage.GetNodeText().c_str());
+ std::string text=storage.GetNodeText();
+ MatrixNodeTextTrimInPlace(text);
+ std::stringstream stream(text);
 
  for(unsigned i=0;i<Rows;i++)
  {
@@ -177,15 +174,11 @@ USerStorageXML& operator << (USerStorageXML& storage, const MDMatrix<T> &data)
 
  std::stringstream stream;
 
- stream<<endl;
  for(int i=0;i<rows;i++)
  {
-  for(int j=0;j<cols;j++)
-  {
-   stream<<data(i,j)<<"\t";
-  }
-  if(i<rows-1)
-   stream<<endl;
+  AppendMatrixTextRow(stream, cols, [&](int j) { stream << data(i, j); });
+  if(i+1<rows)
+   stream<<'\n';
  }
 
  storage.SetNodeText(stream.str());
@@ -203,8 +196,9 @@ USerStorageXML& operator >> (USerStorageXML& storage, MDMatrix<T> &data)
 
  data.Resize(rows,cols);
 
-// std::string rvalue=storage.GetNodeText();
- std::stringstream stream(storage.GetNodeText().c_str());
+ std::string text=storage.GetNodeText();
+ MatrixNodeTextTrimInPlace(text);
+ std::stringstream stream(text);
 
  for(int i=0;i<rows;i++)
  {

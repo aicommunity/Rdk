@@ -34,12 +34,15 @@ struct PendingConfirmation {
     std::string confirmation_id;
     ToolInvokeRequest request;  // один write-tool
     int64_t created_at_unix_sec;  // TD-025 TTL (default 600 s)
+    std::string tool_call_id;     // TD-150: pair Tool result on confirm
 };
+
+struct PendingUserQuestion { /* ask_user HITL */ };
 ```
 
 **Хранение:** `persistToDisk` → `<storage_dir>/<session_id>.json` (в т.ч. `pending`, `pending_plan` со статусами шагов и `last_result`).
 
-`store_schema_version` 2 fields (see `ULLMConversationStore` JSON):
+`store_schema_version` 2/3 fields (see `ULLMConversationStore` JSON):
 
 | Field | Purpose |
 |-------|---------|
@@ -49,6 +52,8 @@ struct PendingConfirmation {
 | `session_context_seeded` | Bootstrap system block written once per session |
 | `session_summary` | Rule-based compaction artifact (P2) |
 | `last_session_context` | Last `LLMSessionContext` snapshot from orchestrator (write/autonomy flags for resume; TD-088) |
+| `session_graph` | Session deltas: `added_long_names`, `linked_records`, `last_template`, **`last_add`** (class/parent/short for «ещё таких же») |
+| `pending_user_question` | Active `ask_user` question + choices |
 
 Per-turn flags still arrive via `LLMRequestEnvelope.session`; on resume the GUI merges persisted `last_session_context` with live user/channel/project state (`ULlmAssistantDockWidget::buildSession`).
 

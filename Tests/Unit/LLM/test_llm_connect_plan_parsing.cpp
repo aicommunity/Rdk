@@ -112,3 +112,41 @@ TEST(LLMConnectPlanParsing, InternalSemanticsHint)
     EXPECT_TRUE(g.wants_internal_semantics_hint);
 }
 
+TEST(LLMConnectPlanParsing, LiveAnalogousRefRussian)
+{
+    const std::string goal =
+        "подключи PGenerator ко всем нейронам так же как он подключен к PNeuron";
+    ParsedConnectGoal g = parseConnectGoal(goal);
+    EXPECT_TRUE(g.wants_analogous);
+    ASSERT_TRUE(g.analogous_ref_token.has_value());
+    EXPECT_EQ(*g.analogous_ref_token, "PNeuron");
+    ASSERT_TRUE(g.hub_token.has_value());
+    EXPECT_EQ(*g.hub_token, "PGenerator");
+    EXPECT_TRUE(g.wants_all_class_peers);
+    EXPECT_EQ(g.kind, ConnectGoalKind::AnalogousToPrevious);
+}
+
+TEST(LLMConnectPlanParsing, SessionPeersAlsoKakK)
+{
+    const std::string goal =
+        "подключил PGenerator к этим нейронам также как к PNeuron";
+    ParsedConnectGoal g = parseConnectGoal(goal);
+    EXPECT_TRUE(g.wants_analogous);
+    ASSERT_TRUE(g.analogous_ref_token.has_value());
+    EXPECT_EQ(*g.analogous_ref_token, "PNeuron");
+    ASSERT_TRUE(g.hub_token.has_value());
+    EXPECT_EQ(*g.hub_token, "PGenerator");
+    EXPECT_TRUE(g.wants_session_peers);
+}
+
+TEST(LLMConnectPlanParsing, LiveAnalogousRefEnglish)
+{
+    ParsedConnectGoal g =
+        parseConnectGoal("connect PGenerator to all neurons the same way as connected to PNeuron");
+    EXPECT_TRUE(g.wants_analogous);
+    ASSERT_TRUE(g.analogous_ref_token.has_value());
+    EXPECT_EQ(*g.analogous_ref_token, "PNeuron");
+    ASSERT_TRUE(g.hub_token.has_value());
+    EXPECT_EQ(*g.hub_token, "PGenerator");
+}
+

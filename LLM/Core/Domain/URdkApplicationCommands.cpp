@@ -618,6 +618,99 @@ ApplicationCommandResult URdkApplicationCommands::stepChannelCalculation(int cha
     return r;
 }
 
+ApplicationCommandResult URdkApplicationCommands::runNStepsChannelCalculation(int channel_index,
+                                                                               int steps)
+{
+    if(!m_app)
+        return fail(DomainStatusCode::NotInitialized, "Application not available");
+    if(!m_app->GetProjectOpenFlag())
+        return fail(DomainStatusCode::ProjectNotLoaded, "No configuration is open");
+    if(channel_index < -1 || channel_index >= m_app->GetNumChannels())
+        return fail(DomainStatusCode::InvalidPropertyValue, "invalid channel_index");
+    constexpr int kMaxSteps = 10000;
+    if(steps < 1 || steps > kMaxSteps)
+        return fail(DomainStatusCode::InvalidPropertyValue,
+                    "steps must be in range [1, " + std::to_string(kMaxSteps) + "]");
+
+    for(int i = 0; i < steps; ++i)
+        m_app->StepChannel(channel_index);
+
+    ApplicationCommandResult r;
+    r.status = {};
+    r.payload = {{"channel_index", channel_index}, {"steps", steps}, {"ran_n_steps", true}};
+    r.presentation = LLMPresentationEffect::DiagramRefresh;
+    return r;
+}
+
+ApplicationCommandResult URdkApplicationCommands::addChannel()
+{
+    if(!m_app)
+        return fail(DomainStatusCode::NotInitialized, "Application not available");
+    if(!m_app->GetProjectOpenFlag())
+        return fail(DomainStatusCode::ProjectNotLoaded, "No configuration is open");
+
+    const int new_count = m_app->GetNumChannels() + 1;
+    if(!m_app->SetNumChannels(new_count))
+        return fail(DomainStatusCode::IOError, "SetNumChannels failed");
+
+    ApplicationCommandResult r;
+    r.status = {};
+    r.payload = {{"channel_index", new_count - 1},
+                 {"channel_count", m_app->GetNumChannels()},
+                 {"added", true}};
+    r.presentation = LLMPresentationEffect::FullShellRefresh;
+    r.update_context = true;
+    return r;
+}
+
+ApplicationCommandResult URdkApplicationCommands::deleteChannel(int channel_index)
+{
+    if(!m_app)
+        return fail(DomainStatusCode::NotInitialized, "Application not available");
+    if(!m_app->GetProjectOpenFlag())
+        return fail(DomainStatusCode::ProjectNotLoaded, "No configuration is open");
+    if(channel_index < 0 || channel_index >= m_app->GetNumChannels())
+        return fail(DomainStatusCode::InvalidPropertyValue, "invalid channel_index");
+    if(channel_index == 0)
+        return fail(DomainStatusCode::InvalidPropertyValue, "cannot delete channel 0");
+
+    if(!m_app->DeleteChannel(channel_index))
+        return fail(DomainStatusCode::IOError, "DeleteChannel failed");
+
+    ApplicationCommandResult r;
+    r.status = {};
+    r.payload = {{"channel_index", channel_index},
+                 {"channel_count", m_app->GetNumChannels()},
+                 {"deleted", true}};
+    r.presentation = LLMPresentationEffect::FullShellRefresh;
+    r.update_context = true;
+    return r;
+}
+
+ApplicationCommandResult URdkApplicationCommands::cloneChannel(int source_channel_index)
+{
+    if(!m_app)
+        return fail(DomainStatusCode::NotInitialized, "Application not available");
+    if(!m_app->GetProjectOpenFlag())
+        return fail(DomainStatusCode::ProjectNotLoaded, "No configuration is open");
+    if(source_channel_index < 0 || source_channel_index >= m_app->GetNumChannels())
+        return fail(DomainStatusCode::InvalidPropertyValue, "invalid source_channel_index");
+
+    const int cloned_id = m_app->GetNumChannels();
+    if(!m_app->CloneChannel(source_channel_index, cloned_id))
+        return fail(DomainStatusCode::IOError, "CloneChannel failed");
+
+    ApplicationCommandResult r;
+    r.status = {};
+    r.payload = {{"source_channel_index", source_channel_index},
+                 {"channel_index", cloned_id},
+                 {"channel_count", m_app->GetNumChannels()},
+                 {"cloned", true}};
+    r.presentation = LLMPresentationEffect::FullShellRefresh;
+    r.update_context = true;
+    return r;
+}
+
 ApplicationCommandResult URdkApplicationCommands::setActiveChannel(int channel_index)
 {
     if(!m_app)

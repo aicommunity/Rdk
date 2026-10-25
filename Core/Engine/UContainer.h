@@ -916,6 +916,9 @@ void DelComponentTable(UEPtr<UContainer> comp);
 
 // Updates cache of active (non-static) components for optimized Calculate() loop
 void UpdateActiveComponentsCache(void);
+
+/// Rebuild Id→index map after PComponents reorder (ChangeComponentPosition).
+void RebuildComponentsIdIndex(void);
 // --------------------------
 
 // Скрытые методы управления общими (shared) переменными
@@ -1055,6 +1058,10 @@ explicit EComponentNameAlreadyExist(const std::string &name) : ENameAlreadyExist
 struct EComponentNameInvalid: public ENameError
 {
 explicit EComponentNameInvalid(const std::string &name) : ENameError(name) {};
+virtual std::string CreateLogMessage(void) const
+{
+ return std::string(" invalid component name: ") + Name;
+}
 };
 
 // Id указателя не найден

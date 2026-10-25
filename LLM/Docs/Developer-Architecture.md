@@ -36,3 +36,19 @@ The model must **never**:
 **Invariants** (full list): [README.md](README.md) § strict invariants.
 
 ---
+
+## 2. TurnPipeline + Capability Packs
+
+Turn entry is `ULLMTurnPipeline` (`Core/Orchestrator/Turn/`) with `SessionGuard`, `Prepare`, `GoalRouter`, and `LegacyRest` phases; `LegacyRest` retains TaskPath/ReAct/finalization while the preceding phases own shared setup and pack routing. Domain scenarios live in **Capability Packs** (`Core/Packs/`), not in orchestrator if-ladders (DD-PACK-001).
+
+**Per-turn shape:**
+
+1. Packs `rank` → optional Recorded short-circuit via `tryRecordedCapabilityPacks` (must use `recordedToolInvoke`).
+2. Else ReAct: pack hints (`collectPackHintsMarkdown`) prepended as ephemeral `## Capability pack hints`; `extra_tool_names` merged into the tool filter.
+3. `working_goals` on `ConversationState` (store v4, DD-WM-001) seeded from high-score packs and injected each provider round.
+
+**Multi-goal (DD-PACK-003):** when ≥2 packs score ≥0.85 **or** the utterance is a compound conjunction (e.g. add + calc), Recorded runs **sequentially** in dependency order (`add_component_direct` → … → `channel_calc`) without exclusive first-hit short-circuit. HITL/clarify pauses the chain.
+
+**ADR note:** lifecycle **load** direct invoke stays env-gated in the orchestrator (`NMSDK_LLM_LIFECYCLE_DIRECT=1`, DD-MEM-002 / TD-102); `lifecycle_soft` pack is hints-only — not migrating load into packs.
+
+Details: [Capability-Packs.md](Capability-Packs.md), [Unified-Turn-Contract.md](Unified-Turn-Contract.md) § Recorded bypass.

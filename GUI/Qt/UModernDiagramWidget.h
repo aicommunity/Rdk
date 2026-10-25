@@ -26,6 +26,7 @@
 #include "../Core/Engine/UXMLEnvSerialize.h"
 #include "../Core/Engine/UEnvSupport.h"
 #include "UModernDiagramPort.h"  // Для Port и PortCategory
+#include "UModernDiagramExternalLinkLayout.h"
 #include "UComponentGuiContext.h"
 
 // Константы для диаграммы
@@ -54,6 +55,8 @@ namespace UModernDiagramConstants {
 class UModernDiagramWidgetMovementTest;
 class UModernDiagramLinkItem;
 class UModernDiagramNodeItem;
+class UModernDiagramExternalSourceItem;
+class UModernDiagramExternalSinkItem;
 class UModernDiagramViewportManager;
 class UModernDiagramCoordinateManager;
 class UModernDiagramCacheManager;
@@ -61,6 +64,7 @@ class UModernDiagramContextMenu;
 // Forward declarations for extracted classes
 class UModernDiagramScene;
 class UModernDiagramView;
+class QLineEdit;
 
 /// Простой современный виджет диаграммы на основе QGraphicsView/QGraphicsScene.
 /// Отображает компоненты как узлы с портами, поддерживает drag&drop связей и миникарту.
@@ -79,6 +83,8 @@ public:
 public slots:
     /// Перезагрузка диаграммы из текущей модели
     void Reload();
+    /// Полная очистка сцены (закрытие конфига / нет модели)
+    void clearDiagram();
     /// Установить масштаб по содержимому
     void FitToView();
     /// Обработка двойного клика из списка компонентов
@@ -93,6 +99,24 @@ public slots:
     void SaveViewState();
     /// Загрузка состояния viewport из QSettings
     void LoadViewState();
+
+    static QString formatExternalSourceDisplayLabel(const QString& itemId,
+                                                    const QString& itemName,
+                                                    int maxWidthPx,
+                                                    QFontMetricsF* fm = nullptr);
+    /// Outgoing sink label: same style as sources, but without the current diagram scope prefix.
+    static QString formatExternalSinkDisplayLabel(const QString& itemId,
+                                                  const QString& itemName,
+                                                  const QString& scopeLongName,
+                                                  const QString& scopeShortName,
+                                                  int maxWidthPx,
+                                                  QFontMetricsF* fm = nullptr);
+    static QString externalSourceFullPathLabel(const QString& itemId, const QString& itemName);
+
+    void updateExternalSourceLinkGeometry(UModernDiagramExternalSourceItem* ext);
+    void onExternalSourceMoved(UModernDiagramExternalSourceItem* ext, bool manual);
+    void updateExternalSinkLinkGeometry(UModernDiagramExternalSinkItem* sink);
+    void onExternalSinkMoved(UModernDiagramExternalSinkItem* sink, bool manual);
     /// Выделение всех NodeItem внутри указанного прямоугольника
     /// @param selectionRect Прямоугольник выделения в координатах scene
     /// @param addToSelection Если true, добавляет к текущему выделению, иначе очищает перед выделением
@@ -100,11 +124,18 @@ public slots:
     int selectNodesInRect(const QRectF& selectionRect, bool addToSelection = false);
     /// Обновление темы - инвалидирует кэш всех узлов и обновляет сцену
     void updateTheme();
+    /// Сброс кэша портов (локальный NodeItem + global ComponentCache) для всей диаграммы
+    void invalidatePortsCache();
+    /// Сброс кэша портов одного компонента (fullName — long name в модели)
+    void invalidatePortsCache(const QString& componentFullName);
+    /// Сброс кэша портов во всех открытых UModernDiagramWidget (Reset/Calculate/Default извне диаграммы)
+    static void invalidatePortsCacheEverywhere(const QString& componentFullName = QString());
     /// Вызвать открытие окна описания проекта (используется кнопкой на диаграмме)
     void requestOpenProjectDescription();
-    /// Обновление стилей кнопки сброса масштаба в соответствии с текущей темой
-    // updateResetZoomButtonStyle теперь в UModernDiagramViewportManager
-
+    /// Показать/скрыть палитру классов (кнопка на диаграмме)
+    void requestToggleClassesList();
+    /// Синхронизировать checked-состояние кнопки палитры классов
+    void setClassesListButtonChecked(bool checked);
 signals:
     /// Компонент выбран (одиночный клик)
     void componentSelected(QString name);
@@ -122,6 +153,8 @@ signals:
     void switchLinks(QString firstComponentName, QString secondComponentName);
     /// Запрос на открытие окна описания проекта (кнопка на диаграмме)
     void openProjectDescriptionRequested();
+    /// Запрос показать/скрыть палитру классов
+    void classesListToggleRequested();
     /// Запрос на открытие специализированной GUI-формы компонента.
     void openComponentGuiRequested(const UComponentGuiContext& context);
     /// Emitted when the schematic drill level changes (SetComponentName).
@@ -135,6 +168,8 @@ private:
     friend class UModernDiagramScene;
     friend class UModernDiagramView;
     friend class UModernDiagramLinkItem;  // Для доступа к NodeItem и PortCategory
+    friend class UModernDiagramExternalSourceItem;
+    friend class UModernDiagramExternalSinkItem;
     friend class UModernDiagramNodeItem;  // Для доступа к Port и PortCategory
     friend class UModernDiagramCacheManager;  // Для доступа к данным кэша
     friend class UModernDiagramCoordinateManager;  // Для доступа к данным координат
@@ -194,6 +229,63 @@ private:
     bool isComponentOutsideVisibleArea(UModernDiagramNodeItem* node) const;
     void buildLinks();
     void rebuildLinks(); // Перестраивает только связи без перезагрузки всей сцены
+    void buildExternalIncomingLinks();
+    void buildExternalOutgoingLinks();
+    void clearExternalSources();
+    void clearExternalSinks();
+    void layoutExternalSources();
+    void layoutExternalSinks();
+    void persistExternalSourcePositionsBeforeClear();
+    void persistExternalSinkPositionsBeforeClear();
+    void rememberExternalSourcePosition(const QString& sourceKey, const QPointF& pos, bool manual);
+    void rememberExternalSinkPosition(const QString& sinkKey, const QPointF& pos, bool manual);
+    bool externalSourceStoredPosition(const QString& sourceKey, ExternalSourceStoredPosition* out) const;
+    bool externalSinkStoredPosition(const QString& sinkKey, ExternalSourceStoredPosition* out) const;
+    void updateAllExternalLinkGeometry();
+    void saveExternalSourcePositionsToSettings();
+    void loadExternalSourcePositionsFromSettings();
+    void saveExternalSinkPositionsToSettings();
+    void loadExternalSinkPositionsFromSettings();
+    QString externalSourcePositionKey(const QString& sourceKey) const;
+    QString externalSinkPositionKey(const QString& sinkKey) const;
+    /// Node bounding boxes for link routing (excludes endpoints).
+    QList<QRectF> routingObstacles(UModernDiagramNodeItem* excludeA,
+                                   UModernDiagramNodeItem* excludeB) const;
+    /// United scene bounds of all diagram nodes.
+    QRectF routingNodesBounds() const;
+    void processExternalIncomingFromLinksList(
+        const RDK::UStringLinksList& linkslist,
+        QHash<UModernDiagramNodeItem*, int>& stackCounter,
+        QHash<QString, UModernDiagramLinkItem*>& aggregatedExternalLinks);
+    bool appendExternalIncomingLinksFromXml(const std::string& linksXml,
+                                            QHash<UModernDiagramNodeItem*, int>& stackCounter,
+                                            QHash<QString, UModernDiagramLinkItem*>& aggregatedExternalLinks);
+    void processExternalOutgoingFromLinksList(const RDK::UStringLinksList& linkslist);
+    bool appendExternalOutgoingLinksFromXml(const std::string& linksXml);
+    UModernDiagramNodeItem* resolveNodeOnDiagram(const QString& fullOrRelative) const;
+    UModernDiagramNodeItem* resolveNodeByIdOnDiagram(const QString& id) const;
+    UModernDiagramNodeItem* resolveDestinationNodeOnDiagram(const QString& connName,
+                                                           const QString& connId) const;
+    QString scopeShortName() const;
+    QString parentScopeName() const;
+    bool connectorTargetsScopeInput(const QString& connName, const QString& connId) const;
+    UModernDiagramNodeItem* findOwnerInputTargetChild() const;
+    static QString formatExternalSourceLabel(const QString& itemId, const QString& itemName);
+    bool isLinkEndpointInsideCurrentScope(const QString& path) const;
+    bool isConnectorNestedInsideVisibleChild(const QString& connName, const QString& connId) const;
+    bool isWhollyNestedSelfLinkOnVisibleChild(UModernDiagramNodeItem* node,
+                                              const QString& itemName,
+                                              const QString& itemId,
+                                              const QString& connName,
+                                              const QString& connId) const;
+    bool isExternalLinkSource(const QString& itemName, const QString& itemId) const;
+    bool isExternalLinkConnector(const QString& connName, const QString& connId) const;
+    QString normalizeConnectorNameForDst(UModernDiagramNodeItem* dstNode,
+                                         const QString& connName,
+                                         const QString& connIdStr) const;
+    PortCategory resolveInputPortCategory(UModernDiagramNodeItem* dstNode,
+                                          const QString& normalizedConnName,
+                                          QHash<QPair<UModernDiagramNodeItem*, QString>, PortCategory>& portCategoryCache) const;
     // Cache management methods теперь в UModernDiagramCacheManager
     // Используйте m_cacheManager для доступа к этим методам
     const Port* m_dragSourcePort;
@@ -216,6 +308,7 @@ private:
     UModernDiagramScene* m_scene;
     UModernDiagramView* m_mainView;
     QGraphicsView* m_miniMap;
+    QLineEdit* m_nodeSearchEdit = nullptr;
 
     // Temporary link during drag
     UModernDiagramLinkItem* m_tempLink;
@@ -233,6 +326,17 @@ private:
     QList<UModernDiagramNodeItem*> m_nodes;
     QHash<QString, UModernDiagramNodeItem*> m_nodeByName;
     QList<UModernDiagramLinkItem*> m_links;
+    QList<UModernDiagramExternalSourceItem*> m_externalSources;
+    QHash<QString, UModernDiagramExternalSourceItem*> m_externalSourceByKey;
+    QHash<QString, ExternalSourceStoredPosition> m_externalSourcePosCache;
+    QSet<QString> m_externalSourceDirtyKeys;
+    QTimer* m_externalSourceSaveTimer = nullptr;
+
+    QList<UModernDiagramExternalSinkItem*> m_externalSinks;
+    QHash<QString, UModernDiagramExternalSinkItem*> m_externalSinkByKey;
+    QHash<QString, ExternalSourceStoredPosition> m_externalSinkPosCache;
+    QSet<QString> m_externalSinkDirtyKeys;
+    QTimer* m_externalSinkSaveTimer = nullptr;
 
     // Защита от бесконечной рекурсии при выборе компонента
     // Cache manager
@@ -328,4 +432,3 @@ typedef UModernDiagramLinkItem LinkItem;
 typedef UModernDiagramNodeItem NodeItem;
 
 #endif // UMODERNDIAGRAMWIDGET_H
-

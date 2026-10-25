@@ -14,6 +14,7 @@
 #include <QGraphicsSceneHoverEvent>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
+#include <QScrollBar>
 #include <QVariant>
 #include <QMap>
 #include <QShortcut>
@@ -66,6 +67,8 @@ UModernDiagramNodeItem::UModernDiagramNodeItem(UModernDiagramWidget* owner, cons
     m_portListWidget->setMaximumHeight(UModernDiagramConstants::PORT_LIST_MAX_HEIGHT);
     m_portListWidget->setMinimumWidth(UModernDiagramConstants::PORT_LIST_MIN_WIDTH);
     m_portListWidget->setMaximumWidth(UModernDiagramConstants::PORT_LIST_MAX_WIDTH);
+    m_portListWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    m_portListWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     m_portListWidget->setStyleSheet(UStyleManager::instance()->getTreeWidgetStyleSheet());
     // Устанавливаем политику фокуса при создании
     m_portListWidget->setFocusPolicy(Qt::StrongFocus);
@@ -223,12 +226,12 @@ UModernDiagramNodeItem::UModernDiagramNodeItem(UModernDiagramWidget* owner, cons
                         });
     }
 
-    // Константы для размеров
+    // Константы для размеров (высота ~−40% vs прежние 80px; GRID_CELL_* не трогаем)
     const double minWidth = 180.0;  // Увеличено в 1.5 раза (120 * 1.5)
-    const double minHeight = 40.0;  // Минимальная высота для текста
-    const double portSpacing = 20.0;
-    const double topMargin = 30.0;  // Отступ сверху для текста
-    const double bottomMargin = 10.0;  // Отступ снизу
+    const double minHeight = 36.0;  // Минимальная высота для текста
+    const double portSpacing = 12.0;
+    const double topMargin = 16.0;  // Отступ сверху для текста / портов (−2)
+    const double bottomMargin = 13.0;  // +5 к высоте блока (было 6 при top=18 → 48; теперь 16+13+24=53)
 
     // Загружаем реальные порты компонента
     if(m_owner && m_owner->m_application)
@@ -1677,9 +1680,9 @@ bool UModernDiagramNodeItem::hasConnectionsToInputCategory(PortCategory category
     if(categoryPorts.isEmpty() && category != PortCategory::Own)
         return false;
 
-    // Получаем все связи компонента
+    // Boundary links only — avoid recursive nested feedback lighting Child ports on parents
     const std::string raw =
-        internalLinksXmlFromModelScope(Core_GetSelectedChannelIndex(), m_owner->m_componentName);
+        scopeChildBoundaryLinksXmlFromModelScope(Core_GetSelectedChannelIndex(), m_owner->m_componentName);
     if(raw.empty())
         return false;
 
@@ -2059,9 +2062,9 @@ bool UModernDiagramNodeItem::hasConnectionsToOutputCategory(PortCategory categor
     if(categoryPorts.isEmpty() && category != PortCategory::Own)
         return false;
 
-    // Получаем все связи компонента
+    // Boundary links only — avoid recursive nested feedback lighting Child ports on parents
     const std::string raw =
-        internalLinksXmlFromModelScope(Core_GetSelectedChannelIndex(), m_owner->m_componentName);
+        scopeChildBoundaryLinksXmlFromModelScope(Core_GetSelectedChannelIndex(), m_owner->m_componentName);
     if(raw.empty())
         return false;
 
@@ -2409,26 +2412,69 @@ void UModernDiagramNodeItem::showPortListWidget(const QPointF& scenePos)
     bool shiftPressed = QApplication::keyboardModifiers() & Qt::ShiftModifier;
     updatePortListWidget(m_hoveredPort->isInput, shiftPressed);
 
-    // Позиционируем виджет рядом с курсором
-    QPointF widgetPos = scenePos + QPointF(20, 20);
+    // Устанавливаем текущий элемент, если есть
+    if(m_portListWidget->topLevelItemCount() > 0)
+    {
+        QTreeWidgetItem* firstItem = m_portListWidget->topLevelItem(0);
+        if(firstItem && firstItem->childCount() > 0)
+        {
+            m_portListWidget->setCurrentItem(firstItem->child(0));
+            m_portListWidget->expandItem(firstItem);
+        }
+    }
 
-    // Проверяем границы viewport и корректируем позицию при необходимости
+    // Размер под содержимое, capped по PORT_LIST_MAX_HEIGHT — иначе в QGraphicsProxyWidget
+    // длинный список обрезается без рабочей полосы прокрутки.
+    {
+        int visibleRows = 0;
+        QList<QTreeWidgetItem*> stack;
+        for(int i = 0; i < m_portListWidget->topLevelItemCount(); ++i)
+            stack.append(m_portListWidget->topLevelItem(i));
+        while(!stack.isEmpty())
+        {
+            QTreeWidgetItem* item = stack.takeLast();
+            ++visibleRows;
+            if(item->isExpanded())
+            {
+                for(int i = 0; i < item->childCount(); ++i)
+                    stack.append(item->child(i));
+            }
+        }
+
+        int rowHeight = m_portListWidget->sizeHintForRow(0);
+        if(rowHeight <= 0)
+            rowHeight = m_portListWidget->fontMetrics().height() + 6;
+        const int frame = 2 * m_portListWidget->frameWidth();
+        const int desiredHeight = visibleRows * rowHeight + frame;
+        const int height = qBound(desiredHeight,
+                                  rowHeight + frame,
+                                  UModernDiagramConstants::PORT_LIST_MAX_HEIGHT);
+
+        m_portListWidget->doItemsLayout();
+        m_portListWidget->resizeColumnToContents(0);
+        int contentWidth = m_portListWidget->columnWidth(0)
+                           + m_portListWidget->indentation()
+                           + frame
+                           + m_portListWidget->verticalScrollBar()->sizeHint().width();
+        const int width = qBound(contentWidth,
+                                 UModernDiagramConstants::PORT_LIST_MIN_WIDTH,
+                                 UModernDiagramConstants::PORT_LIST_MAX_WIDTH);
+
+        m_portListWidget->resize(width, height);
+        m_portListWidgetProxy->resize(width, height);
+    }
+
+    // Позиционируем виджет рядом с курсором с учётом финального размера
+    QPointF widgetPos = scenePos + QPointF(20, 20);
     if(m_owner && m_owner->m_mainView)
     {
         QRectF viewportRect = m_owner->m_mainView->mapToScene(m_owner->m_mainView->viewport()->rect()).boundingRect();
         QRectF widgetRect(widgetPos, QSizeF(m_portListWidget->width(), m_portListWidget->height()));
 
-        // Если виджет выходит за правую границу, позиционируем слева от курсора
         if(widgetRect.right() > viewportRect.right())
-        {
             widgetPos.setX(scenePos.x() - m_portListWidget->width() - 20);
-        }
-
-        // Если виджет выходит за нижнюю границу, позиционируем выше курсора
         if(widgetRect.bottom() > viewportRect.bottom())
-        {
             widgetPos.setY(scenePos.y() - m_portListWidget->height() - 20);
-        }
     }
 
     m_portListWidgetProxy->setPos(widgetPos);
@@ -2443,17 +2489,6 @@ void UModernDiagramNodeItem::showPortListWidget(const QPointF& scenePos)
     if(m_owner && m_owner->m_scene)
     {
         m_owner->m_scene->update();
-    }
-
-    // Устанавливаем текущий элемент, если есть
-    if(m_portListWidget->topLevelItemCount() > 0)
-    {
-        QTreeWidgetItem* firstItem = m_portListWidget->topLevelItem(0);
-        if(firstItem && firstItem->childCount() > 0)
-        {
-            m_portListWidget->setCurrentItem(firstItem->child(0));
-            m_portListWidget->expandItem(firstItem);
-        }
     }
 }
 

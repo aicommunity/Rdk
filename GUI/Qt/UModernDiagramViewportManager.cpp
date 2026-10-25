@@ -20,6 +20,7 @@ UModernDiagramViewportManager::UModernDiagramViewportManager(UModernDiagramWidge
     : m_owner(owner)
     , m_projectDescriptionButton(nullptr)
     , m_resetZoomButton(nullptr)
+    , m_classesListButton(nullptr)
 {
 }
 
@@ -209,6 +210,7 @@ QPushButton* UModernDiagramViewportManager::createProjectDescriptionButton(QWidg
     m_projectDescriptionButton->setIconSize(QSize(20, 20));
     m_projectDescriptionButton->setToolTip(QCoreApplication::translate("UModernDiagramViewportManager", "Project Description"));
     m_projectDescriptionButton->setFixedSize(32, 32);
+    m_projectDescriptionButton->setEnabled(true);
     m_projectDescriptionButton->raise();
 
     if(m_owner)
@@ -258,6 +260,43 @@ QPushButton* UModernDiagramViewportManager::createResetZoomButton(QWidget* paren
     return m_resetZoomButton;
 }
 
+QPushButton* UModernDiagramViewportManager::createClassesListButton(QWidget* parent)
+{
+    if(m_classesListButton)
+        return m_classesListButton;
+
+    m_classesListButton = new QPushButton(parent);
+    QStyle* style = QApplication::style();
+    if(style)
+        m_classesListButton->setIcon(style->standardIcon(QStyle::SP_FileDialogDetailedView));
+    m_classesListButton->setIconSize(QSize(20, 20));
+    m_classesListButton->setToolTip(QCoreApplication::translate("UModernDiagramViewportManager", "Component classes"));
+    m_classesListButton->setFixedSize(32, 32);
+    m_classesListButton->setCheckable(true);
+    m_classesListButton->setChecked(false);
+    m_classesListButton->raise();
+
+    if(m_owner)
+    {
+        QObject::connect(m_classesListButton, &QPushButton::clicked, m_owner, &UModernDiagramWidget::requestToggleClassesList);
+    }
+
+    updateOverlayButtonsStyle();
+
+    QTimer::singleShot(0, parent, [this, parent]() {
+        if(parent)
+            updateOverlayButtonsPosition(parent->width(), parent->height());
+    });
+
+    return m_classesListButton;
+}
+
+void UModernDiagramViewportManager::setClassesListButtonChecked(bool checked)
+{
+    if(m_classesListButton)
+        m_classesListButton->setChecked(checked);
+}
+
 void UModernDiagramViewportManager::updateOverlayButtonsPosition(int width, int height)
 {
     Q_UNUSED(height);
@@ -267,11 +306,20 @@ void UModernDiagramViewportManager::updateOverlayButtonsPosition(int width, int 
     const int gap = 8;
 
     int x = width - margin - buttonWidth;
-    // Кнопка масштаба сверху, описание проекта снизу
+    int y = margin;
+    // Сверху вниз: zoom, project description, classes
     if(m_resetZoomButton)
-        m_resetZoomButton->move(x, margin);
+    {
+        m_resetZoomButton->move(x, y);
+        y += buttonHeight + gap;
+    }
     if(m_projectDescriptionButton)
-        m_projectDescriptionButton->move(x, margin + buttonHeight + gap);
+    {
+        m_projectDescriptionButton->move(x, y);
+        y += buttonHeight + gap;
+    }
+    if(m_classesListButton)
+        m_classesListButton->move(x, y);
 }
 
 void UModernDiagramViewportManager::updateResetZoomButtonPosition(int width, int height)
@@ -283,15 +331,18 @@ void UModernDiagramViewportManager::updateOverlayButtonsStyle()
 {
     UStyleManager* styleManager = UStyleManager::instance();
     QString themeName = styleManager->getThemeName();
+    const int btn = qMax(28, UStyleManager::densitySpace(7));
+    const int fontPx = qMax(14, UStyleManager::densitySpace(4));
 
     QString darkStyle =
+            QStringLiteral(
             "QPushButton {"
-            "    min-width: 32px; max-width: 32px; min-height: 32px; max-height: 32px;"
+            "    min-width: %1px; max-width: %1px; min-height: %1px; max-height: %1px;"
             "    padding: 0;"
             "    background-color: rgba(33, 37, 43, 220);"
             "    border: 1px solid #5C6370;"
             "    border-radius: 4px;"
-            "    font-size: 18px;"
+            "    font-size: %2px;"
             "    color: #ABB2BF;"
             "}"
             "QPushButton:hover {"
@@ -303,15 +354,16 @@ void UModernDiagramViewportManager::updateOverlayButtonsStyle()
             "    background-color: rgba(30, 58, 95, 250);"
             "    border-color: #61AFEF;"
             "    color: #61AFEF;"
-            "}";
+            "}").arg(btn).arg(fontPx);
     QString lightStyle =
+            QStringLiteral(
             "QPushButton {"
-            "    min-width: 32px; max-width: 32px; min-height: 32px; max-height: 32px;"
+            "    min-width: %1px; max-width: %1px; min-height: %1px; max-height: %1px;"
             "    padding: 0;"
             "    background-color: rgba(255, 255, 255, 200);"
             "    border: 1px solid #ccc;"
             "    border-radius: 4px;"
-            "    font-size: 18px;"
+            "    font-size: %2px;"
             "    color: #374151;"
             "}"
             "QPushButton:hover {"
@@ -323,7 +375,7 @@ void UModernDiagramViewportManager::updateOverlayButtonsStyle()
             "    background-color: rgba(220, 220, 220, 240);"
             "    border-color: #3B82F6;"
             "    color: #1E40AF;"
-            "}";
+            "}").arg(btn).arg(fontPx);
 
     if(themeName == "Modern Dark" || themeName == "dark")
     {
@@ -331,6 +383,8 @@ void UModernDiagramViewportManager::updateOverlayButtonsStyle()
             m_resetZoomButton->setStyleSheet(darkStyle);
         if(m_projectDescriptionButton)
             m_projectDescriptionButton->setStyleSheet(darkStyle);
+        if(m_classesListButton)
+            m_classesListButton->setStyleSheet(darkStyle);
     }
     else
     {
@@ -338,6 +392,8 @@ void UModernDiagramViewportManager::updateOverlayButtonsStyle()
             m_resetZoomButton->setStyleSheet(lightStyle);
         if(m_projectDescriptionButton)
             m_projectDescriptionButton->setStyleSheet(lightStyle);
+        if(m_classesListButton)
+            m_classesListButton->setStyleSheet(lightStyle);
     }
 }
 

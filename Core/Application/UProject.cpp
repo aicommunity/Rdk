@@ -3,6 +3,7 @@
 
 #include "UProject.h"
 #include "../Utilities/USupport.h"
+#include <algorithm>
 
 
 namespace RDK
@@ -115,6 +116,8 @@ TProjectConfig::TProjectConfig(void)
 {
  ProjectAutoSaveFlag=true;
 
+ ProjectAutoSaveModelTimeInterval=0;
+
  ProjectAutoSaveStatesFlag=false;
 
  EventsLogFlag=true;
@@ -162,6 +165,8 @@ TProjectConfig::TProjectConfig(const TProjectConfig& copy)
 
  ProjectDescription=copy.ProjectDescription;
  ProjectAutoSaveFlag=copy.ProjectAutoSaveFlag;
+
+ ProjectAutoSaveModelTimeInterval=copy.ProjectAutoSaveModelTimeInterval;
 
  ProjectAutoSaveStatesFlag=copy.ProjectAutoSaveStatesFlag;
  EventsLogFlag=copy.EventsLogFlag;
@@ -220,6 +225,7 @@ bool TProjectConfig::operator != (const TProjectConfig& copy) const
  return (ProjectName != copy.ProjectName) ||
  (ProjectDescription != copy.ProjectDescription) ||
  (ProjectAutoSaveFlag != copy.ProjectAutoSaveFlag) ||
+ (ProjectAutoSaveModelTimeInterval != copy.ProjectAutoSaveModelTimeInterval) ||
  (ProjectAutoSaveStatesFlag != copy.ProjectAutoSaveStatesFlag) ||
  (EventsLogFlag != copy.EventsLogFlag) ||
  (ProjectMode != copy.ProjectMode) ||
@@ -519,6 +525,9 @@ bool UProject::ReadFromXmlOld(USerStorageXML &xml)
  // Флаг автоматического сохранения проекта
  Config.ProjectAutoSaveFlag=xml.ReadInteger("ProjectAutoSaveFlag",1);
 
+ // Интервал сохранения снимков модели в модельном времени; старые конфиги отключают его.
+ Config.ProjectAutoSaveModelTimeInterval=std::max(0, xml.ReadInteger("ProjectAutoSaveModelTimeInterval",0));
+
  // Флаг автоматического сохранения проекта
  Config.ProjectAutoSaveStatesFlag=xml.ReadInteger("ProjectAutoSaveStateFlag",0);
 
@@ -630,6 +639,9 @@ bool UProject::ReadFromXmlNew(USerStorageXML &xml)
  // Флаг автоматического сохранения проекта
  Config.ProjectAutoSaveFlag=xml.ReadInteger("ProjectAutoSaveFlag",1);
 
+ // Интервал сохранения снимков модели в модельном времени; старые конфиги отключают его.
+ Config.ProjectAutoSaveModelTimeInterval=std::max(0, xml.ReadInteger("ProjectAutoSaveModelTimeInterval",0));
+
  // Флаг автоматического сохранения проекта
  Config.ProjectAutoSaveStatesFlag=xml.ReadInteger("ProjectAutoSaveStateFlag",0);
 
@@ -716,6 +728,7 @@ bool UProject::WriteToXmlOld(USerStorageXML &xml)
  xml.WriteString("ProjectDescriptionFileName",Config.DescriptionFileName);
 
  xml.WriteInteger("ProjectAutoSaveFlag",Config.ProjectAutoSaveFlag);
+ xml.WriteInteger("ProjectAutoSaveModelTimeInterval",Config.ProjectAutoSaveModelTimeInterval);
  xml.WriteInteger("ProjectAutoSaveStateFlag",Config.ProjectAutoSaveStatesFlag);
  xml.WriteInteger("MTUpdateInterfaceInterval",Config.MTUpdateInterfaceInterval);
  xml.WriteInteger("GuiUpdateMode",Config.GuiUpdateMode);
@@ -892,6 +905,7 @@ bool UProject::WriteToXmlNew(USerStorageXML &xml)
  xml.WriteString("ProjectDescriptionFileName",Config.DescriptionFileName);
 
  xml.WriteInteger("ProjectAutoSaveFlag",Config.ProjectAutoSaveFlag);
+ xml.WriteInteger("ProjectAutoSaveModelTimeInterval",Config.ProjectAutoSaveModelTimeInterval);
  xml.WriteInteger("ProjectAutoSaveStateFlag",Config.ProjectAutoSaveStatesFlag);
  xml.WriteInteger("MTUpdateInterfaceInterval",Config.MTUpdateInterfaceInterval);
  xml.WriteInteger("GuiUpdateMode",Config.GuiUpdateMode);
@@ -1051,4 +1065,3 @@ bool UProject::DeleteChannel(int index)
 }
 
 #endif
-

@@ -1,9 +1,14 @@
 #include "ULLMContextAssembler.h"
 
 #include "../Context/URdkContextRetriever.h"
+#include "../Session/ULLMWorkingGoals.h"
 #include "ULLMAgentManifestBuilder.h"
+#include "ULLMComponentStructureGoal.h"
+#include "ULLMConfigurationLifecycle.h"
 #include "ULLMConnectPlanParsing.h"
+#include "ULLMWatchPlotGoal.h"
 
+#include <algorithm>
 #include <filesystem>
 #include <sstream>
 
@@ -15,6 +20,7 @@ constexpr std::size_t kGuiFocusMaxChars = 1200;
 constexpr std::size_t kRetrieverSummaryMaxChars = 4096;
 constexpr std::size_t kAgentNotesMaxChars = 4096;
 constexpr std::size_t kLongTermMemoryMaxChars = 2048;
+constexpr std::size_t kPackHintsMaxChars = 2000;
 
 void truncateInPlace(std::string& s, const std::size_t max_chars)
 {
@@ -104,20 +110,19 @@ static std::string buildRetrieverSummaryBlock(const EphemeralContextInput& input
 {
     if(!input.context_retriever || !input.session.project_loaded)
         return {};
-    const bool has_focus = !input.gui.focused_class_name.empty()
-                           || !input.gui.focused_component_long_name.empty();
-    const bool has_diagram_scope = !input.gui.diagram_scope_long_name.empty();
-    if(!has_focus && !has_diagram_scope && !input.allow_retriever_without_list_focus)
-        return {};
-
-    const nlohmann::json summary =
-        input.context_retriever->buildSummary(input.session.active_channel_index,
-                                              input.gui.focused_class_name);
+    // Open project is enough: inject a live net snapshot so Query about "current model"
+    // does not require the model to guess get_net_snapshot.
+    const std::string& root_scope = input.gui.diagram_scope_long_name;
+    const nlohmann::json summary = input.context_retriever->buildSummary(
+        input.session.active_channel_index, input.gui.focused_class_name, root_scope);
     if(summary.empty())
         return {};
 
-    std::string block = "## Project context snapshot\n";
-    block += summary.dump(2);
+    std::string block =
+        "## Project context snapshot (live net; prefer this over guessing tools)\n";
+    if(!root_scope.empty())
+        block += "- root_long_name (diagram drill): " + root_scope + "\n";
+    block += summary.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace);
     truncateInPlace(block, kRetrieverSummaryMaxChars);
     return block;
 }
@@ -161,17 +166,48 @@ void prependEphemeralSystemMessages(std::vector<LLMMessage>& provider_messages,
         prependSystem(provider_messages, std::move(notes));
     }
 
+    {
+        const std::string goals = formatWorkingGoalsEphemeral(input.state.working_goals);
+        if(!goals.empty())
+            prependSystem(provider_messages, goals);
+    }
+
     if(input.state.last_quantity.valid)
     {
         prependSystem(provider_messages,
                       "## Resolved quantity (this turn)\nprimary=" + std::to_string(input.state.last_quantity.primary));
     }
-    if(!input.state.session_graph.added_long_names.empty())
+    if(!input.state.session_graph.added_long_names.empty() || input.state.session_graph.last_add)
     {
         std::ostringstream sg;
         sg << "## Session graph memory\n"
            << "- added_count: " << input.state.session_graph.added_long_names.size() << "\n"
            << "- linked_count: " << input.state.session_graph.linked_records.size() << "\n";
+        if(input.state.session_graph.last_add
+           && !input.state.session_graph.last_add->class_name.empty())
+        {
+            sg << "- last_added_class: " << input.state.session_graph.last_add->class_name << "\n";
+            if(!input.state.session_graph.last_add->parent_long_name.empty())
+                sg << "- last_added_parent: " << input.state.session_graph.last_add->parent_long_name
+                   << "\n";
+            if(!input.state.session_graph.last_add->short_name_base.empty())
+                sg << "- last_added_short_name: "
+                   << input.state.session_graph.last_add->short_name_base << "\n";
+            sg << "- continuity_rule: If the user asks for more of the same "
+                  "(ещё/таких же/same/another/more) or uses a continuer noun "
+                  "(нейрон/neuron/компонент/component/блок/block/модуль/module) and "
+                  "last_added_class is set, use that class_name for add_component; "
+                  "do not ask which class.\n";
+        }
+        const auto& added = input.state.session_graph.added_long_names;
+        if(!added.empty())
+        {
+            sg << "- recent_added:";
+            const std::size_t n = std::min<std::size_t>(added.size(), 5);
+            for(std::size_t i = added.size() - n; i < added.size(); ++i)
+                sg << " `" << added[i] << "`";
+            sg << "\n";
+        }
         prependSystem(provider_messages, sg.str());
     }
 
@@ -179,6 +215,14 @@ void prependEphemeralSystemMessages(std::vector<LLMMessage>& provider_messages,
         prependSystem(provider_messages, input.connect_semantics_block);
     if(!input.link_patterns_block.empty())
         prependSystem(provider_messages, input.link_patterns_block);
+
+    if(!input.pack_hints_block.empty())
+    {
+        std::string pack_hints = "## Capability pack hints\n";
+        pack_hints += input.pack_hints_block;
+        truncateInPlace(pack_hints, kPackHintsMaxChars);
+        prependSystem(provider_messages, std::move(pack_hints));
+    }
 
     prependSystem(provider_messages, buildRetrieverSummaryBlock(input));
     prependSystem(provider_messages, buildGuiFocusSystemHint(input.gui, input.session));
@@ -195,6 +239,8 @@ void prependEphemeralSystemMessages(std::vector<LLMMessage>& provider_messages,
 
     if(!input.prefetched_docs_block.empty())
         prependSystem(provider_messages, input.prefetched_docs_block);
+    if(!input.prefetched_class_schema_block.empty())
+        prependSystem(provider_messages, input.prefetched_class_schema_block);
 
     if(input.lifecycle_action != ConfigurationLifecycleAction::None)
     {
@@ -203,15 +249,31 @@ void prependEphemeralSystemMessages(std::vector<LLMMessage>& provider_messages,
                                                        input.session.project_loaded));
     }
 
-    if(input.intent == LLMIntentKind::Query)
+    // Structure/watch/connect ephemeral hints come from Capability Packs only (avoid dual inject).
+
+    if(input.intent == LLMIntentKind::Query || input.intent == LLMIntentKind::Explain)
     {
         std::string query_hint =
-            "Use search_project_docs(scope=docs) and describe_class. Cite source_id and path. "
-            "Do not call write tools.";
+            "## Inspect live project vs docs\n"
+            "- Live graph / current model / components / diagram / схема: use "
+            "get_net_snapshot (channel_index from GUI focus; if diagram_scope_long_name is set, "
+            "pass root_long_name=that scope). Prefer the Project context snapshot block when "
+            "present instead of re-calling the tool.\n"
+            "- Selected component: find_component / get_component_properties.\n"
+            "- Class metadata / ClDesc: describe_class / list_registered_classes.\n"
+            "- How-to / product docs: search_project_docs(scope=docs). Cite source_id, path, and "
+            "doc_uri. If >=2 hits, list markdown links [title](doc_uri).\n"
+            "- Open in GUI: open_documentation / open_help / open_class_docs; list_help_topics for Help pages.\n"
+            "- Discovery: search_tools; for multi-step inspect use spawn_explore_subagent "
+            "(inspect_graph / search_docs).\n"
+            "- Project folder artifacts (csv/txt/json): list_project_files / read_text_artifact "
+            "when available.\n"
+            "- Recent or disk configurations: list_recent_configurations — not for live graph.\n"
+            "- Do not confuse \"model\" (net graph) with a configuration file or channel.\n"
+            "- Do not call write tools.";
         if(!input.prefetched_docs_block.empty())
             query_hint +=
-                " Prefetched excerpts may appear below; you may still call search_project_docs for "
-                "more.";
+                " Prefetched doc excerpts may appear below; call search_project_docs for more.";
         prependSystem(provider_messages, std::move(query_hint));
     }
 

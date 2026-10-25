@@ -42,6 +42,12 @@ nlohmann::json sessionGraphMemoryToJson(const SessionGraphMemory& graph)
                                 {"from_port", graph.last_template->from_port},
                                 {"to_port", graph.last_template->to_port}};
     }
+    if(graph.last_add && !graph.last_add->class_name.empty())
+    {
+        out["last_add"] = {{"class_name", graph.last_add->class_name},
+                           {"parent_long_name", graph.last_add->parent_long_name},
+                           {"short_name_base", graph.last_add->short_name_base}};
+    }
     return out;
 }
 
@@ -83,6 +89,15 @@ SessionGraphMemory sessionGraphMemoryFromJson(const nlohmann::json& j)
         if(!t.from_class.empty() && !t.to_class.empty())
             out.last_template = std::move(t);
     }
+    if(j.contains("last_add") && j["last_add"].is_object())
+    {
+        LastAddComponentMemory add;
+        add.class_name = j["last_add"].value("class_name", "");
+        add.parent_long_name = j["last_add"].value("parent_long_name", "");
+        add.short_name_base = j["last_add"].value("short_name_base", "");
+        if(!add.class_name.empty())
+            out.last_add = std::move(add);
+    }
     return out;
 }
 
@@ -91,6 +106,7 @@ void resetSessionGraphMemory(SessionGraphMemory& graph)
     graph.added_long_names.clear();
     graph.linked_records.clear();
     graph.last_template.reset();
+    graph.last_add.reset();
 }
 
 void syncSessionGraphOnSessionChange(ConversationState& state, const LLMSessionContext& session)
@@ -178,13 +194,30 @@ bool isEndpointLinkedInSession(const SessionGraphMemory& mem, const std::string&
 
 void recordWriteToolOutcome(ConversationState& state, URdkDomainAccess& domain,
                           const std::string& tool_name, const nlohmann::json& result,
-                          int channel_index)
+                          int channel_index, const nlohmann::json* arguments)
 {
     if(tool_name == "add_component")
     {
-        const std::string long_name = result.value("long_name", "");
+        const std::string long_name =
+            result.is_object() ? result.value("long_name", "") : std::string{};
         if(!long_name.empty())
             recordSessionAdd(state, long_name);
+
+        LastAddComponentMemory add;
+        if(arguments && arguments->is_object())
+        {
+            add.class_name = arguments->value("class_name", "");
+            add.parent_long_name = arguments->value("parent_long_name", "");
+            add.short_name_base = arguments->value("short_name", "");
+        }
+        if(add.class_name.empty() && result.is_object())
+            add.class_name = result.value("class_name", "");
+        if(add.parent_long_name.empty() && result.is_object())
+            add.parent_long_name = result.value("parent_long_name", "");
+        if(add.short_name_base.empty() && result.is_object())
+            add.short_name_base = result.value("short_name", "");
+        if(!add.class_name.empty())
+            state.session_graph.last_add = std::move(add);
         return;
     }
     if(tool_name == "connect_components")

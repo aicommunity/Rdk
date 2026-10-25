@@ -31,6 +31,7 @@ public:
     void setTranslateQueriesToEn(bool enabled);
     void setTaskPathMode(LLMTaskPathMode mode);
     void setContextAcquisitionMode(LLMContextAcquisitionMode mode);
+    void setEnableOllamaThinking(bool enabled);
 
     void setPreferredResponseLanguage(const std::string& code);
     const std::string& preferredResponseLanguage() const;

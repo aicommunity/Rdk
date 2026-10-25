@@ -41,6 +41,36 @@ TEST(LLMSessionGraphMemory, RecordWriteToolOutcomeAdd)
     EXPECT_EQ(st.session_graph.added_long_names[0], "/ch0/X");
 }
 
+TEST(LLMSessionGraphMemory, RecordWriteToolOutcomeStoresLastAddFromArgs)
+{
+    ConversationState st;
+    URdkDomainAccess domain(nullptr);
+    const nlohmann::json args = {{"class_name", "NSPNeuronGen"},
+                                 {"parent_long_name", "Model"},
+                                 {"short_name", "PNeuronGen"}};
+    const nlohmann::json result = {{"long_name", "PNeuronGen"}, {"class_name", "NSPNeuronGen"}};
+    recordWriteToolOutcome(st, domain, "add_component", result, 0, &args);
+    ASSERT_TRUE(st.session_graph.last_add.has_value());
+    EXPECT_EQ(st.session_graph.last_add->class_name, "NSPNeuronGen");
+    EXPECT_EQ(st.session_graph.last_add->parent_long_name, "Model");
+    EXPECT_EQ(st.session_graph.last_add->short_name_base, "PNeuronGen");
+
+    const nlohmann::json j = sessionGraphMemoryToJson(st.session_graph);
+    const SessionGraphMemory roundtrip = sessionGraphMemoryFromJson(j);
+    ASSERT_TRUE(roundtrip.last_add.has_value());
+    EXPECT_EQ(roundtrip.last_add->class_name, "NSPNeuronGen");
+}
+
+TEST(LLMSessionGraphMemory, ResetClearsLastAdd)
+{
+    ConversationState st;
+    st.session_graph.last_add = LastAddComponentMemory{"NSPNeuronGen", "Model", "PNeuronGen"};
+    st.session_graph.added_long_names = {"PNeuronGen"};
+    resetSessionGraphMemory(st.session_graph);
+    EXPECT_FALSE(st.session_graph.last_add.has_value());
+    EXPECT_TRUE(st.session_graph.added_long_names.empty());
+}
+
 TEST(LLMSessionGraphMemory, RecordConnectAppendsKnownFact)
 {
     ConversationState st;

@@ -20,6 +20,17 @@ TEST(LLMConfigurationLifecycle, DetectCreateConfigPhrases)
               ConfigurationLifecycleAction::Create);
 }
 
+TEST(LLMConfigurationLifecycle, CreateDescriptionIsNotCreateOnDisk)
+{
+    EXPECT_EQ(detectConfigurationLifecycleAction(
+                  "опиши открытый конфиг и создай его описание в project description"),
+              ConfigurationLifecycleAction::None);
+    EXPECT_EQ(detectConfigurationLifecycleAction("создай описание конфигурации"),
+              ConfigurationLifecycleAction::None);
+    EXPECT_EQ(detectConfigurationLifecycleAction("create a project description for the config"),
+              ConfigurationLifecycleAction::None);
+}
+
 TEST(LLMConfigurationLifecycle, ForcedToolCreateWhenNoProject)
 {
     EXPECT_EQ(forcedToolForLifecycle(ConfigurationLifecycleAction::Create, false),

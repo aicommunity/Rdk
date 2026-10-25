@@ -41,6 +41,10 @@ std::optional<std::string> findExplicitRegisteredClassInUserText(
 RegisteredClassResolution resolveRegisteredClassName(const std::string& query,
                                                      const std::vector<std::string>& registered);
 
+/// Fuzzy/CI resolve of set_property property_name against a component property catalog.
+RegisteredClassResolution resolvePropertyNameFromCatalog(const std::string& query,
+                                                         const std::vector<std::string>& catalog);
+
 ComponentEntityResolution resolveComponentEntity(
     const std::string& query, const nlohmann::json& snapshot_components,
     const std::optional<std::string>& class_filter = std::nullopt);

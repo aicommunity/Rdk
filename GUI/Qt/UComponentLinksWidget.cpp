@@ -482,13 +482,17 @@ void UComponentLinksWidget::addParameters(QString componentName, QTreeWidgetItem
         RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(Core_GetSelectedChannelIndex());
         RDK::UEPtr<RDK::UContainer> cont = model->GetComponentL(componentName.toLocal8Bit().constData(), true);
         if(!cont) return;
-        RDK::UComponent::VariableMapT varMap = cont->GetPropertiesList();
+        const RDK::UComponent::VariableMapT& varMap = cont->GetPropertiesList();
+        const std::vector<RDK::NameT>& propOrder = cont->GetPropertiesOrder();
 
         bool is_new_outputs(false);
         bool is_new_inputs(false);
 
-        for(RDK::UComponent::VariableMapIteratorT i = varMap.begin(); i != varMap.end(); ++i)
+        for(size_t oi = 0; oi < propOrder.size(); ++oi)
         {
+            RDK::UComponent::VariableMapCIteratorT i = varMap.find(propOrder[oi]);
+            if(i == varMap.end())
+             continue;
             if (i->second.CheckMask(ptPubInput))
             {
              std::string::size_type k=i->first.find("DataInput");
@@ -507,38 +511,16 @@ void UComponentLinksWidget::addParameters(QString componentName, QTreeWidgetItem
              break;
         }
 
-        for(RDK::UComponent::VariableMapIteratorT i = varMap.begin(); i != varMap.end();)
+        for(size_t oi = 0; oi < propOrder.size(); ++oi)
         {
-            if (i->second.CheckMask(ptPubInput) && is_new_inputs)
-            {
-             std::string::size_type k=i->first.find("DataInput");
-             if(k == 0)
-             {
-              i = varMap.erase(i);
-             }
-             else
-              ++i;
-            }
-            else
-            if (i->second.CheckMask(ptPubOutput) && is_new_outputs)
-            {
-             std::string::size_type k=i->first.find("DataOutput");
-             if(k == 0)
-             {
-              i = varMap.erase(i);
-             }
-             else
-              ++i;
-            }
-            else
-            {
-             ++i;
-            }
-        }
+            RDK::UComponent::VariableMapCIteratorT i = varMap.find(propOrder[oi]);
+            if(i == varMap.end())
+             continue;
+            if (i->second.CheckMask(ptPubInput) && is_new_inputs && i->first.find("DataInput") == 0)
+             continue;
+            if (i->second.CheckMask(ptPubOutput) && is_new_outputs && i->first.find("DataOutput") == 0)
+             continue;
 
-
-        for(RDK::UComponent::VariableMapIteratorT i = varMap.begin(); i != varMap.end(); ++i)
-        {
             if (i->second.CheckMask(firstTypeMask))
             {
                 QTreeWidgetItem* firstChildPropertyItem = new QTreeWidgetItem(firstTreeWidgetItemFather);

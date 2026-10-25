@@ -3214,7 +3214,8 @@ const char* UEngine::Model_AddComponent(const char* stringid, const char *classn
 
 // Удаляет из выбранного контейнера модели с идентификатором 'stringid' экземпляр
 // контейнера с заданным 'name'
-// если stringid - пустая строка, то удаляет из самой модели
+// если stringid - пустая строка, то удаляет относительно CurrentComponent
+// (в типичной GUI-сессии Current = Model; см. FindComponent / DD-AG-001)
 int UEngine::Model_DelComponent(const char* stringid, const char *name)
 {
  int res=RDK_UNHANDLED_EXCEPTION;
@@ -3226,6 +3227,20 @@ int UEngine::Model_DelComponent(const char* stringid, const char *name)
 
    if(!destcont)
 	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+
+   // Pre-check via public GetComponentL: DelComponent(UEPtr) is protected on purpose
+   // (only UContainer internals may free by pointer). Public entry is DelComponent(NameT).
+   UEPtr<UContainer> comp=destcont->GetComponentL(name ? name : "", true);
+   if(!comp)
+   {
+	std::string msg=std::string("Model_DelComponent: component not found name=")
+	 +(name ? name : "")
+	 +" parent="
+	 +(stringid && *stringid ? stringid : "<current>");
+	if(GetLogger())
+	 GetLogger()->LogMessageEx(RDK_EX_ERROR,"UEngine",__FUNCTION__,msg);
+	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
+   }
 
    destcont->DelComponent(name);
    AccessCache.clear();
@@ -3888,20 +3903,19 @@ const char* UEngine::Model_GetComponentPropertiesList(const char* stringid, unsi
 	return TempString.c_str();
 
    RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
+   const std::vector<RDK::NameT>& order = cont->GetPropertiesOrder();
 
-   RDK::UContainer::VariableMapCIteratorT I,J;
-
-   I=props.begin();
-   J=props.end();
-   while(I != J)
+   for(size_t oi = 0; oi < order.size(); ++oi)
    {
+	RDK::UContainer::VariableMapCIteratorT I = props.find(order[oi]);
+	if(I == props.end())
+	 continue;
 	if(I->second.CheckMask(type_mask))
 	{
 	 if(TempString.size()>0)
 	  TempString+=",";
 	 TempString+=I->first;
 	}
-	++I;
    }
 
    return TempString.c_str();
@@ -3937,13 +3951,13 @@ const char* UEngine::Model_GetComponentPropertiesLookupList(const char* stringid
 	return TempString.c_str();
 
    RDK::UContainer::VariableMapT props=cont->GetPropertiesList();
+   const std::vector<RDK::NameT>& order = cont->GetPropertiesOrder();
 
-   RDK::UContainer::VariableMapCIteratorT I,J;
-
-   I=props.begin();
-   J=props.end();
-   while(I != J)
+   for(size_t oi = 0; oi < order.size(); ++oi)
    {
+	RDK::UContainer::VariableMapCIteratorT I = props.find(order[oi]);
+	if(I == props.end())
+	 continue;
 	if(I->second.CheckMask(type_mask))
 	{
 	 if(TempString.size()>0)
@@ -3952,7 +3966,6 @@ const char* UEngine::Model_GetComponentPropertiesLookupList(const char* stringid
 	 TempString+=":";
 	 TempString+=sntoa(0);
 	}
-	++I;
    }
 
    return TempString.c_str();
@@ -5535,7 +5548,7 @@ const char *  UEngine::Model_SaveComponent(const char *stringid, unsigned int pa
  {
   try
   {
-   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponentForModelFileIo(stringid));
 
    if(!cont)
 	return 0;
@@ -5625,7 +5638,7 @@ int UEngine::Model_LoadComponent(const char *stringid, const char* buffer)
 	if((strlen(stringid) == 0) && (xml_model_name != Environment->GetModel()->GetName()))
 	 RDK_RAW_THROW(EErrorEngineModelNameDontMatch(xml_model_name, Environment->GetModel()->GetName()));
 
-	UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+	UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponentForModelFileIo(stringid));
 
 	if(!cont)
 	 return RDK_E_MODEL_COMPONENT_NOT_FOUND;
@@ -5711,7 +5724,7 @@ const char * UEngine::Model_SaveComponentProperties(const char *stringid, unsign
  {
   try
   {
-   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponentForModelFileIo(stringid));
 
    if(!cont)
    {
@@ -5782,7 +5795,7 @@ int UEngine::Model_LoadComponentProperties(const char *stringid, const char* buf
  {
   try
   {
-   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponent(stringid));
+   UEPtr<RDK::UNet> cont=dynamic_pointer_cast<RDK::UNet>(FindComponentForModelFileIo(stringid));
 
    if(!cont)
 	return RDK_E_MODEL_COMPONENT_NOT_FOUND;
@@ -7488,8 +7501,10 @@ int UEngine::LoadLibraries(void)
 // --------------------------
 // Скрытые методы управления счетом
 // --------------------------
-// Осуществляет поиск компонента по длинному строковому id
-// Если строковое id не задано, то возвращает указатель на модель
+// Осуществляет поиск компонента по длинному строковому id относительно CurrentComponent.
+// Если строковое id не задано, возвращает CurrentComponent (обычно Model в GUI;
+// Env_SelectCurrentComponent намеренно ребейсит базу всех Model_* — DD-AG-001 / TD-118).
+// Комментарии вида «пусто = модель» верны только пока Current == Model.
 UEPtr<UContainer> UEngine::FindComponent(const char *stringid) const
 {
  UEPtr<RDK::UNet> model=dynamic_pointer_cast<RDK::UNet>(Environment->GetCurrentComponent());
@@ -7523,6 +7538,15 @@ UEPtr<UContainer> UEngine::FindComponent(const char *stringid) const
 // if(stringid)
 //  AccessCache[stringid]=cont;
  return cont;
+}
+
+UEPtr<UContainer> UEngine::FindComponentForModelFileIo(const char *stringid) const
+{
+ if(!Environment)
+  return {};
+ if(!stringid || *stringid == '\0')
+  return Environment->GetModel();
+ return FindComponent(stringid);
 }
 
 // Восстановление настроек по умолчанию и сброс процесса счета

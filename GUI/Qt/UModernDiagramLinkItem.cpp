@@ -1,10 +1,16 @@
 #include "UModernDiagramLinkItem.h"
 #include "UModernDiagramWidget.h" // Для доступа к Port, PortCategory и UModernDiagramWidget
 #include "UModernDiagramNodeItem.h"
+#include "UModernDiagramExternalSourceItem.h"
+#include "UModernDiagramExternalSinkItem.h"
+#include "UModernDiagramLinkRouter.h"
 #include "UModernDiagramTooltipGenerator.h"
 #include "UStyleManager.h"
 
+#include <QPainter>
 #include <QPainterPath>
+#include <QFont>
+#include <QFontMetricsF>
 #include <QGraphicsSceneHoverEvent>
 
 UModernDiagramLinkItem::UModernDiagramLinkItem(UModernDiagramNodeItem* src, UModernDiagramNodeItem* dst, bool useOutput, bool useInput)
@@ -18,6 +24,7 @@ UModernDiagramLinkItem::UModernDiagramLinkItem(UModernDiagramNodeItem* src, UMod
     , m_srcCategory(PortCategory::Own)
     , m_dstCategory(PortCategory::Own)
     , m_hasCategories(false)
+    , m_parallelCount(1)
 {
     UStyleManager* style = UStyleManager::instance();
     setPen(QPen(style->getLinkColor(), style->getLinkWidth(), Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -41,6 +48,7 @@ UModernDiagramLinkItem::UModernDiagramLinkItem(UModernDiagramNodeItem* src, UMod
     , m_srcCategory(srcCategory)
     , m_dstCategory(dstCategory)
     , m_hasCategories(true)
+    , m_parallelCount(1)
 {
     UStyleManager* style = UStyleManager::instance();
     setPen(QPen(style->getLinkColor(), style->getLinkWidth(), Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -66,6 +74,7 @@ UModernDiagramLinkItem::UModernDiagramLinkItem(UModernDiagramNodeItem* src, cons
     , m_srcCategory(PortCategory::Own)
     , m_dstCategory(PortCategory::Own)
     , m_hasCategories(false)
+    , m_parallelCount(1)
 {
     UStyleManager* style = UStyleManager::instance();
     setPen(QPen(style->getLinkTempColor(), style->getLinkWidth(), Qt::DashLine, Qt::RoundCap, Qt::RoundJoin));
@@ -76,8 +85,110 @@ UModernDiagramLinkItem::UModernDiagramLinkItem(UModernDiagramNodeItem* src, cons
     updateGeometry(tempEnd);
 }
 
+UModernDiagramLinkItem::UModernDiagramLinkItem(UModernDiagramExternalSourceItem* externalSrc,
+                                               UModernDiagramNodeItem* dst,
+                                               PortCategory dstCategory,
+                                               const QString& srcLabelForTooltip)
+    : QGraphicsPathItem()
+    , m_owner(dst ? dst->m_owner : nullptr)
+    , m_src(nullptr)
+    , m_dst(dst)
+    , m_useOutput(true)
+    , m_useInput(true)
+    , m_isTemp(false)
+    , m_srcCategory(PortCategory::Own)
+    , m_dstCategory(dstCategory)
+    , m_hasCategories(true)
+    , m_parallelCount(1)
+    , m_externalSrc(externalSrc)
+    , m_externalSrcLabel(srcLabelForTooltip)
+    , m_isExternalIncoming(true)
+{
+    UStyleManager* style = UStyleManager::instance();
+    setPen(QPen(style->getLinkColor(), style->getLinkWidth(),
+                Qt::DashLine, Qt::RoundCap, Qt::RoundJoin));
+    setZValue(-1);
+    setAcceptHoverEvents(true);
+    setCacheMode(QGraphicsItem::NoCache);
+}
+
+UModernDiagramLinkItem::UModernDiagramLinkItem(UModernDiagramNodeItem* src,
+                                               UModernDiagramExternalSinkItem* externalSink,
+                                               PortCategory srcCategory,
+                                               const QString& sinkLabelForTooltip)
+    : QGraphicsPathItem()
+    , m_owner(src ? src->m_owner : nullptr)
+    , m_src(src)
+    , m_dst(nullptr)
+    , m_useOutput(true)
+    , m_useInput(true)
+    , m_isTemp(false)
+    , m_srcCategory(srcCategory)
+    , m_dstCategory(PortCategory::Own)
+    , m_hasCategories(true)
+    , m_parallelCount(1)
+    , m_externalSink(externalSink)
+    , m_externalSinkLabel(sinkLabelForTooltip)
+    , m_isExternalOutgoing(true)
+{
+    UStyleManager* style = UStyleManager::instance();
+    setPen(QPen(style->getLinkColor(), style->getLinkWidth(),
+                Qt::DashLine, Qt::RoundCap, Qt::RoundJoin));
+    setZValue(-1);
+    setAcceptHoverEvents(true);
+    setCacheMode(QGraphicsItem::NoCache);
+}
+
 void UModernDiagramLinkItem::updateGeometry(const QPointF& cursorOverride)
 {
+    auto applyRoute = [this](const QPointF& start, const QPointF& end, bool externalIncoming) {
+        UModernDiagramLinkRouter::RouteRequest req;
+        req.start = start;
+        req.end = end;
+        req.externalIncoming = externalIncoming;
+        req.parallelIndex = m_routeParallelIndex;
+        if(m_owner)
+        {
+            req.obstacles = m_owner->routingObstacles(m_dst, m_src);
+            req.diagramBounds = m_owner->routingNodesBounds();
+        }
+        // Outgoing stubs stay short cubic; incoming uses Auto→ExternalCorridor
+        const UModernDiagramLinkRouter::RouteMode mode = m_isExternalOutgoing
+            ? UModernDiagramLinkRouter::RouteMode::CubicFallback
+            : UModernDiagramLinkRouter::RouteMode::Auto;
+        const UModernDiagramLinkRouter::RouteResult result =
+            UModernDiagramLinkRouter::route(req, mode);
+        prepareGeometryChange();
+        setPath(result.path);
+
+        // Reverse internal links use green stroke; external/temp keep ctor pen style
+        if(!externalIncoming && !m_isExternalOutgoing && !m_isTemp)
+        {
+            UStyleManager* style = UStyleManager::instance();
+            QPen p = pen();
+            const bool reverse = UModernDiagramLinkRouter::isReverseLink(start, end);
+            p.setColor(reverse ? style->getLinkReverseColor() : style->getLinkColor());
+            p.setStyle(Qt::SolidLine);
+            setPen(p);
+        }
+    };
+
+    if(m_isExternalIncoming && m_externalSrc && m_dst)
+    {
+        const QPointF start = m_externalSrc->scenePortPos();
+        const QPointF end = m_dst->scenePortPosByCategory(false, m_dstCategory);
+        applyRoute(start, end, true);
+        return;
+    }
+
+    if(m_isExternalOutgoing && m_externalSink && m_src)
+    {
+        const QPointF start = m_src->scenePortPosByCategory(true, m_srcCategory);
+        const QPointF end = m_externalSink->scenePortPos();
+        applyRoute(start, end, false);
+        return;
+    }
+
     if(!m_src)
         return;
 
@@ -121,13 +232,60 @@ void UModernDiagramLinkItem::updateGeometry(const QPointF& cursorOverride)
     else
     {
         end = cursorOverride.isNull() ? m_tempEnd : cursorOverride;
+        // Temporary rubber-band: keep lightweight cubic for responsiveness
+        QPainterPath path(start);
+        const qreal dx = end.x() - start.x();
+        path.cubicTo(start + QPointF(dx * 0.4, 0),
+                     end - QPointF(dx * 0.4, 0),
+                     end);
+        prepareGeometryChange();
+        setPath(path);
+        return;
     }
 
-    QPainterPath path(start);
-    QPointF c1 = start + QPointF((end.x() - start.x()) * 0.4, 0);
-    QPointF c2 = end   - QPointF((end.x() - start.x()) * 0.4, 0);
-    path.cubicTo(c1, c2, end);
-    setPath(path);
+    applyRoute(start, end, false);
+}
+
+QRectF UModernDiagramLinkItem::boundingRect() const
+{
+    QRectF r = QGraphicsPathItem::boundingRect();
+    if(m_parallelCount > 1)
+        r = r.adjusted(-14, -14, 14, 14);
+    return r;
+}
+
+void UModernDiagramLinkItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget)
+{
+    QGraphicsPathItem::paint(painter, option, widget);
+    if(m_isTemp || m_parallelCount <= 1)
+        return;
+
+    const QPainterPath p = path();
+    if(p.isEmpty())
+        return;
+
+    // Число только у приёмника (конец линии), фон как у ModernDiagram — перекрывает линию
+    const QPointF nearEnd = p.pointAtPercent(0.88);
+    const QString text = QString::number(m_parallelCount);
+
+    QFont font = painter->font();
+    font.setBold(true);
+    font.setPointSizeF(qMax(8.0, font.pointSizeF()));
+
+    const QFontMetricsF fm(font);
+    QRectF textRect = fm.boundingRect(text);
+    textRect.moveCenter(nearEnd);
+    textRect.adjust(-3, -1, 3, 1);
+
+    painter->save();
+    painter->setFont(font);
+    painter->setPen(Qt::NoPen);
+    painter->setBrush(UStyleManager::instance()->getBackgroundAltColor());
+    painter->drawRect(textRect);
+    painter->setPen(pen().color());
+    painter->setBrush(Qt::NoBrush);
+    painter->drawText(textRect, Qt::AlignCenter, text);
+    painter->restore();
 }
 
 void UModernDiagramLinkItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
@@ -145,4 +303,3 @@ void UModernDiagramLinkItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
     QGraphicsPathItem::hoverLeaveEvent(event);
     setToolTip(QString());
 }
-

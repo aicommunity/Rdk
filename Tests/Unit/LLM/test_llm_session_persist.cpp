@@ -208,7 +208,7 @@ TEST(LLMSessionPersist, RoundTripGuiContextV2)
     EXPECT_EQ(loaded.last_gui_context->focused_component_long_name, "PersistNeuron");
     EXPECT_EQ(loaded.agent_notes, "## notes\nok");
     EXPECT_TRUE(loaded.session_context_seeded);
-    EXPECT_EQ(loaded.store_schema_version, 2);
+    EXPECT_GE(loaded.store_schema_version, 4);
 }
 
 TEST(LLMSessionPersist, RoundTripLastSessionContextV2)
@@ -319,6 +319,38 @@ TEST(LLMSessionPersist, BootstrapSeededFlagRoundTrip)
     EXPECT_TRUE(loaded.session_context_seeded);
     ASSERT_FALSE(loaded.messages.empty());
     EXPECT_NE(loaded.messages.front().content.find("Session bootstrap"), std::string::npos);
+
+    std::filesystem::remove_all(dir);
+}
+
+TEST(LLMSessionPersist, WorkingGoalsRoundTripV4)
+{
+    const std::string dir = "/tmp/rdk_llm_sessions_working_goals";
+    std::filesystem::remove_all(dir);
+
+    ULLMConversationStore store;
+    store.setStorageDirectory(dir);
+    ConversationState& state = store.getOrCreate("session-goals");
+    state.session_id = "session-goals";
+    WorkingGoal g;
+    g.id = "turn_goal";
+    g.title = "Add a neuron";
+    g.status = WorkingGoalStatus::InProgress;
+    g.success_criteria = "component exists";
+    g.evidence = {"add_component:ok"};
+    state.working_goals.push_back(g);
+    ASSERT_TRUE(store.persistToDisk("session-goals"));
+    EXPECT_GE(state.store_schema_version, 4);
+
+    ULLMConversationStore reloaded;
+    reloaded.setStorageDirectory(dir);
+    ASSERT_TRUE(reloaded.loadFromDisk("session-goals"));
+    const ConversationState& loaded = *reloaded.findSession("session-goals");
+    ASSERT_EQ(loaded.working_goals.size(), 1u);
+    EXPECT_EQ(loaded.working_goals[0].id, "turn_goal");
+    EXPECT_EQ(loaded.working_goals[0].title, "Add a neuron");
+    EXPECT_EQ(loaded.working_goals[0].status, WorkingGoalStatus::InProgress);
+    ASSERT_EQ(loaded.working_goals[0].evidence.size(), 1u);
 
     std::filesystem::remove_all(dir);
 }

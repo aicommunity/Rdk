@@ -252,3 +252,317 @@ void ULlmQtPresentationSink::runHostListUiPanelsOnGuiThread()
         m_pending_host_list_result = r;
     }
 }
+
+nlohmann::json ULlmQtPresentationSink::watchAddSeries(const RDK::LLM::LLMWatchSeriesArgs& args)
+{
+    RDK::LLM::ApplicationCommandResult cmd = invokeHostSynchronized([&]() {
+        RDK::LLM::ApplicationCommandResult r;
+        if(!m_host)
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::NotInitialized;
+            r.status.message = "Watch host unavailable";
+            return r;
+        }
+        r.payload = m_host->llmWatchAddSeries(args.surface, args.mdi_id, args.tab_index,
+                                              args.chart_index, args.channel_index,
+                                              QString::fromStdString(args.long_name),
+                                              QString::fromStdString(args.property_name), args.jx,
+                                              args.jy);
+        if(r.payload.value("ok", false) && args.surface == "window")
+        {
+            r.show_panel = RDK::LLM::LLMUiPanel::Watch;
+            r.show_panel_visible = true;
+        }
+        if(!r.payload.value("ok", false))
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::InvalidPropertyValue;
+            r.status.message = r.payload.value("error", "watchAddSeries failed");
+        }
+        return r;
+    });
+    if(!cmd.status.ok())
+        return {{"ok", false}, {"error", cmd.status.message}};
+    return cmd.payload;
+}
+
+nlohmann::json ULlmQtPresentationSink::watchListSeries(const RDK::LLM::LLMWatchSeriesArgs& args)
+{
+    RDK::LLM::ApplicationCommandResult cmd = invokeHostSynchronized([&]() {
+        RDK::LLM::ApplicationCommandResult r;
+        if(!m_host)
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::NotInitialized;
+            r.status.message = "Watch host unavailable";
+            return r;
+        }
+        r.payload =
+            m_host->llmWatchListSeries(args.surface, args.mdi_id, args.tab_index, args.chart_index);
+        if(!r.payload.value("ok", false))
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::InvalidPropertyValue;
+            r.status.message = r.payload.value("error", "watchListSeries failed");
+        }
+        return r;
+    });
+    if(!cmd.status.ok())
+        return {{"ok", false}, {"error", cmd.status.message}, {"items", nlohmann::json::array()}};
+    return cmd.payload;
+}
+
+nlohmann::json ULlmQtPresentationSink::watchRemoveSeries(const RDK::LLM::LLMWatchSeriesArgs& args)
+{
+    RDK::LLM::ApplicationCommandResult cmd = invokeHostSynchronized([&]() {
+        RDK::LLM::ApplicationCommandResult r;
+        if(!m_host)
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::NotInitialized;
+            r.status.message = "Watch host unavailable";
+            return r;
+        }
+        r.payload = m_host->llmWatchRemoveSeries(
+            args.surface, args.mdi_id, args.tab_index, args.chart_index, args.serie_index,
+            QString::fromStdString(args.long_name), QString::fromStdString(args.property_name));
+        if(!r.payload.value("ok", false))
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::InvalidPropertyValue;
+            r.status.message = r.payload.value("error", "watchRemoveSeries failed");
+        }
+        return r;
+    });
+    if(!cmd.status.ok())
+        return {{"ok", false}, {"error", cmd.status.message}};
+    return cmd.payload;
+}
+
+nlohmann::json ULlmQtPresentationSink::watchClearSeries(const RDK::LLM::LLMWatchSeriesArgs& args)
+{
+    RDK::LLM::ApplicationCommandResult cmd = invokeHostSynchronized([&]() {
+        RDK::LLM::ApplicationCommandResult r;
+        if(!m_host)
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::NotInitialized;
+            r.status.message = "Watch host unavailable";
+            return r;
+        }
+        r.payload =
+            m_host->llmWatchClearSeries(args.surface, args.mdi_id, args.tab_index, args.chart_index);
+        if(!r.payload.value("ok", false))
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::InvalidPropertyValue;
+            r.status.message = r.payload.value("error", "watchClearSeries failed");
+        }
+        return r;
+    });
+    if(!cmd.status.ok())
+        return {{"ok", false}, {"error", cmd.status.message}};
+    return cmd.payload;
+}
+
+nlohmann::json ULlmQtPresentationSink::watchSetPanelVizKind(const RDK::LLM::LLMWatchSeriesArgs& args)
+{
+    RDK::LLM::ApplicationCommandResult cmd = invokeHostSynchronized([&]() {
+        RDK::LLM::ApplicationCommandResult r;
+        if(!m_host)
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::NotInitialized;
+            r.status.message = "Watch host unavailable";
+            return r;
+        }
+        r.payload = m_host->llmWatchSetPanelVizKind(
+            args.surface, args.mdi_id, args.tab_index, args.chart_index,
+            QString::fromStdString(args.viz_kind));
+        if(!r.payload.value("ok", false))
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::InvalidPropertyValue;
+            r.status.message = r.payload.value("error", "watchSetPanelVizKind failed");
+        }
+        return r;
+    });
+    if(!cmd.status.ok())
+        return {{"ok", false}, {"error", cmd.status.message}};
+    return cmd.payload;
+}
+
+nlohmann::json ULlmQtPresentationSink::watchSetSeriesBinding(const RDK::LLM::LLMWatchSeriesArgs& args)
+{
+    RDK::LLM::ApplicationCommandResult cmd = invokeHostSynchronized([&]() {
+        RDK::LLM::ApplicationCommandResult r;
+        if(!m_host)
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::NotInitialized;
+            r.status.message = "Watch host unavailable";
+            return r;
+        }
+        r.payload = m_host->llmWatchSetSeriesBinding(
+            args.surface, args.mdi_id, args.tab_index, args.chart_index, args.serie_index,
+            args.channel_index, QString::fromStdString(args.long_name),
+            QString::fromStdString(args.property_name), args.jx, args.jy,
+            QString::fromStdString(args.x_long_name), QString::fromStdString(args.x_property_name),
+            args.x_jx, args.x_jy, QString::fromStdString(args.viz_kind));
+        if(!r.payload.value("ok", false))
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::InvalidPropertyValue;
+            r.status.message = r.payload.value("error", "watchSetSeriesBinding failed");
+        }
+        return r;
+    });
+    if(!cmd.status.ok())
+        return {{"ok", false}, {"error", cmd.status.message}};
+    return cmd.payload;
+}
+
+nlohmann::json ULlmQtPresentationSink::watchMdiList()
+{
+    RDK::LLM::ApplicationCommandResult cmd = invokeHostSynchronized([&]() {
+        RDK::LLM::ApplicationCommandResult r;
+        if(!m_host)
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::NotInitialized;
+            r.status.message = "Watch host unavailable";
+            return r;
+        }
+        r.payload = m_host->llmWatchMdiList();
+        return r;
+    });
+    if(!cmd.status.ok())
+        return {{"ok", false}, {"error", cmd.status.message}, {"items", nlohmann::json::array()}};
+    return cmd.payload;
+}
+
+nlohmann::json ULlmQtPresentationSink::watchMdiCreate(int grid_rows, int grid_cols,
+                                                      const std::string& title)
+{
+    RDK::LLM::ApplicationCommandResult cmd = invokeHostSynchronized([&]() {
+        RDK::LLM::ApplicationCommandResult r;
+        if(!m_host)
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::NotInitialized;
+            r.status.message = "Watch host unavailable";
+            return r;
+        }
+        r.payload = m_host->llmWatchMdiCreate(grid_rows, grid_cols, QString::fromStdString(title));
+        if(!r.payload.value("ok", false))
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::IOError;
+            r.status.message = r.payload.value("error", "watchMdiCreate failed");
+        }
+        return r;
+    });
+    if(!cmd.status.ok())
+        return {{"ok", false}, {"error", cmd.status.message}};
+    return cmd.payload;
+}
+
+nlohmann::json ULlmQtPresentationSink::watchMdiFocus(int mdi_id)
+{
+    RDK::LLM::ApplicationCommandResult cmd = invokeHostSynchronized([&]() {
+        RDK::LLM::ApplicationCommandResult r;
+        if(!m_host || !m_host->llmWatchMdiFocus(mdi_id))
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::ComponentNotFound;
+            r.status.message = "Watch MDI not found";
+            r.payload = {{"ok", false}, {"error", r.status.message}};
+            return r;
+        }
+        r.payload = {{"ok", true}, {"mdi_id", mdi_id}};
+        return r;
+    });
+    if(!cmd.status.ok())
+        return {{"ok", false}, {"error", cmd.status.message}};
+    return cmd.payload;
+}
+
+nlohmann::json ULlmQtPresentationSink::watchMdiClose(int mdi_id)
+{
+    RDK::LLM::ApplicationCommandResult cmd = invokeHostSynchronized([&]() {
+        RDK::LLM::ApplicationCommandResult r;
+        if(!m_host || !m_host->llmWatchMdiClose(mdi_id))
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::ComponentNotFound;
+            r.status.message = "Watch MDI not found";
+            r.payload = {{"ok", false}, {"error", r.status.message}};
+            return r;
+        }
+        r.payload = {{"ok", true}, {"mdi_id", mdi_id}};
+        return r;
+    });
+    if(!cmd.status.ok())
+        return {{"ok", false}, {"error", cmd.status.message}};
+    return cmd.payload;
+}
+
+nlohmann::json ULlmQtPresentationSink::openHelpTopic(const std::string& topic)
+{
+    RDK::LLM::ApplicationCommandResult cmd = invokeHostSynchronized([&]() {
+        RDK::LLM::ApplicationCommandResult r;
+        if(!m_host)
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::NotInitialized;
+            r.status.message = "Presentation host unavailable";
+            r.payload = {{"ok", false}, {"error", r.status.message}};
+            return r;
+        }
+        m_host->openHelpWindow(QString::fromStdString(topic));
+        r.payload = {{"ok", true},
+                     {"topic", topic.empty() ? std::string("index.html") : topic}};
+        return r;
+    });
+    if(!cmd.status.ok())
+        return {{"ok", false}, {"error", cmd.status.message}};
+    return cmd.payload;
+}
+
+nlohmann::json ULlmQtPresentationSink::openClassDescription(const std::string& class_name)
+{
+    RDK::LLM::ApplicationCommandResult cmd = invokeHostSynchronized([&]() {
+        RDK::LLM::ApplicationCommandResult r;
+        if(!m_host)
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::NotInitialized;
+            r.status.message = "Presentation host unavailable";
+            r.payload = {{"ok", false}, {"error", r.status.message}};
+            return r;
+        }
+        if(class_name.empty())
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::InvalidPropertyValue;
+            r.status.message = "class_name required";
+            r.payload = {{"ok", false}, {"error", r.status.message}};
+            return r;
+        }
+        m_host->openClassDescriptionWindow(class_name);
+        r.payload = {{"ok", true}, {"class_name", class_name}};
+        return r;
+    });
+    if(!cmd.status.ok())
+        return {{"ok", false}, {"error", cmd.status.message}};
+    return cmd.payload;
+}
+
+nlohmann::json ULlmQtPresentationSink::openMarkdownDocument(const std::string& abs_path,
+                                                            const std::string& title)
+{
+    RDK::LLM::ApplicationCommandResult cmd = invokeHostSynchronized([&]() {
+        RDK::LLM::ApplicationCommandResult r;
+        if(!m_host)
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::NotInitialized;
+            r.status.message = "Presentation host unavailable";
+            r.payload = {{"ok", false}, {"error", r.status.message}};
+            return r;
+        }
+        if(!m_host->openMarkdownDocWindow(QString::fromStdString(abs_path),
+                                          QString::fromStdString(title)))
+        {
+            r.status.code = RDK::LLM::DomainStatusCode::IOError;
+            r.status.message = "Failed to open markdown document";
+            r.payload = {{"ok", false}, {"error", r.status.message}, {"path", abs_path}};
+            return r;
+        }
+        r.payload = {{"ok", true}, {"path", abs_path}, {"title", title}};
+        return r;
+    });
+    if(!cmd.status.ok())
+        return {{"ok", false}, {"error", cmd.status.message}, {"path", abs_path}};
+    return cmd.payload;
+}

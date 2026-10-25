@@ -82,6 +82,8 @@ struct AgentE2eSpec {
     std::vector<std::string> forbidden_tools;
     bool require_orchestrator_ok = true;
     bool allow_app_unavailable_result = true;
+    /// Use Ollama Native + thinking model (qwen3:14b / NMSDK_LLM_OLLAMA_THINKING_MODEL).
+    bool use_thinking_profile = false;
 };
 
 struct AgentScenarioCase {

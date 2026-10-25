@@ -372,14 +372,14 @@ void UVisualControllerMainWidget::SaveParameters(RDK::USerStorageXML &xml)
 {
     try
     {
-        xml.SelectNodeForce(CalcFullName());
+        xml.SelectRoot();
+        if(!xml.SelectNodeForce(CalcFullName()))
+            return;
         ASaveParameters(xml);
         SaveFormPosition(xml);
-        //xml.WriteString("ComponentControlName",ComponentControlName);
         xml.WriteInteger("UpdateInterval",UpdateInterval);
         xml.WriteBool("AlwaysUpdateFlag",AlwaysUpdateFlag);
 
-        //xml.SelectUp();
         xml.SelectUp();
     }
     catch (RDK::UException &exception)
@@ -390,10 +390,6 @@ void UVisualControllerMainWidget::SaveParameters(RDK::USerStorageXML &xml)
     {
         RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("Core-SaveParameters Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
-    /*catch(Exception &exception)
-    {
-        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-SaveParameters Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
-    }*/
 }
 
 void UVisualControllerMainWidget::ASaveParameters(RDK::USerStorageXML &xml)
@@ -424,12 +420,13 @@ void UVisualControllerMainWidget::LoadParameters(RDK::USerStorageXML &xml)
 {
     try
     {
-        xml.SelectNodeForce(CalcFullName());
+        xml.SelectRoot();
+        if(!xml.SelectNodeForce(CalcFullName()))
+            return;
         UpdateInterval=xml.ReadInteger("UpdateInterval",UpdateInterval);
         AlwaysUpdateFlag=xml.ReadBool("AlwaysUpdateFlag",false);
         LoadFormPosition(xml);
         ALoadParameters(xml);
-        //xml.SelectUp();
         xml.SelectUp();
     }
     catch (RDK::UException &exception)
@@ -440,10 +437,6 @@ void UVisualControllerMainWidget::LoadParameters(RDK::USerStorageXML &xml)
     {
         RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("Core-LoadParameters Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
-    /*catch(Exception &exception)
-    {
-        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-LoadParameters Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+AnsiString(exception.Message).c_str()).c_str());
-    }*/
 }
 
 void UVisualControllerMainWidget::ALoadParameters(RDK::USerStorageXML &xml)

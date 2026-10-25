@@ -18,9 +18,12 @@
 
 namespace RDK::LLM::E2eLab {
 
+using Test::kLabOllamaHost;
 using Test::kLabOllamaOpenAiV1;
 using Test::labOllamaModelName;
+using Test::labOllamaThinkingModelName;
 using Test::skipIfLabOllamaUnreachable;
+using Test::skipIfLabThinkingModelMissing;
 
 std::string repoPath(const std::string& relative);
 std::string sampleValidConfigurationIni();
@@ -39,7 +42,16 @@ struct Harness {
     LLMProviderProfile profile;
 
     explicit Harness(RDK::UApplication* app = nullptr);
+
+    /// Rebuild provider + orchestrator after env is applied (thinking vs default lab model).
+    void rebindProvider(const LLMProviderProfile& new_profile);
 };
+
+/// Default lab e2e profile: OpenAI-compat + `labOllamaModelName()` (qwen2.5).
+LLMProviderProfile defaultLabCompatProfile();
+
+/// Thinking Cortex profile: Native + `labOllamaThinkingModelName()` (qwen3:14b).
+LLMProviderProfile thinkingLabNativeProfile();
 
 LLMSessionContext defaultSession(bool project_loaded = false);
 LLMRequestEnvelope makeRequest(const Harness& h, const std::string& session_id,

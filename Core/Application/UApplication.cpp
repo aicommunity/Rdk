@@ -207,6 +207,45 @@ po::options_description CmdLineDescription("Allowed options");
 po::variables_map CmdVariablesMap;
 #endif
 
+namespace {
+
+std::string joinProjectPath(const std::string& dir, const std::string& file)
+{
+ if(dir.empty())
+  return file;
+ std::string d = dir;
+ if(d.back() != '/' && d.back() != '\\')
+  d.push_back('/');
+ return d + file;
+}
+
+std::string canonicalFilesystemPath(const std::string& path)
+{
+ if(path.empty())
+  return path;
+ std::error_code ec;
+ const std::filesystem::path canon = std::filesystem::weakly_canonical(std::filesystem::path(path), ec);
+ if(ec)
+  return path;
+ return canon.generic_string();
+}
+
+/// Absolute path with trailing '/', suitable for ProjectPath and configs dirs.
+std::string normalizeProjectDirPath(const std::string& path)
+{
+ if(path.empty())
+  return path;
+ std::string normalized = canonicalFilesystemPath(path);
+ if(normalized.empty())
+  normalized = path;
+ std::replace(normalized.begin(), normalized.end(), '\\', '/');
+ if(!normalized.empty() && normalized.back() != '/')
+  normalized.push_back('/');
+ return normalized;
+}
+
+} // namespace
+
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
@@ -341,6 +380,19 @@ bool UApplication::SetClDescPath(const std::string &value)
  return true;
 }
 
+const std::string& UApplication::GetWatchPresetsPath(void) const
+{
+ return WatchPresetsPath;
+}
+
+bool UApplication::SetWatchPresetsPath(const std::string &value)
+{
+ if(WatchPresetsPath == value)
+  return true;
+ WatchPresetsPath=value;
+ return true;
+}
+
 /// Относительный путь до папки с хранилищем конфигураций (обычно /Bin/Configs)
 const std::string& UApplication::GetDatabaseMainPath(void) const
 {
@@ -438,9 +490,10 @@ const std::string& UApplication::GetProjectPath(void) const
 
 bool UApplication::SetProjectPath(const std::string& value)
 {
- if(ProjectPath == value)
+ const std::string normalized = normalizeProjectDirPath(value);
+ if(ProjectPath == normalized)
   return true;
- ProjectPath=value;
+ ProjectPath=normalized;
  UpdateLoggers();
 // EngineControl->GetEngineStateThread()->CloseEventsLogFile();
  CalcAppCaption();
@@ -1505,31 +1558,6 @@ void UApplication::ProcessCommandLineArgs(int argc, char **argv)
 // Методы управления проектом
 // --------------------------
 
-namespace {
-
-std::string joinProjectPath(const std::string& dir, const std::string& file)
-{
- if(dir.empty())
-  return file;
- std::string d = dir;
- if(d.back() != '/' && d.back() != '\\')
-  d.push_back('/');
- return d + file;
-}
-
-std::string canonicalFilesystemPath(const std::string& path)
-{
- if(path.empty())
-  return path;
- std::error_code ec;
- const std::filesystem::path canon = std::filesystem::weakly_canonical(std::filesystem::path(path), ec);
- if(ec)
-  return path;
- return canon.generic_string();
-}
-
-} // namespace
-
 std::string UApplication::GetDefaultConfigsDirectory() const
 {
  std::string configs_path = GetWorkDirectory() + "/../../Configs/";
@@ -1552,7 +1580,7 @@ std::string UApplication::GetDefaultConfigsDirectory() const
    configs_path = user_path;
   }
  }
- return configs_path;
+ return normalizeProjectDirPath(configs_path);
 }
 
 std::string UApplication::PrepareNewProjectIniPath(bool autocreate_subdirectory,
@@ -2160,12 +2188,12 @@ bool UApplication::UpdateProject(RDK::TProjectConfig &project_config)
 
   if(old_project_config.ChannelsConfig[i].MaxCalculationModelTime != project_config.ChannelsConfig[i].MaxCalculationModelTime)
   {
-   GetEnvironmentLock()->SetMaxCalcTime(project_config.ChannelsConfig[i].MaxCalculationModelTime);
+   GetEnvironmentLock(i)->SetMaxCalcTime(project_config.ChannelsConfig[i].MaxCalculationModelTime);
   }
 
   if(old_project_config.ChannelsConfig[i].UseIndTimeStepFlag != project_config.ChannelsConfig[i].UseIndTimeStepFlag)
   {
-   GetEnvironmentLock()->SetUseIndTimeStepFlag(project_config.ChannelsConfig[i].UseIndTimeStepFlag);
+   GetEnvironmentLock(i)->SetUseIndTimeStepFlag(project_config.ChannelsConfig[i].UseIndTimeStepFlag);
   }
 
  }
@@ -2550,25 +2578,47 @@ try
  InterfaceXml.SelectNodeRoot(std::string("Interfaces"));
  RDK::UIVisualControllerStorage::SaveParameters(InterfaceXml);
 
+ const size_t n_ctrl = RDK::UIVisualControllerStorage::InterfaceUpdaters.size();
+ InterfaceXml.SelectRoot();
+ const int n_nodes = InterfaceXml.GetNumNodes();
+ RLOG(RDK_EX_INFO, RDK_SYS_MESSAGE, "sys",
+      std::string("Core-SaveProject: Interface controllers=")
+          + RDK::sntoa(static_cast<int>(n_ctrl))
+          + std::string(" xml_nodes=")
+          + RDK::sntoa(n_nodes));
+
+ // Защита: при выходе Qt сначала уничтожает главное окно (DelInterface),
+ // затем UAppCore::UnInit → CloseProject → autosave. К этому моменту в
+ // InterfaceUpdaters часто остаётся только UCurlFtpClientTestWidget(parent=NULL),
+ // и пустой Interface.xml затирает нормальный Save. Не перезаписываем файл.
+ const bool skip_interface_file =
+     (n_ctrl <= 1) || (n_nodes <= 1);
+ if(skip_interface_file)
+ {
+  RLOG(RDK_EX_WARNING, RDK_SYS_MESSAGE, "sys",
+       "Core-SaveProject: skip Interface.xml write — GUI controllers already destroyed "
+       "(would wipe Watch/charts). Save while the main window is still alive.");
+ }
+
  TProjectConfig config=Project->GetConfig();
  ProjectXml.SelectNodeRoot("Project/General");
 
  SaveFileSafe(ProjectPath+config.DescriptionFileName,config.ProjectDescription,"save.tmp",3);
 
- if(!config.InterfaceFileName.empty())
+ if(!config.InterfaceFileName.empty() && !skip_interface_file)
  {
   if(extract_file_path(config.InterfaceFileName).empty())
    is_saved=InterfaceXml.SaveToFile(ProjectPath+config.InterfaceFileName);
   else
    is_saved=InterfaceXml.SaveToFile(config.InterfaceFileName);
  }
- else
+ else if(config.InterfaceFileName.empty() && !skip_interface_file)
  {
   ProjectXml.WriteString("InterfaceFileName","Interface.xml");
   is_saved=InterfaceXml.SaveToFile(ProjectPath+config.InterfaceFileName);
  }
 
- if(!is_saved)
+ if(!skip_interface_file && !is_saved)
  RLOG(RDK_EX_ERROR, RDK_SYS_MESSAGE, "sys", std::string("Core-SaveProject: Can't save interface file: ") + config.InterfaceFileName);
 
  for(int i=0;i<config.NumChannels;i++)
@@ -2717,9 +2767,11 @@ bool UApplication::RenameProject(const std::string &filename)
  if(res == 0)
  {
   SetProjectPath(resfilename);
+  Project->SetProjectPath(ProjectPath);
+  Env_SetCurrentDataDir(ProjectPath.c_str());
 
   std::list<std::string> last_list=LastProjectsList;
-  last_list.push_front(resfilename+ProjectFileName);
+  last_list.push_front(ProjectPath+ProjectFileName);
   while(int(last_list.size())>LastProjectsListMaxSize
    && !LastProjectsList.empty())
   {

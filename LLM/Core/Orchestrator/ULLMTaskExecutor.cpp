@@ -2,17 +2,23 @@
 
 #include "ULLMPlanQuantity.h"
 #include "ULLMPlanRepeatPolicy.h"
+#include "ULLMRecordedToolInvoke.h"
+#include "ULLMTaskOutcomeSummary.h"
 
 #include "../LlmModuleInit.h"
 #include "../LlmPublicApi.h"
+#include "../Observability/ULLMToolTrace.h"
+#include "../Packs/ULLMCompoundGoal.h"
 #include "../Session/ULLMConversationStore.h"
 #include "../Session/ULLMSessionGraphMemory.h"
+#include "../Session/ULLMWorkingGoals.h"
 #include "ULLMPlanExecutor.h"
 #include "ULLMStepVerifier.h"
 
 #include <algorithm>
 #include <sstream>
 #include <unordered_set>
+#include <vector>
 
 namespace RDK::LLM {
 
@@ -47,6 +53,8 @@ TaskExecuteResult ULLMTaskExecutor::execute(ULLMExecutionPlan& plan,
     int replan_attempts = 0;
     bool failed = false;
     std::string fail_reason;
+    std::vector<std::string> connect_outcome_lines;
+    std::vector<std::string> add_outcome_lines;
 
     int guard = 0;
     while(guard++ < static_cast<int>(plan.steps.size()) * 4)
@@ -86,26 +94,69 @@ TaskExecuteResult ULLMTaskExecutor::execute(ULLMExecutionPlan& plan,
             while(retries <= std::max(0, options.max_step_retries))
             {
                 bool repeat_failed = false;
+                std::vector<std::string> pending_connect;
+                std::vector<std::string> pending_add;
                 for(int rep = 0; rep < repeat_total; ++rep)
                 {
-                    ToolInvokeRequest invoke;
-                    invoke.trace_id = trace_id;
-                    invoke.tool_name = step.tool_name;
-                    invoke.arguments = step.arguments;
+                    nlohmann::json rep_args = step.arguments;
                     if(toolSupportsPlanStepRepeat(step.tool_name) && step.tool_name == "add_component"
                        && repeat_total > 1
-                       && invoke.arguments.contains("short_name")
-                       && invoke.arguments["short_name"].is_string())
+                       && rep_args.contains("short_name") && rep_args["short_name"].is_string())
                     {
-                        const std::string base = invoke.arguments["short_name"].get<std::string>();
-                        invoke.arguments["short_name"] = uniqueShortNameForAddRepeat(base, rep);
+                        const std::string base = rep_args["short_name"].get<std::string>();
+                        rep_args["short_name"] = uniqueShortNameForAddRepeat(base, rep);
                     }
-                    invoke.session = session;
-                    invoke.confirmed = def->requires_confirmation;
-                    if(!plan.goal_en.empty())
-                        invoke.user_text_hint = plan.goal_en;
 
-                    const ToolGatewayResult tr = m_gateway.invoke(invoke);
+                    ToolGatewayResult tr;
+                    if(options.conversation_state && options.conversation_store)
+                    {
+                        RecordedToolInvokeDeps deps{m_registry, m_gateway, *options.conversation_store,
+                                                    {}, nullptr};
+                        RecordedToolInvokeRequest rreq;
+                        rreq.session_id = !options.conversation_state->session_id.empty()
+                                              ? options.conversation_state->session_id
+                                              : session.session_id;
+                        rreq.trace_id = trace_id;
+                        rreq.tool_name = step.tool_name;
+                        rreq.arguments = rep_args;
+                        rreq.session = session;
+                        rreq.session.session_id = rreq.session_id;
+                        rreq.user_text_hint = plan.goal_en;
+                        rreq.idempotency_action_id =
+                            "task_step_" + std::to_string(step.step_id) + "_" + std::to_string(rep);
+                        rreq.force_confirmed = true;
+                        rreq.confirmed = true;
+                        rreq.skip_preview = true;
+                        rreq.append_outcome_assistant = false;
+                        rreq.skip_turn_tool_trace = true;
+                        RecordedToolInvokeResult recorded =
+                            recordedToolInvoke(*options.conversation_state, deps, rreq);
+                        tr = std::move(recorded.gateway);
+                    }
+                    else
+                    {
+                        ToolInvokeRequest invoke;
+                        invoke.trace_id = trace_id;
+                        invoke.tool_name = step.tool_name;
+                        invoke.arguments = rep_args;
+                        invoke.session = session;
+                        invoke.confirmed = def->requires_confirmation;
+                        invoke.skip_turn_tool_trace = options.conversation_state != nullptr;
+                        if(!plan.goal_en.empty())
+                            invoke.user_text_hint = plan.goal_en;
+                        tr = m_gateway.invoke(invoke);
+                        if(options.conversation_state && tr.ok && tr.result.is_object())
+                        {
+                            recordWriteToolOutcome(*options.conversation_state, domain,
+                                                   step.tool_name, tr.result,
+                                                   session.active_channel_index, &rep_args);
+                        }
+                    }
+                    if(options.conversation_state)
+                    {
+                        recordTurnToolInvocation(*options.conversation_state, step.tool_name,
+                                                 rep_args, tr, 0, def->input_schema);
+                    }
                     if(!tr.ok)
                     {
                         step_fail = tr.message.empty() ? tr.error_code : tr.message;
@@ -113,10 +164,18 @@ TaskExecuteResult ULLMTaskExecutor::execute(ULLMExecutionPlan& plan,
                         break;
                     }
                     step.last_result = tr.result;
-                    if(options.conversation_state && tr.ok && tr.result.is_object())
+                    if(step.tool_name == "connect_components")
                     {
-                        recordWriteToolOutcome(*options.conversation_state, domain, step.tool_name,
-                                               tr.result, session.active_channel_index);
+                        const std::string line = formatConnectLinkOutcomeLine(rep_args);
+                        if(!line.empty())
+                            pending_connect.push_back(line);
+                    }
+                    else if(step.tool_name == "add_component")
+                    {
+                        const std::string line =
+                            formatAddComponentOutcomeLine(rep_args, tr.result);
+                        if(!line.empty())
+                            pending_add.push_back(line);
                     }
                 }
 
@@ -152,6 +211,10 @@ TaskExecuteResult ULLMTaskExecutor::execute(ULLMExecutionPlan& plan,
 
                 if(vr.satisfied)
                 {
+                    for(const std::string& line : pending_connect)
+                        connect_outcome_lines.push_back(line);
+                    for(const std::string& line : pending_add)
+                        add_outcome_lines.push_back(line);
                     step_ok = true;
                     break;
                 }
@@ -208,6 +271,17 @@ TaskExecuteResult ULLMTaskExecutor::execute(ULLMExecutionPlan& plan,
             completed.insert(step.step_id);
             out.completed_step_ids.push_back(step.step_id);
             plan.checkpoint_after_step_id = step.step_id;
+            if(options.conversation_state)
+            {
+                const std::string goal_id = workingGoalIdForToolName(step.tool_name);
+                if(!goal_id.empty())
+                {
+                    appendWorkingGoalEvidence(*options.conversation_state, goal_id,
+                                              step.tool_name + ":ok");
+                    markWorkingGoalStatus(*options.conversation_state, goal_id,
+                                          WorkingGoalStatus::Done);
+                }
+            }
         }
 
         if(failed)
@@ -245,7 +319,9 @@ TaskExecuteResult ULLMTaskExecutor::execute(ULLMExecutionPlan& plan,
         ULLMPlanExecutor compensator(m_registry, m_gateway);
         std::string compensation_note;
         const int applied =
-            compensator.compensateCompletedWrites(plan, session, trace_id, compensation_note);
+            compensator.compensateCompletedWrites(plan, session, trace_id, compensation_note,
+                                                  options.conversation_state,
+                                                  options.conversation_store);
         GetAuditLog().append("workflow_compensation_note",
                              {{"plan_id", plan.plan_id},
                               {"note", compensation_note},
@@ -255,12 +331,8 @@ TaskExecuteResult ULLMTaskExecutor::execute(ULLMExecutionPlan& plan,
 
     out.goal_satisfied = goal_ok;
     out.ok = !failed && goal_ok;
-    std::ostringstream summary;
-    summary << "Task plan " << plan.plan_id << ": " << out.completed_step_ids.size()
-            << " steps completed.";
-    if(!out.ok && !fail_reason.empty())
-        summary << " " << fail_reason;
-    out.summary = summary.str();
+    out.summary = buildTaskExecuteSummary(connect_outcome_lines, add_outcome_lines, plan.plan_id,
+                                          out.completed_step_ids.size(), out.ok, fail_reason);
     GetAuditLog().append(out.ok ? "task_completed" : "task_failed",
                          {{"plan_id", plan.plan_id},
                           {"completed_steps", static_cast<int>(out.completed_step_ids.size())}},

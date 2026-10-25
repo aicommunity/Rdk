@@ -16,7 +16,9 @@ class UStorage;
 /// Resolves a UI selection path to a model-root long name (e.g. PNeuron -> Model.PNeuron).
 QString resolveComponentLongNameFromModelRoot(int channel_index, const QString& path);
 
-/// Keeps RDK engine CurrentComponent aligned with NeuroModeler UI selection.
+/// Intentionally selects engine CurrentComponent (rebases all FindComponent / Model_* paths).
+/// Do NOT call from GUI selection or diagram drill — that was TD-111 and breaks absolute longName
+/// C-API usage while Current stays off Model. Prefer diagram_scope / focused_* in GUI context.
 void syncEngineCurrentComponent(const QString& component_long_name);
 
 /// Same as syncEngineCurrentComponent but uses an already-locked engine (no extra mutex acquire).
@@ -29,7 +31,22 @@ QStringList childComponentShortNamesFromModelScope(int channel_index, const QStr
 QString componentClassNameFromModelScope(int channel_index, const QString& component_long_name);
 
 /// Internal links XML for a schematic scope from model root. Empty if none or not a net.
-std::string internalLinksXmlFromModelScope(int channel_index, const QString& scope_long_name);
+/// When \a paths_from_model_root is true, link Item/Connector ids use full model-root paths
+/// (required for external-source labels on nested diagrams).
+std::string internalLinksXmlFromModelScope(int channel_index,
+                                           const QString& scope_long_name,
+                                           bool paths_from_model_root = false);
+
+/// Personal/external links for component relative to owner scope (model root paths).
+/// Empty if component not found or no links.
+std::string personalLinksXmlFromModelScope(int channel_index,
+                                           const QString& component_long_name,
+                                           const QString& owner_level_long_name,
+                                           bool paths_from_model_root = false);
+
+/// Boundary links from each direct child to the rest of the scope (SaveComponentDrawInfo semantics).
+std::string scopeChildBoundaryLinksXmlFromModelScope(int channel_index,
+                                                    const QString& scope_long_name);
 
 struct DiagramAddComponentResult {
     bool ok = false;

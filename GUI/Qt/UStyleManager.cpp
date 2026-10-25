@@ -1,12 +1,57 @@
 #include "UStyleManager.h"
 
 #include <QFile>
+#include <QFileInfo>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QDebug>
 #include <QDir>
 #include <QCoreApplication>
+#include <QFontDatabase>
+#include <QFontMetrics>
+#include <QDockWidget>
+#include <QMdiSubWindow>
+#include <QEvent>
+#include <QWidget>
+#include <QScreen>
+#include <QGuiApplication>
+
+namespace {
+
+class UTitleFontPolisher : public QObject
+{
+public:
+    explicit UTitleFontPolisher(UStyleManager* styles, QObject* parent = nullptr)
+        : QObject(parent)
+        , m_styles(styles)
+    {
+    }
+
+    bool eventFilter(QObject* watched, QEvent* event) override
+    {
+        if(!m_styles)
+            return QObject::eventFilter(watched, event);
+
+        const QEvent::Type type = event->type();
+        if(type != QEvent::Polish && type != QEvent::Show)
+            return QObject::eventFilter(watched, event);
+        if(!watched->isWidgetType())
+            return QObject::eventFilter(watched, event);
+
+        if(auto* dock = qobject_cast<QDockWidget*>(watched))
+            m_styles->applyTitleBarFont(dock);
+        else if(auto* mdi = qobject_cast<QMdiSubWindow*>(watched))
+            m_styles->applyTitleBarFont(mdi);
+
+        return QObject::eventFilter(watched, event);
+    }
+
+private:
+    UStyleManager* m_styles;
+};
+
+} // namespace
 
 UStyleManager* UStyleManager::s_instance = nullptr;
 
@@ -20,6 +65,7 @@ UStyleManager* UStyleManager::instance()
 }
 
 UStyleManager::UStyleManager()
+    : QObject(nullptr)
 {
     setDefaults();
 }
@@ -44,6 +90,7 @@ void UStyleManager::setDefaults()
     // Цвета связей
     m_linkSolid = QColor(80, 120, 200);           // #5078C8
     m_linkDashed = QColor(120, 160, 220);         // #78A0DC
+    m_linkReverse = QColor(5, 150, 105);          // #059669
     m_linkWidth = 2.0;
     
     // Цвета drag
@@ -170,6 +217,7 @@ bool UStyleManager::loadTheme(const QString& themeJsonPath)
         QJsonObject link = root["link"].toObject();
         m_linkSolid = parseColor(link, "solid", m_linkSolid);
         m_linkDashed = parseColor(link, "dashed", m_linkDashed);
+        m_linkReverse = parseColor(link, "reverse", m_linkReverse);
         m_linkWidth = parseDouble(link, "width", m_linkWidth);
     }
     
@@ -268,6 +316,12 @@ bool UStyleManager::loadStyleSheet(const QString& qssPath)
     
     m_styleSheet = QString::fromUtf8(file.readAll());
     file.close();
+
+    // setStyleSheet(string) loses the QSS file base path — resolve icon urls.
+    const QString stylesDir = QFileInfo(qssPath).absolutePath();
+    const QString iconsDir = QDir(stylesDir).filePath(QStringLiteral("icons"));
+    m_styleSheet.replace(QStringLiteral("url(icons/"),
+                         QStringLiteral("url(%1/").arg(QDir::fromNativeSeparators(iconsDir)));
     
     qDebug() << "UStyleManager: Stylesheet loaded from" << qssPath;
     return true;
@@ -280,6 +334,94 @@ void UStyleManager::applyGlobalStyleSheet(QApplication* app)
         app->setStyleSheet(m_styleSheet);
         qDebug() << "UStyleManager: Global stylesheet applied";
     }
+    applySystemUiFonts(app);
+}
+
+void UStyleManager::applySystemUiFonts(QApplication* app)
+{
+    if(!app)
+        return;
+
+    QFont uiFont = QFontDatabase::systemFont(QFontDatabase::GeneralFont);
+    if(uiFont.pointSizeF() <= 0 && uiFont.pixelSize() <= 0)
+        uiFont = app->font();
+
+#ifdef Q_OS_WIN
+    // Soft-cap oversized Windows UI fonts so compact chrome stays usable.
+    qreal scale = 1.0;
+    if(QScreen* screen = QGuiApplication::primaryScreen())
+    {
+        scale = qMax(screen->logicalDotsPerInchX() / 96.0, screen->devicePixelRatio());
+    }
+    constexpr qreal kScaleCapThreshold = 1.25;
+    constexpr qreal kMaxPointSize = 12.0;
+    if(scale >= kScaleCapThreshold && uiFont.pointSizeF() > kMaxPointSize)
+    {
+        static bool logged = false;
+        if(!logged)
+        {
+            qDebug() << "UStyleManager: capping UI font from" << uiFont.pointSizeF()
+                     << "pt to" << kMaxPointSize << "pt (scale" << scale << ")";
+            logged = true;
+        }
+        uiFont.setPointSizeF(kMaxPointSize);
+    }
+#endif
+
+    app->setFont(uiFont);
+
+    if(!m_titleFontPolisher)
+    {
+        auto* polisher = new UTitleFontPolisher(this, app);
+        app->installEventFilter(polisher);
+        m_titleFontPolisher = polisher;
+    }
+
+    const auto widgets = app->allWidgets();
+    for(QWidget* widget : widgets)
+    {
+        if(qobject_cast<QDockWidget*>(widget) || qobject_cast<QMdiSubWindow*>(widget))
+            applyTitleBarFont(widget);
+    }
+}
+
+int UStyleManager::densitySpace(int units)
+{
+    if(units <= 0)
+        return 0;
+    QFontMetrics fm(QApplication::font());
+    const int step = qMax(1, fm.height() / 4);
+    return units * step;
+}
+
+QFont UStyleManager::titleBarFont() const
+{
+    // Use the desktop UI font (not GNOME titlebar-font): users typically enlarge
+    // Interface Text, while Window Title stays at the default 11pt.
+    QFont font = QApplication::font();
+    if(font.pointSizeF() <= 0 && font.pixelSize() <= 0)
+        font = QFontDatabase::systemFont(QFontDatabase::GeneralFont);
+    font.setWeight(QFont::DemiBold);
+    return font;
+}
+
+void UStyleManager::applyTitleBarFont(QWidget* titleHost) const
+{
+    if(!titleHost)
+        return;
+
+    titleHost->setFont(titleBarFont());
+
+    if(auto* dock = qobject_cast<QDockWidget*>(titleHost))
+    {
+        if(QWidget* content = dock->widget())
+            content->setFont(QApplication::font());
+    }
+    else if(auto* mdi = qobject_cast<QMdiSubWindow*>(titleHost))
+    {
+        if(QWidget* content = mdi->widget())
+            content->setFont(QApplication::font());
+    }
 }
 
 QString UStyleManager::getTreeWidgetStyleSheet() const
@@ -287,7 +429,6 @@ QString UStyleManager::getTreeWidgetStyleSheet() const
     // Stylesheet for QTreeWidget used in port list popup
     return QString(
         "QTreeWidget {"
-        "  font-size: 10pt;"
         "  background-color: %1;"
         "  border: 1px solid %2;"
         "  border-radius: 4px;"
@@ -455,6 +596,7 @@ bool UStyleManager::switchTheme(const QString& themeName, QApplication* app)
         applyGlobalStyleSheet(app);
         m_stylesPath = stylesPath; // Cache the path
         qDebug() << "UStyleManager: Switched to theme:" << m_themeName << "from" << stylesPath;
+        emit themeChanged();
         return true;
     }
     

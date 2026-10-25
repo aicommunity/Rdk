@@ -3,6 +3,7 @@
 #include "../Orchestrator/ULLMExecutionPlan.h"
 #include "ULLMConfirmationExpiry.h"
 #include "ULLMSessionGraphMemory.h"
+#include "ULLMWorkingGoals.h"
 
 #include <fstream>
 
@@ -79,6 +80,8 @@ nlohmann::json pendingConfirmationToJson(const PendingConfirmation& pending)
     j["tool_name"] = pending.request.tool_name;
     j["arguments"] = pending.request.arguments;
     j["session"] = sessionContextToJson(pending.request.session);
+    if(!pending.tool_call_id.empty())
+        j["tool_call_id"] = pending.tool_call_id;
     return j;
 }
 
@@ -92,6 +95,7 @@ std::optional<PendingConfirmation> pendingConfirmationFromJson(const nlohmann::j
     pending.request.trace_id = j.value("trace_id", "");
     pending.request.tool_name = j.value("tool_name", "");
     pending.request.arguments = j.value("arguments", nlohmann::json::object());
+    pending.tool_call_id = j.value("tool_call_id", "");
     if(j.contains("session"))
         pending.request.session = sessionContextFromJson(j["session"]);
     return pending;
@@ -391,6 +395,8 @@ nlohmann::json ULLMConversationStore::messageToJson(const LLMMessage& msg)
         break;
     }
     j["content"] = redactSensitiveText(msg.content);
+    if(msg.thinking && !msg.thinking->empty())
+        j["thinking"] = redactSensitiveText(*msg.thinking);
     if(msg.tool_call_id)
         j["tool_call_id"] = *msg.tool_call_id;
     if(msg.tool_name)
@@ -421,6 +427,8 @@ LLMMessage ULLMConversationStore::messageFromJson(const nlohmann::json& j)
     else
         msg.role = LLMMessage::Role::User;
     msg.content = j.value("content", "");
+    if(j.contains("thinking") && j["thinking"].is_string() && !j["thinking"].get<std::string>().empty())
+        msg.thinking = j["thinking"].get<std::string>();
     if(j.contains("tool_call_id"))
         msg.tool_call_id = j["tool_call_id"].get<std::string>();
     if(j.contains("tool_name"))
@@ -535,6 +543,9 @@ bool ULLMConversationStore::loadFromDisk(const std::string& session_id)
         state.last_session_context = sessionContextFromJson(j["last_session_context"]);
     if(j.contains("session_graph"))
         state.session_graph = sessionGraphMemoryFromJson(j["session_graph"]);
+    if(j.contains("working_goals"))
+        state.working_goals = workingGoalsFromJson(j["working_goals"]);
+    state.subagent_rounds_used = j.value("subagent_rounds_used", 0);
     m_sessions[session_id] = std::move(state);
     return true;
 }
@@ -548,6 +559,8 @@ bool ULLMConversationStore::persistToDisk(const std::string& session_id)
         return false;
     fs::create_directories(m_storage_dir);
     nlohmann::json j;
+    if(it->second.store_schema_version < 4)
+        it->second.store_schema_version = 4;
     j["store_schema_version"] = it->second.store_schema_version;
     j["session_id"] = it->second.session_id;
     j["workflow_phase"] = workflowPhaseName(it->second.workflow_phase);
@@ -597,11 +610,15 @@ bool ULLMConversationStore::persistToDisk(const std::string& session_id)
        || !it->second.session_graph.linked_records.empty()
        || it->second.session_graph.last_template.has_value())
         j["session_graph"] = sessionGraphMemoryToJson(it->second.session_graph);
+    if(!it->second.working_goals.empty())
+        j["working_goals"] = workingGoalsToJson(it->second.working_goals);
+    if(it->second.subagent_rounds_used > 0)
+        j["subagent_rounds_used"] = it->second.subagent_rounds_used;
     const fs::path file = fs::path(m_storage_dir) / (session_id + ".json");
     std::ofstream out(file);
     if(!out)
         return false;
-    out << j.dump(2);
+    out << j.dump(2, ' ', false, nlohmann::json::error_handler_t::replace);
     return true;
 }
 
@@ -632,7 +649,10 @@ ConversationState& ULLMConversationStore::getOrCreate(const std::string& session
 {
     if(m_sessions.find(session_id) == m_sessions.end())
         loadFromDisk(session_id);
-    return m_sessions[session_id];
+    ConversationState& state = m_sessions[session_id];
+    if(state.session_id.empty())
+        state.session_id = session_id;
+    return state;
 }
 
 void ULLMConversationStore::appendMessage(const std::string& session_id, const LLMMessage& msg)

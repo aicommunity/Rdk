@@ -3,45 +3,77 @@
 #include "LlmGuiBootstrap.h"
 #include "ULlmChatHistoryArchive.h"
 #include "ULlmChatHistoryDialog.h"
+#include "ULlmChatHistoryPanel.h"
+#include "ULlmChatInputCompleter.h"
+#include "ULlmChatMarkdown.h"
+#include "ULlmDetailsHtml.h"
+#include "../UStyleManager.h"
 
 #include <QDateTime>
+#include <QDesktopServices>
 #include <QFutureWatcher>
 #include <QMessageBox>
 #include <QKeyEvent>
+#include <QTextDocument>
 #include <QTimer>
 #include <QUuid>
 #include <QtConcurrent/QtConcurrent>
 #include <QHBoxLayout>
 #include <QMetaObject>
 #include <QProgressBar>
-#include <QTextCursor>
 #include <QVBoxLayout>
 
 #include "../../../LLM/Core/LlmPublicApi.h"
+#include "../../../LLM/Core/Context/ULLMDocOpenPolicy.h"
 #include "../../../LLM/Core/Observability/ULLMToolTrace.h"
 #include "../../../LLM/Core/Orchestrator/ULLMAgentOrchestrator.h"
 #include "../../../LLM/Core/Orchestrator/ULLMWorkflowState.h"
 #include "../../../LLM/Core/Policy/ULLMPolicyLimits.h"
 #include "../../../LLM/Core/Session/ULLMConversationStore.h"
-#include "../../../LLM/Core/Settings/ULLMProviderAuth.h"
 #include "../UGEngineControlWidget.h"
 
-#include <rdk_init.h>
+#include <functional>
+#include <utility>
 
 #include <cstdlib>
 #include <exception>
 #include <filesystem>
+#include <typeinfo>
 
 namespace fs = std::filesystem;
 
 namespace {
+
+RDK::LLM::LLMFinalResponse catchLlmWorkerExceptions(
+    const std::function<RDK::LLM::LLMFinalResponse()>& work)
+{
+    try
+    {
+        return work();
+    }
+    catch(const std::exception& ex)
+    {
+        RDK::LLM::LLMFinalResponse resp;
+        resp.ok = false;
+        const char* what = ex.what();
+        resp.error = std::string(typeid(ex).name()) + ": " + (what ? what : "std::exception");
+        return resp;
+    }
+    catch(...)
+    {
+        RDK::LLM::LLMFinalResponse resp;
+        resp.ok = false;
+        resp.error = "Unknown exception in LLM worker thread";
+        return resp;
+    }
+}
 
 fs::path toArchivePath(const QString& path)
 {
     return fs::path(path.toStdString());
 }
 
-void appendToolTraceToHistory(QTextEdit* history,
+void appendToolTraceToHistory(ULlmChatHistoryPanel* history,
                               const std::function<void(const QString&)>& archive_fn,
                               const RDK::LLM::LLMFinalResponse& resp)
 {
@@ -51,9 +83,62 @@ void appendToolTraceToHistory(QTextEdit* history,
     if(html.empty())
         return;
     const QString qhtml = QString::fromStdString(html);
-    history->append(qhtml);
+    history->appendHtml(qhtml, /*details_expanded_default=*/true);
     if(archive_fn)
         archive_fn(qhtml);
+}
+
+QString escapeHtmlLite(const QString& s)
+{
+    QString out = s;
+    out.replace(QLatin1Char('&'), QStringLiteral("&amp;"));
+    out.replace(QLatin1Char('<'), QStringLiteral("&lt;"));
+    out.replace(QLatin1Char('>'), QStringLiteral("&gt;"));
+    out.replace(QLatin1Char('"'), QStringLiteral("&quot;"));
+    return out;
+}
+
+QString formatWorkingGoalsDetailsHtml(const std::vector<RDK::LLM::WorkingGoal>& goals)
+{
+    if(goals.empty())
+        return {};
+    QString body;
+    for(const RDK::LLM::WorkingGoal& g : goals)
+    {
+        body += QStringLiteral("<li><b>[%1]</b> %2")
+                    .arg(QString::fromUtf8(RDK::LLM::workingGoalStatusName(g.status)),
+                         escapeHtmlLite(QString::fromStdString(g.title)));
+        if(!g.evidence.empty())
+            body += QStringLiteral(" <i>(%1 evidence)</i>").arg(g.evidence.size());
+        body += QStringLiteral("</li>");
+    }
+    return QStringLiteral("<details><summary>Goals</summary><ul>%1</ul></details>").arg(body);
+}
+
+void appendWorkingGoalsToHistory(ULlmChatHistoryPanel* history,
+                                 const std::function<void(const QString&)>& archive_fn,
+                                 const RDK::LLM::LLMFinalResponse& resp)
+{
+    const QString html = formatWorkingGoalsDetailsHtml(resp.working_goals);
+    if(html.isEmpty())
+        return;
+    history->appendHtml(html, /*details_expanded_default=*/false);
+    if(archive_fn)
+        archive_fn(html);
+}
+
+/// Collapsible Reasoning block (same details/summary pattern as tool traces).
+/// Soft safety cap only (~256KB) so AiChats archive keeps full LLM thinking.
+QString formatThinkingDetailsHtml(QString thinking)
+{
+    thinking = thinking.trimmed();
+    if(thinking.isEmpty())
+        return {};
+    constexpr int kMaxChars = 256 * 1024;
+    if(thinking.size() > kMaxChars)
+        thinking = thinking.left(kMaxChars) + QStringLiteral("\n…");
+    return QStringLiteral("<details><summary>%1</summary><pre>%2</pre></details>")
+        .arg(QObject::tr("Reasoning"), escapeHtmlLite(thinking));
 }
 
 RDK::LLM::LLMGuiContextSnapshot guiSnapshotFromContext(const LLMGuiContext& ctx)
@@ -65,12 +150,13 @@ RDK::LLM::LLMGuiContextSnapshot guiSnapshotFromContext(const LLMGuiContext& ctx)
     snap.focused_class_name = ctx.focused_class_name.toStdString();
     snap.diagram_scope_long_name = ctx.diagram_scope_long_name.toStdString();
     snap.snapshot_fingerprint = ctx.snapshot_fingerprint;
-    if(const char* cur = Env_GetCurrentComponentName())
-        snap.current_component_long_name = cur;
-    if(const char* cur_id = Env_GetCurrentComponentId())
-        snap.current_component_id = cur_id;
-    if(snap.current_component_long_name.empty())
+    // TD-111 reverted: do not treat Env CurrentComponent as leaf selection.
+    // current_component_* mirrors diagram drill scope (or focused name if no drill).
+    if(!snap.diagram_scope_long_name.empty())
+        snap.current_component_long_name = snap.diagram_scope_long_name;
+    else
         snap.current_component_long_name = snap.focused_component_long_name;
+    snap.current_component_id.clear();
     return snap;
 }
 
@@ -125,9 +211,9 @@ QString formatMessageForHistory(const RDK::LLM::LLMMessage& msg)
             .arg(QString::fromStdString(msg.content).toHtmlEscaped());
     case LLMMessage::Role::Assistant: {
         const QString body = QString::fromStdString(msg.content);
-        if(body.contains("<b>") || body.contains("<p>") || body.contains("<i>"))
+        if(llmLooksLikeUiHtml(body))
             return QString("<p><b>Assistant:</b> %1</p>").arg(body);
-        return QString("<p><b>Assistant:</b> %1</p>").arg(body.toHtmlEscaped());
+        return QString("<p><b>Assistant:</b></p>%1").arg(llmMarkdownToHtmlFragment(body));
     }
     case LLMMessage::Role::Tool: {
         const QString name =
@@ -156,31 +242,87 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
     ClassName = "ULlmAssistantDockWidget";
 
     auto* layout = new QVBoxLayout(this);
+    layout->setContentsMargins(4, 4, 4, 4);
+    layout->setSpacing(4);
 
     auto* top_row = new QHBoxLayout();
+    top_row->setSpacing(4);
     m_provider_combo = new QComboBox(this);
     auto* settings_btn = new QPushButton(tr("Settings..."), this);
     auto* new_chat_btn = new QPushButton(tr("New chat"), this);
     m_history_btn = new QPushButton(tr("History..."), this);
+    // Provider/model details live in Settings — no status line under the combo.
     m_provider_status = new QLabel(this);
+    m_provider_status->hide();
     m_context_budget = new QLabel(this);
     m_context_budget->setObjectName(QStringLiteral("llmContextBudget"));
-    m_context_budget->setStyleSheet(QStringLiteral("color: palette(mid); font-size: 11px;"));
+    m_context_budget->setStyleSheet(QStringLiteral("color: %1; font-size: 11px;")
+                                        .arg(UStyleManager::instance()->getTextSecondaryColor().name()));
     m_archive_banner = new QLabel(this);
     m_archive_banner->setVisible(false);
     m_archive_banner->setWordWrap(true);
-    m_archive_banner->setStyleSheet(QStringLiteral("background-color: #fff3cd; padding: 4px;"));
+    {
+        const QColor warn = UStyleManager::instance()->getWarningColor();
+        const QColor text = UStyleManager::instance()->getTextColor();
+        m_archive_banner->setStyleSheet(
+            QStringLiteral("background-color: %1; color: %2; padding: 4px;")
+                .arg(warn.lighter(160).name(), text.name()));
+    }
     top_row->addWidget(m_provider_combo, 1);
     top_row->addWidget(new_chat_btn);
     top_row->addWidget(m_history_btn);
     top_row->addWidget(settings_btn);
     layout->addLayout(top_row);
-    layout->addWidget(m_provider_status);
     layout->addWidget(m_context_budget);
     layout->addWidget(m_archive_banner);
 
-    m_history = new QTextEdit(this);
-    m_history->setReadOnly(true);
+    m_history = new ULlmChatHistoryPanel(this);
+    m_history->setAnchorHandler([](const QUrl& url) {
+        const QString scheme = url.scheme().toLower();
+        if(scheme == QStringLiteral("http") || scheme == QStringLiteral("https")
+           || scheme == QStringLiteral("mailto"))
+        {
+            QDesktopServices::openUrl(url);
+            return;
+        }
+        if(!RDK::LLM::LLMServices::instance().isInitialized())
+            return;
+        auto* sink = RDK::LLM::LLMServices::instance().presentationSink();
+        auto* ctx = RDK::LLM::LLMServices::instance().projectContext();
+        if(!sink || !ctx)
+            return;
+        const fs::path root = ctx->paths().repository_root;
+        // Rebuild URI: QUrl may parse nmsdk-doc:path oddly (host vs path).
+        QString uri = url.toString();
+        if(scheme == QStringLiteral("nmsdk-doc") || scheme == QStringLiteral("nmsdk-help")
+           || scheme == QStringLiteral("nmsdk-class"))
+        {
+            // Prefer scheme + opaque remainder when Qt split host/path.
+            if(!url.path().isEmpty() || !url.host().isEmpty())
+            {
+                QString rest = url.host();
+                if(!url.path().isEmpty())
+                {
+                    if(!rest.isEmpty() && !url.path().startsWith(QLatin1Char('/')))
+                        rest += QLatin1Char('/');
+                    rest += url.path();
+                    if(rest.startsWith(QLatin1Char('/')))
+                        rest = rest.mid(1);
+                }
+                uri = scheme + QLatin1Char(':') + rest;
+            }
+        }
+        const RDK::LLM::DocOpenResolve resolved =
+            RDK::LLM::resolveDocUri(uri.toStdString(), root);
+        if(!resolved.ok)
+            return;
+        if(resolved.kind == "markdown")
+            sink->openMarkdownDocument(resolved.abs_path.string(), {});
+        else if(resolved.kind == "help")
+            sink->openHelpTopic(resolved.help_topic);
+        else if(resolved.kind == "class")
+            sink->openClassDescription(resolved.class_name);
+    });
     layout->addWidget(m_history, 1);
 
     m_request_status = new QLabel(this);
@@ -196,6 +338,8 @@ ULlmAssistantDockWidget::ULlmAssistantDockWidget(QWidget* parent, RDK::UApplicat
 
     m_input = new QPlainTextEdit(this);
     layout->addWidget(m_input);
+    m_name_completer = new ULlmChatInputCompleter(m_input, app, this);
+    m_input->installEventFilter(this);
 
     auto* row = new QHBoxLayout();
     m_send = new QPushButton(tr("Send"), this);
@@ -277,22 +421,6 @@ void ULlmAssistantDockWidget::refreshProviderBar()
     }
     m_provider_combo->setCurrentIndex(select);
     m_provider_combo->blockSignals(false);
-
-    const auto active = store.activeProfile();
-    const bool has_key = RDK::LLM::ULLMProviderAuth::hasApiKey(active, store.runtime());
-    const auto preset = store.presetProfile(active.profile_id);
-    const bool custom_endpoint =
-        active.base_url != preset.base_url || active.model != preset.model;
-    QString status;
-    if(active.is_cloud)
-        status = has_key ? tr("Cloud · key set") : tr("Cloud · key missing");
-    else
-        status = tr("Local");
-    if(custom_endpoint)
-        status += tr(" · custom endpoint");
-    status += tr("\n%1 · %2").arg(QString::fromStdString(active.base_url))
-                   .arg(QString::fromStdString(active.model));
-    m_provider_status->setText(status);
 }
 
 void ULlmAssistantDockWidget::onOpenSettings()
@@ -315,9 +443,10 @@ void ULlmAssistantDockWidget::onProviderChanged(int index)
 
 void ULlmAssistantDockWidget::appendAssistantText(const QString& text)
 {
-    m_history->append(text);
+    const QString html = llmLooksLikeUiHtml(text) ? text : llmMarkdownToHtmlFragment(text);
+    m_history->appendHtml(html, /*details_expanded_default=*/true);
     if(!m_streaming_reply)
-        archiveHtmlFragment(text);
+        archiveHtmlFragment(html);
 }
 
 void ULlmAssistantDockWidget::setPendingConfirmation(const QString& confirmation_id,
@@ -444,7 +573,7 @@ void ULlmAssistantDockWidget::startNewChat(const QString& system_note)
 
     if(!system_note.isEmpty())
     {
-        m_history->append(system_note);
+        m_history->appendHtml(system_note, true);
         // System banner is not persisted until the first user message opens a file.
     }
 
@@ -460,11 +589,15 @@ void ULlmAssistantDockWidget::startNewChat(const QString& system_note)
 void ULlmAssistantDockWidget::onProjectOpened(const QString& configuration_ini_path)
 {
     (void)configuration_ini_path;
+    if(m_name_completer)
+        m_name_completer->refreshDictionary(m_last_ctx.channel_index);
     scheduleDeferredNewChat(tr("<i>New chat — project was loaded.</i>"));
 }
 
 void ULlmAssistantDockWidget::onProjectClosed()
 {
+    if(m_name_completer)
+        m_name_completer->refreshDictionary(m_last_ctx.channel_index);
     scheduleDeferredNewChat(tr("<i>New chat — project was closed.</i>"));
 }
 
@@ -525,8 +658,17 @@ void ULlmAssistantDockWidget::handleAsyncLlmResult(
     }
     catch(const std::exception& ex)
     {
+        // Qt5 QtConcurrent maps non-QException to QUnhandledException whose what() is
+        // literally "std::exception" — real details are lost unless the worker catches first.
         resp.ok = false;
-        resp.error = ex.what();
+        const char* what = ex.what();
+        resp.error = (what && *what) ? what : "std::exception";
+        if(resp.error == "std::exception")
+        {
+            resp.error =
+                "Unhandled exception in LLM worker (details lost by QtConcurrent). "
+                "Retry after rebuild; check LLM/audit for turn_exception.";
+        }
     }
     catch(...)
     {
@@ -583,6 +725,8 @@ RDK::LLM::LLMSessionContext ULlmAssistantDockWidget::buildSession(const LLMGuiCo
 void ULlmAssistantDockWidget::onContextChanged(const LLMGuiContext& ctx)
 {
     m_last_ctx = ctx;
+    if(m_name_completer)
+        m_name_completer->refreshDictionary(ctx.channel_index);
 }
 
 void ULlmAssistantDockWidget::onSendClicked()
@@ -594,7 +738,7 @@ void ULlmAssistantDockWidget::onSendClicked()
         return;
     m_input->clear();
     const QString user_html = QString("<b>You:</b> %1").arg(text.toHtmlEscaped());
-    m_history->append(user_html);
+    m_history->appendHtml(user_html, true);
     maybeStartArchiveFile();
     archiveHtmlFragment(user_html);
     runUserMessage(text);
@@ -604,15 +748,29 @@ void ULlmAssistantDockWidget::beginAssistantStream()
 {
     m_streaming_reply = true;
     m_stream_tokens_received = false;
+    m_stream_thinking.clear();
+    m_thinking_details_appended = false;
     const QString header = QString("<b>%1:</b> ").arg(tr("Assistant"));
-    m_history->append(header);
+    m_history->beginAssistantStream(header);
     m_pending_assistant_archive = header;
+}
+
+void ULlmAssistantDockWidget::appendThinkingDetails(const QString& thinking)
+{
+    if(m_thinking_details_appended)
+        return;
+    const QString html = formatThinkingDetailsHtml(thinking);
+    if(html.isEmpty())
+        return;
+    m_history->appendHtml(html, /*details_expanded_default=*/false);
+    archiveHtmlFragment(html);
+    m_thinking_details_appended = true;
 }
 
 void ULlmAssistantDockWidget::endAssistantStream()
 {
     m_streaming_reply = false;
-    m_history->append(QString());
+    m_history->cancelStream();
 }
 
 void ULlmAssistantDockWidget::setRequestInProgress(bool busy)
@@ -653,46 +811,54 @@ void ULlmAssistantDockWidget::applyGuiPreferences()
     if(mode == RDK::LLM::LLMSendShortcutMode::Enter)
     {
         m_input->setPlaceholderText(
-            tr("Ask about the model or configuration… (Enter to send, Shift+Enter for new line)"));
+            tr("Ask about the model or configuration… (Enter to send, Shift+Enter for new line; Tab completes names)"));
         if(m_shortcut_ctrl_return)
             m_shortcut_ctrl_return->setEnabled(false);
         if(m_shortcut_ctrl_enter)
             m_shortcut_ctrl_enter->setEnabled(false);
-        if(!m_enter_send_filter_active)
-        {
-            m_input->installEventFilter(this);
-            m_enter_send_filter_active = true;
-        }
+        m_enter_send_filter_active = true;
     }
     else
     {
         m_input->setPlaceholderText(
-            tr("Ask about the model or configuration… (Ctrl+Enter to send)"));
+            tr("Ask about the model or configuration… (Ctrl+Enter to send; Tab completes names)"));
         if(m_shortcut_ctrl_return)
             m_shortcut_ctrl_return->setEnabled(true);
         if(m_shortcut_ctrl_enter)
             m_shortcut_ctrl_enter->setEnabled(true);
-        if(m_enter_send_filter_active)
-        {
-            m_input->removeEventFilter(this);
-            m_enter_send_filter_active = false;
-        }
+        m_enter_send_filter_active = false;
     }
 }
 
 bool ULlmAssistantDockWidget::eventFilter(QObject* watched, QEvent* event)
 {
-    if(watched != m_input || event->type() != QEvent::KeyPress)
-        return UVisualControllerWidget::eventFilter(watched, event);
-
-    auto* key_event = static_cast<QKeyEvent*>(event);
-    if(key_event->key() != Qt::Key_Return && key_event->key() != Qt::Key_Enter)
-        return UVisualControllerWidget::eventFilter(watched, event);
-    if(key_event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier))
-        return UVisualControllerWidget::eventFilter(watched, event);
-
-    trySendFromShortcut();
-    return true;
+    if(watched == m_input && event->type() == QEvent::KeyPress)
+    {
+        auto* key_event = static_cast<QKeyEvent*>(event);
+        if(key_event->key() == Qt::Key_Escape && m_name_completer
+           && m_name_completer->handleEscape())
+            return true;
+        if(key_event->key() == Qt::Key_Tab || key_event->key() == Qt::Key_Backtab)
+        {
+            if(m_name_completer
+               && m_name_completer->handleTab(key_event->key() != Qt::Key_Backtab
+                                              && !(key_event->modifiers() & Qt::ShiftModifier)))
+                return true;
+            return UVisualControllerWidget::eventFilter(watched, event);
+        }
+        if((key_event->key() == Qt::Key_Return || key_event->key() == Qt::Key_Enter)
+           && !(key_event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier))
+           && m_name_completer && m_name_completer->acceptCurrentSuggestion())
+            return true;
+        if(m_enter_send_filter_active
+           && (key_event->key() == Qt::Key_Return || key_event->key() == Qt::Key_Enter)
+           && !(key_event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier)))
+        {
+            trySendFromShortcut();
+            return true;
+        }
+    }
+    return UVisualControllerWidget::eventFilter(watched, event);
 }
 
 void ULlmAssistantDockWidget::onStreamToken(const QString& token)
@@ -701,11 +867,16 @@ void ULlmAssistantDockWidget::onStreamToken(const QString& token)
         return;
     m_stream_tokens_received = true;
     m_pending_assistant_archive += token;
-    QTextCursor cursor = m_history->textCursor();
-    cursor.movePosition(QTextCursor::End);
-    cursor.insertText(token);
-    m_history->setTextCursor(cursor);
-    m_history->ensureCursorVisible();
+    m_history->appendStreamText(token);
+}
+
+void ULlmAssistantDockWidget::onThinkingToken(const QString& token)
+{
+    if(token.isEmpty())
+        return;
+    m_stream_thinking += token;
+    if(m_request_status && m_request_status->isVisible())
+        m_request_status->setText(tr("Model is reasoning…"));
 }
 
 void ULlmAssistantDockWidget::onStreamFinished(const RDK::LLM::LLMFinalResponse& resp)
@@ -713,19 +884,46 @@ void ULlmAssistantDockWidget::onStreamFinished(const RDK::LLM::LLMFinalResponse&
     setRequestInProgress(false);
     if(m_context_budget)
         m_context_budget->setText(formatContextBudgetLabel(resp));
+
+    // Finalize streamed plain body as markdown HTML before Reasoning/tools blocks.
     if(m_streaming_reply)
     {
-        if(!m_pending_assistant_archive.isEmpty())
-            archiveHtmlFragment(m_pending_assistant_archive);
+        const QString header = QString("<b>%1:</b> ").arg(tr("Assistant"));
+        QString body = m_pending_assistant_archive;
+        if(body.startsWith(header))
+            body = body.mid(header.size());
+        else if(!resp.text.empty() && body.isEmpty())
+            body = QString::fromStdString(resp.text);
+
+        if(m_stream_tokens_received && !body.isEmpty())
+        {
+            m_history->finalizeStreamMarkdown(body);
+            archiveHtmlFragment(header + llmMarkdownToHtmlFragment(body));
+        }
+        else
+        {
+            m_history->cancelStream();
+        }
         m_pending_assistant_archive.clear();
-        endAssistantStream();
+        m_streaming_reply = false;
     }
+
+    QString thinking = m_stream_thinking;
+    if(thinking.trimmed().isEmpty() && !resp.thinking.empty())
+        thinking = QString::fromStdString(resp.thinking);
+    if(!thinking.trimmed().isEmpty()
+       && RDK::LLM::LLMServices::instance().settings().runtime().enable_ollama_thinking)
+        appendThinkingDetails(thinking);
+    m_stream_thinking.clear();
 
     appendRollbackStatusIfPresent(this, resp);
 
     appendToolTraceToHistory(m_history,
                              [this](const QString& fragment) { archiveHtmlFragment(fragment); },
                              resp);
+    appendWorkingGoalsToHistory(m_history,
+                                [this](const QString& fragment) { archiveHtmlFragment(fragment); },
+                                resp);
 
     if(!resp.ok)
     {
@@ -752,18 +950,24 @@ void ULlmAssistantDockWidget::onStreamFinished(const RDK::LLM::LLMFinalResponse&
     }
     if(resp.awaiting_user_input)
     {
-        appendAssistantText(tr("<b>Question</b>"));
-        appendAssistantText(QString::fromStdString(resp.text));
+        // Single Question block: short prompt + options list (HTML so markdown path
+        // does not escape chrome or duplicate candidates already in resp.text).
+        QString block = QStringLiteral("<b>Question</b><br/>%1")
+                            .arg(QString::fromStdString(resp.text).toHtmlEscaped());
         if(resp.user_choice_options.is_array() && !resp.user_choice_options.empty())
         {
-            int idx = 1;
+            block += QStringLiteral("<br/><ol>");
             for(const auto& choice : resp.user_choice_options)
             {
                 if(choice.is_string())
-                    appendAssistantText(QStringLiteral("%1) %2").arg(idx++).arg(
-                        QString::fromStdString(choice.get<std::string>())));
+                {
+                    block += QStringLiteral("<li>%1</li>").arg(
+                        QString::fromStdString(choice.get<std::string>()).toHtmlEscaped());
+                }
             }
+            block += QStringLiteral("</ol>");
         }
+        appendAssistantText(block);
         return;
     }
     if(resp.needs_entity_clarification || resp.needs_tool_disambiguation)
@@ -938,7 +1142,7 @@ void ULlmAssistantDockWidget::openArchivedChatNow(const QString& chat_file_path,
 
     const std::string body = m_chat_archive->loadChatBodyHtml(toArchivePath(chat_file_path));
     if(!body.empty())
-        m_history->setHtml(QString::fromStdString(body));
+        m_history->appendHtml(QString::fromStdString(body), true);
     setArchiveViewMode(true);
 }
 
@@ -995,17 +1199,13 @@ void ULlmAssistantDockWidget::rebuildHistoryFromSession(const std::string& sessi
         return;
     }
 
-    QString html;
+    m_history->clear();
     for(const RDK::LLM::LLMMessage& msg : state->messages)
     {
         const QString block = formatMessageForHistory(msg);
         if(!block.isEmpty())
-            html += block;
+            m_history->appendHtml(block, true);
     }
-    m_history->clear();
-    if(html.isEmpty())
-        return;
-    m_history->setHtml(html);
 }
 
 void ULlmAssistantDockWidget::restoreHitlFromSession(const std::string& session_id)
@@ -1047,8 +1247,9 @@ void ULlmAssistantDockWidget::restoreHitlFromSession(const std::string& session_
 
     if(state->pending_tool_arguments)
     {
-        m_history->append(
-            tr("<p><i>More information is required to continue the pending tool action.</i></p>"));
+        m_history->appendHtml(
+            tr("<p><i>More information is required to continue the pending tool action.</i></p>"),
+            true);
     }
 }
 
@@ -1072,19 +1273,28 @@ void ULlmAssistantDockWidget::runUserMessage(const QString& text)
 
     QPointer<ULlmAssistantDockWidget> self(this);
     auto future = QtConcurrent::run([req, can_stream, self]() {
-        RDK::LLM::LLMStreamHandlers stream;
-        if(can_stream && self)
-        {
-            stream.on_token = [self](const std::string& token) {
-                if(!self)
-                    return;
-                const QString qtok = QString::fromStdString(token);
-                QMetaObject::invokeMethod(self, "onStreamToken", Qt::QueuedConnection,
-                                        Q_ARG(QString, qtok));
-            };
-        }
-        return RDK::LLM::LLMServices::instance().orchestrator().handleUserMessage(
-            req, can_stream ? &stream : nullptr);
+        return catchLlmWorkerExceptions([&]() {
+            RDK::LLM::LLMStreamHandlers stream;
+            if(can_stream && self)
+            {
+                stream.on_token = [self](const std::string& token) {
+                    if(!self)
+                        return;
+                    const QString qtok = QString::fromStdString(token);
+                    QMetaObject::invokeMethod(self, "onStreamToken", Qt::QueuedConnection,
+                                            Q_ARG(QString, qtok));
+                };
+                stream.on_thinking_token = [self](const std::string& token) {
+                    if(!self)
+                        return;
+                    const QString qtok = QString::fromStdString(token);
+                    QMetaObject::invokeMethod(self, "onThinkingToken", Qt::QueuedConnection,
+                                            Q_ARG(QString, qtok));
+                };
+            }
+            return RDK::LLM::LLMServices::instance().orchestrator().handleUserMessage(
+                req, can_stream ? &stream : nullptr);
+        });
     });
 
     auto* watcher = new QFutureWatcher<RDK::LLM::LLMFinalResponse>(this);
@@ -1110,6 +1320,9 @@ void ULlmAssistantDockWidget::onConfirmClicked()
     appendToolTraceToHistory(m_history,
                              [this](const QString& fragment) { archiveHtmlFragment(fragment); },
                              resp);
+    appendWorkingGoalsToHistory(m_history,
+                                [this](const QString& fragment) { archiveHtmlFragment(fragment); },
+                                resp);
     appendAssistantText(resp.ok ? QString::fromStdString(resp.text)
                                 : QString::fromStdString("Error: " + resp.error));
 }
@@ -1139,8 +1352,10 @@ void ULlmAssistantDockWidget::onExecutePlanClicked()
     const std::string session_id = currentSessionId();
     setRequestInProgress(true);
     auto future = QtConcurrent::run([session, session_id]() {
-        return RDK::LLM::LLMServices::instance().orchestrator().confirmPlanExecution(
-            session_id, "gui-plan-trace", session);
+        return catchLlmWorkerExceptions([&]() {
+            return RDK::LLM::LLMServices::instance().orchestrator().confirmPlanExecution(
+                session_id, "gui-plan-trace", session);
+        });
     });
     auto* watcher = new QFutureWatcher<RDK::LLM::LLMFinalResponse>(this);
     connect(watcher, &QFutureWatcher<RDK::LLM::LLMFinalResponse>::finished, this,
@@ -1178,8 +1393,10 @@ void ULlmAssistantDockWidget::onResumePlanClicked()
     const std::string session_id = currentSessionId();
     setRequestInProgress(true);
     auto future = QtConcurrent::run([session, session_id]() {
-        return RDK::LLM::LLMServices::instance().orchestrator().resumePlanExecution(
-            session_id, "gui-plan-resume", session);
+        return catchLlmWorkerExceptions([&]() {
+            return RDK::LLM::LLMServices::instance().orchestrator().resumePlanExecution(
+                session_id, "gui-plan-resume", session);
+        });
     });
     auto* watcher = new QFutureWatcher<RDK::LLM::LLMFinalResponse>(this);
     connect(watcher, &QFutureWatcher<RDK::LLM::LLMFinalResponse>::finished, this,
@@ -1217,8 +1434,10 @@ void ULlmAssistantDockWidget::onRollbackPlanClicked()
     const std::string session_id = currentSessionId();
     setRequestInProgress(true);
     auto future = QtConcurrent::run([session, session_id]() {
-        return RDK::LLM::LLMServices::instance().orchestrator().rollbackPlanExecution(
-            session_id, "gui-plan-rollback", session);
+        return catchLlmWorkerExceptions([&]() {
+            return RDK::LLM::LLMServices::instance().orchestrator().rollbackPlanExecution(
+                session_id, "gui-plan-rollback", session);
+        });
     });
     auto* watcher = new QFutureWatcher<RDK::LLM::LLMFinalResponse>(this);
     connect(watcher, &QFutureWatcher<RDK::LLM::LLMFinalResponse>::finished, this,

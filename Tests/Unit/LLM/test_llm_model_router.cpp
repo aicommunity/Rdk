@@ -13,10 +13,10 @@ TEST(ModelRouter, LiteProfileForRouterTier)
     EXPECT_EQ(route.profile_hint, "ollama-lite");
 }
 
-TEST(ModelRouter, CortexUsesActiveProfile)
+TEST(ModelRouter, CortexPrefersThinkingProfile)
 {
     LLMProviderProfile active;
     active.profile_id = "ollama-local";
     const ModelRoute route = routeModelForPhase(ModelTier::Cortex, active);
-    EXPECT_EQ(route.profile_hint, "ollama-local");
+    EXPECT_EQ(route.profile_hint, "ollama-thinking");
 }

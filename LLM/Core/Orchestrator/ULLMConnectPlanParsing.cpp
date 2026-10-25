@@ -144,6 +144,39 @@ ParsedConnectGoal parseConnectGoal(const std::string& goal_en)
     if(std::smatch hub_m; std::regex_search(goal_en, hub_m, hub_re))
         out.hub_token = hub_m[1].str();
 
+    // "подключи PGenerator …" / "connect PGenerator …" → hub when not set via from/hub.
+    if(!out.hub_token)
+    {
+        static const std::regex connect_hub_re(
+            R"((?:подключи|подключить|подключил|connect|link)\s+([A-Za-z][A-Za-z0-9_./]{1,}))",
+            std::regex::icase);
+        if(std::smatch m; std::regex_search(goal_en, m, connect_hub_re))
+            out.hub_token = m[1].str();
+    }
+
+    // Live analogous reference: "как … к PNeuron" / "также как к PNeuron" / "same way as …".
+    // Note: std::regex \w is ASCII-only; use explicit Cyrillic stems, not \w.
+    static const std::regex analogous_ref_re(
+        R"((?:также\s+как\s+к\s+|как\s+(?:он\s+)?подключен\s+к\s+|как\s+(?:он\s+)?соединен\s+(?:с|к)\s+|как\s+(?:к|to)\s+|same\s+way\s+as\s+(?:(?:it\s+)?(?:is\s+)?connected\s+)?(?:to\s+)?|same\s+as\s+(?:(?:it\s+)?(?:is\s+)?connected\s+)?(?:to\s+)?|like\s+(?:(?:it\s+)?(?:is\s+)?connected\s+)?(?:to\s+))([A-Za-z][A-Za-z0-9_./]{1,}))",
+        std::regex::icase);
+    if(std::smatch ref_m; std::regex_search(goal_en, ref_m, analogous_ref_re))
+    {
+        out.analogous_ref_token = ref_m[1].str();
+        out.wants_analogous = true;
+    }
+
+    static const std::regex all_peers_re(
+        R"((ко\s+всем\s+нейрон|всем\s+нейрон|to\s+all\s+neurons|all\s+neurons|ко\s+всем))",
+        std::regex::icase);
+    if(std::regex_search(goal_en, all_peers_re))
+        out.wants_all_class_peers = true;
+
+    static const std::regex session_peers_re(
+        R"((к\s+этим\s+нейрон|этим\s+нейрон|these\s+neurons|to\s+these\s+neurons|к\s+этим))",
+        std::regex::icase);
+    if(std::regex_search(goal_en, session_peers_re))
+        out.wants_session_peers = true;
+
     static const std::regex sem_hint_re(
         R"((низкопорог|ltzone|lt zone|синапс|synapse|threshold|зона))", std::regex::icase);
     if(std::regex_search(goal_en, sem_hint_re))

@@ -94,7 +94,8 @@ public slots:
 
     void on_tabWidget_currentChanged(int index);
 
-    void on_action_cl_desc_triggered();
+    /// Not named on_* — avoids QMetaObject::connectSlotsByName noise (action is created in code).
+    void actionShowClassDescription();
 
     // Слот для изменения метода группировки
     void on_comboBoxGroupingMethod_currentIndexChanged(int index);

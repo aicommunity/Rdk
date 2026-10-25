@@ -10,7 +10,13 @@ CurrentComponentScope readCurrentComponentScope(const LLMGuiContextSnapshot* gui
     if(!gui_fallback)
         return scope;
 
-    if(!gui_fallback->current_component_long_name.empty())
+    // Prefer diagram drill scope over snapshot current/focused (TD-111 revert).
+    if(!gui_fallback->diagram_scope_long_name.empty())
+    {
+        scope.long_name = gui_fallback->diagram_scope_long_name;
+        scope.valid = true;
+    }
+    else if(!gui_fallback->current_component_long_name.empty())
     {
         scope.long_name = gui_fallback->current_component_long_name;
         scope.valid = true;

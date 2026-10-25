@@ -26,6 +26,7 @@
 #### Детальная документация модулей
 
 - [Engine-Detailed.md](Engine-Detailed.md) - детальная документация модуля Core/Engine (компоненты, свойства, контроллеры)
+- [Component-Order-Contract.md](Component-Order-Contract.md) - контракт порядка расчёта и перечисления свойств/компонентов
 - [Application-Detailed.md](Application-Detailed.md) - детальная документация модуля Core/Application (RPC, проекты, сервер)
 - [Graphics-Detailed.md](Graphics-Detailed.md) - детальная документация модуля Core/Graphics (графика, шрифты, отрисовка)
 - [Serialize-Detailed.md](Serialize-Detailed.md) - детальная документация модуля Core/Serialize (XML, Binary сериализация)

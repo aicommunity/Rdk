@@ -12,6 +12,7 @@
 #include "Domain/URdkDomainAccess.h"
 #include "Gui/ILLMPresentationSink.h"
 #include "Orchestrator/ULLMAgentOrchestrator.h"
+#include "Packs/ILLMCapabilityPack.h"
 #include "Settings/ILLMProviderSettingsSource.h"
 #include "Settings/ULLMProviderAuth.h"
 #include "Settings/ULLMSettingsStore.h"
@@ -46,6 +47,7 @@ public:
     ILLMKnowledgeCatalog* catalog() const;
     UDocSearchIndex& searchIndex();
     URdkContextRetriever* contextRetriever();
+    ILLMCapabilityPackRegistry& packs();
 
     ILLMProjectContextProvider* projectContext() const { return m_project_context; }
     bool loadConversationSession(const std::string& session_id);
@@ -74,6 +76,7 @@ private:
     std::unique_ptr<ILLMKnowledgeCatalog> m_catalog;
     std::unique_ptr<UDocSearchIndex> m_search_index;
     std::unique_ptr<URdkContextRetriever> m_context_retriever;
+    std::unique_ptr<ILLMCapabilityPackRegistry> m_packs;
 };
 
 } // namespace RDK::LLM

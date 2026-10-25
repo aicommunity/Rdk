@@ -205,6 +205,7 @@ bool ULLMContextCompactor::maybeCompact(ConversationState& state, const std::str
     summary_msg.role = LLMMessage::Role::System;
     summary_msg.content = "## Session summary\n" + summary;
 
+    // TD-171: compact messages only — never clear working_goals / known_facts / session graph.
     state.messages.clear();
     state.messages.push_back(summary_msg);
     state.messages.insert(state.messages.end(), tail.begin(), tail.end());

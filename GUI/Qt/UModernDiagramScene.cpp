@@ -587,6 +587,10 @@ void UModernDiagramScene::mousePressEvent(QGraphicsSceneMouseEvent *event)
             m_isGroupMoving = false;
             m_savedSelection.clear();
 
+            // Sync breadcrumbs / component list to the current diagram scope
+            // (container whose contents are shown), same as after entering it.
+            emit m_owner->componentSelected(m_owner->m_componentName);
+
             // Отложенный сброс флага, чтобы он оставался установленным во время обработки всех событий
             QTimer::singleShot(0, [this]() {
                 m_owner->m_isProgrammaticSelection = false;

@@ -47,6 +47,12 @@ struct ParsedConnectGoal {
     ConnectRemainingScope remaining_scope = ConnectRemainingScope::SessionDelta;
     ConnectTopology topology = ConnectTopology::Sequential;
     std::optional<std::string> hub_token;
+    /// Live “same as connected to X” reference component (subtree anchor).
+    std::optional<std::string> analogous_ref_token;
+    /// Fan-out to all peers of the same class as the analogous ref (“всем нейронам”).
+    bool wants_all_class_peers = false;
+    /// Fan-out to session-added components (“к этим нейронам”).
+    bool wants_session_peers = false;
     bool wants_internal_semantics_hint = false;
 };
 

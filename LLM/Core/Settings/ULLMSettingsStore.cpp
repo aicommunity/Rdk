@@ -116,6 +116,11 @@ void ULLMSettingsStore::setContextAcquisitionMode(const LLMContextAcquisitionMod
     m_runtime.context_acquisition_mode = mode;
 }
 
+void ULLMSettingsStore::setEnableOllamaThinking(bool enabled)
+{
+    m_runtime.enable_ollama_thinking = enabled;
+}
+
 void ULLMSettingsStore::setPreferredResponseLanguage(const std::string& code)
 {
     m_runtime.preferred_response_language = code;

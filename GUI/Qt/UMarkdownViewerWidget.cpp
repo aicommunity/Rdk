@@ -1,5 +1,6 @@
 #include "NmsdkQtCompat.h"
 #include "UMarkdownViewerWidget.h"
+#include "UStyleManager.h"
 
 #include <QVBoxLayout>
 #include <QFile>
@@ -70,20 +71,24 @@ UMarkdownViewerWidget::~UMarkdownViewerWidget()
 
 void UMarkdownViewerWidget::setMarkdown(const QString& markdown)
 {
-    m_currentMarkdown = markdown;
+    // Empty content: show a clear placeholder instead of an empty Base64 payload.
+    const QString content = markdown.trimmed().isEmpty()
+        ? QStringLiteral("No project description yet.")
+        : markdown;
+    m_currentMarkdown = content;
 
 #ifdef RDK_USE_QT_WEBENGINE
     QString basePath = m_baseUrl.toString();
-    QString html = createHtmlFromMarkdown(markdown, basePath);
+    QString html = createHtmlFromMarkdown(content, basePath);
     // Базовый URL должен быть qrc:/markdown/, иначе скрипты (marked.min.js, mermaid.min.js)
     // не загружаются из-за политики происхождения (file:// vs qrc://).
     QUrl baseUrl = QUrl(QStringLiteral("qrc:/markdown/"));
     m_webView->setHtml(html, baseUrl);
 #else
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-    m_textEdit->setMarkdown(markdown);
+    m_textEdit->setMarkdown(content);
 #else
-    m_textEdit->setPlainText(markdown);
+    m_textEdit->setPlainText(content);
 #endif
 #endif
 }
@@ -161,11 +166,11 @@ QString UMarkdownViewerWidget::createHtmlFromMarkdown(const QString& markdown, c
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             line-height: 1.6;
-            color: #333;
+            color: __NM_FG__;
             max-width: 100%;
             padding: 20px;
             margin: 0;
-            background-color: #fff;
+            background-color: __NM_BG__;
         }
         h1, h2, h3, h4, h5, h6 {
             margin-top: 24px;
@@ -173,12 +178,12 @@ QString UMarkdownViewerWidget::createHtmlFromMarkdown(const QString& markdown, c
             font-weight: 600;
             line-height: 1.25;
         }
-        h1 { font-size: 2em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
-        h2 { font-size: 1.5em; border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
+        h1 { font-size: 2em; border-bottom: 1px solid __NM_BORDER__; padding-bottom: 0.3em; }
+        h2 { font-size: 1.5em; border-bottom: 1px solid __NM_BORDER__; padding-bottom: 0.3em; }
         h3 { font-size: 1.25em; }
         p { margin-bottom: 16px; }
         code {
-            background-color: rgba(27, 31, 35, 0.05);
+            background-color: __NM_CODE_BG__;
             border-radius: 3px;
             font-size: 85%;
             margin: 0;
@@ -186,7 +191,7 @@ QString UMarkdownViewerWidget::createHtmlFromMarkdown(const QString& markdown, c
             font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
         }
         pre {
-            background-color: #f6f8fa;
+            background-color: __NM_PRE_BG__;
             border-radius: 3px;
             font-size: 85%;
             line-height: 1.45;
@@ -351,7 +356,7 @@ QString UMarkdownViewerWidget::createHtmlFromMarkdown(const QString& markdown, c
                     // Читаем Base64 из data-атрибута
                     const markdownBase64 = el.getAttribute('data-markdown-base64');
                     if (!markdownBase64 || markdownBase64.length === 0) {
-                        el.textContent = 'Error: Empty Base64 string in data attribute';
+                        el.textContent = 'No project description yet.';
                         return;
                     }
 
@@ -377,8 +382,7 @@ QString UMarkdownViewerWidget::createHtmlFromMarkdown(const QString& markdown, c
 
                     console.log('Decoded markdown length:', markdown ? markdown.length : 0);
                     if (!markdown || markdown.length === 0) {
-                        el.textContent = 'Error: Decoded markdown is empty';
-                        console.error('Decoded markdown is empty!');
+                        el.textContent = 'No project description yet.';
                         return;
                     }
 
@@ -446,6 +450,20 @@ QString UMarkdownViewerWidget::createHtmlFromMarkdown(const QString& markdown, c
 </body>
 </html>
 )HTML";
+    if(UStyleManager* style = UStyleManager::instance())
+    {
+        const QColor fg = style->getTextColor();
+        const QColor bg = style->getBackgroundColor();
+        const QColor alt = style->getBackgroundAltColor();
+        const bool dark = style->getThemeName().contains(QStringLiteral("Dark"), Qt::CaseInsensitive)
+            || style->getThemeName() == QStringLiteral("dark");
+        html.replace(QStringLiteral("__NM_FG__"), fg.name());
+        html.replace(QStringLiteral("__NM_BG__"), bg.name());
+        html.replace(QStringLiteral("__NM_BORDER__"), alt.name());
+        html.replace(QStringLiteral("__NM_CODE_BG__"),
+                     dark ? QStringLiteral("rgba(255,255,255,0.08)") : QStringLiteral("rgba(27, 31, 35, 0.05)"));
+        html.replace(QStringLiteral("__NM_PRE_BG__"), alt.name());
+    }
     return html;
 }
 #endif

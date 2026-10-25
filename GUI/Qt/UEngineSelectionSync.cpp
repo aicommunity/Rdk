@@ -199,7 +199,9 @@ QString componentClassNameFromModelScope(int channel_index, const QString& compo
     return QString::fromUtf8(storage->FindClassName(cont->GetClass()).c_str());
 }
 
-std::string internalLinksXmlFromModelScope(int channel_index, const QString& scope_long_name)
+std::string internalLinksXmlFromModelScope(int channel_index,
+                                           const QString& scope_long_name,
+                                           bool paths_from_model_root)
 {
     RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock<RDK::UContainer>(channel_index);
     if(!model)
@@ -213,9 +215,97 @@ std::string internalLinksXmlFromModelScope(int channel_index, const QString& sco
 
     RDK::USerStorageXML xml;
     xml.Create("Links");
-    // UNet::GetComponentInternalLinks returns 0 on success, non-zero on error.
-    if(cont->GetComponentInternalLinks(&xml, cont.Get()) != 0)
+    if(paths_from_model_root)
+    {
+        RDK::UEPtr<RDK::UNet> modelNet = RDK::dynamic_pointer_cast<RDK::UNet>(
+            RDK::UEPtr<RDK::UContainer>(model.Get()));
+        if(!modelNet)
+            return {};
+        RDK::UStringLinksList linkslist;
+        cont->GetLinks(linkslist, modelNet, false, cont);
+        if(linkslist.GetSize() == 0)
+            return {};
+        xml << linkslist;
+    }
+    else if(cont->GetComponentInternalLinks(&xml, cont.Get()) != 0)
+    {
         return {};
+    }
+    std::string out;
+    xml.Save(out);
+    return out;
+}
+
+std::string personalLinksXmlFromModelScope(int channel_index,
+                                           const QString& component_long_name,
+                                           const QString& owner_level_long_name,
+                                           bool paths_from_model_root)
+{
+    RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock<RDK::UContainer>(channel_index);
+    if(!model)
+        return {};
+
+    RDK::UEPtr<RDK::UNet> cont = RDK::dynamic_pointer_cast<RDK::UNet>(
+        containerFromModelScope(model.Get(), component_long_name.trimmed().toUtf8()));
+    if(!cont)
+        return {};
+
+    RDK::UEPtr<RDK::UNet> owner;
+    if(!owner_level_long_name.trimmed().isEmpty())
+    {
+        owner = RDK::dynamic_pointer_cast<RDK::UNet>(
+            containerFromModelScope(model.Get(), owner_level_long_name.trimmed().toUtf8()));
+    }
+
+    RDK::USerStorageXML xml;
+    xml.Create("Links");
+    if(paths_from_model_root)
+    {
+        RDK::UEPtr<RDK::UNet> modelNet = RDK::dynamic_pointer_cast<RDK::UNet>(
+            RDK::UEPtr<RDK::UContainer>(model.Get()));
+        if(!modelNet)
+            return {};
+        RDK::UStringLinksList linkslist;
+        cont->GetLinks(linkslist, modelNet, true, cont);
+        if(linkslist.GetSize() == 0)
+            return {};
+        xml << linkslist;
+    }
+    else if(cont->GetComponentPersonalLinks(&xml, owner ? owner.Get() : nullptr) != 0)
+    {
+        return {};
+    }
+    std::string out;
+    xml.Save(out);
+    return out;
+}
+
+std::string scopeChildBoundaryLinksXmlFromModelScope(int channel_index,
+                                                     const QString& scope_long_name)
+{
+    RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock<RDK::UContainer>(channel_index);
+    if(!model)
+        return {};
+
+    RDK::UEPtr<RDK::UNet> parent = RDK::dynamic_pointer_cast<RDK::UNet>(
+        containerFromModelScope(model.Get(), scope_long_name.trimmed().toUtf8()));
+    if(!parent)
+        return {};
+
+    RDK::UStringLinksList linkslist;
+    for(int i = 0; i < parent->GetNumComponents(); ++i)
+    {
+        RDK::UEPtr<RDK::UNet> sub = RDK::dynamic_pointer_cast<RDK::UNet>(parent->GetComponentByIndex(i));
+        if(sub)
+            sub->GetLinks(linkslist, parent, true, sub);
+    }
+
+    if(linkslist.GetSize() == 0)
+        return {};
+
+    RDK::USerStorageXML xml;
+    xml.Create("Links");
+    xml << linkslist;
     std::string out;
     xml.Save(out);
     return out;
@@ -265,8 +355,12 @@ QString propertiesLookupListFromModelScope(RDK::UContainer* model_root,
 
     QStringList entries;
     const RDK::UContainer::VariableMapT props = cont->GetPropertiesList();
-    for(RDK::UContainer::VariableMapCIteratorT it = props.begin(); it != props.end(); ++it)
+    const std::vector<RDK::NameT>& order = cont->GetPropertiesOrder();
+    for(size_t oi = 0; oi < order.size(); ++oi)
     {
+        RDK::UContainer::VariableMapCIteratorT it = props.find(order[oi]);
+        if(it == props.end())
+            continue;
         if(!it->second.CheckMask(type_mask))
             continue;
         entries.append(QString::fromUtf8(it->first.c_str()) + QLatin1Char(':') + QString::number(0));

@@ -8,14 +8,31 @@ LLMProviderCapabilities ULLMMockProvider::capabilities() const
     c.requires_network = false;
     c.supports_tool_calling = true;
     c.supports_streaming = false;
+    c.supports_thinking = m_supports_thinking;
     return c;
+}
+
+std::vector<std::string> ULLMMockProvider::lastToolNames() const
+{
+    std::vector<std::string> names;
+    for(const nlohmann::json& t : m_last_opts.tools_for_api)
+    {
+        if(!t.is_object())
+            continue;
+        if(t.contains("function") && t["function"].is_object())
+            names.push_back(t["function"].value("name", ""));
+        else
+            names.push_back(t.value("name", ""));
+    }
+    return names;
 }
 
 LLMCompletionResult ULLMMockProvider::chat(const std::vector<LLMMessage>& messages,
                                            const LLMCompletionOptions& opts)
 {
-    (void)opts;
     ++m_invoke_count;
+    m_last_messages = messages;
+    m_last_opts = opts;
     m_last_provider_system_text.clear();
     for(const LLMMessage& msg : messages)
     {
