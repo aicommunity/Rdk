@@ -926,13 +926,11 @@ int URdkCoreManager::ChannelDestroy(int index)
   EngineList[index]=0;
  }
 
+ // Native Free/Disconnect can Build/Reset pooled components. Their Environment
+ // must remain alive throughout storage teardown, including unused instances.
+ // Clear the environment's model references before the storage deletes it.
  if(EnvironmentList[index])
- {
-  if(EnvironmentList[index] == Environment)
-   Environment=0;
-  delete EnvironmentList[index];
-  EnvironmentList[index]=0;
- }
+  EnvironmentList[index]->DestroyModel();
 
  if(StorageList[index])
  {
@@ -940,6 +938,14 @@ int URdkCoreManager::ChannelDestroy(int index)
    Storage=0;
   delete StorageList[index];
   StorageList[index]=0;
+ }
+
+ if(EnvironmentList[index])
+ {
+  if(EnvironmentList[index] == Environment)
+   Environment=0;
+  delete EnvironmentList[index];
+  EnvironmentList[index]=0;
  }
 
  delete LoggerList[index];

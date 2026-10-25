@@ -1097,19 +1097,25 @@ void UStorage::FreeObjectsStorageByClass(const UId &classid)
 // Удаляет все объекты из хранилища
 void UStorage::ClearObjectsStorage(bool force)
 {
- for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
-												instances != iend; ++instances)
- {
-  std::string object_class_name=FindClassName(instances->first);
-  // Удалено избыточное логирование - создавало спам в INFO логах
-  for(list<UInstancesStorageElement>::iterator I=instances->second.begin(), J=instances->second.end(); I!=J; ++I)
+ // Free is recursive: freeing every pooled object in class/list order can
+ // detach a child before its parent, or Free that child a second time after
+ // the parent's walk. A second Free may Build an already dismantled graph.
+ // Snapshot the ownership forest before any native Free changes its links.
+ std::unordered_set<UContainer*> objects;
+ std::vector<UEPtr<UContainer>> roots;
+ for(const auto& instances : ObjectsStorage)
+  for(const auto& instance : instances.second)
+   objects.insert(instance.Object.Get());
+ for(const auto& instances : ObjectsStorage)
+  for(const auto& instance : instances.second)
   {
-   std::string object_name=I->Object->GetName();
-   // Удалено избыточное логирование - создавало спам в INFO логах
-   I->Object->Free();
+   auto owner = instance.Object->GetOwner();
+   if(!owner || objects.find(owner.Get()) == objects.end())
+    roots.push_back(instance.Object);
   }
-
-  // Удалено избыточное логирование - создавало спам в INFO логах
+ for(const auto& root : roots)
+ {
+  root->Free();
  }
 
  FreeObjectsStorage(force);

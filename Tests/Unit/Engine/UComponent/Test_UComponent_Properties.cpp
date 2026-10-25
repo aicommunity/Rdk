@@ -72,3 +72,46 @@ TEST(UComponentPropertiesCompat, PropertiesOrderMatchesRegistration)
     EXPECT_LT(iState1, iOutput1);
     EXPECT_LT(iOutput1, iInput1);
 }
+
+// Deliberately reverse lexical order. Setting the mode resets the dependent
+// value, as structure-mode setters do before the explicit length is loaded.
+class TestOrderedLoad : public UNet
+{
+public:
+    UProperty<int, TestOrderedLoad, ptPubParameter> ZMode;
+    UProperty<int, TestOrderedLoad, ptPubParameter> AValue;
+    std::vector<std::string> writes;
+
+    TestOrderedLoad() : ZMode("ZMode", this, &TestOrderedLoad::SetMode),
+                        AValue("AValue", this, &TestOrderedLoad::SetValue) {}
+    bool SetMode(const int&)
+    {
+        writes.push_back("ZMode");
+        AValue = 0;
+        return true;
+    }
+    bool SetValue(const int&)
+    {
+        writes.push_back("AValue");
+        return true;
+    }
+};
+
+TEST(UComponentPropertiesCompat, XmlAppliesSettersInRegistrationOrder)
+{
+    TestOrderedLoad source, restored;
+    source.ZMode = 1;
+    source.AValue = 37;
+    USerStorageXML xml;
+    ASSERT_TRUE(xml.Create("OrderedParameters"));
+    ASSERT_TRUE(source.GetComponentProperties(&xml, ptPubParameter));
+    restored.AValue = 9; // ensure the mode changes it; equal writes skip setters
+    restored.writes.clear();
+    ASSERT_EQ(restored.SetComponentProperties(&xml), 0);
+    EXPECT_EQ(restored.ZMode.GetData(), 1);
+    EXPECT_EQ(restored.AValue.GetData(), 37);
+    ASSERT_EQ(restored.writes.size(), 3u);
+    EXPECT_EQ(restored.writes[0], "ZMode");
+    EXPECT_EQ(restored.writes[1], "AValue"); // mode's native initialization
+    EXPECT_EQ(restored.writes[2], "AValue"); // explicit serialized value
+}

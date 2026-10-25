@@ -534,12 +534,15 @@ int UNet::SetComponentProperties(RDK::USerStorageXML *serstorage)
 
   const RDK::UContainer::VariableMapT &props=GetPropertiesList();
 
-  RDK::UContainer::VariableMapCIteratorT I,J;
-
-  I=props.begin();
-  J=props.end();
-  while(I != J)
+  // Match native CopyProperties/GetComponentProperties: a mode setter can
+  // change the representation or defaults of properties registered after it.
+  // Map iteration (or XML node order) must not apply that setter last.
+  const std::vector<NameT> order = GetPropertiesOrder();
+  for(size_t oi = 0; oi < order.size(); ++oi)
   {
+   RDK::UContainer::VariableMapCIteratorT I = props.find(order[oi]);
+   if(I == props.end())
+    continue;
    try
    {
 	SetProperty(I->first,serstorage);
@@ -592,7 +595,6 @@ int UNet::SetComponentProperties(RDK::USerStorageXML *serstorage)
 
 	LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Error set property '")+GetFullName()+std::string(":")+I->first+std::string("' to ")+value+std::string(". Reason: Undefined exception"));
    }
-   ++I;
   }
  return 0;
 }
