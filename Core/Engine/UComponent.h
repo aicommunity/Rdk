@@ -573,6 +573,13 @@ class UItem;
 class RDK_LIB_TYPE UIPropertyInput: public UIProperty
 {
 public:
+ /// Read-only effective data sources, in input-slot order. Null entries retain
+ /// unbound slots. Call only while the component graph is not being edited.
+ /// Custom property implementations may opt in without changing evaluation.
+ virtual bool CanInspectDataSources(void) const { return false; }
+ virtual std::vector<const UIProperty*> GetDataSources(void) const { return {}; }
+ virtual bool UsesExternalDataSource(void) const { return false; }
+
  /// Конструкторы и деструкторы
  UIPropertyInput(void);
  virtual ~UIPropertyInput(void);
