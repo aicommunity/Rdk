@@ -832,6 +832,16 @@ void DetachFrom(void)
 }
 
 // Метод возвращает число указателей
+bool CanInspectDataSources(void) const override { return true; }
+bool UsesExternalDataSource(void) const override { return ExternalDataSource != nullptr; }
+std::vector<const UIProperty*> GetDataSources(void) const override
+{
+ // Match GetData's precedence. Do not read data or populate the lazy cache.
+ if(ExternalDataSource) return {ExternalDataSource};
+ if(!IsConnectedFlag) return {};
+ return std::vector<const UIProperty*>(ConnectedOutputs.begin(), ConnectedOutputs.end());
+}
+
 int GetNumPointers(void) const
 {
  return int(ConnectedOutputs.size());
