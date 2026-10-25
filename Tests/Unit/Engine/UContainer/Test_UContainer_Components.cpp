@@ -15,7 +15,6 @@ public:
 protected:
     void AInit() override { ++initCalls; }
     void AUnInit() override { ++uninitCalls; }
-    bool ABuild() override { ++buildCalls; return true; }
 public:
 
     void ForceUpdateActiveCache() { UpdateActiveComponentsCache(); }
@@ -64,7 +63,7 @@ public:
 
 protected:
     bool ADefault(void) override { return true; }
-    bool ABuild(void) override { return true; }
+    bool ABuild(void) override { ++buildCalls; return true; }
     bool AReset(void) override { return true; }
     bool ACalculate(void) override { return true; }
 };
