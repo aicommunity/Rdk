@@ -2324,6 +2324,8 @@ try{
 
    // TODO: Реалиовать загрузку описаний классов
    // Загрузка описаний классов
+   // Apply the channel policy before model/image construction and XML Load.
+   GetEnvironmentLock()->SetUseIndTimeStepFlag(channel_config.UseIndTimeStepFlag);
    Model_SetDefaultTimeStep(channel_config.DefaultTimeStep);
    Log_SetDebugMode(config.DebugMode);
    Log_SetDebugSysEventsMask(config.DebugSysEventsMask);
@@ -2968,6 +2970,7 @@ bool UApplication::CloneChannel(int source_id, int cloned_id)
   else
    Env_SetPredefinedStructure(cloned_channel.PredefinedStructure);
 
+   GetEnvironmentLock()->SetUseIndTimeStepFlag(cloned_channel.UseIndTimeStepFlag);
    Model_SetDefaultTimeStep(cloned_channel.DefaultTimeStep);
    Log_SetDebugMode(config.DebugMode);
    Log_SetDebugSysEventsMask(config.DebugSysEventsMask);
@@ -3023,7 +3026,8 @@ bool UApplication::CloneChannel(int source_id, int cloned_id)
 
  if(Model_Check())
  {
-  Model_SetGlobalTimeStep("",cloned_channel.GlobalTimeStep);
+  if(!cloned_channel.UseIndTimeStepFlag)
+   Model_SetGlobalTimeStep("",cloned_channel.GlobalTimeStep);
   if(cloned_channel.InitAfterLoad)
    MEnv_Init(cloned_id);
   if(cloned_channel.ResetAfterLoad)
