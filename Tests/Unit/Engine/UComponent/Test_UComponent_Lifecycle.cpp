@@ -112,3 +112,30 @@ TEST(UModuleLifecycleObservation, NativeContainerResetAttemptIsObservableWithout
     // With no Storage, UContainer does not enter the Build hooks.
     EXPECT_TRUE(resetAttempt.IsCurrent());EXPECT_FALSE(component.buildCalled);
 }
+
+TEST(UModuleLifecycleObservation, DirectContainerInitAndUnInitKeepTheirNativeHookBypasses)
+{
+    class DirectContainer : public UNet
+    {
+    public:
+        UModuleLifecycleObservation watched;
+        bool invalidAtInit=false,invalidAtUnInit=false;
+        int genericBeforeHooks=0;
+        std::vector<std::string> order;
+    protected:
+        void ABeforeInit() override { ++genericBeforeHooks; }
+        void ABeforeUnInit() override { ++genericBeforeHooks; }
+        void AInit() override { invalidAtInit=!watched.IsCurrent();order.push_back("init"); }
+        void AUnInit() override { invalidAtUnInit=!watched.IsCurrent();order.push_back("uninit"); }
+    };
+    DirectContainer component;component.SetActivity(true);
+    component.watched=component.ObserveLifecycle();component.Init();
+    ASSERT_TRUE(component.IsInit());EXPECT_TRUE(component.invalidAtInit);
+    const auto initialized=component.ObserveLifecycle();component.Init();
+    EXPECT_TRUE(initialized.IsCurrent());EXPECT_EQ(component.genericBeforeHooks,0);
+    component.watched=component.ObserveLifecycle();component.UnInit();
+    EXPECT_TRUE(component.invalidAtUnInit);EXPECT_FALSE(component.IsInit());
+    EXPECT_EQ(component.genericBeforeHooks,0);
+    EXPECT_EQ(component.order,(std::vector<std::string>{"init","uninit"}));
+    const auto inactive=component.ObserveLifecycle();component.UnInit();EXPECT_TRUE(inactive.IsCurrent());
+}

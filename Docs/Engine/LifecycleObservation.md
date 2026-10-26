@@ -12,6 +12,11 @@ Calculate does not invalidate observations. Native no-op calls that return befor
 the corresponding before-hook do not invalidate them either. A Reset attempt
 on an uninitialized UContainer does enter BeforeReset and therefore invalidates
 an observation even when the initialization guard subsequently skips AReset.
+UContainer Init/UnInit historically call AInit/AUnInit directly and bypass
+the generic Before/After hooks. Their observation is advanced at the actual
+entry instead; no previously skipped hooks are introduced. Init still initializes
+children first and resets after AInit, and UnInit still calls AUnInit before
+uninitializing children.
 An invalid observation proves that a lifecycle boundary was entered; it does
 not prove that construction, initialization or reset completed successfully.
 

@@ -2720,6 +2720,7 @@ void UContainer::Init(void)
    if(IsInit())
 	return;
 
+   AdvanceLifecycleObservation();
    for(int i=0;i<NumComponents;i++)
 	PComponents[i]->Init();
 
@@ -2772,6 +2773,7 @@ void UContainer::UnInit(void)
  if(!IsInit())
   return;
 
+ AdvanceLifecycleObservation();
  RDK_SYS_TRY
  {
   try

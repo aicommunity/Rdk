@@ -50,6 +50,8 @@ bool InitFlag;
 
 private:
  std::shared_ptr<UModuleLifecycleObservation::State> LifecycleState;
+protected:
+ /// For native overrides that enter lifecycle directly, without before-hooks.
  void AdvanceLifecycleObservation();
 
 public: // Методы
