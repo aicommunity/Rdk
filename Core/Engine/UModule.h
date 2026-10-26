@@ -15,8 +15,27 @@ See file license.txt for more information
 #define UMODULE_H
 
 #include "../../Deploy/Include/initdll_defs.h"
+#include <cstdint>
+#include <memory>
 
 namespace RDK {
+
+class UModule;
+/// Process-local observation of native lifecycle, independent of parameters and
+/// component storage. It does not own the component or represent a checkpoint.
+class RDK_LIB_TYPE UModuleLifecycleObservation
+{
+public:
+ UModuleLifecycleObservation()=default;
+ bool IsAlive() const;
+ bool IsCurrent() const;
+private:
+ struct State;
+ std::shared_ptr<State> ObservedState;
+ std::uint64_t Revision=0;
+ UModuleLifecycleObservation(std::shared_ptr<State> state,std::uint64_t revision);
+ friend class UModule;
+};
 
 class RDK_LIB_TYPE UModule
 {
@@ -29,12 +48,25 @@ bool Ready;
 /// если false - объект будет проинициализирован
 bool InitFlag;
 
+private:
+ std::shared_ptr<UModuleLifecycleObservation::State> LifecycleState;
+protected:
+ /// For native overrides that enter lifecycle directly, without before-hooks.
+ void AdvanceLifecycleObservation();
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 UModule(void);
+UModule(const UModule& source);
+UModule& operator=(const UModule& source);
 virtual ~UModule(void);
+
+/// Invalidated before native Default/Build/Reset/Init/UnInit hooks, or on C++
+/// assignment/destruction. Calculate and no-op Build/Init do not invalidate it.
+/// Never serialized; copying a module creates an independent identity.
+UModuleLifecycleObservation ObserveLifecycle() const;
 // --------------------------
 
 // --------------------------
