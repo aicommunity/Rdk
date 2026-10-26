@@ -233,6 +233,13 @@ bool UContainer::SetEnvironment(UEPtr<UEnvironment> environment)
  if(!UComponent::SetEnvironment(environment))
   return false;
 
+ // Pooled roots can retain TimeStep visibility from a previous channel.
+ // Environment owns this mode. Synchronize metadata once per node here;
+ // do not alter numeric rates, Build, or physical dynamics during assignment.
+ if(environment)
+  ChangeLookupPropertyType("TimeStep",environment->GetUseIndTimeStepFlag()
+   ? ptPubSysParameter : ptSysParameter);
+
  bool res=true;
 
  for(int i=0;i<NumComponents;i++)

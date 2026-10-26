@@ -146,6 +146,26 @@ TEST(UContainerFrequency, DetachedStorageCopyRetainsHeterogeneousRates)
     copy->Free(); source->Free();
 }
 
+TEST(UContainerFrequency, EnvironmentAssignmentRefreshesModeWithoutChangingRates)
+{
+    UEnvironment environment;
+    TestContainer root;
+    root.SetGlobalTimeStep(20000);
+    UEPtr<TestContainer> child(new TestContainer);
+    child->Name="Child";child->SetGlobalTimeStep(4000);
+    root.AddComponent(child);root.ChangeUseIndTimeStepMode(true);
+    root.SetEnvironment(&environment);
+    EXPECT_EQ(root.FindProperty("TimeStep")->GetType() & pgPublic,0u);
+    EXPECT_EQ(child->FindProperty("TimeStep")->GetType() & pgPublic,0u);
+    EXPECT_EQ(root.GetTimeStep(),20000);EXPECT_EQ(child->GetTimeStep(),4000);
+    environment.SetUseIndTimeStepFlag(true);
+    root.SetEnvironment(&environment); // Same pointer, updated policy.
+    EXPECT_NE(root.FindProperty("TimeStep")->GetType() & pgPublic,0u);
+    EXPECT_NE(child->FindProperty("TimeStep")->GetType() & pgPublic,0u);
+    EXPECT_EQ(root.GetTimeStep(),20000);EXPECT_EQ(child->GetTimeStep(),4000);
+    root.DetachAndFreeChildren();
+}
+
 class StorageFreeCounter : public TestContainer
 {
 public:
