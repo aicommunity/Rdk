@@ -51,6 +51,34 @@ struct Lease
  UEPtr<UContainer> object;
  ~Lease() { if(object) storage->ReturnObject(object); }
 };
+
+// Name the first parameter/metadata mismatch without logging parameter values
+// (generic class images may contain credentials or other private data).
+std::string CopyDifference(UEPtr<UContainer> expected,UEPtr<UContainer> actual)
+{
+ std::vector<Node> left,right;
+ std::set<const UContainer*> leftSeen,rightSeen;
+ Collect(expected,"$",left,leftSeen);Collect(actual,"$",right,rightSeen);
+ if(left.size()!=right.size()) return "node_count";
+ for(size_t i=0;i<left.size();++i)
+ {
+  if(left[i].path!=right[i].path) return left[i].path+":child_order";
+  for(const auto& name:left[i].component->GetPropertiesOrder())
+  {
+   const auto a=left[i].component->FindProperty(name);
+   if(!(a->GetType() & ptParameter) || name=="Name" || name=="Id") continue;
+   const auto b=right[i].component->FindProperty(name);
+   const auto path=left[i].path+":"+name;
+   if(!b) return path+":missing_property";
+   if(a->GetType()!=b->GetType())
+    return path+":property_type(expected="+std::to_string(a->GetType())+",actual="+std::to_string(b->GetType())+")";
+   std::string av,bv;
+   left[i].component->GetPropertyValue(name,av);right[i].component->GetPropertyValue(name,bv);
+   if(av!=bv) return path+":parameter_value";
+  }
+ }
+ return "class_or_binding_order";
+}
 }
 
 std::string DescribeClassImage(UEPtr<UContainer> prototype)
@@ -125,8 +153,10 @@ ClassImageRegistration RegisterClassImage(UEPtr<UStorage> storage,
  if(!lease.object) throw ClassImageError("native_copy_failed", name);
  lease.object->SetEnvironment(prototype->GetEnvironment());
  lease.object->Init();
- if(!lease.object->IsInit() || !lease.object->IsReady() || DescribeClassImage(lease.object) != expected)
-  throw ClassImageError("native_copy_mismatch", name);
+ if(!lease.object->IsInit() || !lease.object->IsReady())
+  throw ClassImageError("native_copy_mismatch", name+":not_initialized_or_ready");
+ if(DescribeClassImage(lease.object) != expected)
+  throw ClassImageError("native_copy_mismatch", name+":"+CopyDifference(prototype,lease.object));
  std::vector<Node> sourceNodes, copyNodes;
  std::set<const UContainer*> sourcePointers, copyPointers;
  Collect(prototype, "$", sourceNodes, sourcePointers);
