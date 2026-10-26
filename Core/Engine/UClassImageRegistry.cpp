@@ -51,6 +51,43 @@ struct Lease
  UEPtr<UContainer> object;
  ~Lease() { if(object) storage->ReturnObject(object); }
 };
+
+unsigned ImagePropertyType(const std::string& name,unsigned type)
+{
+ // Environment controls this visibility; it is not immutable image physics.
+ // Keep every other type bit and the actual numeric TimeStep value significant.
+ if(name=="TimeStep" && (type==ptSysParameter || type==ptPubSysParameter))
+  return ptSysParameter;
+ return type;
+}
+
+// Name the first parameter/metadata mismatch without logging parameter values
+// (generic class images may contain credentials or other private data).
+std::string CopyDifference(UEPtr<UContainer> expected,UEPtr<UContainer> actual)
+{
+ std::vector<Node> left,right;
+ std::set<const UContainer*> leftSeen,rightSeen;
+ Collect(expected,"$",left,leftSeen);Collect(actual,"$",right,rightSeen);
+ if(left.size()!=right.size()) return "node_count";
+ for(size_t i=0;i<left.size();++i)
+ {
+  if(left[i].path!=right[i].path) return left[i].path+":child_order";
+  for(const auto& name:left[i].component->GetPropertiesOrder())
+  {
+   const auto a=left[i].component->FindProperty(name);
+   if(!(a->GetType() & ptParameter) || name=="Name" || name=="Id") continue;
+   const auto b=right[i].component->FindProperty(name);
+   const auto path=left[i].path+":"+name;
+   if(!b) return path+":missing_property";
+   if(ImagePropertyType(name,a->GetType())!=ImagePropertyType(name,b->GetType()))
+    return path+":property_type(expected="+std::to_string(a->GetType())+",actual="+std::to_string(b->GetType())+")";
+   std::string av,bv;
+   left[i].component->GetPropertyValue(name,av);right[i].component->GetPropertyValue(name,bv);
+   if(av!=bv) return path+":parameter_value";
+  }
+ }
+ return "class_or_binding_order";
+}
 }
 
 std::string DescribeClassImage(UEPtr<UContainer> prototype)
@@ -64,7 +101,7 @@ std::string DescribeClassImage(UEPtr<UContainer> prototype)
   for(const auto& property : node.component->GetPropertiesList())
    propertyPaths[property.second.Property.Get()] = node.path + ":" + property.first;
 
- std::string result = "RdkClassImage-v1";
+ std::string result = "RdkClassImage-v2";
  for(const auto& node : nodes)
  {
   Append(result, "node"); Append(result, node.path);
@@ -81,7 +118,7 @@ std::string DescribeClassImage(UEPtr<UContainer> prototype)
     std::string value;
     node.component->GetPropertyValue(name, value);
     Append(result, "parameter"); Append(result, name);
-    Append(result, std::to_string(property->GetType())); Append(result, value);
+    Append(result, std::to_string(ImagePropertyType(name,property->GetType()))); Append(result, value);
    }
    if(auto input = dynamic_cast<const UIPropertyInput*>(property.Get()))
    {
@@ -125,8 +162,10 @@ ClassImageRegistration RegisterClassImage(UEPtr<UStorage> storage,
  if(!lease.object) throw ClassImageError("native_copy_failed", name);
  lease.object->SetEnvironment(prototype->GetEnvironment());
  lease.object->Init();
- if(!lease.object->IsInit() || !lease.object->IsReady() || DescribeClassImage(lease.object) != expected)
-  throw ClassImageError("native_copy_mismatch", name);
+ if(!lease.object->IsInit() || !lease.object->IsReady())
+  throw ClassImageError("native_copy_mismatch", name+":not_initialized_or_ready");
+ if(DescribeClassImage(lease.object) != expected)
+  throw ClassImageError("native_copy_mismatch", name+":"+CopyDifference(prototype,lease.object));
  std::vector<Node> sourceNodes, copyNodes;
  std::set<const UContainer*> sourcePointers, copyPointers;
  Collect(prototype, "$", sourceNodes, sourcePointers);

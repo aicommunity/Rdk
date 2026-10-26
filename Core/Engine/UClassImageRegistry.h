@@ -23,7 +23,9 @@ struct ClassImageRegistration
 };
 
 // Read-only parameter/structure/binding description. Identity and dynamic state
-// are excluded. The caller must stop calculation and graph editing.
+// are excluded. V2 canonicalizes Environment-owned TimeStep visibility only;
+// its numeric frequency remains significant. Comparison is process-local.
+// The caller must stop calculation and graph editing.
 RDK_LIB_TYPE std::string DescribeClassImage(UEPtr<UContainer> prototype);
 
 // Construct a separate native parameter copy, initialize it, verify equivalence,
