@@ -263,6 +263,17 @@ classDiagram
 - `MaxCalculationModelTime` - максимально допустимое время расчета модели
 - `UseIndTimeStepFlag` - использование индивидуальных параметров TimeStep для каждого компонента
 
+При `UseIndTimeStepFlag=false` общий режим распространяется и на поддеревья,
+присоединяемые позднее к модели в Environment: они получают частоту владельца.
+Переключение существующей модели в общий режим выравнивает дерево по частоте
+корня; обратное переключение разрешает индивидуальные значения, но не
+восстанавливает прежние частоты. Изменять режим следует между пробами и затем
+выполнять штатный Reset/Init для обновления зависимых коэффициентов.
+При `true` присоединение сохраняет частоты образа. Копирование отдельных
+storage-образов без Environment сохраняет неоднородные частоты в обоих случаях.
+`SetGlobalTimeStep` выравнивает существующее дерево; `DefaultTimeStep` не
+подменяет частоту явно сконфигурированной модели.
+
 **Настройки загрузки:**
 - `InitAfterLoad` - инициализировать канал после загрузки
 - `ResetAfterLoad` - сбросить расчет после загрузки
@@ -1011,6 +1022,15 @@ The project supports three XML format versions:
 - `MinInterstepsInterval` - minimum interval between calculation steps (ms)
 - `MaxCalculationModelTime` - maximum allowed model calculation time
 - `UseIndTimeStepFlag` - use individual TimeStep parameters for each component
+
+With `UseIndTimeStepFlag=false`, subtrees attached later to a model in an
+Environment inherit their owner's frequency. Switching an existing model to
+global mode aligns its tree to the root frequency; enabling individual mode
+permits separate values without restoring previous rates. Change this policy
+between probes, followed by native Reset/Init to refresh derived coefficients.
+Individual mode preserves image rates on attachment. Detached storage-image
+copies preserve heterogeneous rates. `SetGlobalTimeStep` aligns the existing
+tree; `DefaultTimeStep` does not override an explicitly configured model clock.
 
 **Load Settings:**
 - `InitAfterLoad` - initialize channel after load

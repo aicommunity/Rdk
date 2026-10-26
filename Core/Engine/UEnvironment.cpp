@@ -181,7 +181,11 @@ bool UEnvironment::SetUseIndTimeStepFlag(bool value)
 {
  UseIndTimeStepFlag=value;
  if(Model)
+ {
   Model->ChangeUseIndTimeStepMode(value);
+  if(!value)
+   Model->SetGlobalTimeStep(Model->GetTimeStep());
+ }
  return true;
 }
 // --------------------------
@@ -304,6 +308,9 @@ bool UEnvironment::CreateModel(const NameT& classname)
 
  Model->SetLogger(Logger);
  Model->SetEnvironment(this);
+ Model->ChangeUseIndTimeStepMode(UseIndTimeStepFlag);
+ if(!UseIndTimeStepFlag)
+  Model->SetGlobalTimeStep(Model->GetTimeStep());
  Ready=false;
  // Инвалидируем кэш компонента расчета при создании новой модели
  CachedCalculationComponent = UEPtr<UContainer>(0);
@@ -344,6 +351,9 @@ bool UEnvironment::CreateModel(const UId& classid)
 
  Model->SetLogger(Logger);
  Model->SetEnvironment(this);
+ Model->ChangeUseIndTimeStepMode(UseIndTimeStepFlag);
+ if(!UseIndTimeStepFlag)
+  Model->SetGlobalTimeStep(Model->GetTimeStep());
  Ready=false;
  // Инвалидируем кэш компонента расчета при создании новой модели
  CachedCalculationComponent = UEPtr<UContainer>(0);

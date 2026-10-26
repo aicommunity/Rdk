@@ -1310,6 +1310,13 @@ UId UContainer::AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer)
 
  comp->SetEnvironment(Environment);
 
+ // Global-rate mode applies to future children as well as the existing
+ // tree. Detached storage images have no Environment: preserve their
+ // individual physics while copying/registering them. This is a structural
+ // boundary; native Init/Reset refreshes time-dependent coefficients later.
+ if(Environment && !Environment->GetUseIndTimeStepFlag())
+  comp->SetGlobalTimeStep(GetTimeStep());
+
  const UEPtr<UIProperty> prop_ts=FindProperty("TimeStep");
  unsigned int time_step_prop_type=prop_ts->GetType();
  if((time_step_prop_type & ptPubParameter) == ptPubParameter)

@@ -93,6 +93,59 @@ TEST(UContainerCopyLifecycle, ReplacesInitializedGraphThroughNativeReinitializat
     storage->ReturnObject(target); storage->ReturnObject(source);
 }
 
+TEST(UContainerFrequency, GlobalEnvironmentAppliesRateToNewSubtree)
+{
+    UEnvironment environment;
+    TestContainer root;
+    root.SetEnvironment(&environment);
+    root.SetGlobalTimeStep(20000);
+    UEPtr<TestContainer> child(new TestContainer), grandchild(new TestContainer);
+    child->Name="Child"; grandchild->Name="Grandchild";
+    child->SetGlobalTimeStep(4000); grandchild->SetGlobalTimeStep(5000);
+    child->AddComponent(grandchild);
+    root.AddComponent(child);
+    EXPECT_EQ(child->GetTimeStep(),20000);
+    EXPECT_EQ(grandchild->GetTimeStep(),20000);
+    root.DetachAndFreeChildren();
+}
+
+TEST(UContainerFrequency, IndividualEnvironmentPreservesNewSubtreeRates)
+{
+    UEnvironment environment;
+    environment.SetUseIndTimeStepFlag(true);
+    TestContainer root;
+    root.SetEnvironment(&environment);
+    root.ChangeUseIndTimeStepMode(true);
+    root.SetGlobalTimeStep(20000);
+    UEPtr<TestContainer> child(new TestContainer), grandchild(new TestContainer);
+    child->Name="Child"; grandchild->Name="Grandchild";
+    child->SetGlobalTimeStep(4000); grandchild->SetGlobalTimeStep(5000);
+    child->AddComponent(grandchild);
+    root.AddComponent(child);
+    EXPECT_EQ(child->GetTimeStep(),4000);
+    EXPECT_EQ(grandchild->GetTimeStep(),5000);
+    root.DetachAndFreeChildren();
+}
+
+TEST(UContainerFrequency, DetachedStorageCopyRetainsHeterogeneousRates)
+{
+    UEPtr<UStorage> storage(new UStorage);
+    storage->AddClass(new UComponentFactoryMethod(storage,
+        +[]() -> UComponent* { return new TestContainer; }, "FrequencyFixture"), "FrequencyFixture");
+    auto source=dynamic_pointer_cast<TestContainer>(storage->TakeObject("FrequencyFixture"));
+    auto child=dynamic_pointer_cast<TestContainer>(storage->TakeObject("FrequencyFixture"));
+    ASSERT_TRUE(source); ASSERT_TRUE(child);
+    source->Name="Source"; source->SetGlobalTimeStep(20000);
+    child->Name="Child"; child->SetGlobalTimeStep(4000);
+    source->AddComponent(child);
+    auto copy=source->Alloc(storage);
+    ASSERT_TRUE(copy);
+    EXPECT_EQ(copy->GetTimeStep(),20000);
+    ASSERT_EQ(copy->GetNumComponents(),1);
+    EXPECT_EQ(copy->GetComponentByIndex(0)->GetTimeStep(),4000);
+    copy->Free(); source->Free();
+}
+
 class StorageFreeCounter : public TestContainer
 {
 public:
