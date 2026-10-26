@@ -266,16 +266,25 @@ UId UStorage::AddClass(UEPtr<UComponentAbstractFactory> factory, const string &c
 // все объекты этого класса
 void UStorage::DelClass(const UId &classid, bool force)
 {
+ // Validate before changing the object pool. Keep the factory itself, rather
+ // than a map iterator that becomes invalid as soon as its entry is erased.
+ UClassesStorageIterator class_entry=ClassesStorage.find(classid);
+ if(class_entry == ClassesStorage.end())
+  throw EClassIdNotExist(classid);
+ UClassStorageElement element=class_entry->second;
  UObjectsStorageIterator temp=ObjectsStorage.find(classid);
 
  if(!force)
  {
   FreeObjectsStorageByClass(classid);
-  // Если после очистки у класса не осталось объектов
-  if(temp != ObjectsStorage.end() && temp->second.empty())
-      ObjectsStorage.erase(temp);
-  if(temp != ObjectsStorage.end() && temp->second.size() > 0)
-   throw EObjectStorageNotEmpty(classid);
+  // Reacquire after native destruction, and never read an erased entry.
+  temp=ObjectsStorage.find(classid);
+  if(temp != ObjectsStorage.end())
+  {
+   if(!temp->second.empty())
+    throw EObjectStorageNotEmpty(classid);
+   ObjectsStorage.erase(temp);
+  }
  }
  else
  {
@@ -313,7 +322,6 @@ void UStorage::DelClass(const UId &classid, bool force)
   ClearObjectsStorageByClass(classid);
  }
 
- UClassesStorageIterator I=ClassesStorage.find(classid);
  std::string name;
 
  // КРИТИЧНО: Получаем имя класса перед удалением из ClassesStorage
@@ -332,12 +340,8 @@ void UStorage::DelClass(const UId &classid, bool force)
     std::string(" not found in ClassesLookupTable"));
  }
 
- if(I != ClassesStorage.end())
-  ClassesStorage.erase(I);
- else
-  throw EClassIdNotExist(classid);
-
- UClassStorageElement element=I->second;
+ UEPtr<ULibrary> lib=FindCollection(name);
+ ClassesStorage.erase(classid);
  if(element)
   delete element.Get();
 
@@ -362,7 +366,7 @@ void UStorage::DelClass(const UId &classid, bool force)
   }
  }
 
- UEPtr<ULibrary> lib=FindCollection(name);
+ ClassLibraryIndex.erase(name);
  if(lib)
   lib->RemoveClassFromCompletedList(name);
 }
