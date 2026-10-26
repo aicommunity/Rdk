@@ -15,20 +15,56 @@ See file license.txt for more information
 #define UMODULE_CPP
 
 #include "UModule.h"
+#include <atomic>
+#include <limits>
+#include <utility>
 
 namespace RDK {
+
+struct UModuleLifecycleObservation::State
+{
+ std::atomic<std::uint64_t> Revision{0};
+ std::atomic<bool> Alive{true},Overflowed{false};
+};
+UModuleLifecycleObservation::UModuleLifecycleObservation(std::shared_ptr<State> state,std::uint64_t revision)
+ : ObservedState(std::move(state)),Revision(revision) {}
+bool UModuleLifecycleObservation::IsAlive() const
+{ return ObservedState && ObservedState->Alive.load(std::memory_order_acquire); }
+bool UModuleLifecycleObservation::IsCurrent() const
+{
+ return IsAlive() && !ObservedState->Overflowed.load(std::memory_order_acquire) &&
+  ObservedState->Revision.load(std::memory_order_acquire)==Revision;
+}
+UModuleLifecycleObservation UModule::ObserveLifecycle() const
+{ return {LifecycleState,LifecycleState->Revision.load(std::memory_order_acquire)}; }
+void UModule::AdvanceLifecycleObservation()
+{
+ auto revision=LifecycleState->Revision.load(std::memory_order_acquire);
+ while(revision!=std::numeric_limits<std::uint64_t>::max())
+  if(LifecycleState->Revision.compare_exchange_weak(revision,revision+1,std::memory_order_acq_rel))return;
+ LifecycleState->Overflowed.store(true,std::memory_order_release);
+}
 
 
 // --------------------------
 // Конструкторы и деструкторы
 // --------------------------
 UModule::UModule(void)
-: Ready(false), InitFlag(false)
+: Ready(false), InitFlag(false),LifecycleState(std::make_shared<UModuleLifecycleObservation::State>())
 {
+}
+
+UModule::UModule(const UModule& source):UModule()
+{ Ready=source.Ready;InitFlag=source.InitFlag; }
+UModule& UModule::operator=(const UModule& source)
+{
+ if(this!=&source){AdvanceLifecycleObservation();Ready=source.Ready;InitFlag=source.InitFlag;}
+ return *this;
 }
 
 UModule::~UModule(void)
 {
+ LifecycleState->Alive.store(false,std::memory_order_release);
 }
 // --------------------------
 
@@ -47,6 +83,7 @@ UModule::~UModule(void)
 // Восстановление настроек по умолчанию и сброс процесса счета
 bool UModule::BeforeDefault(void)
 {
+ AdvanceLifecycleObservation();
  ABeforeDefault();
  return true;
 }
@@ -73,6 +110,7 @@ bool UModule::Default(void)
 // в случае успешной сборки
 bool UModule::BeforeBuild(void)
 {
+ AdvanceLifecycleObservation();
  ABeforeBuild();
  return true;
 }
@@ -98,6 +136,7 @@ bool UModule::Build(void)
 // Сброс процесса счета.
 bool UModule::BeforeReset(void)
 {
+ AdvanceLifecycleObservation();
  ABeforeReset();
  return true;
 }
@@ -148,6 +187,7 @@ bool UModule::Calculate(void)
 // Выполняет инициализацию этого объекта
 void UModule::BeforeInit(void)
 {
+ AdvanceLifecycleObservation();
  ABeforeInit();
 }
 
@@ -170,6 +210,7 @@ void UModule::Init(void)
 // Выполняет деинициализацию этого объекта
 void UModule::BeforeUnInit(void)
 {
+ AdvanceLifecycleObservation();
  ABeforeUnInit();
 }
 
