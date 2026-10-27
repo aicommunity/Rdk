@@ -1575,16 +1575,16 @@ bool UContainer::ChangeComponentPosition(int index, int step)
  if(step == 0)
   return true;
 
- int result=index+step;
- if(result<0)
-  result=0;
- if(result>=NumComponents)
-  result=NumComponents-1;
+ // Clamp the mathematical destination before narrowing. A valid index plus
+ // an arbitrary int step can overflow int even though the final position is
+ // always inside the child vector.
+ const long long destination=static_cast<long long>(index)+step;
+ const int result=destination<0?0:(destination>=NumComponents?NumComponents-1:static_cast<int>(destination));
 
  UEPtr<UContainer> comp=PComponents[index];
  if(result>index)
  {
-  for(int i=index;i<=result;i++)
+  for(int i=index;i<result;i++)
    PComponents[i]=PComponents[i+1];
   PComponents[result]=comp;
  }
@@ -1615,7 +1615,12 @@ bool UContainer::ChangeComponentPosition(const NameT &name, int step)
 // Применяется для изменения порядка расчета компонент
 bool UContainer::SetComponentPosition(int index, int new_position)
 {
- int step=new_position-index;
+ if(index<0 || index>=NumComponents)
+  return false;
+ // Saturate the absolute position first; INT_MIN-index must not overflow.
+ if(new_position<0)new_position=0;
+ if(new_position>=NumComponents)new_position=NumComponents-1;
+ const int step=new_position-index;
  return ChangeComponentPosition(index, step);
 }
 
