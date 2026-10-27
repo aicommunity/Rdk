@@ -808,6 +808,11 @@ virtual void SharesUnInit(void);
 // Восстановление настроек по умолчанию и сброс процесса счета
 virtual bool Default(void);
 
+/// Disconnect this object's incoming registered and direct property sources.
+/// Does not recurse or reset values. Copy uses it before overwriting properties;
+/// ordinary Build/Reset/Default retain the existing live wiring.
+void DisconnectPropertyDataSources(void);
+
 /// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
 virtual bool DefaultAll(UContainer* cont, bool subcomps);
 

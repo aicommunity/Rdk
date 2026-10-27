@@ -821,6 +821,8 @@ void DetachFrom(void)
   UGenericMutexExclusiveLocker locker(this->Mutex);
   IsConnectedFlag=false;
   CachedConnectedOutput = 0; // Clear cache
+  ConnectedOutputs.clear();
+  ExternalDataSource = nullptr;
   UVBaseDataProperty<T>::DetachFrom();
   return;
  }
@@ -828,6 +830,8 @@ void DetachFrom(void)
  // No mutex: original logic
  IsConnectedFlag=false;
  CachedConnectedOutput = 0; // Clear cache
+ ConnectedOutputs.clear();
+ ExternalDataSource = nullptr;
  UVBaseDataProperty<T>::DetachFrom();
 }
 
@@ -861,6 +865,11 @@ bool SetPointer(int index, UIPropertyOutput* property)
 /// Возвращает указатель на указатель
 bool ResetPointer(int index, UIPropertyOutput* property)
 {
+ if(index==-1 && property==nullptr)
+ {
+  DetachFrom();
+  return true;
+ }
  if(!ConnectedOutputs.empty() && ConnectedOutputs[0] == property)
  {
   IsConnectedFlag=false;
@@ -1116,6 +1125,11 @@ bool SetPointer(int index, UIPropertyOutput* property)
 /// Возвращает указатель на указатель
 bool ResetPointer(int index, UIPropertyOutput* property)
 {
+ if(index==-1 && property==nullptr)
+ {
+  this->DetachFrom();
+  return true;
+ }
  // Thread-safe path: use exclusive lock if mutex exists
  if (this->Mutex)
  {

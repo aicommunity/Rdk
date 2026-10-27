@@ -600,6 +600,8 @@ public:
  virtual bool SetPointer(int index, UIPropertyOutput* property)=0;
 
  /// Возвращает указатель на указатель
+ /// Standard typed properties support (-1,nullptr) to detach all direct data
+ /// sources without reading the old source or resetting the local value.
  virtual bool ResetPointer(int index, UIPropertyOutput* property)=0;
 
  // Данные
