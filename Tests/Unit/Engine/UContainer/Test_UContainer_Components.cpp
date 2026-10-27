@@ -2,6 +2,7 @@
 #include "rdk.h"
 
 #include <algorithm>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -323,5 +324,45 @@ TEST(UContainerActiveCache, UpdateComputationOrderInvalidatesCache)
     EXPECT_EQ(names[0], "B");
     EXPECT_EQ(names[1], "A");
 
+    root.DetachAndFreeChildren();
+}
+
+TEST(UContainerComponentOrder, ForwardMoveToLastKeepsObjectsIdsAndActiveOrder)
+{
+    TestContainer root;
+    UEPtr<TestContainer> a(new TestContainer),b(new TestContainer);
+    a->Name="A";b->Name="B";a->Activity=true;b->Activity=true;
+    const auto aid=root.AddComponent(a),bid=root.AddComponent(b);
+    root.ForceUpdateActiveCache();
+    ASSERT_TRUE(root.ChangeComponentPosition(0,1));
+    EXPECT_EQ(root.PComponentNames(),(std::vector<std::string>{"B","A"}));
+    EXPECT_EQ(root.GetComponentByIndex(0),b);EXPECT_EQ(root.GetComponentByIndex(1),a);
+    EXPECT_EQ(root.GetComponent(aid),a);EXPECT_EQ(root.GetComponent(bid),b);
+    EXPECT_EQ(root.ActiveComponentNames(),(std::vector<std::string>{"B","A"}));
+    ASSERT_TRUE(root.SetComponentPosition("A",0));
+    EXPECT_EQ(root.PComponentNames(),(std::vector<std::string>{"A","B"}));
+    root.DetachAndFreeChildren();
+}
+
+TEST(UContainerComponentOrder, MaximumPositiveStepClampsBeforeIntegerOverflow)
+{
+    TestContainer root;
+    UEPtr<TestContainer> a(new TestContainer),b(new TestContainer);
+    a->Name="A";b->Name="B";
+    root.AddComponent(a);root.AddComponent(b);
+    ASSERT_TRUE(root.ChangeComponentPosition(1,std::numeric_limits<int>::max()));
+    EXPECT_EQ(root.PComponentNames(),(std::vector<std::string>{"A","B"}));
+    root.DetachAndFreeChildren();
+}
+
+TEST(UContainerComponentOrder, MinimumAbsolutePositionClampsBeforeSubtraction)
+{
+    TestContainer root;
+    UEPtr<TestContainer> a(new TestContainer),b(new TestContainer);
+    a->Name="A";b->Name="B";
+    root.AddComponent(a);root.AddComponent(b);
+    ASSERT_TRUE(root.SetComponentPosition(1,std::numeric_limits<int>::min()));
+    EXPECT_EQ(root.PComponentNames(),(std::vector<std::string>{"B","A"}));
+    EXPECT_FALSE(root.SetComponentPosition(-1,0));EXPECT_FALSE(root.SetComponentPosition(2,0));
     root.DetachAndFreeChildren();
 }

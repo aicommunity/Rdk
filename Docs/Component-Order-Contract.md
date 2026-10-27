@@ -5,6 +5,15 @@
 1. Sibling calculation order is the order of non-static children in `UContainer::PComponents` after the latest `UpdateComputationOrder()`.
 2. `Calculate` / `Reset` / active-child `Build` loops use `ActiveComponents`, which must match that `PComponents` order.
 3. `ChangeComponentPosition` / `SetComponentPosition` invalidate `ActiveComponents` and rebuild `ComponentsIdIndex`.
+   Positions outside the vector clamp to its first/last element. The relative
+   destination is evaluated without signed integer overflow; absolute positions
+   clamp before subtracting the current index. Forward movement copies only the
+   intervening elements and never reads the element after the destination.
+   Invalid source indices return false without changing order. Native regression
+   cases live in `UContainerComponentOrder`: forward-to-last order/IDs/cache,
+   maximum positive step, and minimum absolute position. The pre-fix implementation
+   has been reproduced with a failing order check and an ASan heap-buffer-overflow;
+   runtime acceptance of this correction is recorded by the parent project.
 4. Pulse neuron cable order (`NPulseNeuron::UpdateComputationOrder`) places distal segments first (`Dendrite1_N` … `Dendrite1_1`), then soma / LT — intentional tip→soma calc.
    This automatic order applies to neuron structure modes 1/2. Mode 0 keeps the explicit graph's sibling order, including after XML Load and native Build; moving only soma/LT would change its dynamics.
 5. `NNeuronTrainer` / `NNeuronLearner` place pulse sources before the neuron in their own `UpdateComputationOrder`.
