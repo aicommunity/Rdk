@@ -366,3 +366,63 @@ TEST(UContainerComponentOrder, MinimumAbsolutePositionClampsBeforeSubtraction)
     EXPECT_FALSE(root.SetComponentPosition(-1,0));EXPECT_FALSE(root.SetComponentPosition(2,0));
     root.DetachAndFreeChildren();
 }
+
+class RawPropertyFixture : public TestContainer
+{
+public:
+    UProperty<double,RawPropertyFixture,ptInput|ptState> Input;
+    UProperty<double,RawPropertyFixture,ptOutput|ptState> Output;
+    UProperty<MDMatrix<double>,RawPropertyFixture,ptInput|ptState> MatrixInput;
+    UProperty<MDMatrix<double>,RawPropertyFixture,ptOutput|ptState> MatrixOutput;
+    RawPropertyFixture():Input("Input",this),Output("Output",this),MatrixInput("MatrixInput",this),MatrixOutput("MatrixOutput",this){}
+    RawPropertyFixture* New(void) override {return new RawPropertyFixture;}
+protected:
+    bool ADefault(void) override
+    {Input=0.;Output=0.;MatrixInput->Assign(1,1,0.);MatrixOutput->Assign(1,1,0.);return true;}
+};
+
+TEST(UContainerPropertyBindings, StorageReuseClearsPreviousScalarAndMatrixSources)
+{
+    UEPtr<UStorage> storage(new UStorage);
+    storage->AddClass(new UComponentFactoryMethod(storage,
+        +[]() -> UComponent* {return new RawPropertyFixture;},"RawPoolFixture"),"RawPoolFixture");
+    auto source=dynamic_pointer_cast<RawPropertyFixture>(storage->TakeObject("RawPoolFixture"));
+    auto target=dynamic_pointer_cast<RawPropertyFixture>(storage->TakeObject("RawPoolFixture"));
+    ASSERT_TRUE(source);ASSERT_TRUE(target);source->Output=2.;source->MatrixOutput->Assign(1,1,3.);
+    ASSERT_TRUE(target->Input.SetPointer(0,&source->Output));ASSERT_TRUE(target->MatrixInput.SetPointer(0,&source->MatrixOutput));
+    EXPECT_EQ(target->Input.GetData(),2.);EXPECT_EQ(target->MatrixInput(0,0),3.);
+    storage->ReturnObject(target);
+    auto reused=dynamic_pointer_cast<RawPropertyFixture>(storage->TakeObject("RawPoolFixture"));ASSERT_EQ(reused,target);
+    EXPECT_FALSE(reused->Input.IsConnected());EXPECT_FALSE(reused->MatrixInput.IsConnected());
+    EXPECT_TRUE(reused->Input.GetDataSources().empty());EXPECT_TRUE(reused->MatrixInput.GetDataSources().empty());
+    EXPECT_EQ(reused->Input.GetData(),0.);EXPECT_EQ(reused->MatrixInput(0,0),0.);
+    reused->Input.DetachFrom();reused->MatrixInput.DetachFrom();storage->ReturnObject(reused);storage->ReturnObject(source);
+}
+
+TEST(UContainerPropertyBindings, CopyReplacesPreviousDestinationDataSources)
+{
+    UEPtr<UStorage> storage(new UStorage);
+    storage->AddClass(new UComponentFactoryMethod(storage,
+        +[]() -> UComponent* {return new RawPropertyFixture;},"RawCopyFixture"),"RawCopyFixture");
+    auto source=dynamic_pointer_cast<RawPropertyFixture>(storage->TakeObject("RawCopyFixture"));
+    auto target=dynamic_pointer_cast<RawPropertyFixture>(storage->TakeObject("RawCopyFixture"));
+    auto original=dynamic_pointer_cast<RawPropertyFixture>(storage->TakeObject("RawCopyFixture"));
+    source->Output=2.;source->MatrixOutput->Assign(1,1,3.);
+    ASSERT_TRUE(target->Input.SetPointer(0,&source->Output));ASSERT_TRUE(target->MatrixInput.SetPointer(0,&source->MatrixOutput));
+    original->Copy(target,storage,true);
+    EXPECT_FALSE(target->Input.IsConnected());EXPECT_FALSE(target->MatrixInput.IsConnected());
+    EXPECT_EQ(target->Input.GetData(),original->Input.GetData());EXPECT_EQ(target->MatrixInput(0,0),original->MatrixInput(0,0));
+    target->Input.DetachFrom();target->MatrixInput.DetachFrom();
+    storage->ReturnObject(target);storage->ReturnObject(source);storage->ReturnObject(original);
+}
+
+TEST(UContainerPropertyBindings, OrdinaryBuildResetAndDefaultPreserveLiveBindings)
+{
+    RawPropertyFixture source,target;source.Default();target.Default();source.Output=2.;source.MatrixOutput->Assign(1,1,3.);
+    target.Input.SetPointer(0,&source.Output);target.MatrixInput.SetPointer(0,&source.MatrixOutput);
+    target.Build();target.Reset();target.Default();
+    EXPECT_TRUE(target.Input.IsConnected());EXPECT_TRUE(target.MatrixInput.IsConnected());
+    EXPECT_EQ(target.Input.GetDataSources(),(std::vector<const UIProperty*>{&source.Output}));
+    EXPECT_EQ(target.MatrixInput.GetDataSources(),(std::vector<const UIProperty*>{&source.MatrixOutput}));
+    target.Input.DetachFrom();target.MatrixInput.DetachFrom();
+}
