@@ -17,8 +17,60 @@ See file license.txt for more information
 #include "UComponent.h"
 // Включаем заголовок для доступа к TProjectLoadDiagnostics
 #include "TProjectLoadDiagnostics.h"
+#include <functional>
 
 namespace RDK {
+
+namespace {
+struct DirectCopyBinding {
+ NameT path,property;
+ std::vector<std::pair<NameT,NameT>> sources;
+};
+std::vector<DirectCopyBinding> CaptureDirectCopyBindings(const UNet& root)
+{
+ std::map<const UIProperty*,std::pair<NameT,NameT>> endpoints;
+ std::vector<std::pair<const UContainer*,NameT>> nodes;
+ std::function<void(const UContainer&,const NameT&)> collect=[&](const UContainer& node,const NameT& path) {
+  nodes.emplace_back(&node,path);
+  for(const auto& entry:node.GetPropertiesList())endpoints.emplace(entry.second.Property.Get(),std::make_pair(path,entry.first));
+  std::vector<NameT> names;node.GetComponentsList(names);
+  for(const auto& name:names)collect(*node.GetComponent(name,true),path.empty()?name:path+"."+name);
+ };
+ collect(root,"");std::vector<DirectCopyBinding> bindings;
+ for(const auto& node:nodes)for(const auto& entry:node.first->GetPropertiesList())
+ {
+  auto input=dynamic_cast<UIPropertyInput*>(entry.second.Property.Get());
+  if(!input || !input->CanInspectDataSources() || !input->IsConnected() || input->UsesExternalDataSource())continue;
+  auto connector=dynamic_cast<const UConnector*>(node.first);
+  if(connector && connector->GetNumActiveInputs(entry.first)>0)continue; // GetLinks owns registered wiring.
+  DirectCopyBinding binding{node.second,entry.first,{}};bool closed=true;
+  for(auto source:input->GetDataSources())
+  {
+   auto found=endpoints.find(source);if(found==endpoints.end()){closed=false;break;}
+   binding.sources.push_back(found->second);
+  }
+  if(closed && !binding.sources.empty())bindings.push_back(std::move(binding));
+ }
+ return bindings;
+}
+bool RestoreDirectCopyBindings(UEPtr<UContainer> root,const std::vector<DirectCopyBinding>& bindings)
+{
+ for(const auto& binding:bindings)
+ {
+  auto node=binding.path.empty()?root:root->GetComponentL(binding.path,true);if(!node)return false;
+  auto input=dynamic_cast<UIPropertyInput*>(node->FindProperty(binding.property).Get());if(!input)return false;
+  input->ResetPointer(-1,nullptr);
+  for(std::size_t i=0;i<binding.sources.size();++i)
+  {
+   const auto& endpoint=binding.sources[i];auto source=endpoint.first.empty()?root:root->GetComponentL(endpoint.first,true);
+   if(!source)return false;
+   auto output=dynamic_cast<UIPropertyOutput*>(source->FindProperty(endpoint.second).Get());
+   if(!output || !input->SetPointer(int(i),output))return false;
+  }
+ }
+ return true;
+}
+}
 
 /* *************************************************************************** */
 // --------------------------
@@ -109,12 +161,14 @@ bool UNet::Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor, bool copystate) 
  if(!dynamic_pointer_cast<UNet>(target))
   return false;
 
+ const auto directBindings=CaptureDirectCopyBindings(*this);
+
  if(UItem::Copy(target,stor,copystate))
   {
    static_pointer_cast<UNet>(target)->BreakLinks();
 
    if(static_pointer_cast<UNet>(target)->CreateLinks(GetLinks(linkslist,const_cast<UNet*>(this))))
-    return true;
+    return RestoreDirectCopyBindings(target,directBindings);
   }
 
  return false;
@@ -233,10 +287,12 @@ void UNet::BreakLinks(void)
 	static_pointer_cast<UItem>(PComponents[i])->DisconnectAll();
    if(dynamic_pointer_cast<UConnector>(PComponents[i]))
 	static_pointer_cast<UConnector>(PComponents[i])->DisconnectAllItems();
+   PComponents[i]->DisconnectPropertyDataSources();
   }
 
  DisconnectAll();
  DisconnectAllItems();
+ DisconnectPropertyDataSources();
 }
 /*
 // Разрывает связь ко входу connector_index коннектора 'connectorid'

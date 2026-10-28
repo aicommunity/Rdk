@@ -17,6 +17,7 @@ See file license.txt for more information
 #include "../../Deploy/Include/rdk_version.h"
 #include "UStorage.h"
 #include "ULibrary.h"
+#include "UConnector.h"
 #include "../../Deploy/Include/rdk_exceptions.h"
 #include "UEnvException.h"
 #include "../../Deploy/Include/rdk_init.h"
@@ -28,8 +29,45 @@ See file license.txt for more information
 #include <mutex>
 #include <unordered_set>
 #include <sstream>
+#include <functional>
 
 namespace RDK {
+
+namespace {
+// Cold reuse preserves constructor/internal wiring, but never an input source
+// belonging to the previous owner's graph. Do not dereference source addresses:
+// an unmanaged pointer can already be stale by the time its consumer is reused.
+void DisconnectPooledExternalSources(UEPtr<UContainer> root)
+{
+ std::vector<UEPtr<UContainer>> nodes;
+ std::unordered_set<const UIProperty*> inside;
+ std::function<void(UEPtr<UContainer>)> collect=[&](UEPtr<UContainer> node) {
+  nodes.push_back(node);
+  for(const auto& entry:node->GetPropertiesList())inside.insert(entry.second.Property.Get());
+  std::vector<NameT> names;node->GetComponentsList(names);
+  for(const auto& name:names)collect(node->GetComponent(name,true));
+ };
+ collect(root);
+ for(const auto& node:nodes)for(const auto& entry:node->GetPropertiesList())
+ {
+  auto input=dynamic_cast<UIPropertyInput*>(entry.second.Property.Get());
+  if(!input || !input->CanInspectDataSources())continue;
+  const auto sources=input->GetDataSources();
+  for(std::size_t n=sources.size();n>0;--n)
+  {
+   const auto i=n-1;if(inside.count(sources[i]))continue;
+   auto connector=dynamic_cast<UConnector*>(node.Get());
+   if(connector && connector->GetNumActiveInputs(entry.first)>int(i))
+   {
+    const auto registered=connector->GetCItem(entry.first,int(i));
+    connector->DisconnectFromIndex(entry.first,registered.Name,int(i));
+   }
+   else if(input->UsesExternalDataSource())input->ResetPointer(-1,nullptr);
+   else input->ResetPointer(int(i),static_cast<UIPropertyOutput*>(const_cast<UIProperty*>(sources[i])));
+  }
+ }
+}
+}
 
 namespace {
 // Диагностический режим трассировки TakeObject во время Default() NNeuronLearner.
@@ -640,6 +678,7 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
       std::string("Enter Default() for root '") + obj->GetName() + "'");
     }
 
+    DisconnectPooledExternalSources(obj);
     obj->Default();
 
     if(Logger && trace_guard.enabled)

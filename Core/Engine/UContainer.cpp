@@ -1055,6 +1055,9 @@ bool UContainer::Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor, bool copys
  // The destination's initialized state belongs to its previous graph. Copy
  // replaces that graph; keep native Init/Build responsible for the new one.
  target->UnInit();
+ // Connected destinations ignore SetData. Detach the previous incoming graph
+ // before copying parameter/state values into this replacement object.
+ target->DisconnectPropertyDataSources();
  // КРИТИЧНО: Сохраняем ClassId объекта-получателя перед копированием
  // чтобы он не был перезаписан неправильным значением из источника
  UId target_class_id = target->GetClass();
@@ -1080,6 +1083,14 @@ bool UContainer::Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor, bool copys
 
 // или вызов деструктора, если Storage == 0
 // или вызов деструктора, если Storage == 0
+void UContainer::DisconnectPropertyDataSources(void)
+{
+ if(auto connector=dynamic_cast<UConnector*>(this))connector->DisconnectAllItems();
+ for(const auto& entry:GetPropertiesList())
+  if(auto input=dynamic_cast<UIPropertyInput*>(entry.second.Property.Get()))
+   input->ResetPointer(-1,nullptr);
+}
+
 void UContainer::Free(void)
 {
  while(NumComponents)
