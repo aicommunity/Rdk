@@ -23,9 +23,21 @@ Root evidence commit `6210f02353cf2b3956a8a4ee93201607d870541a`,
 Reports/StructTrain/TimeLearner/s09-config-m40: 92 stored / 90 raw hashes сверены.
 Попытки A2 (launcher syntax) и A3 (disk exhaustion) не являются parser failures.
 Более широкий full regression прежнего Rdk181 не подменяет scope новой проверки;
-отдельная normal/wide-platform приёмка нового source пока не заявлена.
+normal-проверка нового source завершена ниже; wide-platform приёмка
+по-прежнему не заявлена.
 
 Это исправление serialization owner, не learner workaround и не изменение
 Default/Build/Calculate/Reset, scheduler или физической динамики. Их bool-контракт
 не меняется. Методы файлового ввода и полнота typed component preflight этим
 подэтапом не объявляются проверенными.
+
+## Дополнительный normal gate на Elder-1
+
+Root 796a73075b930d634c905355541e47187aed6f5f / Rdk abc21b65
+(Core 8ebf64dd): четыре выбранные CTest groups прошли, включая обе encoding
+регрессии. Дополнительный прямой XmlTextEncoding filter: 2/2 cases, отдельный
+XML. RDK_UNICODE_RUN=OFF. Runtime создан после завершения предыдущего задания,
+без перезаписи прежнего runtime. Evidence root commit
+fa39375f17f3cb694a9a42c3d37c3d7c11c5a58b,
+Reports/StructTrain/TimeLearner/s04-bom-elder1. Это normal narrow проверка;
+исходный M40 adapter readback остаётся отдельным evidence.
