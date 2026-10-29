@@ -108,10 +108,20 @@ bool USerStorageXML::Load(const std::string &str, const std::string &root)
 {
  CurrentNode.deleteNodeContent();
  RootNode.deleteNodeContent();
+ // XMLNode::parseString does not reliably recognize a declaration after a
+ // UTF-8 BOM (unlike its file/encoding helpers). Treat the BOM as an encoding
+ // signature, never as document text. Leave ordinary input allocation-free.
+ std::string withoutBom;
+ const std::string *xml=&str;
+ if(str.compare(0,3,"\xef\xbb\xbf")==0)
+ {
+  withoutBom=str.substr(3);
+  xml=&withoutBom;
+ }
 #ifdef RDK_UNICODE_RUN
- RootNode=XMLNode::parseString(widen(str,Locale,WBuffer).c_str(),widen(root,Locale,WBuffer2).c_str());
+ RootNode=XMLNode::parseString(widen(*xml,Locale,WBuffer).c_str(),widen(root,Locale,WBuffer2).c_str());
 #else
- RootNode=XMLNode::parseString(str.c_str(),root.c_str());
+ RootNode=XMLNode::parseString(xml->c_str(),root.c_str());
 #endif
  if(RootNode.isEmpty())
   return false;

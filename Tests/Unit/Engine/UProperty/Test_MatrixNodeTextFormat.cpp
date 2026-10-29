@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <vector>
 
 #include "rdk.h"
 #include "../Core/Math/MDMatrix.h"
@@ -6,6 +7,28 @@
 #include "../Core/Serialize/USerStorageXML.h"
 
 using namespace RDK;
+
+TEST(XmlTextEncoding, Utf8BomAndDeclarationPreserveNumericTagsAndText)
+{
+    const std::string body="<Project><Channels><00><Value>4000</Value></00></Channels><Text>&lt;x&gt; &amp; text</Text></Project>";
+    for(const std::string& prefix:std::vector<std::string>{"","\xef\xbb\xbf","<?xml version=\"1.0\" encoding=\"UTF-8\"?>","\xef\xbb\xbf<?xml version=\"1.0\" encoding=\"UTF-8\"?>"})
+    {
+        SCOPED_TRACE(prefix);
+        USerStorageXML storage;ASSERT_TRUE(storage.Load(prefix+body,"Project"));
+        ASSERT_TRUE(storage.SelectNode("Channels"));ASSERT_TRUE(storage.SelectNode("00"));
+        ASSERT_TRUE(storage.SelectNode("Value"));EXPECT_EQ(storage.GetNodeText(),"4000");
+        storage.SelectRoot();ASSERT_TRUE(storage.SelectNode("Text"));EXPECT_EQ(storage.GetNodeText(),"<x> & text");
+    }
+}
+
+TEST(XmlTextEncoding, BomDoesNotManufactureMissingRootOrContent)
+{
+    USerStorageXML storage;
+    EXPECT_FALSE(storage.Load("\xef\xbb\xbf","Project"));
+    EXPECT_FALSE(storage.Load("\xef\xbb\xbf<Other/>","Project"));
+    ASSERT_TRUE(storage.Load("<Project><Text>old</Text></Project>","Project"));
+    EXPECT_FALSE(storage.Load("\xef\xbb\xbf","Project"));
+}
 
 namespace {
 
