@@ -2496,7 +2496,9 @@ bool UContainer::Calculate(void)
 	#ifdef RDK_ENABLE_CALC_LOGGING
 	LogDebugSysMessage(RDK_SYS_DEBUG_CALC, RDK_SYS_MESSAGE_EXIT_ININIT_FAIL);
 	#endif
-	return false;
+	// Keep the native skip: no implicit Build/Init or child calculation.
+	// Lifecycle bool is not an error channel; observe InitFlag/diagnostics.
+	return true;
    }
 
    // Оптимизация: кэшируем GetCurrentStartupTime() для уменьшения системных вызовов

@@ -340,27 +340,31 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant Env as UEnvironment
+    participant Clock as UEnvironment
     participant Container as UContainer
-    participant Component as UComponent
-    participant Property as UIProperty
-    
-    Env->>Container: Reset()
-    Container->>Container: AReset()
-    Container->>Component: Reset() (для всех дочерних)
-    Component->>Component: AReset()
-    Component->>Property: Reset values
-    
-    loop Каждый шаг времени
-        Env->>Container: Calculate()
-        Container->>Container: ACalculate()
-        Container->>Component: Calculate() (для всех дочерних)
-        Component->>Component: ACalculate()
-        Component->>Property: Read inputs
-        Component->>Property: Process data
-        Component->>Property: Write outputs
-        Component->>Container: UpdateControllers()
-        Container->>Controller: Update()
+    participant Child as UContainer
+    Clock->>Container: Reset()
+    Container->>Container: Build(); SharesInit(); BeforeReset()
+    alt InitFlag is true
+        loop Static children, then active children
+            Container->>Child: Reset()
+        end
+        Container->>Container: AReset(); AfterReset()
+    else InitFlag is false
+        Note over Container: Skip children and AReset/AfterReset; return true
+    end
+    loop Each model tick
+        Clock->>Container: Calculate()
+        alt Inactive or not initialized
+            Note over Container: Skip callbacks and children; return true
+        else Active and initialized
+            Container->>Container: Build() if not Ready; BeforeCalculate()
+            Container->>Container: Refresh active cache if invalid
+            loop Active children in computation order
+                Container->>Child: Calculate()
+            end
+            Container->>Container: ACalculate(); AfterCalculate()
+        end
     end
 ```
 
@@ -401,25 +405,25 @@ stateDiagram-v2
     ADefault --> AfterDefault: AfterDefault()
     AfterDefault --> Building: Build()
     Building --> BeforeBuild: BeforeBuild()
-    BeforeBuild --> ABuild: ABuild()
-    ABuild --> AfterBuild: AfterBuild()
-    AfterBuild --> Ready: Ready = true
+    BeforeBuild --> BuildChildren: UContainer child Build
+    BuildChildren --> ABuild: ABuild()
+    ABuild --> AfterBuild: Ready = true
+    AfterBuild --> Ready: AfterBuild / Reset / computation order
     
     Ready --> Resetting: Reset()
     Resetting --> BeforeReset: BeforeReset()
-    BeforeReset --> AReset: AReset()
+    BeforeReset --> ResetChildren: initialized UContainer
+    ResetChildren --> AReset: AReset()
     AReset --> AfterReset: AfterReset()
     AfterReset --> Ready: Готов к вычислениям
     
     Ready --> Calculating: Calculate()
     Calculating --> BeforeCalculate: BeforeCalculate()
-    BeforeCalculate --> ACalculate: ACalculate()
+    BeforeCalculate --> CalculateChildren: native child scheduler
+    CalculateChildren --> ACalculate: ACalculate()
     ACalculate --> AfterCalculate: AfterCalculate()
     AfterCalculate --> Ready: Готов к следующему шагу
     
-    Building --> Error: Ошибка сборки
-    Calculating --> Error: Ошибка вычисления
-    Error --> [*]: Удаление компонента
     Ready --> [*]: Удаление компонента
 ```
 
@@ -1134,27 +1138,31 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant Env as UEnvironment
+    participant Clock as UEnvironment
     participant Container as UContainer
-    participant Component as UComponent
-    participant Property as UIProperty
-    
-    Env->>Container: Reset()
-    Container->>Container: AReset()
-    Container->>Component: Reset() (для всех дочерних)
-    Component->>Component: AReset()
-    Component->>Property: Reset values
-    
-    loop Каждый шаг времени
-        Env->>Container: Calculate()
-        Container->>Container: ACalculate()
-        Container->>Component: Calculate() (для всех дочерних)
-        Component->>Component: ACalculate()
-        Component->>Property: Read inputs
-        Component->>Property: Process data
-        Component->>Property: Write outputs
-        Component->>Container: UpdateControllers()
-        Container->>Controller: Update()
+    participant Child as UContainer
+    Clock->>Container: Reset()
+    Container->>Container: Build(); SharesInit(); BeforeReset()
+    alt InitFlag is true
+        loop Static children, then active children
+            Container->>Child: Reset()
+        end
+        Container->>Container: AReset(); AfterReset()
+    else InitFlag is false
+        Note over Container: Skip children and AReset/AfterReset; return true
+    end
+    loop Each model tick
+        Clock->>Container: Calculate()
+        alt Inactive or not initialized
+            Note over Container: Skip callbacks and children; return true
+        else Active and initialized
+            Container->>Container: Build() if not Ready; BeforeCalculate()
+            Container->>Container: Refresh active cache if invalid
+            loop Active children in computation order
+                Container->>Child: Calculate()
+            end
+            Container->>Container: ACalculate(); AfterCalculate()
+        end
     end
 ```
 
@@ -1191,24 +1199,56 @@ stateDiagram-v2
     ADefault --> AfterDefault: AfterDefault()
     AfterDefault --> Building: Build()
     Building --> BeforeBuild: BeforeBuild()
-    BeforeBuild --> ABuild: ABuild()
-    ABuild --> AfterBuild: AfterBuild()
-    AfterBuild --> Ready: Ready = true
+    BeforeBuild --> BuildChildren: UContainer child Build
+    BuildChildren --> ABuild: ABuild()
+    ABuild --> AfterBuild: Ready = true
+    AfterBuild --> Ready: AfterBuild / Reset / computation order
     
     Ready --> Resetting: Reset()
     Resetting --> BeforeReset: BeforeReset()
-    BeforeReset --> AReset: AReset()
+    BeforeReset --> ResetChildren: initialized UContainer
+    ResetChildren --> AReset: AReset()
     AReset --> AfterReset: AfterReset()
     AfterReset --> Ready: Готов к вычислениям
     
     Ready --> Calculating: Calculate()
     Calculating --> BeforeCalculate: BeforeCalculate()
-    BeforeCalculate --> ACalculate: ACalculate()
+    BeforeCalculate --> CalculateChildren: native child scheduler
+    CalculateChildren --> ACalculate: ACalculate()
     ACalculate --> AfterCalculate: AfterCalculate()
     AfterCalculate --> Ready: Готов к следующему шагу
     
-    Building --> Error: Ошибка сборки
-    Calculating --> Error: Ошибка вычисления
-    Error --> [*]: Удаление компонента
     Ready --> [*]: Удаление компонента
 ```
+
+
+### Native container lifecycle contract / Контракт UContainer
+
+`Build()`, `Calculate()` and `Reset()` return `true`; the bool is not an error,
+initialization, convergence or scientific-quality channel. Inspect lifecycle
+flags and component diagnostics for the corresponding state. `Init()` is void.
+The state diagrams above summarize normal initialized UContainer paths; they
+are not a public state enum or an automatic deletion-on-error policy.
+
+`Ready` does not imply `InitFlag`. An inactive or uninitialized UContainer skips
+its Calculate callbacks and all children, including children already initialized
+individually. The uninitialized skip does not implicitly Build or Init the tree.
+Once initialized, BeforeCalculate runs before refreshing the active-child cache;
+children run before the container's ACalculate. Explicit ComponentReCalculation
+can restart the native child loop; controllers that require one visit per tick
+must not request such a restart. UModule's own implementation has no child loop
+or UContainer InitFlag skip; do not infer its traversal from the container override.
+
+Container Reset calls Build and SharesInit, then BeforeReset. For InitFlag=false
+it returns before child Reset, AReset and AfterReset. For initialized containers,
+static children reset first, then active children, then AReset and AfterReset.
+Default and Init have separate semantics: Reset does not mean restoring all
+parameters to defaults or making every physical state zero. AfterBuild and Init
+can invoke Reset; explicit and implicit resets must be distinguished by a
+controller that owns temporary search state. No lifecycle bool should carry
+training/configuration errors in place of the component's diagnostic state.
+
+RU: неинициализированное дерево пропускает расчёт, но возвращает true. Это не
+разрешение считать модель обученной или готовой к измерению. Успешный путь:
+BeforeCalculate → дети в штатном порядке → ACalculate → AfterCalculate;
+Ready и InitFlag — разные флаги. До Init нет скрытого Build/Init и обхода детей.
