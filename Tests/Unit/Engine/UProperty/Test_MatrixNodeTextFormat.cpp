@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 #include <vector>
+#include <cmath>
+#include <limits>
 
 #include "rdk.h"
 #include "../Core/Math/MDMatrix.h"
@@ -81,6 +83,36 @@ TEST(MatrixNodeTextFormat, MDMatrixLegacyNodeTextStillLoads)
     EXPECT_DOUBLE_EQ(matrix(1, 0), 4.0);
     EXPECT_DOUBLE_EQ(matrix(1, 2), 6.0);
 }
+
+namespace {
+template<class T> void ExpectExactFloatingMatrixRoundtrip()
+{
+    MDMatrix<T> before(2,3);
+    before(0,0)=std::nextafter(T(1),T(2));
+    before(0,1)=std::nextafter(T(1e-9),T(2e-9));
+    before(0,2)=T(-.01234567890123456789L);
+    before(1,0)=std::numeric_limits<T>::min();
+    before(1,1)=std::numeric_limits<T>::max();
+    before(1,2)=T(.001234567890123456789L);
+    USerStorageXML source;ASSERT_TRUE(source.Create("Matrix"));source << before;
+    std::string text;ASSERT_TRUE(source.Save(text));
+    USerStorageXML loaded;ASSERT_TRUE(loaded.Load(text,"Matrix"));
+    MDMatrix<T> after;loaded >> after;
+    ASSERT_EQ(after.GetRows(),2);ASSERT_EQ(after.GetCols(),3);
+    for(int r=0;r<2;++r)for(int c=0;c<3;++c)
+    {
+        SCOPED_TRACE(std::to_string(r)+","+std::to_string(c));
+        EXPECT_EQ(after(r,c),before(r,c));
+    }
+}
+}
+
+TEST(MatrixNodeTextFormat, MDMatrixFloatRoundtripPreservesAllSignificantDigits)
+{ ExpectExactFloatingMatrixRoundtrip<float>(); }
+TEST(MatrixNodeTextFormat, MDMatrixDoubleRoundtripPreservesAllSignificantDigits)
+{ ExpectExactFloatingMatrixRoundtrip<double>(); }
+TEST(MatrixNodeTextFormat, MDMatrixLongDoubleRoundtripPreservesAllSignificantDigits)
+{ ExpectExactFloatingMatrixRoundtrip<long double>(); }
 
 TEST(MatrixNodeTextFormat, MDMatrixEmptyIsEmptyText)
 {

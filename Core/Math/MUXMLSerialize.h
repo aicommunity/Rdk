@@ -17,6 +17,9 @@ See file license.txt for more information
 #include <map>
 //#include <strstream>
 #include <sstream>
+#include <iomanip>
+#include <limits>
+#include <type_traits>
 #include "../Serialize/USerStorageXML.h"
 #include "../Utilities/USupport.h"
 #include "../Math/UMath.h"
@@ -173,6 +176,10 @@ USerStorageXML& operator << (USerStorageXML& storage, const MDMatrix<T> &data)
  storage.SetNodeAttribute("Cols",sntoa(cols));
 
  std::stringstream stream;
+ // A public matrix parameter must survive native Save/Load without rounding.
+ // Other element types retain their existing stream representation.
+ if(std::is_floating_point<T>::value)
+  stream << std::setprecision(std::numeric_limits<T>::max_digits10);
 
  for(int i=0;i<rows;i++)
  {
