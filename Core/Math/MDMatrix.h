@@ -408,13 +408,12 @@ void MDMatrix<T>::Resize(int rows, int cols, T defvalue)
  else
  if(cols<Cols) // матрица уменьшилась по числу колонок, переносим данные в старой памяти
  {
-  T* old_pos=Data+1*Cols;
-  T* new_pos=Data+cols;
-  for(int i=1;i<rows;i++)
+  // Only old logical rows contain source cells. Newly added rows must be
+  // initialized below, never read using the old (larger) column stride.
+  const int c_rows=(Rows<rows)?Rows:rows;
+  for(int i=1;i<c_rows;i++)
   {
-   memmove(new_pos,old_pos,cols*sizeof(T));
-   new_pos+=cols;
-   old_pos+=Cols;
+   memmove(Data+i*cols,Data+i*Cols,cols*sizeof(T));
   }
   for(int i=Rows;i<rows;i++)
    for(int j=0;j<cols;j++)
@@ -423,13 +422,11 @@ void MDMatrix<T>::Resize(int rows, int cols, T defvalue)
  else // Матрица увеличилась без реалокации, переносим данные в старой памяти
  {
   int c_rows=(Rows<rows)?Rows:rows;
-  T* old_pos=Data+(c_rows-1)*Cols;
-  T* new_pos=Data+(c_rows-1)*cols;
+  // Indices also handle an empty retained rectangle without forming pointers
+  // before Data (including the unused decrement after the final copied row).
   for(int i=c_rows;i>0;i--)
   {
-   memmove(new_pos,old_pos,Cols*sizeof(T));
-   new_pos-=cols;
-   old_pos-=Cols;
+   memmove(Data+(i-1)*cols,Data+(i-1)*Cols,Cols*sizeof(T));
   }
   for(int i=Rows;i<rows;i++)
    for(int j=0;j<cols;j++)
