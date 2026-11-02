@@ -30,7 +30,7 @@ namespace RDK {
 template<typename CharT, typename T>
 std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const MVector<T,3> &data)
 {
- stream<<"{"<<(T)data.x<<","<<(T)data.y<<","<<(T)data.z<<"}";
+ stream<<CharT('{')<<data(0)<<CharT(',')<<data(1)<<CharT(',')<<data(2)<<CharT('}');
  return stream;
 }
 
@@ -38,23 +38,26 @@ std::basic_ostream<CharT>& operator << (std::basic_ostream<CharT>& stream, const
 template<typename CharT, typename T>
 std::basic_istream<CharT>& operator >> (std::basic_istream<CharT>& stream, MVector<T,3> &data)
 {
+ typename std::basic_istream<CharT>::sentry sentry(stream);
+ if(!sentry)return stream;
  CharT ch;
- ch=stream.get();
- if(ch != '{')
-  return stream;
-
- ch=stream.get();
- if(ch == '}')
-  return stream;
- else
-  stream.unget();
-
- stream>>data.x;
- ch=stream.get();
- stream>>data.y;
- ch=stream.get();
- stream>>data.z;
- ch=stream.get();
+ if(!stream.get(ch) || ch!=CharT('{'))
+ {stream.setstate(std::ios_base::failbit);return stream;}
+ MVector<T,3> parsed;
+ for(int i=0;i<3;++i)
+ {
+  if(i)
+  {
+   stream>>std::ws;
+   if(!stream.get(ch) || ch!=CharT(','))
+   {stream.setstate(std::ios_base::failbit);return stream;}
+  }
+  if(!(stream>>parsed(i)))return stream;
+ }
+ stream>>std::ws;
+ if(!stream.get(ch) || ch!=CharT('}'))
+ {stream.setstate(std::ios_base::failbit);return stream;}
+ data=parsed;
  return stream;
 }
 
