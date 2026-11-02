@@ -36,5 +36,18 @@ introduced by the ledger.
 
 Unit coverage checks retention, copy/assignment, independence from lifecycle and
 coherent concurrent recording. Real storage/neuron fault-injection tests belong
-to the parent project's native integration gate. Server validation is required
-before accepting this change into develop.
+to the parent project's native integration gate.
+
+Scoped server acceptance (2026-11-02): the corrected Core at
+`c3850711b2cd73f33956aae18a8db6cd1c4ead41` passed 9/9 unit and 13/13 native
+integration cases in normal Elder and M40 ASan builds. Parent Nmsdk evidence
+commits are `094bced1b7431e726b052e315eceb2e04e2ad277` and
+`12d5a24605bd464f0471a4b044f198c8d1b19763`. The latter preserves actual
+libasan mappings for both processes; all 237 archived members were verified.
+All 74 corresponding CSV/probe records match the normal run. Native cases
+exercise caught Build/Reset/Calculate faults, preserved connection and
+Environment failure results, joint physical edit rollback and real neurons.
+Earlier evidence retaining Build's false return is a baseline, not acceptance
+of the corrected contract. This acceptance covers the operation ledger and
+listed consumers, not the entire Rdk lifecycle/profile matrix or completion of
+the parent TimeLearner refactoring plan. Core has not changed since c3850711.
