@@ -151,7 +151,9 @@ bool UItem::Connect(UEPtr<UConnector> c, const NameT &item_property_name, const 
  if(!c)
   return false;
 
- if(!Build())
+ const auto buildFailureSequence=OperationFailureSequence();
+ Build();
+ if(HasOperationFailureSince(buildFailureSequence))
   return false;
 
  if(!c->ConnectToItem(this,item_property_name, connector_property_name, c_index, forced_connect_same_item))

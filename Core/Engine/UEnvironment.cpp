@@ -810,7 +810,9 @@ bool UEnvironment::CreateStructure(void)
 
  Structured=true;
 
- if(!Build())
+ const auto buildFailureSequence=OperationFailureSequence();
+ Build();
+ if(HasOperationFailureSince(buildFailureSequence))
   return false;
 
  return true;
@@ -1102,8 +1104,20 @@ bool UEnvironment::ABuild(void)
 
  if(ModelCalculationComponent.GetSize() == 0)
  {
-  if(!Model->Build())
+  const auto ownFailureSequence=OperationFailureSequence();
+  const auto childFailureSequence=Model->OperationFailureSequence();
+  Model->Build();
+  if(Model->HasOperationFailureSince(childFailureSequence))
+  {
+   // Environment's Model may be a separate ownership root. Forward its
+   // diagnostic explicitly, without relying on a lifecycle return value.
+   if(!HasOperationFailureSince(ownFailureSequence))
+   {
+    const auto failure=Model->LastOperationFailure();
+    RecordOperationFailure(failure.Operation,failure.Reason);
+   }
    return false;
+  }
  }
  else
  {
@@ -1113,8 +1127,18 @@ bool UEnvironment::ABuild(void)
   if(!destcont)
    return false;
 
-  if(!destcont->Build())
+  const auto ownFailureSequence=OperationFailureSequence();
+  const auto childFailureSequence=destcont->OperationFailureSequence();
+  destcont->Build();
+  if(destcont->HasOperationFailureSince(childFailureSequence))
+  {
+   if(!HasOperationFailureSince(ownFailureSequence))
+   {
+    const auto failure=destcont->LastOperationFailure();
+    RecordOperationFailure(failure.Operation,failure.Reason);
+   }
    return false;
+  }
  }
 
  return true;

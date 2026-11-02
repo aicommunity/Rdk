@@ -2256,7 +2256,6 @@ bool UContainer::Build(void)
  if(!Storage) // TODO: Заглушка в случае если хранилище не установлено.
   return true;
 
- bool build_success = false;
  RDK_SYS_TRY
  {
   try
@@ -2291,7 +2290,6 @@ bool UContainer::Build(void)
    UpdateComputationOrder();
    // Defense in depth: UCO reorders PComponents; ActiveComponents must not stay stale.
    InvalidateActiveComponentsCache();
-   build_success = true;
   }
   catch(UException &exception)
   {
@@ -2333,7 +2331,6 @@ bool UContainer::Build(void)
    }
 
    Ready = false;
-   build_success = false;
 //   throw;
   }
   catch(std::exception &exception)
@@ -2343,7 +2340,6 @@ bool UContainer::Build(void)
    GetFullName(full_name);
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throws exception: ")+exception.what());
    Ready = false;
-   build_success = false;
 //   RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
@@ -2354,7 +2350,6 @@ bool UContainer::Build(void)
    GetFullName(full_name);
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throws exception: ")+AnsiString(exception.Message).c_str());
    Ready = false;
-   build_success = false;
 //   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
   #endif
@@ -2366,7 +2361,6 @@ bool UContainer::Build(void)
    GetFullName(full_name);
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throws exception: ")+exception.what());
    Ready = false;
-   build_success = false;
 //   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
   #endif
@@ -2378,7 +2372,6 @@ bool UContainer::Build(void)
    GetFullName(full_name);
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throws exception: ")+exception.what());
    Ready = false;
-   build_success = false;
 //   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
   #endif
@@ -2390,10 +2383,11 @@ bool UContainer::Build(void)
   GetFullName(full_name);
   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
   Ready = false;
-  build_success = false;
 //  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
- return build_success;
+ // Lifecycle bools are interface artifacts. Ready and the operation ledger
+ // retain the failure; callers must not use this return as an error channel.
+ return true;
 }
 
 // Метод сброса компонента.

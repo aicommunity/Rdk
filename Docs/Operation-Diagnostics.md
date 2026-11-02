@@ -2,8 +2,18 @@
 
 `UContainer` catches component exceptions during Default, Build, Init, Reset,
 Calculate and UnInit. The existing lifecycle, scheduler, logging and return-value
-contract remain unchanged. In particular Build/Reset/Calculate return values
+contract of Reset/Calculate remain unchanged. Build's legacy caught-exception
+false return is corrected to the user-required true artifact as a separate
+change. Ready remains false on a caught local Build exception. Lifecycle bools
 are not an error channel.
+
+Connection/structure APIs retain their own meaningful success/failure results.
+Their previous checks of Build's bool use the operation marker instead, so a
+failed Build still refuses linking or structure creation. This also preserves
+the existing no-storage no-op behavior; no unconditional IsReady requirement
+is added. Environment forwards Model/subcomponent Build failures when those
+objects are separate ownership roots. The ABuild hook's existing return and
+native invocation order are retained.
 
 Each caught exception records its operation and component-qualified reason in a
 process-local ledger on that container and its current owner chain. A caller
