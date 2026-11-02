@@ -25,15 +25,15 @@
 
 ### UModule
 
-Базовый абстрактный класс для всех модулей системы.
+Базовый класс для модулей системы с реализациями lifecycle hooks по умолчанию.
 
 **Заголовок:** `Rdk/Core/Engine/UModule.h`
 
 **Виртуальные методы:**
-- `virtual bool ADefault(void) = 0` - установка значений по умолчанию
-- `virtual bool ABuild(void) = 0` - построение внутренней структуры
-- `virtual bool AReset(void) = 0` - сброс состояния
-- `virtual bool ACalculate(void) = 0` - выполнение вычислений
+- `virtual bool ADefault(void)` - установка значений по умолчанию
+- `virtual bool ABuild(void)` - построение внутренней структуры
+- `virtual bool AReset(void)` - сброс состояния
+- `virtual bool ACalculate(void)` - выполнение вычислений
 
 **Публичные методы:**
 - `bool IsReady(void) const` - проверка готовности модуля
@@ -42,6 +42,19 @@
 - `bool Build(void)` - вызов ABuild с хуками
 - `bool Reset(void)` - вызов AReset с хуками
 - `bool Calculate(void)` - вызов ACalculate с хуками
+
+Для компонентного lifecycle значения Build/Reset/Calculate являются артефактами
+интерфейса и возвращают true; они не доказывают успешность операции. UContainer
+сохраняет пойманные исключения в специализированной диагностике. Для проверки
+новых ошибок используются `OperationFailureSequence()`,
+`HasOperationFailureSince(marker)` и `LastOperationFailure()`. Успешный повтор
+не стирает прежнюю историю. `IsReady` остаётся состоянием готовности; оно не
+заменяет историю ошибок и полноценную проверку эффективного графа.
+
+Порядок UModule::AfterBuild включает Reset. UContainer и UEnvironment имеют
+собственные native обходы и guards; не добавляйте повторные Build/Reset либо
+вложенный Calculate для исправления порядка вызывающего компонента. Подробные
+границы диагностики: [Operation-Diagnostics.md](Operation-Diagnostics.md).
 
 **Хуки (переопределяемые):**
 - `virtual bool BeforeDefault(void)` - перед ADefault
