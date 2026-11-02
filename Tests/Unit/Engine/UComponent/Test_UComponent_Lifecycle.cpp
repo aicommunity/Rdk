@@ -2,8 +2,52 @@
 #include "rdk.h"
 #include <string>
 #include <vector>
+#include <thread>
 
 using namespace RDK;
+
+namespace {
+struct OperationReporter : UModule {
+    void Report(const std::string& operation,const std::string& reason) {RecordOperationFailure(operation,reason);}
+};
+}
+TEST(UModuleOperationDiagnostics,SuccessDoesNotEraseAnEarlierFailure)
+{
+    OperationReporter module;const auto marker=module.OperationFailureSequence();
+    module.Report("Reset","observed reset failure");
+    EXPECT_TRUE(module.HasOperationFailureSince(marker));
+    const auto after=module.OperationFailureSequence();
+    module.Build();module.Init();module.Reset();module.Calculate();
+    EXPECT_FALSE(module.HasOperationFailureSince(after));
+    const auto failure=module.LastOperationFailure();
+    EXPECT_EQ(failure.Sequence,after);EXPECT_EQ(failure.Operation,"Reset");
+    EXPECT_EQ(failure.Reason,"observed reset failure");EXPECT_FALSE(failure.Overflowed);
+}
+TEST(UModuleOperationDiagnostics,CopyStartsAnIndependentDiagnosticHistory)
+{
+    OperationReporter source;source.Report("Calculate","source only");
+    UModule copy(source);EXPECT_EQ(copy.OperationFailureSequence(),0u);
+    EXPECT_FALSE(copy.HasOperationFailureSince(0));
+    OperationReporter target;target.Report("Reset","target history");const auto marker=target.OperationFailureSequence();
+    static_cast<UModule&>(target)=source;
+    EXPECT_EQ(target.OperationFailureSequence(),marker);EXPECT_EQ(target.LastOperationFailure().Reason,"target history");
+}
+TEST(UModuleOperationDiagnostics,DiagnosticsDoNotChangeLifecycleIdentity)
+{
+    OperationReporter module;const auto life=module.ObserveLifecycle();
+    module.Report("Build","diagnostic event");
+    EXPECT_TRUE(life.IsCurrent());EXPECT_TRUE(module.HasOperationFailureSince(0));
+}
+TEST(UModuleOperationDiagnostics,ConcurrentReportsKeepCoherentOperationAndReason)
+{
+    OperationReporter module;
+    std::thread first([&]{for(int i=0;i<1000;++i)module.Report("Reset","reset failure");});
+    std::thread second([&]{for(int i=0;i<1000;++i)module.Report("Calculate","calculate failure");});
+    first.join();second.join();const auto failure=module.LastOperationFailure();
+    EXPECT_EQ(failure.Sequence,2000u);EXPECT_FALSE(failure.Overflowed);
+    ASSERT_TRUE(failure.Operation=="Reset" || failure.Operation=="Calculate");
+    EXPECT_EQ(failure.Reason,failure.Operation=="Reset"?"reset failure":"calculate failure");
+}
 
 class LifecycleTestComponent : public UNet
 {

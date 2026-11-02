@@ -13,6 +13,7 @@ See file license.txt for more information
 #define UAContainerCPP
 
 #include <algorithm>
+#include <set>
 #include <locale>
 #include <string.h>
 #include <cstdio>
@@ -32,6 +33,14 @@ See file license.txt for more information
 #include "../../Deploy/Include/rdk_cpp_init.h"
 
 namespace RDK {
+void UContainer::RecordSubtreeOperationFailure(const std::string& operation,const std::string& reason)
+{
+ std::set<UContainer*> seen;
+ for(auto node=this;node && seen.insert(node).second;node=node->GetOwner().Get())
+  node->RecordOperationFailure(operation,reason);
+}
+
+
 
 UIPointer::~UIPointer()
 {
@@ -2029,6 +2038,7 @@ bool UContainer::Default(void)
   }
   catch(UException &exception)
   {
+   RecordSubtreeOperationFailure("Default",GetFullName()+std::string(": ")+exception.what());
    // Расширенное логирование: добавляем тип исключения и его числовые коды
    std::string full_name;
    GetFullName(full_name);
@@ -2086,6 +2096,7 @@ bool UContainer::Default(void)
   }
   catch(std::exception &exception)
   {
+   RecordSubtreeOperationFailure("Default",GetFullName()+std::string(": ")+exception.what());
    std::string full_name;
    GetFullName(full_name);
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throws exception: ")+exception.what());
@@ -2095,6 +2106,7 @@ bool UContainer::Default(void)
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
+   RecordSubtreeOperationFailure("Default",GetFullName()+std::string(": ")+AnsiString(exception.Message).c_str());
    std::string full_name;
    GetFullName(full_name);
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throws exception: ")+AnsiString(exception.Message).c_str());
@@ -2105,6 +2117,7 @@ bool UContainer::Default(void)
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
+   RecordSubtreeOperationFailure("Default",GetFullName()+std::string(": ")+exception.what());
    std::string full_name;
    GetFullName(full_name);
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throws exception: ")+exception.what());
@@ -2115,6 +2128,7 @@ bool UContainer::Default(void)
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
+   RecordSubtreeOperationFailure("Default",GetFullName()+std::string(": ")+exception.what());
    std::string full_name;
    GetFullName(full_name);
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throws exception: ")+exception.what());
@@ -2125,6 +2139,7 @@ bool UContainer::Default(void)
  }
  RDK_SYS_CATCH
  {
+  RecordSubtreeOperationFailure("Default",GetFullName()+std::string(": ")+GET_SYSTEM_EXCEPTION_DATA);
   std::string full_name;
   GetFullName(full_name);
   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
@@ -2280,6 +2295,7 @@ bool UContainer::Build(void)
   }
   catch(UException &exception)
   {
+   RecordSubtreeOperationFailure("Build",GetFullName()+std::string(": ")+exception.what());
    // Расширенное логирование: добавляем тип исключения и его числовые коды
    std::string full_name;
    GetFullName(full_name);
@@ -2322,6 +2338,7 @@ bool UContainer::Build(void)
   }
   catch(std::exception &exception)
   {
+   RecordSubtreeOperationFailure("Build",GetFullName()+std::string(": ")+exception.what());
    std::string full_name;
    GetFullName(full_name);
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throws exception: ")+exception.what());
@@ -2332,6 +2349,7 @@ bool UContainer::Build(void)
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
+   RecordSubtreeOperationFailure("Build",GetFullName()+std::string(": ")+AnsiString(exception.Message).c_str());
    std::string full_name;
    GetFullName(full_name);
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throws exception: ")+AnsiString(exception.Message).c_str());
@@ -2343,6 +2361,7 @@ bool UContainer::Build(void)
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
+   RecordSubtreeOperationFailure("Build",GetFullName()+std::string(": ")+exception.what());
    std::string full_name;
    GetFullName(full_name);
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throws exception: ")+exception.what());
@@ -2354,6 +2373,7 @@ bool UContainer::Build(void)
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
+   RecordSubtreeOperationFailure("Build",GetFullName()+std::string(": ")+exception.what());
    std::string full_name;
    GetFullName(full_name);
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throws exception: ")+exception.what());
@@ -2365,6 +2385,7 @@ bool UContainer::Build(void)
   }
  RDK_SYS_CATCH
  {
+  RecordSubtreeOperationFailure("Build",GetFullName()+std::string(": ")+GET_SYSTEM_EXCEPTION_DATA);
   std::string full_name;
   GetFullName(full_name);
   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, full_name+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
@@ -2433,17 +2454,20 @@ bool UContainer::Reset(void)
   }
   catch(UException &exception)
   {
+   RecordSubtreeOperationFailure("Reset",GetFullName()+std::string(": ")+exception.what());
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
 //   throw;
   }
   catch(std::exception &exception)
   {
+   RecordSubtreeOperationFailure("Reset",GetFullName()+std::string(": ")+exception.what());
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
  //  RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
+   RecordSubtreeOperationFailure("Reset",GetFullName()+std::string(": ")+AnsiString(exception.Message).c_str());
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+AnsiString(exception.Message).c_str());
 //   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
@@ -2451,6 +2475,7 @@ bool UContainer::Reset(void)
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
+   RecordSubtreeOperationFailure("Reset",GetFullName()+std::string(": ")+exception.what());
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
 //   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
@@ -2458,6 +2483,7 @@ bool UContainer::Reset(void)
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
+   RecordSubtreeOperationFailure("Reset",GetFullName()+std::string(": ")+exception.what());
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throws exception: ")+exception.what());
 //   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
@@ -2465,6 +2491,7 @@ bool UContainer::Reset(void)
  }
  RDK_SYS_CATCH
  {
+  RecordSubtreeOperationFailure("Reset",GetFullName()+std::string(": ")+GET_SYSTEM_EXCEPTION_DATA);
   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
 //  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
@@ -2685,17 +2712,20 @@ bool UContainer::Calculate(void)
   }
   catch(UException &exception)
   {
+   RecordSubtreeOperationFailure("Calculate",GetFullName()+std::string(": ")+exception.what());
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
 //   throw;
   }
   catch(std::exception &exception)
   {
+   RecordSubtreeOperationFailure("Calculate",GetFullName()+std::string(": ")+exception.what());
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
 //   RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
+   RecordSubtreeOperationFailure("Calculate",GetFullName()+std::string(": ")+AnsiString(exception.Message).c_str());
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+AnsiString(exception.Message).c_str());
 //   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
@@ -2703,6 +2733,7 @@ bool UContainer::Calculate(void)
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
+   RecordSubtreeOperationFailure("Calculate",GetFullName()+std::string(": ")+exception.what());
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
 //   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
@@ -2710,6 +2741,7 @@ bool UContainer::Calculate(void)
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
+   RecordSubtreeOperationFailure("Calculate",GetFullName()+std::string(": ")+exception.what());
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
 //   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
@@ -2717,6 +2749,7 @@ bool UContainer::Calculate(void)
  }
  RDK_SYS_CATCH
  {
+  RecordSubtreeOperationFailure("Calculate",GetFullName()+std::string(": ")+GET_SYSTEM_EXCEPTION_DATA);
   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
 //  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
@@ -2748,17 +2781,20 @@ void UContainer::Init(void)
   }
   catch(UException &exception)
   {
+   RecordSubtreeOperationFailure("Init",GetFullName()+std::string(": ")+exception.what());
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
 //   throw;
   }
   catch(std::exception &exception)
   {
+   RecordSubtreeOperationFailure("Init",GetFullName()+std::string(": ")+exception.what());
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
 //   RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
+   RecordSubtreeOperationFailure("Init",GetFullName()+std::string(": ")+AnsiString(exception.Message).c_str());
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+AnsiString(exception.Message).c_str());
 //   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
@@ -2766,6 +2802,7 @@ void UContainer::Init(void)
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
+   RecordSubtreeOperationFailure("Init",GetFullName()+std::string(": ")+exception.what());
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
 //   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
@@ -2773,6 +2810,7 @@ void UContainer::Init(void)
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
+   RecordSubtreeOperationFailure("Init",GetFullName()+std::string(": ")+exception.what());
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
 //   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
@@ -2780,6 +2818,7 @@ void UContainer::Init(void)
  }
  RDK_SYS_CATCH
  {
+  RecordSubtreeOperationFailure("Init",GetFullName()+std::string(": ")+GET_SYSTEM_EXCEPTION_DATA);
   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
 //  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
@@ -2803,17 +2842,20 @@ void UContainer::UnInit(void)
   }
   catch(UException &exception)
   {
+   RecordSubtreeOperationFailure("UnInit",GetFullName()+std::string(": ")+exception.what());
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
 //   throw;
   }
   catch(std::exception &exception)
   {
+   RecordSubtreeOperationFailure("UnInit",GetFullName()+std::string(": ")+exception.what());
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
 //   RDK_THROW(UExceptionWrapperStd(exception));
   }
   #ifdef __BORLANDC__
   catch(System::Sysutils::Exception &exception)
   {
+   RecordSubtreeOperationFailure("UnInit",GetFullName()+std::string(": ")+AnsiString(exception.Message).c_str());
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+AnsiString(exception.Message).c_str());
 //   RDK_THROW(UExceptionWrapperBcb(GET_BCB_SYSTEM_EXCEPTION_DATA));
   }
@@ -2821,6 +2863,7 @@ void UContainer::UnInit(void)
   #ifdef BOOST_VERSION
   catch(boost::exception &exception)
   {
+   RecordSubtreeOperationFailure("UnInit",GetFullName()+std::string(": ")+exception.what());
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
 //   RDK_THROW(UExceptionWrapperBoost(exception.what()));
   }
@@ -2828,6 +2871,7 @@ void UContainer::UnInit(void)
   #ifdef CV_VERSION
   catch(cv::exception &exception)
   {
+   RecordSubtreeOperationFailure("UnInit",GetFullName()+std::string(": ")+exception.what());
    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw exception: ")+exception.what());
 //   RDK_THROW(UExceptionWrapperOpenCv(exception.what()));
   }
@@ -2835,6 +2879,7 @@ void UContainer::UnInit(void)
  }
  RDK_SYS_CATCH
  {
+  RecordSubtreeOperationFailure("UnInit",GetFullName()+std::string(": ")+GET_SYSTEM_EXCEPTION_DATA);
   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, GetFullName()+std::string(" throw system exception: ")+GET_SYSTEM_EXCEPTION_DATA);
 //  RDK_THROW(UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
  }
