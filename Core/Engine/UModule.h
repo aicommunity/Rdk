@@ -17,10 +17,17 @@ See file license.txt for more information
 #include "../../Deploy/Include/initdll_defs.h"
 #include <cstdint>
 #include <memory>
+#include <string>
 
 namespace RDK {
 
 class UModule;
+struct UModuleOperationFailure
+{
+ std::uint64_t Sequence=0;
+ bool Overflowed=false;
+ std::string Operation,Reason;
+};
 /// Process-local observation of native lifecycle, independent of parameters and
 /// component storage. It does not own the component or represent a checkpoint.
 class RDK_LIB_TYPE UModuleLifecycleObservation
@@ -53,6 +60,9 @@ private:
 protected:
  /// For native overrides that enter lifecycle directly, without before-hooks.
  void AdvanceLifecycleObservation();
+ // Process-local diagnostics, independent of lifecycle return-value artifacts.
+ // UContainer records exceptions it catches and forwards them to its owners.
+ void RecordOperationFailure(const std::string& operation,const std::string& reason);
 
 public: // Методы
 // --------------------------
@@ -67,6 +77,9 @@ virtual ~UModule(void);
 /// assignment/destruction. Calculate and no-op Build/Init do not invalidate it.
 /// Never serialized; copying a module creates an independent identity.
 UModuleLifecycleObservation ObserveLifecycle() const;
+ std::uint64_t OperationFailureSequence() const;
+ bool HasOperationFailureSince(std::uint64_t sequence) const;
+ UModuleOperationFailure LastOperationFailure() const;
 // --------------------------
 
 // --------------------------

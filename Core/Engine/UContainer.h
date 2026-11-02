@@ -87,6 +87,8 @@ typedef std::map<UEPtr<UContainer>, NameT> UAStaticContainerMap;
 
 class RDK_LIB_TYPE UContainer: public UComponent
 {
+protected:
+ void RecordSubtreeOperationFailure(const std::string& operation,const std::string& reason);
 public:
 typedef std::unordered_map<NameT,UPVariable> PointerMapT;
 typedef std::unordered_map<NameT,UPVariable>::iterator PointerMapIteratorT;

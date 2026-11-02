@@ -18,6 +18,7 @@ See file license.txt for more information
 #include <atomic>
 #include <limits>
 #include <utility>
+#include <mutex>
 
 namespace RDK {
 
@@ -25,6 +26,10 @@ struct UModuleLifecycleObservation::State
 {
  std::atomic<std::uint64_t> Revision{0};
  std::atomic<bool> Alive{true},Overflowed{false};
+ std::atomic<std::uint64_t> FailureSequence{0};
+ std::atomic<bool> FailureOverflowed{false};
+ mutable std::mutex FailureMutex;
+ std::string FailureOperation,FailureReason;
 };
 UModuleLifecycleObservation::UModuleLifecycleObservation(std::shared_ptr<State> state,std::uint64_t revision)
  : ObservedState(std::move(state)),Revision(revision) {}
@@ -43,6 +48,30 @@ void UModule::AdvanceLifecycleObservation()
  while(revision!=std::numeric_limits<std::uint64_t>::max())
   if(LifecycleState->Revision.compare_exchange_weak(revision,revision+1,std::memory_order_acq_rel))return;
  LifecycleState->Overflowed.store(true,std::memory_order_release);
+}
+
+std::uint64_t UModule::OperationFailureSequence() const
+{return LifecycleState->FailureSequence.load(std::memory_order_acquire);}
+bool UModule::HasOperationFailureSince(std::uint64_t sequence) const
+{
+ return LifecycleState->FailureOverflowed.load(std::memory_order_acquire) ||
+  LifecycleState->FailureSequence.load(std::memory_order_acquire)!=sequence;
+}
+UModuleOperationFailure UModule::LastOperationFailure() const
+{
+ std::lock_guard<std::mutex> lock(LifecycleState->FailureMutex);
+ return {LifecycleState->FailureSequence.load(std::memory_order_acquire),
+  LifecycleState->FailureOverflowed.load(std::memory_order_acquire),
+  LifecycleState->FailureOperation,LifecycleState->FailureReason};
+}
+void UModule::RecordOperationFailure(const std::string& operation,const std::string& reason)
+{
+ std::lock_guard<std::mutex> lock(LifecycleState->FailureMutex);
+ LifecycleState->FailureOperation=operation;LifecycleState->FailureReason=reason;
+ const auto sequence=LifecycleState->FailureSequence.load(std::memory_order_relaxed);
+ if(sequence==std::numeric_limits<std::uint64_t>::max())
+  LifecycleState->FailureOverflowed.store(true,std::memory_order_release);
+ else LifecycleState->FailureSequence.store(sequence+1,std::memory_order_release);
 }
 
 

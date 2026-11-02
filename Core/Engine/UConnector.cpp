@@ -429,7 +429,9 @@ bool UConnector::ConnectToItem(UEPtr<UItem> na, const NameT &item_property_name,
  if(!na)
   return false;
 
- if(!Build())
+ const auto buildFailureSequence=OperationFailureSequence();
+ Build();
+ if(HasOperationFailureSince(buildFailureSequence))
   return false;
 
  if(!na->GetActivity() && !na->GetOwner())
