@@ -1,5 +1,8 @@
 # Детальная документация модуля Core/Engine
 
+[Native lifecycle: точный порядок UModule/UContainer](Engine/NativeLifecycle.md).
+Схемы классов ниже не заменяют контракт вызовов, guards и структурного владения.
+
 ## RU
 
 ### Обзор

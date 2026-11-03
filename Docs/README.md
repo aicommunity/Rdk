@@ -13,6 +13,7 @@
 - [Создание компонентов](Guides/Creating-Components.md) - руководство по созданию компонентов
 - [Создание свойств](Guides/Creating-Properties.md) - руководство по созданию свойств
 - [Движок](Engine-Detailed.md) - детальная документация движка
+- [Штатный lifecycle](Engine/NativeLifecycle.md) - UModule/UContainer, guards, Build/Init/Reset и загрузка графа
 - [Приложение](Application-Detailed.md) - детальная документация приложения
 - [Система логирования](Logging-System.md) - система логирования
 

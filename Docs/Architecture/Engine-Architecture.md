@@ -23,19 +23,11 @@
 
 **Жизненный цикл компонента:**
 
-Ниже показана диаграмма состояний, обобщающая переходы между основными методами жизненного цикла компонента. Она напрямую отражает шаблон вызовов `ADefault()`, `ABuild()`, `AReset()`, `ACalculate()` в базовом классе `UComponent`.
+Ниже показана только обзорная схема. Фактический контракт реализован различно
+в UModule и UContainer: Ready и InitFlag независимы, Build/Init/Reset могут
+вызывать друг друга. [Точный порядок и ветви пропуска](../Engine/NativeLifecycle.md).
 
-```mermaid
-stateDiagram-v2
-    [*] --> Default: Создание
-    Default --> Build: Настройка параметров
-    Build --> Ready: Готов к работе
-    Ready --> Reset: Перед вычислениями
-    Reset --> Calculate: Вычисление
-    Calculate --> Calculate: Повтор
-    Calculate --> Reset: Новый цикл
-    Ready --> [*]: Удаление
-```
+[Lifecycle diagram and guarded call sequence](../Diagrams/Component-Lifecycle.md).
 
 **Методы жизненного цикла:**
 - `ADefault()` - инициализация значений по умолчанию
@@ -211,7 +203,9 @@ classDiagram
 
 **Последовательность выполнения:**
 
-Диаграмма последовательностей ниже демонстрирует типичное выполнение цикла расчётов: `UEngine` запускает `UEnvironment`, окружение вызывает операции `Reset/Calculate` на корневом контейнере, а тот, в свою очередь, делегирует вызовы методам `AReset` и `ACalculate` дочерних компонентов.
+Диаграмма последовательностей ниже демонстрирует типичное выполнение цикла расчётов: `UEngine` запускает `UEnvironment`, окружение вызывает операции `Reset/Calculate` на корневом контейнере, а тот, в свою очередь, вызывает публичные `Reset` и `Calculate` дочерних компонентов. Hooks вызывают
+сами дети. Схема опускает guards, Build/Init и multirate; см.
+[штатный lifecycle](../Engine/NativeLifecycle.md).
 
 ```mermaid
 sequenceDiagram
@@ -223,15 +217,15 @@ sequenceDiagram
     
     Engine->>Env: Start()
     Env->>Container: Reset()
-    Container->>Comp1: AReset()
-    Container->>Comp2: AReset()
+    Container->>Comp1: Reset()
+    Container->>Comp2: Reset()
     
     loop Каждый шаг времени
         Env->>Container: Calculate()
-        Container->>Comp1: ACalculate()
+        Container->>Comp1: Calculate()
         Comp1->>Comp1: Обработка данных
         Comp1->>Comp2: Обновление выходных свойств
-        Container->>Comp2: ACalculate()
+        Container->>Comp2: Calculate()
         Comp2->>Comp2: Обработка данных
     end
     
@@ -400,7 +394,10 @@ Execution is orchestrated by `UEngine` and `UEnvironment`:
 - `UEnvironment` calls `Reset` and `Calculate` on root containers,
 - containers delegate lifecycle calls to child components in a defined order (often respecting network topology).
 
-The corresponding sequence is illustrated by the execution diagram in the Russian section.
+The corresponding diagram is only a simplified overview. Parents call public
+child.Reset/Calculate, not child hooks directly. Ready and InitFlag are independent;
+Init can indirectly Build through Reset. See the [native lifecycle contract](../Engine/NativeLifecycle.md)
+for UModule/UContainer differences, skipped calls, diagnostics and structural ownership.
 
 ### Component Factories
 
@@ -417,17 +414,7 @@ Factories are created either from prototype instances (`UVirtualMethodFactory`) 
 - [Detailed Engine Documentation](../Engine-Detailed.md)
 - [Creating Components](../Guides/Creating-Components.md)
 
-```mermaid
-stateDiagram-v2
-    [*] --> Default: Creation
-    Default --> Build: Настройка параметров
-    Build --> Ready: Ready
-    Ready --> Reset: Перед вычислениями
-    Reset --> Calculate: Calculate
-    Calculate --> Calculate: Повтор
-    Calculate --> Reset: Новый цикл
-    Ready --> [*]: Удаление
-```
+[Lifecycle diagram and guarded call sequence](../Diagrams/Component-Lifecycle.md).
 
 ```mermaid
 classDiagram
@@ -526,15 +513,15 @@ sequenceDiagram
     
     Engine->>Env: Start()
     Env->>Container: Reset()
-    Container->>Comp1: AReset()
-    Container->>Comp2: AReset()
+    Container->>Comp1: Reset()
+    Container->>Comp2: Reset()
     
     loop Каждый шаг времени
         Env->>Container: Calculate()
-        Container->>Comp1: ACalculate()
+        Container->>Comp1: Calculate()
         Comp1->>Comp1: Processing данных
         Comp1->>Comp2: Обновление выходных свойств
-        Container->>Comp2: ACalculate()
+        Container->>Comp2: Calculate()
         Comp2->>Comp2: Processing данных
     end
     
