@@ -1296,7 +1296,10 @@ bool UApplication::Init(void)
 {
  std::string font_path=extract_file_path(ApplicationFileName);
  Core_SetSystemDir(font_path.c_str());
- SetWorkDirectory(font_path);
+ // A caller may select a separate writable working directory before startup.
+ // The system/resource directory still belongs to the actual executable.
+ if(WorkDirectory.empty())
+  SetWorkDirectory(font_path);
  CurrentLogSessionStart = std::time(nullptr);
  // Инициализируем кэш имени приложения для логов
  GetLogFileBaseName();
