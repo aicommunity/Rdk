@@ -17,6 +17,14 @@ Build не является рекурсивной командой «испра
 возвращает управление до обхода детей. Изменение leaf property не обязано
 автоматически инвалидировать владельцев.
 
+У свойств UVProperty/UVVectorProperty CheckEqualsFlag по умолчанию включён:
+SetData равного локального значения возвращается до setter. При connected input
+SetData не заменяет связанное значение, а при ExternalDataSource перенаправляет
+запись источнику. Это видно в [UProperty.h](../../Core/Engine/UProperty.h).
+Самоприсваивание не является командой rebuild; изменение вектора через прямой
+доступ к данным также не доказывает выполнение setter/инвалидации. Применять
+параметры надо через контракт владельца, с проверкой effective readback.
+
 Публичные `Build/Reset/Calculate` возвращают true как артефакт интерфейса.
 Это не подтверждение сборки, вычисленного отклика или сброса. Отказы проверяют
 по специализированной диагностике, operation ledger и фактическому состоянию
@@ -135,3 +143,9 @@ UItem.Connect and UConnector.ConnectToItem call Build. Deferring an explicit
 model.Build until after Load therefore does not defer all structural builds.
 Use the owner's supported graph-preservation/import/adoption mode while restoring
 links. Do not bypass native links with raw pointer writes or force wake-ups.
+
+UVProperty/UVVectorProperty enable equality checks by default: setting the same
+local value skips the setter. Connected input writes are ignored; ExternalDataSource
+writes are forwarded. Self-assignment is not a rebuild operation, and direct
+vector-data mutation does not prove setter execution or invalidation. Use the
+owning component's contract and effective readback.
