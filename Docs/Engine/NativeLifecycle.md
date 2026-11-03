@@ -72,6 +72,19 @@ UNet.LoadComponent читает параметры, удаляет прежни�
 process-local состояние контроллера. Обновлять сохранённые pointers/arrays нужно
 по штатному контракту конкретного класса; успешный bool Load не заменяет readback.
 
+LoadComponent с links=true может косвенно вызвать Build уже внутри загрузки:
+UNet.SetComponentInternalLinks вызывает BreakLinks и CreateLinks; рекурсивный
+BreakLinks вызывает UItem.DisconnectAll, а этот метод входит в Build.
+UItem.Connect и UConnector.ConnectToItem также вызывают Build своих объектов.
+Следовательно, отложить явный вызов model.Build до завершения Load недостаточно,
+чтобы отложить структурную сборку. Это штатное поведение операций связей,
+подтверждённое [UItem.cpp](../../Core/Engine/UItem.cpp) и
+[UConnector.cpp](../../Core/Engine/UConnector.cpp), а не причина обходить их
+прямой записью pointers. Полный граф следует загружать в разрешённом владельцем
+режиме сохранения структуры и затем применять его штатный import/adoption.
+Переход в режим автоматического построения должен быть осмысленным изменением
+конфигурации, а не самоприсваиванием для принудительного пробуждения.
+
 Класс-владелец может намеренно пересоздать структуру из своего storage-профиля
 при Build. Тогда загрузка готового неоднородного графа с последующим Build такого
 владельца не гарантирует его сохранности. Следует выбрать поддерживаемый режим
@@ -115,3 +128,10 @@ the loaded graph from its profile. Use its explicit graph/import/adoption contra
 prepare required physical children before adoption, refresh handles, and verify
 effective classes/parameters/bindings/order and response. Do not repair this with
 extra Default, self-assignment, Ready toggles, prototype mutation or per-tick writes.
+
+Link restoration is itself a lifecycle boundary: LoadComponent(links=true) calls
+SetComponentInternalLinks → BreakLinks/CreateLinks. UItem.DisconnectAll,
+UItem.Connect and UConnector.ConnectToItem call Build. Deferring an explicit
+model.Build until after Load therefore does not defer all structural builds.
+Use the owner's supported graph-preservation/import/adoption mode while restoring
+links. Do not bypass native links with raw pointer writes or force wake-ups.
