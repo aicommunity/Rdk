@@ -1390,13 +1390,14 @@ void UStorage::LoadClassesDescription()
         }
     };
 
-    // Параллельно загружаем XML файлы (только чтение, безопасно)
+    // Keep description parsing on the calling thread. Unbounded async launch
+    // could exhaust the application's thread budget before registry assembly.
     std::vector<std::future<LoadedFileData>> futures;
     futures.reserve(files_to_load.size());
 
     for(const auto& file_info : files_to_load)
     {
-        futures.push_back(std::async(std::launch::async, [file_info]() {
+        futures.push_back(std::async(std::launch::deferred, [file_info]() {
             LoadedFileData result;
             result.valid = false;
 

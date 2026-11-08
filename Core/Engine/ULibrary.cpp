@@ -489,8 +489,9 @@ bool URuntimeLibrary::LoadCompDescriptions()
     if(RDK::FindFilesList(LibPath,"*.xml",true,comp_descriptions))
         return false;
 
-    // Параллельная загрузка XML файлов (только чтение, безопасно)
-    // Используем std::async для параллельного чтения файлов
+    // Read descriptions in the existing collection order without creating one
+    // OS thread per file. Deferred futures retain the same get()/error path
+    // while remaining usable when the application has no spare thread slots.
     std::vector<std::future<std::string>> futures;
     futures.reserve(comp_descriptions.size());
     
@@ -498,7 +499,7 @@ bool URuntimeLibrary::LoadCompDescriptions()
     {
         // Захватываем по значению для безопасности в многопоточной среде
         std::string file_path = LibPath + "/" + comp_descriptions[i];
-        futures.push_back(std::async(std::launch::async, [file_path]() {
+        futures.push_back(std::async(std::launch::deferred, [file_path]() {
             // Каждый поток работает со своей копией XML структуры
             USerStorageXML temp_xml;
             temp_xml.LoadFromFile(file_path, "");
