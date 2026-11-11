@@ -118,14 +118,13 @@ _add_llm_unit_test(Test_LLM_ChatMarkdown
   ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt/Llm/ULlmChatMarkdown.cpp)
 target_include_directories(Test_LLM_ChatMarkdown PRIVATE
   ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt/Llm)
-find_package(Qt5 COMPONENTS Gui REQUIRED)
-target_link_libraries(Test_LLM_ChatMarkdown PRIVATE Qt5::Gui)
+target_link_libraries(Test_LLM_ChatMarkdown PRIVATE Nmsdk::Qt::Gui)
 _add_llm_unit_test(Test_LLM_DetailsHtml
   test_llm_details_html.cpp
   ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt/Llm/ULlmDetailsHtml.cpp)
 target_include_directories(Test_LLM_DetailsHtml PRIVATE
   ${CMAKE_SOURCE_DIR}/Rdk/GUI/Qt/Llm)
-target_link_libraries(Test_LLM_DetailsHtml PRIVATE Qt5::Core)
+target_link_libraries(Test_LLM_DetailsHtml PRIVATE Nmsdk::Qt::Core)
 _add_llm_unit_test(Test_LLM_DocSearch test_llm_doc_search.cpp)
 _add_llm_unit_test(Test_LLM_Workflow test_llm_workflow.cpp)
 _add_llm_unit_test(Test_LLM_UnifiedTurnContract test_llm_unified_turn_contract.cpp)
