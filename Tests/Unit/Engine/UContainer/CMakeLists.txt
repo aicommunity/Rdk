@@ -10,8 +10,8 @@ target_sources(Test_UContainer_Components
 target_link_libraries(Test_UContainer_Components
     PRIVATE
     rdk.static.qt
-    gtest
-    gtest_main
+    GTest::gtest
+    GTest::gtest_main
 )
 
 target_include_directories(Test_UContainer_Components

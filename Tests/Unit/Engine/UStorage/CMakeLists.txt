@@ -10,8 +10,8 @@ target_sources(Test_UStorage_Objects
 target_link_libraries(Test_UStorage_Objects
     PRIVATE
     rdk.static.qt
-    gtest
-    gtest_main
+    GTest::gtest
+    GTest::gtest_main
 )
 
 target_include_directories(Test_UStorage_Objects
