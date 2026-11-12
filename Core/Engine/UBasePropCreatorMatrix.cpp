@@ -4,7 +4,7 @@
 
 namespace RDK {
 
-// Основная функция создания свойств всех возможных типов (добавляется в Storage)
+// РћСЃРЅРѕРІРЅР°СЏ С„СѓРЅРєС†РёСЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІ РІСЃРµС… РІРѕР·РјРѕР¶РЅС‹С… С‚РёРїРѕРІ (РґРѕР±Р°РІР»СЏРµС‚СЃСЏ РІ Storage)
 bool UBasePropCreatorMatrix::BaseCrPropMock(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
 {
  return BaseCrPropMockTempl<UBasePropCreatorMatrix>(serstorage,mock_unet);

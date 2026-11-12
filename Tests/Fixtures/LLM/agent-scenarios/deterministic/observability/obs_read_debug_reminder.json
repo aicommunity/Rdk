@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "id": "obs_read_debug_reminder",
+  "tier": "deterministic",
+  "suite": "observability",
+  "registry_profile": "core",
+  "user_text": "покажи DEBUG лог",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "read_system_log",
+          "arguments": {
+            "mode": "tail",
+            "severity": "debug"
+          }
+        }
+      ]
+    },
+    {
+      "text": "Краткий ответ по результатам tool."
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": [
+      "read_system_log"
+    ]
+  }
+}

@@ -27,31 +27,31 @@ private:	// User declarations
 public:		// User declarations
 	__fastcall TMatrixForm(TComponent* Owner);
 
-/// Строка и столбец выбранные в матрице
+/// РЎС‚СЂРѕРєР° Рё СЃС‚РѕР»Р±РµС† РІС‹Р±СЂР°РЅРЅС‹Рµ РІ РјР°С‚СЂРёС†Рµ
 int SelectedRow,SelectedCol;
 
-/// Имя компонента
+/// РРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°
 std::string ComponentMatrixName;
 
-/// Имя свойства
+/// РРјСЏ СЃРІРѕР№СЃС‚РІР°
 std::string PropertyMatrixName;
 
-/// Тип свойства
-/// 0 - неизвестно
+/// РўРёРї СЃРІРѕР№СЃС‚РІР°
+/// 0 - РЅРµРёР·РІРµСЃС‚РЅРѕ
 /// 1 - MDMatrix<double>
 /// 2 - MDMatrix<int>
 /// 3 - MDVector<double>
 /// 4 - MDVector<int>
 int PropertyType;
 
-// Если force_update == true, то интерфейс обновляется
-// вне зависимости от UpdateInterval
+// Р•СЃР»Рё force_update == true, С‚Рѕ РёРЅС‚РµСЂС„РµР№СЃ РѕР±РЅРѕРІР»СЏРµС‚СЃСЏ
+// РІРЅРµ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ UpdateInterval
 virtual void AUpdateInterface(void);
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 virtual void AClearInterface(void);
 
-/// Выбирает матрицу для наблюдения
+/// Р’С‹Р±РёСЂР°РµС‚ РјР°С‚СЂРёС†Сѓ РґР»СЏ РЅР°Р±Р»СЋРґРµРЅРёСЏ
 bool SelectMatrix(const std::string &comp_name, const std::string &prop_name);
 };
 //---------------------------------------------------------------------------

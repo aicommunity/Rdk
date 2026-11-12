@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "fd_corpus_15_ru",
+  "user_text": "как найти класс Arduino?",
+  "lang": "ru",
+  "tags": [
+    "free_dialogue",
+    "ru"
+  ],
+  "expect": {
+    "orchestrator_ok": true,
+    "no_hard_task_path_fail": true
+  }
+}

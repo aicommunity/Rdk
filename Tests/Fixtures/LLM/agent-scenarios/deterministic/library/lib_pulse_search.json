@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "id": "lib_pulse_search",
+  "tier": "deterministic",
+  "suite": "library",
+  "registry_profile": "full",
+  "user_text": "документация PulseLib neuron",
+  "session": {
+    "project_loaded": false,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "search_pulse_docs",
+          "arguments": {
+            "query": "overview"
+          }
+        }
+      ]
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": [
+      "search_pulse_docs"
+    ]
+  }
+}

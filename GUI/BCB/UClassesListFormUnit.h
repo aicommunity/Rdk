@@ -26,7 +26,7 @@ public:		// User declarations
 	__fastcall TUClassesListForm(TComponent* Owner);
 
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 virtual TUClassesListForm* New(TComponent *owner=0);
 };
 //---------------------------------------------------------------------------

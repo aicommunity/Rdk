@@ -20,7 +20,7 @@ public:
 	virtual bool Load(const std::string &dll_name);
     virtual bool isLoaded();
 
-    /// QLibrary НЕ выгрузит бибилиотеку, пока все созданные объекты Qlibrary не сделаю UnLoad
+    /// QLibrary РќР• РІС‹РіСЂСѓР·РёС‚ Р±РёР±РёР»РёРѕС‚РµРєСѓ, РїРѕРєР° РІСЃРµ СЃРѕР·РґР°РЅРЅС‹Рµ РѕР±СЉРµРєС‚С‹ Qlibrary РЅРµ СЃРґРµР»Р°СЋ UnLoad
     virtual bool UnLoad(void);
 	virtual void * Resolve(const std::string &symbol);
     virtual std::string GetErrorString();

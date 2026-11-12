@@ -14,5 +14,11 @@ bool RDK_CALL RdkCreatePredefinedStructure(RDK::UEnvironment* env, int predefine
  return true;
 }
 
+bool RDK_CALL RdkLoadPredefinedCrPropFunctions(RDK::UStorage* storage)
+{
+ (void)storage;
+ return true;
+}
+
 }
 

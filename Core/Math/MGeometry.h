@@ -23,9 +23,9 @@ See file license.txt for more information
 namespace RDK {
 
 // -----------------------------------------------------------------
-// Вспомогательные функции оперирования с матрицами внешней калибровки
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ С„СѓРЅРєС†РёРё РѕРїРµСЂРёСЂРѕРІР°РЅРёСЏ СЃ РјР°С‚СЂРёС†Р°РјРё РІРЅРµС€РЅРµР№ РєР°Р»РёР±СЂРѕРІРєРё
 // -----------------------------------------------------------------
-// Разделяет матрицу внешней калибровки на матрицу поворота и вектор перемещения
+// Р Р°Р·РґРµР»СЏРµС‚ РјР°С‚СЂРёС†Сѓ РІРЅРµС€РЅРµР№ РєР°Р»РёР±СЂРѕРІРєРё РЅР° РјР°С‚СЂРёС†Сѓ РїРѕРІРѕСЂРѕС‚Р° Рё РІРµРєС‚РѕСЂ РїРµСЂРµРјРµС‰РµРЅРёСЏ
 template<class T>
 void SplitEcc(const MMatrix<T,4,4>& ecc, MMatrix<T,3,3>& rotation, MMatrix<T,3,1> &translation)
 {
@@ -33,7 +33,7 @@ void SplitEcc(const MMatrix<T,4,4>& ecc, MMatrix<T,3,3>& rotation, MMatrix<T,3,1
  GetSubMatrix(ecc,0,3,translation);
 }
 
-// Собирает матрицу внешней калибровки из матрицы поворота и вектора перемещения
+// РЎРѕР±РёСЂР°РµС‚ РјР°С‚СЂРёС†Сѓ РІРЅРµС€РЅРµР№ РєР°Р»РёР±СЂРѕРІРєРё РёР· РјР°С‚СЂРёС†С‹ РїРѕРІРѕСЂРѕС‚Р° Рё РІРµРєС‚РѕСЂР° РїРµСЂРµРјРµС‰РµРЅРёСЏ
 template<class T>
 void MergeEcc(const MMatrix<T,3,3>& rotation, const MMatrix<T,3,1> &translation, MMatrix<T,4,4>& ecc)
 {
@@ -43,7 +43,7 @@ void MergeEcc(const MMatrix<T,3,3>& rotation, const MMatrix<T,3,1> &translation,
  ecc.Data[3][3]=1;
 }
 
-// Обращает матрицу внешней калибровки
+// РћР±СЂР°С‰Р°РµС‚ РјР°С‚СЂРёС†Сѓ РІРЅРµС€РЅРµР№ РєР°Р»РёР±СЂРѕРІРєРё
 template<class T>
 void InverseEcc(const MMatrix<T,4,4>& source_ecc,MMatrix<T,4,4>& dest_ecc)
 {
@@ -53,9 +53,9 @@ void InverseEcc(const MMatrix<T,4,4>& source_ecc,MMatrix<T,4,4>& dest_ecc)
  MergeEcc(rotation.Transpose(),-rotation.Transpose()*translation,dest_ecc);
 }
 
-// Расчитывает матрицу приведения объекта из СК объекта в СК камеры без учета матрицы
-// внешней калибровки (предполагается, что матрица внешней калибровки единичная)
-// Углы передаются в радианах, расстояния в метрах
+// Р Р°СЃС‡РёС‚С‹РІР°РµС‚ РјР°С‚СЂРёС†Сѓ РїСЂРёРІРµРґРµРЅРёСЏ РѕР±СЉРµРєС‚Р° РёР· РЎРљ РѕР±СЉРµРєС‚Р° РІ РЎРљ РєР°РјРµСЂС‹ Р±РµР· СѓС‡РµС‚Р° РјР°С‚СЂРёС†С‹
+// РІРЅРµС€РЅРµР№ РєР°Р»РёР±СЂРѕРІРєРё (РїСЂРµРґРїРѕР»Р°РіР°РµС‚СЃСЏ, С‡С‚Рѕ РјР°С‚СЂРёС†Р° РІРЅРµС€РЅРµР№ РєР°Р»РёР±СЂРѕРІРєРё РµРґРёРЅРёС‡РЅР°СЏ)
+// РЈРіР»С‹ РїРµСЂРµРґР°СЋС‚СЃСЏ РІ СЂР°РґРёР°РЅР°С…, СЂР°СЃСЃС‚РѕСЏРЅРёСЏ РІ РјРµС‚СЂР°С…
 //1.1
 template<class T>
 MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,3> &angles, const MVector<T,3> &shifts, int seqmat=3)
@@ -84,7 +84,7 @@ MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,3> &angles, const MVecto
 //    6:
 //    M=Mz*My*Mx;
 //    7:
-//    углы Вартанова: fi, psi, omega = (6: fi=Az, psi=-Ay, omega=Ax)
+//    СѓРіР»С‹ Р’Р°СЂС‚Р°РЅРѕРІР°: fi, psi, omega = (6: fi=Az, psi=-Ay, omega=Ax)
 template<class T>
 MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts, int seqmat=3)
 {
@@ -112,7 +112,7 @@ MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts, int
 	Mz(1,0)=sin_alpha; Mz(1,1)=cos_alpha;	Mz(1,2)=0;
 	Mz(2,0)=0;		   Mz(2,1)=0;			Mz(2,2)=1;
 
-	//!!!Порядок перемножения!!!
+	//!!!РџРѕСЂСЏРґРѕРє РїРµСЂРµРјРЅРѕР¶РµРЅРёСЏ!!!
 	switch (seqmat){
 	case 2:
 	M=Mx*Mz*My; break;
@@ -124,7 +124,7 @@ MMatrix<T,4,4> CalcObjectPositionMatrix(const MVector<T,6> &anglesANDshifts, int
 	M=Mz*Mx*My; break;
 	case 6:
 	M=Mz*My*Mx; break;
-	case 7: // углы Вартанова: fi, psi, omega
+	case 7: // СѓРіР»С‹ Р’Р°СЂС‚Р°РЅРѕРІР°: fi, psi, omega
 	{
 		T Cfi,Sfi,Cpsi,Spsi,Comega,Somega;
 		Cfi=cos_gamma;  Sfi=sin_gamma;
@@ -187,27 +187,27 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,3> &angle
 //    6:
 //    M=Mz*My*Mx;
 //    7:
-//    углы Вартанова: fi, psi, omega = (6: fi=Az, psi=-Ay, omega=Ax)
+//    СѓРіР»С‹ Р’Р°СЂС‚Р°РЅРѕРІР°: fi, psi, omega = (6: fi=Az, psi=-Ay, omega=Ax)
 template<class T>
 void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &anglesANDshifts, int seqmat=3)
 {
 	T C, trX, trY;
-	// Порог для "Шарнирного замка"
+	// РџРѕСЂРѕРі РґР»СЏ "РЁР°СЂРЅРёСЂРЅРѕРіРѕ Р·Р°РјРєР°"
 	double MGThresholdAS = 1e-2;
 
-		//!!!Порядок перемножения!!!
+		//!!!РџРѕСЂСЏРґРѕРє РїРµСЂРµРјРЅРѕР¶РµРЅРёСЏ!!!
 	switch (seqmat)
 	{
 	case 2:
 	{
 	 if(fabs(ExtMat(0,1))>1)
 	  throw EMatrixDomainError();
-		anglesANDshifts(5) = -asin( ExtMat(0,1));        // Вычисления угла вращения вокруг оси Z
+		anglesANDshifts(5) = -asin( ExtMat(0,1));        // Р’С‹С‡РёСЃР»РµРЅРёСЏ СѓРіР»Р° РІСЂР°С‰РµРЅРёСЏ РІРѕРєСЂСѓРі РѕСЃРё Z
 		C = cos( anglesANDshifts(5) );
 
-		if ( fabs( C ) > MGThresholdAS )          // "Шарнирный замок" (Gimball lock)?
+		if ( fabs( C ) > MGThresholdAS )          // "РЁР°СЂРЅРёСЂРЅС‹Р№ Р·Р°РјРѕРє" (Gimball lock)?
 		{
-			trX      =  ExtMat(0,0) / C;        // Если нет, то получаем угол вращения вокруг оси Y
+			trX      =  ExtMat(0,0) / C;        // Р•СЃР»Рё РЅРµС‚, С‚Рѕ РїРѕР»СѓС‡Р°РµРј СѓРіРѕР» РІСЂР°С‰РµРЅРёСЏ РІРѕРєСЂСѓРі РѕСЃРё Y
 			trY      = ExtMat(0,2) / C;
 
 		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
@@ -215,7 +215,7 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 		  throw EMatrixZeroDiv();
 		anglesANDshifts(4)  = atan2( trY, trX );
 
-		trX      =  ExtMat(1,1) / C;            // Получаем угол вращения вокруг оси  X
+		trX      =  ExtMat(1,1) / C;            // РџРѕР»СѓС‡Р°РµРј СѓРіРѕР» РІСЂР°С‰РµРЅРёСЏ РІРѕРєСЂСѓРі РѕСЃРё  X
 		trY      =  ExtMat(2,1) / C;
 		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
 			fabs(trY)<std::numeric_limits<T>::epsilon())
@@ -223,11 +223,11 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 
 		anglesANDshifts(3)  = atan2( trY, trX );
 		}
-	else                                 // Имеет место "Шарнирный замок" (Gimball lock)
+	else                                 // РРјРµРµС‚ РјРµСЃС‚Рѕ "РЁР°СЂРЅРёСЂРЅС‹Р№ Р·Р°РјРѕРє" (Gimball lock)
     {
-      anglesANDshifts(3)  = 0;                      // Угол вращения вокруг оси X приравниваем к нулю
+      anglesANDshifts(3)  = 0;                      // РЈРіРѕР» РІСЂР°С‰РµРЅРёСЏ РІРѕРєСЂСѓРі РѕСЃРё X РїСЂРёСЂР°РІРЅРёРІР°РµРј Рє РЅСѓР»СЋ
 
-      trX      = ExtMat(2,2);                 // И вычисляем угол вращения вокруг оси Y
+      trX      = ExtMat(2,2);                 // Р РІС‹С‡РёСЃР»СЏРµРј СѓРіРѕР» РІСЂР°С‰РµРЅРёСЏ РІРѕРєСЂСѓРі РѕСЃРё Y
       trY      = -ExtMat(2,0);
 
 	  if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
@@ -393,10 +393,10 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 	  }
 	break;
 	}
-	case 7: // углы Вартанова fi, psi, omega
+	case 7: // СѓРіР»С‹ Р’Р°СЂС‚Р°РЅРѕРІР° fi, psi, omega
 	{
-		T Xb[3],Yb[3],Zb[3]; //орты осей СК2 в СК1
-		T Ob[3]; //радиус-вектор начала СК2 в СК1
+		T Xb[3],Yb[3],Zb[3]; //РѕСЂС‚С‹ РѕСЃРµР№ РЎРљ2 РІ РЎРљ1
+		T Ob[3]; //СЂР°РґРёСѓСЃ-РІРµРєС‚РѕСЂ РЅР°С‡Р°Р»Р° РЎРљ2 РІ РЎРљ1
 		T Xx,Xy,Xz,Rxy,fiMod,Cpsi,Somega,Comega,omegaMod;
 		T fi,psi,omega;
 		//-------------
@@ -407,7 +407,7 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 			Zb[i]=ExtMat(i,2);
 			Ob[i]=ExtMat(i,3);
 		}
-		//~~~~~~~ Углы ориентации СК2 отн. СК1 ~~~~~~~
+		//~~~~~~~ РЈРіР»С‹ РѕСЂРёРµРЅС‚Р°С†РёРё РЎРљ2 РѕС‚РЅ. РЎРљ1 ~~~~~~~
 		Xx=Xb[0]; Xy=Xb[1]; Xz=Xb[2];
 		psi=asin(Xz);
 		//,,,,,,,,,,,,,,,,,,
@@ -435,12 +435,12 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 	{
 	 if(fabs(ExtMat(0,2))>1)
 	  throw EMatrixDomainError();
-		anglesANDshifts(4) = asin( ExtMat(0,2));        // Вычисления угла вращения вокруг оси Y
+		anglesANDshifts(4) = asin( ExtMat(0,2));        // Р’С‹С‡РёСЃР»РµРЅРёСЏ СѓРіР»Р° РІСЂР°С‰РµРЅРёСЏ РІРѕРєСЂСѓРі РѕСЃРё Y
 		C = cos( anglesANDshifts(4) );
 
-		if ( fabs( C ) > MGThresholdAS )          // "Шарнирный замок" (Gimball lock)?
+		if ( fabs( C ) > MGThresholdAS )          // "РЁР°СЂРЅРёСЂРЅС‹Р№ Р·Р°РјРѕРє" (Gimball lock)?
 		{
-			trX      =  ExtMat(2,2) / C;        // Если нет, то получаем угол вращения вокруг оси X
+			trX      =  ExtMat(2,2) / C;        // Р•СЃР»Рё РЅРµС‚, С‚Рѕ РїРѕР»СѓС‡Р°РµРј СѓРіРѕР» РІСЂР°С‰РµРЅРёСЏ РІРѕРєСЂСѓРі РѕСЃРё X
 			trY      = -ExtMat(1,2) / C;
 
 		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
@@ -448,7 +448,7 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 		  throw EMatrixZeroDiv();
 		anglesANDshifts(3)  = atan2( trY, trX );
 
-		trX      =  ExtMat(0,0) / C;            // Получаем угол вращения вокруг оси  Z
+		trX      =  ExtMat(0,0) / C;            // РџРѕР»СѓС‡Р°РµРј СѓРіРѕР» РІСЂР°С‰РµРЅРёСЏ РІРѕРєСЂСѓРі РѕСЃРё  Z
 		trY      =  -ExtMat(0,1) / C;
 
 		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
@@ -456,11 +456,11 @@ void CalcObjectAnglesAndShifts(const MMatrix<T,4,4> &ExtMat, MVector<T,6> &angle
 		  throw EMatrixZeroDiv();
 		anglesANDshifts(5)  = atan2( trY, trX );
 		}
-	else                                 // Имеет место "Шарнирный замок" (Gimball lock)
+	else                                 // РРјРµРµС‚ РјРµСЃС‚Рѕ "РЁР°СЂРЅРёСЂРЅС‹Р№ Р·Р°РјРѕРє" (Gimball lock)
 	  {
-	  anglesANDshifts(3)  = 0;                      // Угол вращения вокруг оси X приравниваем к нулю
+	  anglesANDshifts(3)  = 0;                      // РЈРіРѕР» РІСЂР°С‰РµРЅРёСЏ РІРѕРєСЂСѓРі РѕСЃРё X РїСЂРёСЂР°РІРЅРёРІР°РµРј Рє РЅСѓР»СЋ
 
-	  trX      = ExtMat(1,1);                 // И вычисляем угол вращения вокруг оси Z
+	  trX      = ExtMat(1,1);                 // Р РІС‹С‡РёСЃР»СЏРµРј СѓРіРѕР» РІСЂР°С‰РµРЅРёСЏ РІРѕРєСЂСѓРі РѕСЃРё Z
 	  trY      = ExtMat(1,0);
 
 		 if(fabs(trX)<std::numeric_limits<T>::epsilon() &&
@@ -601,21 +601,21 @@ void CalcObjectAnglesAndShiftsD(const MDMatrix<T> &ExtMat, MDMatrix<T> &anglesAN
 }
 
 //=======================================================================================
-// Кватернион
+// РљРІР°С‚РµСЂРЅРёРѕРЅ
 template<class T>
 struct Quaternion{
-  T x,y,z; // Вектор
-  T w;     // Скаляр
+  T x,y,z; // Р’РµРєС‚РѕСЂ
+  T w;     // РЎРєР°Р»СЏСЂ
 };
 
-// Нормализация кватерниона
+// РќРѕСЂРјР°Р»РёР·Р°С†РёСЏ РєРІР°С‚РµСЂРЅРёРѕРЅР°
 template<class T>
 void QuaternionNormalise(Quaternion<T> *quat, bool vectnorm=true)
 {
 	Quaternion<T> quattemp=*quat;
 	T Sin=sin(quat->w/2);
 	T Cos=cos(quat->w/2);
-	// нормализация вектора x,y,z, заданный угол сохраняется
+	// РЅРѕСЂРјР°Р»РёР·Р°С†РёСЏ РІРµРєС‚РѕСЂР° x,y,z, Р·Р°РґР°РЅРЅС‹Р№ СѓРіРѕР» СЃРѕС…СЂР°РЅСЏРµС‚СЃСЏ
 	if(vectnorm)
 	{
 		quat->x=Sin*quattemp.x/sqrt(quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z);
@@ -623,7 +623,7 @@ void QuaternionNormalise(Quaternion<T> *quat, bool vectnorm=true)
 		quat->z=Sin*quattemp.z/sqrt(quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z);
 		quat->w=Cos;
 	}
-	// нормализация кватериона по x,y,z,w
+	// РЅРѕСЂРјР°Р»РёР·Р°С†РёСЏ РєРІР°С‚РµСЂРёРѕРЅР° РїРѕ x,y,z,w
 	else
 	{
 		quat->x=quattemp.x/sqrt(quattemp.x*quattemp.x+quattemp.y*quattemp.y+quattemp.z*quattemp.z+quattemp.w*quattemp.w);
@@ -634,7 +634,7 @@ void QuaternionNormalise(Quaternion<T> *quat, bool vectnorm=true)
 	//std::cout<<quat->x<<"\t"<<quat->y<<"\t"<<quat->z<<"\t"<<quat->w<<"\n";
 }
 
-// Произведение кватернионов
+// РџСЂРѕРёР·РІРµРґРµРЅРёРµ РєРІР°С‚РµСЂРЅРёРѕРЅРѕРІ
 template<class T>
 void MulQuaternions(Quaternion<T> *res, const Quaternion<T> *q1, const Quaternion<T> *q2)
 {
@@ -655,7 +655,7 @@ void MulQuaternions(Quaternion<T> *res, const Quaternion<T> *q1, const Quaternio
   res->z =-D + ( E - F - G + H) * 0.5;
 }
 
-// Преобразование матрицы в кватернион
+// РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ РјР°С‚СЂРёС†С‹ РІ РєРІР°С‚РµСЂРЅРёРѕРЅ
 template<class T>
 void MatrixToQuaternion(Quaternion<T> *quat, const T m[4][4])
 {
@@ -700,7 +700,7 @@ void MatrixToQuaternion(Quaternion<T> *quat, const T m[4][4])
   }
 }
 
-// Преобразование кватерниона в матрицу
+// РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ РєРІР°С‚РµСЂРЅРёРѕРЅР° РІ РјР°С‚СЂРёС†Сѓ
 template<class T>
 void QuaternionToMatrix(T m[4][4], const Quaternion<T> *quat)
 {
@@ -721,7 +721,7 @@ void QuaternionToMatrix(T m[4][4], const Quaternion<T> *quat)
   m[3][3] = 1;
 }
 
-// Получение матрицы из вектора и угла или кватериона
+// РџРѕР»СѓС‡РµРЅРёРµ РјР°С‚СЂРёС†С‹ РёР· РІРµРєС‚РѕСЂР° Рё СѓРіР»Р° РёР»Рё РєРІР°С‚РµСЂРёРѕРЅР°
 template<class T>
 MMatrix<T,4,4> CalcObjectPositionMatrixFromQuatern(const MVector<T,7> &anglesANDshifts, bool vect=true)
 {
@@ -751,7 +751,7 @@ MMatrix<T,4,4> CalcObjectPositionMatrixFromQuatern(const MVector<T,7> &anglesAND
  return res;
 }
 
-// Получение кватерниона или вектора с углом из матрицы
+// РџРѕР»СѓС‡РµРЅРёРµ РєРІР°С‚РµСЂРЅРёРѕРЅР° РёР»Рё РІРµРєС‚РѕСЂР° СЃ СѓРіР»РѕРј РёР· РјР°С‚СЂРёС†С‹
 template<class T>
 void CalcObjectQuatern(const MMatrix<T,4,4> &ExtMat, MVector<T,7> &anglesANDshifts, bool vect=true)
 {
@@ -787,9 +787,9 @@ void CalcObjectQuatern(const MMatrix<T,4,4> &ExtMat, MVector<T,7> &anglesANDshif
 //=======================================================================================
 
 
-// Расчитывает матрицу внешней калибровки
-// Углы передаются в радианах, расстояния в метрах
-// ЛУЧШЕ НЕ ИСПОЛЬЗОВАТЬ! НАПРАВЛЕНИЕ y ДРУГОЕ, А ТАКЖЕ ТРАНСПОНИРОВАНИЕ
+// Р Р°СЃС‡РёС‚С‹РІР°РµС‚ РјР°С‚СЂРёС†Сѓ РІРЅРµС€РЅРµР№ РєР°Р»РёР±СЂРѕРІРєРё
+// РЈРіР»С‹ РїРµСЂРµРґР°СЋС‚СЃСЏ РІ СЂР°РґРёР°РЅР°С…, СЂР°СЃСЃС‚РѕСЏРЅРёСЏ РІ РјРµС‚СЂР°С…
+// Р›РЈР§РЁР• РќР• РРЎРџРћР›Р¬Р—РћР’РђРўР¬! РќРђРџР РђР’Р›Р•РќРР• y Р”Р РЈР“РћР•, Рђ РўРђРљР–Р• РўР РђРќРЎРџРћРќРР РћР’РђРќРР•
 template<class T>
 MMatrix<T, 4,4> CalcCameraPositionMatrix(const MVector<T,3> &angles, const MVector<T,3> &shifts)
 {
@@ -834,16 +834,16 @@ MMatrix<T, 4,4> CalcCameraPositionMatrix(const MVector<T,3> &angles, const MVect
 template<class T, int Rows>
 class MRay
 {
-public: // Данные
-// Начало луча
+public: // Р”Р°РЅРЅС‹Рµ
+// РќР°С‡Р°Р»Рѕ Р»СѓС‡Р°
 MVector<T,Rows> Origin;
 
-// Направление луча
+// РќР°РїСЂР°РІР»РµРЅРёРµ Р»СѓС‡Р°
 MVector<T,Rows> Direction;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 MRay(void)
 {};
@@ -855,9 +855,9 @@ MRay(MVector<T,Rows> &o, MVector<T,Rows> &d)
 // --------------------------
 
 // --------------------------
-// Операторы управления
+// РћРїРµСЂР°С‚РѕСЂС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-// Оператор копирования
+// РћРїРµСЂР°С‚РѕСЂ РєРѕРїРёСЂРѕРІР°РЅРёСЏ
 inline MRay& operator = (const MRay &copy)
 {
  Origin=copy.Origin;
@@ -865,7 +865,7 @@ inline MRay& operator = (const MRay &copy)
  return *this;
 }
 
-// Операторы сравнения
+// РћРїРµСЂР°С‚РѕСЂС‹ СЃСЂР°РІРЅРµРЅРёСЏ
 inline bool operator == (const MRay &v) const
 {
  return (Origin == v.Origin) & (Direction == v.Direction);
@@ -878,14 +878,14 @@ inline bool operator != (const MRay &v) const
 // --------------------------
 
 // --------------------------
-// Методы счета
+// РњРµС‚РѕРґС‹ СЃС‡РµС‚Р°
 // --------------------------
-// Вычисляет вектор точки, смещенной вдоль луча на расстояние t
+// Р’С‹С‡РёСЃР»СЏРµС‚ РІРµРєС‚РѕСЂ С‚РѕС‡РєРё, СЃРјРµС‰РµРЅРЅРѕР№ РІРґРѕР»СЊ Р»СѓС‡Р° РЅР° СЂР°СЃСЃС‚РѕСЏРЅРёРµ t
 inline MVector<T,Rows> CalcPoint(T t)
 { return Origin+Direction*t; };
 
-// Вычисляет точку пересечения лучей
-// Возвращает true если пересечение существует
+// Р’С‹С‡РёСЃР»СЏРµС‚ С‚РѕС‡РєСѓ РїРµСЂРµСЃРµС‡РµРЅРёСЏ Р»СѓС‡РµР№
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ true РµСЃР»Рё РїРµСЂРµСЃРµС‡РµРЅРёРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
 bool CalcIntersection(const MRay<T,Rows> &r, MVector<T,Rows> &res)
 {
  T t;
@@ -914,20 +914,20 @@ bool CalcIntersection(const MRay<T,Rows> &r, MVector<T,Rows> &res)
 // --------------------------
 };
 
-// Класс плоскость
+// РљР»Р°СЃСЃ РїР»РѕСЃРєРѕСЃС‚СЊ
 template<class T, int Rows>
 class MPlane
 {
-public: // Данные
-// Нормаль к плоскости
+public: // Р”Р°РЅРЅС‹Рµ
+// РќРѕСЂРјР°Р»СЊ Рє РїР»РѕСЃРєРѕСЃС‚Рё
 MVector<T,Rows> Normal;
 
-// Смещение точки плоскости вдоль нормали от начала координат
+// РЎРјРµС‰РµРЅРёРµ С‚РѕС‡РєРё РїР»РѕСЃРєРѕСЃС‚Рё РІРґРѕР»СЊ РЅРѕСЂРјР°Р»Рё РѕС‚ РЅР°С‡Р°Р»Р° РєРѕРѕСЂРґРёРЅР°С‚
 T Distance;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 MPlane(void)
  : Normal(0), Distance(0)
@@ -941,9 +941,9 @@ virtual ~MPlane(void){};
 // --------------------------
 
 // --------------------------
-// Операторы управления
+// РћРїРµСЂР°С‚РѕСЂС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-// Оператор копирования
+// РћРїРµСЂР°С‚РѕСЂ РєРѕРїРёСЂРѕРІР°РЅРёСЏ
 inline MPlane& operator = (const MPlane &copy)
 {
  Normal=copy.Normal;
@@ -951,7 +951,7 @@ inline MPlane& operator = (const MPlane &copy)
  return *this;
 }
 
-// Операторы сравнения
+// РћРїРµСЂР°С‚РѕСЂС‹ СЃСЂР°РІРЅРµРЅРёСЏ
 inline bool operator == (const MPlane &v) const
 {
  return (Normal == v.Normal) & (Distance == v.Distance);
@@ -964,10 +964,10 @@ inline bool operator != (const MPlane &v) const
 // --------------------------
 
 // --------------------------
-// Методы счета
+// РњРµС‚РѕРґС‹ СЃС‡РµС‚Р°
 // --------------------------
-// Вычисляет точку пересечения луча с плоскостью
-// Возвращает true если пересечение существует
+// Р’С‹С‡РёСЃР»СЏРµС‚ С‚РѕС‡РєСѓ РїРµСЂРµСЃРµС‡РµРЅРёСЏ Р»СѓС‡Р° СЃ РїР»РѕСЃРєРѕСЃС‚СЊСЋ
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ true РµСЃР»Рё РїРµСЂРµСЃРµС‡РµРЅРёРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
 bool CalcIntersection(const MRay<T,Rows> &ray, MVector<T,Rows> &p)
 {
  T alfa,beta,t;
@@ -985,23 +985,23 @@ bool CalcIntersection(const MRay<T,Rows> &ray, MVector<T,Rows> &p)
 
 typedef std::vector<int> MBorder;
 
-// Геометрия объекта
+// Р“РµРѕРјРµС‚СЂРёСЏ РѕР±СЉРµРєС‚Р°
 template<class T, int Rows>
 class MGeometry
 {
-protected: // Данные
-// Вектора вершин
+protected: // Р”Р°РЅРЅС‹Рµ
+// Р’РµРєС‚РѕСЂР° РІРµСЂС€РёРЅ
 std::vector<MVector<T,Rows> > Vertices;
 
-// Имена вершин
+// РРјРµРЅР° РІРµСЂС€РёРЅ
 std::vector<std::string> VerticesNames;
 
-// Границы объекта
+// Р“СЂР°РЅРёС†С‹ РѕР±СЉРµРєС‚Р°
 std::vector<MBorder> Borders;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 MGeometry(void);
 MGeometry(const MGeometry<T,Rows> &copy);
@@ -1010,54 +1010,54 @@ virtual ~MGeometry(void);
 // --------------------------
 
 // --------------------------
-// Методы управления
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-// Очищает фигуру
+// РћС‡РёС‰Р°РµС‚ С„РёРіСѓСЂСѓ
 void Clear(void);
 
-// Число вершин
+// Р§РёСЃР»Рѕ РІРµСЂС€РёРЅ
 size_t GetNumVertices(void) const;
 bool SetNumVertices(size_t value);
 
-// Число границ
+// Р§РёСЃР»Рѕ РіСЂР°РЅРёС†
 size_t GetNumBorders(void) const;
 bool SetNumBorders(size_t value);
 
-// Вектора вершин
+// Р’РµРєС‚РѕСЂР° РІРµСЂС€РёРЅ
 const MVector<T,Rows>& Vertex(int index) const;
 MVector<T,Rows>& Vertex(int index);
 
-// Имена векторов вершин
+// РРјРµРЅР° РІРµРєС‚РѕСЂРѕРІ РІРµСЂС€РёРЅ
 const std::string& VertexName(int index) const;
 std::string& VertexName(int index);
 
-// Границы объекта
+// Р“СЂР°РЅРёС†С‹ РѕР±СЉРµРєС‚Р°
 const MBorder& Border(int index) const;
 MBorder& Border(int index);
 
-// Вектора вершин
+// Р’РµРєС‚РѕСЂР° РІРµСЂС€РёРЅ
 const std::vector<MVector<T,Rows> >& GetVertices(void) const;
 bool SetVertices(const std::vector<MVector<T,Rows> >& value);
 
-// Имена вершин
+// РРјРµРЅР° РІРµСЂС€РёРЅ
 const std::vector<std::string>& GetVerticesNames(void) const;
 bool SetVerticesNames(const std::vector<std::string>& value);
 
-// Границы объекта
+// Р“СЂР°РЅРёС†С‹ РѕР±СЉРµРєС‚Р°
 const std::vector<MBorder>& GetBorders(void) const;
 bool SetBorders(const std::vector<MBorder>& value);
 
-// Удаляет вершину
+// РЈРґР°Р»СЏРµС‚ РІРµСЂС€РёРЅСѓ
 void DelVertex(int index);
 // --------------------------
 
 // --------------------------
-// Операторы управления
+// РћРїРµСЂР°С‚РѕСЂС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-// Оператор копирования
+// РћРїРµСЂР°С‚РѕСЂ РєРѕРїРёСЂРѕРІР°РЅРёСЏ
 MGeometry<T,Rows>& operator = (const MGeometry<T,Rows> &copy);
 
-// Операторы сравнения
+// РћРїРµСЂР°С‚РѕСЂС‹ СЃСЂР°РІРЅРµРЅРёСЏ
 bool operator == (const MGeometry<T,Rows> &v) const;
 bool operator != (const MGeometry<T,Rows> &v) const;
 // --------------------------
@@ -1066,12 +1066,12 @@ bool operator != (const MGeometry<T,Rows> &v) const;
 
 // ****************************************************************************
 // ****************************************************************************
-// Реализация методов
+// Р РµР°Р»РёР·Р°С†РёСЏ РјРµС‚РѕРґРѕРІ
 // ****************************************************************************
 // ****************************************************************************
 // MGeometry
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 template<class T, int Rows>
 MGeometry<T,Rows>::MGeometry(void)
@@ -1098,9 +1098,9 @@ MGeometry<T,Rows>::~MGeometry(void)
 // --------------------------
 
 // --------------------------
-// Методы управления
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-// Очищает фигуру
+// РћС‡РёС‰Р°РµС‚ С„РёРіСѓСЂСѓ
 template<class T, int Rows>
 void MGeometry<T,Rows>::Clear(void)
 {
@@ -1109,7 +1109,7 @@ void MGeometry<T,Rows>::Clear(void)
  VerticesNames.clear();
 }
 
-// Число вершин
+// Р§РёСЃР»Рѕ РІРµСЂС€РёРЅ
 template<class T, int Rows>
 size_t MGeometry<T,Rows>::GetNumVertices(void) const
 {
@@ -1124,7 +1124,7 @@ bool MGeometry<T,Rows>::SetNumVertices(size_t value)
  return true;
 }
 
-// Число границ
+// Р§РёСЃР»Рѕ РіСЂР°РЅРёС†
 template<class T, int Rows>
 size_t MGeometry<T,Rows>::GetNumBorders(void) const
 {
@@ -1138,7 +1138,7 @@ bool MGeometry<T,Rows>::SetNumBorders(size_t value)
  return true;
 }
 
-// Вектора вершин
+// Р’РµРєС‚РѕСЂР° РІРµСЂС€РёРЅ
 template<class T, int Rows>
 const MVector<T,Rows>& MGeometry<T,Rows>::Vertex(int index) const
 {
@@ -1151,7 +1151,7 @@ MVector<T,Rows>& MGeometry<T,Rows>::Vertex(int index)
  return Vertices[index];
 }
 
-// Имена векторов вершин
+// РРјРµРЅР° РІРµРєС‚РѕСЂРѕРІ РІРµСЂС€РёРЅ
 template<class T, int Rows>
 const std::string& MGeometry<T,Rows>::VertexName(int index) const
 {
@@ -1164,7 +1164,7 @@ std::string& MGeometry<T,Rows>::VertexName(int index)
  return VerticesNames[index];
 }
 
-// Границы объекта
+// Р“СЂР°РЅРёС†С‹ РѕР±СЉРµРєС‚Р°
 template<class T, int Rows>
 const MBorder& MGeometry<T,Rows>::Border(int index) const
 {
@@ -1177,7 +1177,7 @@ MBorder& MGeometry<T,Rows>::Border(int index)
  return Borders[index];
 }
 
-// Вектора вершин
+// Р’РµРєС‚РѕСЂР° РІРµСЂС€РёРЅ
 template<class T, int Rows>
 const std::vector<MVector<T,Rows> >& MGeometry<T,Rows>::GetVertices(void) const
 {
@@ -1191,7 +1191,7 @@ bool MGeometry<T,Rows>::SetVertices(const std::vector<MVector<T,Rows> >& value)
  return true;
 }
 
-// Имена вершин
+// РРјРµРЅР° РІРµСЂС€РёРЅ
 template<class T, int Rows>
 const std::vector<std::string>& MGeometry<T,Rows>::GetVerticesNames(void) const
 {
@@ -1206,7 +1206,7 @@ bool MGeometry<T,Rows>::SetVerticesNames(const std::vector<std::string>& value)
  return true;
 }
 
-// Границы объекта
+// Р“СЂР°РЅРёС†С‹ РѕР±СЉРµРєС‚Р°
 template<class T, int Rows>
 const std::vector<MBorder>& MGeometry<T,Rows>::GetBorders(void) const
 {
@@ -1220,7 +1220,7 @@ bool MGeometry<T,Rows>::SetBorders(const std::vector<MBorder>& value)
  return true;
 }
 
-// Удаляет вершину
+// РЈРґР°Р»СЏРµС‚ РІРµСЂС€РёРЅСѓ
 template<class T, int Rows>
 void MGeometry<T,Rows>::DelVertex(int index)
 {
@@ -1233,24 +1233,24 @@ void MGeometry<T,Rows>::DelVertex(int index)
 // --------------------------
 
 // --------------------------
-// Операторы управления
+// РћРїРµСЂР°С‚РѕСЂС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-// Оператор копирования
+// РћРїРµСЂР°С‚РѕСЂ РєРѕРїРёСЂРѕРІР°РЅРёСЏ
 template<class T, int Rows>
 MGeometry<T,Rows>& MGeometry<T,Rows>::operator = (const MGeometry<T,Rows> &copy)
 {
- // Вектора вершин
+ // Р’РµРєС‚РѕСЂР° РІРµСЂС€РёРЅ
  Vertices=copy.Vertices;
 
  VerticesNames=copy.VerticesNames;
 
- // Границы объекта
+ // Р“СЂР°РЅРёС†С‹ РѕР±СЉРµРєС‚Р°
  Borders=copy.Borders;
 
  return *this;
 }
 
-// Операторы сравнения
+// РћРїРµСЂР°С‚РѕСЂС‹ СЃСЂР°РІРЅРµРЅРёСЏ
 template<class T, int Rows>
 bool MGeometry<T,Rows>::operator == (const MGeometry<T,Rows> &v) const
 {

@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "id": "life_create_path",
+  "tier": "deterministic",
+  "suite": "lifecycle",
+  "registry_profile": "core",
+  "user_text": "create config in /tmp/nmsdk_agent_test",
+  "session": {
+    "project_loaded": false,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "create_configuration",
+          "arguments": {
+            "parent_directory": "/tmp/nmsdk_agent_test",
+            "project_ini_path": "/tmp/nmsdk_agent_test/project.ini"
+          }
+        }
+      ]
+    },
+    {
+      "text": "Краткий ответ по результатам tool."
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": [
+      "create_configuration"
+    ]
+  }
+}

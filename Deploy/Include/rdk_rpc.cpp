@@ -10,10 +10,10 @@ namespace RDK{
 
 //std::vector<std::string> RpcReturnString;
 
-/// Возвращает набор из имени компонента и индекса канала
-/// Если определен параметр "CC"
-/// Содержимое параметра представляет собой
-/// текст вида: индекс_канала@Имя компонента
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РЅР°Р±РѕСЂ РёР· РёРјРµРЅРё РєРѕРјРїРѕРЅРµРЅС‚Р° Рё РёРЅРґРµРєСЃР° РєР°РЅР°Р»Р°
+/// Р•СЃР»Рё РѕРїСЂРµРґРµР»РµРЅ РїР°СЂР°РјРµС‚СЂ "CC"
+/// РЎРѕРґРµСЂР¶РёРјРѕРµ РїР°СЂР°РјРµС‚СЂР° РїСЂРµРґСЃС‚Р°РІР»СЏРµС‚ СЃРѕР±РѕР№
+/// С‚РµРєСЃС‚ РІРёРґР°: РёРЅРґРµРєСЃ_РєР°РЅР°Р»Р°@РРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°
 bool RDK_CALL ExtractCC(USerStorageXML &xml, int &channel_index, std::string &component_name)
 {
  if(!xml.SelectNode("Component"))
@@ -29,8 +29,8 @@ bool RDK_CALL ExtractCC(USerStorageXML &xml, int &channel_index, std::string &co
  return true;
 }
 
-/// Возвращает имя компонента
-/// Если определен параметр "Component"
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°
+/// Р•СЃР»Рё РѕРїСЂРµРґРµР»РµРЅ РїР°СЂР°РјРµС‚СЂ "Component"
 bool RDK_CALL ExtractComponent(USerStorageXML &xml, std::string &component_name)
 {
  if(!xml.SelectNode("Component"))
@@ -40,8 +40,8 @@ bool RDK_CALL ExtractComponent(USerStorageXML &xml, std::string &component_name)
  return true;
 }
 
-/// Возвращает индекса канала
-/// Если определен параметр "Channel"
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅРґРµРєСЃР° РєР°РЅР°Р»Р°
+/// Р•СЃР»Рё РѕРїСЂРµРґРµР»РµРЅ РїР°СЂР°РјРµС‚СЂ "Channel"
 bool RDK_CALL ExtractChannel(USerStorageXML &xml, int &channel_index)
 {
  if(!xml.SelectNode("Channel"))
@@ -51,8 +51,8 @@ bool RDK_CALL ExtractChannel(USerStorageXML &xml, int &channel_index)
  return true;
 }
 
-/// Возвращает имя команды
-/// Если определен параметр "Cmd"
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєРѕРјР°РЅРґС‹
+/// Р•СЃР»Рё РѕРїСЂРµРґРµР»РµРЅ РїР°СЂР°РјРµС‚СЂ "Cmd"
 bool RDK_CALL ExtractCmd(USerStorageXML &xml, std::string &cmd_name)
 {
  if(!xml.SelectNode("Cmd"))
@@ -63,11 +63,11 @@ bool RDK_CALL ExtractCmd(USerStorageXML &xml, std::string &cmd_name)
 }
 
 /// <RPC_Request>
-///     <Channel>индекс движка</Channel>
-///     <Cmd>имя вызываемой функции</Cmd>
-///     <Component>имя компонента</Component>
-///     <Class>имя класса</Class>
-///     <Data>xml-описание данных функции, например xml с параметрами компонента</Data>
+///     <Channel>РёРЅРґРµРєСЃ РґРІРёР¶РєР°</Channel>
+///     <Cmd>РёРјСЏ РІС‹Р·С‹РІР°РµРјРѕР№ С„СѓРЅРєС†РёРё</Cmd>
+///     <Component>РёРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°</Component>
+///     <Class>РёРјСЏ РєР»Р°СЃСЃР°</Class>
+///     <Data>xml-РѕРїРёСЃР°РЅРёРµ РґР°РЅРЅС‹С… С„СѓРЅРєС†РёРё, РЅР°РїСЂРёРјРµСЂ xml СЃ РїР°СЂР°РјРµС‚СЂР°РјРё РєРѕРјРїРѕРЅРµРЅС‚Р°</Data>
 /// </RPC_Request>
 const char* RDK_CALL RemoteCallInternal(const char *request, int &return_value, int &res_channel_index)
 {
@@ -363,7 +363,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   if(Ptz_SetMoveParamImplemented(channel_index,camera.c_str(),param_name.c_str(),param_value))
    return_value=0;
   else
-   return_value=11000; // Исходная функция вернула false
+   return_value=11000; // РСЃС…РѕРґРЅР°СЏ С„СѓРЅРєС†РёСЏ РІРµСЂРЅСѓР»Р° false
  }
  else
  if(cmd == "Ptz_GetMoveParamMinNativeValue")
@@ -380,7 +380,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   if(Ptz_SetMoveParamMinNativeValue(channel_index,camera.c_str(),param_name.c_str(),param_value))
    return_value=0;
   else
-   return_value=11000; // Исходная функция вернула false
+   return_value=11000; // РСЃС…РѕРґРЅР°СЏ С„СѓРЅРєС†РёСЏ РІРµСЂРЅСѓР»Р° false
  }
  else
  if(cmd == "Ptz_GetMoveParamMaxNativeValue")
@@ -397,7 +397,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   if(Ptz_SetMoveParamMaxNativeValue(channel_index,camera.c_str(),param_name.c_str(),param_value))
    return_value=0;
   else
-   return_value=11000; // Исходная функция вернула false
+   return_value=11000; // РСЃС…РѕРґРЅР°СЏ С„СѓРЅРєС†РёСЏ РІРµСЂРЅСѓР»Р° false
  }
  else
  if(cmd == "Ptz_GetMoveParamMinValue")
@@ -414,7 +414,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   if(Ptz_SetMoveParamMinValue(channel_index,camera.c_str(),param_name.c_str(),param_value))
    return_value=0;
   else
-   return_value=11000; // Исходная функция вернула false
+   return_value=11000; // РСЃС…РѕРґРЅР°СЏ С„СѓРЅРєС†РёСЏ РІРµСЂРЅСѓР»Р° false
  }
  else
  if(cmd == "Ptz_GetMoveParamMaxValue")
@@ -431,7 +431,7 @@ const char* RDK_CALL PtzRemoteCall(const char *request, int &return_value, int &
   if(Ptz_SetMoveParamMaxValue(channel_index,camera.c_str(),param_name.c_str(),param_value))
    return_value=0;
   else
-   return_value=11000; // Исходная функция вернула false
+   return_value=11000; // РСЃС…РѕРґРЅР°СЏ С„СѓРЅРєС†РёСЏ РІРµСЂРЅСѓР»Р° false
  }
  else
  if(cmd == "Ptz_Stop")

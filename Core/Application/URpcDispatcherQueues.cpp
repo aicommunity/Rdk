@@ -9,7 +9,7 @@
 namespace RDK {
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 URpcDispatcherQueues::URpcDispatcherQueues(void)
 {
@@ -23,18 +23,18 @@ URpcDispatcherQueues::~URpcDispatcherQueues(void)
 // --------------------------
 
 // --------------------------
-// Методы управления
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-/// Добавление команды в очередь на обработку
-/// Записывает Id команды в cmd_id
-/// в случае неудачи возвращает false
+/// Р”РѕР±Р°РІР»РµРЅРёРµ РєРѕРјР°РЅРґС‹ РІ РѕС‡РµСЂРµРґСЊ РЅР° РѕР±СЂР°Р±РѕС‚РєСѓ
+/// Р—Р°РїРёСЃС‹РІР°РµС‚ Id РєРѕРјР°РЅРґС‹ РІ cmd_id
+/// РІ СЃР»СѓС‡Р°Рµ РЅРµСѓРґР°С‡Рё РІРѕР·РІСЂР°С‰Р°РµС‚ false
 bool URpcDispatcherQueues::PushCommand(const UEPtr<URpcCommand> &command, unsigned &cmd_id)
 {
  if(!command)
   return false;
  if(!command->DecodeBasicData())
  {
-  // Ошибка декодирования
+  // РћС€РёР±РєР° РґРµРєРѕРґРёСЂРѕРІР°РЅРёСЏ
   return false;
  }
 
@@ -44,8 +44,8 @@ bool URpcDispatcherQueues::PushCommand(const UEPtr<URpcCommand> &command, unsign
  return true;
 }
 
-/// Добавление команды в очередь на обработку
-/// в случае неудачи возвращает false
+/// Р”РѕР±Р°РІР»РµРЅРёРµ РєРѕРјР°РЅРґС‹ РІ РѕС‡РµСЂРµРґСЊ РЅР° РѕР±СЂР°Р±РѕС‚РєСѓ
+/// РІ СЃР»СѓС‡Р°Рµ РЅРµСѓРґР°С‡Рё РІРѕР·РІСЂР°С‰Р°РµС‚ false
 bool URpcDispatcherQueues::PushCommand(const UEPtr<URpcCommand> &command)
 {
  unsigned cmd_id(0);
@@ -54,8 +54,8 @@ bool URpcDispatcherQueues::PushCommand(const UEPtr<URpcCommand> &command)
 
 
 
-/// Возвращает указатель на команду по ее Id в очереди ответов
-/// Возвращаемый указатель равен нулю, если команды нет в очереди
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РєРѕРјР°РЅРґСѓ РїРѕ РµРµ Id РІ РѕС‡РµСЂРµРґРё РѕС‚РІРµС‚РѕРІ
+/// Р’РѕР·РІСЂР°С‰Р°РµРјС‹Р№ СѓРєР°Р·Р°С‚РµР»СЊ СЂР°РІРµРЅ РЅСѓР»СЋ, РµСЃР»Рё РєРѕРјР°РЅРґС‹ РЅРµС‚ РІ РѕС‡РµСЂРµРґРё
 UEPtr<URpcCommand> URpcDispatcherQueues::FindProcessedCommand(unsigned cmd_id)
 {
  boost::mutex::scoped_lock lock(ProcessedCommandQueueMutex);
@@ -69,8 +69,8 @@ UEPtr<URpcCommand> URpcDispatcherQueues::FindProcessedCommand(unsigned cmd_id)
  return 0;
 }
 
-/// Удаляет команду из очереди ответов по ее идентификатору
-/// Возвращает true если команда была в очереди
+/// РЈРґР°Р»СЏРµС‚ РєРѕРјР°РЅРґСѓ РёР· РѕС‡РµСЂРµРґРё РѕС‚РІРµС‚РѕРІ РїРѕ РµРµ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂСѓ
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ true РµСЃР»Рё РєРѕРјР°РЅРґР° Р±С‹Р»Р° РІ РѕС‡РµСЂРµРґРё
 bool URpcDispatcherQueues::PopProcessedCommand(unsigned cmd_id)
 {
  boost::mutex::scoped_lock lock(ProcessedCommandQueueMutex);
@@ -87,8 +87,8 @@ bool URpcDispatcherQueues::PopProcessedCommand(unsigned cmd_id)
  return false;
 }
 
-/// Возвращает указатель на самый старый ответ
-/// и удаляет его из очереди
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЃР°РјС‹Р№ СЃС‚Р°СЂС‹Р№ РѕС‚РІРµС‚
+/// Рё СѓРґР°Р»СЏРµС‚ РµРіРѕ РёР· РѕС‡РµСЂРµРґРё
 UEPtr<URpcCommand> URpcDispatcherQueues::PopProcessedCommand(void)
 {
  boost::mutex::scoped_lock lock(ProcessedCommandQueueMutex);
@@ -102,7 +102,7 @@ UEPtr<URpcCommand> URpcDispatcherQueues::PopProcessedCommand(void)
  return result;
 }
 
-/// Возвращает true если очередь ответов не пуста
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ true РµСЃР»Рё РѕС‡РµСЂРµРґСЊ РѕС‚РІРµС‚РѕРІ РЅРµ РїСѓСЃС‚Р°
 bool URpcDispatcherQueues::CheckProcessedCommand(void)
 {
  boost::mutex::scoped_lock lock(ProcessedCommandQueueMutex);
@@ -114,14 +114,14 @@ bool URpcDispatcherQueues::CheckProcessedCommand(void)
 }
 
 
-/// Очищает очередь
+/// РћС‡РёС‰Р°РµС‚ РѕС‡РµСЂРµРґСЊ
 void URpcDispatcherQueues::ClearQueue(void)
 {
  boost::mutex::scoped_lock lock(CommandQueueMutex);
  CommandQueue.clear();
 }
 
-/// Очищает очередь ожидающих отправки ответов
+/// РћС‡РёС‰Р°РµС‚ РѕС‡РµСЂРµРґСЊ РѕР¶РёРґР°СЋС‰РёС… РѕС‚РїСЂР°РІРєРё РѕС‚РІРµС‚РѕРІ
 void URpcDispatcherQueues::ClearProcessedQueue(void)
 {
  boost::mutex::scoped_lock lock(ProcessedCommandQueueMutex);
@@ -131,9 +131,9 @@ void URpcDispatcherQueues::ClearProcessedQueue(void)
 
 
 // --------------------------
-// Вспомогательные методы управления
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-/// Возвращает следующую на очереди команду из CommandQueue и удаляет ее из очереди
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃР»РµРґСѓСЋС‰СѓСЋ РЅР° РѕС‡РµСЂРµРґРё РєРѕРјР°РЅРґСѓ РёР· CommandQueue Рё СѓРґР°Р»СЏРµС‚ РµРµ РёР· РѕС‡РµСЂРµРґРё
 UEPtr<URpcCommand> URpcDispatcherQueues::PopFromCommandQueue(void)
 {
  UEPtr<URpcCommand> result;
@@ -146,7 +146,7 @@ UEPtr<URpcCommand> URpcDispatcherQueues::PopFromCommandQueue(void)
  return result;
 }
 
-/// Кладет команду в очередь ответов
+/// РљР»Р°РґРµС‚ РєРѕРјР°РЅРґСѓ РІ РѕС‡РµСЂРµРґСЊ РѕС‚РІРµС‚РѕРІ
 void URpcDispatcherQueues::PushToProcessedQueue(const UEPtr<URpcCommand> &command)
 {
  boost::mutex::scoped_lock lock(ProcessedCommandQueueMutex);

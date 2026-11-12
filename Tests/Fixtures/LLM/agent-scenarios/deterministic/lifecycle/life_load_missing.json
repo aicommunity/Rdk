@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "life_load_missing",
+  "tier": "deterministic",
+  "suite": "lifecycle",
+  "registry_profile": "core",
+  "user_text": "load config",
+  "session": {
+    "project_loaded": false,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": []
+    },
+    {
+      "tool_calls": []
+    }
+  ],
+  "expect": {
+    "orchestrator_ok": true,
+    "provider_rounds_max": 2,
+    "tools_invoked_count_max": 0
+  }
+}

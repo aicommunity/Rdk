@@ -1,0 +1,13 @@
+{
+  "tool_calls": [
+    {
+      "id": "c1",
+      "name": "get_net_snapshot",
+      "arguments": {
+        "channel_index": 0,
+        "max_components": 200,
+        "reason": "inspect"
+      }
+    }
+  ]
+}

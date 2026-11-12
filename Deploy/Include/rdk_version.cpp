@@ -5,7 +5,7 @@
 namespace RDK {
 
 /// --------------------------
-/// Конструкторы и деструкторы
+/// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 /// --------------------------
 UVersion::UVersion(void)
  : Major(CoreMajorVer()), Minor(CoreMinorVer()), Revision(CoreRevisionVer()),
@@ -38,9 +38,9 @@ UVersion::UVersion(int major, int minor, int revision, const std::string &boost,
 /// --------------------------
 
 /// --------------------------
-/// Вывод и сравнение
+/// Р’С‹РІРѕРґ Рё СЃСЂР°РІРЅРµРЅРёРµ
 /// --------------------------
-/// Преобразует версию в строку
+/// РџСЂРµРѕР±СЂР°Р·СѓРµС‚ РІРµСЂСЃРёСЋ РІ СЃС‚СЂРѕРєСѓ
 std::string UVersion::ToString(void) const
 {
  std::stringstream tempstr;
@@ -48,7 +48,7 @@ std::string UVersion::ToString(void) const
  return tempstr.str();
 }
 
-/// Преобразует версию в строку со всеми зависимостями
+/// РџСЂРµРѕР±СЂР°Р·СѓРµС‚ РІРµСЂСЃРёСЋ РІ СЃС‚СЂРѕРєСѓ СЃРѕ РІСЃРµРјРё Р·Р°РІРёСЃРёРјРѕСЃС‚СЏРјРё
 std::string UVersion::ToStringFull(void) const
 {
  std::stringstream tempstr;
@@ -59,10 +59,10 @@ std::string UVersion::ToStringFull(void) const
  return tempstr.str();
 }
 
-/// Сравнивает версию с другой (только основную версию)
-/// возвращает >0 если версия ядра больше,
-/// возвращает <0 если версия ядра меньше,
-/// возвращает 0 в случае совпадения.
+/// РЎСЂР°РІРЅРёРІР°РµС‚ РІРµСЂСЃРёСЋ СЃ РґСЂСѓРіРѕР№ (С‚РѕР»СЊРєРѕ РѕСЃРЅРѕРІРЅСѓСЋ РІРµСЂСЃРёСЋ)
+/// РІРѕР·РІСЂР°С‰Р°РµС‚ >0 РµСЃР»Рё РІРµСЂСЃРёСЏ СЏРґСЂР° Р±РѕР»СЊС€Рµ,
+/// РІРѕР·РІСЂР°С‰Р°РµС‚ <0 РµСЃР»Рё РІРµСЂСЃРёСЏ СЏРґСЂР° РјРµРЅСЊС€Рµ,
+/// РІРѕР·РІСЂР°С‰Р°РµС‚ 0 РІ СЃР»СѓС‡Р°Рµ СЃРѕРІРїР°РґРµРЅРёСЏ.
 int UVersion::CompareCore(const UVersion &ver) const
 {
  return CompareCore(ver.Major,ver.Minor, ver.Revision);
@@ -91,10 +91,10 @@ int UVersion::CompareCore(int major, int minor, int revision) const
  return 0;
 }
 /*
-/// Сравнивает версию с другой (вместе с зависимостями)
-/// возвращает >0 если версия ядра больше,
-/// возвращает <0 если версия ядра меньше,
-/// возвращает 0 в случае совпадения.
+/// РЎСЂР°РІРЅРёРІР°РµС‚ РІРµСЂСЃРёСЋ СЃ РґСЂСѓРіРѕР№ (РІРјРµСЃС‚Рµ СЃ Р·Р°РІРёСЃРёРјРѕСЃС‚СЏРјРё)
+/// РІРѕР·РІСЂР°С‰Р°РµС‚ >0 РµСЃР»Рё РІРµСЂСЃРёСЏ СЏРґСЂР° Р±РѕР»СЊС€Рµ,
+/// РІРѕР·РІСЂР°С‰Р°РµС‚ <0 РµСЃР»Рё РІРµСЂСЃРёСЏ СЏРґСЂР° РјРµРЅСЊС€Рµ,
+/// РІРѕР·РІСЂР°С‰Р°РµС‚ 0 РІ СЃР»СѓС‡Р°Рµ СЃРѕРІРїР°РґРµРЅРёСЏ.
 int UVersion::CompareFull(const UVersion &ver)
 {
  int res=CompareCore(ver);
@@ -131,7 +131,7 @@ int UVersion::CompareFull(int major, int minor, int revision, const std::string 
 
 }*/
 
-/// Сравнивает версию с другой (только основную версию) на полное совпадение
+/// РЎСЂР°РІРЅРёРІР°РµС‚ РІРµСЂСЃРёСЋ СЃ РґСЂСѓРіРѕР№ (С‚РѕР»СЊРєРѕ РѕСЃРЅРѕРІРЅСѓСЋ РІРµСЂСЃРёСЋ) РЅР° РїРѕР»РЅРѕРµ СЃРѕРІРїР°РґРµРЅРёРµ
 bool UVersion::IsEqualCore(const UVersion &ver) const
 {
  return IsEqualCore(ver.Major,ver.Minor,ver.Revision);
@@ -142,7 +142,7 @@ bool UVersion::IsEqualCore(int major, int minor, int revision) const
  return !((Major != major) | (Minor != minor) | (Revision != revision));
 }
 
-/// Сравнивает версию с другой (вместе с зависимостями) на полное совпадение
+/// РЎСЂР°РІРЅРёРІР°РµС‚ РІРµСЂСЃРёСЋ СЃ РґСЂСѓРіРѕР№ (РІРјРµСЃС‚Рµ СЃ Р·Р°РІРёСЃРёРјРѕСЃС‚СЏРјРё) РЅР° РїРѕР»РЅРѕРµ СЃРѕРІРїР°РґРµРЅРёРµ
 bool UVersion::IsEqualFull(const UVersion &ver)
 {
  return IsEqualFull(ver.Major,ver.Minor,ver.Revision, ver.Boost, ver.OpenCv, ver.CompilerName, ver.CompilerVersion);
@@ -157,34 +157,34 @@ bool UVersion::IsEqualFull(int major, int minor, int revision, const std::string
 
 
 // ----------------------------
-// Функции определения версий
+// Р¤СѓРЅРєС†РёРё РѕРїСЂРµРґРµР»РµРЅРёСЏ РІРµСЂСЃРёР№
 // ----------------------------
-/// Доступ к глобальной переменной версии
+/// Р”РѕСЃС‚СѓРї Рє РіР»РѕР±Р°Р»СЊРЅРѕР№ РїРµСЂРµРјРµРЅРЅРѕР№ РІРµСЂСЃРёРё
 const RDK::UVersion& GetGlobalVersion(void)
 {
  static RDK::UVersion GlobalVersion;
  return GlobalVersion;
 }
 
-/// Возвращает мажорную версию ядра
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјР°Р¶РѕСЂРЅСѓСЋ РІРµСЂСЃРёСЋ СЏРґСЂР°
 int CoreMajorVer(void)
 {
  return RDK_MAJOR_VERSION;
 }
 
-/// Возвращает минорную версию ядра
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјРёРЅРѕСЂРЅСѓСЋ РІРµСЂСЃРёСЋ СЏРґСЂР°
 int CoreMinorVer(void)
 {
  return RDK_MINOR_VERSION;
 }
 
-/// Возвращает версию патча ядра
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІРµСЂСЃРёСЋ РїР°С‚С‡Р° СЏРґСЂР°
 int CoreRevisionVer(void)
 {
  return RDK_CORE_CVS_REVISION;
 }
 
-/// Возвращает полную вер сию ядра в виде строки
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїРѕР»РЅСѓСЋ РІРµСЂ СЃРёСЋ СЏРґСЂР° РІ РІРёРґРµ СЃС‚СЂРѕРєРё
 const char* CoreVer(void)
 {
  static char version[100];
@@ -201,10 +201,10 @@ const char* CoreVer(void)
  return version;
 }
 
-/// Сравнивает версию ядра с переданной
-/// возвращает >0 если версия ядра больше,
-/// возвращает <0 если версия ядра меньше,
-/// возвращает 0 в случае совпадения.
+/// РЎСЂР°РІРЅРёРІР°РµС‚ РІРµСЂСЃРёСЋ СЏРґСЂР° СЃ РїРµСЂРµРґР°РЅРЅРѕР№
+/// РІРѕР·РІСЂР°С‰Р°РµС‚ >0 РµСЃР»Рё РІРµСЂСЃРёСЏ СЏРґСЂР° Р±РѕР»СЊС€Рµ,
+/// РІРѕР·РІСЂР°С‰Р°РµС‚ <0 РµСЃР»Рё РІРµСЂСЃРёСЏ СЏРґСЂР° РјРµРЅСЊС€Рµ,
+/// РІРѕР·РІСЂР°С‰Р°РµС‚ 0 РІ СЃР»СѓС‡Р°Рµ СЃРѕРІРїР°РґРµРЅРёСЏ.
 int CoreCompareVer(int major, int minor, int patch)
 {
  if(CoreMajorVer() < major)
@@ -228,7 +228,7 @@ int CoreCompareVer(int major, int minor, int patch)
  return 0;
 }
 
-/// Возвращает имя компилятора ядра
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєРѕРјРїРёР»СЏС‚РѕСЂР° СЏРґСЂР°
 const char* CompilerName(void)
 {
 #if defined(__clang__)
@@ -260,7 +260,7 @@ const char* CompilerName(void)
 #endif
 }
 
-/// Возвращает версию компилятора ядра
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІРµСЂСЃРёСЋ РєРѕРјРїРёР»СЏС‚РѕСЂР° СЏРґСЂР°
 const char* CompilerVersion(void)
 {
 #if defined(__clang__)
@@ -300,7 +300,7 @@ const char* CompilerVersion(void)
 #endif
 }
 
-/// Возвращает версию opencv (если используется)
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІРµСЂСЃРёСЋ opencv (РµСЃР»Рё РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ)
 const char* OpenCvVersion(void)
 {
 #ifdef CV_VERSION

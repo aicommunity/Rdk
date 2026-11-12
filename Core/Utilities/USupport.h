@@ -18,6 +18,13 @@ See file license.txt for more information
 #include <iomanip>
 #include <locale>
 #include <limits>
+#include <algorithm>
+#include <ostream>
+#include <cstdio>
+#include <cstring>
+#include <cstdlib>
+#include <clocale>
+#include <cwchar>
 #include "UPtr.h"
 
 #ifndef u_min
@@ -89,31 +96,297 @@ namespace RDK {
 
 using namespace std;
 
-// Cистемные буферы
+// CРёСЃС‚РµРјРЅС‹Рµ Р±СѓС„РµСЂС‹
 //extern string ustrbuf;
 //extern wstring uwstrbuf;
 
 /*
- Функции возвращают указатель на внутренний буфер
- Значение буфера изменяется при следующем вызове функции библиотеки
+ Р¤СѓРЅРєС†РёРё РІРѕР·РІСЂР°С‰Р°СЋС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РІРЅСѓС‚СЂРµРЅРЅРёР№ Р±СѓС„РµСЂ
+ Р—РЅР°С‡РµРЅРёРµ Р±СѓС„РµСЂР° РёР·РјРµРЅСЏРµС‚СЃСЏ РїСЂРё СЃР»РµРґСѓСЋС‰РµРј РІС‹Р·РѕРІРµ С„СѓРЅРєС†РёРё Р±РёР±Р»РёРѕС‚РµРєРё
 */
 
-/// Проверка на NaN
+/// РџСЂРѕРІРµСЂРєР° РЅР° NaN
 template<typename NumT>
 bool is_nan(NumT n)
 {
  return n != n;
 }
 
-/// Проверка на Inf
+/// РџСЂРѕРІРµСЂРєР° РЅР° Inf
 template<typename NumT>
 bool is_inf(NumT n)
 {
  return ((n==std::numeric_limits<NumT>::infinity()) || (n==-std::numeric_limits<NumT>::infinity()));
 }
 
+/// Force ASCII '.' after snprintf which may emit locale ',' for LC_NUMERIC.
+inline void ForceCDecimalPointInPlace(char *buffer, int len)
+{
+ if(!buffer || len <= 0)
+  return;
+ for(int i = 0; i < len; ++i)
+ {
+  if(buffer[i] == ',')
+   buffer[i] = '.';
+ }
+}
 
-// Функция, преобразующая число в строку
+/// Accept both '.' and legacy locale ',' before strtod/wcstod.
+inline void NormalizeDecimalSeparatorsInPlace(std::string &text)
+{
+ for(char &ch : text)
+ {
+  if(ch == ',')
+   ch = '.';
+ }
+}
+
+inline void NormalizeDecimalSeparatorsInPlace(std::wstring &text)
+{
+ for(wchar_t &ch : text)
+ {
+  if(ch == L',')
+   ch = L'.';
+ }
+}
+
+/// Parse float with C numeric rules ('.' decimal), independent of process locale.
+inline double ParseFloatLocaleIndependent(const char *text)
+{
+ if(!text || !*text)
+  return 0.0;
+ std::string normalized(text);
+ NormalizeDecimalSeparatorsInPlace(normalized);
+
+ const char *previous = std::setlocale(LC_NUMERIC, nullptr);
+ const std::string previousLocale = previous ? previous : "C";
+ std::setlocale(LC_NUMERIC, "C");
+ const double value = std::strtod(normalized.c_str(), nullptr);
+ std::setlocale(LC_NUMERIC, previousLocale.c_str());
+ return value;
+}
+
+inline double ParseFloatLocaleIndependent(const wchar_t *text)
+{
+ if(!text || !*text)
+  return 0.0;
+ std::wstring normalized(text);
+ NormalizeDecimalSeparatorsInPlace(normalized);
+
+ const char *previous = std::setlocale(LC_NUMERIC, nullptr);
+ const std::string previousLocale = previous ? previous : "C";
+ std::setlocale(LC_NUMERIC, "C");
+ const double value = std::wcstod(normalized.c_str(), nullptr);
+ std::setlocale(LC_NUMERIC, previousLocale.c_str());
+ return value;
+}
+
+/// Trim legacy matrix node text (leading/trailing whitespace) before parse.
+inline void MatrixNodeTextTrimInPlace(std::string &text)
+{
+ auto notSpace = [](unsigned char c) {
+  return c != ' ' && c != '\t' && c != '\r' && c != '\n';
+ };
+ text.erase(text.begin(), std::find_if(text.begin(), text.end(), notSpace));
+ text.erase(std::find_if(text.rbegin(), text.rend(), notSpace).base(), text.end());
+}
+
+/// Write one matrix row: v0\\tv1\\t... without trailing tab.
+template<typename WriteFn>
+inline void AppendMatrixTextRow(std::ostream &out, int cols, WriteFn writeCell)
+{
+ for(int j = 0; j < cols; ++j)
+ {
+  if(j > 0)
+   out << '\t';
+  writeCell(j);
+ }
+}
+
+inline bool IsMatrixPropertyTypeName(const std::string &typeName)
+{
+ return typeName.find("MDMatrix") != std::string::npos
+     || typeName.find("MMatrix") != std::string::npos;
+}
+
+/// Normalize matrix property text for GUI display/edit (trim + strip trailing tabs per line).
+inline std::string NormalizeMatrixPropertyText(std::string text)
+{
+ MatrixNodeTextTrimInPlace(text);
+ if(text.empty())
+  return text;
+
+ std::string result;
+ result.reserve(text.size());
+ std::size_t lineStart = 0;
+ for(std::size_t i = 0; i <= text.size(); ++i)
+ {
+  if(i == text.size() || text[i] == '\n')
+  {
+   std::size_t lineEnd = i;
+   while(lineEnd > lineStart && (text[lineEnd - 1] == '\t' || text[lineEnd - 1] == '\r'))
+    --lineEnd;
+   if(!result.empty())
+    result += '\n';
+   result.append(text, lineStart, lineEnd - lineStart);
+   lineStart = i + 1;
+  }
+ }
+ return result;
+}
+
+// РћРїС‚РёРјРёР·РёСЂРѕРІР°РЅРЅС‹Рµ РїРµСЂРµРіСЂСѓР·РєРё РґР»СЏ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ С‡РёСЃРµР» РІ СЃС‚СЂРѕРєСѓ
+// Р”Р»СЏ РІРµС‰РµСЃС‚РІРµРЅРЅС‹С… С‡РёСЃРµР» РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РјР°РєСЃРёРјР°Р»СЊРЅР°СЏ С‚РѕС‡РЅРѕСЃС‚СЊ РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ РїРѕР»РЅРѕР№ РјР°РЅС‚РёСЃСЃС‹
+
+// РџРµСЂРµРіСЂСѓР·РєР° РґР»СЏ double - СЃРѕС…СЂР°РЅСЏРµС‚ РїРѕР»РЅСѓСЋ РјР°РЅС‚РёСЃСЃСѓ (17 Р·РЅР°С‡Р°С‰РёС… С†РёС„СЂ)
+inline string& ntoa(double n, string &buf)
+{
+ char buffer[64]; // Р”РѕСЃС‚Р°С‚РѕС‡РЅРѕ РґР»СЏ double РІ Р»СЋР±РѕРј С„РѕСЂРјР°С‚Рµ
+ int len = snprintf(buffer, sizeof(buffer), "%.17g", n);
+ if(len < 0 || len >= (int)sizeof(buffer))
+ {
+  // Fallback РЅР° stringstream РІ СЃР»СѓС‡Р°Рµ РѕС€РёР±РєРё
+  basic_stringstream<char> stream;
+  stream.imbue(std::locale::classic());
+  stream << std::setprecision(17) << n;
+  buf = stream.str();
+ }
+ else
+ {
+  ForceCDecimalPointInPlace(buffer, len);
+  buf.assign(buffer, len);
+ }
+ return buf;
+}
+
+// РџРµСЂРµРіСЂСѓР·РєР° РґР»СЏ float - СЃРѕС…СЂР°РЅСЏРµС‚ РїРѕР»РЅСѓСЋ РјР°РЅС‚РёСЃСЃСѓ (9 Р·РЅР°С‡Р°С‰РёС… С†РёС„СЂ)
+inline string& ntoa(float n, string &buf)
+{
+ char buffer[64];
+ int len = snprintf(buffer, sizeof(buffer), "%.9g", n);
+ if(len < 0 || len >= (int)sizeof(buffer))
+ {
+  basic_stringstream<char> stream;
+  stream.imbue(std::locale::classic());
+  stream << std::setprecision(9) << n;
+  buf = stream.str();
+ }
+ else
+ {
+  ForceCDecimalPointInPlace(buffer, len);
+  buf.assign(buffer, len);
+ }
+ return buf;
+}
+
+// РџРµСЂРµРіСЂСѓР·РєР° РґР»СЏ long double - СЃРѕС…СЂР°РЅСЏРµС‚ РїРѕР»РЅСѓСЋ РјР°РЅС‚РёСЃСЃСѓ (21 Р·РЅР°С‡Р°С‰Р°СЏ С†РёС„СЂР°)
+inline string& ntoa(long double n, string &buf)
+{
+ char buffer[128]; // Р‘РѕР»СЊС€Рµ РјРµСЃС‚Р° РґР»СЏ long double
+ int len = snprintf(buffer, sizeof(buffer), "%.21Lg", n);
+ if(len < 0 || len >= (int)sizeof(buffer))
+ {
+  basic_stringstream<char> stream;
+  stream.imbue(std::locale::classic());
+  stream << std::setprecision(21) << n;
+  buf = stream.str();
+ }
+ else
+ {
+  ForceCDecimalPointInPlace(buffer, len);
+  buf.assign(buffer, len);
+ }
+ return buf;
+}
+
+// РџРµСЂРµРіСЂСѓР·РєРё РґР»СЏ С†РµР»С‹С… С‡РёСЃРµР» - РёСЃРїРѕР»СЊР·СѓСЋС‚ Р±С‹СЃС‚СЂС‹Рµ РјРµС‚РѕРґС‹
+inline string& ntoa(int n, string &buf)
+{
+ char buffer[32];
+ int len = snprintf(buffer, sizeof(buffer), "%d", n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(unsigned int n, string &buf)
+{
+ char buffer[32];
+ int len = snprintf(buffer, sizeof(buffer), "%u", n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(long n, string &buf)
+{
+ char buffer[32];
+ int len = snprintf(buffer, sizeof(buffer), "%ld", n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(unsigned long n, string &buf)
+{
+ char buffer[32];
+ int len = snprintf(buffer, sizeof(buffer), "%lu", n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(long long n, string &buf)
+{
+ char buffer[32];
+ int len = snprintf(buffer, sizeof(buffer), "%lld", n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(unsigned long long n, string &buf)
+{
+ char buffer[32];
+ int len = snprintf(buffer, sizeof(buffer), "%llu", n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(short n, string &buf)
+{
+ char buffer[32];
+ int len = snprintf(buffer, sizeof(buffer), "%d", (int)n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(unsigned short n, string &buf)
+{
+ char buffer[32];
+ int len = snprintf(buffer, sizeof(buffer), "%u", (unsigned int)n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(char n, string &buf)
+{
+ char buffer[32];
+ int len = snprintf(buffer, sizeof(buffer), "%d", (int)n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(unsigned char n, string &buf)
+{
+ char buffer[32];
+ int len = snprintf(buffer, sizeof(buffer), "%u", (unsigned int)n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(bool n, string &buf)
+{
+ buf = n ? "1" : "0";
+ return buf;
+}
+
+// РћР±С‰РёР№ С€Р°Р±Р»РѕРЅ РґР»СЏ РѕСЃС‚Р°Р»СЊРЅС‹С… С‚РёРїРѕРІ (fallback РЅР° stringstream)
 template<typename CharT, typename NumT>
 basic_string<CharT>& ntoa(NumT n, basic_string<CharT> &buf)
 {
@@ -136,6 +409,163 @@ wstring wntoa(NumT n)
  return ntoa(n,res);
 }
 
+// РћРїС‚РёРјРёР·РёСЂРѕРІР°РЅРЅР°СЏ РІРµСЂСЃРёСЏ ntoa СЃ Р·Р°РґР°РЅРЅРѕР№ С‚РѕС‡РЅРѕСЃС‚СЊСЋ
+// Р”Р»СЏ РІРµС‰РµСЃС‚РІРµРЅРЅС‹С… С‡РёСЃРµР» СЃРѕС…СЂР°РЅСЏРµС‚ РїРѕР»РЅСѓСЋ РјР°РЅС‚РёСЃСЃСѓ РїСЂРё digs >= РЅРµРѕР±С…РѕРґРёРјРѕР№ С‚РѕС‡РЅРѕСЃС‚Рё
+
+// РџРµСЂРµРіСЂСѓР·РєР° РґР»СЏ double СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ
+inline string& ntoa(double n, int digs, string &buf)
+{
+ char buffer[128];
+ char format[32];
+ if(digs >= 17)
+ {
+  // РСЃРїРѕР»СЊР·СѓРµРј РјР°РєСЃРёРјР°Р»СЊРЅСѓСЋ С‚РѕС‡РЅРѕСЃС‚СЊ РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ РїРѕР»РЅРѕР№ РјР°РЅС‚РёСЃСЃС‹
+  int len = snprintf(buffer, sizeof(buffer), "%.17g", n);
+  if(len < 0 || len >= (int)sizeof(buffer))
+  {
+   basic_stringstream<char> stream;
+   stream.imbue(std::locale::classic());
+   stream << std::setprecision(17) << n;
+   buf = stream.str();
+  }
+  else
+  {
+   ForceCDecimalPointInPlace(buffer, len);
+   buf.assign(buffer, len);
+  }
+ }
+ else
+ {
+  snprintf(format, sizeof(format), "%%.%df", digs);
+  int len = snprintf(buffer, sizeof(buffer), format, n);
+  if(len < 0 || len >= (int)sizeof(buffer))
+  {
+   basic_stringstream<char> stream;
+   stream.imbue(std::locale::classic());
+   stream.width(digs);
+   stream.fill('0');
+   stream << std::fixed << std::setprecision(digs) << n;
+   buf = stream.str();
+  }
+  else
+  {
+   ForceCDecimalPointInPlace(buffer, len);
+   buf.assign(buffer, len);
+  }
+ }
+ return buf;
+}
+
+// РџРµСЂРµРіСЂСѓР·РєР° РґР»СЏ float СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ
+inline string& ntoa(float n, int digs, string &buf)
+{
+ char buffer[128];
+ char format[32];
+ if(digs >= 9)
+ {
+  // РСЃРїРѕР»СЊР·СѓРµРј РјР°РєСЃРёРјР°Р»СЊРЅСѓСЋ С‚РѕС‡РЅРѕСЃС‚СЊ РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ РїРѕР»РЅРѕР№ РјР°РЅС‚РёСЃСЃС‹
+  int len = snprintf(buffer, sizeof(buffer), "%.9g", n);
+  if(len < 0 || len >= (int)sizeof(buffer))
+  {
+   basic_stringstream<char> stream;
+   stream.imbue(std::locale::classic());
+   stream << std::setprecision(9) << n;
+   buf = stream.str();
+  }
+  else
+  {
+   ForceCDecimalPointInPlace(buffer, len);
+   buf.assign(buffer, len);
+  }
+ }
+ else
+ {
+  snprintf(format, sizeof(format), "%%.%df", digs);
+  int len = snprintf(buffer, sizeof(buffer), format, n);
+  if(len < 0 || len >= (int)sizeof(buffer))
+  {
+   basic_stringstream<char> stream;
+   stream.imbue(std::locale::classic());
+   stream.width(digs);
+   stream.fill('0');
+   stream << std::fixed << std::setprecision(digs) << n;
+   buf = stream.str();
+  }
+  else
+  {
+   ForceCDecimalPointInPlace(buffer, len);
+   buf.assign(buffer, len);
+  }
+ }
+ return buf;
+}
+
+// РџРµСЂРµРіСЂСѓР·РєР° РґР»СЏ long double СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ
+inline string& ntoa(long double n, int digs, string &buf)
+{
+ char buffer[256];
+ char format[32];
+ if(digs >= 21)
+ {
+  // РСЃРїРѕР»СЊР·СѓРµРј РјР°РєСЃРёРјР°Р»СЊРЅСѓСЋ С‚РѕС‡РЅРѕСЃС‚СЊ РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ РїРѕР»РЅРѕР№ РјР°РЅС‚РёСЃСЃС‹
+  int len = snprintf(buffer, sizeof(buffer), "%.21Lg", n);
+  if(len < 0 || len >= (int)sizeof(buffer))
+  {
+   basic_stringstream<char> stream;
+   stream.imbue(std::locale::classic());
+   stream << std::setprecision(21) << n;
+   buf = stream.str();
+  }
+  else
+  {
+   ForceCDecimalPointInPlace(buffer, len);
+   buf.assign(buffer, len);
+  }
+ }
+ else
+ {
+  snprintf(format, sizeof(format), "%%.%dLf", digs);
+  int len = snprintf(buffer, sizeof(buffer), format, n);
+  if(len < 0 || len >= (int)sizeof(buffer))
+  {
+   basic_stringstream<char> stream;
+   stream.imbue(std::locale::classic());
+   stream.width(digs);
+   stream.fill('0');
+   stream << std::fixed << std::setprecision(digs) << n;
+   buf = stream.str();
+  }
+  else
+  {
+   ForceCDecimalPointInPlace(buffer, len);
+   buf.assign(buffer, len);
+  }
+ }
+ return buf;
+}
+
+// РџРµСЂРµРіСЂСѓР·РєРё РґР»СЏ С†РµР»С‹С… С‡РёСЃРµР» СЃ С€РёСЂРёРЅРѕР№
+inline string& ntoa(int n, int digs, string &buf)
+{
+ char buffer[64];
+ char format[32];
+ snprintf(format, sizeof(format), "%%0%dd", digs);
+ int len = snprintf(buffer, sizeof(buffer), format, n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+inline string& ntoa(unsigned int n, int digs, string &buf)
+{
+ char buffer[64];
+ char format[32];
+ snprintf(format, sizeof(format), "%%0%du", digs);
+ int len = snprintf(buffer, sizeof(buffer), format, n);
+ buf.assign(buffer, len);
+ return buf;
+}
+
+// РћР±С‰РёР№ С€Р°Р±Р»РѕРЅ РґР»СЏ РѕСЃС‚Р°Р»СЊРЅС‹С… С‚РёРїРѕРІ (fallback РЅР° stringstream)
 template<typename CharT, typename NumT>
 basic_string<CharT>& ntoa(NumT n, int digs, basic_string<CharT> &buf)
 {
@@ -160,7 +590,7 @@ wstring wntoa(NumT n,int digs)
  return ntoa(n,digs,res);
 }
 
-// Функция, преобразующая число в шестнадцатиричную строку
+// Р¤СѓРЅРєС†РёСЏ, РїСЂРµРѕР±СЂР°Р·СѓСЋС‰Р°СЏ С‡РёСЃР»Рѕ РІ С€РµСЃС‚РЅР°РґС†Р°С‚РёСЂРёС‡РЅСѓСЋ СЃС‚СЂРѕРєСѓ
 template<typename CharT, typename NumT>
 basic_string<CharT>& ntohex(NumT n, basic_string<CharT> &buf)
 {
@@ -208,76 +638,132 @@ wstring wntohex(NumT n, int digs)
  return ntohex(n,digs, res);
 }
 
-// Функция, преобразующая строку в вещественное число
+// РћРїС‚РёРјРёР·РёСЂРѕРІР°РЅРЅР°СЏ С„СѓРЅРєС†РёСЏ, РїСЂРµРѕР±СЂР°Р·СѓСЋС‰Р°СЏ СЃС‚СЂРѕРєСѓ РІ РІРµС‰РµСЃС‚РІРµРЅРЅРѕРµ С‡РёСЃР»Рѕ
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїРѕР»РЅСѓСЋ С‚РѕС‡РЅРѕСЃС‚СЊ РїСЂРё РґРµСЃРµСЂРёР°Р»РёР·Р°С†РёРё; '.' Рё ',' РїСЂРёРЅРёРјР°СЋС‚СЃСЏ.
 template<typename CharT>
 double atof(const std::basic_string<CharT> &str)
 {
- basic_stringstream<CharT> stream(str);
- double res(0.0);
- stream>>res;
- return res;
+ if(str.empty())
+  return 0.0;
+ std::string normalized;
+ normalized.reserve(str.size());
+ for(CharT ch : str)
+ {
+  if(ch == CharT(','))
+   normalized.push_back('.');
+  else
+   normalized.push_back(static_cast<char>(ch));
+ }
+ return ParseFloatLocaleIndependent(normalized.c_str());
 }
 
-// Функция, преобразующая строку в целое число
+// РЎРїРµС†РёР°Р»РёР·Р°С†РёСЏ РґР»СЏ wstring
+template<>
+inline double atof<wchar_t>(const std::basic_string<wchar_t> &str)
+{
+ if(str.empty())
+  return 0.0;
+ return ParseFloatLocaleIndependent(str.c_str());
+}
+
+// РћРїС‚РёРјРёР·РёСЂРѕРІР°РЅРЅР°СЏ С„СѓРЅРєС†РёСЏ, РїСЂРµРѕР±СЂР°Р·СѓСЋС‰Р°СЏ СЃС‚СЂРѕРєСѓ РІ С†РµР»РѕРµ С‡РёСЃР»Рѕ
 template<typename CharT>
 int atoi(const std::basic_string<CharT> &str)
 {
- basic_stringstream<CharT> stream(str);
- int res(0);
- stream>>res;
- return res;
+ if(str.empty())
+  return 0;
+ // РСЃРїРѕР»СЊР·СѓРµРј СЃС‚Р°РЅРґР°СЂС‚РЅСѓСЋ С„СѓРЅРєС†РёСЋ C РґР»СЏ Р±С‹СЃС‚СЂРѕРіРѕ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ
+ return std::atoi(str.c_str());
 }
 
-// Функция, преобразующая шестнадцатиричную строку в целое число
+// РЎРїРµС†РёР°Р»РёР·Р°С†РёСЏ РґР»СЏ wstring
+template<>
+inline int atoi<wchar_t>(const std::basic_string<wchar_t> &str)
+{
+ if(str.empty())
+  return 0;
+ // Р”Р»СЏ wide string РёСЃРїРѕР»СЊР·СѓРµРј wcstol
+ return (int)std::wcstol(str.c_str(), nullptr, 10);
+}
+
+// Р¤СѓРЅРєС†РёСЏ, РїСЂРµРѕР±СЂР°Р·СѓСЋС‰Р°СЏ С€РµСЃС‚РЅР°РґС†Р°С‚РёСЂРёС‡РЅСѓСЋ СЃС‚СЂРѕРєСѓ РІ С†РµР»РѕРµ С‡РёСЃР»Рѕ
 template<typename CharT, typename T>
 T hextoi(const std::basic_string<CharT> &str)
 {
  basic_stringstream<CharT> stream(str);
  int res(0);
  stream>>hex>>res;
- return res;
+ return static_cast<T>(res);
 }
 
-// Выделяет дробную часть числа с точностью digs знаков после запятой
+// Р’С‹РґРµР»СЏРµС‚ РґСЂРѕР±РЅСѓСЋ С‡Р°СЃС‚СЊ С‡РёСЃР»Р° СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ digs Р·РЅР°РєРѕРІ РїРѕСЃР»Рµ Р·Р°РїСЏС‚РѕР№
 RDK_LIB_TYPE int fraction(double d, int digs);
 
-// Разделяет строку на составлящие через сепаратор 'sep'
-// Возвращает число полученных строк
+// Р Р°Р·РґРµР»СЏРµС‚ СЃС‚СЂРѕРєСѓ РЅР° СЃРѕСЃС‚Р°РІР»СЏС‰РёРµ С‡РµСЂРµР· СЃРµРїР°СЂР°С‚РѕСЂ 'sep'
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РїРѕР»СѓС‡РµРЅРЅС‹С… СЃС‚СЂРѕРє
 template<typename CharT>
 int separatestring(const basic_string<CharT> &str, vector<basic_string<CharT> > &output, CharT sep, int num=0, int *lastpos=0)
 {
- typename basic_string<CharT>::size_type i=0,j=0;
- int size=0;
- int nnum=(num>0)?num-1:0;
-
  if(lastpos) *lastpos=0;
- output.resize(0);
+ output.clear();
  if(str.empty())
   return 0;
 
- while(i != string::npos && (nnum>=0) )
+ // РџСЂРµРґРІР°СЂРёС‚РµР»СЊРЅРѕ РїРѕРґСЃС‡РёС‚С‹РІР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СЌР»РµРјРµРЅС‚РѕРІ РґР»СЏ СЂРµР·РµСЂРІРёСЂРѕРІР°РЅРёСЏ РїР°РјСЏС‚Рё
+ typename basic_string<CharT>::size_type i=0, j=0;
+ int count = 0;
+ int nnum = (num>0) ? num-1 : 0;
+ 
+ // РџРµСЂРІС‹Р№ РїСЂРѕС…РѕРґ - РїРѕРґСЃС‡РµС‚ СЌР»РµРјРµРЅС‚РѕРІ
+ while(i != string::npos && (nnum>=0))
  {
-  i=str.find_first_of(sep,j);
+  i = str.find_first_of(sep, j);
   if(i == j)
   {
    j++;
    continue;
   }
-
-  ++size;
-  output.resize(size);
+  ++count;
   if(num)
    nnum--;
   if(i == string::npos)
-   output[size-1]=str.substr(j);
+   break;
+  j = i + 1;
+  if(j >= str.size())
+   break;
+ }
+ 
+ // Р РµР·РµСЂРІРёСЂСѓРµРј РїР°РјСЏС‚СЊ
+ output.reserve(count);
+ 
+ // Р’С‚РѕСЂРѕР№ РїСЂРѕС…РѕРґ - Р·Р°РїРѕР»РЅРµРЅРёРµ РІРµРєС‚РѕСЂР°
+ i = 0;
+ j = 0;
+ nnum = (num>0) ? num-1 : 0;
+ int size = 0;
+ 
+ while(i != string::npos && (nnum>=0))
+ {
+  i = str.find_first_of(sep, j);
+  if(i == j)
+  {
+   j++;
+   continue;
+  }
+  
+  ++size;
+  if(num)
+   nnum--;
+  if(i == string::npos)
+   output.push_back(str.substr(j));
   else
-   output[size-1]=str.substr(j,i-j);
-  j=i+1;
+   output.push_back(str.substr(j, i-j));
+  j = i + 1;
   if(j >= str.size())
    break;
  }
 
- if(lastpos) *lastpos=int(i);
+ if(lastpos) *lastpos = int(i);
 
  return size;
 }
@@ -302,31 +788,31 @@ std::basic_string<CharT> concat_strings(const std::vector<std::basic_string<Char
  return "";
 }
 
-/// Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РІ РІРёРґРµ РїРѕРЅСЏС‚РЅРѕР№ СЃС‚СЂРѕРєРё РІРёРґР° YYYY.MM.DD HH:MM:SS
 RDK_LIB_TYPE std::string get_text_time(time_t time_data, char date_sep='.', char time_sep=':');
 
-/// Возвращает время в виде понятной строки вида YYYYy MMm DDd HHh MMm SS:MSMSs из времени в секундах
-/// отображает только те элементы времени, которые необходимы
-/// Если is_full_time==true то время выводится полностью всегда
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РІ РІРёРґРµ РїРѕРЅСЏС‚РЅРѕР№ СЃС‚СЂРѕРєРё РІРёРґР° YYYYy MMm DDd HHh MMm SS:MSMSs РёР· РІСЂРµРјРµРЅРё РІ СЃРµРєСѓРЅРґР°С…
+/// РѕС‚РѕР±СЂР°Р¶Р°РµС‚ С‚РѕР»СЊРєРѕ С‚Рµ СЌР»РµРјРµРЅС‚С‹ РІСЂРµРјРµРЅРё, РєРѕС‚РѕСЂС‹Рµ РЅРµРѕР±С…РѕРґРёРјС‹
+/// Р•СЃР»Рё is_full_time==true С‚Рѕ РІСЂРµРјСЏ РІС‹РІРѕРґРёС‚СЃСЏ РїРѕР»РЅРѕСЃС‚СЊСЋ РІСЃРµРіРґР°
 RDK_LIB_TYPE std::string get_text_time_from_seconds(double time_data, char date_sep='.', char time_sep=':', bool is_full_time=false);
 
-// Возвращает время в виде понятной строки вида YYYY/MM/DD HH:MM:SS,MS + добавочная строка additional_line
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РІ РІРёРґРµ РїРѕРЅСЏС‚РЅРѕР№ СЃС‚СЂРѕРєРё РІРёРґР° YYYY/MM/DD HH:MM:SS,MS + РґРѕР±Р°РІРѕС‡РЅР°СЏ СЃС‚СЂРѕРєР° additional_line
 //std::string get_text_current_time(char date_sep='/', char time_sep=':', char m_sec_sep=',', std::string additional_line="GMT+04:00");
 
-// Конвертация string<->wstring
-// !!! Платформенно-зависимая реализация !!!
-// Копипаста с http://habrahabr.ru/blogs/cpp/112997/
-//@brief Сужает широкую строку, используя локализацию loc
-//   @return Возвращает суженную строку или пустую суженную строку, в
-//   случае. если возникла ошибка
+// РљРѕРЅРІРµСЂС‚Р°С†РёСЏ string<->wstring
+// !!! РџР»Р°С‚С„РѕСЂРјРµРЅРЅРѕ-Р·Р°РІРёСЃРёРјР°СЏ СЂРµР°Р»РёР·Р°С†РёСЏ !!!
+// РљРѕРїРёРїР°СЃС‚Р° СЃ http://habrahabr.ru/blogs/cpp/112997/
+//@brief РЎСѓР¶Р°РµС‚ С€РёСЂРѕРєСѓСЋ СЃС‚СЂРѕРєСѓ, РёСЃРїРѕР»СЊР·СѓСЏ Р»РѕРєР°Р»РёР·Р°С†РёСЋ loc
+//   @return Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСѓР¶РµРЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ РёР»Рё РїСѓСЃС‚СѓСЋ СЃСѓР¶РµРЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ, РІ
+//   СЃР»СѓС‡Р°Рµ. РµСЃР»Рё РІРѕР·РЅРёРєР»Р° РѕС€РёР±РєР°
 //RDK_LIB_TYPE std::string& narrow(const std::wstring& wstr, const std::locale& loc, std::string &result);
 //RDK_LIB_TYPE std::string& narrow(const std::wstring& wstr, std::string &result, unsigned codepage);
 
 //std::string narrow2(const std::wstring& wstr);
 
-//@brief Расширяет строку, используя локализацию loc
-//   @return Возвращает расширенную строку или пустую расширенную строку, в
-//   случае, если возникла ошибка.
+//@brief Р Р°СЃС€РёСЂСЏРµС‚ СЃС‚СЂРѕРєСѓ, РёСЃРїРѕР»СЊР·СѓСЏ Р»РѕРєР°Р»РёР·Р°С†РёСЋ loc
+//   @return Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂР°СЃС€РёСЂРµРЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ РёР»Рё РїСѓСЃС‚СѓСЋ СЂР°СЃС€РёСЂРµРЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ, РІ
+//   СЃР»СѓС‡Р°Рµ, РµСЃР»Рё РІРѕР·РЅРёРєР»Р° РѕС€РёР±РєР°.
 //RDK_LIB_TYPE std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring &result);
 //RDK_LIB_TYPE std::wstring& widen(const std::string& str, std::wstring &result, unsigned codepage);
 
@@ -361,34 +847,34 @@ inline int signum(T x)
 }
 #endif
 
-/// Обрезает лидирующие и завершающие пробелы в строке
+/// РћР±СЂРµР·Р°РµС‚ Р»РёРґРёСЂСѓСЋС‰РёРµ Рё Р·Р°РІРµСЂС€Р°СЋС‰РёРµ РїСЂРѕР±РµР»С‹ РІ СЃС‚СЂРѕРєРµ
 RDK_LIB_TYPE std::string trim_spaces(const std::string &str);
 
-/// Извлекает путь из полного имени файла
+/// РР·РІР»РµРєР°РµС‚ РїСѓС‚СЊ РёР· РїРѕР»РЅРѕРіРѕ РёРјРµРЅРё С„Р°Р№Р»Р°
 RDK_LIB_TYPE std::string extract_file_path(const std::string& full_name);
 
-/// Извлекает имя файла из полного имени файла
+/// РР·РІР»РµРєР°РµС‚ РёРјСЏ С„Р°Р№Р»Р° РёР· РїРѕР»РЅРѕРіРѕ РёРјРµРЅРё С„Р°Р№Р»Р°
 RDK_LIB_TYPE std::string extract_file_name(const std::string& full_name);
 
-/// Извлекает имя файла из полного имени файла исключая расширение
+/// РР·РІР»РµРєР°РµС‚ РёРјСЏ С„Р°Р№Р»Р° РёР· РїРѕР»РЅРѕРіРѕ РёРјРµРЅРё С„Р°Р№Р»Р° РёСЃРєР»СЋС‡Р°СЏ СЂР°СЃС€РёСЂРµРЅРёРµ
 RDK_LIB_TYPE std::string extract_file_name_wo_ext(const std::string& full_name);
 
-/// Извлекает расширение файла из имени файла
+/// РР·РІР»РµРєР°РµС‚ СЂР°СЃС€РёСЂРµРЅРёРµ С„Р°Р№Р»Р° РёР· РёРјРµРЅРё С„Р°Р№Р»Р°
 RDK_LIB_TYPE std::string extract_file_ext(const std::string& full_name);
 
-/// Модифицирует имя файла так, чтобы оно стало относительным относительно заданного пути
+/// РњРѕРґРёС„РёС†РёСЂСѓРµС‚ РёРјСЏ С„Р°Р№Р»Р° С‚Р°Рє, С‡С‚РѕР±С‹ РѕРЅРѕ СЃС‚Р°Р»Рѕ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Рј РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ Р·Р°РґР°РЅРЅРѕРіРѕ РїСѓС‚Рё
 RDK_LIB_TYPE string relative_file_path(const string &path, const string &relative_path_base);
 
-/// Заменяет все вхождения подстроки find_str на подстроку replace_str
+/// Р—Р°РјРµРЅСЏРµС‚ РІСЃРµ РІС…РѕР¶РґРµРЅРёСЏ РїРѕРґСЃС‚СЂРѕРєРё find_str РЅР° РїРѕРґСЃС‚СЂРѕРєСѓ replace_str
 RDK_LIB_TYPE string replace_substring(const string &src, const string &find_str, const string &replace_str);
 
 
 
-/// Загружает файл в строку
+/// Р—Р°РіСЂСѓР¶Р°РµС‚ С„Р°Р№Р» РІ СЃС‚СЂРѕРєСѓ
 RDK_LIB_TYPE bool LoadFile(const std::string &file_name, std::string &buffer);
 RDK_LIB_TYPE bool LoadFileBin(const std::string &file_name, std::vector<uint8_t> &buffer);
 
-/// Сохраняет файл из строки
+/// РЎРѕС…СЂР°РЅСЏРµС‚ С„Р°Р№Р» РёР· СЃС‚СЂРѕРєРё
 RDK_LIB_TYPE bool SaveFile(const std::string &file_name, const std::string &buffer);
 RDK_LIB_TYPE bool SaveFileBin(const std::string &file_name, const std::vector<uint8_t> &buffer);
 

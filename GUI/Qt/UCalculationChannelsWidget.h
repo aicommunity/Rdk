@@ -18,6 +18,9 @@ public:
 
     void AUpdateInterface();
 
+    /// Select channel in the list and sync Core_SelectChannel (LLM presentation).
+    void setLlmActiveChannel(int channel_index);
+
 public slots:
     void channelSelectionChanged();
 

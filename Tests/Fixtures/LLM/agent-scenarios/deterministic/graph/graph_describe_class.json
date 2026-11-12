@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "id": "graph_describe_class",
+  "tier": "deterministic",
+  "suite": "graph",
+  "registry_profile": "core",
+  "user_text": "что такое UNet",
+  "session": {
+    "project_loaded": false,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "describe_class",
+          "arguments": {
+            "class_name": "UNet"
+          }
+        }
+      ]
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": [
+      "describe_class"
+    ]
+  }
+}

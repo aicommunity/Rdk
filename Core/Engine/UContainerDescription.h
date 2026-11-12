@@ -2,60 +2,61 @@
 #define UCONTAINER_DESCRIPTION_H
 
 #include <map>
+#include <unordered_map>
 #include <vector>
 #include "UComponentDescription.h"
 
 namespace RDK {
 
-// Класс описания свойства компонента
+// РљР»Р°СЃСЃ РѕРїРёСЃР°РЅРёСЏ СЃРІРѕР№СЃС‚РІР° РєРѕРјРїРѕРЅРµРЅС‚Р°
 class RDK_LIB_TYPE UPropertyDescription
 {
-public: // Данные
-// Краткое описание (заголовок) свойства
+public: // Р”Р°РЅРЅС‹Рµ
+// РљСЂР°С‚РєРѕРµ РѕРїРёСЃР°РЅРёРµ (Р·Р°РіРѕР»РѕРІРѕРє) СЃРІРѕР№СЃС‚РІР°
 std::string Header;
 
-// Описание свойства
+// РћРїРёСЃР°РЅРёРµ СЃРІРѕР№СЃС‚РІР°
 std::string Description;
 
-// Тип данных свойства
+// РўРёРї РґР°РЅРЅС‹С… СЃРІРѕР№СЃС‚РІР°
 std::string Type;
 
-// Тип выбора вариантов данных свойства
-// 0 - произвольные данные
+// РўРёРї РІС‹Р±РѕСЂР° РІР°СЂРёР°РЅС‚РѕРІ РґР°РЅРЅС‹С… СЃРІРѕР№СЃС‚РІР°
+// 0 - РїСЂРѕРёР·РІРѕР»СЊРЅС‹Рµ РґР°РЅРЅС‹Рµ
 // 1 - Checkbox
-// 2 - Диапазон
-// 3 - Список вариантов
-// 4 - Диапазон с заданным шагом
+// 2 - Р”РёР°РїР°Р·РѕРЅ
+// 3 - РЎРїРёСЃРѕРє РІР°СЂРёР°РЅС‚РѕРІ
+// 4 - Р”РёР°РїР°Р·РѕРЅ СЃ Р·Р°РґР°РЅРЅС‹Рј С€Р°РіРѕРј
 int DataSelectionType;
 
-/// Список значений
-/// В режиме диапазона, список состоит из двух значений
-/// начала и конца диапазона
+/// РЎРїРёСЃРѕРє Р·РЅР°С‡РµРЅРёР№
+/// Р’ СЂРµР¶РёРјРµ РґРёР°РїР°Р·РѕРЅР°, СЃРїРёСЃРѕРє СЃРѕСЃС‚РѕРёС‚ РёР· РґРІСѓС… Р·РЅР°С‡РµРЅРёР№
+/// РЅР°С‡Р°Р»Р° Рё РєРѕРЅС†Р° РґРёР°РїР°Р·РѕРЅР°
 std::vector<std::string> ValueList;
 
-/// Шаг по диапазону
+/// РЁР°Рі РїРѕ РґРёР°РїР°Р·РѕРЅСѓ
 std::string Step;
 
-/// Тип свойства
+/// РўРёРї СЃРІРѕР№СЃС‚РІР°
 unsigned int PropertyType;
 
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 UPropertyDescription(void);
 
 };
 
 class RDK_LIB_TYPE UContainerDescription: public UComponentDescription
 {
-protected: // Данные
-// Описания свойств
+protected: // Р”Р°РЅРЅС‹Рµ
+// РћРїРёСЃР°РЅРёСЏ СЃРІРѕР№СЃС‚РІ
 std::map<std::string, UPropertyDescription> Properties;
 
 std::map<std::string, std::string> Favorites;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UContainerDescription(void);
 UContainerDescription(const UContainerDescription &copy);
@@ -63,19 +64,19 @@ virtual ~UContainerDescription(void);
 // --------------------------
 
 // --------------------------
-// Методы управления данными
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё
 // --------------------------
-// Описание свойства
+// РћРїРёСЃР°РЅРёРµ СЃРІРѕР№СЃС‚РІР°
 const UPropertyDescription& GetPropertyDescription(const std::string &name);
 bool SetPropertyDescription(const std::string &name, const UPropertyDescription& value, bool force=false);
 
-// Удаляет свойство из этого описания, если он есть в общих описаниях
-bool RemoveCommonDuplicatesDescription(const std::map<std::string, UPropertyDescription> &common_descriptions, const std::string &name);
+// РЈРґР°Р»СЏРµС‚ СЃРІРѕР№СЃС‚РІРѕ РёР· СЌС‚РѕРіРѕ РѕРїРёСЃР°РЅРёСЏ, РµСЃР»Рё РѕРЅ РµСЃС‚СЊ РІ РѕР±С‰РёС… РѕРїРёСЃР°РЅРёСЏС…
+bool RemoveCommonDuplicatesDescription(const std::unordered_map<std::string, UPropertyDescription> &common_descriptions, const std::string &name);
 
-// Удаляет все свойства из этого описания, если они есть в общих описаниях
-bool RemoveCommonDuplicatesDescriptions(const std::map<std::string, UPropertyDescription> &common_descriptions);
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ СЃРІРѕР№СЃС‚РІР° РёР· СЌС‚РѕРіРѕ РѕРїРёСЃР°РЅРёСЏ, РµСЃР»Рё РѕРЅРё РµСЃС‚СЊ РІ РѕР±С‰РёС… РѕРїРёСЃР°РЅРёСЏС…
+bool RemoveCommonDuplicatesDescriptions(const std::unordered_map<std::string, UPropertyDescription> &common_descriptions);
 
-// Создание описаний свойств единожды (вызов к хранилищу)
+// РЎРѕР·РґР°РЅРёРµ РѕРїРёСЃР°РЅРёР№ СЃРІРѕР№СЃС‚РІ РµРґРёРЅРѕР¶РґС‹ (РІС‹Р·РѕРІ Рє С…СЂР°РЅРёР»РёС‰Сѓ)
 virtual void CreateProperties();
 
 const std::map<std::string, UPropertyDescription>& GetProperties();
@@ -86,15 +87,35 @@ const std::map<std::string, std::string>& GetFavorites();
 void AddNewFavorite(const std::string& name, const std::string& path);
 
 void DeleteFavorite(const std::string& name);
+
+// РњРµС‚РѕРґС‹ СЂР°Р±РѕС‚С‹ СЃ Р°Р»РёР°СЃР°РјРё РІ Favorites
+// РџСЂРѕРІРµСЂСЏРµС‚, СЏРІР»СЏРµС‚СЃСЏ Р»Рё Favorite Р°Р»РёР°СЃРѕРј (РїСѓС‚СЊ СЃРѕРґРµСЂР¶РёС‚ С‚РѕС‡РєСѓ, С‡С‚Рѕ СѓРєР°Р·С‹РІР°РµС‚ РЅР° РІР»РѕР¶РµРЅРЅРѕРµ СЃРІРѕР№СЃС‚РІРѕ)
+bool IsFavoriteAlias(const std::string& name) const;
+
+// Р Р°Р·Р±РёСЂР°РµС‚ РїСѓС‚СЊ Favorite РЅР° РєРѕРјРїРѕРЅРµРЅС‚ Рё СЃРІРѕР№СЃС‚РІРѕ
+// Р¤РѕСЂРјР°С‚: "ComponentPath.PropertyName" РёР»Рё "{CompName}:ComponentPath.PropertyName"
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ true, РµСЃР»Рё РїСѓС‚СЊ СѓСЃРїРµС€РЅРѕ СЂР°Р·РѕР±СЂР°РЅ
+bool ParseFavoritePath(const std::string& path, std::string& componentPath, std::string& propertyName) const;
+
+// Р”РѕР±Р°РІР»СЏРµС‚ Р°Р»РёР°СЃ РІ С„РѕСЂРјР°С‚Рµ РґР»СЏ UNet
+// aliasName - РёРјСЏ Р°Р»РёР°СЃР° (РЅР°РїСЂРёРјРµСЂ, "LTZoneOutput")
+// componentPath - РїСѓС‚СЊ Рє РєРѕРјРїРѕРЅРµРЅС‚Сѓ (РЅР°РїСЂРёРјРµСЂ, "LTZone")
+// propertyName - РёРјСЏ СЃРІРѕР№СЃС‚РІР° (РЅР°РїСЂРёРјРµСЂ, "Output")
+// propertyType - С‚РёРї СЃРІРѕР№СЃС‚РІР° (ptOutput, ptInput, etc.)
+void AddPropertyAlias(const std::string& aliasName, const std::string& componentPath, 
+                      const std::string& propertyName, unsigned int propertyType = 0);
+
+// РџРѕР»СѓС‡Р°РµС‚ РІСЃРµ Р°Р»РёР°СЃС‹ РёР· Favorites РІ С„РѕСЂРјР°С‚Рµ РґР»СЏ UNet
+std::vector<std::pair<std::string, std::string>> GetPropertyAliases() const;
 // --------------------------
 
 // --------------------------
-// Методы ввода вывода данных
+// РњРµС‚РѕРґС‹ РІРІРѕРґР° РІС‹РІРѕРґР° РґР°РЅРЅС‹С…
 // --------------------------
-// Сохраняет данные класса в XML
+// РЎРѕС…СЂР°РЅСЏРµС‚ РґР°РЅРЅС‹Рµ РєР»Р°СЃСЃР° РІ XML
 virtual bool Save(USerStorageXML &xml);
 
-// Загружает данные класса из XML
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РґР°РЅРЅС‹Рµ РєР»Р°СЃСЃР° РёР· XML
 virtual bool Load(USerStorageXML &xml);
 // --------------------------
 };

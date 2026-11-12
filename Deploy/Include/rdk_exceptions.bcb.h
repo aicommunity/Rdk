@@ -45,7 +45,7 @@ static int xfilter(EXCEPTION_POINTERS *xp) {
 
 //extern LPEXCEPTION_POINTERS ExceptionsPointers;
 
-// Формирует строку с описанием возникшего системного исключения
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ СЃ РѕРїРёСЃР°РЅРёРµРј РІРѕР·РЅРёРєС€РµРіРѕ СЃРёСЃС‚РµРјРЅРѕРіРѕ РёСЃРєР»СЋС‡РµРЅРёСЏ
 std::string GetSystemExceptionData(System::Sysutils::Exception &exception);
 std::string GetSystemExceptionData(void);
 

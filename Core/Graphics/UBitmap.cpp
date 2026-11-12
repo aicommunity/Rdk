@@ -1,3 +1,7 @@
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4244)
+#endif
 /* ***********************************************************
 @Copyright Alexsandr V. Bakhshiev, 2005.
 E-mail:        alexab@ailab.ru
@@ -51,7 +55,7 @@ UBColor& UColorT::operator [] (int i)
 
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UBitmapParam::UBitmapParam(void)
 {
@@ -78,7 +82,7 @@ UBitmapParam::~UBitmapParam(void)
 }
 
 // --------------------------
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 // --------------------------
 bool UBitmapParam::operator == (const UBitmapParam &bitmap) const
 {
@@ -94,9 +98,9 @@ bool UBitmapParam::operator != (const UBitmapParam &bitmap) const
 // --------------------------
 
 
-// Методы UBitmap
+// РњРµС‚РѕРґС‹ UBitmap
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UBitmap::UBitmap(void)
  : UBitmapParam()
@@ -173,9 +177,9 @@ UBitmap::~UBitmap(void)
 // --------------------------
 
 // -------------------------
-// Методы управления данными
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё
 // -------------------------
-// Смещение данных пикселя (канала) в битах для масштабирования
+// РЎРјРµС‰РµРЅРёРµ РґР°РЅРЅС‹С… РїРёРєСЃРµР»СЏ (РєР°РЅР°Р»Р°) РІ Р±РёС‚Р°С… РґР»СЏ РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёСЏ
 int UBitmap::GetShift(void) const
 {
  return Shift;
@@ -190,20 +194,20 @@ bool UBitmap::SetShift(int value)
  return true;
 }
 
-// Длина линии изображения в байтах
+// Р”Р»РёРЅР° Р»РёРЅРёРё РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РІ Р±Р°Р№С‚Р°С…
 int UBitmap::GetLineByteLength(void) const
 {
  return CalcLineByteLength(Width,ColorModel);
 }
 
-// Длина пикселя в байтах
+// Р”Р»РёРЅР° РїРёРєСЃРµР»СЏ РІ Р±Р°Р№С‚Р°С…
 int UBitmap::GetPixelByteLength(void) const
 {
  return CalcLineByteLength(1,ColorModel);
 }
 
-// Задает формат изображения
-// Если isupdate == true то существующее изображение преобразуется
+// Р—Р°РґР°РµС‚ С„РѕСЂРјР°С‚ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+// Р•СЃР»Рё isupdate == true С‚Рѕ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РїСЂРµРѕР±СЂР°Р·СѓРµС‚СЃСЏ
 void UBitmap::SetColorModel(UBMColorModel cmodel, bool isupdate)
 {
  if(ColorModel == cmodel)
@@ -219,7 +223,7 @@ void UBitmap::SetColorModel(UBMColorModel cmodel, bool isupdate)
   {
    UBColor* target=new UBColor[CalcByteLength(Width, Height, cmodel)];
    ColorConvert(Data, ColorModel, target, cmodel);
-   // Устанавливаем новый буфер
+   // РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РЅРѕРІС‹Р№ Р±СѓС„РµСЂ
    AttachBuffer(Width, Height, target, cmodel);
   }
   else
@@ -231,13 +235,13 @@ void UBitmap::SetColorModel(UBMColorModel cmodel, bool isupdate)
   }
 }
 
-// Создает внутренний буфер
+// РЎРѕР·РґР°РµС‚ РІРЅСѓС‚СЂРµРЅРЅРёР№ Р±СѓС„РµСЂ
 void UBitmap::SetRes(int width, int height)
 {
  SetRes(width,height,ColorModel);
 }
 
-// Создает внутренний буфер
+// РЎРѕР·РґР°РµС‚ РІРЅСѓС‚СЂРµРЅРЅРёР№ Р±СѓС„РµСЂ
 void UBitmap::SetRes(int width, int height, UBMColorModel cmodel)
 {
 // if(Width == width && Height == height && (cmodel == ColorModel || cmodel == ubmUnknown))
@@ -253,15 +257,15 @@ void UBitmap::SetRes(int width, int height, UBMColorModel cmodel)
   CreateData(width,height,cmodel);
 }
 
-// Копирует новое изображение из буфера data
-// с прежними размерами
+// РљРѕРїРёСЂСѓРµС‚ РЅРѕРІРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РёР· Р±СѓС„РµСЂР° data
+// СЃ РїСЂРµР¶РЅРёРјРё СЂР°Р·РјРµСЂР°РјРё
 void UBitmap::SetImage(const UBColor* data)
 {
  memcpy(Data,data,ByteLength*sizeof(UBColor));
 }
 
-// Копирует новое изображение из буфера data
-// с новыми размерами
+// РљРѕРїРёСЂСѓРµС‚ РЅРѕРІРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РёР· Р±СѓС„РµСЂР° data
+// СЃ РЅРѕРІС‹РјРё СЂР°Р·РјРµСЂР°РјРё
 void UBitmap::SetImage(int width, int height,
                         const UBColor* data, UBMColorModel cmodel)
 {
@@ -272,8 +276,8 @@ void UBitmap::SetImage(int width, int height,
  SetImage(data);
 }
 
-// Устанавливает внутренний указатель на буфер data
-// сохраняя прежнюю информацию о размерах
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІРЅСѓС‚СЂРµРЅРЅРёР№ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° Р±СѓС„РµСЂ data
+// СЃРѕС…СЂР°РЅСЏСЏ РїСЂРµР¶РЅСЋСЋ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ СЂР°Р·РјРµСЂР°С…
 void UBitmap::AttachBuffer(UBColor* data)
 {
  if(Data == data)
@@ -290,8 +294,8 @@ void UBitmap::AttachBuffer(UBColor* data)
  }
 }
 
-// Устанавливает внутренний указатель на буфер data
-// обновляя информацию о размерах
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІРЅСѓС‚СЂРµРЅРЅРёР№ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° Р±СѓС„РµСЂ data
+// РѕР±РЅРѕРІР»СЏСЏ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ СЂР°Р·РјРµСЂР°С…
 void UBitmap::AttachBuffer(int width, int height, UBColor* data, UBMColorModel cmodel)
 {
  if(Data == data)
@@ -317,9 +321,9 @@ void UBitmap::AttachBuffer(int width, int height, UBColor* data, UBMColorModel c
 }
 
 
-// Отдает буфер изображения на внешнее управление
-// После выполнения метода класс становится пустым
-// Возвращает освобожденный буфер
+// РћС‚РґР°РµС‚ Р±СѓС„РµСЂ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РЅР° РІРЅРµС€РЅРµРµ СѓРїСЂР°РІР»РµРЅРёРµ
+// РџРѕСЃР»Рµ РІС‹РїРѕР»РЅРµРЅРёСЏ РјРµС‚РѕРґР° РєР»Р°СЃСЃ СЃС‚Р°РЅРѕРІРёС‚СЃСЏ РїСѓСЃС‚С‹Рј
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РѕСЃРІРѕР±РѕР¶РґРµРЅРЅС‹Р№ Р±СѓС„РµСЂ
 UBColor* UBitmap::DetachBuffer(void)
 {
  if(!Data)
@@ -331,7 +335,7 @@ UBColor* UBitmap::DetachBuffer(void)
  return pData;
 }
 
-// Очищает память изображения и обнуляет его размеры
+// РћС‡РёС‰Р°РµС‚ РїР°РјСЏС‚СЊ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ Рё РѕР±РЅСѓР»СЏРµС‚ РµРіРѕ СЂР°Р·РјРµСЂС‹
 void UBitmap::Clear(void)
 {
  if(Data)
@@ -343,8 +347,8 @@ void UBitmap::Clear(void)
  memset(ChannelOffset,0,sizeof(ChannelOffset));
 }
 
-// Заполняет изображение цветом color
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// Р—Р°РїРѕР»РЅСЏРµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ С†РІРµС‚РѕРј color
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::Fill(UColorT color)
 {
  if(!Data || Width == 0 || Height == 0)
@@ -445,8 +449,8 @@ void UBitmap::Fill(UColorT color, const UBRect &rect)
 
 
 
-// Преобразует это изображение в формат приемника 'target'
-// и записывает результат в приемник.
+// РџСЂРµРѕР±СЂР°Р·СѓРµС‚ СЌС‚Рѕ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІ С„РѕСЂРјР°С‚ РїСЂРёРµРјРЅРёРєР° 'target'
+// Рё Р·Р°РїРёСЃС‹РІР°РµС‚ СЂРµР·СѓР»СЊС‚Р°С‚ РІ РїСЂРёРµРјРЅРёРє.
 void UBitmap::ConvertTo(UBitmap &target) const
 {
  if(ColorModel == target.ColorModel)
@@ -466,10 +470,10 @@ void UBitmap::ConvertTo(UBitmap &target) const
  ColorConvert(Data, ColorModel, target.Data, target.ColorModel);
 }
 
-// Копирует изображение в 'target' в позицию,
-// начинающуюся как x,y
-// Если изображение не вмещается целиком, то оно усекается
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// РљРѕРїРёСЂСѓРµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІ 'target' РІ РїРѕР·РёС†РёСЋ,
+// РЅР°С‡РёРЅР°СЋС‰СѓСЋСЃСЏ РєР°Рє x,y
+// Р•СЃР»Рё РёР·РѕР±СЂР°Р¶РµРЅРёРµ РЅРµ РІРјРµС‰Р°РµС‚СЃСЏ С†РµР»РёРєРѕРј, С‚Рѕ РѕРЅРѕ СѓСЃРµРєР°РµС‚СЃСЏ
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::CopyTo(int x, int y, UBitmap &target)
 {
  int xsize,ysize;
@@ -501,8 +505,8 @@ void UBitmap::CopyTo(int x, int y, UBitmap &target)
  }
 }
 
-// Ширина и высота копируемого источника copy_width, copy_height
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// РЁРёСЂРёРЅР° Рё РІС‹СЃРѕС‚Р° РєРѕРїРёСЂСѓРµРјРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР° copy_width, copy_height
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::CopyTo(int x, int y, int x_from, int y_from, int copy_width, int copy_height, UBitmap &target)
 {
  int xsize,ysize;
@@ -544,13 +548,13 @@ void UBitmap::CopyTo(int x, int y, int x_from, int y_from, int copy_width, int c
  }
 }
 
-// Копирует изображение в 'target' в позицию,
-// начинающуюся как x,y
-// Если изображение не вмещается целиком, то оно усекается
-// Изображение всегда преобразуется в цветовую модель цели 'target'
-// Элементы изображения источника с цветом 'transp' не переносятся
-// (эффект прозрачности)
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// РљРѕРїРёСЂСѓРµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІ 'target' РІ РїРѕР·РёС†РёСЋ,
+// РЅР°С‡РёРЅР°СЋС‰СѓСЋСЃСЏ РєР°Рє x,y
+// Р•СЃР»Рё РёР·РѕР±СЂР°Р¶РµРЅРёРµ РЅРµ РІРјРµС‰Р°РµС‚СЃСЏ С†РµР»РёРєРѕРј, С‚Рѕ РѕРЅРѕ СѓСЃРµРєР°РµС‚СЃСЏ
+// РР·РѕР±СЂР°Р¶РµРЅРёРµ РІСЃРµРіРґР° РїСЂРµРѕР±СЂР°Р·СѓРµС‚СЃСЏ РІ С†РІРµС‚РѕРІСѓСЋ РјРѕРґРµР»СЊ С†РµР»Рё 'target'
+// Р­Р»РµРјРµРЅС‚С‹ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РёСЃС‚РѕС‡РЅРёРєР° СЃ С†РІРµС‚РѕРј 'transp' РЅРµ РїРµСЂРµРЅРѕСЃСЏС‚СЃСЏ
+// (СЌС„С„РµРєС‚ РїСЂРѕР·СЂР°С‡РЅРѕСЃС‚Рё)
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::CopyTo(int x, int y, UBitmap &target, UColorT transp)
 {
  int xsize,ysize;
@@ -603,14 +607,14 @@ void UBitmap::CopyTo(int x, int y, UBitmap &target, UColorT transp)
  }
 }
 
-// Копирует изображение в 'target' в позицию,
-// начинающуюся как x,y
-// Если изображение не вмещается целиком, то оно усекается
-// Изображение всегда преобразуется в цветовую модель цели 'target'
-// Элементы изображения источника с цветом 'transp' не переносятся
-// (эффект прозрачности)
-// Все остальные элементы заменяются в итоговом изображении на цвет 'color'
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// РљРѕРїРёСЂСѓРµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІ 'target' РІ РїРѕР·РёС†РёСЋ,
+// РЅР°С‡РёРЅР°СЋС‰СѓСЋСЃСЏ РєР°Рє x,y
+// Р•СЃР»Рё РёР·РѕР±СЂР°Р¶РµРЅРёРµ РЅРµ РІРјРµС‰Р°РµС‚СЃСЏ С†РµР»РёРєРѕРј, С‚Рѕ РѕРЅРѕ СѓСЃРµРєР°РµС‚СЃСЏ
+// РР·РѕР±СЂР°Р¶РµРЅРёРµ РІСЃРµРіРґР° РїСЂРµРѕР±СЂР°Р·СѓРµС‚СЃСЏ РІ С†РІРµС‚РѕРІСѓСЋ РјРѕРґРµР»СЊ С†РµР»Рё 'target'
+// Р­Р»РµРјРµРЅС‚С‹ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РёСЃС‚РѕС‡РЅРёРєР° СЃ С†РІРµС‚РѕРј 'transp' РЅРµ РїРµСЂРµРЅРѕСЃСЏС‚СЃСЏ
+// (СЌС„С„РµРєС‚ РїСЂРѕР·СЂР°С‡РЅРѕСЃС‚Рё)
+// Р’СЃРµ РѕСЃС‚Р°Р»СЊРЅС‹Рµ СЌР»РµРјРµРЅС‚С‹ Р·Р°РјРµРЅСЏСЋС‚СЃСЏ РІ РёС‚РѕРіРѕРІРѕРј РёР·РѕР±СЂР°Р¶РµРЅРёРё РЅР° С†РІРµС‚ 'color'
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::MaskTo(int x, int y, UBitmap &target, UColorT transp, UColorT color)
 {
  int xsize,ysize;
@@ -722,11 +726,11 @@ void UBitmap::MaskTo(int x, int y, UBitmap &target, UColorT transp)
  }
 }
 
-// Возвращает участок изображения с координатами
-// левого верхнего угла x,y и шириной и длиной
-// соответствующей размерам 'target'
-// Возвращает false если при копировании произошло усечение
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓС‡Р°СЃС‚РѕРє РёР·РѕР±СЂР°Р¶РµРЅРёСЏ СЃ РєРѕРѕСЂРґРёРЅР°С‚Р°РјРё
+// Р»РµРІРѕРіРѕ РІРµСЂС…РЅРµРіРѕ СѓРіР»Р° x,y Рё С€РёСЂРёРЅРѕР№ Рё РґР»РёРЅРѕР№
+// СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµР№ СЂР°Р·РјРµСЂР°Рј 'target'
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ false РµСЃР»Рё РїСЂРё РєРѕРїРёСЂРѕРІР°РЅРёРё РїСЂРѕРёР·РѕС€Р»Рѕ СѓСЃРµС‡РµРЅРёРµ
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 bool UBitmap::GetRect(int x, int y, UBitmap &target) const
 {
  int width,height;
@@ -774,10 +778,10 @@ bool UBitmap::GetRect(int x, int y, UBitmap &target) const
 }
 
 
-// Разделяет текущее изображение на цветовые каналы
-// Каналы формируются в цветовой модели 'Y8' для исходного 'RGB24' и
-// в 'Y32' для исходного 'RGB96'
-// Поддерживает режимы ubmRGB24, ubmRGB96
+// Р Р°Р·РґРµР»СЏРµС‚ С‚РµРєСѓС‰РµРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РЅР° С†РІРµС‚РѕРІС‹Рµ РєР°РЅР°Р»С‹
+// РљР°РЅР°Р»С‹ С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ РІ С†РІРµС‚РѕРІРѕР№ РјРѕРґРµР»Рё 'Y8' РґР»СЏ РёСЃС…РѕРґРЅРѕРіРѕ 'RGB24' Рё
+// РІ 'Y32' РґР»СЏ РёСЃС…РѕРґРЅРѕРіРѕ 'RGB96'
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmRGB24, ubmRGB96
 void UBitmap::Separate(UBitmap* channels)
 {
  switch(ColorModel)
@@ -824,8 +828,8 @@ void UBitmap::Separate(UBitmap* channels)
  }
 }
 
-// Совмещает в себе каналы в одно цветное изображение
-// Поддерживает режимы ubmRGB24, ubmRGB96
+// РЎРѕРІРјРµС‰Р°РµС‚ РІ СЃРµР±Рµ РєР°РЅР°Р»С‹ РІ РѕРґРЅРѕ С†РІРµС‚РЅРѕРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmRGB24, ubmRGB96
 void UBitmap::Merge(UBitmap* channels)
 {
  switch(ColorModel)
@@ -888,10 +892,10 @@ void UBitmap::Merge(UBitmap* channels)
 
 
 // -------------------------
-// Методы сбора статистики
+// РњРµС‚РѕРґС‹ СЃР±РѕСЂР° СЃС‚Р°С‚РёСЃС‚РёРєРё
 // -------------------------
-// Возвращает минимальное и максимальное значение яркостей
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјРёРЅРёРјР°Р»СЊРЅРѕРµ Рё РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ СЏСЂРєРѕСЃС‚РµР№
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::FindColorRange(UColorT &minval, UColorT &maxval) const
 {
  minval.c=0xffffffff;
@@ -947,8 +951,8 @@ void UBitmap::FindColorRange(UColorT &minval, UColorT &maxval) const
  }
 }
 
-// Возвращает минимальное и максимальное значение яркостей и их координаты
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјРёРЅРёРјР°Р»СЊРЅРѕРµ Рё РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ СЏСЂРєРѕСЃС‚РµР№ Рё РёС… РєРѕРѕСЂРґРёРЅР°С‚С‹
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::FindColorRange(UBColorPoint &minval, UBColorPoint &maxval) const
 {
  minval.Color.c=0xffffffff;
@@ -1041,8 +1045,8 @@ void UBitmap::FindColorRange(UBColorPoint &minval, UBColorPoint &maxval) const
  maxval.X=maxl-maxval.Y;
 }
 
-// Возвращает минимальное и максимальное значение яркостей участка изображения
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјРёРЅРёРјР°Р»СЊРЅРѕРµ Рё РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ СЏСЂРєРѕСЃС‚РµР№ СѓС‡Р°СЃС‚РєР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::FindColorRange(UBRect rect, UColorT &minval, UColorT &maxval) const
 {
  minval.c=0xffffffff;
@@ -1126,10 +1130,10 @@ void UBitmap::FindColorRange(UBRect rect, UColorT &minval, UColorT &maxval) cons
  }
 }
 
-// Вычисляет средневзвешенную сумму яркостей всех пикслей участка изображения
-// Если 'width' или 'height' < 0 или превышает максимум
-// то размеры участка вычисляются до конца изображения
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// Р’С‹С‡РёСЃР»СЏРµС‚ СЃСЂРµРґРЅРµРІР·РІРµС€РµРЅРЅСѓСЋ СЃСѓРјРјСѓ СЏСЂРєРѕСЃС‚РµР№ РІСЃРµС… РїРёРєСЃР»РµР№ СѓС‡Р°СЃС‚РєР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+// Р•СЃР»Рё 'width' РёР»Рё 'height' < 0 РёР»Рё РїСЂРµРІС‹С€Р°РµС‚ РјР°РєСЃРёРјСѓРј
+// С‚Рѕ СЂР°Р·РјРµСЂС‹ СѓС‡Р°СЃС‚РєР° РІС‹С‡РёСЃР»СЏСЋС‚СЃСЏ РґРѕ РєРѕРЅС†Р° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 UColorT UBitmap::FindAverageColor(int x, int y, int width,int height) const
 {
  UColorT result=0;
@@ -1194,8 +1198,8 @@ UColorT UBitmap::FindAverageColor(int x, int y, int width,int height) const
  return result;
 }
 
-// Вычисляет суммарную яркость по строке изображения с номером y
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// Р’С‹С‡РёСЃР»СЏРµС‚ СЃСѓРјРјР°СЂРЅСѓСЋ СЏСЂРєРѕСЃС‚СЊ РїРѕ СЃС‚СЂРѕРєРµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ СЃ РЅРѕРјРµСЂРѕРј y
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 unsigned int UBitmap::CalcBrightnessByRow(int y) const
 {
  unsigned int res=0;
@@ -1229,8 +1233,8 @@ unsigned int UBitmap::CalcBrightnessByRow(int y) const
  return res;
 }
 
-// Вычисляет суммарную яркость по столбцу изображения с номером x
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// Р’С‹С‡РёСЃР»СЏРµС‚ СЃСѓРјРјР°СЂРЅСѓСЋ СЏСЂРєРѕСЃС‚СЊ РїРѕ СЃС‚РѕР»Р±С†Сѓ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ СЃ РЅРѕРјРµСЂРѕРј x
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 unsigned int UBitmap::CalcBrightnessByCol(int x) const
 {
  unsigned int res=0;
@@ -1268,10 +1272,10 @@ unsigned int UBitmap::CalcBrightnessByCol(int x) const
  return res;
 }
 
-// Вычисляет суммарную яркость раздельно по столбцам и строками изображения от 
-// столбца x1 до x2, и от строки y1 до y2. 
-// В x_result значения столбцов, в y_result - строк, память должна быть выделена
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// Р’С‹С‡РёСЃР»СЏРµС‚ СЃСѓРјРјР°СЂРЅСѓСЋ СЏСЂРєРѕСЃС‚СЊ СЂР°Р·РґРµР»СЊРЅРѕ РїРѕ СЃС‚РѕР»Р±С†Р°Рј Рё СЃС‚СЂРѕРєР°РјРё РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РѕС‚ 
+// СЃС‚РѕР»Р±С†Р° x1 РґРѕ x2, Рё РѕС‚ СЃС‚СЂРѕРєРё y1 РґРѕ y2. 
+// Р’ x_result Р·РЅР°С‡РµРЅРёСЏ СЃС‚РѕР»Р±С†РѕРІ, РІ y_result - СЃС‚СЂРѕРє, РїР°РјСЏС‚СЊ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РІС‹РґРµР»РµРЅР°
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::CalcBrightness(unsigned *x_result, unsigned *y_result,
                                    int x1, int x2, int y1, int y2) const
 {                                                            
@@ -1356,11 +1360,11 @@ void UBitmap::CalcBrightness(unsigned *x_result, unsigned *y_result,
 }
 
 
-// Вычисляет относительную суммарную интенсивность раздельно по столбцам и
-// строками изображения от столбца x1 до x2, и от строки y1 до y2.
-// Интенсивность считается раздельно по каналам в зависимости от цветовой модели
-// В x_result значения столбцов, в y_result - строк, память должна быть выделена
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// Р’С‹С‡РёСЃР»СЏРµС‚ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅСѓСЋ СЃСѓРјРјР°СЂРЅСѓСЋ РёРЅС‚РµРЅСЃРёРІРЅРѕСЃС‚СЊ СЂР°Р·РґРµР»СЊРЅРѕ РїРѕ СЃС‚РѕР»Р±С†Р°Рј Рё
+// СЃС‚СЂРѕРєР°РјРё РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РѕС‚ СЃС‚РѕР»Р±С†Р° x1 РґРѕ x2, Рё РѕС‚ СЃС‚СЂРѕРєРё y1 РґРѕ y2.
+// РРЅС‚РµРЅСЃРёРІРЅРѕСЃС‚СЊ СЃС‡РёС‚Р°РµС‚СЃСЏ СЂР°Р·РґРµР»СЊРЅРѕ РїРѕ РєР°РЅР°Р»Р°Рј РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С†РІРµС‚РѕРІРѕР№ РјРѕРґРµР»Рё
+// Р’ x_result Р·РЅР°С‡РµРЅРёСЏ СЃС‚РѕР»Р±С†РѕРІ, РІ y_result - СЃС‚СЂРѕРє, РїР°РјСЏС‚СЊ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РІС‹РґРµР»РµРЅР°
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::CalcBrightnessAverage(UColorT *x_result, UColorT *y_result,
                                    int x1, int x2, int y1, int y2) const
 {
@@ -1395,7 +1399,7 @@ void UBitmap::CalcBrightnessAverage(UColorT *x_result, UColorT *y_result,
 
  UBColor *p;
 
- // Временные буферы для цветного изображения
+ // Р’СЂРµРјРµРЅРЅС‹Рµ Р±СѓС„РµСЂС‹ РґР»СЏ С†РІРµС‚РЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
  unsigned* x_buf[3]={0,0,0};
  unsigned* y_buf[3]={0,0,0};
 
@@ -1496,7 +1500,7 @@ void UBitmap::CalcBrightnessAverage(UColorT *x_result, UColorT *y_result,
  }
 }
 
-// Подсчитывает число пикселей имеющих интенсивность выше порога UColorT
+// РџРѕРґСЃС‡РёС‚С‹РІР°РµС‚ С‡РёСЃР»Рѕ РїРёРєСЃРµР»РµР№ РёРјРµСЋС‰РёС… РёРЅС‚РµРЅСЃРёРІРЅРѕСЃС‚СЊ РІС‹С€Рµ РїРѕСЂРѕРіР° UColorT
 int UBitmap::CalcNumPixels(UColorT threshold) const
 {
  if(!Data || Width == 0 || Height == 0)
@@ -1531,10 +1535,10 @@ int UBitmap::CalcNumPixels(UColorT threshold) const
 }
 
 
-// Вычисляет ожидаемый размер гистограммы, если это возможно
-// и выделяет память на необходимое число элементов
-// result - указатель на возвращаемый массив данных гистограммы
-// Поддерживает режимы ubmY8
+// Р’С‹С‡РёСЃР»СЏРµС‚ РѕР¶РёРґР°РµРјС‹Р№ СЂР°Р·РјРµСЂ РіРёСЃС‚РѕРіСЂР°РјРјС‹, РµСЃР»Рё СЌС‚Рѕ РІРѕР·РјРѕР¶РЅРѕ
+// Рё РІС‹РґРµР»СЏРµС‚ РїР°РјСЏС‚СЊ РЅР° РЅРµРѕР±С…РѕРґРёРјРѕРµ С‡РёСЃР»Рѕ СЌР»РµРјРµРЅС‚РѕРІ
+// result - СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РІРѕР·РІСЂР°С‰Р°РµРјС‹Р№ РјР°СЃСЃРёРІ РґР°РЅРЅС‹С… РіРёСЃС‚РѕРіСЂР°РјРјС‹
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8
 /*void UBitmap::PrepareHistogram(UBHistogram &result,
 					int x, int y, int width, int height) const
 {
@@ -1550,12 +1554,12 @@ int UBitmap::CalcNumPixels(UColorT threshold) const
  }
 }   */
 
-// Вычисляет гистограмму яркостей по изображению в заданной области
-// result - указатель на возвращаемый массив данных гистограммы
-// Память должна быть выделена на заданное число элементов 'ressize'
-// Гистограмма вычисляется для первых N заданных яркостей пикселей в массиве result
-// для случая ubmY8, для заданных яркостей для случая ubmY32
-// Поддерживает режимы ubmY8, ubmY32
+// Р’С‹С‡РёСЃР»СЏРµС‚ РіРёСЃС‚РѕРіСЂР°РјРјСѓ СЏСЂРєРѕСЃС‚РµР№ РїРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЋ РІ Р·Р°РґР°РЅРЅРѕР№ РѕР±Р»Р°СЃС‚Рё
+// result - СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РІРѕР·РІСЂР°С‰Р°РµРјС‹Р№ РјР°СЃСЃРёРІ РґР°РЅРЅС‹С… РіРёСЃС‚РѕРіСЂР°РјРјС‹
+// РџР°РјСЏС‚СЊ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РІС‹РґРµР»РµРЅР° РЅР° Р·Р°РґР°РЅРЅРѕРµ С‡РёСЃР»Рѕ СЌР»РµРјРµРЅС‚РѕРІ 'ressize'
+// Р“РёСЃС‚РѕРіСЂР°РјРјР° РІС‹С‡РёСЃР»СЏРµС‚СЃСЏ РґР»СЏ РїРµСЂРІС‹С… N Р·Р°РґР°РЅРЅС‹С… СЏСЂРєРѕСЃС‚РµР№ РїРёРєСЃРµР»РµР№ РІ РјР°СЃСЃРёРІРµ result
+// РґР»СЏ СЃР»СѓС‡Р°СЏ ubmY8, РґР»СЏ Р·Р°РґР°РЅРЅС‹С… СЏСЂРєРѕСЃС‚РµР№ РґР»СЏ СЃР»СѓС‡Р°СЏ ubmY32
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmY32
 /*void UBitmap::CalcHistogram(UBHistogram &result,
                                    int x, int y, int width, int height) const
 {
@@ -1626,7 +1630,7 @@ int UBitmap::CalcNumPixels(UColorT threshold) const
  result.NumPixels=width*height;
 }    */
 
-// Поддерживает режимы ubmRGB24
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmRGB24
 /*void UBitmap::CalcHistogram(UBHistogram &red, UBHistogram &green, UBHistogram &blue,
                     int x, int y, int width, int height) const
 {
@@ -1718,12 +1722,12 @@ int UBitmap::CalcNumPixels(UColorT threshold) const
 // -------------------------
 
 // -------------------------
-// Методы обработки изображения
+// РњРµС‚РѕРґС‹ РѕР±СЂР°Р±РѕС‚РєРё РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 // -------------------------
-// Прорежение изображения
-// Сохраняет каждый n-ый столбец изображения по горизонтали
-// и каждую m-ю строку по вертикали
-// Если 'target' != 0 то результат операции сохраняется в него
+// РџСЂРѕСЂРµР¶РµРЅРёРµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+// РЎРѕС…СЂР°РЅСЏРµС‚ РєР°Р¶РґС‹Р№ n-С‹Р№ СЃС‚РѕР»Р±РµС† РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё
+// Рё РєР°Р¶РґСѓСЋ m-СЋ СЃС‚СЂРѕРєСѓ РїРѕ РІРµСЂС‚РёРєР°Р»Рё
+// Р•СЃР»Рё 'target' != 0 С‚Рѕ СЂРµР·СѓР»СЊС‚Р°С‚ РѕРїРµСЂР°С†РёРё СЃРѕС…СЂР°РЅСЏРµС‚СЃСЏ РІ РЅРµРіРѕ
 void UBitmap::Reduce(int n, int m, UBitmap *target)
 {
  if(n==0 || m==0)
@@ -1825,15 +1829,15 @@ void UBitmap::Reduce(int n, int m, UBitmap *target)
  }
 }
 
-// Отражение по вертикали
-// Если 'target' != 0 то результат операции сохраняется в него
-// и цветовая модель 'target' замещается моделью источника
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// РћС‚СЂР°Р¶РµРЅРёРµ РїРѕ РІРµСЂС‚РёРєР°Р»Рё
+// Р•СЃР»Рё 'target' != 0 С‚Рѕ СЂРµР·СѓР»СЊС‚Р°С‚ РѕРїРµСЂР°С†РёРё СЃРѕС…СЂР°РЅСЏРµС‚СЃСЏ РІ РЅРµРіРѕ
+// Рё С†РІРµС‚РѕРІР°СЏ РјРѕРґРµР»СЊ 'target' Р·Р°РјРµС‰Р°РµС‚СЃСЏ РјРѕРґРµР»СЊСЋ РёСЃС‚РѕС‡РЅРёРєР°
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::ReflectionX(void)
 {
  int i;
- UBColor *buf; // буферная строка
- UBColor *beg, *fin; // указатели на начало и конец изображения
+ UBColor *buf; // Р±СѓС„РµСЂРЅР°СЏ СЃС‚СЂРѕРєР°
+ UBColor *beg, *fin; // СѓРєР°Р·Р°С‚РµР»Рё РЅР° РЅР°С‡Р°Р»Рѕ Рё РєРѕРЅРµС† РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
  int LineWidth=CalcLineByteLength(Width,ColorModel);
 
  buf=new UBColor[LineWidth];
@@ -1853,7 +1857,7 @@ void UBitmap::ReflectionX(void)
 void UBitmap::ReflectionX(UBitmap *target) const
 {
  int i;
- UBColor *beg, *fin; // указатели на начало и конец изображения
+ UBColor *beg, *fin; // СѓРєР°Р·Р°С‚РµР»Рё РЅР° РЅР°С‡Р°Р»Рѕ Рё РєРѕРЅРµС† РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
  int LineWidth=CalcLineByteLength(Width,ColorModel);
 
  target->SetRes(Width,Height,ColorModel);
@@ -1869,15 +1873,15 @@ void UBitmap::ReflectionX(UBitmap *target) const
   memcpy(fin,beg,LineWidth);
 }
 
-// Отражение по горизонтали
-// Если 'target' != 0 то результат операции сохраняется в него
-// и цветовая модель 'target' замещается моделью источника
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// РћС‚СЂР°Р¶РµРЅРёРµ РїРѕ РіРѕСЂРёР·РѕРЅС‚Р°Р»Рё
+// Р•СЃР»Рё 'target' != 0 С‚Рѕ СЂРµР·СѓР»СЊС‚Р°С‚ РѕРїРµСЂР°С†РёРё СЃРѕС…СЂР°РЅСЏРµС‚СЃСЏ РІ РЅРµРіРѕ
+// Рё С†РІРµС‚РѕРІР°СЏ РјРѕРґРµР»СЊ 'target' Р·Р°РјРµС‰Р°РµС‚СЃСЏ РјРѕРґРµР»СЊСЋ РёСЃС‚РѕС‡РЅРёРєР°
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::ReflectionY(void)
 {
  int i,j;
- UBColor *buf; // буферная строка
- UBColor *beg, *fin; // указатели на начало и конец изображения
+ UBColor *buf; // Р±СѓС„РµСЂРЅР°СЏ СЃС‚СЂРѕРєР°
+ UBColor *beg, *fin; // СѓРєР°Р·Р°С‚РµР»Рё РЅР° РЅР°С‡Р°Р»Рѕ Рё РєРѕРЅРµС† РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
  int LineWidth=CalcLineByteLength(Width,ColorModel);
 
  buf=new UBColor[PixelByteLength];
@@ -1900,7 +1904,7 @@ void UBitmap::ReflectionY(void)
 void UBitmap::ReflectionY(UBitmap *target) const
 {
  int i,j;
- UBColor *beg, *fin; // указатели на начало и конец изображения
+ UBColor *beg, *fin; // СѓРєР°Р·Р°С‚РµР»Рё РЅР° РЅР°С‡Р°Р»Рѕ Рё РєРѕРЅРµС† РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
  int LineWidth=CalcLineByteLength(Width,ColorModel);
 
  target->SetRes(Width,Height,ColorModel);
@@ -1918,16 +1922,16 @@ void UBitmap::ReflectionY(UBitmap *target) const
 }
 
 
-// Сдвигает изображение в требуемую сторону на 'pixels' пикселей
-// Направление определяется 'direction'
+// РЎРґРІРёРіР°РµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІ С‚СЂРµР±СѓРµРјСѓСЋ СЃС‚РѕСЂРѕРЅСѓ РЅР° 'pixels' РїРёРєСЃРµР»РµР№
+// РќР°РїСЂР°РІР»РµРЅРёРµ РѕРїСЂРµРґРµР»СЏРµС‚СЃСЏ 'direction'
 // 1 - Up
 // 2 - Down
 // 3 - Left
 // 4 - Right
-// При иных значениях 'direction' или отрицательных значениях pixels
-// метод не делает ничего
-// Пустое место заполняется цветом 'color'
-// Если 'target' != 0 то результат операции сохраняется в него
+// РџСЂРё РёРЅС‹С… Р·РЅР°С‡РµРЅРёСЏС… 'direction' РёР»Рё РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹С… Р·РЅР°С‡РµРЅРёСЏС… pixels
+// РјРµС‚РѕРґ РЅРµ РґРµР»Р°РµС‚ РЅРёС‡РµРіРѕ
+// РџСѓСЃС‚РѕРµ РјРµСЃС‚Рѕ Р·Р°РїРѕР»РЅСЏРµС‚СЃСЏ С†РІРµС‚РѕРј 'color'
+// Р•СЃР»Рё 'target' != 0 С‚Рѕ СЂРµР·СѓР»СЊС‚Р°С‚ РѕРїРµСЂР°С†РёРё СЃРѕС…СЂР°РЅСЏРµС‚СЃСЏ РІ РЅРµРіРѕ
 void UBitmap::Move(int pixels, int direction, UBMFillType filltype, UColorT color, UBitmap *target)
 {
  UBColor *pout;
@@ -2133,12 +2137,12 @@ void UBitmap::Move(int pixels, int direction, UBMFillType filltype, UColorT colo
   }
 }
 
-// Сдвигает изображение на 'x' пикселей по оси абсцисс и на 'y'
-// пикселей по оси ординат
-// положительные значения вызывают сдвиг вправо и вниз
-// отрицательные - влево и вверх
-// Пустое место заполняется цветом 'color'
-// Если 'target' != 0 то результат операции сохраняется в него
+// РЎРґРІРёРіР°РµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РЅР° 'x' РїРёРєСЃРµР»РµР№ РїРѕ РѕСЃРё Р°Р±СЃС†РёСЃСЃ Рё РЅР° 'y'
+// РїРёРєСЃРµР»РµР№ РїРѕ РѕСЃРё РѕСЂРґРёРЅР°С‚
+// РїРѕР»РѕР¶РёС‚РµР»СЊРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ РІС‹Р·С‹РІР°СЋС‚ СЃРґРІРёРі РІРїСЂР°РІРѕ Рё РІРЅРёР·
+// РѕС‚СЂРёС†Р°С‚РµР»СЊРЅС‹Рµ - РІР»РµРІРѕ Рё РІРІРµСЂС…
+// РџСѓСЃС‚РѕРµ РјРµСЃС‚Рѕ Р·Р°РїРѕР»РЅСЏРµС‚СЃСЏ С†РІРµС‚РѕРј 'color'
+// Р•СЃР»Рё 'target' != 0 С‚Рѕ СЂРµР·СѓР»СЊС‚Р°С‚ РѕРїРµСЂР°С†РёРё СЃРѕС…СЂР°РЅСЏРµС‚СЃСЏ РІ РЅРµРіРѕ
 void UBitmap::MoveXY(int x, int y, UBMFillType filltype, UColorT color, UBitmap *target)
 {
  if(target)
@@ -2167,12 +2171,12 @@ void UBitmap::MoveXY(int x, int y, UBMFillType filltype, UColorT color, UBitmap 
  }
 }
 
-// Изменяет размер канвы, сохраняя нетронутым изображение
-// Если изображение не помещается целиком в новую канву,
-// то оно усекается
-// Свободное место заполняется цветом 'color'
-// Если 'target' != 0 то результат операции сохраняется в него
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// РР·РјРµРЅСЏРµС‚ СЂР°Р·РјРµСЂ РєР°РЅРІС‹, СЃРѕС…СЂР°РЅСЏСЏ РЅРµС‚СЂРѕРЅСѓС‚С‹Рј РёР·РѕР±СЂР°Р¶РµРЅРёРµ
+// Р•СЃР»Рё РёР·РѕР±СЂР°Р¶РµРЅРёРµ РЅРµ РїРѕРјРµС‰Р°РµС‚СЃСЏ С†РµР»РёРєРѕРј РІ РЅРѕРІСѓСЋ РєР°РЅРІСѓ,
+// С‚Рѕ РѕРЅРѕ СѓСЃРµРєР°РµС‚СЃСЏ
+// РЎРІРѕР±РѕРґРЅРѕРµ РјРµСЃС‚Рѕ Р·Р°РїРѕР»РЅСЏРµС‚СЃСЏ С†РІРµС‚РѕРј 'color'
+// Р•СЃР»Рё 'target' != 0 С‚Рѕ СЂРµР·СѓР»СЊС‚Р°С‚ РѕРїРµСЂР°С†РёРё СЃРѕС…СЂР°РЅСЏРµС‚СЃСЏ РІ РЅРµРіРѕ
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::ResizeCanvas(int top, int left, int right, int bottom,
                             UColorT color, UBitmap *target)
 {
@@ -2180,13 +2184,13 @@ void UBitmap::ResizeCanvas(int top, int left, int right, int bottom,
  UBColor *line;
  int i,j;
 
- // Координаты остающейся части исходного изображения
+ // РљРѕРѕСЂРґРёРЅР°С‚С‹ РѕСЃС‚Р°СЋС‰РµР№СЃСЏ С‡Р°СЃС‚Рё РёСЃС…РѕРґРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
  int live_left, live_top, live_width, live_height;
 
- // Координаты начала исходного изображения в новой канве
+ // РљРѕРѕСЂРґРёРЅР°С‚С‹ РЅР°С‡Р°Р»Р° РёСЃС…РѕРґРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РІ РЅРѕРІРѕР№ РєР°РЅРІРµ
  int start_left, start_top;
 
- // Новое разрешение изображения
+ // РќРѕРІРѕРµ СЂР°Р·СЂРµС€РµРЅРёРµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
  int nWidth,nHeight;
 
  if(!top && !left && !right && !bottom)
@@ -2225,18 +2229,18 @@ void UBitmap::ResizeCanvas(int top, int left, int right, int bottom,
      return;
   }
 
-  // Вычисляем координаты остатка исходного изображения
+  // Р’С‹С‡РёСЃР»СЏРµРј РєРѕРѕСЂРґРёРЅР°С‚С‹ РѕСЃС‚Р°С‚РєР° РёСЃС…РѕРґРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
  live_left=(left>0)?0:-left;
  live_top=(top>0)?0:-top;
  live_width=Width-live_left-((right>0)?0:-right);
  live_height=Height-live_top-((bottom>0)?0:-bottom);
 
- // Вычисляем координаты начала исходного изображения в новой канве
+ // Р’С‹С‡РёСЃР»СЏРµРј РєРѕРѕСЂРґРёРЅР°С‚С‹ РЅР°С‡Р°Р»Р° РёСЃС…РѕРґРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РІ РЅРѕРІРѕР№ РєР°РЅРІРµ
  start_left=(left>0)?left:0;
  start_top=(top>0)?top:0;
 
 
- // Определяем выходной буфер
+ // РћРїСЂРµРґРµР»СЏРµРј РІС‹С…РѕРґРЅРѕР№ Р±СѓС„РµСЂ
  if(target)
   {
    target->SetRes(nWidth,nHeight);
@@ -2250,7 +2254,7 @@ void UBitmap::ResizeCanvas(int top, int left, int right, int bottom,
  int ByteLineLength=CalcLineByteLength(Width,ColorModel);
  int BytePixelLength=nByteLineLength/nWidth;
 
- // Источник заполнения пустот
+ // РСЃС‚РѕС‡РЅРёРє Р·Р°РїРѕР»РЅРµРЅРёСЏ РїСѓСЃС‚РѕС‚
  line=new UBColor[nByteLineLength];
 
  UBColor *pline=line;
@@ -2276,20 +2280,20 @@ void UBitmap::ResizeCanvas(int top, int left, int right, int bottom,
   *reinterpret_cast<unsigned int*>(pline)=color.c;
  break;
  }
- // Заполнение верхней пустоты
+ // Р—Р°РїРѕР»РЅРµРЅРёРµ РІРµСЂС…РЅРµР№ РїСѓСЃС‚РѕС‚С‹
  for(j=0;j<start_top;j++)
   {
    memcpy(pout,line,nByteLineLength);
    pout+=nByteLineLength;
   }
 
- // Перенос остатка исходного изображения в новый буфер
+ // РџРµСЂРµРЅРѕСЃ РѕСЃС‚Р°С‚РєР° РёСЃС…РѕРґРЅРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РІ РЅРѕРІС‹Р№ Р±СѓС„РµСЂ
  j=start_top;
  for(i=live_top;i<live_top+live_height;i++,j++)
  {
-  memcpy(pout,line,start_left*BytePixelLength);// Заполнение пустот
+  memcpy(pout,line,start_left*BytePixelLength);// Р—Р°РїРѕР»РЅРµРЅРёРµ РїСѓСЃС‚РѕС‚
   memcpy(pout+start_left*BytePixelLength,Data+i*ByteLineLength+live_left*BytePixelLength,live_width*BytePixelLength);
-  memcpy(pout+(start_left+live_width)*BytePixelLength, // Заполнение пустот
+  memcpy(pout+(start_left+live_width)*BytePixelLength, // Р—Р°РїРѕР»РЅРµРЅРёРµ РїСѓСЃС‚РѕС‚
                 line,(nWidth-live_width-start_left)*BytePixelLength);
   pout+=nByteLineLength;
  }
@@ -2305,16 +2309,16 @@ void UBitmap::ResizeCanvas(int top, int left, int right, int bottom,
   AttachBuffer(nWidth,nHeight,out,ColorModel);
 }
 
-// Вставляет горизонтальную полосу толщиной 'thickness'
-// начиная с позиции с верхней y-координатой
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// Р’СЃС‚Р°РІР»СЏРµС‚ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅСѓСЋ РїРѕР»РѕСЃСѓ С‚РѕР»С‰РёРЅРѕР№ 'thickness'
+// РЅР°С‡РёРЅР°СЏ СЃ РїРѕР·РёС†РёРё СЃ РІРµСЂС…РЅРµР№ y-РєРѕРѕСЂРґРёРЅР°С‚РѕР№
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::InsertHorLine(int y, int thickness, UColorT color, UBitmap *target)
 {
  if(thickness < 0 || y < 0 || y >= Height)
   return;
 
- int LineByteLength=CalcLineByteLength(Width,ColorModel);
- int thicksize=thickness*LineByteLength;
+ int line_byte_length=CalcLineByteLength(Width,ColorModel);
+ int thicksize=thickness*line_byte_length;
  UBColor *p=0;
  unsigned *p2=0;
 
@@ -2380,9 +2384,9 @@ void UBitmap::InsertHorLine(int y, int thickness, UColorT color, UBitmap *target
  }
 }
 
-// Удаляет горизонтальную полосу толщиной 'thickness'
-// начиная с позиции с верхней y-координатой
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// РЈРґР°Р»СЏРµС‚ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅСѓСЋ РїРѕР»РѕСЃСѓ С‚РѕР»С‰РёРЅРѕР№ 'thickness'
+// РЅР°С‡РёРЅР°СЏ СЃ РїРѕР·РёС†РёРё СЃ РІРµСЂС…РЅРµР№ y-РєРѕРѕСЂРґРёРЅР°С‚РѕР№
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::RemoveHorLine(int y, int thickness, UBitmap *target)
 {
  if(thickness < 0 || y < 0 || y >= Height || Height-thickness<0)
@@ -2391,7 +2395,7 @@ void UBitmap::RemoveHorLine(int y, int thickness, UBitmap *target)
  if(y+thickness >= Height)
   thickness=Height-y;
 
- int LineByteLength=CalcLineByteLength(Width,ColorModel);
+ int line_byte_length=CalcLineByteLength(Width,ColorModel);
 
  if(target)
   {
@@ -2402,9 +2406,9 @@ void UBitmap::RemoveHorLine(int y, int thickness, UBitmap *target)
     }
 
    target->SetRes(Width,Height-thickness,ColorModel);
-   memcpy(target->Data,Data,y*LineByteLength);
-   memcpy(target->Data+y*LineByteLength,Data+(y+thickness)*LineByteLength,
-										   (Height-y-thickness)*LineByteLength);
+   memcpy(target->Data,Data,y*line_byte_length);
+   memcpy(target->Data+y*line_byte_length,Data+(y+thickness)*line_byte_length,
+										   (Height-y-thickness)*line_byte_length);
   }
  else
   {
@@ -2414,17 +2418,17 @@ void UBitmap::RemoveHorLine(int y, int thickness, UBitmap *target)
 	 return;
 	}
 
-   memmove(Data+y*LineByteLength, Data+(y+thickness)*LineByteLength,
-								   (Height-y-thickness)*LineByteLength);
+   memmove(Data+y*line_byte_length, Data+(y+thickness)*line_byte_length,
+								   (Height-y-thickness)*line_byte_length);
    Height-=thickness;
    ByteLength=Height*LineByteLength;
    Length=Width*Height;
   }
 }
 
-// Вставляет вертикальную полосу толщиной 'thickness'
-// начиная с позиции с левой x-координатой
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// Р’СЃС‚Р°РІР»СЏРµС‚ РІРµСЂС‚РёРєР°Р»СЊРЅСѓСЋ РїРѕР»РѕСЃСѓ С‚РѕР»С‰РёРЅРѕР№ 'thickness'
+// РЅР°С‡РёРЅР°СЏ СЃ РїРѕР·РёС†РёРё СЃ Р»РµРІРѕР№ x-РєРѕРѕСЂРґРёРЅР°С‚РѕР№
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::InsertVertLine(int x, int thickness, UColorT color, UBitmap *target)
 {
  int height;
@@ -2433,11 +2437,11 @@ void UBitmap::InsertVertLine(int x, int thickness, UColorT color, UBitmap *targe
  if(thickness < 0 || x < 0 || x >= Width)
   return;
 
- int LineByteLength=CalcLineByteLength(Width,ColorModel);
+ int line_byte_length=CalcLineByteLength(Width,ColorModel);
  int nLineByteLength=CalcLineByteLength(Width+thickness,ColorModel);
 // if(nLineByteLength % 2)
 //  ++nLineByteLength;
- int PixelByteLength=LineByteLength/Width;
+ int pixel_byte_length=line_byte_length/Width;
 
  if(target)
   {
@@ -2445,13 +2449,13 @@ void UBitmap::InsertVertLine(int x, int thickness, UColorT color, UBitmap *targe
 
    p=Data; pend=Data+ByteLength;
    p2=target->Data;
-   for(;p<pend;p+=LineByteLength,p2+=nLineByteLength)
+   for(;p<pend;p+=line_byte_length,p2+=nLineByteLength)
     {
-     memcpy(p2,p,x*PixelByteLength);
-     memcpy(p2+(x+thickness)*PixelByteLength,p+x*PixelByteLength,(Width-x)*PixelByteLength);
+     memcpy(p2,p,x*pixel_byte_length);
+     memcpy(p2+(x+thickness)*pixel_byte_length,p+x*pixel_byte_length,(Width-x)*pixel_byte_length);
     }
 
-   p=p2=target->Data+x*PixelByteLength;
+   p=p2=target->Data+x*pixel_byte_length;
    height=target->Height;
   }
  else
@@ -2459,9 +2463,9 @@ void UBitmap::InsertVertLine(int x, int thickness, UColorT color, UBitmap *targe
    MemoryLength=nLineByteLength*Height;
    out=p2=new UBColor[MemoryLength];
    p=Data; pend=Data+ByteLength;
-   for(;p<pend;p+=LineByteLength,p2+=nLineByteLength)
+   for(;p<pend;p+=line_byte_length,p2+=nLineByteLength)
     {
-     memcpy(p2,p,x*PixelByteLength);
+     memcpy(p2,p,x*pixel_byte_length);
      memcpy(p2+(x+thickness)*PixelByteLength,p+x*PixelByteLength,(Width-x)*PixelByteLength);
     }
    delete []Data;
@@ -2475,7 +2479,7 @@ void UBitmap::InsertVertLine(int x, int thickness, UColorT color, UBitmap *targe
    p=p2=Data+x*PixelByteLength;
   }
 
- // Заполняем полосу цветом
+ // Р—Р°РїРѕР»РЅСЏРµРј РїРѕР»РѕСЃСѓ С†РІРµС‚РѕРј
  switch(ColorModel)
  {
  case ubmRGB24:
@@ -2531,9 +2535,9 @@ void UBitmap::InsertVertLine(int x, int thickness, UColorT color, UBitmap *targe
  }
 }
 
-// Удаляет вертикальную полосу толщиной 'thickness'
-// начиная с позиции с левой x-координатой
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// РЈРґР°Р»СЏРµС‚ РІРµСЂС‚РёРєР°Р»СЊРЅСѓСЋ РїРѕР»РѕСЃСѓ С‚РѕР»С‰РёРЅРѕР№ 'thickness'
+// РЅР°С‡РёРЅР°СЏ СЃ РїРѕР·РёС†РёРё СЃ Р»РµРІРѕР№ x-РєРѕРѕСЂРґРёРЅР°С‚РѕР№
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::RemoveVertLine(int x, int thickness, UBitmap *target)
 {
  UBColor *p, *pend, *p2;
@@ -2544,9 +2548,9 @@ void UBitmap::RemoveVertLine(int x, int thickness, UBitmap *target)
  if(x+thickness >= Width)
   thickness=Width-x;
 
- int LineByteLength=CalcLineByteLength(Width,ColorModel);
+ int line_byte_length=CalcLineByteLength(Width,ColorModel);
  int nLineByteLength=CalcLineByteLength(Width-thickness,ColorModel);
- int PixelByteLength=LineByteLength/Width;
+ int pixel_byte_length=line_byte_length/Width;
 
  if(target)
   {
@@ -2554,18 +2558,18 @@ void UBitmap::RemoveVertLine(int x, int thickness, UBitmap *target)
 
    p=Data; pend=Data+ByteLength;
    p2=target->Data;
-   for(;p<pend;p+=LineByteLength,p2+=(Width-thickness)*PixelByteLength)
+   for(;p<pend;p+=line_byte_length,p2+=(Width-thickness)*pixel_byte_length)
     {
-     memcpy(p2,p,x*PixelByteLength);
-     memcpy(p2+x*PixelByteLength,p+(x+thickness)*PixelByteLength,(Width-x-thickness)*PixelByteLength);
+     memcpy(p2,p,x*pixel_byte_length);
+     memcpy(p2+x*pixel_byte_length,p+(x+thickness)*pixel_byte_length,(Width-x-thickness)*pixel_byte_length);
     }
   }
  else
   {
-   p=Data+x*PixelByteLength; pend=Data+ByteLength;
-   p2=Data+(x+thickness)*PixelByteLength;
-   for(;p2<pend;p+=(Width-thickness)*PixelByteLength,p2+=LineByteLength)
-    memmove(p,p2,(Width-thickness)*PixelByteLength);
+   p=Data+x*pixel_byte_length; pend=Data+ByteLength;
+   p2=Data+(x+thickness)*pixel_byte_length;
+   for(;p2<pend;p+=(Width-thickness)*pixel_byte_length,p2+=line_byte_length)
+    memmove(p,p2,(Width-thickness)*pixel_byte_length);
 
    Width-=thickness;
    Length=Width*Height;
@@ -2573,9 +2577,9 @@ void UBitmap::RemoveVertLine(int x, int thickness, UBitmap *target)
   }
 }
 
-// Контрастирование. Производит пересчёт значений яркости в масштаб 0 - 255.
-// Запись результата производится в target
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// РљРѕРЅС‚СЂР°СЃС‚РёСЂРѕРІР°РЅРёРµ. РџСЂРѕРёР·РІРѕРґРёС‚ РїРµСЂРµСЃС‡С‘С‚ Р·РЅР°С‡РµРЅРёР№ СЏСЂРєРѕСЃС‚Рё РІ РјР°СЃС€С‚Р°Р± 0 - 255.
+// Р—Р°РїРёСЃСЊ СЂРµР·СѓР»СЊС‚Р°С‚Р° РїСЂРѕРёР·РІРѕРґРёС‚СЃСЏ РІ target
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::Contrasting(UBitmap *target)
 {
  switch(ColorModel)
@@ -2594,12 +2598,12 @@ void UBitmap::Contrasting(UBitmap *target)
  }
 }
 
-// Контрастирование. Производит пересчёт значений яркости в масштаб minb - maxb.
-// Запись результата производится в target
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// РљРѕРЅС‚СЂР°СЃС‚РёСЂРѕРІР°РЅРёРµ. РџСЂРѕРёР·РІРѕРґРёС‚ РїРµСЂРµСЃС‡С‘С‚ Р·РЅР°С‡РµРЅРёР№ СЏСЂРєРѕСЃС‚Рё РІ РјР°СЃС€С‚Р°Р± minb - maxb.
+// Р—Р°РїРёСЃСЊ СЂРµР·СѓР»СЊС‚Р°С‚Р° РїСЂРѕРёР·РІРѕРґРёС‚СЃСЏ РІ target
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::Contrasting(UColorT minb, UColorT maxb, UBitmap *target)
 {
- UColorT minf, maxf; // Минимум и максимум освщённости
+ UColorT minf, maxf; // РњРёРЅРёРјСѓРј Рё РјР°РєСЃРёРјСѓРј РѕСЃРІС‰С‘РЅРЅРѕСЃС‚Рё
  UBColor *out=0,*pout=0,*pdata=0;
  unsigned int dif_b,dif_c;
 
@@ -2659,12 +2663,12 @@ void UBitmap::Contrasting(UColorT minb, UColorT maxb, UBitmap *target)
 }
 
 
-// Контрастирование в заданной области. Производит пересчёт значений яркости в масштаб minb - maxb.
-// Если 'target' != 0 то результат операции сохраняется в него
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// РљРѕРЅС‚СЂР°СЃС‚РёСЂРѕРІР°РЅРёРµ РІ Р·Р°РґР°РЅРЅРѕР№ РѕР±Р»Р°СЃС‚Рё. РџСЂРѕРёР·РІРѕРґРёС‚ РїРµСЂРµСЃС‡С‘С‚ Р·РЅР°С‡РµРЅРёР№ СЏСЂРєРѕСЃС‚Рё РІ РјР°СЃС€С‚Р°Р± minb - maxb.
+// Р•СЃР»Рё 'target' != 0 С‚Рѕ СЂРµР·СѓР»СЊС‚Р°С‚ РѕРїРµСЂР°С†РёРё СЃРѕС…СЂР°РЅСЏРµС‚СЃСЏ РІ РЅРµРіРѕ
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::Contrasting(UBRect rect, UColorT minb, UColorT maxb, UColorT threshold, UBitmap *target)
 {
- UColorT minf, maxf; // Минимум и максимум освещённости
+ UColorT minf, maxf; // РњРёРЅРёРјСѓРј Рё РјР°РєСЃРёРјСѓРј РѕСЃРІРµС‰С‘РЅРЅРѕСЃС‚Рё
  UBColor *out=0,*pout=0,*pdata=0;
  unsigned int dif_b,dif_c;
 
@@ -2762,11 +2766,11 @@ void UBitmap::Contrasting(UBRect rect, UColorT minb, UColorT maxb, UColorT thres
  }
 }
 
-// Производит бинаризацию изображения с порогом threshold
-// Если 'target' != 0 то результат операции сохраняется в него
-// Пиксели с яркостями ниже порога устанавливаются равными 'minval'
-// Пиксели с яркостями выше порога устанавливаются равными 'maxval'
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// РџСЂРѕРёР·РІРѕРґРёС‚ Р±РёРЅР°СЂРёР·Р°С†РёСЋ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ СЃ РїРѕСЂРѕРіРѕРј threshold
+// Р•СЃР»Рё 'target' != 0 С‚Рѕ СЂРµР·СѓР»СЊС‚Р°С‚ РѕРїРµСЂР°С†РёРё СЃРѕС…СЂР°РЅСЏРµС‚СЃСЏ РІ РЅРµРіРѕ
+// РџРёРєСЃРµР»Рё СЃ СЏСЂРєРѕСЃС‚СЏРјРё РЅРёР¶Рµ РїРѕСЂРѕРіР° СѓСЃС‚Р°РЅР°РІР»РёРІР°СЋС‚СЃСЏ СЂР°РІРЅС‹РјРё 'minval'
+// РџРёРєСЃРµР»Рё СЃ СЏСЂРєРѕСЃС‚СЏРјРё РІС‹С€Рµ РїРѕСЂРѕРіР° СѓСЃС‚Р°РЅР°РІР»РёРІР°СЋС‚СЃСЏ СЂР°РІРЅС‹РјРё 'maxval'
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::Binarization(UColorT threshold, UColorT minval, UColorT maxval,
                           UBitmap *target)
 {
@@ -2807,23 +2811,23 @@ void UBitmap::Binarization(UColorT threshold, UColorT minval, UColorT maxval,
 }
 
 
-// Производит автоматическую бинаризацию изображения по
-// порогу, представляющему собой средневзвешенную яркость изображения
-// Если 'target' != 0 то результат операции сохраняется в него
-// Пиксели с яркостями ниже порога устанавливаются равными 'minval'
-// Пиксели с яркостями выше порога устанавливаются равными 'maxval'
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// РџСЂРѕРёР·РІРѕРґРёС‚ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєСѓСЋ Р±РёРЅР°СЂРёР·Р°С†РёСЋ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РїРѕ
+// РїРѕСЂРѕРіСѓ, РїСЂРµРґСЃС‚Р°РІР»СЏСЋС‰РµРјСѓ СЃРѕР±РѕР№ СЃСЂРµРґРЅРµРІР·РІРµС€РµРЅРЅСѓСЋ СЏСЂРєРѕСЃС‚СЊ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
+// Р•СЃР»Рё 'target' != 0 С‚Рѕ СЂРµР·СѓР»СЊС‚Р°С‚ РѕРїРµСЂР°С†РёРё СЃРѕС…СЂР°РЅСЏРµС‚СЃСЏ РІ РЅРµРіРѕ
+// РџРёРєСЃРµР»Рё СЃ СЏСЂРєРѕСЃС‚СЏРјРё РЅРёР¶Рµ РїРѕСЂРѕРіР° СѓСЃС‚Р°РЅР°РІР»РёРІР°СЋС‚СЃСЏ СЂР°РІРЅС‹РјРё 'minval'
+// РџРёРєСЃРµР»Рё СЃ СЏСЂРєРѕСЃС‚СЏРјРё РІС‹С€Рµ РїРѕСЂРѕРіР° СѓСЃС‚Р°РЅР°РІР»РёРІР°СЋС‚СЃСЏ СЂР°РІРЅС‹РјРё 'maxval'
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::Binarization(UColorT minval, UColorT maxval,
                             UBitmap *target)
 {
  Binarization(FindAverageColor(), minval, maxval, target);
 }
 
-// Инвертирует изображение
-// Если 'target' != 0 то результат операции сохраняется в него
-// Для всех цветовых моделей база устанавливается == 255
-// т.о. модель ubmY32 необходим нормировать в [0:255] перед инверсией
-// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+// РРЅРІРµСЂС‚РёСЂСѓРµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ
+// Р•СЃР»Рё 'target' != 0 С‚Рѕ СЂРµР·СѓР»СЊС‚Р°С‚ РѕРїРµСЂР°С†РёРё СЃРѕС…СЂР°РЅСЏРµС‚СЃСЏ РІ РЅРµРіРѕ
+// Р”Р»СЏ РІСЃРµС… С†РІРµС‚РѕРІС‹С… РјРѕРґРµР»РµР№ Р±Р°Р·Р° СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ == 255
+// С‚.Рѕ. РјРѕРґРµР»СЊ ubmY32 РЅРµРѕР±С…РѕРґРёРј РЅРѕСЂРјРёСЂРѕРІР°С‚СЊ РІ [0:255] РїРµСЂРµРґ РёРЅРІРµСЂСЃРёРµР№
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::Inverse(UBitmap *target)
 {
  UBColor *out,*data;
@@ -2859,8 +2863,8 @@ void UBitmap::Inverse(UBitmap *target)
   }
 }
 
-/// Меняет местами RGB каналы из RGB в BGR и наоборот.
-/// Поддерживает режимы ubmY8, ubmRGB24, ubmY32
+/// РњРµРЅСЏРµС‚ РјРµСЃС‚Р°РјРё RGB РєР°РЅР°Р»С‹ РёР· RGB РІ BGR Рё РЅР°РѕР±РѕСЂРѕС‚.
+/// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmY32
 void UBitmap::SwapRGBChannels(UBitmap *target)
 {
  UBColor *out,*data;
@@ -2939,10 +2943,10 @@ void UBitmap::SwapRGBChannels(UBitmap *target)
 
 
 // -----------------------
-// Перегруженные операторы
+// РџРµСЂРµРіСЂСѓР¶РµРЅРЅС‹Рµ РѕРїРµСЂР°С‚РѕСЂС‹
 // -----------------------
-// Оператор присваивания
-// Цветовая модель приемника всегда замещается моделью источника
+// РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
+// Р¦РІРµС‚РѕРІР°СЏ РјРѕРґРµР»СЊ РїСЂРёРµРјРЅРёРєР° РІСЃРµРіРґР° Р·Р°РјРµС‰Р°РµС‚СЃСЏ РјРѕРґРµР»СЊСЋ РёСЃС‚РѕС‡РЅРёРєР°
 UBitmap& UBitmap::operator = (const UBitmap &bitmap)
 {
  if(this == &bitmap)
@@ -2980,11 +2984,11 @@ UBitmap& UBitmap::operator = (const UBitmap &bitmap)
 // -----------------------
 
 
-// Скрытые методы
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹
 // -----------------------
-// Методы расчета параметров изображения
+// РњРµС‚РѕРґС‹ СЂР°СЃС‡РµС‚Р° РїР°СЂР°РјРµС‚СЂРѕРІ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 // -----------------------
-// Вычисляет длину строки изображения в байтах
+// Р’С‹С‡РёСЃР»СЏРµС‚ РґР»РёРЅСѓ СЃС‚СЂРѕРєРё РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РІ Р±Р°Р№С‚Р°С…
 int UBitmap::CalcLineByteLength(int width, UBMColorModel cmodel) const
 {
  switch (cmodel)
@@ -3060,13 +3064,13 @@ int UBitmap::CalcLineByteLength(int width, UBMColorModel cmodel) const
  }
 }
 
-// Возвращает длину буфера изображения в байтах, по заданным размерам и цветовой модели
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РґР»РёРЅСѓ Р±СѓС„РµСЂР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РІ Р±Р°Р№С‚Р°С…, РїРѕ Р·Р°РґР°РЅРЅС‹Рј СЂР°Р·РјРµСЂР°Рј Рё С†РІРµС‚РѕРІРѕР№ РјРѕРґРµР»Рё
 int UBitmap::CalcByteLength(int width, int height, UBMColorModel cmodel) const
 {
  return CalcLineByteLength(width,cmodel)*height;
 }
 
-// Расчитывает смещения каналов
+// Р Р°СЃС‡РёС‚С‹РІР°РµС‚ СЃРјРµС‰РµРЅРёСЏ РєР°РЅР°Р»РѕРІ
 void UBitmap::CalcChannelOffset(int width, int height, UBMColorModel cmodel, int *offset)
 {
  switch (cmodel)
@@ -3142,7 +3146,7 @@ void UBitmap::CalcChannelOffset(int width, int height, UBMColorModel cmodel, int
  }
 }
 
-// Создает новый буфер с заданными параметрами и инициализирует все внутренние переменные
+// РЎРѕР·РґР°РµС‚ РЅРѕРІС‹Р№ Р±СѓС„РµСЂ СЃ Р·Р°РґР°РЅРЅС‹РјРё РїР°СЂР°РјРµС‚СЂР°РјРё Рё РёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РІСЃРµ РІРЅСѓС‚СЂРµРЅРЅРёРµ РїРµСЂРµРјРµРЅРЅС‹Рµ
 void UBitmap::CreateData(int width, int height, UBMColorModel cmodel)
 {
  int bytelength=CalcByteLength(width,height,cmodel);
@@ -3173,7 +3177,7 @@ void UBitmap::CreateData(int width, int height, UBMColorModel cmodel)
 // -----------------------
 
 // -----------------------
-// Методы преобразования цветовых моделей
+// РњРµС‚РѕРґС‹ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ С†РІРµС‚РѕРІС‹С… РјРѕРґРµР»РµР№
 // -----------------------
 void UBitmap::ColorConvert(UBColor *source, UBMColorModel sourcecmodel,
 UBColor *dest, UBMColorModel destcmodel) const
@@ -4057,10 +4061,10 @@ void UBitmap::ColorConvertRGB24_HSI(UBColor *source, UBColor *dest) const
   if(tmax == b)
    res=static_cast<float>(60.0*(r-g)/(tmax-tmin)+240.0);
 
-  // преобразуем интервал [0-360] в [0-255]
+  // РїСЂРµРѕР±СЂР°Р·СѓРµРј РёРЅС‚РµСЂРІР°Р» [0-360] РІ [0-255]
   *dest++=static_cast<UBColor>(res*255.0/360.0);
 
-  unsigned l=(tmax+tmin)/2; // яркость
+  unsigned l=(tmax+tmin)/2; // СЏСЂРєРѕСЃС‚СЊ
 
   if(l == 0 || tmax == tmin)
    res=0;
@@ -4213,7 +4217,7 @@ void UBitmap::ColorConvertY32_Y8(UBColor *source, UBColor *dest) const
 {
  unsigned int* psource=reinterpret_cast<unsigned int*>(source);
 
- int shift=GetShift(); // Заглушка!! Возможно это не всегда так
+ int shift=GetShift(); // Р—Р°РіР»СѓС€РєР°!! Р’РѕР·РјРѕР¶РЅРѕ СЌС‚Рѕ РЅРµ РІСЃРµРіРґР° С‚Р°Рє
  for(int i=0;i<ByteLength;i+=4)
   *(dest++)=*(psource++)>>shift;
 }
@@ -5115,9 +5119,9 @@ void UBitmap::ColorConvertRGB96_F32(UBColor *source, UBColor *dest) const
 #endif
 // -----------------------
 
-// Методы UBPoint
+// РњРµС‚РѕРґС‹ UBPoint
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UBPoint::UBPoint(void)
 {
@@ -5142,9 +5146,9 @@ UBPoint::~UBPoint(void)
 // --------------------------
 
 // --------------------------
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 // --------------------------
-// Операторы сравнения
+// РћРїРµСЂР°С‚РѕСЂС‹ СЃСЂР°РІРЅРµРЅРёСЏ
 bool UBPoint::operator == (const UBPoint &value) const
 {
  return (X == value.X && Y == value.Y);
@@ -5158,7 +5162,7 @@ bool UBPoint::operator != (const UBPoint &value) const
 
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UBColorPoint::UBColorPoint(void)
 {
@@ -5170,9 +5174,9 @@ UBColorPoint::~UBColorPoint(void)
 // --------------------------
 
 
-// Методы UBRect
+// РњРµС‚РѕРґС‹ UBRect
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UBRect::UBRect(void)
 {
@@ -5200,7 +5204,7 @@ UBRect::~UBRect(void)
 // --------------------------
 
 // ---------------------
-// Методы доступа к данным
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј
 // ---------------------
 int UBRect::X1(void) const
 {
@@ -5265,7 +5269,7 @@ void UBRect::Height(int value)
 // ---------------------
 
 // ---------------------
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 // ---------------------
 bool UBRect::operator == (const UBRect &value) const
 {
@@ -5279,7 +5283,7 @@ bool UBRect::operator != (const UBRect &value) const
 }
 // ---------------------
 
-// Методы UBHistogramElement
+// РњРµС‚РѕРґС‹ UBHistogramElement
 
 UBHistogramElement::UBHistogramElement(void)
 {
@@ -5290,7 +5294,7 @@ UBHistogramElement::UBHistogramElement(void)
 }
 
 // ---------------------
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 // ---------------------
 bool UBHistogramElement::operator < (const UBHistogramElement &value) const
 {
@@ -5304,7 +5308,7 @@ bool UBHistogramElement::operator > (const UBHistogramElement &value) const
 
 extern "C" {
 
-// Функция сравнения двух элементов гистограммы
+// Р¤СѓРЅРєС†РёСЏ СЃСЂР°РІРЅРµРЅРёСЏ РґРІСѓС… СЌР»РµРјРµРЅС‚РѕРІ РіРёСЃС‚РѕРіСЂР°РјРјС‹
 int UBHistogramElementCompare(const void *e1, const void *e2)
 {
  if(*static_cast<const UBHistogramElement*>(e1) < *static_cast<const UBHistogramElement*>(e2))
@@ -5321,14 +5325,14 @@ int UBHistogramElementCompare(const void *e1, const void *e2)
 
 // class UBHistogram
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UBHistogram::UBHistogram(void)
 {
- // Данные гистограммы
+ // Р”Р°РЅРЅС‹Рµ РіРёСЃС‚РѕРіСЂР°РјРјС‹
  Data=0;
 
- // Размер гистограммы
+ // Р Р°Р·РјРµСЂ РіРёСЃС‚РѕРіСЂР°РјРјС‹
  RealSize=Size=0;
 
  NumPixels=1;
@@ -5354,9 +5358,9 @@ UBHistogram::~UBHistogram(void)
 // --------------------------
 
 // --------------------------
-// Методы управления параметрами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
-// Размер гистограммы
+// Р Р°Р·РјРµСЂ РіРёСЃС‚РѕРіСЂР°РјРјС‹
 int UBHistogram::GetSize(void) const
 {
  return Size;
@@ -5377,8 +5381,8 @@ bool UBHistogram::Resize(int value)
  return true;
 }
 
-// Возвращает состояние нормировки гистограммы
-// если true - то гистограмму следует рассматривать как нормированную в веществнных числах
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ РЅРѕСЂРјРёСЂРѕРІРєРё РіРёСЃС‚РѕРіСЂР°РјРјС‹
+// РµСЃР»Рё true - С‚Рѕ РіРёСЃС‚РѕРіСЂР°РјРјСѓ СЃР»РµРґСѓРµС‚ СЂР°СЃСЃРјР°С‚СЂРёРІР°С‚СЊ РєР°Рє РЅРѕСЂРјРёСЂРѕРІР°РЅРЅСѓСЋ РІ РІРµС‰РµСЃС‚РІРЅРЅС‹С… С‡РёСЃР»Р°С…
 bool UBHistogram::IsNormalized(void) const
 {
  return NormalizeFlag;
@@ -5386,21 +5390,21 @@ bool UBHistogram::IsNormalized(void) const
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј
 // --------------------------
-// Данные гистограммы
+// Р”Р°РЅРЅС‹Рµ РіРёСЃС‚РѕРіСЂР°РјРјС‹
 UBHistogramElement* UBHistogram::GetData(void) const
 {
  return Data;
 }
 
-// Реальный размер массива
+// Р РµР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ РјР°СЃСЃРёРІР°
 int UBHistogram::GetRealSize(void) const
 {
  return RealSize;
 }
 
-// Минимум и максимум гистограммы
+// РњРёРЅРёРјСѓРј Рё РјР°РєСЃРёРјСѓРј РіРёСЃС‚РѕРіСЂР°РјРјС‹
 UBHistogramElement UBHistogram::GetMin(void) const
 {
  return Min;
@@ -5423,8 +5427,8 @@ bool UBHistogram::SetMax(UBHistogramElement value)
  return true;
 }
 
-// Число элементов по которым строилась гистограмма
-// Минимальное возвращаемое значение = 1
+// Р§РёСЃР»Рѕ СЌР»РµРјРµРЅС‚РѕРІ РїРѕ РєРѕС‚РѕСЂС‹Рј СЃС‚СЂРѕРёР»Р°СЃСЊ РіРёСЃС‚РѕРіСЂР°РјРјР°
+// РњРёРЅРёРјР°Р»СЊРЅРѕРµ РІРѕР·РІСЂР°С‰Р°РµРјРѕРµ Р·РЅР°С‡РµРЅРёРµ = 1
 int UBHistogram::GetNumPixels(void) const
 {
  if(NumPixels <= 0)
@@ -5443,12 +5447,11 @@ bool UBHistogram::SetNumPixels(int value)
  return true;
 }
 // --------------------------
-
 // --------------------------
-// Методы счета
+// РњРµС‚РѕРґС‹ СЃС‡РµС‚Р°
 // --------------------------
-// Создает данные гистограммы в соответствии с цветовой моделью
-// Поддерживает режимы ubmY8, ubmRGB24, ubmRGB32
+// РЎРѕР·РґР°РµС‚ РґР°РЅРЅС‹Рµ РіРёСЃС‚РѕРіСЂР°РјРјС‹ РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ С†РІРµС‚РѕРІРѕР№ РјРѕРґРµР»СЊСЋ
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmRGB32
 bool UBHistogram::Prepare(UBMColorModel model)
 {
  switch(model)
@@ -5474,7 +5477,7 @@ bool UBHistogram::Prepare(const UBitmap &bmp)
  return Prepare(bmp.GetColorModel());
 }
 
-// Заполняет гистограмму заданным значением
+// Р—Р°РїРѕР»РЅСЏРµС‚ РіРёСЃС‚РѕРіСЂР°РјРјСѓ Р·Р°РґР°РЅРЅС‹Рј Р·РЅР°С‡РµРЅРёРµРј
 void UBHistogram::Fill(unsigned value)
 {
  if(NormalizeFlag == false)
@@ -5495,8 +5498,8 @@ void UBHistogram::Fill(float value)
  }
 }
 
-// Вычисление гистограммы по индексу цветового канала
-// Поддерживает режимы ubmY8, ubmRGB24, ubmRGB32
+// Р’С‹С‡РёСЃР»РµРЅРёРµ РіРёСЃС‚РѕРіСЂР°РјРјС‹ РїРѕ РёРЅРґРµРєСЃСѓ С†РІРµС‚РѕРІРѕРіРѕ РєР°РЅР°Р»Р°
+// РџРѕРґРґРµСЂР¶РёРІР°РµС‚ СЂРµР¶РёРјС‹ ubmY8, ubmRGB24, ubmRGB32
 void UBHistogram::Calc(const UBitmap &bmp, int x, int y, int width, int height, int channel)
 {
  if(!bmp.GetLength() || !bmp.GetData())
@@ -5673,9 +5676,9 @@ void UBHistogram::Calc(const UBitmap &bmp, const UBitmap &mask, int channel)
 }
 
 
-// Вычисление оценки интегрального распределения по существующей гистограмме
-// Автоматически вычисляет диапазон значений распределения
-// Если текущая гистограмма - нормированная, то распределение вычисляется нормированным
+// Р’С‹С‡РёСЃР»РµРЅРёРµ РѕС†РµРЅРєРё РёРЅС‚РµРіСЂР°Р»СЊРЅРѕРіРѕ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ РїРѕ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµР№ РіРёСЃС‚РѕРіСЂР°РјРјРµ
+// РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРё РІС‹С‡РёСЃР»СЏРµС‚ РґРёР°РїР°Р·РѕРЅ Р·РЅР°С‡РµРЅРёР№ СЂР°СЃРїСЂРµРґРµР»РµРЅРёСЏ
+// Р•СЃР»Рё С‚РµРєСѓС‰Р°СЏ РіРёСЃС‚РѕРіСЂР°РјРјР° - РЅРѕСЂРјРёСЂРѕРІР°РЅРЅР°СЏ, С‚Рѕ СЂР°СЃРїСЂРµРґРµР»РµРЅРёРµ РІС‹С‡РёСЃР»СЏРµС‚СЃСЏ РЅРѕСЂРјРёСЂРѕРІР°РЅРЅС‹Рј
 void UBHistogram::CalcCumulativeDistribution(UBHistogram &output)
 {
  UBHistogramElement *pin, *pout;
@@ -5723,7 +5726,7 @@ void UBHistogram::CalcCumulativeDistribution(UBHistogram &output)
 }
 
 
-// Меняет флаг нормировки и вычисляет значения гистограммы если 'process' == true
+// РњРµРЅСЏРµС‚ С„Р»Р°Рі РЅРѕСЂРјРёСЂРѕРІРєРё Рё РІС‹С‡РёСЃР»СЏРµС‚ Р·РЅР°С‡РµРЅРёСЏ РіРёСЃС‚РѕРіСЂР°РјРјС‹ РµСЃР»Рё 'process' == true
 bool UBHistogram::Normalize(bool value, bool process)
 {
  if(NormalizeFlag == value)
@@ -5741,7 +5744,7 @@ bool UBHistogram::Normalize(bool value, bool process)
  return true;
 }
 
-// Заполнение дырок в гистограмме интерполированными данными
+// Р—Р°РїРѕР»РЅРµРЅРёРµ РґС‹СЂРѕРє РІ РіРёСЃС‚РѕРіСЂР°РјРјРµ РёРЅС‚РµСЂРїРѕР»РёСЂРѕРІР°РЅРЅС‹РјРё РґР°РЅРЅС‹РјРё
 void UBHistogram::CalcZeroSmoothHistogram(UBHistogram &result, UBColor min, UBColor max)
 {
  if(!NumPixels || !Size)
@@ -5773,6 +5776,7 @@ void UBHistogram::CalcZeroSmoothHistogram(UBHistogram &result, UBColor min, UBCo
 	left_value=Data[min].Int;
    }
 
+   right_value=Data[max].Int; // Initialize to default value
    for(j=i;j<=max;j++)
 	if(Data[j].Int != 0)
     {
@@ -5784,9 +5788,9 @@ void UBHistogram::CalcZeroSmoothHistogram(UBHistogram &result, UBColor min, UBCo
    if(j >= max)
    {
     right=max;
-    right_value=Data[max].Int;
+	right_value=Data[max].Int;
    }
-   // Нашли левую и правую ненулевые границы дырки
+   // РќР°С€Р»Рё Р»РµРІСѓСЋ Рё РїСЂР°РІСѓСЋ РЅРµРЅСѓР»РµРІС‹Рµ РіСЂР°РЅРёС†С‹ РґС‹СЂРєРё
    for(j=left+1;j<=right-1;j++)
 	result[j].Int=abs(right_value-left_value)/2;
 
@@ -5795,7 +5799,7 @@ void UBHistogram::CalcZeroSmoothHistogram(UBHistogram &result, UBColor min, UBCo
 
  }
 
- // Квазинормировка
+ // РљРІР°Р·РёРЅРѕСЂРјРёСЂРѕРІРєР°
  unsigned numpixels=0;
  presult=result.Data;
  for(i=0;i<Size;i++)
@@ -5806,7 +5810,7 @@ void UBHistogram::CalcZeroSmoothHistogram(UBHistogram &result, UBColor min, UBCo
   presult->Int-=diff;
 }
 
-// Вычисление диапазона значений гистограммы
+// Р’С‹С‡РёСЃР»РµРЅРёРµ РґРёР°РїР°Р·РѕРЅР° Р·РЅР°С‡РµРЅРёР№ РіРёСЃС‚РѕРіСЂР°РјРјС‹
 void UBHistogram::CalcHistogramRange(void)
 {
  UBHistogramElement *pout;
@@ -5842,8 +5846,8 @@ void UBHistogram::CalcHistogramRange(void)
 
 }
 
-// Сортировка гистограммы по возрастанию значений Y
-// Если output != 0, то записывает результат в него
+// РЎРѕСЂС‚РёСЂРѕРІРєР° РіРёСЃС‚РѕРіСЂР°РјРјС‹ РїРѕ РІРѕР·СЂР°СЃС‚Р°РЅРёСЋ Р·РЅР°С‡РµРЅРёР№ Y
+// Р•СЃР»Рё output != 0, С‚Рѕ Р·Р°РїРёСЃС‹РІР°РµС‚ СЂРµР·СѓР»СЊС‚Р°С‚ РІ РЅРµРіРѕ
 void UBHistogram::Sort(UBHistogram *output)
 {
  UBHistogramElement *data=0;
@@ -5865,7 +5869,7 @@ void UBHistogram::Sort(UBHistogram *output)
 // --------------------------
 
 // --------------------------
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 // --------------------------
 UBHistogramElement& UBHistogram::operator [] (int index) const
 {
@@ -5932,6 +5936,10 @@ UBHistogram operator - (const UBHistogram &value1, const UBHistogram &value2)
 // --------------------------
 
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #endif
 

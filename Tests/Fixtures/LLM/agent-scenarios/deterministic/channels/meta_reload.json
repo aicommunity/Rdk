@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "id": "meta_reload",
+  "tier": "deterministic",
+  "suite": "channels",
+  "registry_profile": "core",
+  "user_text": "перечитай parameters.xml",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "reload_configuration_parameters",
+          "arguments": {}
+        }
+      ]
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": [
+      "reload_configuration_parameters"
+    ]
+  }
+}

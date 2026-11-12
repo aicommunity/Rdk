@@ -13,7 +13,6 @@ See file license.txt for more information
 #ifndef UBinaryEnvSerializeH
 #define UBinaryEnvSerializeH
 
-#include "UItemData.h"
 #include "../Serialize/USerStorageBinary.h"
 #include "UELockVar.h"
 
@@ -22,10 +21,6 @@ namespace RDK {
 // UBMColorModel
 //USerStorageBinary& operator << (USerStorageBinary& storage, UBMColorModel data);
 //USerStorageBinary& operator >> (USerStorageBinary& storage, UBMColorModel &data);
-
-// UItemData
-//RDK_LIB_TYPE USerStorageBinary& operator << (USerStorageBinary& storage, const UItemData &data);
-//RDK_LIB_TYPE USerStorageBinary& operator >> (USerStorageBinary& storage, UItemData &data);
 
 
 // UELockVar

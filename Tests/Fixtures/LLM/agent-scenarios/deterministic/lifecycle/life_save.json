@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "id": "life_save",
+  "tier": "deterministic",
+  "suite": "lifecycle",
+  "registry_profile": "core",
+  "user_text": "сохрани конфигурацию",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "save_configuration",
+          "arguments": {}
+        }
+      ]
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": [
+      "save_configuration",
+      "save_project"
+    ]
+  }
+}

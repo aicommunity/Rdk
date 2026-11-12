@@ -7,7 +7,7 @@
 namespace RDK {
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 MMatrixSize::MMatrixSize(void)
 {
@@ -52,7 +52,7 @@ MMatrixSize::MMatrixSize(const std::vector<int> &dims)
 // --------------------------
 
 // --------------------------
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 // --------------------------
 MMatrixSize& MMatrixSize::operator = (const MMatrixSize &copy)
 {
@@ -168,13 +168,13 @@ bool MMatrixSize::operator <= (const MMatrixSize &copy) const
 }
 
 
-// Возвращает размерность
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂР°Р·РјРµСЂРЅРѕСЃС‚СЊ
 int MMatrixSize::GetDimensions(void) const
 {
  return int(Dims.size());
 }
 
-/// Возвращает сырые данные размерности
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃС‹СЂС‹Рµ РґР°РЅРЅС‹Рµ СЂР°Р·РјРµСЂРЅРѕСЃС‚Рё
 const std::vector<int> MMatrixSize::GetDims(void) const
 {
  return Dims;
@@ -183,13 +183,13 @@ const std::vector<int> MMatrixSize::GetDims(void) const
 
 
 	 /*
-// Метод сравнивает матрицы по типу элементов
+// РњРµС‚РѕРґ СЃСЂР°РІРЅРёРІР°РµС‚ РјР°С‚СЂРёС†С‹ РїРѕ С‚РёРїСѓ СЌР»РµРјРµРЅС‚РѕРІ
 bool MMatrixBase::CompareLanguageType(const MMatrixBase &dt) const
 {
  return GetLanguageType() == dt.GetLanguageType();
 }    */
 
-/// Копирует данные в другую матрицу
+/// РљРѕРїРёСЂСѓРµС‚ РґР°РЅРЅС‹Рµ РІ РґСЂСѓРіСѓСЋ РјР°С‚СЂРёС†Сѓ
 bool MMatrixBase::CopyTo(MMatrixBase &dest) const
 {
  if(GetElementByteSize() != dest.GetElementByteSize())

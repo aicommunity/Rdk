@@ -2,6 +2,7 @@
 #define UCOMPONENT_FACTORY_CPP
 
 #include "UComponentFactory.h"
+#include "UStorage.h"
 
 namespace RDK
 {
@@ -13,7 +14,13 @@ namespace RDK
   if(Component)
   {
 //   Component->Default();
-   Component->SetClass(ClassId);
+   // КРИТИЧНО: Устанавливаем ClassId только если он еще не установлен или невалидный
+   // Это предотвратит перезапись правильного ClassId
+   UId current_class_id = Component->GetClass();
+   if(current_class_id == ForbiddenId || ClassId != ForbiddenId)
+   {
+    Component->SetClass(ClassId);
+   }
   }
  }
 
@@ -30,6 +37,9 @@ namespace RDK
 
   UEPtr<UContainer> obj = Component->New();
   obj->SetStorage(Storage);
+  // Устанавливаем Logger перед Default(), если Storage имеет Logger
+  if(Storage && Storage->GetLogger())
+   obj->SetLogger(Storage->GetLogger());
   obj->Default();
   Component->Copy(obj, Storage);
   return static_pointer_cast<UComponent>(obj);
@@ -42,6 +52,9 @@ namespace RDK
 
   UEPtr<UContainer> obj = Component->New();
   obj->SetStorage(Storage);
+  // Устанавливаем Logger перед Default(), если Storage имеет Logger
+  if(Storage && Storage->GetLogger())
+   obj->SetLogger(Storage->GetLogger());
   obj->Default();
   dynamic_pointer_cast<UContainer>(prototype)->Copy(obj, Storage);
   return static_pointer_cast<UComponent>(obj);
@@ -50,7 +63,27 @@ namespace RDK
  void UVirtualMethodFactory::ResetComponent(UEPtr<UComponent> component) const
  {
   if(Component)
-   Component->Copy(dynamic_pointer_cast<UContainer>(component), Component->GetStorage());
+  {
+   UEPtr<UContainer> target = dynamic_pointer_cast<UContainer>(component);
+   
+   // КРИТИЧНО: Сохраняем ClassId объекта-получателя перед копированием
+   UId target_class_id = target->GetClass();
+   
+   // КРИТИЧНО: Убеждаемся, что Component имеет правильный ClassId перед копированием
+   if(Component->GetClass() == ForbiddenId && ClassId != ForbiddenId)
+   {
+    Component->SetClass(ClassId);
+   }
+   
+   Component->Copy(target, Component->GetStorage());
+   
+   // КРИТИЧНО: Восстанавливаем ClassId объекта-получателя после копирования
+   // если он был валидным до копирования
+   if(target_class_id != ForbiddenId)
+   {
+    target->SetClass(target_class_id);
+   }
+  }
  }
 
  UEPtr<UContainer> UVirtualMethodFactory::GetComponent()
@@ -81,6 +114,9 @@ void UVirtualMethodFactory::FreeComponent()
   UEPtr<UComponent> obj = Method();
   dynamic_pointer_cast<UContainer>(obj)->Name = DefaultComponentName;
   obj->SetStorage(Storage);
+  // Устанавливаем Logger перед Default(), если Storage имеет Logger
+  if(Storage && Storage->GetLogger())
+   obj->SetLogger(Storage->GetLogger());
   obj->Default();
   return obj;
  }
@@ -89,6 +125,9 @@ void UVirtualMethodFactory::FreeComponent()
  {
   UEPtr<UContainer> obj = dynamic_cast<UContainer*>(Method());
   obj->SetStorage(Storage);
+  // Устанавливаем Logger перед Default(), если Storage имеет Logger
+  if(Storage && Storage->GetLogger())
+   obj->SetLogger(Storage->GetLogger());
   obj->Default();
   obj->Name = DefaultComponentName;
   dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj, Storage);

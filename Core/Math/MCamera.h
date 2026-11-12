@@ -11,178 +11,178 @@ namespace RDK {
 template<class T>
 class MCamera
 {
-private: // Данные камеры
-/// Матрица внешней калибровки
+private: // Р”Р°РЅРЅС‹Рµ РєР°РјРµСЂС‹
+/// РњР°С‚СЂРёС†Р° РІРЅРµС€РЅРµР№ РєР°Р»РёР±СЂРѕРІРєРё
 MMatrix<T,4,4> Ecc;
 
-/// Обратная матрица внешней калибровки
+/// РћР±СЂР°С‚РЅР°СЏ РјР°С‚СЂРёС†Р° РІРЅРµС€РЅРµР№ РєР°Р»РёР±СЂРѕРІРєРё
 MMatrix<T,4,4> InvEcc;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 MCamera(void);
 MCamera(const MCamera& copy);
 virtual ~MCamera(void);
 // --------------------------
 
-/// Управление матрицей внешней калибровки камеры
+/// РЈРїСЂР°РІР»РµРЅРёРµ РјР°С‚СЂРёС†РµР№ РІРЅРµС€РЅРµР№ РєР°Р»РёР±СЂРѕРІРєРё РєР°РјРµСЂС‹
 const MMatrix<T,4,4>& GetEcc(void) const;
 const MMatrix<T,4,4>& GetInvEcc(void) const;
 bool SetEcc(const MMatrix<T,4,4>& value);
 bool SetInvEcc(const MMatrix<T,4,4>& value);
 
-/// Преобразование точки в нормальной плоскости в реальную точку (учет дисторсии)
+/// РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ С‚РѕС‡РєРё РІ РЅРѕСЂРјР°Р»СЊРЅРѕР№ РїР»РѕСЃРєРѕСЃС‚Рё РІ СЂРµР°Р»СЊРЅСѓСЋ С‚РѕС‡РєСѓ (СѓС‡РµС‚ РґРёСЃС‚РѕСЂСЃРёРё)
 virtual MVector<T,3> CalcPixelPositionFromNormalPosition(const MVector<T,3> &point)=0;
 
-/// Вычисляет положение пикселя на кадре с учетом дисторсии, по положению пикселя без учета дисторсии
+/// Р’С‹С‡РёСЃР»СЏРµС‚ РїРѕР»РѕР¶РµРЅРёРµ РїРёРєСЃРµР»СЏ РЅР° РєР°РґСЂРµ СЃ СѓС‡РµС‚РѕРј РґРёСЃС‚РѕСЂСЃРёРё, РїРѕ РїРѕР»РѕР¶РµРЅРёСЋ РїРёРєСЃРµР»СЏ Р±РµР· СѓС‡РµС‚Р° РґРёСЃС‚РѕСЂСЃРёРё
 virtual MVector<T,3> CalcDistortPixelPosition(const MVector<T,3> &undistort_pixel)=0;
 
-/// Вычисляет положение пикселя на выпрямленном кадре, по положению пикселя на кадре с дисторсией
+/// Р’С‹С‡РёСЃР»СЏРµС‚ РїРѕР»РѕР¶РµРЅРёРµ РїРёРєСЃРµР»СЏ РЅР° РІС‹РїСЂСЏРјР»РµРЅРЅРѕРј РєР°РґСЂРµ, РїРѕ РїРѕР»РѕР¶РµРЅРёСЋ РїРёРєСЃРµР»СЏ РЅР° РєР°РґСЂРµ СЃ РґРёСЃС‚РѕСЂСЃРёРµР№
 virtual MVector<T,3> CalcUndistortPixelPosition(const MVector<T,3> &distort_pixel)=0;
 
-/// Вычисляет положение точки на кадре по положению точки в пространстве
+/// Р’С‹С‡РёСЃР»СЏРµС‚ РїРѕР»РѕР¶РµРЅРёРµ С‚РѕС‡РєРё РЅР° РєР°РґСЂРµ РїРѕ РїРѕР»РѕР¶РµРЅРёСЋ С‚РѕС‡РєРё РІ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРµ
 virtual MVector<T,3> CalcScreenBySpacePoint(const MVector<T,4> &space_point)=0;
 virtual MVector<T,3> CalcScreenBySpacePoint(const MVector<T,4> &space_point, int image_width, int image_height, bool &res)=0;
 virtual MVector<T,3> CalcScreenBySpacePointWODistortions(const MVector<T,4> &space_point)=0;
 virtual MVector<T,3> CalcScreenBySpacePointWODistortions(const MVector<T,4> &space_point, int image_width, int image_height, bool &res)=0;
 
-/// Вычисляет положение точки в пространстве по положению точки на кадре и заданному расстоянию
+/// Р’С‹С‡РёСЃР»СЏРµС‚ РїРѕР»РѕР¶РµРЅРёРµ С‚РѕС‡РєРё РІ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРµ РїРѕ РїРѕР»РѕР¶РµРЅРёСЋ С‚РѕС‡РєРё РЅР° РєР°РґСЂРµ Рё Р·Р°РґР°РЅРЅРѕРјСѓ СЂР°СЃСЃС‚РѕСЏРЅРёСЋ
 virtual MVector<T,4> CalcSpaceByScreenPoint(const MVector<T,3> &screen_point, T distance)=0;
 
-/// Вычисляет и возвращает метрическую длину отрезка по отрезку в пикселях при заданном расстоянии
+/// Р’С‹С‡РёСЃР»СЏРµС‚ Рё РІРѕР·РІСЂР°С‰Р°РµС‚ РјРµС‚СЂРёС‡РµСЃРєСѓСЋ РґР»РёРЅСѓ РѕС‚СЂРµР·РєР° РїРѕ РѕС‚СЂРµР·РєСѓ РІ РїРёРєСЃРµР»СЏС… РїСЂРё Р·Р°РґР°РЅРЅРѕРј СЂР°СЃСЃС‚РѕСЏРЅРёРё
 /// h=(y*l*d)/(f*ymax) || h=(x*l*d)/(f*xmax)
 virtual T CalcSpaceByScreenSegmentLength(const UBRect &screen_segment, T distance)=0;
 
-/// Вычисляет и возвращает расстояние до отрезка по отрезку в пикселях и заданных метрических размерах
+/// Р’С‹С‡РёСЃР»СЏРµС‚ Рё РІРѕР·РІСЂР°С‰Р°РµС‚ СЂР°СЃСЃС‚РѕСЏРЅРёРµ РґРѕ РѕС‚СЂРµР·РєР° РїРѕ РѕС‚СЂРµР·РєСѓ РІ РїРёРєСЃРµР»СЏС… Рё Р·Р°РґР°РЅРЅС‹С… РјРµС‚СЂРёС‡РµСЃРєРёС… СЂР°Р·РјРµСЂР°С…
 virtual T CalcSpaceByScreenSegmentDistance(const UBRect &screen_segment, T segment_length)=0;
 
-/// Преобразует 3D геометрию в 2D
+/// РџСЂРµРѕР±СЂР°Р·СѓРµС‚ 3D РіРµРѕРјРµС‚СЂРёСЋ РІ 2D
 virtual void Convert3Dto2DGeometry(const MGeometry<T,4> &geometry_3d, MGeometry<T,3> &geometry_2d);
 
-/// Преобразует 3D геометрию в 2D
-/// geometry_3d - N строк по 3 координаты точек
-/// geometry_2d - N строк по 2 координаты точек
+/// РџСЂРµРѕР±СЂР°Р·СѓРµС‚ 3D РіРµРѕРјРµС‚СЂРёСЋ РІ 2D
+/// geometry_3d - N СЃС‚СЂРѕРє РїРѕ 3 РєРѕРѕСЂРґРёРЅР°С‚С‹ С‚РѕС‡РµРє
+/// geometry_2d - N СЃС‚СЂРѕРє РїРѕ 2 РєРѕРѕСЂРґРёРЅР°С‚С‹ С‚РѕС‡РµРє
 virtual void Convert3Dto2DGeometry(const MDMatrix<T> &geometry_3d, MDMatrix<T> &geometry_2d);
 
-protected: // Скрытые методы
+protected: // РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹
 };
 
 
 
-// Стандартная модель камеры с произвольной дисторсией
+// РЎС‚Р°РЅРґР°СЂС‚РЅР°СЏ РјРѕРґРµР»СЊ РєР°РјРµСЂС‹ СЃ РїСЂРѕРёР·РІРѕР»СЊРЅРѕР№ РґРёСЃС‚РѕСЂСЃРёРµР№
 template<class T>
 class MCameraStandard: public MCamera<T>
 {
-private: // Данные
-/// Матрица внутренней калибровки
+private: // Р”Р°РЅРЅС‹Рµ
+/// РњР°С‚СЂРёС†Р° РІРЅСѓС‚СЂРµРЅРЅРµР№ РєР°Р»РёР±СЂРѕРІРєРё
 MMatrix<T,3,3> Icc;
 
-/// Обратная матрица внутренней калибровки
+/// РћР±СЂР°С‚РЅР°СЏ РјР°С‚СЂРёС†Р° РІРЅСѓС‚СЂРµРЅРЅРµР№ РєР°Р»РёР±СЂРѕРІРєРё
 MMatrix<T,3,3> InvIcc;
 
-// Модель дисторсии
-// 0 - Учета дисторсии нет
-// 1 - Модель OpenCV
-// 2 - Модель Artoolkit
-// 3 - Модель Цая (DistortionCoeff(0) = k1, DistortionCoeff(1) = f (фокусное расстояние в мм), DistortionCoeff(2) = s (маштабирующий коэффициент)
+// РњРѕРґРµР»СЊ РґРёСЃС‚РѕСЂСЃРёРё
+// 0 - РЈС‡РµС‚Р° РґРёСЃС‚РѕСЂСЃРёРё РЅРµС‚
+// 1 - РњРѕРґРµР»СЊ OpenCV
+// 2 - РњРѕРґРµР»СЊ Artoolkit
+// 3 - РњРѕРґРµР»СЊ Р¦Р°СЏ (DistortionCoeff(0) = k1, DistortionCoeff(1) = f (С„РѕРєСѓСЃРЅРѕРµ СЂР°СЃСЃС‚РѕСЏРЅРёРµ РІ РјРј), DistortionCoeff(2) = s (РјР°С€С‚Р°Р±РёСЂСѓСЋС‰РёР№ РєРѕСЌС„С„РёС†РёРµРЅС‚)
 int DistortionMode;
 
-/// Модель камеры
-/// 0 - обычная (pinhole)
+/// РњРѕРґРµР»СЊ РєР°РјРµСЂС‹
+/// 0 - РѕР±С‹С‡РЅР°СЏ (pinhole)
 /// 1 - fisheye (opencv)
 int CameraMode;
 
-/// К-ты дисторсии
+/// Рљ-С‚С‹ РґРёСЃС‚РѕСЂСЃРёРё
 MDVector<double> DistortionCoeff;
 
-/// Ширина изображения на котором проводилась калибровка
+/// РЁРёСЂРёРЅР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РЅР° РєРѕС‚РѕСЂРѕРј РїСЂРѕРІРѕРґРёР»Р°СЃСЊ РєР°Р»РёР±СЂРѕРІРєР°
 int CalibrationWidth;
 
-/// Высота изображения на котором проводилась калибровка
+/// Р’С‹СЃРѕС‚Р° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РЅР° РєРѕС‚РѕСЂРѕРј РїСЂРѕРІРѕРґРёР»Р°СЃСЊ РєР°Р»РёР±СЂРѕРІРєР°
 int CalibrationHeight;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 MCameraStandard(void);
 MCameraStandard(const MCameraStandard& copy);
 virtual ~MCameraStandard(void);
 // --------------------------
 
-/// Управление матрицей внутренней калибровки камеры
+/// РЈРїСЂР°РІР»РµРЅРёРµ РјР°С‚СЂРёС†РµР№ РІРЅСѓС‚СЂРµРЅРЅРµР№ РєР°Р»РёР±СЂРѕРІРєРё РєР°РјРµСЂС‹
 const MMatrix<T,3,3>& GetIcc(void) const;
 const MMatrix<T,3,3>& GetInvIcc(void) const;
 virtual bool SetIcc(const MMatrix<T,3,3>& value);
 virtual bool SetInvIcc(const MMatrix<T,3,3>& value);
 
-/// Модель дисторсии
+/// РњРѕРґРµР»СЊ РґРёСЃС‚РѕСЂСЃРёРё
 const int& GetDistortionMode(void) const;
 virtual bool SetDistortionMode(const int &value);
 
-/// Модель камеры
-/// 0 - обычная (pinhole)
+/// РњРѕРґРµР»СЊ РєР°РјРµСЂС‹
+/// 0 - РѕР±С‹С‡РЅР°СЏ (pinhole)
 /// 1 - fisheye (opencv)
 const int& GetCameraMode(void) const;
 virtual bool SetCameraMode(const int& value);
 
-/// К-ты дисторсии
+/// Рљ-С‚С‹ РґРёСЃС‚РѕСЂСЃРёРё
 const MDVector<T>& GetDistortionCoeff(void) const;
 virtual bool SetDistortionCoeff(const MDVector<T>& value);
 
-/// Ширина изображения на котором проводилась калибровка
+/// РЁРёСЂРёРЅР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РЅР° РєРѕС‚РѕСЂРѕРј РїСЂРѕРІРѕРґРёР»Р°СЃСЊ РєР°Р»РёР±СЂРѕРІРєР°
 const int& GetCalibrationWidth(void) const;
 virtual bool SetCalibrationWidth(const int& value);
 
-/// Высота изображения на котором проводилась калибровка
+/// Р’С‹СЃРѕС‚Р° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РЅР° РєРѕС‚РѕСЂРѕРј РїСЂРѕРІРѕРґРёР»Р°СЃСЊ РєР°Р»РёР±СЂРѕРІРєР°
 const int& GetCalibrationHeight(void) const;
 virtual bool SetCalibrationHeight(const int& value);
 
-/// Преобразование точки в нормальной плоскости в реальную точку (учет дисторсии)
+/// РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ С‚РѕС‡РєРё РІ РЅРѕСЂРјР°Р»СЊРЅРѕР№ РїР»РѕСЃРєРѕСЃС‚Рё РІ СЂРµР°Р»СЊРЅСѓСЋ С‚РѕС‡РєСѓ (СѓС‡РµС‚ РґРёСЃС‚РѕСЂСЃРёРё)
 virtual MVector<T,3> CalcPixelPositionFromNormalPosition(const MVector<T,3> &point);
 
-/// Вычисляет положение пикселя на кадре с учетом дисторсии, по положению пикселя без учета дисторсии
+/// Р’С‹С‡РёСЃР»СЏРµС‚ РїРѕР»РѕР¶РµРЅРёРµ РїРёРєСЃРµР»СЏ РЅР° РєР°РґСЂРµ СЃ СѓС‡РµС‚РѕРј РґРёСЃС‚РѕСЂСЃРёРё, РїРѕ РїРѕР»РѕР¶РµРЅРёСЋ РїРёРєСЃРµР»СЏ Р±РµР· СѓС‡РµС‚Р° РґРёСЃС‚РѕСЂСЃРёРё
 virtual MVector<T,3> CalcDistortPixelPosition(const MVector<T,3> &undistort_pixel);
 
-/// Вычисляет положение пикселя на выпрямленном кадре, по положению пикселя на кадре с дисторсией
+/// Р’С‹С‡РёСЃР»СЏРµС‚ РїРѕР»РѕР¶РµРЅРёРµ РїРёРєСЃРµР»СЏ РЅР° РІС‹РїСЂСЏРјР»РµРЅРЅРѕРј РєР°РґСЂРµ, РїРѕ РїРѕР»РѕР¶РµРЅРёСЋ РїРёРєСЃРµР»СЏ РЅР° РєР°РґСЂРµ СЃ РґРёСЃС‚РѕСЂСЃРёРµР№
 virtual MVector<T,3> CalcUndistortPixelPosition(const MVector<T,3> &distort_pixel);
 
-/// Вычисляет положение точки на кадре по положению точки в пространстве
+/// Р’С‹С‡РёСЃР»СЏРµС‚ РїРѕР»РѕР¶РµРЅРёРµ С‚РѕС‡РєРё РЅР° РєР°РґСЂРµ РїРѕ РїРѕР»РѕР¶РµРЅРёСЋ С‚РѕС‡РєРё РІ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРµ
 virtual MVector<T,3> CalcScreenBySpacePoint(const MVector<T,4> &space_point);
 virtual MVector<T,3> CalcScreenBySpacePoint(const MVector<T,4> &space_point, int image_width, int image_height, bool &res);
 virtual MVector<T,3> CalcScreenBySpacePointWODistortions(const MVector<T,4> &space_point);
 virtual MVector<T,3> CalcScreenBySpacePointWODistortions(const MVector<T,4> &space_point, int image_width, int image_height, bool &res);
 
-/// Вычисляет положение точки в пространстве по положению точки на кадре и заданному расстоянию
+/// Р’С‹С‡РёСЃР»СЏРµС‚ РїРѕР»РѕР¶РµРЅРёРµ С‚РѕС‡РєРё РІ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРµ РїРѕ РїРѕР»РѕР¶РµРЅРёСЋ С‚РѕС‡РєРё РЅР° РєР°РґСЂРµ Рё Р·Р°РґР°РЅРЅРѕРјСѓ СЂР°СЃСЃС‚РѕСЏРЅРёСЋ
 virtual MVector<T,4> CalcSpaceByScreenPoint(const MVector<T,3> &screen_point, T distance);
 
-/// Вычисляет и возвращает метрическую длину отрезка по отрезку в пикселях при заданном расстоянии
+/// Р’С‹С‡РёСЃР»СЏРµС‚ Рё РІРѕР·РІСЂР°С‰Р°РµС‚ РјРµС‚СЂРёС‡РµСЃРєСѓСЋ РґР»РёРЅСѓ РѕС‚СЂРµР·РєР° РїРѕ РѕС‚СЂРµР·РєСѓ РІ РїРёРєСЃРµР»СЏС… РїСЂРё Р·Р°РґР°РЅРЅРѕРј СЂР°СЃСЃС‚РѕСЏРЅРёРё
 /// h=(y*l*d)/(f*ymax) || h=(x*l*d)/(f*xmax)
 virtual T CalcSpaceByScreenSegmentLength(const UBRect &screen_segment, T distance);
 
-/// Вычисляет и возвращает расстояние до отрезка по отрезку в пикселях и заданных метрических размерах
+/// Р’С‹С‡РёСЃР»СЏРµС‚ Рё РІРѕР·РІСЂР°С‰Р°РµС‚ СЂР°СЃСЃС‚РѕСЏРЅРёРµ РґРѕ РѕС‚СЂРµР·РєР° РїРѕ РѕС‚СЂРµР·РєСѓ РІ РїРёРєСЃРµР»СЏС… Рё Р·Р°РґР°РЅРЅС‹С… РјРµС‚СЂРёС‡РµСЃРєРёС… СЂР°Р·РјРµСЂР°С…
 virtual T CalcSpaceByScreenSegmentDistance(const UBRect &screen_segment, T segment_length);
 
-/// Вычисляет угловое значение пикселя в модели камеры
+/// Р’С‹С‡РёСЃР»СЏРµС‚ СѓРіР»РѕРІРѕРµ Р·РЅР°С‡РµРЅРёРµ РїРёРєСЃРµР»СЏ РІ РјРѕРґРµР»Рё РєР°РјРµСЂС‹
 virtual T CalcAngleX(int pixel) const;
 virtual T CalcAngleY(int pixel) const;
 
-/// Вычисляет пиксельное значение угла в модели камеры
+/// Р’С‹С‡РёСЃР»СЏРµС‚ РїРёРєСЃРµР»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ СѓРіР»Р° РІ РјРѕРґРµР»Рё РєР°РјРµСЂС‹
 virtual T CalcPixelXByAngle(T angle) const;
 virtual T CalcPixelYByAngle(T angle) const;
 
-/// Вычисляет матрицу внутренней калибровки по известным полям зрения
+/// Р’С‹С‡РёСЃР»СЏРµС‚ РјР°С‚СЂРёС†Сѓ РІРЅСѓС‚СЂРµРЅРЅРµР№ РєР°Р»РёР±СЂРѕРІРєРё РїРѕ РёР·РІРµСЃС‚РЅС‹Рј РїРѕР»СЏРј Р·СЂРµРЅРёСЏ
 virtual bool CalcIccByVisualAngle(T angle_x, T angle_y, T principle_x, T principle_y, int image_width, int image_height, MMatrix<T,3,3> &icc, MMatrix<T,3,3> &norm_icc);
 
-/// Вычисляет матрицу внутренней калибровки по известным полям зрения
+/// Р’С‹С‡РёСЃР»СЏРµС‚ РјР°С‚СЂРёС†Сѓ РІРЅСѓС‚СЂРµРЅРЅРµР№ РєР°Р»РёР±СЂРѕРІРєРё РїРѕ РёР·РІРµСЃС‚РЅС‹Рј РїРѕР»СЏРј Р·СЂРµРЅРёСЏ
 virtual bool CalcVisualAnglesByIcc(const MMatrix<T,3,3> &icc, T &angle_x, T &angle_y, T &principle_x, T &principle_y, int image_width, int image_height);
 
-// Получение мировых координат точки в пространстве по её экранным координатам
+// РџРѕР»СѓС‡РµРЅРёРµ РјРёСЂРѕРІС‹С… РєРѕРѕСЂРґРёРЅР°С‚ С‚РѕС‡РєРё РІ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРµ РїРѕ РµС‘ СЌРєСЂР°РЅРЅС‹Рј РєРѕРѕСЂРґРёРЅР°С‚Р°Рј
 virtual int GetWorldPoint(double Xfd, double Yfd, double yw, double &xw, double &zw);
 
-protected: // Скрытые методы
+protected: // РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹
 
 virtual int image_coord_to_world_coord (double Xfd, double Yfd, double zw,
 					  double &xw, double &yw);
@@ -190,10 +190,10 @@ virtual int image_coord_to_world_coord (double Xfd, double Yfd, double zw,
 void distorted_to_undistorted_sensor_coord (double Xd, double Yd, double &Xu, double &Yu);
 
 
-/// Функция вычисления дисторсии для fisheye thetaD=theta+k1*theta^3+k2*theta^5+k3*theta^7+k4*theta^9  (theta+k1*theta^3+k2*theta^5+k3*theta^7+k4*theta^9 - thetaD = 0)
+/// Р¤СѓРЅРєС†РёСЏ РІС‹С‡РёСЃР»РµРЅРёСЏ РґРёСЃС‚РѕСЂСЃРёРё РґР»СЏ fisheye thetaD=theta+k1*theta^3+k2*theta^5+k3*theta^7+k4*theta^9  (theta+k1*theta^3+k2*theta^5+k3*theta^7+k4*theta^9 - thetaD = 0)
 T FuncTheta(T thetaD, T Xthet) const;
 
-/// Метод хорд для нахождения численного решения уравнения относительно theta
+/// РњРµС‚РѕРґ С…РѕСЂРґ РґР»СЏ РЅР°С…РѕР¶РґРµРЅРёСЏ С‡РёСЃР»РµРЅРЅРѕРіРѕ СЂРµС€РµРЅРёСЏ СѓСЂР°РІРЅРµРЅРёСЏ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ theta
 T ChordMethod(T Cx1, T Cx2, double epsilon, T thetaD) const;
 
 
@@ -201,11 +201,11 @@ MCameraStandard& operator = (const MCameraStandard& copy);
 };
 
 // -----------------------------------------------------------------------------
-// Реализация
+// Р РµР°Р»РёР·Р°С†РёСЏ
 // -----------------------------------------------------------------------------
 // MCamera
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 template<class T>
 MCamera<T>::MCamera(void)
@@ -227,7 +227,7 @@ MCamera<T>::~MCamera(void)
 // --------------------------
 
 
-// Управление матрицей внешней калибровки камеры
+// РЈРїСЂР°РІР»РµРЅРёРµ РјР°С‚СЂРёС†РµР№ РІРЅРµС€РЅРµР№ РєР°Р»РёР±СЂРѕРІРєРё РєР°РјРµСЂС‹
 template<class T>
 const MMatrix<T,4,4>& MCamera<T>::GetEcc(void) const
 {
@@ -258,7 +258,7 @@ bool MCamera<T>::SetInvEcc(const MMatrix<T,4,4>& value)
 }
 
 
-// Преобразует 3D геометрию в 2D
+// РџСЂРµРѕР±СЂР°Р·СѓРµС‚ 3D РіРµРѕРјРµС‚СЂРёСЋ РІ 2D
 template<class T>
 void MCamera<T>::Convert3Dto2DGeometry(const MGeometry<T,4> &geometry_3d, MGeometry<T,3> &geometry_2d)
 {
@@ -275,9 +275,9 @@ void MCamera<T>::Convert3Dto2DGeometry(const MGeometry<T,4> &geometry_3d, MGeome
 }
 
 
-/// Преобразует 3D геометрию в 2D
-/// geometry_3d - N строк по 3 координаты точек
-/// geometry_2d - N строк по 2 координаты точек
+/// РџСЂРµРѕР±СЂР°Р·СѓРµС‚ 3D РіРµРѕРјРµС‚СЂРёСЋ РІ 2D
+/// geometry_3d - N СЃС‚СЂРѕРє РїРѕ 3 РєРѕРѕСЂРґРёРЅР°С‚С‹ С‚РѕС‡РµРє
+/// geometry_2d - N СЃС‚СЂРѕРє РїРѕ 2 РєРѕРѕСЂРґРёРЅР°С‚С‹ С‚РѕС‡РµРє
 template<class T>
 void MCamera<T>::Convert3Dto2DGeometry(const MDMatrix<T> &geometry_3d, MDMatrix<T> &geometry_2d)
 {
@@ -300,7 +300,7 @@ void MCamera<T>::Convert3Dto2DGeometry(const MDMatrix<T> &geometry_3d, MDMatrix<
 // MCameraStandard
 // ****************************************************************************
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 template<class T>
 MCameraStandard<T>::MCameraStandard(void)
@@ -324,7 +324,7 @@ MCameraStandard<T>::~MCameraStandard(void)
 }
 // --------------------------
 
-// Управление матрицей внутренней калибровки камеры
+// РЈРїСЂР°РІР»РµРЅРёРµ РјР°С‚СЂРёС†РµР№ РІРЅСѓС‚СЂРµРЅРЅРµР№ РєР°Р»РёР±СЂРѕРІРєРё РєР°РјРµСЂС‹
 template<class T>
 const MMatrix<T,3,3>& MCameraStandard<T>::GetIcc(void) const
 {
@@ -353,7 +353,7 @@ bool MCameraStandard<T>::SetInvIcc(const MMatrix<T,3,3>& value)
  return true;
 }
 
-// Модель дисторсии
+// РњРѕРґРµР»СЊ РґРёСЃС‚РѕСЂСЃРёРё
 template<class T>
 const int& MCameraStandard<T>::GetDistortionMode(void) const
 {
@@ -367,8 +367,8 @@ bool MCameraStandard<T>::SetDistortionMode(const int &value)
  return true;
 }
 
-/// Модель камеры
-/// 0 - обычная (pinhole)
+/// РњРѕРґРµР»СЊ РєР°РјРµСЂС‹
+/// 0 - РѕР±С‹С‡РЅР°СЏ (pinhole)
 /// 1 - fisheye (opencv)
 template<class T>
 const int& MCameraStandard<T>::GetCameraMode(void) const
@@ -383,7 +383,7 @@ bool MCameraStandard<T>::SetCameraMode(const int& value)
  return true;
 }
 
-// К-ты дисторсии
+// Рљ-С‚С‹ РґРёСЃС‚РѕСЂСЃРёРё
 template<class T>
 const MDVector<T>& MCameraStandard<T>::GetDistortionCoeff(void) const
 {
@@ -399,7 +399,7 @@ bool MCameraStandard<T>::SetDistortionCoeff(const MDVector<T>& value)
 }
 
 
-/// Ширина изображения на котором проводилась калибровка
+/// РЁРёСЂРёРЅР° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РЅР° РєРѕС‚РѕСЂРѕРј РїСЂРѕРІРѕРґРёР»Р°СЃСЊ РєР°Р»РёР±СЂРѕРІРєР°
 template<class T>
 const int& MCameraStandard<T>::GetCalibrationWidth(void) const
 {
@@ -413,7 +413,7 @@ bool MCameraStandard<T>::SetCalibrationWidth(const int& value)
  return true;
 }
 
-/// Высота изображения на котором проводилась калибровка
+/// Р’С‹СЃРѕС‚Р° РёР·РѕР±СЂР°Р¶РµРЅРёСЏ РЅР° РєРѕС‚РѕСЂРѕРј РїСЂРѕРІРѕРґРёР»Р°СЃСЊ РєР°Р»РёР±СЂРѕРІРєР°
 template<class T>
 const int& MCameraStandard<T>::GetCalibrationHeight(void) const
 {
@@ -427,7 +427,7 @@ bool MCameraStandard<T>::SetCalibrationHeight(const int& value)
  return true;
 }
 
-// Преобразование точки в нормальной плоскости в реальную точку (учет дисторсии)
+// РџСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ С‚РѕС‡РєРё РІ РЅРѕСЂРјР°Р»СЊРЅРѕР№ РїР»РѕСЃРєРѕСЃС‚Рё РІ СЂРµР°Р»СЊРЅСѓСЋ С‚РѕС‡РєСѓ (СѓС‡РµС‚ РґРёСЃС‚РѕСЂСЃРёРё)
 template<class T>
 MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVector<T,3> &point)
 {
@@ -538,7 +538,7 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
    return res;
   }
 
-  // 3 - Модель Цая (DistortionCoeff(0) = k1, DistortionCoeff(1) = f (фокусное расстояние в мм), DistortionCoeff(2) = s (маштабирующий коэффициент)
+  // 3 - РњРѕРґРµР»СЊ Р¦Р°СЏ (DistortionCoeff(0) = k1, DistortionCoeff(1) = f (С„РѕРєСѓСЃРЅРѕРµ СЂР°СЃСЃС‚РѕСЏРЅРёРµ РІ РјРј), DistortionCoeff(2) = s (РјР°С€С‚Р°Р±РёСЂСѓСЋС‰РёР№ РєРѕСЌС„С„РёС†РёРµРЅС‚)
   if(DistortionMode == 3)
   {
    if(DistortionCoeff.GetSize() != 3)
@@ -549,7 +549,7 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
    // Tsai/cal_tran.cpp
    //void      Tsai::undistorted_to_distorted_sensor_coord (double Xu, double Yu, double *Xd, double *Yd)
    double Ru, Rd, lambda, c, d, Q, R, D, S, TT, sinT, cosT;
-   double Xu, Yu;	// a, b, x', y' - Здесь и ниже в комментах обозначения OpenCv
+   double Xu, Yu;	// a, b, x', y' - Р—РґРµСЃСЊ Рё РЅРёР¶Рµ РІ РєРѕРјРјРµРЅС‚Р°С… РѕР±РѕР·РЅР°С‡РµРЅРёСЏ OpenCv
    double kappa1;	// k1 (?)
 
    Xu = DistortionCoeff(1)*point(0);	// a
@@ -620,7 +620,7 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
 	// the smaller positive root is   -S*cos(T) + SQRT(3)*S*sin(T)
 	// the negative root is           -S*cos(T) - SQRT(3)*S*sin(T)
 
-	// Корень из трёх
+	// РљРѕСЂРµРЅСЊ РёР· С‚СЂС‘С…
 	double SQRT3 = 1.732050807568877293527446341505872366943;
 	Rd = -S * cosT + SQRT3 * S * sinT;	// use the smaller positive root
    }
@@ -672,7 +672,7 @@ MVector<T,3> MCameraStandard<T>::CalcPixelPositionFromNormalPosition(const MVect
  return point;
 }
 
-// Вычисляет положение пикселя на кадре с учетом дисторсии, по положению пикселя без учета дисторсии
+// Р’С‹С‡РёСЃР»СЏРµС‚ РїРѕР»РѕР¶РµРЅРёРµ РїРёРєСЃРµР»СЏ РЅР° РєР°РґСЂРµ СЃ СѓС‡РµС‚РѕРј РґРёСЃС‚РѕСЂСЃРёРё, РїРѕ РїРѕР»РѕР¶РµРЅРёСЋ РїРёРєСЃРµР»СЏ Р±РµР· СѓС‡РµС‚Р° РґРёСЃС‚РѕСЂСЃРёРё
 template<class T>
 MVector<T,3> MCameraStandard<T>::CalcDistortPixelPosition(const MVector<T,3> &undistort_pixel)
 {
@@ -683,7 +683,7 @@ MVector<T,3> MCameraStandard<T>::CalcDistortPixelPosition(const MVector<T,3> &un
  return result;
 }
 
-// Вычисляет положение пикселя на выпрямленном кадре, по положению пикселя на кадре с дисторсией
+// Р’С‹С‡РёСЃР»СЏРµС‚ РїРѕР»РѕР¶РµРЅРёРµ РїРёРєСЃРµР»СЏ РЅР° РІС‹РїСЂСЏРјР»РµРЅРЅРѕРј РєР°РґСЂРµ, РїРѕ РїРѕР»РѕР¶РµРЅРёСЋ РїРёРєСЃРµР»СЏ РЅР° РєР°РґСЂРµ СЃ РґРёСЃС‚РѕСЂСЃРёРµР№
 template<class T>
 MVector<T,3> MCameraStandard<T>::CalcUndistortPixelPosition(const MVector<T,3> &distort_pixel)
 {
@@ -694,7 +694,7 @@ MVector<T,3> MCameraStandard<T>::CalcUndistortPixelPosition(const MVector<T,3> &
  return result;
 }
 
-// Вычисляет положение точки на кадре по положению точки в пространстве
+// Р’С‹С‡РёСЃР»СЏРµС‚ РїРѕР»РѕР¶РµРЅРёРµ С‚РѕС‡РєРё РЅР° РєР°РґСЂРµ РїРѕ РїРѕР»РѕР¶РµРЅРёСЋ С‚РѕС‡РєРё РІ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРµ
 template<class T>
 MVector<T,3> MCameraStandard<T>::CalcScreenBySpacePoint(const MVector<T,4> &space_point)
 {
@@ -719,7 +719,7 @@ MVector<T,3> MCameraStandard<T>::CalcScreenBySpacePoint(const MVector<T,4> &spac
  return screenpoint;
 }
 
-// Вычисляет положение точки на кадре по положению точки в пространстве
+// Р’С‹С‡РёСЃР»СЏРµС‚ РїРѕР»РѕР¶РµРЅРёРµ С‚РѕС‡РєРё РЅР° РєР°РґСЂРµ РїРѕ РїРѕР»РѕР¶РµРЅРёСЋ С‚РѕС‡РєРё РІ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРµ
 template<class T>
 MVector<T,3> MCameraStandard<T>::CalcScreenBySpacePoint(const MVector<T,4> &space_point, int image_width, int image_height, bool &res)
 {
@@ -797,7 +797,7 @@ MVector<T,3> MCameraStandard<T>::CalcScreenBySpacePointWODistortions(const MVect
  return screenpoint;
 }
 
-// Вычисляет положение точки в пространстве по положению точки на кадре и заданному расстоянию
+// Р’С‹С‡РёСЃР»СЏРµС‚ РїРѕР»РѕР¶РµРЅРёРµ С‚РѕС‡РєРё РІ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРµ РїРѕ РїРѕР»РѕР¶РµРЅРёСЋ С‚РѕС‡РєРё РЅР° РєР°РґСЂРµ Рё Р·Р°РґР°РЅРЅРѕРјСѓ СЂР°СЃСЃС‚РѕСЏРЅРёСЋ
 template<class T>
 MVector<T,4> MCameraStandard<T>::CalcSpaceByScreenPoint(const MVector<T,3> &screen_point, T distance)
 {
@@ -806,7 +806,7 @@ MVector<T,4> MCameraStandard<T>::CalcSpaceByScreenPoint(const MVector<T,3> &scre
  return res;
 }
 
-// Вычисляет и возвращает метрическую длину отрезка по отрезку в пикселях при заданном расстоянии
+// Р’С‹С‡РёСЃР»СЏРµС‚ Рё РІРѕР·РІСЂР°С‰Р°РµС‚ РјРµС‚СЂРёС‡РµСЃРєСѓСЋ РґР»РёРЅСѓ РѕС‚СЂРµР·РєР° РїРѕ РѕС‚СЂРµР·РєСѓ РІ РїРёРєСЃРµР»СЏС… РїСЂРё Р·Р°РґР°РЅРЅРѕРј СЂР°СЃСЃС‚РѕСЏРЅРёРё
 // h=(y*l*d)/(f*ymax) || h=(x*l*d)/(f*xmax)
 template<class T>
 T MCameraStandard<T>::CalcSpaceByScreenSegmentLength(const UBRect &screen_segment, T distance)
@@ -814,7 +814,7 @@ T MCameraStandard<T>::CalcSpaceByScreenSegmentLength(const UBRect &screen_segmen
  return 0;
 }
 
-// Вычисляет и возвращает расстояние до отрезка по отрезку в пикселях и заданных метрических размерах
+// Р’С‹С‡РёСЃР»СЏРµС‚ Рё РІРѕР·РІСЂР°С‰Р°РµС‚ СЂР°СЃСЃС‚РѕСЏРЅРёРµ РґРѕ РѕС‚СЂРµР·РєР° РїРѕ РѕС‚СЂРµР·РєСѓ РІ РїРёРєСЃРµР»СЏС… Рё Р·Р°РґР°РЅРЅС‹С… РјРµС‚СЂРёС‡РµСЃРєРёС… СЂР°Р·РјРµСЂР°С…
 template<class T>
 T MCameraStandard<T>::CalcSpaceByScreenSegmentDistance(const UBRect &screen_segment, T segment_length)
 {
@@ -822,17 +822,17 @@ T MCameraStandard<T>::CalcSpaceByScreenSegmentDistance(const UBRect &screen_segm
 }
 
 
-/// Вычисляет угловое значение пикселя в модели камеры
+/// Р’С‹С‡РёСЃР»СЏРµС‚ СѓРіР»РѕРІРѕРµ Р·РЅР°С‡РµРЅРёРµ РїРёРєСЃРµР»СЏ РІ РјРѕРґРµР»Рё РєР°РјРµСЂС‹
 template<class T>
 T MCameraStandard<T>::CalcAngleX(int pixel) const
 {
  if(GetIcc()(0,0) < 1e-5 || GetIcc()(1,1)< 1e-5)
-  return 0; // TODO: тут исключение
+  return 0; // TODO: С‚СѓС‚ РёСЃРєР»СЋС‡РµРЅРёРµ
  switch(CameraMode)
  {
  case 0:
  {
-  if(DistortionMode==3)  //Модель Тсаи
+  if(DistortionMode==3)  //РњРѕРґРµР»СЊ РўСЃР°Рё
   {
       double dxmm_d=(pixel-GetIcc()(0,2))*DistortionCoeff(1)/(GetIcc()(0,0)*DistortionCoeff(2));
 	  double dymm_d=(pixel-GetIcc()(1,2))*DistortionCoeff(1)/GetIcc()(1,1);
@@ -867,7 +867,7 @@ T MCameraStandard<T>::CalcAngleX(int pixel) const
   T x_diff=(pixel-GetIcc()(0,2))/GetIcc()(0,0);
   T y_diff=(0-GetIcc()(0,1))/GetIcc()(1,1);
   T teta=sqrt(x_diff*x_diff+y_diff*y_diff);
-  teta=ChordMethod(0,M_PI,1e-5,teta); // учет дисторсии
+  teta=ChordMethod(0,M_PI,1e-5,teta); // СѓС‡РµС‚ РґРёСЃС‚РѕСЂСЃРёРё
   T beta=atan2(y_diff,x_diff);
   T res=atan(tan(teta)*cos(beta));
   return res;
@@ -881,13 +881,13 @@ template<class T>
 T MCameraStandard<T>::CalcAngleY(int pixel) const
 {
  if(GetIcc()(0,0) < 1e-5 || GetIcc()(1,1)< 1e-5)
-  return 0; // TODO: тут исключение
+  return 0; // TODO: С‚СѓС‚ РёСЃРєР»СЋС‡РµРЅРёРµ
 
  switch(CameraMode)
  {
  case 0:
  {
-  if(DistortionMode==3) //Модель Тсаи
+  if(DistortionMode==3) //РњРѕРґРµР»СЊ РўСЃР°Рё
   {
 	  double dxmm_d=(pixel-GetIcc()(0,2))*DistortionCoeff(1)/(GetIcc()(0,0)*DistortionCoeff(2));
 	  double dymm_d=(pixel-GetIcc()(1,2))*DistortionCoeff(1)/GetIcc()(1,1);
@@ -922,7 +922,7 @@ T MCameraStandard<T>::CalcAngleY(int pixel) const
   T x_diff=(0-GetIcc()(0,2))/GetIcc()(0,0);
   T y_diff=(pixel-GetIcc()(0,1))/GetIcc()(1,1);
   T teta=sqrt(x_diff*x_diff+y_diff*y_diff);
-  teta=ChordMethod(0,M_PI,1e-5,teta); // учет дисторсии
+  teta=ChordMethod(0,M_PI,1e-5,teta); // СѓС‡РµС‚ РґРёСЃС‚РѕСЂСЃРёРё
   T beta=atan2(x_diff,y_diff);
   T res=atan(tan(teta)*cos(beta));
   return res;
@@ -932,7 +932,7 @@ T MCameraStandard<T>::CalcAngleY(int pixel) const
  return 0.0;
 }
 
-/// Вычисляет пиксельное значение угла в модели камеры
+/// Р’С‹С‡РёСЃР»СЏРµС‚ РїРёРєСЃРµР»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ СѓРіР»Р° РІ РјРѕРґРµР»Рё РєР°РјРµСЂС‹
 template<class T>
 T MCameraStandard<T>::CalcPixelXByAngle(T angle) const
 {
@@ -982,7 +982,7 @@ T MCameraStandard<T>::CalcPixelYByAngle(T angle) const
 }
 
 
-/// Вычисляет матрицу внутренней калибровки по известным полям зрения
+/// Р’С‹С‡РёСЃР»СЏРµС‚ РјР°С‚СЂРёС†Сѓ РІРЅСѓС‚СЂРµРЅРЅРµР№ РєР°Р»РёР±СЂРѕРІРєРё РїРѕ РёР·РІРµСЃС‚РЅС‹Рј РїРѕР»СЏРј Р·СЂРµРЅРёСЏ
 template<class T>
 bool MCameraStandard<T>::CalcIccByVisualAngle(T angle_x, T angle_y, T principle_x, T principle_y, int image_width, int image_height, MMatrix<T,3,3> &icc, MMatrix<T,3,3> &norm_icc)
 {
@@ -1023,7 +1023,7 @@ bool MCameraStandard<T>::CalcIccByVisualAngle(T angle_x, T angle_y, T principle_
  break;
  }
 
- // Вычисляем нормированную ICC
+ // Р’С‹С‡РёСЃР»СЏРµРј РЅРѕСЂРјРёСЂРѕРІР°РЅРЅСѓСЋ ICC
  norm_icc(0,0)/=image_width;
  norm_icc(1,1)/=image_height;
  norm_icc(0,2)/=image_width;
@@ -1032,7 +1032,7 @@ bool MCameraStandard<T>::CalcIccByVisualAngle(T angle_x, T angle_y, T principle_
  return true;
 }
 
-/// Вычисляет матрицу внутренней калибровки по известным полям зрения
+/// Р’С‹С‡РёСЃР»СЏРµС‚ РјР°С‚СЂРёС†Сѓ РІРЅСѓС‚СЂРµРЅРЅРµР№ РєР°Р»РёР±СЂРѕРІРєРё РїРѕ РёР·РІРµСЃС‚РЅС‹Рј РїРѕР»СЏРј Р·СЂРµРЅРёСЏ
 template<class T>
 bool MCameraStandard<T>::CalcVisualAnglesByIcc(const MMatrix<T,3,3> &icc, T &angle_x, T &angle_y, T &principle_x, T &principle_y, int image_width, int image_height)
 {
@@ -1091,7 +1091,7 @@ bool MCameraStandard<T>::CalcVisualAnglesByIcc(const MMatrix<T,3,3> &icc, T &ang
 
 
 
-// Получение мировых координат точки в пространстве по её экранным координатам
+// РџРѕР»СѓС‡РµРЅРёРµ РјРёСЂРѕРІС‹С… РєРѕРѕСЂРґРёРЅР°С‚ С‚РѕС‡РєРё РІ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРµ РїРѕ РµС‘ СЌРєСЂР°РЅРЅС‹Рј РєРѕРѕСЂРґРёРЅР°С‚Р°Рј
 template<class T>
 int MCameraStandard<T>::GetWorldPoint(double Xfd, double Yfd, double yw, double &xw, double &zw)
 {
@@ -1146,18 +1146,18 @@ int MCameraStandard<T>::image_coord_to_world_coord (double Xfd, double Yfd, doub
 	//RDK::InverseEcc<double>(ecc,inp_ecc);
 	//inp_ecc = RDK::CalcObjectPositionMatrix(Position,6);;
 
-	//Матрица перехода из СК Тсаи в СК Глагола (сцена)
+	//РњР°С‚СЂРёС†Р° РїРµСЂРµС…РѕРґР° РёР· РЎРљ РўСЃР°Рё РІ РЎРљ Р“Р»Р°РіРѕР»Р° (СЃС†РµРЅР°)
 	RDK::MMatrix<double,4,4> mat_glagol_to_tsai;
 	mat_glagol_to_tsai(0,0) = 1.0;	mat_glagol_to_tsai(0,1) = 0.0;	mat_glagol_to_tsai(0,2) = 0.0;	mat_glagol_to_tsai(0,3) = 0.0;
 	mat_glagol_to_tsai(1,0) = 0.0;	mat_glagol_to_tsai(1,1) = 0.0;	mat_glagol_to_tsai(1,2) = 1.0;	mat_glagol_to_tsai(1,3) = 0.0;
 	mat_glagol_to_tsai(2,0) = 0.0;	mat_glagol_to_tsai(2,1) = -1.0;	mat_glagol_to_tsai(2,2) = 0.0;	mat_glagol_to_tsai(2,3) = 0.0;
 	mat_glagol_to_tsai(3,0) = 0.0;	mat_glagol_to_tsai(3,1) = 0.0;	mat_glagol_to_tsai(3,2) = 0.0;	mat_glagol_to_tsai(3,3) = 1.0;
-	//Матрица перехода из СК Глагола (сцена) в СК Тсаи
+	//РњР°С‚СЂРёС†Р° РїРµСЂРµС…РѕРґР° РёР· РЎРљ Р“Р»Р°РіРѕР»Р° (СЃС†РµРЅР°) РІ РЎРљ РўСЃР°Рё
 	//RDK::MMatrix<double,4,4> mat_glagol_to_tsai;
 	//RDK::InverseEcc<double>(mat_tsai_to_glagol,mat_glagol_to_tsai);
-	// Матрица (сцена -> камера) в СК Тсаи
+	// РњР°С‚СЂРёС†Р° (СЃС†РµРЅР° -> РєР°РјРµСЂР°) РІ РЎРљ РўСЃР°Рё
 	mat_tsai_scene_to_cam = mat_glagol_to_tsai*ecc;
-	// Матрица (сцена <- камера) в СК Tsai
+	// РњР°С‚СЂРёС†Р° (СЃС†РµРЅР° <- РєР°РјРµСЂР°) РІ РЎРљ Tsai
 	RDK::InverseEcc<double>(mat_tsai_scene_to_cam,ecc_tsai);
 	//ecc_tsai = mat_tsai_scene_to_cam;
 
@@ -1170,7 +1170,7 @@ int MCameraStandard<T>::image_coord_to_world_coord (double Xfd, double Yfd, doub
 		   r7=ecc_tsai(2,0), r8=ecc_tsai(2,1), r9=ecc_tsai(2,2);
 	double f=DistortionCoeff(1);
 
-	// Положение Tsai
+	// РџРѕР»РѕР¶РµРЅРёРµ Tsai
 	RDK::MVector<double,6> tsai_position;
 	CalcObjectAnglesAndShifts(ecc_tsai,tsai_position,6);
 
@@ -1217,7 +1217,7 @@ void MCameraStandard<T>::distorted_to_undistorted_sensor_coord (double Xd, doubl
 }
 
 
-// Функция вычисления дисторсии для fisheye thetaD=theta+k1*theta^3+k2*theta^5+k3*theta^7+k4*theta^9  (theta+k1*theta^3+k2*theta^5+k3*theta^7+k4*theta^9 - thetaD = 0)
+// Р¤СѓРЅРєС†РёСЏ РІС‹С‡РёСЃР»РµРЅРёСЏ РґРёСЃС‚РѕСЂСЃРёРё РґР»СЏ fisheye thetaD=theta+k1*theta^3+k2*theta^5+k3*theta^7+k4*theta^9  (theta+k1*theta^3+k2*theta^5+k3*theta^7+k4*theta^9 - thetaD = 0)
 template<class T>
 T MCameraStandard<T>::FuncTheta(T thetaD, T Xthet) const
 {
@@ -1232,7 +1232,7 @@ T MCameraStandard<T>::FuncTheta(T thetaD, T Xthet) const
 	return res;
 }
 
-// Метод хорд для нахождения численного решения уравнения относительно theta
+// РњРµС‚РѕРґ С…РѕСЂРґ РґР»СЏ РЅР°С…РѕР¶РґРµРЅРёСЏ С‡РёСЃР»РµРЅРЅРѕРіРѕ СЂРµС€РµРЅРёСЏ СѓСЂР°РІРЅРµРЅРёСЏ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ theta
 template<class T>
 T MCameraStandard<T>::ChordMethod(T Cx1, T Cx2, double epsilon, T thetaD) const
 {

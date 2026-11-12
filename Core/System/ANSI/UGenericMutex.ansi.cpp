@@ -18,92 +18,119 @@ class RDK_LIB_TYPE UGenericMutexAnsi: public UGenericMutex
 private:
 boost::shared_mutex Mutex;
 
-boost::thread::id Id;
-boost::exception ex;
-
-DWORD Pid;
-
-//boost::unique_lock< boost::shared_mutex > * UniqueLock;
-
-//boost::shared_lock< boost::shared_mutex > * SharedLock;
-
 public:
 UGenericMutexAnsi();
-virtual ~UGenericMutexAnsi();
+virtual ~UGenericMutexAnsi() noexcept;
 
 virtual bool shared_lock(unsigned timeout=RDK_MUTEX_TIMEOUT);
-virtual bool shared_unlock(void);
+virtual bool shared_unlock() noexcept;
 
 virtual bool exclusive_lock(unsigned timeout=RDK_MUTEX_TIMEOUT);
-virtual bool exclusive_unlock(void);
+virtual bool exclusive_unlock() noexcept;
 
+private:
+UGenericMutexAnsi(const UGenericMutexAnsi &copy) = delete;
+UGenericMutexAnsi& operator = (const UGenericMutexAnsi &copy) = delete;
 };
 
 
 UGenericMutexAnsi::UGenericMutexAnsi()
 {
- //m_UnlockEvent = CreateEvent(0, TRUE, TRUE, 0);
+ // boost::shared_mutex инициализируется автоматически
 }
 
-UGenericMutexAnsi::~UGenericMutexAnsi()
+UGenericMutexAnsi::~UGenericMutexAnsi() noexcept
 {
-/* if(SharedLock)
- {
-  delete SharedLock;
-  SharedLock=0;
- }
-
- if(UniqueLock)
- {
-  delete UniqueLock;
-  UniqueLock=0;
- }  */
+ // boost::shared_mutex автоматически освобождается при уничтожении
 }
 
 bool UGenericMutexAnsi::shared_lock(unsigned timeout)
 {
-// Mutex.lock_shared();
- boost::system_time pt(boost::get_system_time());
- if(!Mutex.timed_lock_shared(pt + boost::posix_time::milliseconds(timeout)))
+ try
  {
+  if(timeout == RDK_MUTEX_TIMEOUT)
+  {
+   Mutex.lock_shared();
+   return true;
+  }
+  else
+  {
+   boost::system_time pt(boost::get_system_time());
+   if(!Mutex.timed_lock_shared(pt + boost::posix_time::milliseconds(timeout)))
+   {
+    return false;
+   }
+   return true;
+  }
+ }
+ catch(...)
+ {
+  // Boost может выбросить исключение при ошибке блокировки
   return false;
  }
- return true;
 }
 
-bool UGenericMutexAnsi::shared_unlock(void)
+bool UGenericMutexAnsi::shared_unlock() noexcept
 {
- Mutex.unlock_shared();
- return true;
+ try
+ {
+  Mutex.unlock_shared();
+  return true;
+ }
+ catch(...)
+ {
+  // В noexcept функции не можем выбросить исключение
+  // Boost обычно не бросает исключения из unlock_shared, но на всякий случай
+  return false;
+ }
 }
 
 bool UGenericMutexAnsi::exclusive_lock(unsigned timeout)
 {
-// boost::thread::id self = boost::this_thread::get_id();
- if(Mutex.try_lock())
+ try
  {
-//  Id = self;
-  return true;
+  if(timeout == RDK_MUTEX_TIMEOUT)
+  {
+   Mutex.lock();
+   return true;
+  }
+  else
+  {
+   // Сначала пробуем быструю блокировку
+   if(Mutex.try_lock())
+   {
+    return true;
+   }
+   
+   // Если не получилось, используем таймаут
+   boost::system_time pt(boost::get_system_time());
+   if(!Mutex.timed_lock(pt + boost::posix_time::milliseconds(timeout)))
+   {
+    return false;
+   }
+   return true;
+  }
  }
-
-// if(Id == self)
-//  return true;
-
-// Mutex.lock();
- boost::system_time pt(boost::get_system_time());
- if(!Mutex.timed_lock(pt + boost::posix_time::milliseconds(timeout)))
+ catch(...)
  {
+  // Boost может выбросить исключение при ошибке блокировки
   return false;
  }
- // Id = self;
- return true;
 }
 
-bool UGenericMutexAnsi::exclusive_unlock(void)
+bool UGenericMutexAnsi::exclusive_unlock() noexcept
 {
- Mutex.unlock();
-// Id=boost::thread::id();
- return true;
+ try
+ {
+  Mutex.unlock();
+  return true;
+ }
+ catch(...)
+ {
+  // В noexcept функции не можем выбросить исключение
+  // Boost обычно не бросает исключения из unlock, но на всякий случай
+  return false;
+ }
 }
 
 // ---------------------------------------------------------------------------

@@ -99,11 +99,11 @@ void UCreateTestWidget::addProperty()
   }
   catch (RDK::UException &exception)
   {
-    Log_LogMessage(exception.GetType(), (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+    RDK::Logging::SystemLog(exception.GetType(), (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
   }
   catch (std::exception &exception)
   {
-    Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+    RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
   }
 }
 
@@ -133,7 +133,7 @@ void UCreateTestWidget::createTest()
     storage.SetNodeAttribute("Delta", (*it)->data(4, Qt::DisplayRole).toString().toLocal8Bit().constData());
     std::string nodeValue = (*it)->data(3, Qt::DisplayRole).toString().toLocal8Bit().constData();
 
-    // êîñòûëü
+    // ÐºÐ¾ÑÑ‚Ñ‹Ð»ÑŒ
     if(nodeValue.size() > 0 && nodeValue[0] == '<')
     {
       RDK::USerStorageXML nodeData;

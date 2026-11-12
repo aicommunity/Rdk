@@ -23,7 +23,7 @@ public:		// User declarations
 	__fastcall TUImagesForm(TComponent* Owner);
 
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 virtual TUImagesForm* New(TComponent *owner=0);
 
 

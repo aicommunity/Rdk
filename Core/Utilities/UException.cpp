@@ -14,7 +14,7 @@
 namespace RDK {
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UException::UException(void)
 : Number(0), Type(0), ExLineNumber(-1)
@@ -42,21 +42,21 @@ UException::~UException(void) throw()
 
 
 // --------------------------
-// Методы упрвления данными исключения
+// РњРµС‚РѕРґС‹ СѓРїСЂРІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё РёСЃРєР»СЋС‡РµРЅРёСЏ
 // --------------------------
-// Возвращает номер исключения
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РЅРѕРјРµСЂ РёСЃРєР»СЋС‡РµРЅРёСЏ
 int UException::GetNumber(void) const
 {
  return Number;
 }
 
-// Тип исключения
+// РўРёРї РёСЃРєР»СЋС‡РµРЅРёСЏ
 int UException::GetType(void) const
 {
  return Type;
 }
 
-// Время возникновения (обработки) исключения
+// Р’СЂРµРјСЏ РІРѕР·РЅРёРєРЅРѕРІРµРЅРёСЏ (РѕР±СЂР°Р±РѕС‚РєРё) РёСЃРєР»СЋС‡РµРЅРёСЏ
 std::time_t UException::GetTime(void) const
 {
  return Time;
@@ -67,7 +67,7 @@ void UException::SetTime(std::time_t ex_time)
  Time=ex_time;
 }
 
-/// Имя файла в котором произошло исключение
+/// РРјСЏ С„Р°Р№Р»Р° РІ РєРѕС‚РѕСЂРѕРј РїСЂРѕРёР·РѕС€Р»Рѕ РёСЃРєР»СЋС‡РµРЅРёРµ
 std::string UException::GetExFileName(void) const
 {
  return ExFileName;
@@ -78,7 +78,7 @@ void UException::SetExFileName(const std::string &value)
  ExFileName=value;
 }
 
-/// Строка на которой произошло исключение
+/// РЎС‚СЂРѕРєР° РЅР° РєРѕС‚РѕСЂРѕР№ РїСЂРѕРёР·РѕС€Р»Рѕ РёСЃРєР»СЋС‡РµРЅРёРµ
 int UException::GetExLineNumber(void) const
 {
  return ExLineNumber;
@@ -89,7 +89,7 @@ void UException::SetExLineNumber(int value)
  ExLineNumber=value;
 }
 
-/// Имя объекта сгенерировавшего искючение
+/// РРјСЏ РѕР±СЉРµРєС‚Р° СЃРіРµРЅРµСЂРёСЂРѕРІР°РІС€РµРіРѕ РёСЃРєСЋС‡РµРЅРёРµ
 std::string UException::GetObjectName(void) const
 {
  return ObjectName;
@@ -100,7 +100,7 @@ void UException::SetObjectName(const std::string &value)
  ObjectName=value;
 }
 
-/// Сообщение исключения сохраненное во внутреннем буфере
+/// РЎРѕРѕР±С‰РµРЅРёРµ РёСЃРєР»СЋС‡РµРЅРёСЏ СЃРѕС…СЂР°РЅРµРЅРЅРѕРµ РІРѕ РІРЅСѓС‚СЂРµРЅРЅРµРј Р±СѓС„РµСЂРµ
 const std::string& UException::GetMessage(void) const
 {
  return Message;
@@ -113,9 +113,9 @@ void UException::SetMessage(const std::string& value)
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-/// Возвращает строку лога об исключении
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 char const * UException::what() const throw()
 {
  Message=GenerateLogPrefix();
@@ -124,7 +124,7 @@ char const * UException::what() const throw()
  return Message.c_str();
 }
 
-/// Оборачивает этим исключнением уже существующее, с возможностью подмены требуемых данных
+/// РћР±РѕСЂР°С‡РёРІР°РµС‚ СЌС‚РёРј РёСЃРєР»СЋС‡РЅРµРЅРёРµРј СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµРµ, СЃ РІРѕР·РјРѕР¶РЅРѕСЃС‚СЊСЋ РїРѕРґРјРµРЅС‹ С‚СЂРµР±СѓРµРјС‹С… РґР°РЅРЅС‹С…
 void UException::Wrap(const UException &ex, const std::string &new_message)
 {
  Number=ex.Number;
@@ -157,63 +157,21 @@ std::string UException::GenerateLogPrefix(void) const
 {
  std::string result;
 
- std::time_t ex_time=GetTime();
- tm time_result;
- tm* time_struct(0);
-
-#if defined(_MSC_VER)
- localtime_s(&time_result,&ex_time);
- time_struct=&time_result;
-#elif defined(__STDC_LIB_EXT1__)
- time_struct=localtime_s(&ex_time,&time_result);
-#else
- time_struct=localtime(&ex_time); // TODO: Possible unsafe!!
- memcpy(&time_result,time_struct,sizeof(time_result));
-#endif
-
- if(!time_struct)
-  return result;
-
- result+=sntoa(time_struct->tm_mday,2);
- result+="/";
- result+=sntoa(time_struct->tm_mon+1,2);
- result+="/";
- result+=sntoa(time_struct->tm_year+1900,4);
- result+=" ";
-
- result+=sntoa(time_struct->tm_hour,2);
- result+=":";
- result+=sntoa(time_struct->tm_min,2);
- result+=":";
- result+=sntoa(time_struct->tm_sec,2);
- result+=".";
- result+=sntoa(TimeMsecs/1000,3);
- result+=" ";
-
- result+=sntoa(GetType());
- result+="> [";
- if(Number != 0)
+ if(!ObjectName.empty())
  {
-  result+=sntoa(Number);
-  result+=": ";
+  result += ObjectName;
+  result += "> ";
  }
- result+=typeid(*this).name();
- result+="]";
 
  if(!ExFileName.empty())
  {
-  result+="> ";
-  result+=ExFileName;
-  result+=":";
-  result+=sntoa(ExLineNumber);
-  result+="> ";
- }
-
- if(!ObjectName.empty())
- {
-  result+=" ";
-  result+=ObjectName;
-  result+="> ";
+  result += ExFileName;
+  if(ExLineNumber > 0)
+  {
+   result += ":";
+   result += sntoa(ExLineNumber);
+  }
+  result += " ";
  }
 
  return result;
@@ -224,11 +182,11 @@ std::string UException::GenerateLogPrefix(void) const
 
 
 
-/* Фатальные ошибки (обращение по 0 указателям и т.п.) */
+/* Р¤Р°С‚Р°Р»СЊРЅС‹Рµ РѕС€РёР±РєРё (РѕР±СЂР°С‰РµРЅРёРµ РїРѕ 0 СѓРєР°Р·Р°С‚РµР»СЏРј Рё С‚.Рї.) */
 //class EFatal: public UException
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 EFatal::EFatal(void)
 {
@@ -249,10 +207,10 @@ EFatal::~EFatal(void) throw()
 
 
 
-/* Ошибки, корректируемые пользователем */
+/* РћС€РёР±РєРё, РєРѕСЂСЂРµРєС‚РёСЂСѓРµРјС‹Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»РµРј */
 //class EError: public UException
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 EError::EError(void)
 {
@@ -273,10 +231,10 @@ EError::~EError(void) throw()
 
 
 
-/* Предупреждения (например об неэффективном использовании ресурсов) */
+/* РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёСЏ (РЅР°РїСЂРёРјРµСЂ РѕР± РЅРµСЌС„С„РµРєС‚РёРІРЅРѕРј РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРё СЂРµСЃСѓСЂСЃРѕРІ) */
 //class EWarning: public UException
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 EWarning::EWarning(void)
 {
@@ -296,10 +254,10 @@ EWarning::~EWarning(void) throw()
 // --------------------------
 
 
-/* Информационные сообщения, выдача которых инициируется пользователем */
+/* РРЅС„РѕСЂРјР°С†РёРѕРЅРЅС‹Рµ СЃРѕРѕР±С‰РµРЅРёСЏ, РІС‹РґР°С‡Р° РєРѕС‚РѕСЂС‹С… РёРЅРёС†РёРёСЂСѓРµС‚СЃСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»РµРј */
 //class EInfo: public UException
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 EInfo::EInfo(void)
 {
@@ -319,9 +277,9 @@ EInfo::~EInfo(void) throw()
 }
 // --------------------------
 
-/* Отладочные сообщения, выдача которых инициируется пользователем */
+/* РћС‚Р»Р°РґРѕС‡РЅС‹Рµ СЃРѕРѕР±С‰РµРЅРёСЏ, РІС‹РґР°С‡Р° РєРѕС‚РѕСЂС‹С… РёРЅРёС†РёРёСЂСѓРµС‚СЃСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»РµРј */
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 EDebug::EDebug(void)
 {
@@ -341,7 +299,7 @@ EDebug::~EDebug(void) throw()
 // --------------------------
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 EApp::EApp(void)
 {
@@ -358,9 +316,9 @@ EApp::~EApp(void) throw()
 }
 // --------------------------
 
-/* Ошибка преобразования строки в число */
+/* РћС€РёР±РєР° РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ СЃС‚СЂРѕРєРё РІ С‡РёСЃР»Рѕ */
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 EStrToNumber::EStrToNumber(const std::string &str)
  : Str(str)
@@ -374,19 +332,19 @@ EStrToNumber::~EStrToNumber(void) throw()
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string EStrToNumber::CreateLogMessage(void) const
 {
  return EError::CreateLogMessage()+string(" Str=")+Str;
 }
 // --------------------------
 
-// Исключения, связанные с идентификаторами
+// РСЃРєР»СЋС‡РµРЅРёСЏ, СЃРІСЏР·Р°РЅРЅС‹Рµ СЃ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂР°РјРё
 //struct EIdError
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 EIdError::EIdError(int id) : Id(id)
 {
@@ -398,19 +356,19 @@ EIdError::~EIdError(void) throw()
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string EIdError::CreateLogMessage(void) const
 {
  return EError::CreateLogMessage()+string(" Id=")+sntoa(Id);
 }
 // --------------------------
 
-// Исключения, связанные с именами
+// РСЃРєР»СЋС‡РµРЅРёСЏ, СЃРІСЏР·Р°РЅРЅС‹Рµ СЃ РёРјРµРЅР°РјРё
 //struct ENameError
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 ENameError::ENameError(const std::string &name) : Name(name)
 {
@@ -422,18 +380,28 @@ ENameError::~ENameError(void) throw()
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string ENameError::CreateLogMessage(void) const
 {
- return EError::CreateLogMessage()+string(" Name=")+Name;
+ return EError::CreateLogMessage()+string(" name error: ")+Name;
+}
+
+std::string ENameNotExist::CreateLogMessage(void) const
+{
+ return EError::CreateLogMessage()+string(" name not found: ")+Name;
+}
+
+std::string ENameAlreadyExist::CreateLogMessage(void) const
+{
+ return EError::CreateLogMessage()+string(" name already exists: ")+Name;
 }
 // --------------------------
 
-// Исключения, связанные с индексами
+// РСЃРєР»СЋС‡РµРЅРёСЏ, СЃРІСЏР·Р°РЅРЅС‹Рµ СЃ РёРЅРґРµРєСЃР°РјРё
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 EIndexError::EIndexError(int index) : Index(index)
 {
@@ -441,9 +409,9 @@ EIndexError::EIndexError(int index) : Index(index)
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string EIndexError::CreateLogMessage(void) const
 {
  return EError::CreateLogMessage()+string(" Index=")+sntoa(Index);
@@ -451,7 +419,7 @@ std::string EIndexError::CreateLogMessage(void) const
 // --------------------------
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 ESystemException::ESystemException(void)
 {
@@ -478,9 +446,9 @@ ESystemException::~ESystemException(void) throw()
 
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string ESystemException::CreateLogMessage(void) const
 {
  return EFatal::CreateLogMessage()+Info;
@@ -488,7 +456,7 @@ std::string ESystemException::CreateLogMessage(void) const
 // --------------------------
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 EFunctionReturnFalse::EFunctionReturnFalse(const std::string &file_name, const std::string &function_name, int line)
  : FileName(file_name), FunctionName(function_name), Line(line)
@@ -502,9 +470,9 @@ EFunctionReturnFalse::~EFunctionReturnFalse(void) throw()
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string EFunctionReturnFalse::CreateLogMessage(void) const
 {
  return EError::CreateLogMessage()+std::string(" File=")+FileName+
@@ -515,7 +483,7 @@ std::string EFunctionReturnFalse::CreateLogMessage(void) const
 
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 EFunctionReturnError::EFunctionReturnError(const std::string &file_name, const std::string &function_name, int line, int code)
  : FileName(file_name), FunctionName(function_name), Line(line), Code(code)
@@ -529,9 +497,9 @@ EFunctionReturnError::~EFunctionReturnError(void) throw()
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string EFunctionReturnError::CreateLogMessage(void) const
 {
  return EError::CreateLogMessage()+std::string(" File=")+FileName+
@@ -541,9 +509,9 @@ std::string EFunctionReturnError::CreateLogMessage(void) const
 }
 // --------------------------
 
-// Исключение с простой строкой текста как фатальная ошибка
+// РСЃРєР»СЋС‡РµРЅРёРµ СЃ РїСЂРѕСЃС‚РѕР№ СЃС‚СЂРѕРєРѕР№ С‚РµРєСЃС‚Р° РєР°Рє С„Р°С‚Р°Р»СЊРЅР°СЏ РѕС€РёР±РєР°
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 EStringFatal::EStringFatal(const std::string &str, int number)
  : Str(str)
@@ -557,18 +525,18 @@ EStringFatal::~EStringFatal(void) throw()
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string EStringFatal::CreateLogMessage(void) const
 {
  return EFatal::CreateLogMessage()+std::string(" ")+Str;
 }
 
 
-// Исключение с простой строкой текста как фатальная ошибка
+// РСЃРєР»СЋС‡РµРЅРёРµ СЃ РїСЂРѕСЃС‚РѕР№ СЃС‚СЂРѕРєРѕР№ С‚РµРєСЃС‚Р° РєР°Рє С„Р°С‚Р°Р»СЊРЅР°СЏ РѕС€РёР±РєР°
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 EStringError::EStringError(const std::string &str, int number)
  : Str(str)
@@ -582,18 +550,18 @@ EStringError::~EStringError(void) throw()
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string EStringError::CreateLogMessage(void) const
 {
  return EError::CreateLogMessage()+std::string(" ")+Str;
 }
 
 // --------------------------
-// Исключение с простой строкой текста как предупреждение
+// РСЃРєР»СЋС‡РµРЅРёРµ СЃ РїСЂРѕСЃС‚РѕР№ СЃС‚СЂРѕРєРѕР№ С‚РµРєСЃС‚Р° РєР°Рє РїСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 EStringWarning::EStringWarning(const std::string &str, int number)
  : Str(str)
@@ -607,9 +575,9 @@ EStringWarning::~EStringWarning(void) throw()
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string EStringWarning::CreateLogMessage(void) const
 {
  return EWarning::CreateLogMessage()+std::string(" ")+Str;
@@ -617,9 +585,9 @@ std::string EStringWarning::CreateLogMessage(void) const
 // --------------------------
 
 
-// Исключение с простой строкой текста как информационное сообщение
+// РСЃРєР»СЋС‡РµРЅРёРµ СЃ РїСЂРѕСЃС‚РѕР№ СЃС‚СЂРѕРєРѕР№ С‚РµРєСЃС‚Р° РєР°Рє РёРЅС„РѕСЂРјР°С†РёРѕРЅРЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 EStringInfo::EStringInfo(const std::string &str, int number)
  : Str(str)
@@ -633,18 +601,18 @@ EStringInfo::~EStringInfo(void) throw()
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string EStringInfo::CreateLogMessage(void) const
 {
  return EInfo::CreateLogMessage()+std::string(" ")+Str;
 }
 // --------------------------
 
-// Исключение с простой строкой текста как отладочное сообщение
+// РСЃРєР»СЋС‡РµРЅРёРµ СЃ РїСЂРѕСЃС‚РѕР№ СЃС‚СЂРѕРєРѕР№ С‚РµРєСЃС‚Р° РєР°Рє РѕС‚Р»Р°РґРѕС‡РЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 EStringDebug::EStringDebug(const std::string &str, int number)
  : Str(str)
@@ -658,18 +626,18 @@ EStringDebug::~EStringDebug(void) throw()
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string EStringDebug::CreateLogMessage(void) const
 {
  return EDebug::CreateLogMessage()+std::string(" ")+Str;
 }
 // --------------------------
 
-/// Исключение для информирования о высокоуровневом событии приложения
+/// РСЃРєР»СЋС‡РµРЅРёРµ РґР»СЏ РёРЅС„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Рѕ РІС‹СЃРѕРєРѕСѓСЂРѕРІРЅРµРІРѕРј СЃРѕР±С‹С‚РёРё РїСЂРёР»РѕР¶РµРЅРёСЏ
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 EStringApp::EStringApp(const std::string &str, int number)
  : Str(str)
@@ -683,9 +651,9 @@ EStringApp::~EStringApp(void) throw()
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string EStringApp::CreateLogMessage(void) const
 {
  return EApp::CreateLogMessage()+std::string(" ")+Str;
@@ -693,7 +661,7 @@ std::string EStringApp::CreateLogMessage(void) const
 // --------------------------
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UExceptionUnhandled::UExceptionUnhandled(const std::string &file_name, int line, const std::string &function_name)
  : FileName(file_name), FunctionName(function_name), Line(line)
@@ -707,9 +675,9 @@ UExceptionUnhandled::~UExceptionUnhandled(void) throw()
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string UExceptionUnhandled::CreateLogMessage(void) const
 {
  return EFatal::CreateLogMessage()+std::string(" File=")+FileName+

@@ -6,7 +6,7 @@
 /*#pragma package(smart_init)
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 TUFormsSerialize::TUFormsSerialize(void)
 {
@@ -20,9 +20,9 @@ TUFormsSerialize::~TUFormsSerialize(void)
 // --------------------------
 
 // --------------------------
-// Методы управления данными
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё
 // --------------------------
-// Управление хранилищем форм
+// РЈРїСЂР°РІР»РµРЅРёРµ С…СЂР°РЅРёР»РёС‰РµРј С„РѕСЂРј
 RDK::USerStorageXML* TUFormsSerialize::GetXml(void)
 {
  return Xml;
@@ -33,13 +33,13 @@ void TUFormsSerialize::SetXml(RDK::USerStorageXML *xml)
  Xml=xml;
 }
 
-// Добавляет форму в список сериализуемых
+// Р”РѕР±Р°РІР»СЏРµС‚ С„РѕСЂРјСѓ РІ СЃРїРёСЃРѕРє СЃРµСЂРёР°Р»РёР·СѓРµРјС‹С…
 void TUFormsSerialize::AddForm(const std::string &name, TForm *form)
 {
  Forms[name]=form;
 }
 
-// Удаляет форму из списка сериализуемых
+// РЈРґР°Р»СЏРµС‚ С„РѕСЂРјСѓ РёР· СЃРїРёСЃРєР° СЃРµСЂРёР°Р»РёР·СѓРµРјС‹С…
 void TUFormsSerialize::DelForm(TForm *form)
 {
  std::map<std::string, TForm* >::iterator I,J,K;
@@ -63,7 +63,7 @@ void TUFormsSerialize::DelForm(const std::string &name)
   Forms.erase(I);
 }
 
-// Удаляет все формы из списка сериализуемых
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ С„РѕСЂРјС‹ РёР· СЃРїРёСЃРєР° СЃРµСЂРёР°Р»РёР·СѓРµРјС‹С…
 void TUFormsSerialize::ClearForms(void)
 {
  Forms.clear();
@@ -72,9 +72,9 @@ void TUFormsSerialize::ClearForms(void)
 // --------------------------
 
 // --------------------------
-// Методы сериализации
+// РњРµС‚РѕРґС‹ СЃРµСЂРёР°Р»РёР·Р°С†РёРё
 // --------------------------
-// Сохраняет все данные форм в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РІСЃРµ РґР°РЅРЅС‹Рµ С„РѕСЂРј РІ xml
 void TUFormsSerialize::Save(void)
 {
  std::map<std::string, TForm* >::iterator I,J;
@@ -85,7 +85,7 @@ void TUFormsSerialize::Save(void)
  }
 }
 
-// Загружает все данные форм из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РІСЃРµ РґР°РЅРЅС‹Рµ С„РѕСЂРј РёР· xml
 void TUFormsSerialize::Load(void)
 {
  std::map<std::string, TForm* >::iterator I,J;
@@ -99,7 +99,7 @@ void TUFormsSerialize::Load(void)
 }
 
 
-// Сохраняет xml в файл
+// РЎРѕС…СЂР°РЅСЏРµС‚ xml РІ С„Р°Р№Р»
 void TUFormsSerialize::SaveXmlToFile(const String &filename)
 {
  if(!Xml)
@@ -115,7 +115,7 @@ void TUFormsSerialize::SaveXmlToFile(const String &filename)
  delete edit;
 }
 
-// Загружает xml из файла
+// Р—Р°РіСЂСѓР¶Р°РµС‚ xml РёР· С„Р°Р№Р»Р°
 void TUFormsSerialize::LoadXmlFromFile(const String &filename)
 {
  if(!Xml)
@@ -132,9 +132,9 @@ void TUFormsSerialize::LoadXmlFromFile(const String &filename)
 // --------------------------
 
 // --------------------------
-// Вспомогательные методы сериализации
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РјРµС‚РѕРґС‹ СЃРµСЂРёР°Р»РёР·Р°С†РёРё
 // --------------------------
-// Сохраняет данные формы в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РґР°РЅРЅС‹Рµ С„РѕСЂРјС‹ РІ xml
 void TUFormsSerialize::SaveForm(RDK::USerStorageXML &xml, TForm *form)
 {
  if(!form)
@@ -149,7 +149,7 @@ void TUFormsSerialize::SaveForm(RDK::USerStorageXML &xml, TForm *form)
  xml.SelectUp();
 }
 
-// Загружает данные формы из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РґР°РЅРЅС‹Рµ С„РѕСЂРјС‹ РёР· xml
 void TUFormsSerialize::LoadForm(RDK::USerStorageXML &xml, TForm *form)
 {
  if(!form)

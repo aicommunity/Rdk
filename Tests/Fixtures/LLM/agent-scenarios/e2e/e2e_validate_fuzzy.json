@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "id": "e2e_validate_fuzzy",
+  "tier": "e2e",
+  "suite": "e2e",
+  "user_text": "Could you check whether the configuration at /tmp/nmsdk_sample/project.ini is valid?",
+  "session": {
+    "project_loaded": false,
+    "llm_write_enabled": true
+  },
+  "e2e": {
+    "goal": "ValidateRan",
+    "expected_tools_any": [
+      "validate_configuration"
+    ],
+    "forbidden_tools": [
+      "add_component"
+    ],
+    "require_orchestrator_ok": true,
+    "allow_app_unavailable_result": true
+  },
+  "expect": {
+    "provider_rounds_max": 4,
+    "final_text_not_contains": [
+      "too many steps",
+      "maximum tool"
+    ]
+  }
+}

@@ -17,29 +17,32 @@ See file license.txt for more information
 #include "UPropertyEndpoints.h"
 #include "UTime.h"
 #include "UController.h"
+#include <unordered_map>
+#include <typeindex>
 
 namespace RDK {
 
 class UContainer;
 
-// Класс описания локальных указателей
+// РРЅС‚РµСЂС„РµР№СЃРЅС‹Р№ РєР»Р°СЃСЃ РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ СѓРєР°Р·Р°С‚РµР»СЏРјРё
 class RDK_LIB_TYPE UIPointer
 {
-protected: // Данные
+protected:
 
 public:
+virtual ~UIPointer();
 virtual UEPtr<UContainer> const Get(void) const=0;
 
 virtual void Set(UEPtr<UContainer> source)=0;
 
 virtual void Del(UEPtr<UContainer> source)=0;
 
-// Проверяет, существует ли такой указатель в этом классе
-// Возвращает 0 если да, и <0 если нет
+// РџСЂРѕРІРµСЂСЏРµС‚, СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё С‚Р°РєРѕР№ СѓРєР°Р·Р°С‚РµР»СЊ РІ СЌС‚РѕРј РєР»Р°СЃСЃРµ
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ 0 РµСЃР»Рё РґР°, Рё <0 РµСЃР»Рё РЅРµС‚
 virtual int Find(UEPtr<const UContainer> cont) const=0;
 
+// РћРїРµСЂР°С‚РѕСЂС‹
 // -----------------
-// Операторы
 // -----------------
 UIPointer& operator = (UEPtr<UContainer> source)
 {
@@ -50,20 +53,22 @@ UIPointer& operator = (UEPtr<UContainer> source)
 };
 
 
-// Хранилище свойств указателя
+// РџРµСЂРµРјРµРЅРЅР°СЏ СѓРєР°Р·Р°С‚РµР»СЏ СЃРІРѕР№СЃС‚РІР°
 struct RDK_LIB_TYPE UPVariable
 {
- // Id указателя
+// Id РѕР±СЉРµРєС‚Р°
  UId Id;
 
- // Указатель на свойство
+ // РЈРєР°Р·Р°С‚РµР»СЊ РЅР° СЃРІРѕР№СЃС‚РІРѕ
  UEPtr<UIPointer> Pointer;
 
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
-// Конструкторы и деструкторы
 // --------------------------
 UPVariable(void);
 UPVariable(UId id, UEPtr<UIPointer> prop);
+UPVariable(const UPVariable&) = default;
+UPVariable& operator=(const UPVariable&) = default;
 virtual ~UPVariable(void);
 // --------------------------
 };
@@ -75,186 +80,191 @@ typedef long int IndexT;
 //class UContainer;
 typedef UContainer* PUAContainer;
 
-// Массив указателей на контейнеры
+// РњР°СЃСЃРёРІ СѓРєР°Р·Р°С‚РµР»РµР№ РЅР° РєРѕРЅС‚РµР№РЅРµСЂС‹
 typedef std::vector<UEPtr<UContainer> > UAContainerVector;
 
-// Массив статических компонент
 typedef std::map<UEPtr<UContainer>, NameT> UAStaticContainerMap;
 
 class RDK_LIB_TYPE UContainer: public UComponent
 {
-public: // Типы данных
-typedef std::map<NameT,UPVariable> PointerMapT;
-typedef std::map<NameT,UPVariable>::iterator PointerMapIteratorT;
-typedef std::map<NameT,UPVariable>::const_iterator PointerMapCIteratorT;
+public:
+typedef std::unordered_map<NameT,UPVariable> PointerMapT;
+typedef std::unordered_map<NameT,UPVariable>::iterator PointerMapIteratorT;
+typedef std::unordered_map<NameT,UPVariable>::const_iterator PointerMapCIteratorT;
 
 //friend class UStorage;
 friend class UController;
 
-private: // Системные свойства
-// Таблица соответствий имен и Id компонент объекта
-std::map<NameT,UId> CompsLookupTable;
+private: // РўР°Р±Р»РёС†Р° СЃРѕРѕС‚РІРµС‚СЃС‚РІРёР№ РёРјРµРЅ Рё Id РєРѕРјРїРѕРЅРµРЅС‚ РѕР±СЉРµРєС‚Р°
+std::unordered_map<NameT,UId> CompsLookupTable;
 
-// Таблица локальных указателей на дочерние компоненты
+// РўР°Р±Р»РёС†Р° Р»РѕРєР°Р»СЊРЅС‹С… СѓРєР°Р·Р°С‚РµР»РµР№ РЅР° РґРѕС‡РµСЂРЅРёРµ РєРѕРјРїРѕРЅРµРЅС‚С‹
 PointerMapT PointerLookupTable;
 
-private: // Системные свойства
-// Таблица компонент
+private: // РўР°Р±Р»РёС†Р° РєРѕРјРїРѕРЅРµРЅС‚
+// РўР°Р±Р»РёС†Р° РєРѕРјРїРѕРЅРµРЅС‚
 UAContainerVector Components;
 
-/// Таблица статических компонент
+// Index map for O(1) component lookup by ID
+std::unordered_map<UId, size_t> ComponentsIdIndex;
+
+// Cache for last successful dynamic_pointer_cast in GetComponent<T>
+mutable UEPtr<UContainer> CachedComponent;
+mutable UId CachedComponentId;
+mutable std::type_index CachedComponentType;
+
+/// РњР°СЃРєР° РґР»СЏ С„РёР»СЊС‚СЂР°С†РёРё СЃРёСЃС‚РµРјРЅС‹С… СЃРѕР±С‹С‚РёР№ РєРѕРјРїРѕРЅРµРЅС‚Р°
 UAStaticContainerMap StaticComponents;
 
-// Таблица контроллеров интерфейса
+// РўР°Р±Р»РёС†Р° РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРІ РёРЅС‚РµСЂС„РµР№СЃР°
 std::vector<UEPtr<UController> > Controllers;
 
-public: // Общедоступные свойства
-// Имя объекта
-UProperty<NameT, UContainer, ptParameter | pgSystem> Name;
+public: // РРјСЏ РѕР±СЉРµРєС‚Р°
+UProperty<NameT, UContainer, ptSysParameter> Name;
 
-// Id объекта
-UProperty<UId, UContainer, ptParameter | pgSystem> Id;
+// Id РѕР±СЉРµРєС‚Р°
+UProperty<UId, UContainer, ptSysParameter> Id;
 
-// Флаг активности объекта
-// true - расчет объекта будет выполняться
-// false - расчет объекта будет игнорироваться
-UProperty<bool,  UContainer, ptParameter | pgPublic> Activity;
+// true - СЂР°СЃС‡РµС‚ РѕР±СЉРµРєС‚Р° Р±СѓРґРµС‚ РІС‹РїРѕР»РЅСЏС‚СЊСЃСЏ
+// false - СЂР°СЃС‡РµС‚ РѕР±СЉРµРєС‚Р° Р±СѓРґРµС‚ РёРіРЅРѕСЂРёСЂРѕРІР°С‚СЊСЃСЏ
+UProperty<bool,  UContainer, ptPubParameter> Activity;
 
-// Шаг счета в долях секунды
-// Реальный шаг = 1./TimeStep
-UProperty<UTime,  UContainer, ptParameter | pgSystem> TimeStep;
+// Р РµР°Р»СЊРЅС‹Р№ С€Р°Рі = 1./TimeStep
+UProperty<UTime,  UContainer, ptSysParameter> TimeStep;
 
-/// Максимально допустимое время расчета компонента вместе с дочерними компонентами
-/// в миллисекундах.
-/// Если время расчета превышено, то расчет последующих дочерних компонент
-/// не выполняется
-/// Если значение параметра <0, то нет ограничений
-UProperty<long long, UContainer, ptParameter | pgPublic> MaxCalculationDuration;
+/// РІ РјРёР»Р»РёСЃРµРєСѓРЅРґР°С….
+/// Р•СЃР»Рё РІСЂРµРјСЏ СЂР°СЃС‡РµС‚Р° РїСЂРµРІС‹С€РµРЅРѕ, С‚Рѕ СЂР°СЃС‡РµС‚ РїРѕСЃР»РµРґСѓСЋС‰РёС… РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚
+/// РЅРµ РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ
+/// Р•СЃР»Рё Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР° <0, С‚Рѕ РЅРµС‚ РѕРіСЂР°РЅРёС‡РµРЅРёР№
+UProperty<long long, UContainer, ptPubParameter> MaxCalculationDuration;
 
-/// Время расчета компонента вместе с дочерними компонентами
-/// в миллисекундах, по превышении которого выдается предупреждающее сообщение в лог.
-/// Если значение параметра <0, то нет ограничений
-UProperty<long long, UContainer, ptParameter | pgPublic> CalculationDurationThreshold;
+/// РІ РјРёР»Р»РёСЃРµРєСѓРЅРґР°С…, РїРѕ РїСЂРµРІС‹С€РµРЅРёРё РєРѕС‚РѕСЂРѕРіРѕ РІС‹РґР°РµС‚СЃСЏ РїСЂРµРґСѓРїСЂРµР¶РґР°СЋС‰РµРµ СЃРѕРѕР±С‰РµРЅРёРµ РІ Р»РѕРі.
+/// Р•СЃР»Рё Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР° <0, С‚Рѕ РЅРµС‚ РѕРіСЂР°РЅРёС‡РµРЅРёР№
+UProperty<long long, UContainer, ptPubParameter> CalculationDurationThreshold;
 
-public: // Физические свойства
-// Координата компонента в пространстве сети
-UProperty<RDK::MVector<double,3>, UContainer, ptParameter | pgPublic> Coord;
+public: // РљРѕРѕСЂРґРёРЅР°С‚Р° РєРѕРјРїРѕРЅРµРЅС‚Р° РІ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРµ СЃРµС‚Рё
+UProperty<RDK::MVector<double,3>, UContainer, ptPubParameter> Coord;
 
-// Время, затраченное на обработку объекта
-// (без учета времени обсчета дочерних объектов) (мс)
-UProperty<unsigned long long, UContainer, ptState | pgPublic | pgSystem> StepDuration;
+// (Р±РµР· СѓС‡РµС‚Р° РІСЂРµРјРµРЅРё РѕР±СЃС‡РµС‚Р° РґРѕС‡РµСЂРЅРёС… РѕР±СЉРµРєС‚РѕРІ) (РјСЃ)
+UProperty<unsigned long long, UContainer, ptPubSysState> StepDuration;
 
-/// Флаги переопределения настроек вывода детальной отладочной информации
-UProperty<unsigned int, UContainer, ptParameter | pgPublic | pgSystem> DebugSysEventsMask;
+/// РњР°СЃРєР° РґР»СЏ С„РёР»СЊС‚СЂР°С†РёРё СЃРёСЃС‚РµРјРЅС‹С… СЃРѕР±С‹С‚РёР№ РєРѕРјРїРѕРЅРµРЅС‚Р°
+UProperty<unsigned int, UContainer, ptPubParameter | static_cast<unsigned int>(pgSystem)> DebugSysEventsMask;
 
-protected: // Временные переменные
-// Время, прошедшее между двумя последними итерациями счета
+protected: // Р’СЂРµРјСЏ, РїСЂРѕС€РµРґС€РµРµ РјРµР¶РґСѓ РґРІСѓРјСЏ РїРѕСЃР»РµРґРЅРёРјРё РёС‚РµСЂР°С†РёСЏРјРё СЃС‡РµС‚Р°
 unsigned long long InterstepsInterval;
 
-// Если 'TimeStep' > 'Owner->TimeStep' то 'CalcCounter' является
-// счетчиком текущего интервала ожидания.
-// В противном случае 'CalcCounter' не ипользуется
+// СЃС‡РµС‚С‡РёРєРѕРј С‚РµРєСѓС‰РµРіРѕ РёРЅС‚РµСЂРІР°Р»Р° РѕР¶РёРґР°РЅРёСЏ.
+// Р’ РїСЂРѕС‚РёРІРЅРѕРј СЃР»СѓС‡Р°Рµ 'CalcCounter' РЅРµ РёРїРѕР»СЊР·СѓРµС‚СЃСЏ
 int CalcCounter;
 
-// Хранит величину шага счета родительского
-// объекта или величину шага счета этого объекта
-// если родительского объекта не существует
+// РҐСЂР°РЅРёС‚ РІРµР»РёС‡РёРЅСѓ С€Р°РіР° СЃС‡РµС‚Р° СЂРѕРґРёС‚РµР»СЊСЃРєРѕРіРѕ
+// РѕР±СЉРµРєС‚Р° РёР»Рё РІРµР»РёС‡РёРЅСѓ С€Р°РіР° СЃС‡РµС‚Р° СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°
+// РµСЃР»Рё СЂРѕРґРёС‚РµР»СЊСЃРєРѕРіРѕ РѕР±СЉРµРєС‚Р° РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
 UTime OwnerTimeStep;
 
-// Указатель на 0-й элемент вектора компонент
+// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° 0-Р№ СЌР»РµРјРµРЅС‚ РІРµРєС‚РѕСЂР° РєРѕРјРїРѕРЅРµРЅС‚
 UEPtr<UContainer>* PComponents;
 
-// Количество компонент в векторе компонент
+// РљРѕР»РёС‡РµСЃС‚РІРѕ РєРѕРјРїРѕРЅРµРЅС‚ РІ РІРµРєС‚РѕСЂРµ РєРѕРјРїРѕРЅРµРЅС‚
 int NumComponents;
 
-// Указатель на этот объект в хранилище
+// Cache for active (non-static) components to optimize Calculate() loop
+// Updated when components are added/removed or static flag changes
+std::vector<UEPtr<UContainer>> ActiveComponents;
+bool ActiveComponentsCacheValid;
+
+// РљСЌС€ РґР»СЏ РїСЂРѕРІРµСЂРєРё TimeStep (РѕРїС‚РёРјРёР·Р°С†РёСЏ Calculate)
+// РРЅРІР°Р»РёРґРёСЂСѓРµС‚СЃСЏ РїСЂРё РёР·РјРµРЅРµРЅРёРё TimeStep
+mutable bool CachedTimeStepEqual;
+mutable bool CachedTimeStepLess;
+mutable bool CachedTimeStepGreater;
+
+//UEPtr<UInstancesStorageElement> ObjectIterator;
 //UEPtr<UInstancesStorageElement> ObjectIterator;
 
-// Последний использованный Id компонент
+// РџРѕСЃР»РµРґРЅРёР№ РёСЃРїРѕР»СЊР·РѕРІР°РЅРЅС‹Р№ Id РєРѕРјРїРѕРЅРµРЅС‚
 UId LastId;
 
-// Флаг запроса на пропуск обсчета компонент в текущей итерации расчетов
+// Р¤Р»Р°Рі Р·Р°РїСЂРѕСЃР° РЅР° РїСЂРѕРїСѓСЃРє РѕР±СЃС‡РµС‚Р° РєРѕРјРїРѕРЅРµРЅС‚ РІ С‚РµРєСѓС‰РµР№ РёС‚РµСЂР°С†РёРё СЂР°СЃС‡РµС‚РѕРІ
 bool SkipComponentCalculation;
 
-// Флаг запроса на повторный обсчет компонент в текущей итерации расчетов сначала
+// Р¤Р»Р°Рі Р·Р°РїСЂРѕСЃР° РЅР° РїРѕРІС‚РѕСЂРЅС‹Р№ РѕР±СЃС‡РµС‚ РєРѕРјРїРѕРЅРµРЅС‚ РІ С‚РµРєСѓС‰РµР№ РёС‚РµСЂР°С†РёРё СЂР°СЃС‡РµС‚РѕРІ СЃРЅР°С‡Р°Р»Р°
 bool ComponentReCalculation;
 
-// Время начала счета компонента на текущем шаге
+/// Р’СЂРµРјСЏ РЅР°С‡Р°Р»Р° СЂР°СЃС‡РµС‚Р° СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° РїРѕ СЃРёСЃС‚РµРјРЅС‹Рј С‡Р°СЃР°Рј
 unsigned long long StartCalcTime;
 
-// Время окончания счета компонента на предыдущем шаге
+/// Р’СЂРµРјСЏ Р·Р°РІРµСЂС€РµРЅРёСЏ СЂР°СЃС‡РµС‚Р° СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° РїРѕ СЃРёСЃС‚РµРјРЅС‹Рј С‡Р°СЃР°Рј
 unsigned long long LastCalcTime;
 
-/// Флаг, выставляемый на время перемещения компонента
+/// Р¤Р»Р°Рі, РїРѕРєР°Р·С‹РІР°СЋС‰РёР№ С‡С‚Рѕ РєРѕРјРїРѕРЅРµРЅС‚ РЅР°С…РѕРґРёС‚СЃСЏ РІ РґРІРёР¶РµРЅРёРё
 bool MovingFlag;
 
-/// Объем потребленной памяти за шаг расчета.
-/// Может быть отрицательрным если память освобождалась.
-/// Актуально если включен флаг MemoryMonitor
+/// РњРѕР¶РµС‚ Р±С‹С‚СЊ РѕС‚СЂРёС†Р°С‚РµР»СЊСЂРЅС‹Рј РµСЃР»Рё РїР°РјСЏС‚СЊ РѕСЃРІРѕР±РѕР¶РґР°Р»Р°СЃСЊ.
+/// РђРєС‚СѓР°Р»СЊРЅРѕ РµСЃР»Рё РІРєР»СЋС‡РµРЅ С„Р»Р°Рі MemoryMonitor
 long long MemoryUsageDiff;
 
-/// Изменение максимально длинного куска доступной памяти после шага расчета
-/// Может быть отрицательрным если кусок увеличился.
-/// Актуально если включен флаг MemoryMonitor
+/// РњРѕР¶РµС‚ Р±С‹С‚СЊ РѕС‚СЂРёС†Р°С‚РµР»СЊСЂРЅС‹Рј РµСЃР»Рё РєСѓСЃРѕРє СѓРІРµР»РёС‡РёР»СЃСЏ.
+/// РђРєС‚СѓР°Р»СЊРЅРѕ РµСЃР»Рё РІРєР»СЋС‡РµРЅ С„Р»Р°Рі MemoryMonitor
 long long MaxMemoryBlockDiff;
 
 protected:
-/// Список свойств, выводимых в детальный лог
+/// РЎРїРёСЃРѕРє РёРјРµРЅ СЃРІРѕР№СЃС‚РІ, РІС‹РІРѕРґРёРјС‹С… РІ РїРѕРґСЂРѕР±РЅС‹Р№ Р»РѕРі
 std::vector<std::string> PropertiesForDetailedLog;
 
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
-// Конструкторы и деструкторы
 // --------------------------
 public:
 UContainer(void);
+// РЈРґР°Р»СЏРµРј РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РєРѕРїРёСЂРѕРІР°РЅРёСЏ Рё РѕРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
+// РљРѕРїРёСЂРѕРІР°РЅРёРµ РґРѕР»Р¶РЅРѕ РІС‹РїРѕР»РЅСЏС‚СЊСЃСЏ С‡РµСЂРµР· РјРµС‚РѕРґ Copy()
+UContainer(const UContainer&) = delete;
+UContainer& operator=(const UContainer&) = delete;
 virtual ~UContainer(void);
 // --------------------------
 
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє СЃРІРѕР№СЃС‚РІР°Рј
 // --------------------------
-// Методы доступа к свойствам
-// --------------------------
-// Возвращает владелца этого объекта
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІР»Р°РґРµР»С†Р° СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°
 UEPtr<UContainer> GetOwner(void) const;
 
-// Возвращает указатель на главного владельца этим объектом
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РіР»Р°РІРЅРѕРіРѕ РІР»Р°РґРµР»СЊС†Р° СЌС‚РёРј РѕР±СЉРµРєС‚РѕРј
 UEPtr<UContainer> GetMainOwner(void) const;
 
-// Возвращает хранилище компонент этого объекта
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С…СЂР°РЅРёР»РёС‰Рµ РєРѕРјРїРѕРЅРµРЅС‚ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°
 UEPtr<UStorage> const GetStorage(void) const;
 
-// Проверяет, является ли объект owner
-// владельцем этого объекта на каком-либо уровне иерархии
+// РџСЂРѕРІРµСЂСЏРµС‚, СЏРІР»СЏРµС‚СЃСЏ Р»Рё РѕР±СЉРµРєС‚ owner РІР»Р°РґРµР»СЊС†РµРј СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р° РЅР° РєР°РєРѕРј-Р»РёР±Рѕ СѓСЂРѕРІРЅРµ РёРµСЂР°СЂС…РёРё
 bool CheckOwner(UEPtr<UContainer> owner) const;
 
-// Возвращает полный Id объекта
-// (включая Id всех владельцев)
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїРѕР»РЅС‹Р№ Id РѕР±СЉРµРєС‚Р° (РІРєР»СЋС‡Р°СЏ Id РІСЃРµС… РІР»Р°РґРµР»СЊС†РµРІ)
 ULongId& GetFullId(ULongId &buffer) const;
 ULongId GetFullId(void) const;
 
-// Возвращает  'длинный' Id объекта
-// (исключая имя владельца 'mainowner')
-// Метод возвращает пустой вектор, если 'mainowner' - не является
-// владельцем объекта ни на каком уровне иерархии
+// Р’РѕР·РІСЂР°С‰Р°РµС‚  'РґР»РёРЅРЅС‹Р№' Id РѕР±СЉРµРєС‚Р° (РёСЃРєР»СЋС‡Р°СЏ РёРјСЏ РІР»Р°РґРµР»СЊС†Р° 'mainowner')
+// РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ РїСѓСЃС‚РѕР№ РІРµРєС‚РѕСЂ, РµСЃР»Рё 'mainowner' - РЅРµ СЏРІР»СЏРµС‚СЃСЏ
+// РІР»Р°РґРµР»СЊС†РµРј РѕР±СЉРµРєС‚Р° РЅРё РЅР° РєР°РєРѕРј СѓСЂРѕРІРЅРµ РёРµСЂР°СЂС…РёРё
 ULongId& GetLongId(UEPtr<UContainer> mainowner, ULongId &buffer) const;
 ULongId GetLongId(UEPtr<UContainer> mainowner) const;
-// Промежуточный вариант одноименного метода, возвращающего длинное имя
+// РџСЂРѕРјРµР¶СѓС‚РѕС‡РЅС‹Р№ РІР°СЂРёР°РЅС‚ РѕРґРЅРѕРёРјРµРЅРЅРѕРіРѕ РјРµС‚РѕРґР°, РІРѕР·РІСЂР°С‰Р°СЋС‰РµРіРѕ РґР»РёРЅРЅРѕРµ РёРјСЏ
 std::string& GetLongId(UEPtr<UContainer> mainowner, std::string &buffer) const;
 
-// Возвращает true если передаваемый идентификатор объекта корректен, в противном случае возвращает false
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ true РµСЃР»Рё РїРµСЂРµРґР°РІР°РµРјС‹Р№ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РѕР±СЉРµРєС‚Р° РєРѕСЂСЂРµРєС‚РµРЅ, РІ РїСЂРѕС‚РёРІРЅРѕРј СЃР»СѓС‡Р°Рµ РІРѕР·РІСЂР°С‰Р°РµС‚ false
 bool CheckLongId(const ULongId &id) const;
-// Промежуточный вариант одноименного метода, обрабатывающего длинное имя
+// РџСЂРѕРјРµР¶СѓС‚РѕС‡РЅС‹Р№ РІР°СЂРёР°РЅС‚ РѕРґРЅРѕРёРјРµРЅРЅРѕРіРѕ РјРµС‚РѕРґР°, РѕР±СЂР°Р±Р°С‚С‹РІР°СЋС‰РµРіРѕ РґР»РёРЅРЅРѕРµ РёРјСЏ
 bool CheckLongId(const std::string &id) const;
 
-// Управление средой выполнения этого объекта
+// РЈРїСЂР°РІР»РµРЅРёРµ СЃСЂРµРґРѕР№ РІС‹РїРѕР»РЅРµРЅРёСЏ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°
 virtual bool SetEnvironment(UEPtr<UEnvironment> environment);
 
-// Указатель на логгер
-virtual bool SetLogger(UEPtr<ULoggerEnv> logger);
+virtual bool SetLogger(UEPtr<UExceptionLogger> logger);
 
-// Вызов обработчика исключений среды
+// Р’С‹Р·РѕРІ РѕР±СЂР°Р±РѕС‚С‡РёРєР° РёСЃРєР»СЋС‡РµРЅРёР№ СЃСЂРµРґС‹
 virtual void ProcessException(UException &exception);
 
-// Вызов обработчика исключений среды для простой записи данных в лог
+/// Р—Р°РїРёСЃС‹РІР°РµС‚ РґРёР°РіРЅРѕСЃС‚РёС‡РµСЃРєРѕРµ РёР»Рё РѕС€РёР±РѕС‡РЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ РІ Р»РѕРі
 virtual void LogMessage(int msg_level, const std::string &line, int error_event_number=0);
 virtual void LogMessage(int msg_level, const std::string &method_name, const std::string &line, int error_event_number=0);
 virtual void LogMessageEx(int msg_level, const std::string &line, int error_event_number=0);
@@ -263,139 +273,128 @@ virtual void LogMessageEx(int msg_level, const std::string &method_name, int lin
 
 virtual void LogDebugSysMessage(unsigned long long debug_sys_msg_type, unsigned long long modifier);
 
-/// Логирует свойства при входе в расчет (входы, параметры, состояния)
+/// Р—Р°РїРёСЃС‹РІР°РµС‚ Р·РЅР°С‡РµРЅРёСЏ РІС‹Р±СЂР°РЅРЅС‹С… СЃРІРѕР№СЃС‚РІ РїРµСЂРµРґ РЅР°С‡Р°Р»РѕРј СЂР°СЃС‡РµС‚Р° РєРѕРјРїРѕРЅРµРЅС‚Р°
 virtual void LogPropertiesBeforeCalc(void);
 
-/// Логирует свойства при выходе из расчета (выходы)
+/// Р—Р°РїРёСЃС‹РІР°РµС‚ Р·РЅР°С‡РµРЅРёСЏ РІС‹Р±СЂР°РЅРЅС‹С… СЃРІРѕР№СЃС‚РІ РїРѕСЃР»Рµ Р·Р°РІРµСЂС€РµРЅРёСЏ СЂР°СЃС‡РµС‚Р° РєРѕРјРїРѕРЅРµРЅС‚Р°
 virtual void LogPropertiesAfterCalc(void);
 
-/// Возвращает состояние флага режима отладки
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ С„Р»Р°РіР° СЂРµР¶РёРјР° РѕС‚Р»Р°РґРєРё
 virtual bool CheckDebugMode(void) const;
 
-/// Формирует список свйоств для детального лога из строки
-/// Разделитель - запятая
+/// Р Р°Р·РґРµР»РёС‚РµР»СЊ - Р·Р°РїСЏС‚Р°СЏ
 void SetPropertiesForDetailedLog(const std::string &str);
 // --------------------------
 
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃРІРѕР№СЃС‚РІР°РјРё
 // --------------------------
-// Методы управления свойствами
+// РЈРґР°Р»СЏРµС‚ РІР»Р°РґРµР»СЊС†Р° РѕР±СЉРµРєС‚Р°
 // --------------------------
-// Удаляет владельца объекта
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃРІРѕР№СЃС‚РІР°РјРё
+// --------------------------
+// РЈРґР°Р»СЏРµС‚ РІР»Р°РґРµР»СЊС†Р° РѕР±СЉРµРєС‚Р°
 void BreakOwner(void);
 
-// Указатель устанавливается на число уровней дочерних компонент
-// 'levels'. Если levels < 0 то устанавливается компонентам на всех уровнях
+// РЈРєР°Р·Р°С‚РµР»СЊ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ РЅР° С‡РёСЃР»Рѕ СѓСЂРѕРІРЅРµР№ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚
+// 'levels'. Р•СЃР»Рё levels < 0 С‚Рѕ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°Рј РЅР° РІСЃРµС… СѓСЂРѕРІРЅСЏС…
 void SetMainOwner(UEPtr<UComponent> mainowner);
 void SetMainOwner(UEPtr<UComponent> mainowner, int levels);
 
-// Проверяет предлагаемый Id 'id' на уникальность в рамках данного, объекта.
+// РџСЂРѕРІРµСЂСЏРµС‚ РїСЂРµРґР»Р°РіР°РµРјС‹Р№ Id 'id' РЅР° СѓРЅРёРєР°Р»СЊРЅРѕСЃС‚СЊ РІ СЂР°РјРєР°С… РґР°РЅРЅРѕРіРѕ, РѕР±СЉРµРєС‚Р°.
 bool CheckId(const UId &id);
 
-// Генерирует уникальный Id
+// Р“РµРЅРµСЂРёСЂСѓРµС‚ СѓРЅРёРєР°Р»СЊРЅС‹Р№ Id
 virtual UId GenerateId(void);
 
-
-// Возвращает базовый класс свойства с типом данных
+/// РќР°С…РѕРґРёС‚ СЃРІРѕР№СЃС‚РІРѕ РїРѕ РёРјРµРЅРё Рё С‚РёРїСѓ T, РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РёР»Рё 0 РµСЃР»Рё РЅРµ РЅР°Р№РґРµРЅРѕ
 template<typename T>
 const UEPtr<UVBaseDataProperty<T> > FindPropertyEx(const NameT &name) const;
 
 template<typename T>
 UEPtr<UVBaseDataProperty<T> > FindPropertyEx(const NameT &name);
 
-/// Подключает к свойству destination_property данные свойства другого компонента
+/// РџРѕРґРєР»СЋС‡Р°РµС‚ РґР°РЅРЅС‹Рµ СЃРІРѕР№СЃС‚РІР° source_property РєРѕРјРїРѕРЅРµРЅС‚Р° source_component
+/// Рє СЃРІРѕР№СЃС‚РІСѓ destination_property РґР°РЅРЅРѕРіРѕ РєРѕРЅС‚РµР№РЅРµСЂР°
 template<typename T>
 bool AttachPropertyData(const NameT& destination_property, const NameT& source_component, const NameT &source_property);
 
-/// Отключает от свойства destination_property данные свойства другого компонента
 template<typename T>
 void DetachPropertyData(const NameT& destination_property);
 // --------------------------
 
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РѕР±С‰РµРґРѕСЃС‚СѓРїРЅС‹РјРё СЃРІРѕР№СЃС‚РІР°РјРё
 // --------------------------
-// Методы управления общедоступными свойствами
 // --------------------------
 public:
-// Координата компонента в пространстве сети
+// РљРѕРѕСЂРґРёРЅР°С‚Р° РєРѕРјРїРѕРЅРµРЅС‚Р° РІ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРµ СЃРµС‚Рё
 const RDK::MVector<double,3>& GetCoord(void) const;
 
-// Время, затраченное на обработку объекта
-// (без учета времени обсчета дочерних объектов) (мс)
+// (Р±РµР· СѓС‡РµС‚Р° РІСЂРµРјРµРЅРё РѕР±СЃС‡РµС‚Р° РґРѕС‡РµСЂРЅРёС… РѕР±СЉРµРєС‚РѕРІ) (РјСЃ)
 unsigned long long GetStepDuration(void) const;
 
-// Время, затраченное на обработку объекта
-// (вместе со времени обсчета дочерних объектов) (мс)
+// (РІРјРµСЃС‚Рµ СЃРѕ РІСЂРµРјРµРЅРё РѕР±СЃС‡РµС‚Р° РґРѕС‡РµСЂРЅРёС… РѕР±СЉРµРєС‚РѕРІ) (РјСЃ)
 unsigned long long GetFullStepDuration(void) const;
 
-// Время, прошедшее между двумя последними итерациями счета
 unsigned long long GetInterstepsInterval(void) const;
 
-// Возвращает мгновенное быстродействие, равное отношению
-// полного затраченного времени к ожидаемому времени шага счета
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјРіРЅРѕРІРµРЅРЅРѕРµ Р±С‹СЃС‚СЂРѕРґРµР№СЃС‚РІРёРµ, СЂР°РІРЅРѕРµ РѕС‚РЅРѕС€РµРЅРёСЋ
+// РїРѕР»РЅРѕРіРѕ Р·Р°С‚СЂР°С‡РµРЅРЅРѕРіРѕ РІСЂРµРјРµРЅРё Рє РѕР¶РёРґР°РµРјРѕРјСѓ РІСЂРµРјРµРЅРё С€Р°РіР° СЃС‡РµС‚Р°
 double GetInstantPerformance(void) const;
 
-// Устанавливает величину шага интегрирования
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІРµР»РёС‡РёРЅСѓ С€Р°РіР° РёРЅС‚РµРіСЂРёСЂРѕРІР°РЅРёСЏ
 const UTime& GetTimeStep(void) const;
 
-// Устанавливает величину шага интегрирования компоненту и всем его дочерним компонентам
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІРµР»РёС‡РёРЅСѓ С€Р°РіР° РёРЅС‚РµРіСЂРёСЂРѕРІР°РЅРёСЏ РєРѕРјРїРѕРЅРµРЅС‚Сѓ Рё РІСЃРµРј РµРіРѕ РґРѕС‡РµСЂРЅРёРј РєРѕРјРїРѕРЅРµРЅС‚Р°Рј
 bool SetGlobalTimeStep(UTime timestep);
 
-/// Переключает режим использования индивидуального TimeStep для компонента и всех дочерних компонент
-/// Предназначено только для вызова из UEnvironment
+/// РџСЂРµРґРЅР°Р·РЅР°С‡РµРЅРѕ С‚РѕР»СЊРєРѕ РґР»СЏ РІС‹Р·РѕРІР° РёР· UEnvironment
 void ChangeUseIndTimeStepMode(bool value);
 
-// Устанавливает флаг активности объекта
-const bool& GetActivity(void) const;
+inline const bool& GetActivity(void) const { return Activity.GetData(); }
 
-// Id объекта
 UId GetId(void) const;
 
-// Проверяет предлагаемое имя 'name' на уникальность в рамках данного объекта
+// РџСЂРѕРІРµСЂСЏРµС‚ РїСЂРµРґР»Р°РіР°РµРјРѕРµ РёРјСЏ 'name' РЅР° СѓРЅРёРєР°Р»СЊРЅРѕСЃС‚СЊ РІ СЂР°РјРєР°С… РґР°РЅРЅРѕРіРѕ РѕР±СЉРµРєС‚Р°
 bool CheckName(const NameT &name);
 
-// Проверяет предлагаемое имя 'name' на синтаксическую корректность
 bool ValidateName(const NameT &name);
 
-// Генерирует имя уникальное в компонентах этого объекта
+// Р“РµРЅРµСЂРёСЂСѓРµС‚ РёРјСЏ СѓРЅРёРєР°Р»СЊРЅРѕРµ РІ РєРѕРјРїРѕРЅРµРЅС‚Р°С… СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°
 virtual NameT& GenerateName(const NameT &prefix, NameT &namebuffer);
 
-// Устанавливает имя объекта
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РёРјСЏ РѕР±СЉРµРєС‚Р°
 const NameT& GetName(void) const;
 
-// Возвращает полное имя объекта
-// (включая имена всех владельцев)
+// (РІРєР»СЋС‡Р°СЏ РёРјРµРЅР° РІСЃРµС… РІР»Р°РґРµР»СЊС†РµРІ)
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїРѕР»РЅРѕРµ РёРјСЏ РѕР±СЉРµРєС‚Р° (РІРєР»СЋС‡Р°СЏ РёРјРµРЅР° РІСЃРµС… РІР»Р°РґРµР»СЊС†РµРІ)
 NameT& GetFullName(NameT &buffer) const;
 NameT GetFullName(void) const;
 
-// Возвращает  'длинное' имя объекта
-// (исключая имя владельца 'mainowner').
-// Метод возвращает пустую строку, если 'mainowner' - не является
-// владельцем объекта ни на каком уровне иерархии
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ 'РґР»РёРЅРЅРѕРµ' РёРјСЏ РѕР±СЉРµРєС‚Р° (РёСЃРєР»СЋС‡Р°СЏ РёРјСЏ РІР»Р°РґРµР»СЊС†Р° 'mainowner').
+// РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ РїСѓСЃС‚СѓСЋ СЃС‚СЂРѕРєСѓ, РµСЃР»Рё 'mainowner' - РЅРµ СЏРІР»СЏРµС‚СЃСЏ
+// РІР»Р°РґРµР»СЊС†РµРј РѕР±СЉРµРєС‚Р° РЅРё РЅР° РєР°РєРѕРј СѓСЂРѕРІРЅРµ РёРµСЂР°СЂС…РёРё
 NameT& GetLongName(const UEPtr<UContainer> &mainowner, NameT &buffer) const;
 NameT GetLongName(const UEPtr<UContainer> &mainowner) const;
 
-/// Максимально допустимое время расчета компонента вместе с дочерними компонентами
-/// в миллисекундах.
-/// Если время расчета превышено, то расчет последующих дочерних компонент
-/// не выполняется
-/// Если значение параметра <0, то нет ограничений
+/// РњР°РєСЃРёРјР°Р»СЊРЅРѕ РґРѕРїСѓСЃС‚РёРјРѕРµ РІСЂРµРјСЏ СЂР°СЃС‡РµС‚Р° РєРѕРјРїРѕРЅРµРЅС‚Р° РІРјРµСЃС‚Рµ СЃ РґРѕС‡РµСЂРЅРёРјРё РєРѕРјРїРѕРЅРµРЅС‚Р°РјРё
+/// РІ РјРёР»Р»РёСЃРµРєСѓРЅРґР°С….
+/// Р•СЃР»Рё РІСЂРµРјСЏ СЂР°СЃС‡РµС‚Р° РїСЂРµРІС‹С€РµРЅРѕ, С‚Рѕ СЂР°СЃС‡РµС‚ РїРѕСЃР»РµРґСѓСЋС‰РёС… РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚
+/// РЅРµ РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ
+/// Р•СЃР»Рё Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР° <0, С‚Рѕ РЅРµС‚ РѕРіСЂР°РЅРёС‡РµРЅРёР№
 const long long& GetMaxCalculationDuration(void) const;
 
-/// Время расчета компонента вместе с дочерними компонентами
-/// в миллисекундах, по превышении которого выдается предупреждающее сообщение в лог.
-/// Если значение параметра <0, то нет ограничений
+/// РІ РјРёР»Р»РёСЃРµРєСѓРЅРґР°С…, РїРѕ РїСЂРµРІС‹С€РµРЅРёРё РєРѕС‚РѕСЂРѕРіРѕ РІС‹РґР°РµС‚СЃСЏ РїСЂРµРґСѓРїСЂРµР¶РґР°СЋС‰РµРµ СЃРѕРѕР±С‰РµРЅРёРµ РІ Р»РѕРі.
+/// Р•СЃР»Рё Р·РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР° <0, С‚Рѕ РЅРµС‚ РѕРіСЂР°РЅРёС‡РµРЅРёР№
 const long long& GetCalculationDurationThreshold(void) const;
 
-/// Флаги переопределения настроек вывода детальной отладочной информации
 const unsigned int& GetDebugSysEventsMask(void) const;
 
-/// Объем потребленной памяти за шаг расчета.
-/// Может быть отрицательрным если память освобождалась.
-/// Актуально если включен флаг MemoryMonitor
+/// РњРѕР¶РµС‚ Р±С‹С‚СЊ РѕС‚СЂРёС†Р°С‚РµР»СЊСЂРЅС‹Рј РµСЃР»Рё РїР°РјСЏС‚СЊ РѕСЃРІРѕР±РѕР¶РґР°Р»Р°СЃСЊ.
+/// РђРєС‚СѓР°Р»СЊРЅРѕ РµСЃР»Рё РІРєР»СЋС‡РµРЅ С„Р»Р°Рі MemoryMonitor
 long long GetMemoryUsageDiff(void) const;
 
-/// Изменение максимально длинного куска доступной памяти после шага расчета
-/// Может быть отрицательрным если кусок увеличился.
-/// Актуально если включен флаг MemoryMonitor
+/// РњРѕР¶РµС‚ Р±С‹С‚СЊ РѕС‚СЂРёС†Р°С‚РµР»СЊСЂРЅС‹Рј РµСЃР»Рё РєСѓСЃРѕРє СѓРІРµР»РёС‡РёР»СЃСЏ.
+/// РђРєС‚СѓР°Р»СЊРЅРѕ РµСЃР»Рё РІРєР»СЋС‡РµРЅ С„Р»Р°Рі MemoryMonitor
 long long GetMaxMemoryBlockDiff(void) const;
 
 bool SetName(const NameT &name);
@@ -411,148 +410,241 @@ bool SetMaxCalculationDuration(const long long &value);
 bool SetCalculationDurationThreshold(const long long& value);
 // --------------------------
 
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє С‚Р°Р±Р»РёС†Р°Рј СЃРѕРѕС‚РІРµСЃС‚РІРёР№
 // --------------------------
-// Методы доступа к таблицам соотвествий
 // --------------------------
 public:
-// Возвращает имя дочернего компонента по его Id
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РґРѕС‡РµСЂРЅРµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° РїРѕ РµРіРѕ Id
 const NameT& GetComponentName(const UId &id) const;
 
-// Возвращает Id дочернего компонента по его имени
-const UId& GetComponentId(const NameT &name, bool nothrow=false) const;
+const UId& GetComponentId(const NameT &name, bool no_throw=false) const;
 
-// Возвращает имя локального указателя по его Id
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ Р»РѕРєР°Р»СЊРЅРѕРіРѕ СѓРєР°Р·Р°С‚РµР»СЏ РїРѕ РµРіРѕ Id
 const NameT& GetPointerName(const UId &id) const;
 
-// Возвращает Id локального указателя по его имени
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ Id Р»РѕРєР°Р»СЊРЅРѕРіРѕ СѓРєР°Р·Р°С‚РµР»СЏ РїРѕ РµРіРѕ РёРјРµРЅРё
 const UId& GetPointerId(const NameT &name) const;
 
-// Осуществляет поиск всех компонент по заданному имени класса
-// и возвращает вектор компонент либо пустой вектор
+// Рё РІРѕР·РІСЂР°С‰Р°РµС‚ РІРµРєС‚РѕСЂ РєРѕРјРїРѕРЅРµРЅС‚ Р»РёР±Рѕ РїСѓСЃС‚РѕР№ РІРµРєС‚РѕСЂ
+// РћСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РїРѕРёСЃРє РІСЃРµС… РєРѕРјРїРѕРЅРµРЅС‚ РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ РёРјРµРЅРё РєР»Р°СЃСЃР°
+// Рё РІРѕР·РІСЂР°С‰Р°РµС‚ РІРµРєС‚РѕСЂ РєРѕРјРїРѕРЅРµРЅС‚ Р»РёР±Рѕ РїСѓСЃС‚РѕР№ РІРµРєС‚РѕСЂ
 // find_all
-// false - искать в текущей компоненте
-// true -  искать в текущей компоненте и глубже
+// false - РёСЃРєР°С‚СЊ РІ С‚РµРєСѓС‰РµР№ РєРѕРјРїРѕРЅРµРЅС‚Рµ
+// true -  РёСЃРєР°С‚СЊ РІ С‚РµРєСѓС‰РµР№ РєРѕРјРїРѕРЅРµРЅС‚Рµ Рё РіР»СѓР±Р¶Рµ
 const vector<UEPtr<UContainer> >& GetComponentsByClassName(const NameT &name, vector<UEPtr<UContainer> > &buffer, bool find_all=false);
 
-// Осуществляет поиск всех компонент по заданному имени класса
-// и возвращает вектор длинных имен компонент относительно текущего либо пустой вектор
+// РћСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РїРѕРёСЃРє РІСЃРµС… РєРѕРјРїРѕРЅРµРЅС‚ РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ РёРјРµРЅРё РєР»Р°СЃСЃР°
+// Рё РІРѕР·РІСЂР°С‰Р°РµС‚ РІРµРєС‚РѕСЂ РґР»РёРЅРЅС‹С… РёРјРµРЅ РєРѕРјРїРѕРЅРµРЅС‚ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ С‚РµРєСѓС‰РµРіРѕ Р»РёР±Рѕ РїСѓСЃС‚РѕР№ РІРµРєС‚РѕСЂ
 // find_all
-// false - искать в текущей компоненте
-// true -  искать в текущей компоненте и глубже
+// false - РёСЃРєР°С‚СЊ РІ С‚РµРєСѓС‰РµР№ РєРѕРјРїРѕРЅРµРЅС‚Рµ
+// true -  РёСЃРєР°С‚СЊ РІ С‚РµРєСѓС‰РµР№ РєРѕРјРїРѕРЅРµРЅС‚Рµ Рё РіР»СѓР±Р¶Рµ
 const vector<NameT>& GetComponentsNameByClassName(const NameT &name, vector<NameT> &buffer, bool find_all=false);
 
-// Осуществляет поиск всех компонент приводимых к заданному C++ типу
-// и возвращает вектор длинных имен компонент относительно текущего либо пустой вектор
 // find_all
-// false - искать в текущей компоненте
-// true -  искать в текущей компоненте и глубже
-// имена возвращются относительно уровня net
+// false - РёСЃРєР°С‚СЊ РІ С‚РµРєСѓС‰РµР№ РєРѕРјРїРѕРЅРµРЅС‚Рµ
+// true -  РёСЃРєР°С‚СЊ РІ С‚РµРєСѓС‰РµР№ РєРѕРјРїРѕРЅРµРЅС‚Рµ Рё РіР»СѓР±Р¶Рµ
+// РёРјРµРЅР° РІРѕР·РІСЂР°С‰СЋС‚СЃСЏ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ СѓСЂРѕРІРЅСЏ net
 template<class T>
 const vector<NameT>& GetComponentsNameByClassType(vector<NameT> &buffer, UEPtr<UContainer> net=0, bool find_all=false);
 // --------------------------
 
 public:
+// РЎРёСЃС‚РµРјРЅС‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РѕР±СЉРµРєС‚РѕРј
 // --------------------------
-// Системные методы управления объектом
-// --------------------------
-// Выделяет память для новой чистой копии объекта этого класса
+// Р’С‹РґРµР»СЏРµС‚ РїР°РјСЏС‚СЊ РґР»СЏ РЅРѕРІРѕР№ С‡РёСЃС‚РѕР№ РєРѕРїРёРё РѕР±СЉРµРєС‚Р° СЌС‚РѕРіРѕ РєР»Р°СЃСЃР°
 virtual UContainer* New(void)=0;
 
-// Создает экземпляр описания класса
+//virtual UContainerDescription* NewDescription(void);
 //virtual UContainerDescription* NewDescription(void);
 
-// Создает копию этого объекта с сохранением всех компонент
-// и значений параметров.
-// Если 'stor' == 0, то создание объектов осуществляется
-// в том же хранилище где располагается этот объект
+// РљРѕРїРёСЂСѓРµС‚ СЌС‚РѕС‚ РѕР±СЉРµРєС‚ РІ 'target' СЃ СЃРѕС…СЂР°РЅРµРЅРёРµРј РІСЃРµС… РєРѕРјРїРѕРЅРµРЅС‚
+// Рё Р·РЅР°С‡РµРЅРёР№ РїР°СЂР°РјРµС‚СЂРѕРІ
+// Р•СЃР»Рё 'stor' == 0, С‚Рѕ СЃРѕР·РґР°РЅРёРµ РѕР±СЉРµРєС‚РѕРІ РѕСЃСѓС‰РµСЃС‚РІР»СЏРµС‚СЃСЏ
+// РІ С‚РѕРј Р¶Рµ С…СЂР°РЅРёР»РёС‰Рµ РіРґРµ СЂР°СЃРїРѕР»Р°РіР°РµС‚СЃСЏ СЌС‚РѕС‚ РѕР±СЉРµРєС‚
 virtual UEPtr<UContainer> Alloc(UEPtr<UStorage> stor, bool copystate=false);
 
-// Копирует этот объект в 'target' с сохранением всех компонент
-// и значений параметров
-// Если 'stor' == 0, то создание объектов осуществляется
-// в том же хранилище где располагается этот объект
+// РљРѕРїРёСЂСѓРµС‚ СЌС‚РѕС‚ РѕР±СЉРµРєС‚ РІ 'target' СЃ СЃРѕС…СЂР°РЅРµРЅРёРµРј РІСЃРµС… РєРѕРјРїРѕРЅРµРЅС‚
+// Рё Р·РЅР°С‡РµРЅРёР№ РїР°СЂР°РјРµС‚СЂРѕРІ
+// Р•СЃР»Рё 'stor' == 0, С‚Рѕ СЃРѕР·РґР°РЅРёРµ РѕР±СЉРµРєС‚РѕРІ РѕСЃСѓС‰РµСЃС‚РІР»СЏРµС‚СЃСЏ
+// РІ С‚РѕРј Р¶Рµ С…СЂР°РЅРёР»РёС‰Рµ РіРґРµ СЂР°СЃРїРѕР»Р°РіР°РµС‚СЃСЏ СЌС‚РѕС‚ РѕР±СЉРµРєС‚
 virtual bool Copy(UEPtr<UContainer> target, UEPtr<UStorage> stor=0, bool copystate=false) const;
 
-// Осуществляет освобождение этого объекта в его хранилище
-// или вызов деструктора, если Storage == 0
+// РёР»Рё РІС‹Р·РѕРІ РґРµСЃС‚СЂСѓРєС‚РѕСЂР°, РµСЃР»Рё Storage == 0
+// РћСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р° РІ РµРіРѕ С…СЂР°РЅРёР»РёС‰Рµ
+// РёР»Рё РІС‹Р·РѕРІ РґРµСЃС‚СЂСѓРєС‚РѕСЂР°, РµСЃР»Рё Storage == 0
 virtual void Free(void);
 
-// Указатель на этот объект в хранилище
 //UEPtr<UInstancesStorageElement> GetObjectIterator(void);
+//void SetObjectIterator(UEPtr<UInstancesStorageElement> value);
 //void SetObjectIterator(UEPtr<UInstancesStorageElement> value);
 
 protected:
-/// Осуществляет обновление внутренних данных компонента, обеспечивающих его целостность
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 virtual void AUpdateInternalData(void);
 // --------------------------
 
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РєРѕРјРїРѕРЅРµРЅС‚Р°Рј
 // --------------------------
-// Методы доступа к компонентам
 // --------------------------
 public:
-// Возвращает число дочерних компонент
+// --------------------------
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РєРѕРјРїРѕРЅРµРЅС‚Р°Рј
+// --------------------------
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚
 int GetNumComponents(void) const;
 
-// Возвращает полное число дочерних компонент
-// (включая все компоненты дочерних компонент)
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїРѕР»РЅРѕРµ С‡РёСЃР»Рѕ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚
+// (РІРєР»СЋС‡Р°СЏ РІСЃРµ РєРѕРјРїРѕРЅРµРЅС‚С‹ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚)
 int GetNumAllComponents(void) const;
 
 bool CheckComponent(const NameT &name);
 bool CheckComponentL(const NameT &name);
 
-// Метод проверяет на допустимость объекта данного типа
-// в качестве компоненты данного объекта
-// Метод возвращает 'true' в случае допустимости
-// и 'false' в случае некорректного типа
+// РњРµС‚РѕРґ РїСЂРѕРІРµСЂСЏРµС‚ РЅР° РґРѕРїСѓСЃС‚РёРјРѕСЃС‚СЊ РѕР±СЉРµРєС‚Р° РґР°РЅРЅРѕРіРѕ С‚РёРїР°
+// РІ РєР°С‡РµСЃС‚РІРµ РєРѕРјРїРѕРЅРµРЅС‚С‹ РґР°РЅРЅРѕРіРѕ РѕР±СЉРµРєС‚Р°
+// РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ 'true' РІ СЃР»СѓС‡Р°Рµ РґРѕРїСѓСЃС‚РёРјРѕСЃС‚Рё
+// Рё 'false' РІ СЃР»СѓС‡Р°Рµ РЅРµРєРѕСЂСЂРµРєС‚РЅРѕРіРѕ С‚РёРїР°
 virtual bool CheckComponentType(UEPtr<UContainer> comp) const;
 
-// Возвращает указатель на дочерний компонент, хранимый в этом
-// объекте по короткому Id 'id'
-// Если id == ForbiddenId то возвращает указатель на этот компонент
-// Если nothrow == true то возвращает 0 и не кидает исключение
-virtual UEPtr<UContainer> GetComponent(const UId &id, bool nothrow=false) const;
+// РѕР±СЉРµРєС‚Рµ РїРѕ РєРѕСЂРѕС‚РєРѕРјСѓ Id 'id'
+// Р•СЃР»Рё id == ForbiddenId С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЌС‚РѕС‚ РєРѕРјРїРѕРЅРµРЅС‚
+// Р•СЃР»Рё nothrow == true С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ 0 Рё РЅРµ РєРёРґР°РµС‚ РёСЃРєР»СЋС‡РµРЅРёРµ
+virtual UEPtr<UContainer> GetComponent(const UId &id, bool no_throw=false) const;
 
 template<class T>
-UEPtr<T> GetComponent(const UId &id, bool nothrow=false) const
+UEPtr<T> GetComponent(const UId &id, bool no_throw=false) const
 {
- return dynamic_pointer_cast<T>(GetComponent(id,nothrow));
+ // Check cache first
+ if(CachedComponent && CachedComponentId == id)
+ {
+  if(typeid(T) == CachedComponentType)
+  {
+   return static_pointer_cast<T>(CachedComponent);
+  }
+ }
+ 
+ // Get base component
+ UEPtr<UContainer> comp = GetComponent(id, no_throw);
+ if(!comp)
+  return UEPtr<T>(0);
+ 
+ // Try dynamic cast
+ UEPtr<T> result = dynamic_pointer_cast<T>(comp);
+ if(result)
+ {
+  // Update cache
+  CachedComponent = comp;
+  CachedComponentId = id;
+  CachedComponentType = typeid(T);
+ }
+ 
+ return result;
 }
 
-// Возвращает указатель на дочерний компонент, хранимый в этом
-// объекте по короткому имени 'name'
-virtual UEPtr<UContainer> GetComponent(const NameT &name, bool nothrow=false) const;
+// РѕР±СЉРµРєС‚Рµ РїРѕ РєРѕСЂРѕС‚РєРѕРјСѓ РёРјРµРЅРё 'name'
+virtual UEPtr<UContainer> GetComponent(const NameT &name, bool no_throw=false) const;
 
 template<class T>
-UEPtr<T> GetComponent(const NameT &name, bool nothrow=false) const
+UEPtr<T> GetComponent(const NameT &name, bool no_throw=false) const
 {
- return dynamic_pointer_cast<T>(GetComponent(name,nothrow));
+ // Get base component by name
+ UEPtr<UContainer> comp = GetComponent(name, no_throw);
+ if(!comp)
+  return UEPtr<T>(0);
+ 
+ // Check cache if ID matches
+ if(CachedComponent && CachedComponent == comp)
+ {
+  if(typeid(T) == CachedComponentType)
+  {
+   return static_pointer_cast<T>(CachedComponent);
+  }
+ }
+ 
+ // Try dynamic cast
+ UEPtr<T> result = dynamic_pointer_cast<T>(comp);
+ if(result)
+ {
+  // Update cache
+  CachedComponent = comp;
+  CachedComponentId = comp->Id;
+  CachedComponentType = typeid(T);
+ }
+ 
+ return result;
 }
 
-// Возвращает указатель на дочерний компонент, хранимый в этом
-// объекте по ДЛИННОМУ Id 'id'
-// Если id[0] == ForbiddenId или Id имеет нулевой размер,
-// то возвращает указатель на этот компонент
-UEPtr<UContainer> GetComponentL(const ULongId &id, bool nothrow=false) const;
+// РѕР±СЉРµРєС‚Рµ РїРѕ Р”Р›РРќРќРћРњРЈ Id 'id'
+// Р•СЃР»Рё id[0] == ForbiddenId РёР»Рё Id РёРјРµРµС‚ РЅСѓР»РµРІРѕР№ СЂР°Р·РјРµСЂ,
+// С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЌС‚РѕС‚ РєРѕРјРїРѕРЅРµРЅС‚
+UEPtr<UContainer> GetComponentL(const ULongId &id, bool no_throw=false) const;
 
 template<class T>
-UEPtr<T> GetComponentL(const ULongId &id, bool nothrow=false) const
+UEPtr<T> GetComponentL(const ULongId &id, bool no_throw=false) const
 {
- return dynamic_pointer_cast<T>(GetComponentL(id,nothrow));
+ // Get base component by long ID
+ UEPtr<UContainer> comp = GetComponentL(id, no_throw);
+ if(!comp)
+  return UEPtr<T>(0);
+ 
+ // Check cache if ID matches
+ if(CachedComponent && CachedComponent == comp)
+ {
+  if(typeid(T) == CachedComponentType)
+  {
+   return static_pointer_cast<T>(CachedComponent);
+  }
+ }
+ 
+ // Try dynamic cast
+ UEPtr<T> result = dynamic_pointer_cast<T>(comp);
+ if(result)
+ {
+  // Update cache
+  CachedComponent = comp;
+  CachedComponentId = comp->Id;
+  CachedComponentType = typeid(T);
+ }
+ 
+ return result;
 }
 
-// Возвращает указатель на дочерний компонент, хранимый в этом
-// объекте по ДЛИННОМУ имени 'name'
-virtual UEPtr<UContainer> GetComponentL(const NameT &name, bool nothrow=false) const;
+// РѕР±СЉРµРєС‚Рµ РїРѕ Р”Р›РРќРќРћРњРЈ РёРјРµРЅРё 'name'
+virtual UEPtr<UContainer> GetComponentL(const NameT &name, bool no_throw=false) const;
 
 template<class T>
-UEPtr<T> GetComponentL(const NameT &name, bool nothrow=false) const
+UEPtr<T> GetComponentL(const NameT &name, bool no_throw=false) const
 {
- return dynamic_pointer_cast<T>(GetComponentL(name,nothrow));
+ // Get base component by long name
+ UEPtr<UContainer> comp = GetComponentL(name, no_throw);
+ if(!comp)
+  return UEPtr<T>(0);
+ 
+ // Check cache if component matches
+ if(CachedComponent && CachedComponent == comp)
+ {
+  if(typeid(T) == CachedComponentType)
+  {
+   return static_pointer_cast<T>(CachedComponent);
+  }
+ }
+ 
+ // Try dynamic cast
+ UEPtr<T> result = dynamic_pointer_cast<T>(comp);
+ if(result)
+ {
+  // Update cache
+  CachedComponent = comp;
+  CachedComponentId = comp->Id;
+  CachedComponentType = typeid(T);
+ }
+ 
+ return result;
 }
 
-// Возвращает указатель на дочерний компонент, хранимый в этом
-// объекте по порядковому индеку в списке компонент
-// Метод возвращает 0, если индекс выходит за границы массива
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РґРѕС‡РµСЂРЅРёР№ РєРѕРјРїРѕРЅРµРЅС‚, С…СЂР°РЅРёРјС‹Р№ РІ СЌС‚РѕРј
+// РѕР±СЉРµРєС‚Рµ РїРѕ РїРѕСЂСЏРґРєРѕРІРѕРјСѓ РёРЅРґРµРєСѓ РІ СЃРїРёСЃРєРµ РєРѕРјРїРѕРЅРµРЅС‚
+// РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ 0, РµСЃР»Рё РёРЅРґРµРєСЃ РІС‹С…РѕРґРёС‚ Р·Р° РіСЂР°РЅРёС†С‹ РјР°СЃСЃРёРІР°
 UEPtr<UContainer> GetComponentByIndex(int index) const;
 
 template<class T>
@@ -561,371 +653,369 @@ UEPtr<T> GetComponentByIndex(int index) const
  return dynamic_pointer_cast<T>(GetComponentByIndex(index));
 }
 
-// Добавляет дочерний компонент в этот объект
-// Возвращает его Id или ForbiddenId если добавление неудачно
-// Может быть передан указатель на локальную переменную
+// Р”РѕР±Р°РІР»СЏРµС‚ РґРѕС‡РµСЂРЅРёР№ РєРѕРјРїРѕРЅРµРЅС‚ РІ СЌС‚РѕС‚ РѕР±СЉРµРєС‚
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РµРіРѕ Id РёР»Рё ForbiddenId РµСЃР»Рё РґРѕР±Р°РІР»РµРЅРёРµ РЅРµСѓРґР°С‡РЅРѕ
+// РњРѕР¶РµС‚ Р±С‹С‚СЊ РїРµСЂРµРґР°РЅ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° Р»РѕРєР°Р»СЊРЅСѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ
 virtual void BeforeAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer=0);
 virtual void AfterAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer=0);
 virtual UId AddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer=0);
 
-// Удаляет дочерний компонент из этого объекта.
-// Удаляемый компонент должен содержаться именно в этом объекте.
-// Таким образом 'id' - должно быть коротким Id
-// удаляемого объекта
-// Если 'canfree' == true - предпринимается попытка вернуть объект в хранилище
-// или удалить его. Иначе объект сохраняется в хранилище в состоянии занят
-// либо повисает, если хранилище не установлено
-//virtual void DelComponent(const UId &id, bool canfree=true);
-
-// Удаляет дочерний компонент из этого объекта.
-// Удаляемый компонент должен содержаться именно в этом объекте.
-// Если 'canfree' == true - предпринимается попытка вернуть объект в хранилище
-// или удалить его. Иначе объект сохраняется в хранилище в состоянии занят
-// либо повисает, если хранилище не установлено
+// РЈРґР°Р»СЏРµС‚ РґРѕС‡РµСЂРЅРёР№ РєРѕРјРїРѕРЅРµРЅС‚ РёР· СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°.
+// РЈРґР°Р»СЏРµРјС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚ РґРѕР»Р¶РµРЅ СЃРѕРґРµСЂР¶Р°С‚СЊСЃСЏ РёРјРµРЅРЅРѕ РІ СЌС‚РѕРј РѕР±СЉРµРєС‚Рµ.
+// РўР°РєРёРј РѕР±СЂР°Р·РѕРј 'name' - РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ РєРѕСЂРѕС‚РєРёРј РёРјРµРЅРµРј
+// СѓРґР°Р»СЏРµРјРѕРіРѕ РѕР±СЉРµРєС‚Р°
+// Р•СЃР»Рё 'canfree' == true - РїСЂРµРґРїСЂРёРЅРёРјР°РµС‚СЃСЏ РїРѕРїС‹С‚РєР° РІРµСЂРЅСѓС‚СЊ РѕР±СЉРµРєС‚ РІ С…СЂР°РЅРёР»РёС‰Рµ
+// РёР»Рё СѓРґР°Р»РёС‚СЊ РµРіРѕ. РРЅР°С‡Рµ РѕР±СЉРµРєС‚ СЃРѕС…СЂР°РЅСЏРµС‚СЃСЏ РІ С…СЂР°РЅРёР»РёС‰Рµ РІ СЃРѕСЃС‚РѕСЏРЅРёРё Р·Р°РЅСЏС‚
+// Р»РёР±Рѕ РїРѕРІРёСЃР°РµС‚, РµСЃР»Рё С…СЂР°РЅРёР»РёС‰Рµ РЅРµ СѓСЃС‚Р°РЅРѕРІР»РµРЅРѕ
 void DelComponent(const NameT &name, bool canfree=true);
 
-// Принудительно удаляет все дочерние компоненты
+// РџСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕ СѓРґР°Р»СЏРµС‚ РІСЃРµ РґРѕС‡РµСЂРЅРёРµ РєРѕРјРїРѕРЅРµРЅС‚С‹
 void DelAllComponents(void);
 protected:
 void DelAllComponentsRaw(void);
 
 public:
-/// Добавляет компонент как статическую переменную задавая ему имя класса 'classname'
-/// и имя 'name'
+/// Рё РёРјСЏ 'name'
 virtual void AddStaticComponent(const NameT &classname, const NameT &name, UEPtr<UContainer> comp);
 
-/// Удаляет компонент как статическую переменную
+/// РЈРґР°Р»СЏРµС‚ РєРѕРјРїРѕРЅРµРЅС‚ РёР· СЃРїРёСЃРєР° СЃС‚Р°С‚РёС‡РµСЃРєРёС… РєРѕРјРїРѕРЅРµРЅС‚
 virtual void DelStaticComponent(UEPtr<UContainer> comp);
 
-/// Удаляет компонент как статическую переменную
+/// РЈРґР°Р»СЏРµС‚ РІСЃРµ РєРѕРјРїРѕРЅРµРЅС‚С‹ РёР· СЃРїРёСЃРєР° СЃС‚Р°С‚РёС‡РµСЃРєРёС… РєРѕРјРїРѕРЅРµРЅС‚
 virtual void DelAllStaticComponents(void);
 
-/// Возвращает указатель на static компонент
-/// с классом 'classname' и именем 'name'
+/// СЃ РєР»Р°СЃСЃРѕРј 'classname' Рё РёРјРµРЅРµРј 'name'
 virtual UEPtr<UContainer> FindStaticComponent(const NameT &classname, const NameT &name) const;
 
-/// Перемещает компоненту в другой компонент
-/// Если comp не принадлежит этому компоненту, или target имеет отличный от
-/// этого компонента storage, или target не может принять в себя компонент
-/// то возвращает false и не делает ничего
+/// Р•СЃР»Рё comp РЅРµ РїСЂРёРЅР°РґР»РµР¶РёС‚ СЌС‚РѕРјСѓ РєРѕРјРїРѕРЅРµРЅС‚Сѓ, РёР»Рё target РёРјРµРµС‚ РѕС‚Р»РёС‡РЅС‹Р№ РѕС‚
+/// СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° storage, РёР»Рё target РЅРµ РјРѕР¶РµС‚ РїСЂРёРЅСЏС‚СЊ РІ СЃРµР±СЏ РєРѕРјРїРѕРЅРµРЅС‚
+/// С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ false Рё РЅРµ РґРµР»Р°РµС‚ РЅРёС‡РµРіРѕ
 virtual bool MoveComponent(UEPtr<UContainer> comp, UEPtr<UContainer> target);
 
-// Возвращает список имен и Id компонент, содержащихся непосредственно
-// в этом объекте
-// Память должна быть выделена
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє РёРјРµРЅ Рё Id РєРѕРјРїРѕРЅРµРЅС‚, СЃРѕРґРµСЂР¶Р°С‰РёС…СЃСЏ РЅРµРїРѕСЃСЂРµРґСЃС‚РІРµРЅРЅРѕ
+// РІ СЌС‚РѕРј РѕР±СЉРµРєС‚Рµ
+// РџР°РјСЏС‚СЊ РґРѕР»Р¶РЅР° Р±С‹С‚СЊ РІС‹РґРµР»РµРЅР°
 void GetComponentsList(vector<UId> &buffer) const;
 void GetComponentsList(vector<NameT> &buffer) const;
 
-// Копирует все компоненты этого объекта в объект 'comp', если возможно
-// Если хранилище stor != 0 то используется оно
+// РљРѕРїРёСЂСѓРµС‚ РІСЃРµ РєРѕРјРїРѕРЅРµРЅС‚С‹ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р° РІ РѕР±СЉРµРєС‚ 'comp', РµСЃР»Рё РІРѕР·РјРѕР¶РЅРѕ
+// Р•СЃР»Рё С…СЂР°РЅРёР»РёС‰Рµ stor != 0 С‚Рѕ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РѕРЅРѕ
 virtual void CopyComponents(UEPtr<UContainer> comp, UEPtr<UStorage> stor=0) const;
 
-// Перемещает компонент с текущим индексом index или именем 'name' вверх или
-// вниз по списку на заданное число элементов
-// Применяется для изменения порядка расчета компонент
-// Если значение 'step' выводит за границы массива, то компонент устанавливается
-// на эту границу
+// РџРµСЂРµРјРµС‰Р°РµС‚ РєРѕРјРїРѕРЅРµРЅС‚ СЃ С‚РµРєСѓС‰РёРј РёРЅРґРµРєСЃРѕРј index РёР»Рё РёРјРµРЅРµРј 'name' РІРІРµСЂС… РёР»Рё
+// РІРЅРёР· РїРѕ СЃРїРёСЃРєСѓ РЅР° Р·Р°РґР°РЅРЅРѕРµ С‡РёСЃР»Рѕ СЌР»РµРјРµРЅС‚РѕРІ
+// РџСЂРёРјРµРЅСЏРµС‚СЃСЏ РґР»СЏ РёР·РјРµРЅРµРЅРёСЏ РїРѕСЂСЏРґРєР° СЂР°СЃС‡РµС‚Р° РєРѕРјРїРѕРЅРµРЅС‚
+// Р•СЃР»Рё Р·РЅР°С‡РµРЅРёРµ 'step' РІС‹РІРѕРґРёС‚ Р·Р° РіСЂР°РЅРёС†С‹ РјР°СЃСЃРёРІР°, С‚Рѕ РєРѕРјРїРѕРЅРµРЅС‚ СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚СЃСЏ
+// РЅР° СЌС‚Сѓ РіСЂР°РЅРёС†Сѓ
 virtual bool ChangeComponentPosition(int index, int step);
 virtual bool ChangeComponentPosition(const NameT &name, int step);
 
-// Устанавливает компонент с текущим индексом index или именем 'name' на
-// заданную позицию
-// Применяется для изменения порядка расчета компонент
+// РџСЂРёРјРµРЅСЏРµС‚СЃСЏ РґР»СЏ РёР·РјРµРЅРµРЅРёСЏ РїРѕСЂСЏРґРєР° СЂР°СЃС‡РµС‚Р° РєРѕРјРїРѕРЅРµРЅС‚
 virtual bool SetComponentPosition(int index, int new_position);
 virtual bool SetComponentPosition(const NameT &name, int new_position);
 
-/// Флаг, выставляемый на время перемещения компонента
 bool IsMoving(void) const;
 // --------------------------
 
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РєРѕРјРјСѓРЅРёРєР°С†РёРѕРЅРЅС‹РјРё РєРѕРјРїРѕРЅРµРЅС‚Р°РјРё
 // ----------------------
-// Методы управления коммуникационными компонентами
 // ----------------------
 public:
-// Возвращает список длинных идентификаторов всех коннекторов сети.
-// 'sublevel' опеределяет число уровней вложенности подсетей для которых
-// коннекторы будут добавлены в список.
-// если 'sublevel' == -2, то возвращает идентификаторы всех элементов включая
-// все вложенные сети и сам опрашиваемый компонент.
-// если 'sublevel' == -1, то возвращает идентификаторы всех коннекторов включая
-// все вложенные сети.
-// если 'sublevel' == 0, то возвращает идентификаторы коннекторов только этой сети
-// Предварительная очистка буфера не производится.
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє РґР»РёРЅРЅС‹С… РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂРѕРІ РІСЃРµС… РєРѕРЅРЅРµРєС‚РѕСЂРѕРІ СЃРµС‚Рё.
+// 'sublevel' РѕРїРµСЂРµРґРµР»СЏРµС‚ С‡РёСЃР»Рѕ СѓСЂРѕРІРЅРµР№ РІР»РѕР¶РµРЅРЅРѕСЃС‚Рё РїРѕРґСЃРµС‚РµР№ РґР»СЏ РєРѕС‚РѕСЂС‹С…
+// РєРѕРЅРЅРµРєС‚РѕСЂС‹ Р±СѓРґСѓС‚ РґРѕР±Р°РІР»РµРЅС‹ РІ СЃРїРёСЃРѕРє.
+// РµСЃР»Рё 'sublevel' == -2, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ РІРєР»СЋС‡Р°СЏ
+// РІСЃРµ РІР»РѕР¶РµРЅРЅС‹Рµ СЃРµС‚Рё Рё СЃР°Рј РѕРїСЂР°С€РёРІР°РµРјС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚.
+// РµСЃР»Рё 'sublevel' == -1, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ РІСЃРµС… РєРѕРЅРЅРµРєС‚РѕСЂРѕРІ РІРєР»СЋС‡Р°СЏ
+// РІСЃРµ РІР»РѕР¶РµРЅРЅС‹Рµ СЃРµС‚Рё.
+// РµСЃР»Рё 'sublevel' == 0, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ РєРѕРЅРЅРµРєС‚РѕСЂРѕРІ С‚РѕР»СЊРєРѕ СЌС‚РѕР№ СЃРµС‚Рё
+// РџСЂРµРґРІР°СЂРёС‚РµР»СЊРЅР°СЏ РѕС‡РёСЃС‚РєР° Р±СѓС„РµСЂР° РЅРµ РїСЂРѕРёР·РІРѕРґРёС‚СЃСЏ.
 virtual ULongIdVector& GetConnectorsList(ULongIdVector &buffer,
 						  int sublevel=-1, UEPtr<UContainer> ownerlevel=0);
 
-// Возвращает список длинных идентификаторов всех элементов сети.
-// 'sublevel' опеределяет число уровней вложенности подсетей для которых
-// элементы будут добавлены в список.
-// если 'sublevel' == -2, то возвращает идентификаторы всех элементов включая
-// все вложенные сети и сам опрашиваемый компонент.
-// если 'sublevel' == -1, то возвращает идентификаторы всех элементов включая
-// все вложенные сети.
-// если 'sublevel' == 0, то возвращает идентификаторы элементов только этой сети
-// Предварительная очистка буфера не производится.
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє РґР»РёРЅРЅС‹С… РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂРѕРІ РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ СЃРµС‚Рё.
+// 'sublevel' РѕРїРµСЂРµРґРµР»СЏРµС‚ С‡РёСЃР»Рѕ СѓСЂРѕРІРЅРµР№ РІР»РѕР¶РµРЅРЅРѕСЃС‚Рё РїРѕРґСЃРµС‚РµР№ РґР»СЏ РєРѕС‚РѕСЂС‹С…
+// СЌР»РµРјРµРЅС‚С‹ Р±СѓРґСѓС‚ РґРѕР±Р°РІР»РµРЅС‹ РІ СЃРїРёСЃРѕРє.
+// РµСЃР»Рё 'sublevel' == -2, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ РІРєР»СЋС‡Р°СЏ
+// РІСЃРµ РІР»РѕР¶РµРЅРЅС‹Рµ СЃРµС‚Рё Рё СЃР°Рј РѕРїСЂР°С€РёРІР°РµРјС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚.
+// РµСЃР»Рё 'sublevel' == -1, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ РІРєР»СЋС‡Р°СЏ
+// РІСЃРµ РІР»РѕР¶РµРЅРЅС‹Рµ СЃРµС‚Рё.
+// РµСЃР»Рё 'sublevel' == 0, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ СЌР»РµРјРµРЅС‚РѕРІ С‚РѕР»СЊРєРѕ СЌС‚РѕР№ СЃРµС‚Рё
+// РџСЂРµРґРІР°СЂРёС‚РµР»СЊРЅР°СЏ РѕС‡РёСЃС‚РєР° Р±СѓС„РµСЂР° РЅРµ РїСЂРѕРёР·РІРѕРґРёС‚СЃСЏ.
 virtual ULongIdVector& GetItemsList(ULongIdVector &buffer,
 							int sublevel=-1, UEPtr<UContainer> ownerlevel=0);
 
-// Возвращает список длинных идентификаторов всех подсетей сети.
-// 'sublevel' опеределяет число уровней вложенности подсетей для которых
-// подсети будут добавлены в список.
-// если 'sublevel' == -2, то возвращает идентификаторы всех элементов включая
-// все вложенные сети и сам опрашиваемый компонент.
-// если 'sublevel' == -1, то возвращает идентификаторы всех подсетей включая
-// все вложенные сети.
-// если 'sublevel' == 0, то возвращает идентификаторы подсетей только этой сети
-// Предварительная очистка буфера не производится.
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє РґР»РёРЅРЅС‹С… РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂРѕРІ РІСЃРµС… РїРѕРґСЃРµС‚РµР№ СЃРµС‚Рё.
+// 'sublevel' РѕРїРµСЂРµРґРµР»СЏРµС‚ С‡РёСЃР»Рѕ СѓСЂРѕРІРЅРµР№ РІР»РѕР¶РµРЅРЅРѕСЃС‚Рё РїРѕРґСЃРµС‚РµР№ РґР»СЏ РєРѕС‚РѕСЂС‹С…
+// РїРѕРґСЃРµС‚Рё Р±СѓРґСѓС‚ РґРѕР±Р°РІР»РµРЅС‹ РІ СЃРїРёСЃРѕРє.
+// РµСЃР»Рё 'sublevel' == -2, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ РІСЃРµС… СЌР»РµРјРµРЅС‚РѕРІ РІРєР»СЋС‡Р°СЏ
+// РІСЃРµ РІР»РѕР¶РµРЅРЅС‹Рµ СЃРµС‚Рё Рё СЃР°Рј РѕРїСЂР°С€РёРІР°РµРјС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚.
+// РµСЃР»Рё 'sublevel' == -1, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ РІСЃРµС… РїРѕРґСЃРµС‚РµР№ РІРєР»СЋС‡Р°СЏ
+// РІСЃРµ РІР»РѕР¶РµРЅРЅС‹Рµ СЃРµС‚Рё.
+// РµСЃР»Рё 'sublevel' == 0, С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ РїРѕРґСЃРµС‚РµР№ С‚РѕР»СЊРєРѕ СЌС‚РѕР№ СЃРµС‚Рё
+// РџСЂРµРґРІР°СЂРёС‚РµР»СЊРЅР°СЏ РѕС‡РёСЃС‚РєР° Р±СѓС„РµСЂР° РЅРµ РїСЂРѕРёР·РІРѕРґРёС‚СЃСЏ.
 virtual ULongIdVector& GetNetsList(ULongIdVector &buffer,
 							int sublevel=-1, UEPtr<UContainer> ownerlevel=0);
 // ----------------------
 
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹РјРё СѓРєР°Р·Р°С‚РµР»СЏРјРё
 // --------------------------
-// Методы управления локальными указателями
-// --------------------------
-// Устанавливает дочерний компонент 'id' в качестве заданного класса локальных указателей
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РґРѕС‡РµСЂРЅРёР№ РєРѕРјРїРѕРЅРµРЅС‚ 'id' РІ РєР°С‡РµСЃС‚РІРµ Р·Р°РґР°РЅРЅРѕРіРѕ РєР»Р°СЃСЃР° Р»РѕРєР°Р»СЊРЅС‹С… СѓРєР°Р·Р°С‚РµР»РµР№
 // 'pointerid'
 bool SetComponentAs(const UId &id, const UId &pointerid);
 
-// Устанавливает дочерний компонент 'name' в качестве заданного класса локальных указателей
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РґРѕС‡РµСЂРЅРёР№ РєРѕРјРїРѕРЅРµРЅС‚ 'name' РІ РєР°С‡РµСЃС‚РІРµ Р·Р°РґР°РЅРЅРѕРіРѕ РєР»Р°СЃСЃР° Р»РѕРєР°Р»СЊРЅС‹С… СѓРєР°Р·Р°С‚РµР»РµР№
 // 'pointername'
 bool SetComponentAs(const NameT &name,const NameT &pointername);
 
-// Сбрасывает отношение дочерниего компонента 'id' к заданному классу локальных указателей
+// РЎР±СЂР°СЃС‹РІР°РµС‚ РѕС‚РЅРѕС€РµРЅРёРµ РґРѕС‡РµСЂРЅРёРµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° 'id' Рє Р·Р°РґР°РЅРЅРѕРјСѓ РєР»Р°СЃСЃСѓ Р»РѕРєР°Р»СЊРЅС‹С… СѓРєР°Р·Р°С‚РµР»РµР№
 // 'pointerid'
 bool ResetComponentAs(const UId &id, const UId &pointerid);
 
-// Сбрасывает отношение дочерниего компонента 'name' к заданному классу локальных указателей
+// РЎР±СЂР°СЃС‹РІР°РµС‚ РѕС‚РЅРѕС€РµРЅРёРµ РґРѕС‡РµСЂРЅРёРµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° 'name' Рє Р·Р°РґР°РЅРЅРѕРјСѓ РєР»Р°СЃСЃСѓ Р»РѕРєР°Р»СЊРЅС‹С… СѓРєР°Р·Р°С‚РµР»РµР№
 // 'pointername'
 bool ResetComponentAs(const NameT &name,const NameT &pointername);
 
-// Сбрасывает отношение дочерниего компонента 'name' ко всем классам локальных указателей
+// РЎР±СЂР°СЃС‹РІР°РµС‚ РѕС‚РЅРѕС€РµРЅРёРµ РґРѕС‡РµСЂРЅРёРµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° 'name' РєРѕ РІСЃРµРј РєР»Р°СЃСЃР°Рј Р»РѕРєР°Р»СЊРЅС‹С… СѓРєР°Р·Р°С‚РµР»РµР№
 bool ResetComponentAll(const UId &id);
 
-// Сбрасывает отношение дочерниего компонента 'name' ко всем классам локальных указателей
+// РЎР±СЂР°СЃС‹РІР°РµС‚ РѕС‚РЅРѕС€РµРЅРёРµ РґРѕС‡РµСЂРЅРёРµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° 'name' РєРѕ РІСЃРµРј РєР»Р°СЃСЃР°Рј Р»РѕРєР°Р»СЊРЅС‹С… СѓРєР°Р·Р°С‚РµР»РµР№
 bool ResetComponentAll(const NameT &name);
 
-// Удаляет все компоненты относящиеся к заданному классу локальных указателей
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ РєРѕРјРїРѕРЅРµРЅС‚С‹ РѕС‚РЅРѕСЃСЏС‰РёРµСЃСЏ Рє Р·Р°РґР°РЅРЅРѕРјСѓ РєР»Р°СЃСЃСѓ Р»РѕРєР°Р»СЊРЅС‹С… СѓРєР°Р·Р°С‚РµР»РµР№
 void DelAllComponentsAs(const NameT &pointername, bool canfree=true);
 // --------------------------
 
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РѕР±С‰РёРјРё (shared) РїРµСЂРµРјРµРЅРЅС‹РјРё
 // --------------------------
-// Методы управления общими (shared) переменными
+// РњРµС‚РѕРґ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РѕР±С‰РёС… РїРµСЂРµРјРµРЅРЅС‹С…. Р’С‹Р·С‹РІР°РµС‚СЃСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РїСЂРё РґРѕР±Р°РІР»РµРЅРёРё
+// РѕР±СЉРµРєС‚Р° РІР»Р°РґРµР»СЊС†Сѓ
 // --------------------------
-// Метод инициализации общих переменных. Вызывается автоматически при добавлении
-// объекта владельцу
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РѕР±С‰РёРјРё (shared) РїРµСЂРµРјРµРЅРЅС‹РјРё
+// --------------------------
+// РњРµС‚РѕРґ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РѕР±С‰РёС… РїРµСЂРµРјРµРЅРЅС‹С…. Р’С‹Р·С‹РІР°РµС‚СЃСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РїСЂРё РґРѕР±Р°РІР»РµРЅРёРё
+// РѕР±СЉРµРєС‚Р° РІР»Р°РґРµР»СЊС†Сѓ
 virtual void SharesInit(void);
 
-// Метод деинициализации общих переменных. Вызывается автоматически при удалении
-// объекта из владельца
+// РѕР±СЉРµРєС‚Р° РёР· РІР»Р°РґРµР»СЊС†Р°
+// РњРµС‚РѕРґ РґРµРёРЅРёС†РёР°Р»РёР·Р°С†РёРё РѕР±С‰РёС… РїРµСЂРµРјРµРЅРЅС‹С…. Р’С‹Р·С‹РІР°РµС‚СЃСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РїСЂРё СѓРґР°Р»РµРЅРёРё
+// РѕР±СЉРµРєС‚Р° РёР· РІР»Р°РґРµР»СЊС†Р°
 virtual void SharesUnInit(void);
 // --------------------------
 
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃС‡РµС‚РѕРј
 // --------------------------
-// Методы управления счетом
-// --------------------------
-// Восстановление настроек по умолчанию и сброс процесса счета
+// Р’РѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ Рё СЃР±СЂРѕСЃ РїСЂРѕС†РµСЃСЃР° СЃС‡РµС‚Р°
 virtual bool Default(void);
 
-/// Метод сброса параметров на значения по умолчанию
-/// Если subcomps == true то также сбрасывает параметры всех дочерних компонент
+/// Р•СЃР»Рё subcomps == true С‚Рѕ С‚Р°РєР¶Рµ СЃР±СЂР°СЃС‹РІР°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РІСЃРµС… РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚
 virtual bool DefaultAll(UContainer* cont, bool subcomps);
 
-// Обеспечивает сборку внутренней структуры объекта
-// после настройки параметров
-// Автоматически вызывает метод Reset() и выставляет Ready в true
-// в случае успешной сборки
+// РћР±РµСЃРїРµС‡РёРІР°РµС‚ СЃР±РѕСЂРєСѓ РІРЅСѓС‚СЂРµРЅРЅРµР№ СЃС‚СЂСѓРєС‚СѓСЂС‹ РѕР±СЉРµРєС‚Р°
+// РїРѕСЃР»Рµ РЅР°СЃС‚СЂРѕР№РєРё РїР°СЂР°РјРµС‚СЂРѕРІ
+// РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРё РІС‹Р·С‹РІР°РµС‚ РјРµС‚РѕРґ Reset() Рё РІС‹СЃС‚Р°РІР»СЏРµС‚ Ready РІ true
+// РІ СЃР»СѓС‡Р°Рµ СѓСЃРїРµС€РЅРѕР№ СЃР±РѕСЂРєРё
 virtual bool Build(void);
 
-// Сброс процесса счета без потери настроек
+// РЎР±СЂРѕСЃ РїСЂРѕС†РµСЃСЃР° СЃС‡РµС‚Р° Р±РµР· РїРѕС‚РµСЂРё РЅР°СЃС‚СЂРѕРµРє
 virtual bool Reset(void);
 
-// Выполняет расчет этого объекта
+// Р’С‹РїРѕР»РЅСЏРµС‚ СЂР°СЃС‡РµС‚ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°
 virtual bool Calculate(void);
 
-// Выполняет начальную инициализацию этого объекта
+// Р’С‹РїРѕР»РЅСЏРµС‚ РЅР°С‡Р°Р»СЊРЅСѓСЋ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЋ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°
 virtual void Init(void);
 
-// Выполняет деинициализацию этого объекта
+// Р’С‹РїРѕР»РЅСЏРµС‚ РґРµРёРЅРёС†РёР°Р»РёР·Р°С†РёСЋ СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°
 virtual void UnInit(void);
 
-// Обновляет состояние MainOwner после расчета этого объекта
+// РћР±РЅРѕРІР»СЏРµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ MainOwner РїРѕСЃР»Рµ СЂР°СЃС‡РµС‚Р° СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°
 virtual void UpdateMainOwner(void);
 
-// Обычно вызывается дочерним компонентом и прерывает обсчет цепочки дочерних
-// компонент на этом шаге счета
+// РћР±С‹С‡РЅРѕ РІС‹Р·С‹РІР°РµС‚СЃСЏ РґРѕС‡РµСЂРЅРёРј РєРѕРјРїРѕРЅРµРЅС‚РѕРј Рё РїСЂРµСЂС‹РІР°РµС‚ РѕР±СЃС‡РµС‚ С†РµРїРѕС‡РєРё РґРѕС‡РµСЂРЅРёС…
+// РєРѕРјРїРѕРЅРµРЅС‚ РЅР° СЌС‚РѕРј С€Р°РіРµ СЃС‡РµС‚Р°
 virtual void ForceSkipComponentCalculation(void);
 
-// Обычно вызывается дочерним компонентом и требует перерасчет цепочки дочерних
-// компонент на этом шаге счета сначала
+// РћР±С‹С‡РЅРѕ РІС‹Р·С‹РІР°РµС‚СЃСЏ РґРѕС‡РµСЂРЅРёРј РєРѕРјРїРѕРЅРµРЅС‚РѕРј Рё С‚СЂРµР±СѓРµС‚ РїРµСЂРµСЂР°СЃС‡РµС‚ С†РµРїРѕС‡РєРё РґРѕС‡РµСЂРЅРёС…
+// РєРѕРјРїРѕРЅРµРЅС‚ РЅР° СЌС‚РѕРј С€Р°РіРµ СЃС‡РµС‚Р° СЃРЅР°С‡Р°Р»Р°
 virtual void ForceComponentReCalculation(void);
 
-/// Проверяет текущую длительность расчета этого компонента
-/// и если она превышает MaxCalculationDuration и MaxCalculationDuration>=0
-/// то прерывает обсчет остальной цепочки дочерних компонент
+/// РџСЂРѕРІРµСЂСЏРµС‚ С‚РµРєСѓС‰СѓСЋ РґР»РёС‚РµР»СЊРЅРѕСЃС‚СЊ СЂР°СЃС‡РµС‚Р° СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
+/// Рё РµСЃР»Рё РѕРЅР° РїСЂРµРІС‹С€Р°РµС‚ MaxCalculationDuration Рё MaxCalculationDuration>=0
+/// С‚Рѕ РїСЂРµСЂС‹РІР°РµС‚ РѕР±СЃС‡РµС‚ РѕСЃС‚Р°Р»СЊРЅРѕР№ С†РµРїРѕС‡РєРё РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚
 virtual bool CheckDurationAndSkipComponentCalculation(void);
 
-// Устанавливает компоненты в требуемый порядок расчета
 virtual void UpdateComputationOrder(void);
+
+/// Invalidates active components cache (called when component static flag changes)
+void InvalidateActiveComponentsCache(void);
+
+/// Adds component to active cache (incremental update)
+void AddToActiveCache(UEPtr<UContainer> comp);
+
+/// Removes component from active cache (incremental update)
+void RemoveFromActiveCache(UEPtr<UContainer> comp);
 // --------------------------
 
-// --------------------------
-// Скрытые методы управления счетом
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃС‡РµС‚РѕРј
 // --------------------------
 protected:
 virtual void AInit(void);
 virtual void AUnInit(void);
 // --------------------------
 
-// --------------------------
-// Скрытые методы управления контроллерами интерфейса
-// Удаление контроллеров лежит на вызывающем модуле
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°РјРё РёРЅС‚РµСЂС„РµР№СЃР°
+// РЈРґР°Р»РµРЅРёРµ РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРІ Р»РµР¶РёС‚ РЅР° РІС‹Р·С‹РІР°СЋС‰РµРј РјРѕРґСѓР»Рµ
 // --------------------------
 protected:
-// Добавляет новый контроллер
+// Р”РѕР±Р°РІР»СЏРµС‚ РЅРѕРІС‹Р№ РєРѕРЅС‚СЂРѕР»Р»РµСЂ
 void AddController(UEPtr<UController> controller, bool forchilds=false);
 
-// Удаляет контроллер из списка
+// РЈРґР°Р»СЏРµС‚ РєРѕРЅС‚СЂРѕР»Р»РµСЂ РёР· СЃРїРёСЃРєР°
 void DelController(UEPtr<UController> controller, bool forchilds=false);
 
-// Удаляет все контроллеры
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ РєРѕРЅС‚СЂРѕР»Р»РµСЂС‹
 void DelAllControllers(bool forchilds=false);
 
-// Инициирует отключение всех контроллеров
+// РРЅРёС†РёРёСЂСѓРµС‚ РѕС‚РєР»СЋС‡РµРЅРёРµ РІСЃРµС… РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРІ
 void UnLinkAllControllers(bool forchilds=false);
 
-// Проверяет, существует ли контроллер в списке
+// РџСЂРѕРІРµСЂСЏРµС‚, СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё РєРѕРЅС‚СЂРѕР»Р»РµСЂ РІ СЃРїРёСЃРєРµ
 bool CheckController(UEPtr<UController> controller) const;
 
-// Возвращает число контроллеров
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРІ
 size_t GetNumControllers(void) const;
 
-// Возвращает контроллер по индексу
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕРЅС‚СЂРѕР»Р»РµСЂ РїРѕ РёРЅРґРµРєСЃСѓ
 UEPtr<UController> GetController(int index);
 // --------------------------
 
-// --------------------------
-// Скрытые методы управления локальными указателями
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ Р»РѕРєР°Р»СЊРЅС‹РјРё СѓРєР°Р·Р°С‚РµР»СЏРјРё
 // --------------------------
 public:
-// Добавляет указатель с именем 'name' в таблицу соотвествий
-// параметров и назначает ей корректный индекс
-// Должна вызываться в конструкторах классов
+// Р”РѕР±Р°РІР»СЏРµС‚ СѓРєР°Р·Р°С‚РµР»СЊ СЃ РёРјРµРЅРµРј 'name' РІ С‚Р°Р±Р»РёС†Сѓ СЃРѕРѕС‚РІРµСЃС‚РІРёР№
+// РїР°СЂР°РјРµС‚СЂРѕРІ Рё РЅР°Р·РЅР°С‡Р°РµС‚ РµР№ РєРѕСЂСЂРµРєС‚РЅС‹Р№ РёРЅРґРµРєСЃ
+// Р”РѕР»Р¶РЅР° РІС‹Р·С‹РІР°С‚СЊСЃСЏ РІ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂР°С… РєР»Р°СЃСЃРѕРІ
 UId AddLookupPointer(const NameT &name, UEPtr<UIPointer> pointer);
 
 protected:
-// Удаляет указатель с ID 'id' из таблицы соотвествий
+// РЈРґР°Р»СЏРµС‚ СѓРєР°Р·Р°С‚РµР»СЊ СЃ ID 'id' РёР· С‚Р°Р±Р»РёС†С‹ СЃРѕРѕС‚РІРµСЃС‚РІРёР№
 void DelLookupPointer(const NameT &name);
 
-// Осуществляет поиск в таблице указателя, соответствующего заданному источнику
+// РћСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РїРѕРёСЃРє РІ С‚Р°Р±Р»РёС†Рµ СѓРєР°Р·Р°С‚РµР»СЏ, СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµРіРѕ Р·Р°РґР°РЅРЅРѕРјСѓ РёСЃС‚РѕС‡РЅРёРєСѓ
 PointerMapCIteratorT FindLookupPointer(UEPtr<UContainer> source) const;
 // --------------------------
 
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ С‚Р°Р±Р»РёС†РµР№ РєРѕРјРїРѕРЅРµРЅС‚
 // --------------------------
-// Скрытые методы управления таблицей компонент
-// --------------------------
-// Добавляет компонент 'comp' в таблицу компонент
+// Р”РѕР±Р°РІР»СЏРµС‚ РєРѕРјРїРѕРЅРµРЅС‚ 'comp' РІ С‚Р°Р±Р»РёС†Сѓ РєРѕРјРїРѕРЅРµРЅС‚
 void AddComponentTable(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer=0);
 
-// Удаляет компонент 'comp' из таблицы компонент
+// РЈРґР°Р»СЏРµС‚ РєРѕРјРїРѕРЅРµРЅС‚ 'comp' РёР· С‚Р°Р±Р»РёС†С‹ РєРѕРјРїРѕРЅРµРЅС‚
 void DelComponentTable(UEPtr<UContainer> comp);
+
+// Updates cache of active (non-static) components for optimized Calculate() loop
+void UpdateActiveComponentsCache(void);
+
+/// Rebuild Idв†’index map after PComponents reorder (ChangeComponentPosition).
+void RebuildComponentsIdIndex(void);
 // --------------------------
 
-// --------------------------
-// Скрытые методы управления общими (shared) переменными
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РѕР±С‰РёРјРё (shared) РїРµСЂРµРјРµРЅРЅС‹РјРё
 // --------------------------
 protected:
-// Метод инициализации общих переменных. Вызывается автоматически при добавлении
-// объекта владельцу
+// РњРµС‚РѕРґ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РѕР±С‰РёС… РїРµСЂРµРјРµРЅРЅС‹С…. Р’С‹Р·С‹РІР°РµС‚СЃСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РїСЂРё РґРѕР±Р°РІР»РµРЅРёРё
+// РѕР±СЉРµРєС‚Р° РІР»Р°РґРµР»СЊС†Сѓ
 virtual void ASharesInit(void);
 
-// Метод деинициализации общих переменных. Вызывается автоматически при удалении
-// объекта из владельца
+// РѕР±СЉРµРєС‚Р° РёР· РІР»Р°РґРµР»СЊС†Р°
+// РњРµС‚РѕРґ РґРµРёРЅРёС†РёР°Р»РёР·Р°С†РёРё РѕР±С‰РёС… РїРµСЂРµРјРµРЅРЅС‹С…. Р’С‹Р·С‹РІР°РµС‚СЃСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РїСЂРё СѓРґР°Р»РµРЅРёРё
+// РѕР±СЉРµРєС‚Р° РёР· РІР»Р°РґРµР»СЊС†Р°
 virtual void ASharesUnInit(void);
 // --------------------------
 
 protected:
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ С‚Р°Р±Р»РёС†РµР№ СЃРѕРѕС‚РІРµС‚СЃРІРёР№ РєРѕРјРїРѕРЅРµРЅС‚
 // --------------------------
-// Скрытые методы управления таблицей соответсвий компонент
-// --------------------------
-// Обновляет таблицу соответствий компонент заменяя 'oldname'
-// имя компонента на 'newname'
+// РћР±РЅРѕРІР»СЏРµС‚ С‚Р°Р±Р»РёС†Сѓ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёР№ РєРѕРјРїРѕРЅРµРЅС‚ Р·Р°РјРµРЅСЏСЏ 'oldname'
+// РёРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° РЅР° 'newname'
 void ModifyLookupComponent(const NameT &oldname, const NameT &newname);
 
-// Обновляет таблицу соответствий компонент устанавливая Id 'id'
-// для компонента с именем 'name'
+// РћР±РЅРѕРІР»СЏРµС‚ С‚Р°Р±Р»РёС†Сѓ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёР№ РєРѕРјРїРѕРЅРµРЅС‚ СѓСЃС‚Р°РЅР°РІР»РёРІР°СЏ Id 'id'
+// РґР»СЏ РєРѕРјРїРѕРЅРµРЅС‚Р° СЃ РёРјРµРЅРµРј 'name'
 void SetLookupComponent(const NameT &name, const UId &id);
 
-// Обновляет таблицу соответствий компонент удаляя запись
-// компонента с именем 'name'
+// РћР±РЅРѕРІР»СЏРµС‚ С‚Р°Р±Р»РёС†Сѓ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёР№ РєРѕРјРїРѕРЅРµРЅС‚ СѓРґР°Р»СЏСЏ Р·Р°РїРёСЃСЊ
+// РєРѕРјРїРѕРЅРµРЅС‚Р° СЃ РёРјРµРЅРµРј 'name'
 void DelLookupComponent(const NameT &name);
 // --------------------------
 
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°РјРё
 // --------------------------
-// Скрытые методы управления компонентами
 // --------------------------
 protected:
-/// Производит необходимые операции по добавлению статического компонента
+/// РћР±РЅРѕРІР»СЏРµС‚ РёР»Рё СЃРѕР·РґР°С‘С‚ Р·Р°РїРёСЃСЊ Рѕ СЃС‚Р°С‚РёС‡РµСЃРєРѕРј РєРѕРјРїРѕРЅРµРЅС‚Рµ РєР»Р°СЃСЃР° classname,
+/// РІРѕР·РІСЂР°С‰Р°РµС‚ РµРіРѕ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ
 UId UpdateStaticComponent(const NameT &classname, UEPtr<UContainer> comp);
 
-// Удаляет компонент comp
-// Метод предполагает, что компонент принадлежит объекту
+// РњРµС‚РѕРґ РїСЂРµРґРїРѕР»Р°РіР°РµС‚, С‡С‚Рѕ РєРѕРјРїРѕРЅРµРЅС‚ РїСЂРёРЅР°РґР»РµР¶РёС‚ РѕР±СЉРµРєС‚Сѓ
+// РЈРґР°Р»СЏРµС‚ РєРѕРјРїРѕРЅРµРЅС‚ comp
 virtual void BeforeDelComponent(UEPtr<UContainer> comp, bool canfree=true);
 virtual void AfterDelComponent(UEPtr<UContainer> comp, bool canfree=true);
 void DelComponent(UEPtr<UContainer> comp, bool canfree);
 
-// Выполняет завершающие пользовательские действия
-// при добавлении дочернего компонента в этот объект
-// Метод будет вызван только если comp был
-// успешно добавлен в список компонент
-// Может быть передан указатель на локальную переменную
+// Р’С‹РїРѕР»РЅСЏРµС‚ Р·Р°РІРµСЂС€Р°СЋС‰РёРµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРёРµ РґРµР№СЃС‚РІРёСЏ
+// РїСЂРё РґРѕР±Р°РІР»РµРЅРёРё РґРѕС‡РµСЂРЅРµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° РІ СЌС‚РѕС‚ РѕР±СЉРµРєС‚
+// РњРµС‚РѕРґ Р±СѓРґРµС‚ РІС‹Р·РІР°РЅ С‚РѕР»СЊРєРѕ РµСЃР»Рё comp Р±С‹Р»
+// СѓСЃРїРµС€РЅРѕ РґРѕР±Р°РІР»РµРЅ РІ СЃРїРёСЃРѕРє РєРѕРјРїРѕРЅРµРЅС‚
+// РњРѕР¶РµС‚ Р±С‹С‚СЊ РїРµСЂРµРґР°РЅ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° Р»РѕРєР°Р»СЊРЅСѓСЋ РїРµСЂРµРјРµРЅРЅСѓСЋ
 virtual void ABeforeAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer=0);
 virtual void AAfterAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer=0);
 virtual bool AAddComponent(UEPtr<UContainer> comp, UEPtr<UIPointer> pointer=0);
 
-// Выполняет предварительные пользовательские действия
-// при удалении дочернего компонента из этого объекта
-// Метод будет вызван только если comp
-// существует в списке компонент
+// Р’С‹РїРѕР»РЅСЏРµС‚ РїСЂРµРґРІР°СЂРёС‚РµР»СЊРЅС‹Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЊСЃРєРёРµ РґРµР№СЃС‚РІРёСЏ
+// РїСЂРё СѓРґР°Р»РµРЅРёРё РґРѕС‡РµСЂРЅРµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° РёР· СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°
+// РњРµС‚РѕРґ Р±СѓРґРµС‚ РІС‹Р·РІР°РЅ С‚РѕР»СЊРєРѕ РµСЃР»Рё comp
+// СЃСѓС‰РµСЃС‚РІСѓРµС‚ РІ СЃРїРёСЃРєРµ РєРѕРјРїРѕРЅРµРЅС‚
 virtual void ABeforeDelComponent(UEPtr<UContainer> comp, bool canfree);
 virtual void AAfterDelComponent(UEPtr<UContainer> comp, bool canfree);
 virtual bool ADelComponent(UEPtr<UContainer> comp);
 // --------------------------
 
-// --------------------------
-// Скрытые методы управления счетом
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃС‡РµС‚РѕРј
 // --------------------------
 protected:
-// Обновляет состояние MainOwner после расчета этого объекта
+// РћР±РЅРѕРІР»СЏРµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ MainOwner РїРѕСЃР»Рµ СЂР°СЃС‡РµС‚Р° СЌС‚РѕРіРѕ РѕР±СЉРµРєС‚Р°
 virtual void AUpdateMainOwner(void);
 // --------------------------
 
-public: // Классы описания исключений
-/* Базовый класс исключений */
+/// Р‘Р°Р·РѕРІС‹Р№ РєР»Р°СЃСЃ РґР»СЏ РІСЃРµС… РёСЃРєР»СЋС‡РµРЅРёР№ РєРѕРЅС‚РµР№РЅРµСЂР°.
+/// РЎРѕРґРµСЂР¶РёС‚ СЃРІРµРґРµРЅРёСЏ РѕР± РѕР±СЉРµРєС‚Рµ, РІ РєРѕС‚РѕСЂРѕРј РІРѕР·РЅРёРєР»Рѕ РёСЃРєР»СЋС‡РµРЅРёРµ.
+public: /* Р‘Р°Р·РѕРІС‹Р№ РєР»Р°СЃСЃ РёСЃРєР»СЋС‡РµРЅРёР№ */
 class EIContainer
 {
-public: // Данные исключения
-// Короткое имя компонента в котором сгенерировано исключение
+public: // РљРѕСЂРѕС‚РєРѕРµ РёРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° РІ РєРѕС‚РѕСЂРѕРј СЃРіРµРЅРµСЂРёСЂРѕРІР°РЅРѕ РёСЃРєР»СЋС‡РµРЅРёРµ
 std::string Name;
 
-// Короткий идентификатор компонента в котором сгенерировано исключение
+// РљРѕСЂРѕС‚РєРёР№ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєРѕРјРїРѕРЅРµРЅС‚Р° РІ РєРѕС‚РѕСЂРѕРј СЃРіРµРЅРµСЂРёСЂРѕРІР°РЅРѕ РёСЃРєР»СЋС‡РµРЅРёРµ
 ULongId Id;
 
-// Полное имя владельца компонента в котором сгенерировано исключение
+// РџРѕР»РЅРѕРµ РёРјСЏ РІР»Р°РґРµР»СЊС†Р° РєРѕРјРїРѕРЅРµРЅС‚Р° РІ РєРѕС‚РѕСЂРѕРј СЃРіРµРЅРµСЂРёСЂРѕРІР°РЅРѕ РёСЃРєР»СЋС‡РµРЅРёРµ
 std::string OwnerName;
 
-// Полный идентификатор владельца компонента в котором сгенерировано исключение
+// РџРѕР»РЅС‹Р№ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РІР»Р°РґРµР»СЊС†Р° РєРѕРјРїРѕРЅРµРЅС‚Р° РІ РєРѕС‚РѕСЂРѕРј СЃРіРµРЅРµСЂРёСЂРѕРІР°РЅРѕ РёСЃРєР»СЋС‡РµРЅРёРµ
 ULongId OwnerId;
 
-// Полное имя главного владельца компонента в котором сгенерировано исключение
+// РџРѕР»РЅРѕРµ РёРјСЏ РіР»Р°РІРЅРѕРіРѕ РІР»Р°РґРµР»СЊС†Р° РєРѕРјРїРѕРЅРµРЅС‚Р° РІ РєРѕС‚РѕСЂРѕРј СЃРіРµРЅРµСЂРёСЂРѕРІР°РЅРѕ РёСЃРєР»СЋС‡РµРЅРёРµ
 std::string MainOwnerName;
 
-// Полный идентификатор главного владельца компонента в котором сгенерировано исключение
+// РџРѕР»РЅС‹Р№ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РіР»Р°РІРЅРѕРіРѕ РІР»Р°РґРµР»СЊС†Р° РєРѕРјРїРѕРЅРµРЅС‚Р° РІ РєРѕС‚РѕСЂРѕРј СЃРіРµРЅРµСЂРёСЂРѕРІР°РЅРѕ РёСЃРєР»СЋС‡РµРЅРёРµ
 ULongId MainOwnerId;
 
 
-public: // Методы
+public: // --------------------------
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
-// Конструкторы и деструкторы
 // --------------------------
 EIContainer(void);
 explicit EIContainer(const UContainer *cont);
@@ -933,93 +1023,94 @@ EIContainer(const EIContainer &copy);
 virtual ~EIContainer(void);
 // --------------------------
 
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Методы формирования лога
-// --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 virtual std::string CreateLogMessage(void) const;
 // --------------------------
 };
 
-// Id компонента не найден
+// Id РєРѕРјРїРѕРЅРµРЅС‚Р° РЅРµ РЅР°Р№РґРµРЅ
 struct EComponentIdNotExist: public EIdNotExist
 {
 explicit EComponentIdNotExist(UId id) : EIdNotExist(id) {};
 };
 
-// Id компонента уже существует
+// Id РєРѕРјРїРѕРЅРµРЅС‚Р° СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
 struct EComponentIdAlreadyExist: public EIdAlreadyExist
 {
 explicit EComponentIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
 };
 
-// Имя компонента не найдено
+// РРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° РЅРµ РЅР°Р№РґРµРЅРѕ
 struct EComponentNameNotExist: public ENameNotExist
 {
 explicit EComponentNameNotExist(const std::string &name) : ENameNotExist(name) {};
 };
 
-// Имя компонента уже существует
+// РРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
 struct EComponentNameAlreadyExist: public ENameAlreadyExist
 {
 explicit EComponentNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
 };
 
-// Имя компонента недопустимо
+/// РРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° РЅРµРєРѕСЂСЂРµРєС‚РЅРѕ (РЅР°СЂСѓС€Р°РµС‚ РїСЂР°РІРёР»Р° РґРѕРїСѓСЃС‚РёРјС‹С… РёРјС‘РЅ)
 struct EComponentNameInvalid: public ENameError
 {
 explicit EComponentNameInvalid(const std::string &name) : ENameError(name) {};
+virtual std::string CreateLogMessage(void) const
+{
+ return std::string(" invalid component name: ") + Name;
+}
 };
 
-// Id указателя не найден
+// Id СѓРєР°Р·Р°С‚РµР»СЏ РЅРµ РЅР°Р№РґРµРЅ
 struct EPointerIdNotExist: public EIdNotExist
 {
 explicit EPointerIdNotExist(UId id) : EIdNotExist(id) {};
 };
 
-// Id указателя уже существует
+// Id СѓРєР°Р·Р°С‚РµР»СЏ СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
 struct EPointerIdAlreadyExist: public EIdAlreadyExist
 {
 explicit EPointerIdAlreadyExist(UId id) : EIdAlreadyExist(id) {};
 };
 
-// Имя указателя не найдено
+// РРјСЏ СѓРєР°Р·Р°С‚РµР»СЏ РЅРµ РЅР°Р№РґРµРЅРѕ
 struct EPointerNameNotExist: public ENameNotExist
 {
 explicit EPointerNameNotExist(const std::string &name) : ENameNotExist(name) {};
 };
 
-// Имя указателя уже существует
+// РРјСЏ СѓРєР°Р·Р°С‚РµР»СЏ СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
 struct EPointerNameAlreadyExist: public ENameAlreadyExist
 {
 explicit EPointerNameAlreadyExist(const std::string &name) : ENameAlreadyExist(name) {};
 };
 
-// Ошибки добавления/удаления компонент
-// Id указателя уже существует
+// РћС€РёР±РєРё РґРѕР±Р°РІР»РµРЅРёСЏ/СѓРґР°Р»РµРЅРёСЏ РєРѕРјРїРѕРЅРµРЅС‚
 struct EAddComponentAlreadyHaveOwner: public EIdError
 {
 explicit EAddComponentAlreadyHaveOwner(UId id) : EIdError(id) {};
 };
 
-// Недопустимый тип дочернего компонента
+// РќРµРґРѕРїСѓСЃС‚РёРјС‹Р№ С‚РёРї РґРѕС‡РµСЂРЅРµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 struct EAddComponentHaveInvalidType: public EIdError
 {
 explicit EAddComponentHaveInvalidType(UId id) : EIdError(id) {};
 };
 
-// Интерфейсный класс для обработки ошибок счета компонент
+// РРЅС‚РµСЂС„РµР№СЃРЅС‹Р№ РєР»Р°СЃСЃ РґР»СЏ РѕР±СЂР°Р±РѕС‚РєРё РѕС€РёР±РѕРє СЃС‡РµС‚Р° РєРѕРјРїРѕРЅРµРЅС‚
 class EICalculateContainer: public EIContainer
 {
- public: // Данные исключения
- // Короткое имя дочернего компонента в котором произошла ошибка счета
+ public:  // РљРѕСЂРѕС‚РєРѕРµ РёРјСЏ РґРѕС‡РµСЂРЅРµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° РІ РєРѕС‚РѕСЂРѕРј РїСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР° СЃС‡РµС‚Р°
  std::string SubName;
 
- // Короткий идентификатор дочернего компонента в котором произошла ошибка счета
+ // РљРѕСЂРѕС‚РєРёР№ РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РґРѕС‡РµСЂРЅРµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° РІ РєРѕС‚РѕСЂРѕРј РїСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР° СЃС‡РµС‚Р°
  ULongId SubId;
 
+ // РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
  // --------------------------
- // Конструкторы и деструкторы
  // --------------------------
  EICalculateContainer(void);
  EICalculateContainer(const UContainer *cont, const UContainer *subcont);
@@ -1027,21 +1118,20 @@ class EICalculateContainer: public EIContainer
  virtual ~EICalculateContainer(void);
  // --------------------------
 
+ // РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
  // --------------------------
- // Методы формирования лога
- // --------------------------
- // Формирует строку лога об исключении
+ // Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
  virtual std::string CreateLogMessage(void) const;
  // --------------------------
 };
 
 
-// Исключение - ошибка
+// РСЃРєР»СЋС‡РµРЅРёРµ - РѕС€РёР±РєР°
 class EComponentCalculate: public EError, public EICalculateContainer
 {
 public:
+ // РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
  // --------------------------
- // Конструкторы и деструкторы
  // --------------------------
  EComponentCalculate(void);
  EComponentCalculate(const UContainer *cont, const UContainer *subcont);
@@ -1049,21 +1139,20 @@ public:
  virtual ~EComponentCalculate(void) throw();
  // --------------------------
 
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Методы формирования лога
-// --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 virtual std::string CreateLogMessage(void) const;
 // --------------------------
 };
 
-// Исключение - фатальная ошибка стороннего исключения
+// РСЃРєР»СЋС‡РµРЅРёРµ - С„Р°С‚Р°Р»СЊРЅР°СЏ РѕС€РёР±РєР° СЃС‚РѕСЂРѕРЅРЅРµРіРѕ РёСЃРєР»СЋС‡РµРЅРёСЏ
 class EComponentSystemException: public ESystemException, public EICalculateContainer
 {
  public:
 
+ // РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
  // --------------------------
- // Конструкторы и деструкторы
  // --------------------------
  EComponentSystemException(void);
  EComponentSystemException(const UContainer *cont, const UContainer *subcont, const std::string &info);
@@ -1071,10 +1160,9 @@ class EComponentSystemException: public ESystemException, public EICalculateCont
  virtual ~EComponentSystemException(void) throw();
  // --------------------------
 
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Методы формирования лога
-// --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 virtual std::string CreateLogMessage(void) const;
 // --------------------------
 };
@@ -1082,15 +1170,13 @@ virtual std::string CreateLogMessage(void) const;
 
 };
 
-/// Функция подготавливает строку для логирования
 bool PreparePropertyLogString(const UVariable& variable, unsigned int expected_type, std::string &result);
 
 
-// Осуществляет поиск всех компонент приводимых к заданному C++ типу
-// и возвращает вектор длинных имен компонент относительно текущего либо пустой вектор
+// Рё РІРѕР·РІСЂР°С‰Р°РµС‚ РІРµРєС‚РѕСЂ РґР»РёРЅРЅС‹С… РёРјРµРЅ РєРѕРјРїРѕРЅРµРЅС‚ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ С‚РµРєСѓС‰РµРіРѕ Р»РёР±Рѕ РїСѓСЃС‚РѕР№ РІРµРєС‚РѕСЂ
 // find_all
-// false - искать в текущей компоненте
-// true -  искать в текущей компоненте и глубже
+// false - РёСЃРєР°С‚СЊ РІ С‚РµРєСѓС‰РµР№ РєРѕРјРїРѕРЅРµРЅС‚Рµ
+// true -  РёСЃРєР°С‚СЊ РІ С‚РµРєСѓС‰РµР№ РєРѕРјРїРѕРЅРµРЅС‚Рµ Рё РіР»СѓР±Р¶Рµ
 template<class T>
 const vector<NameT>& UContainer::GetComponentsNameByClassType(vector<NameT> &buffer, UEPtr<UContainer> net, bool find_all)
 {
@@ -1133,7 +1219,7 @@ const vector<NameT>& UContainer::GetComponentsNameByClassType(vector<NameT> &buf
  return buffer;
 }
 
-// Возвращает базовый класс свойства с типом данных
+// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T>
 const UEPtr<UVBaseDataProperty<T> > UContainer::FindPropertyEx(const NameT &name) const
 {
@@ -1161,7 +1247,7 @@ UEPtr<UVBaseDataProperty<T> > UContainer::FindPropertyEx(const NameT &name)
 }
 
 
-/// Подключает к свойству destination_property данные свойства другого компонента
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ destination_property пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T>
 bool UContainer::AttachPropertyData(const NameT& destination_property, const NameT& source_component, const NameT &source_property)
 {
@@ -1179,7 +1265,7 @@ bool UContainer::AttachPropertyData(const NameT& destination_property, const Nam
  return dest_prop->AttachTo(source_prop);
 }
 
-/// Отключает от свойства destination_property данные свойства другого компонента
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ destination_property пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T>
 void UContainer::DetachPropertyData(const NameT& destination_property)
 {
@@ -1189,7 +1275,7 @@ void UContainer::DetachPropertyData(const NameT& destination_property)
 }
 
 
-/// Возвращает имя подключенного компонента
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T,class OwnerT>
 UItem* UVProperty<T, OwnerT>::GetItem(int index)
 {
@@ -1200,7 +1286,6 @@ UItem* UVProperty<T, OwnerT>::GetItem(int index)
  return 0;
 }
 
-/// Возвращает имя подключенного выхода
 template<typename T,class OwnerT>
 std::string UVProperty<T, OwnerT>::GetItemOutputName(int index) const
 {
@@ -1211,7 +1296,7 @@ std::string UVProperty<T, OwnerT>::GetItemOutputName(int index) const
  return std::string();
 }
 
-/// Возвращает имя подключенного компонента
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 template<typename T,class OwnerT>
 std::string UVProperty<T, OwnerT>::GetItemName(int index) const
 {
@@ -1222,7 +1307,6 @@ std::string UVProperty<T, OwnerT>::GetItemName(int index) const
  return std::string();
 }
 
-/// Возвращает полное имя подключенного компонента
 template<typename T,class OwnerT>
 std::string UVProperty<T, OwnerT>::GetItemFullName(int index) const
 {

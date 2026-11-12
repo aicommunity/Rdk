@@ -37,7 +37,7 @@ int round(double number)
  return int((number < 0.0) ? ceil(number - 0.5) : floor(number + 0.5));
 }
 
-// Процедура вычисления кодов для точки(конца/начала отрезка)
+// РџСЂРѕС†РµРґСѓСЂР° РІС‹С‡РёСЃР»РµРЅРёСЏ РєРѕРґРѕРІ РґР»СЏ С‚РѕС‡РєРё(РєРѕРЅС†Р°/РЅР°С‡Р°Р»Р° РѕС‚СЂРµР·РєР°)
 int CompOutCode(const UBPoint &point, const UBRect &rect)
 {
  int code=UG_EDGE_CODE_NONE;
@@ -54,15 +54,14 @@ int CompOutCode(const UBPoint &point, const UBRect &rect)
  return code;
 }
 
-// Процедура отсечения отрезка
-// взято отсюда: http://grafika.me/node/694
+// РџСЂРѕС†РµРґСѓСЂР° РѕС‚СЃРµС‡РµРЅРёСЏ РѕС‚СЂРµР·РєР°
+// РІР·СЏС‚Рѕ РѕС‚СЃСЋРґР°: http://grafika.me/node/694
 void ClipLine(const UBPoint &point1, const UBPoint &point2, const UBRect &rect, UBPoint &out_point1, UBPoint &out_point2)
 {
  int outcodeOut=UG_EDGE_CODE_NONE;
  bool accept = false;
  bool done = false;
  int x0(point1.X), y0(point1.Y), x1(point2.X), y1(point2.Y);
- double x,y;
  int counter=100000;
 
  out_point1=point1;
@@ -74,21 +73,22 @@ void ClipLine(const UBPoint &point1, const UBPoint &point2, const UBRect &rect, 
  {
   if((outcode0==UG_EDGE_CODE_NONE) && (outcode1==UG_EDGE_CODE_NONE))
   {
-   // Отрезок целиком лежит внутри окна
+   // РћС‚СЂРµР·РѕРє С†РµР»РёРєРѕРј Р»РµР¶РёС‚ РІРЅСѓС‚СЂРё РѕРєРЅР°
    accept = true; done=true;
   }
   else
   if( (outcode0*outcode1) != UG_EDGE_CODE_NONE)
-   //Отрезок лежит за пределами окна и не будет отрисован
+   //РћС‚СЂРµР·РѕРє Р»РµР¶РёС‚ Р·Р° РїСЂРµРґРµР»Р°РјРё РѕРєРЅР° Рё РЅРµ Р±СѓРґРµС‚ РѕС‚СЂРёСЃРѕРІР°РЅ
    done = true;
-  else // Часть отрезка лежит внутри прямоугольника
+  else // Р§Р°СЃС‚СЊ РѕС‚СЂРµР·РєР° Р»РµР¶РёС‚ РІРЅСѓС‚СЂРё РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєР°
   {
-   if(outcode0 != UG_EDGE_CODE_NONE) // Если начальная точка лежит вне прямоугольника
+   if(outcode0 != UG_EDGE_CODE_NONE) // Р•СЃР»Рё РЅР°С‡Р°Р»СЊРЅР°СЏ С‚РѕС‡РєР° Р»РµР¶РёС‚ РІРЅРµ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєР°
 	outcodeOut = outcode0;
    else
     outcodeOut = outcode1;
 
-   // Найдём точку пересечения отрезка с границей прямоугольника
+   // РќР°Р№РґС‘Рј С‚РѕС‡РєСѓ РїРµСЂРµСЃРµС‡РµРЅРёСЏ РѕС‚СЂРµР·РєР° СЃ РіСЂР°РЅРёС†РµР№ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєР°
+   double x = x0, y = y0; // Initialize to avoid uninitialized variable warning
    if(UG_EDGE_CODE_TOP & outcodeOut)
    {
 	x = x0 + (x1 - x0) * (rect.Y2() - y0) / (y1 - y0);
@@ -113,7 +113,7 @@ void ClipLine(const UBPoint &point1, const UBPoint &point2, const UBRect &rect, 
 	x = rect.X1();
    }
 
-   // Переместили внешнюю точку в точку пересечения
+   // РџРµСЂРµРјРµСЃС‚РёР»Рё РІРЅРµС€РЅСЋСЋ С‚РѕС‡РєСѓ РІ С‚РѕС‡РєСѓ РїРµСЂРµСЃРµС‡РµРЅРёСЏ
    if (outcodeOut == outcode0)
    {
 	x0 = round(x); y0 = round(y);
@@ -129,7 +129,7 @@ void ClipLine(const UBPoint &point1, const UBPoint &point2, const UBRect &rect, 
   --counter;
  } while(!done || counter == 0);
 
- if(accept)  // Рисуем видимую часть отрезка
+ if(accept)  // Р РёСЃСѓРµРј РІРёРґРёРјСѓСЋ С‡Р°СЃС‚СЊ РѕС‚СЂРµР·РєР°
  {
   out_point1.X=x0;
   out_point1.Y=y0;
@@ -141,11 +141,11 @@ void ClipLine(const UBPoint &point1, const UBPoint &point2, const UBRect &rect, 
 using namespace std;
 
 /* ***************************************************************************
- Реализация UGraphics
+ Р РµР°Р»РёР·Р°С†РёСЏ UGraphics
 *************************************************************************** */
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UGraphics::UGraphics(void)
 {
@@ -172,15 +172,15 @@ UGraphics::~UGraphics(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј
 // --------------------------
-// Возвращает текущую канву рисования
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСѓС‰СѓСЋ РєР°РЅРІСѓ СЂРёСЃРѕРІР°РЅРёСЏ
 UBitmap* UGraphics::GetCanvas(void)
 {
  return Canvas;
 }
 
-// Задает канву рисования
+// Р—Р°РґР°РµС‚ РєР°РЅРІСѓ СЂРёСЃРѕРІР°РЅРёСЏ
 bool UGraphics::SetCanvas(UBitmap *canvas)
 {
  if(!canvas)
@@ -194,9 +194,9 @@ bool UGraphics::SetCanvas(UBitmap *canvas)
 // --------------------------
 
 // --------------------------
-// Перегруженные операторы
+// РџРµСЂРµРіСЂСѓР¶РµРЅРЅС‹Рµ РѕРїРµСЂР°С‚РѕСЂС‹
 // --------------------------
-// Оператор присваивания
+// РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
 UGraphics& UGraphics::operator = (UGraphics &tool)
 {
  PenColor=tool.PenColor;
@@ -206,10 +206,10 @@ UGraphics& UGraphics::operator = (UGraphics &tool)
 // --------------------------
 
 // --------------------------
-// Графические примитивы
+// Р“СЂР°С„РёС‡РµСЃРєРёРµ РїСЂРёРјРёС‚РёРІС‹
 // --------------------------
-// Отображает пиксель
-// если ispos == true позиционирует перо в заданную позицию
+// РћС‚РѕР±СЂР°Р¶Р°РµС‚ РїРёРєСЃРµР»СЊ
+// РµСЃР»Рё ispos == true РїРѕР·РёС†РёРѕРЅРёСЂСѓРµС‚ РїРµСЂРѕ РІ Р·Р°РґР°РЅРЅСѓСЋ РїРѕР·РёС†РёСЋ
 void UGraphics::Pixel(int x, int y, bool ispos)
 {
  CWidth=Canvas->GetWidth();
@@ -224,7 +224,7 @@ void UGraphics::Pixel(int x, int y, bool ispos)
   }
 }
 
-// Отображает линию по координатам концов
+// РћС‚РѕР±СЂР°Р¶Р°РµС‚ Р»РёРЅРёСЋ РїРѕ РєРѕРѕСЂРґРёРЅР°С‚Р°Рј РєРѕРЅС†РѕРІ
 void UGraphics::Line(int x1, int y1, int x2, int y2)
 {
  int dx,dy,y,x;
@@ -315,8 +315,8 @@ void UGraphics::Line(int x1, int y1, int x2, int y2)
   }
 }
 
-// Отображает линию относительно позиции пера
-// Перемещает перо в позицию x,y
+// РћС‚РѕР±СЂР°Р¶Р°РµС‚ Р»РёРЅРёСЋ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ РїРѕР·РёС†РёРё РїРµСЂР°
+// РџРµСЂРµРјРµС‰Р°РµС‚ РїРµСЂРѕ РІ РїРѕР·РёС†РёСЋ x,y
 void UGraphics::LineTo(int x, int y)
 {
  Line(PenX,PenY,x,y);
@@ -324,8 +324,8 @@ void UGraphics::LineTo(int x, int y)
  PenY=y;
 }
 
-// Отображает окружность с центром x,y и радиусом r
-// Если fill == true - то рисуем с заливкой
+// РћС‚РѕР±СЂР°Р¶Р°РµС‚ РѕРєСЂСѓР¶РЅРѕСЃС‚СЊ СЃ С†РµРЅС‚СЂРѕРј x,y Рё СЂР°РґРёСѓСЃРѕРј r
+// Р•СЃР»Рё fill == true - С‚Рѕ СЂРёСЃСѓРµРј СЃ Р·Р°Р»РёРІРєРѕР№
 void UGraphics::Circle(int x, int y, int r, bool fill)
 {
  int r2=r*r, r4=static_cast<int>(r*1.414/2.0);
@@ -371,10 +371,10 @@ void UGraphics::Circle(int x, int y, int r, bool fill)
   }
 }
 
-// Отображает круговой сектор с центром x,y и радиусом r
-// Раствор сектора fi, повернут на угол teta
-// против часовой стрелки от горизонтальной оси
-// углы задаются в градусах
+// РћС‚РѕР±СЂР°Р¶Р°РµС‚ РєСЂСѓРіРѕРІРѕР№ СЃРµРєС‚РѕСЂ СЃ С†РµРЅС‚СЂРѕРј x,y Рё СЂР°РґРёСѓСЃРѕРј r
+// Р Р°СЃС‚РІРѕСЂ СЃРµРєС‚РѕСЂР° fi, РїРѕРІРµСЂРЅСѓС‚ РЅР° СѓРіРѕР» teta
+// РїСЂРѕС‚РёРІ С‡Р°СЃРѕРІРѕР№ СЃС‚СЂРµР»РєРё РѕС‚ РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕР№ РѕСЃРё
+// СѓРіР»С‹ Р·Р°РґР°СЋС‚СЃСЏ РІ РіСЂР°РґСѓСЃР°С…
 void UGraphics::Sector(int x, int y, int r, float fi, float teta, bool fill)
 {
  int x1,y1;
@@ -402,8 +402,8 @@ void UGraphics::Sector(int x, int y, int r, float fi, float teta, bool fill)
  }
 }
 
-// Отображает эллипс с центром x,y и радиусами hor, vert
-// Если fill == true - то рисуем с заливкой
+// РћС‚РѕР±СЂР°Р¶Р°РµС‚ СЌР»Р»РёРїСЃ СЃ С†РµРЅС‚СЂРѕРј x,y Рё СЂР°РґРёСѓСЃР°РјРё hor, vert
+// Р•СЃР»Рё fill == true - С‚Рѕ СЂРёСЃСѓРµРј СЃ Р·Р°Р»РёРІРєРѕР№
 void UGraphics::Ellipse(int x, int y, int hor, int vert, bool fill)
 {
  int hor2=hor*hor;
@@ -455,10 +455,10 @@ void UGraphics::Ellipse(int x, int y, int hor, int vert, bool fill)
   }
 }
 
-// Отображает прямоугольник с координатами
-// x1,y1 - верхнего левого угла
-// x2,y2 - правого нижнего угла
-// Если fill == true - то рисуем с заливкой
+// РћС‚РѕР±СЂР°Р¶Р°РµС‚ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє СЃ РєРѕРѕСЂРґРёРЅР°С‚Р°РјРё
+// x1,y1 - РІРµСЂС…РЅРµРіРѕ Р»РµРІРѕРіРѕ СѓРіР»Р°
+// x2,y2 - РїСЂР°РІРѕРіРѕ РЅРёР¶РЅРµРіРѕ СѓРіР»Р°
+// Р•СЃР»Рё fill == true - С‚Рѕ СЂРёСЃСѓРµРј СЃ Р·Р°Р»РёРІРєРѕР№
 void UGraphics::Rect(int x1, int y1, int x2, int y2, bool fill)
 {
  int width;
@@ -515,8 +515,8 @@ void UGraphics::Rect(int x1, int y1, int x2, int y2, bool fill)
   }
 }
 
-// Отображает прямоугольник с координатами вершин
-// Если fill == true - то рисуем с заливкой
+// РћС‚РѕР±СЂР°Р¶Р°РµС‚ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє СЃ РєРѕРѕСЂРґРёРЅР°С‚Р°РјРё РІРµСЂС€РёРЅ
+// Р•СЃР»Рё fill == true - С‚Рѕ СЂРёСЃСѓРµРј СЃ Р·Р°Р»РёРІРєРѕР№
 void UGraphics::Triangle(int x1, int y1, int x2, int y2, int x3, int y3,
                          bool fill)
 {
@@ -532,7 +532,7 @@ void UGraphics::Triangle(int x1, int y1, int x2, int y2, int x3, int y3,
 }
 
 
-// Простейшая заливка произвольной области
+// РџСЂРѕСЃС‚РµР№С€Р°СЏ Р·Р°Р»РёРІРєР° РїСЂРѕРёР·РІРѕР»СЊРЅРѕР№ РѕР±Р»Р°СЃС‚Рё
 void UGraphics::Fill(int x, int y, UColorT BorderColor)
 {
  CWidth=Canvas->GetWidth();
@@ -555,11 +555,11 @@ void UGraphics::Fill(int x, int y, UColorT BorderColor)
 
  do{
   pos=points.front();
-  // Поиск соседних точек
-  int y=pos/CWidth;
-  int x=pos-y*CWidth;
+  // РџРѕРёСЃРє СЃРѕСЃРµРґРЅРёС… С‚РѕС‡РµРє
+  int local_y=pos/CWidth;
+  int local_x=pos-local_y*CWidth;
 
-  if(x-1>=0)
+  if(local_x-1>=0)
   {
    CData=Canvas->GetData()+(pos-1)*3;
    if(memcmp(CData,&BorderColor,3))
@@ -570,7 +570,7 @@ void UGraphics::Fill(int x, int y, UColorT BorderColor)
     points.push_back(pos-1);
    }
   }
-  if(x+1<CWidth)
+  if(local_x+1<CWidth)
   {
    CData=Canvas->GetData()+(pos+1)*3;
    if(memcmp(CData,&BorderColor,3))
@@ -581,7 +581,7 @@ void UGraphics::Fill(int x, int y, UColorT BorderColor)
     points.push_back(pos+1);
    }
   }
-  if(y+1<CHeight)
+  if(local_y+1<CHeight)
   {
    CData=Canvas->GetData()+(pos+CWidth)*3;
    if(memcmp(CData,&BorderColor,3))
@@ -592,7 +592,7 @@ void UGraphics::Fill(int x, int y, UColorT BorderColor)
     points.push_back(pos+CWidth);
    }
   }
-  if(y-1>=0)
+  if(local_y-1>=0)
   {
    CData=Canvas->GetData()+(pos-CWidth)*3;
    if(memcmp(CData,&BorderColor,3))
@@ -608,10 +608,10 @@ void UGraphics::Fill(int x, int y, UColorT BorderColor)
  }while(!points.empty());
 }
 
-// Выводит изображение с началом в заданной позиции
-// Если transparency == 0 копируется без прозрачности
-// Если transparency == 1 копируется c эффектом прозрачности
-// Если transparency == 2 копируется как маска, с цветом данных как текущего пера
+// Р’С‹РІРѕРґРёС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ СЃ РЅР°С‡Р°Р»РѕРј РІ Р·Р°РґР°РЅРЅРѕР№ РїРѕР·РёС†РёРё
+// Р•СЃР»Рё transparency == 0 РєРѕРїРёСЂСѓРµС‚СЃСЏ Р±РµР· РїСЂРѕР·СЂР°С‡РЅРѕСЃС‚Рё
+// Р•СЃР»Рё transparency == 1 РєРѕРїРёСЂСѓРµС‚СЃСЏ c СЌС„С„РµРєС‚РѕРј РїСЂРѕР·СЂР°С‡РЅРѕСЃС‚Рё
+// Р•СЃР»Рё transparency == 2 РєРѕРїРёСЂСѓРµС‚СЃСЏ РєР°Рє РјР°СЃРєР°, СЃ С†РІРµС‚РѕРј РґР°РЅРЅС‹С… РєР°Рє С‚РµРєСѓС‰РµРіРѕ РїРµСЂР°
 void UGraphics::Bitmap(int x, int y, UBitmap &bmp, int transparency, UColorT transp)
 {
  switch(transparency)
@@ -633,9 +633,9 @@ void UGraphics::Bitmap(int x, int y, UBitmap &bmp, int transparency, UColorT tra
 
 
 // --------------------------
-// Вывод текста
+// Р’С‹РІРѕРґ С‚РµРєСЃС‚Р°
 // --------------------------
-// Вычисление длины и высоты строки текста
+// Р’С‹С‡РёСЃР»РµРЅРёРµ РґР»РёРЅС‹ Рё РІС‹СЃРѕС‚С‹ СЃС‚СЂРѕРєРё С‚РµРєСЃС‚Р°
 void UGraphics::CalcTextSize(const wstring &str, int &width, int &height)
 {
  if(!Font)
@@ -652,8 +652,8 @@ void UGraphics::CalcTextSize(const string &str, int &width, int &height)
  Font->CalcTextSize(str, width, height);
 }
 
-// Вычисление, сколько символов строки, начиная с символа index, войдет по
-// ширине в заданное число пикселей
+// Р’С‹С‡РёСЃР»РµРЅРёРµ, СЃРєРѕР»СЊРєРѕ СЃРёРјРІРѕР»РѕРІ СЃС‚СЂРѕРєРё, РЅР°С‡РёРЅР°СЏ СЃ СЃРёРјРІРѕР»Р° index, РІРѕР№РґРµС‚ РїРѕ
+// С€РёСЂРёРЅРµ РІ Р·Р°РґР°РЅРЅРѕРµ С‡РёСЃР»Рѕ РїРёРєСЃРµР»РµР№
 int UGraphics::CalcTextLength(const string &str, int index, int width)
 {
  if(!Font)
@@ -670,7 +670,7 @@ int UGraphics::CalcTextLength(const wstring &str, int index, int width)
  return Font->CalcTextLength(str, index, width);
 }
 
-// Выводит текст str
+// Р’С‹РІРѕРґРёС‚ С‚РµРєСЃС‚ str
 void UGraphics::Text(const wstring &str, int x, int y)
 {
  if(!Font)
@@ -708,11 +708,11 @@ void UGraphics::TextRect(const string &str, const UBRect &rect, int align)
 
 
 
-// Вспомогательные методы
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РјРµС‚РѕРґС‹
 // --------------------------
-// Вспомогательные графические примитивы
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РіСЂР°С„РёС‡РµСЃРєРёРµ РїСЂРёРјРёС‚РёРІС‹
 // --------------------------
-// Отрисовывает пиксель в координатах x,y без проверок
+// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ РїРёРєСЃРµР»СЊ РІ РєРѕРѕСЂРґРёРЅР°С‚Р°С… x,y Р±РµР· РїСЂРѕРІРµСЂРѕРє
 void UGraphics::DrawPixel(int x, int y)
 {
  int x1,y1,x2,y2,dx,dy;

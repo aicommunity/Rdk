@@ -56,6 +56,7 @@ void UPropertyXMLWidget::setProperty()
     if(!isInit) return;
     Model_SetComponentProperties(componentName.toLocal8Bit(),
                                  ui->plainTextEditPropertyXml->toPlainText().toLocal8Bit());
+    emit propertiesApplied();
 }
 
 void UPropertyXMLWidget::reloadProperty()
@@ -72,6 +73,7 @@ void UPropertyXMLWidget::defaultAllProperty()
 {
     if(!isInit) return;
     Env_Default(componentName.toLocal8Bit(), false);
-    //Env_Reset(selectedComponentLongName.toLocal8Bit()); //тут вопрос о сбросе вложенных компонент (как в билдере)
+    //Env_Reset(selectedComponentLongName.toLocal8Bit()); //С‚СѓС‚ РІРѕРїСЂРѕСЃ Рѕ СЃР±СЂРѕСЃРµ РІР»РѕР¶РµРЅРЅС‹С… РєРѕРјРїРѕРЅРµРЅС‚ (РєР°Рє РІ Р±РёР»РґРµСЂРµ)
     reloadProperty();
+    emit propertiesApplied();
 }

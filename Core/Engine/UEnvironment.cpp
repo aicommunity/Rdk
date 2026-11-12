@@ -26,12 +26,12 @@ namespace RDK {
 // --------------------------
 UEnvironment::UEnvironment(void)
 {
- // Параметры
- // Индекс предарительно заданной модели обработки
- // 0 - Структура определяется извне
+ // РџР°СЂР°РјРµС‚СЂС‹
+ // РРЅРґРµРєСЃ РїСЂРµРґР°СЂРёС‚РµР»СЊРЅРѕ Р·Р°РґР°РЅРЅРѕР№ РјРѕРґРµР»Рё РѕР±СЂР°Р±РѕС‚РєРё
+ // 0 - РЎС‚СЂСѓРєС‚СѓСЂР° РѕРїСЂРµРґРµР»СЏРµС‚СЃСЏ РёР·РІРЅРµ
  PredefinedStructure=0;
 
- // Признак наличия сформированной структуры
+ // РџСЂРёР·РЅР°Рє РЅР°Р»РёС‡РёСЏ СЃС„РѕСЂРјРёСЂРѕРІР°РЅРЅРѕР№ СЃС‚СЂСѓРєС‚СѓСЂС‹
  Structured=false;
 
  Model=0;
@@ -40,7 +40,7 @@ UEnvironment::UEnvironment(void)
 
  MaxModelDuration=1000;
 
- // Текущий компонент модели
+ // РўРµРєСѓС‰РёР№ РєРѕРјРїРѕРЅРµРЅС‚ РјРѕРґРµР»Рё
 // CurrentComponent=0;
 
  StartupTime=0;
@@ -66,9 +66,9 @@ UEnvironment::~UEnvironment(void)
 // --------------------------
 
 // --------------------------
-// Методы управления параметрами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
-// Индекс предарительно заданной модели обработки
+// РРЅРґРµРєСЃ РїСЂРµРґР°СЂРёС‚РµР»СЊРЅРѕ Р·Р°РґР°РЅРЅРѕР№ РјРѕРґРµР»Рё РѕР±СЂР°Р±РѕС‚РєРё
 int UEnvironment::GetPredefinedStructure(void) const
 {
  return PredefinedStructure;
@@ -84,7 +84,7 @@ bool UEnvironment::SetPredefinedStructure(int value)
 }
 
 
-// Идентификатор компонента модели, который будет обсчитываться
+// РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєРѕРјРїРѕРЅРµРЅС‚Р° РјРѕРґРµР»Рё, РєРѕС‚РѕСЂС‹Р№ Р±СѓРґРµС‚ РѕР±СЃС‡РёС‚С‹РІР°С‚СЊСЃСЏ
 const ULongId& UEnvironment::GetModelCalculationComponent(void) const
 {
  return ModelCalculationComponent;
@@ -96,11 +96,13 @@ bool UEnvironment::SetModelCalculationComponent(const ULongId& value)
   return true;
 
  ModelCalculationComponent=value;
+ // РРЅРІР°Р»РёРґРёСЂСѓРµРј РєСЌС€ РєРѕРјРїРѕРЅРµРЅС‚Р° СЂР°СЃС‡РµС‚Р°
+ CachedCalculationComponent = UEPtr<UContainer>(0);
 
  return true;
 }
 
-// Имя текущего каталога хранения данных
+// РРјСЏ С‚РµРєСѓС‰РµРіРѕ РєР°С‚Р°Р»РѕРіР° С…СЂР°РЅРµРЅРёСЏ РґР°РЅРЅС‹С…
 const std::string& UEnvironment::GetCurrentDataDir(void)
 {
  return CurrentDataDir;
@@ -118,7 +120,7 @@ void UEnvironment::SetCurrentDataDir(const std::string& dir)
   CurrentDataDir+='/';
 }
 
-// Имя каталога бинарных файлов
+// РРјСЏ РєР°С‚Р°Р»РѕРіР° Р±РёРЅР°СЂРЅС‹С… С„Р°Р№Р»РѕРІ
 const std::string& UEnvironment::GetSystemDir(void) const
 {
  return SystemDir;
@@ -135,7 +137,7 @@ void UEnvironment::SetSystemDir(const std::string& dir)
   SystemDir+='/';
 }
 
-/// Минимальный интервал времени между итерациями счета (мс)
+/// РњРёРЅРёРјР°Р»СЊРЅС‹Р№ РёРЅС‚РµСЂРІР°Р» РІСЂРµРјРµРЅРё РјРµР¶РґСѓ РёС‚РµСЂР°С†РёСЏРјРё СЃС‡РµС‚Р° (РјСЃ)
 unsigned long long UEnvironment::GetMinInterstepsInterval(void) const
 {
  return MinInterstepsInterval;
@@ -150,8 +152,8 @@ bool UEnvironment::SetMinInterstepsInterval(unsigned long long value)
  return true;
 }
 
-/// Максимальное время расчета модели (сек)
-/// если 0 - то не ограничено
+/// РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ РІСЂРµРјСЏ СЂР°СЃС‡РµС‚Р° РјРѕРґРµР»Рё (СЃРµРє)
+/// РµСЃР»Рё 0 - С‚Рѕ РЅРµ РѕРіСЂР°РЅРёС‡РµРЅРѕ
 double UEnvironment::GetMaxCalcTime(void) const
 {
  return MaxCalcTime;
@@ -162,11 +164,14 @@ bool UEnvironment::SetMaxCalcTime(double value)
  if(value<0)
   return false;
  MaxCalcTime=value;
+ // Allow Start to continue after raising/clearing the limit without a full Reset.
+ if(CalcFinishedFlag && (MaxCalcTime <= 0.0 || Time.GetDoubleTime() < MaxCalcTime))
+  CalcFinishedFlag = false;
  return true;
 }
 
-/// Флаг включения использования индидвидуальных параметров TimeStep для
-/// каждого компонента
+/// Р¤Р»Р°Рі РІРєР»СЋС‡РµРЅРёСЏ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РёРЅРґРёРґРІРёРґСѓР°Р»СЊРЅС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ TimeStep РґР»СЏ
+/// РєР°Р¶РґРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 bool UEnvironment::GetUseIndTimeStepFlag(void) const
 {
  return UseIndTimeStepFlag;
@@ -183,27 +188,27 @@ bool UEnvironment::SetUseIndTimeStepFlag(bool value)
 
 
 // --------------------------
-// Методы управления состояниями
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃРѕСЃС‚РѕСЏРЅРёСЏРјРё
 // --------------------------
-// Признак наличия сформированной структуры
+// РџСЂРёР·РЅР°Рє РЅР°Р»РёС‡РёСЏ СЃС„РѕСЂРјРёСЂРѕРІР°РЅРЅРѕР№ СЃС‚СЂСѓРєС‚СѓСЂС‹
 bool UEnvironment::IsStructured(void) const
 {
  return Structured;
 }
 
-/// Возвращает время, потраченное на последний RT расчет
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ, РїРѕС‚СЂР°С‡РµРЅРЅРѕРµ РЅР° РїРѕСЃР»РµРґРЅРёР№ RT СЂР°СЃС‡РµС‚
 double UEnvironment::GetRTLastDuration(void) const
 {
  return double(LastDuration)/1000.0;
 }
 
-/// Время, расчитанное в модели за один вызов RTCalculate;
+/// Р’СЂРµРјСЏ, СЂР°СЃС‡РёС‚Р°РЅРЅРѕРµ РІ РјРѕРґРµР»Рё Р·Р° РѕРґРёРЅ РІС‹Р·РѕРІ RTCalculate;
 double UEnvironment::GetRTModelCalcTime(void) const
 {
  return RTModelCalcTime;
 }
 
-/// Производительность RT расчета (отношение RTModelCalcTime/RTLastDuration)
+/// РџСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚СЊ RT СЂР°СЃС‡РµС‚Р° (РѕС‚РЅРѕС€РµРЅРёРµ RTModelCalcTime/RTLastDuration)
 double UEnvironment::CalcRTPerformance(void) const
 {
  if(LastDuration>0)
@@ -214,15 +219,15 @@ double UEnvironment::CalcRTPerformance(void) const
 // --------------------------
 
 // --------------------------
-// Методы управления данными среды
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё СЃСЂРµРґС‹
 // --------------------------
-// Указатель на логгер
-UEPtr<ULoggerEnv> const UEnvironment::GetLogger(void) const
+// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° Р»РѕРіРіРµСЂ
+UEPtr<UExceptionLogger> const UEnvironment::GetLogger(void) const
 {
  return Logger;
 }
 
-bool UEnvironment::SetLogger(UEPtr<ULoggerEnv> logger)
+bool UEnvironment::SetLogger(UEPtr<UExceptionLogger> logger)
 {
  if(Logger == logger)
   return true;
@@ -231,16 +236,16 @@ bool UEnvironment::SetLogger(UEPtr<ULoggerEnv> logger)
  return true;
 }
 
-// Возвращает указатель на хранилище
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С…СЂР°РЅРёР»РёС‰Рµ
 UStorage* UEnvironment::GetStorage(void)
 {
  return Storage;
 }
 
-// Устанавливает новое хранилище
-// Указатель на старое хранилище более не используется средой
-// Ответственность за освобождение памяти лежит на вызывающей стороне
-// Текущая модель уничтожается.
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅРѕРІРѕРµ С…СЂР°РЅРёР»РёС‰Рµ
+// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° СЃС‚Р°СЂРѕРµ С…СЂР°РЅРёР»РёС‰Рµ Р±РѕР»РµРµ РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ СЃСЂРµРґРѕР№
+// РћС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚СЊ Р·Р° РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё Р»РµР¶РёС‚ РЅР° РІС‹Р·С‹РІР°СЋС‰РµР№ СЃС‚РѕСЂРѕРЅРµ
+// РўРµРєСѓС‰Р°СЏ РјРѕРґРµР»СЊ СѓРЅРёС‡С‚РѕР¶Р°РµС‚СЃСЏ.
 bool UEnvironment::SetStorage(UStorage *storage)
 {
  if(!storage)
@@ -249,6 +254,7 @@ bool UEnvironment::SetStorage(UStorage *storage)
  if(Storage == storage)
   return true;
 
+ // Destroy existing model before changing storage
  if(!DestroyModel())
   return false;
 
@@ -258,59 +264,93 @@ bool UEnvironment::SetStorage(UStorage *storage)
  return true;
 }
 
-// Возвращает указатель на модель
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјРѕРґРµР»СЊ РёР· СЏРґСЂР°
 UEPtr<UContainer> UEnvironment::GetModel(void)
 {
  return Model;
 }
 
-// Создает новую модель из хранилища по имени класса
+// РЎРѕР·РґР°РµС‚ РЅРѕРІСѓСЋ РјРѕРґРµР»СЊ РІ Environment РїРѕ РёРјРµРЅРё РєР»Р°СЃСЃР°
 bool UEnvironment::CreateModel(const NameT& classname)
 {
  if(!IsInit())
  {
-  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment is not initialized.");
   return false;
  }
 
  if(!IsStoragePresent())
+ {
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Storage is not present.");
   return false;
+ }
 
- CurrentComponent=Model=dynamic_pointer_cast<UContainer>(GetStorage()->TakeObject(classname));
+ if(!Storage)
+ {
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Storage pointer is null.");
+  return false;
+ }
+
+ CurrentComponent=Model=dynamic_pointer_cast<UContainer>(Storage->TakeObject(classname));
+ if(!Model)
+ {
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, std::string("Failed to create model: ")+classname);
+  return false;
+ }
+
  Model->SetLogger(Logger);
  Model->SetEnvironment(this);
  Ready=false;
- if(Model)
- {
-  return true;
- }
-
- return false;
+ // РРЅРІР°Р»РёРґРёСЂСѓРµРј РєСЌС€ РєРѕРјРїРѕРЅРµРЅС‚Р° СЂР°СЃС‡РµС‚Р° РїСЂРё СЃРѕР·РґР°РЅРёРё РЅРѕРІРѕР№ РјРѕРґРµР»Рё
+ CachedCalculationComponent = UEPtr<UContainer>(0);
+ return true;
 }
 
-// Создает новую модель из хранилища по id класса
+// РЎРѕР·РґР°РµС‚ РЅРѕРІСѓСЋ РјРѕРґРµР»СЊ РІ Environment РїРѕ id РєР»Р°СЃСЃР°
 bool UEnvironment::CreateModel(const UId& classid)
 {
  if(!IsInit())
  {
-  Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment does't initialized.");
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Environment is not initialized.");
   return false;
  }
 
  if(!IsStoragePresent())
+ {
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Storage is not present.");
   return false;
+ }
+
+ if(!Storage)
+ {
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Storage pointer is null.");
+  return false;
+ }
 
  CurrentComponent=Model=dynamic_pointer_cast<UContainer>(Storage->TakeObject(classid));
+ if(!Model)
+ {
+  if(Logger)
+   Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, "Failed to create model from class ID.");
+  return false;
+ }
+
  Model->SetLogger(Logger);
  Model->SetEnvironment(this);
  Ready=false;
- if(Model)
-  return true;
-
- return false;
+ // РРЅРІР°Р»РёРґРёСЂСѓРµРј РєСЌС€ РєРѕРјРїРѕРЅРµРЅС‚Р° СЂР°СЃС‡РµС‚Р° РїСЂРё СЃРѕР·РґР°РЅРёРё РЅРѕРІРѕР№ РјРѕРґРµР»Рё
+ CachedCalculationComponent = UEPtr<UContainer>(0);
+ return true;
 }
 
-// Уничтожает текущую модель
+// РЈРЅРёС‡С‚РѕР¶Р°РµС‚ РјРѕРґРµР»СЊ РјРѕРґРµР»Рё
 bool UEnvironment::DestroyModel(void)
 {
  if(!Model)
@@ -319,13 +359,15 @@ bool UEnvironment::DestroyModel(void)
  UnRegisterAllDataReaders();
 
  Model->Free();
- Model=0;
- CurrentComponent=0;
+ Model = UEPtr<UContainer>(0);
+ CurrentComponent = UEPtr<UComponent>(0);
+ // РРЅРІР°Р»РёРґРёСЂСѓРµРј РєСЌС€ РєРѕРјРїРѕРЅРµРЅС‚Р° СЂР°СЃС‡РµС‚Р°
+ CachedCalculationComponent = UEPtr<UContainer>(0);
 
  return true;
 }
 
-/// Инициализирует модель
+/// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РјРѕРґРµР»СЊ
 void UEnvironment::ModelInit(void)
 {
     if(!Model)
@@ -334,7 +376,7 @@ void UEnvironment::ModelInit(void)
     Model->Init();
 }
 
-/// Деинициализирует модель
+/// Р”РµРёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РјРѕРґРµР»СЊ
 void UEnvironment::ModelUnInit(void)
 {
     if(!Model)
@@ -347,20 +389,20 @@ void UEnvironment::ModelUnInit(void)
 // --------------------------
 
 // --------------------------
-// Методы управления контроллерами
+// Р¤СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ РєРѕРјРїРѕРЅРµРЅС‚Р°РјРё
 // --------------------------
 // --------------------------
 
 // --------------------------
-// Операторы доступа к данным среды
+// Р¤СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ С‚РµРєСѓС‰РёРј РєРѕРјРїРѕРЅРµРЅС‚РѕРј
 // --------------------------
-// Возвращает указатель на текущий компонент модели
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕРјРїРѕРЅРµРЅС‚ РёР· С‚РµРєСѓС‰РµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° РјРѕРґРµР»Рё
 UEPtr<UContainer> UEnvironment::GetCurrentComponent(void)
 {
  return CurrentComponent;
 }
 
-// Устанавливает указатель на текущий компонент модели
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РєРѕРјРїРѕРЅРµРЅС‚ РЅР° С‚РµРєСѓС‰РёР№ РєРѕРјРїРѕРЅРµРЅС‚ РјРѕРґРµР»Рё
 void UEnvironment::SelectCurrentComponent(const NameT &name)
 {
  if(!IsInit())
@@ -389,7 +431,7 @@ void UEnvironment::SelectCurrentComponent(const ULongId &id)
   CurrentComponent=Model->GetComponentL(id);
 }
 
-// Устанавливает указатель на текущий компонент модели на саму модель
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РєРѕРјРїРѕРЅРµРЅС‚ РЅР° С‚РµРєСѓС‰РёР№ РєРѕРјРїРѕРЅРµРЅС‚ РјРѕРґРµР»Рё РІ СЃРѕСЃС‚РѕСЏРЅРёРµ СЃР±СЂРѕСЃР°
 void UEnvironment::ResetCurrentComponent(void)
 {
  if(!IsInit())
@@ -401,8 +443,8 @@ void UEnvironment::ResetCurrentComponent(void)
  CurrentComponent=Model;
 }
 
-// Устанавливает указатель на текущий компонент модели на родительский компонент
-// (переход на уровень вверх). Если уже указывает на модель, то не делает ничего
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РєРѕРјРїРѕРЅРµРЅС‚ РЅР° С‚РµРєСѓС‰РёР№ РєРѕРјРїРѕРЅРµРЅС‚ РјРѕРґРµР»Рё РЅР° СЂРѕРґРёС‚РµР»СЊСЃРєРёР№ РєРѕРјРїРѕРЅРµРЅС‚
+// (РїРµСЂРµС…РѕРґ Рє СЂРѕРґРёС‚РµР»СЊСЃРєРѕРјСѓ РєРѕРјРїРѕРЅРµРЅС‚Сѓ). Р•СЃР»Рё РѕРЅ РЅРµ РёРјРµРµС‚ СЂРѕРґРёС‚РµР»СЏ, С‚Рѕ РЅРµ РґРµР»Р°РµС‚ РЅРёС‡РµРіРѕ
 void UEnvironment::UpCurrentComponent(void)
 {
  if(!IsInit())
@@ -417,8 +459,8 @@ void UEnvironment::UpCurrentComponent(void)
  CurrentComponent=CurrentComponent->GetOwner();
 }
 
-// Устанавливает указатель на текущий компонент модели на дочерней компонент на
-// любом уровне (переход на уровень вниз).
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РєРѕРјРїРѕРЅРµРЅС‚ РЅР° С‚РµРєСѓС‰РёР№ РєРѕРјРїРѕРЅРµРЅС‚ РјРѕРґРµР»Рё РЅР° РґРѕС‡РµСЂРЅРёР№ РєРѕРјРїРѕРЅРµРЅС‚ РїРѕ
+// РёРјРµРЅРё РєРѕРјРїРѕРЅРµРЅС‚Р° (РїРµСЂРµС…РѕРґ Рє РґРѕС‡РµСЂРЅРµРјСѓ РєРѕРјРїРѕРЅРµРЅС‚Сѓ).
 void UEnvironment::DownCurrentComponent(const NameT &name)
 {
  if(!IsInit())
@@ -441,7 +483,7 @@ void UEnvironment::DownCurrentComponent(const ULongId &id)
  CurrentComponent=GetCurrentComponent()->GetComponentL(id);
 }
 
-/// Время среды
+/// Р’СЂРµРјСЏ РјРѕРґРµР»Рё
 const UTimeControl& UEnvironment::GetTime(void) const
 {
  return Time;
@@ -452,7 +494,7 @@ UTimeControl& UEnvironment::GetTime(void)
  return Time;
 }
 
-/// Индекс текущего канала в многоканальной библиотеке
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅРґРµРєСЃ РєР°РЅР°Р»Р° РјРѕРґРµР»Рё РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµРј РјР°СЃСЃРёРІРµ
 int UEnvironment::GetChannelIndex(void) const
 {
  return ChannelIndex;
@@ -464,18 +506,10 @@ bool UEnvironment::SetChannelIndex(int value)
   return true;
 
  ChannelIndex=value;
-/*
- Logger.SetSuffix(std::string(" Ch")+sntoa(ChannelIndex,2));
- if(EventsLogMode && IsInit())
- {
-  Logger.Clear();
-  Logger.InitLog();
- }
-  */
  return true;
 }
 
-/// Шрифты
+/// РЁСЂРёС„С‚С‹
 RDK::UBitmapFontCollection& UEnvironment::GetFonts(void)
 {
  return Fonts;
@@ -487,13 +521,13 @@ bool UEnvironment::SetFonts(const RDK::UBitmapFontCollection& value)
  return true;
 }
 
-/// Возвращает набор вариантов predefined structures
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє РІСЃРµС… predefined structures
 const std::map<int, UEnvPredefinedStructDescription>& UEnvironment::GetPredefinedStructures(void) const
 {
  return PredefinedStructures;
 }
 
-/// Возвращает вариантов predefined structure по id
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РѕРїРёСЃР°РЅРёРµ predefined structure РїРѕ id
 UEnvPredefinedStructDescription UEnvironment::GetPredefinedStructureDescription(int id) const
 {
  std::map<int, UEnvPredefinedStructDescription>::const_iterator I=PredefinedStructures.find(id);
@@ -503,7 +537,7 @@ UEnvPredefinedStructDescription UEnvironment::GetPredefinedStructureDescription(
  return UEnvPredefinedStructDescription();
 }
 
-/// Добавляет вариант predefined structure
+/// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° Рё РїРµСЂРµРјРµРЅРЅРѕР№ СЃРѕСЃС‚РѕСЏРЅРёСЏ РјРѕРґРµР»Рё РєРѕС‚РѕСЂРѕРјСѓ РјРѕР¶РµС‚
 bool UEnvironment::AddPredefinedStructure(const UEnvPredefinedStructDescription &descr)
 {
  std::map<int, UEnvPredefinedStructDescription>::const_iterator I=PredefinedStructures.find(descr.Id);
@@ -513,7 +547,7 @@ bool UEnvironment::AddPredefinedStructure(const UEnvPredefinedStructDescription 
  return true;
 }
 
-/// Добавляет удаляет predefined structure по id
+/// РЈРґР°Р»СЏРµС‚ РѕРїРёСЃР°РЅРёРµ predefined structure РїРѕ id
 void UEnvironment::DelPredefinedStructure(int id)
 {
  std::map<int, UEnvPredefinedStructDescription>::iterator I=PredefinedStructures.find(id);
@@ -523,7 +557,7 @@ void UEnvironment::DelPredefinedStructure(int id)
  PredefinedStructures.erase(I);
 }
 
-/// Удаляет все predefined structures
+/// РћС‡РёС‰Р°РµС‚ РІСЃРµ predefined structures
 void UEnvironment::ClearPredefinedStructures(void)
 {
  PredefinedStructures.clear();
@@ -532,11 +566,11 @@ void UEnvironment::ClearPredefinedStructures(void)
 
 
 // --------------------------
-// Методы управления контроллерами
+// Р¤СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ РєРѕРЅС‚СЂРѕР»Р»РµСЂР°РјРё
 // --------------------------
-/// Инициализация компонента и переменной состояния модели которому может
-/// передаваться сигнал о сбое в работе
-/// источника данных
+/// Р РµРіРёСЃС‚СЂРёСЂСѓРµС‚ РєРѕРЅС‚СЂРѕР»Р»РµСЂ РёСЃС‚РѕС‡РЅРёРєР° РІ СѓРєР°Р·Р°РЅРЅРѕРј РєРѕРјРїРѕРЅРµРЅС‚Рµ РјРѕРґРµР»Рё РёСЃС‚РѕС‡РЅРёРєР° РґР°РЅРЅС‹С…
+/// РЎРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёР№ РѕР±СЉРµРєС‚ РІ Р»РѕРі РІ Р»РѕРі
+/// Р’С‹Р·С‹РІР°РµС‚ РєРѕРЅС‚СЂРѕР»Р»РµСЂ
 bool UEnvironment::RegisterSourceController(const std::string &component_name, const std::string &property_name)
 {
  if(!IsInit())
@@ -551,7 +585,7 @@ bool UEnvironment::RegisterSourceController(const std::string &component_name, c
 }
 
 
-/// Активация извещения о сбое в работе источника данных
+// --------------------------
 bool UEnvironment::CallSourceController(void)
 {
  if(!IsInit())
@@ -583,9 +617,9 @@ bool UEnvironment::CallSourceController(void)
 
 
 // --------------------------
-// Методы управления регистрацией данных
+// Р¤СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ С‡РёС‚Р°С‚РµР»СЏРјРё РґР°РЅРЅС‹С…
 // --------------------------
-/// Регистрирует новую точку съема данных (вида MDMatrix)
+/// Р РµРіРёСЃС‚СЂРёСЂСѓРµС‚ С‡РёС‚Р°С‚РµР»СЊ РґР°РЅРЅС‹С… РґР»СЏ СЌР»РµРјРµРЅС‚Р° РјР°С‚СЂРёС†С‹ (С‚РёРї MDMatrix)
 UControllerDataReader* UEnvironment::RegisterDataReader(const std::string &component_name, const std::string &property_name, int row, int col)
 {
  for(size_t i=0;i<DataReaders.size();i++)
@@ -620,7 +654,7 @@ UControllerDataReader* UEnvironment::RegisterDataReader(const std::string &compo
  return data;
 }
 
-/// Снимает регистрацию точки съема данных (вида MDMatrix)
+/// РЈРґР°Р»СЏРµС‚ СЂРµРіРёСЃС‚СЂР°С†РёСЋ С‡РёС‚Р°С‚РµР»СЏ РґР°РЅРЅС‹С… РґР»СЏ СЌР»РµРјРµРЅС‚Р° РјР°С‚СЂРёС†С‹ (С‚РёРї MDMatrix)
 void UEnvironment::UnRegisterDataReader(const std::string &component_name, const std::string &property_name, int row, int col)
 {
  for(size_t i=0;i<DataReaders.size();i++)
@@ -639,7 +673,7 @@ void UEnvironment::UnRegisterDataReader(const std::string &component_name, const
  }
 }
 
-/// Снимает регистрацию всех точек съема данных (вида MDMatrix)
+/// РЈРґР°Р»СЏРµС‚ СЂРµРіРёСЃС‚СЂР°С†РёСЋ РІСЃРµС… С‡РёС‚Р°С‚РµР»РµР№ РґР°РЅРЅС‹С… РґР»СЏ СЌР»РµРјРµРЅС‚РѕРІ РјР°С‚СЂРёС†С‹ (С‚РёРї MDMatrix)
 void UEnvironment::UnRegisterAllDataReaders(void)
 {
  for(size_t i=0;i<DataReaders.size();i++)
@@ -647,9 +681,62 @@ void UEnvironment::UnRegisterAllDataReaders(void)
  DataReaders.clear();
 }
 
-/// Возвращает данные точки съема
+// --------------------------
 UControllerDataReader* UEnvironment::GetDataReader(const std::string &component_name, const std::string &property_name, int row, int col)
 {
+ UContainer *current_component = 0;
+ UEPtr<UIProperty> current_property;
+ if(Model)
+ {
+  current_component = Model->GetComponentL(component_name,true);
+  if(current_component)
+   current_property = current_component->FindProperty(property_name);
+ }
+
+ // If current model/property for this key does not exist, remove stale reader entries.
+ if(!current_component || !current_property)
+ {
+  for(size_t i=0;i<DataReaders.size();)
+  {
+   if(DataReaders[i].first &&
+      DataReaders[i].first->GetComponentName() == component_name &&
+      DataReaders[i].first->GetPropertyName() == property_name &&
+      DataReaders[i].first->MRow == row &&
+      DataReaders[i].first->MCol == col)
+   {
+    delete DataReaders[i].first;
+    DataReaders.erase(DataReaders.begin()+i);
+    continue;
+   }
+   ++i;
+  }
+  return 0;
+ }
+
+ // Validate matrix coordinates against the current property binding.
+ UControllerDataReader probe;
+ if(!probe.Configure(current_component, current_property))
+  return 0;
+ probe.SetMatrixCoord(row,col);
+ if(!probe.Update())
+ {
+  for(size_t i=0;i<DataReaders.size();)
+  {
+   if(DataReaders[i].first &&
+      DataReaders[i].first->GetComponentName() == component_name &&
+      DataReaders[i].first->GetPropertyName() == property_name &&
+      DataReaders[i].first->MRow == row &&
+      DataReaders[i].first->MCol == col)
+   {
+    delete DataReaders[i].first;
+    DataReaders.erase(DataReaders.begin()+i);
+    continue;
+   }
+   ++i;
+  }
+  return 0;
+ }
+
  for(size_t i=0;i<DataReaders.size();i++)
  {
   if(DataReaders[i].first && DataReaders[i].first->GetComponentName() == component_name && DataReaders[i].first->GetPropertyName() == property_name &&
@@ -663,9 +750,9 @@ UControllerDataReader* UEnvironment::GetDataReader(const std::string &component_
 // --------------------------
 
 // --------------------------
-// Методы управления счетом
+// Р¤СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃ РІСЂРµРјРµРЅРµРј
 // --------------------------
-// Производит увеличение времени модели на требуемую величину
+// РЈРІРµР»РёС‡РёРІР°РµС‚ С‚РµРєСѓС‰РµРµ РІСЂРµРјСЏ РјРѕРґРµР»Рё РЅР° С€Р°Рі СЂР°СЃС‡РµС‚Р°
 void UEnvironment::IncreaseModelTimeByStep(void)
 {
  if(!IsInit())
@@ -681,16 +768,16 @@ void UEnvironment::IncreaseModelTimeByStep(void)
 // --------------------------
 
 // --------------------------
-// Методы инициализации среды
+// Р¤СѓРЅРєС†РёРё СЂР°Р±РѕС‚С‹ СЃРѕ Storage
 // --------------------------
 // --------------------------
 
 // --------------------------
-// Методы доступа к флагам состояний
+// Р¤СѓРЅРєС†РёРё СЃРѕР·РґР°РЅРёСЏ Рё СѓРЅРёС‡С‚РѕР¶РµРЅРёСЏ РјРѕРґРµР»Рё
 // --------------------------
-// Флаг состояния инициализации
-// true - хранилище готово к использованию
-// false - хранилище не готово
+// РЈРЅРёС‡С‚РѕР¶Р°РµС‚ С‚РµРєСѓС‰СѓСЋ РјРѕРґРµР»СЊ РѕР±СЂР°Р±РѕС‚РєРё
+// true - Storage РїСЂРёСЃСѓС‚СЃС‚РІСѓРµС‚ РІ Environment
+// false - Storage РѕС‚СЃСѓС‚СЃС‚РІСѓРµС‚
 bool UEnvironment::IsStoragePresent(void) const
 {
  return StoragePresent;
@@ -698,9 +785,9 @@ bool UEnvironment::IsStoragePresent(void) const
 // --------------------------
 
 // --------------------------
-// Методы управления
+// Р¤СѓРЅРєС†РёРё СЃС‚СЂСѓРєС‚СѓСЂРёСЂРѕРІР°РЅРёСЏ
 // --------------------------
-// Формирует предварительно заданную модель обработки
+// Р’С‹РїРѕР»РЅСЏРµС‚ РїРѕСЃС‚СЂРѕРµРЅРёРµ СЃС‚СЂСѓРєС‚СѓСЂРёСЂРѕРІР°РЅРЅРѕР№ СЃС‚СЂСѓРєС‚СѓСЂС‹ РјРѕРґРµР»Рё РєРѕРјРїРѕРЅРµРЅС‚Р°
 bool UEnvironment::CreateStructure(void)
 {
  if(Structured)
@@ -719,7 +806,7 @@ bool UEnvironment::CreateStructure(void)
  return true;
 }
 
-// Уничтожает текущую модель обработки
+// РЈРЅРёС‡С‚РѕР¶Р°РµС‚ СЃС‚СЂСѓРєС‚СѓСЂСѓ РјРѕРґРµР»Рё РєРѕРјРїРѕРЅРµРЅС‚Р°
 bool UEnvironment::DestroyStructure(void)
 {
  if(!Structured)
@@ -735,13 +822,13 @@ bool UEnvironment::DestroyStructure(void)
  return true;
 }
 
-/// Флаг, выставляемый если достигнут конец расчета (по MaxCalcTime)
+/// Р¤Р»Р°Рі, СѓРєР°Р·С‹РІР°СЋС‰РёР№ С‡С‚Рѕ СЂР°СЃС‡РµС‚ РјРѕРґРµР»Рё Р±С‹Р» Р·Р°РІРµСЂС€РµРЅ (РїРѕ MaxCalcTime)
 bool UEnvironment::IsCalcFinished(void) const
 {
  return CalcFinishedFlag;
 }
 
-// Расчет модели в реальном времени
+// Р’С‹Р·РѕРІ СЂР°СЃС‡РµС‚Р° РІ СЂРµР¶РёРјРµ СЂРµР°Р»СЊРЅРѕРіРѕ РІСЂРµРјРµРЅРё
 void UEnvironment::RTCalculate(void)
 {
  if(!IsInit())
@@ -752,12 +839,14 @@ void UEnvironment::RTCalculate(void)
 
  if(IsCalcFinished())
   return;
- Build();
+ // Р’С‹Р·С‹РІР°РµРј Build() С‚РѕР»СЊРєРѕ РµСЃР»Рё РѕР±СЉРµРєС‚ РЅРµ РіРѕС‚РѕРІ (РѕРїС‚РёРјРёР·Р°С†РёСЏ: РёР·Р±РµРіР°РµРј РёР·Р±С‹С‚РѕС‡РЅС‹С… РІС‹Р·РѕРІРѕРІ)
+ if(!IsReady())
+  Build();
 
  CurrentTime=GetCurrentStartupTime();
 // Time.SetSourceCurrentLocalTime(double(GetCurrentStartupTime())/1000.0);
 
- // Если первый шаг расчета после Reset
+ // Р•СЃР»Рё РІСЂРµРјСЏ СЂР°РІРЅРѕ РЅСѓР»СЋ С‚Рѕ РІС‹Р·С‹РІР°РµС‚СЃСЏ С„СѓРЅРєС†РёСЏ Reset
  if(Time.GetTime() == 0)
  {
   Time.SetSourceStartLocalTime(Time.GetSourceCurrentLocalTime());
@@ -794,7 +883,9 @@ void UEnvironment::RTCalculate(void)
  int elapsed_counter=0;
  if(model_duration>0)
  {
-  elapsed_counter=int((model_duration*Model->GetTimeStep())/1000);
+  // РћРїС‚РёРјРёР·Р°С†РёСЏ: РєСЌС€РёСЂСѓРµРј GetTimeStep() РІ Р»РѕРєР°Р»СЊРЅРѕР№ РїРµСЂРµРјРµРЅРЅРѕР№
+  ULongTime time_step = Model->GetTimeStep();
+  elapsed_counter=int((model_duration*time_step)/1000);
  }
  else
  {
@@ -805,18 +896,26 @@ void UEnvironment::RTCalculate(void)
  }
 
  curtime=GetCurrentStartupTime();
+ // РљСЌС€РёСЂСѓРµРј РЅР°С‡Р°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ РІСЂРµРјРµРЅРё РјРѕРґРµР»Рё РґР»СЏ РѕРїС‚РёРјРёР·Р°С†РёРё РїСЂРѕРІРµСЂРєРё MaxCalcTime
+ double cached_model_time = Time.GetDoubleTime();
+ const bool check_max_calc_time = (MaxCalcTime > 0.0);
+ 
  while(curtime-CurrentTime<timer_interval && i<elapsed_counter)
  {
-  Calculate();
-  //for(size_t i=0;i<DataReaders.size();i++)
-  // DataReaders[i]->Update();
+  Calculate(); // updates DataReaders once per step, then advances model time
 
   ++i;
+  // РћРїС‚РёРјРёР·Р°С†РёСЏ: РѕР±РЅРѕРІР»СЏРµРј СЃРёСЃС‚РµРјРЅРѕРµ РІСЂРµРјСЏ РґР»СЏ РїСЂРѕРІРµСЂРєРё СѓСЃР»РѕРІРёСЏ С†РёРєР»Р°, РЅРѕ РїСЂРѕРІРµСЂРєСѓ MaxCalcTime РґРµР»Р°РµРј СЂРµР¶Рµ
   curtime=GetCurrentStartupTime();
-  if(MaxCalcTime>0.0 && Time.GetDoubleTime()>=MaxCalcTime)
+  // РџСЂРѕРІРµСЂСЏРµРј MaxCalcTime РєР°Р¶РґС‹Рµ 10 РёС‚РµСЂР°С†РёР№ РґР»СЏ РѕРїС‚РёРјРёР·Р°С†РёРё (РёР»Рё РєР°Р¶РґСѓСЋ РёС‚РµСЂР°С†РёСЋ, РµСЃР»Рё Р±Р»РёР·РєРѕ Рє Р»РёРјРёС‚Сѓ)
+  if(check_max_calc_time && (i % 10 == 0 || i == elapsed_counter - 1))
   {
-   CalcFinishedFlag=true;
-   break;
+   cached_model_time = Time.GetDoubleTime();
+   if(cached_model_time >= MaxCalcTime)
+   {
+    CalcFinishedFlag=true;
+    break;
+   }
   }
  }
 
@@ -832,7 +931,7 @@ void UEnvironment::RTCalculate(void)
  RTModelCalcTime=model_stop_calc_time-model_start_calc_time;
 }
 
-/// Расчет модели порциями длительностью calc_intervsal секунд с максимально возможной скоростью
+/// Р’С‹Р·РѕРІ СЂР°СЃС‡РµС‚Р° РјРѕРґРµР»Рё СЃ Р·Р°РґР°РЅРЅС‹Рј РёРЅС‚РµСЂРІР°Р»РѕРј calc_interval СЂР°СЃС‡РµС‚Р° РІ РјРёР»Р»РёСЃРµРєСѓРЅРґР°С… РІСЂРµРјРµРЅРё
 void UEnvironment::FastCalculate(double calc_interval)
 {
  if(!IsInit())
@@ -843,12 +942,14 @@ void UEnvironment::FastCalculate(double calc_interval)
 
  if(IsCalcFinished())
   return;
- Build();
+ // Р’С‹Р·С‹РІР°РµРј Build() С‚РѕР»СЊРєРѕ РµСЃР»Рё РѕР±СЉРµРєС‚ РЅРµ РіРѕС‚РѕРІ (РѕРїС‚РёРјРёР·Р°С†РёСЏ: РёР·Р±РµРіР°РµРј РёР·Р±С‹С‚РѕС‡РЅС‹С… РІС‹Р·РѕРІРѕРІ)
+ if(!IsReady())
+  Build();
 
  CurrentTime=GetCurrentStartupTime();
 // Time.SetSourceCurrentLocalTime(double(GetCurrentStartupTime())/1000.0);
 
- // Если первый шаг расчета после Reset
+ // Р•СЃР»Рё РІСЂРµРјСЏ СЂР°РІРЅРѕ РЅСѓР»СЋ С‚Рѕ РІС‹Р·С‹РІР°РµС‚СЃСЏ С„СѓРЅРєС†РёСЏ Reset
  if(Time.GetTime() == 0)
  {
   Time.SetSourceStartLocalTime(Time.GetSourceCurrentLocalTime());
@@ -860,7 +961,6 @@ void UEnvironment::FastCalculate(double calc_interval)
  ULongTime cur_time=(ULongTime)((Time.GetSourceCurrentGlobalTime()-Time.GetSourceStartGlobalTime())*(86400.0*1000.0));
  Time.SetSourceCurrentLocalTime(cur_time/1000.0);
 
- //unsigned long long curtime;
  unsigned long long timer_interval=0;
  //double devicemodeltime=0;
 
@@ -880,7 +980,9 @@ void UEnvironment::FastCalculate(double calc_interval)
  int elapsed_counter=0;
  if(model_duration>0)
  {
-  elapsed_counter=int((model_duration*Model->GetTimeStep())/1000);
+  // РћРїС‚РёРјРёР·Р°С†РёСЏ: РєСЌС€РёСЂСѓРµРј GetTimeStep() РІ Р»РѕРєР°Р»СЊРЅРѕР№ РїРµСЂРµРјРµРЅРЅРѕР№
+  ULongTime time_step = Model->GetTimeStep();
+  elapsed_counter=int((model_duration*time_step)/1000);
  }
  else
  {
@@ -889,9 +991,7 @@ void UEnvironment::FastCalculate(double calc_interval)
 
  while(i<elapsed_counter)
  {
-  Calculate();
-  //for(size_t i=0;i<DataReaders.size();i++)
-  // DataReaders[i]->Update();
+  Calculate(); // updates DataReaders once per step, then advances model time
 
   ++i;
   if(MaxCalcTime>0.0 && Time.GetDoubleTime()>=MaxCalcTime)
@@ -917,9 +1017,9 @@ void UEnvironment::FastCalculate(double calc_interval)
 
 
 // --------------------------
-// Скрытые методы управления счетом
-// --------------------------
-// Инициализация среды
+// Р¤СѓРЅРєС†РёРё Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕР№ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РјРѕРґРµР»Рё
+// Р’РѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРёРµ РЅР°СЃС‚СЂРѕРµРє РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ Рё СЃР±СЂРѕСЃ РїСЂРѕС†РµСЃСЃР° СЃС‡РµС‚Р°
+// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ Environment
 void UEnvironment::AInit(void)
 {
  ModelCalculationComponent.Resize(0);
@@ -927,7 +1027,7 @@ void UEnvironment::AInit(void)
  return;
 }
 
-// Деинициализация среды
+// Р”РµРёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ Environment
 void UEnvironment::AUnInit(void)
 {
  ModelUnInit();
@@ -935,7 +1035,7 @@ void UEnvironment::AUnInit(void)
  return;
 }
 
-// Формирует предварительно заданную модель обработки
+// Р’С‹РїРѕР»РЅСЏРµС‚ РїРѕСЃС‚СЂРѕРµРЅРёРµ СЃС‚СЂСѓРєС‚СѓСЂРёСЂРѕРІР°РЅРЅРѕР№ СЃС‚СЂСѓРєС‚СѓСЂС‹ РјРѕРґРµР»Рё РєРѕРјРїРѕРЅРµРЅС‚Р°
 bool UEnvironment::ACreateStructure(void)
 {
  RdkCreatePredefinedStructure(this, PredefinedStructure);
@@ -943,13 +1043,13 @@ bool UEnvironment::ACreateStructure(void)
 }
 
 
-// Уничтожает текущую модель обработки
+// РЈРЅРёС‡С‚РѕР¶Р°РµС‚ СЃС‚СЂСѓРєС‚СѓСЂСѓ РјРѕРґРµР»Рё РєРѕРјРїРѕРЅРµРЅС‚Р°
 bool UEnvironment::ADestroyStructure(void)
 {
  return true;
 }
 
-// Восстановление настроек по умолчанию и сброс процесса счета
+// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ Р·РЅР°С‡РµРЅРёСЏ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РґР»СЏ СЃРІРѕР№СЃС‚РІ Рё РІСЃРµС… РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ
 bool UEnvironment::ADefault(void)
 {
  if(!Model)
@@ -981,10 +1081,10 @@ bool UEnvironment::ADefault(void)
  return true;
 }
 
-// Обеспечивает сборку внутренней структуры объекта
-// после настройки параметров
-// Автоматически вызывает метод Reset() и выставляет Ready в true
-// в случае успешной сборки
+// Р’С‹РїРѕР»РЅСЏРµС‚ РїРѕСЃС‚СЂРѕРµРЅРёРµ СЃС‚СЂСѓРєС‚СѓСЂС‹ РјРѕРґРµР»Рё РєРѕРјРїРѕРЅРµРЅС‚Р°
+// РґР»СЏ С‚РµРєСѓС‰РµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° РјРѕРґРµР»Рё
+// Р’С‹РїРѕР»РЅСЏРµС‚ РІС‹Р·РѕРІ С„СѓРЅРєС†РёРё Reset() Рё СѓСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Ready РІ true
+// РІ СЃР»СѓС‡Р°Рµ СѓСЃРїРµС€РЅРѕРіРѕ РїРѕСЃС‚СЂРѕРµРЅРёСЏ РјРѕРґРµР»Рё
 bool UEnvironment::ABuild(void)
 {
  if(!Model)
@@ -1010,7 +1110,7 @@ bool UEnvironment::ABuild(void)
  return true;
 }
 
-// Сброс процесса счета.
+// Р’С‹Р·РѕРІ СЃР±СЂРѕСЃР° РјРѕРґРµР»Рё.
 bool UEnvironment::AReset(void)
 {
  CalcFinishedFlag=false;
@@ -1020,8 +1120,6 @@ bool UEnvironment::AReset(void)
  LastStepStartTime=0;
  Time.SetTime(0);
 
- if(Logger)
-  Logger->Reset();
  RTModelCalcTime=0;
 
  for(size_t i=0;i<DataReaders.size();i++)
@@ -1050,10 +1148,10 @@ bool UEnvironment::AReset(void)
  return true;
 }
 
-// Выполняет расчет этого объекта
+// Р’С‹Р·С‹РІР°РµС‚ СЂР°СЃС‡РµС‚ РјРѕРґРµР»Рё РєРѕРјРїРѕРЅРµРЅС‚Р°
 bool UEnvironment::ACalculate(void)
 {
- // Если первый шаг расчета после Reset
+ // Р•СЃР»Рё РІСЂРµРјСЏ СЂР°РІРЅРѕ РЅСѓР»СЋ С‚Рѕ РІС‹Р·С‹РІР°РµС‚СЃСЏ С„СѓРЅРєС†РёСЏ Reset
  if(Time.GetTime() == 0)
  {
   Time.SetSourceStartLocalTime(0);
@@ -1068,7 +1166,7 @@ bool UEnvironment::ACalculate(void)
  if(!Model)
   return true;
 
- // Проверяем, достаточно ли велик интервал времени между итерациями счета
+ // РџСЂРѕРІРµСЂСЏРµС‚, РїСЂРѕС€Р»Рѕ Р»Рё СЃ РјРѕРјРµРЅС‚Р° РїРѕСЃР»РµРґРЅРµРіРѕ СЂР°СЃС‡РµС‚Р° РІСЂРµРјРµРЅРё Р±РѕР»СЊС€Рµ С‡РµРј РёРЅС‚РµСЂРІР°Р»
  if(MinInterstepsInterval>0 && CalcDiffTime(cur_time,LastStepStartTime)<MinInterstepsInterval)
   return true;
 
@@ -1076,29 +1174,38 @@ bool UEnvironment::ACalculate(void)
   return true;
 
  LastStepStartTime=cur_time;
- if(ModelCalculationComponent.GetSize() == 0)
+ // РћРїС‚РёРјРёР·Р°С†РёСЏ: РєСЌС€РёСЂСѓРµРј СЂРµР·СѓР»СЊС‚Р°С‚ РїСЂРѕРІРµСЂРєРё СЂР°Р·РјРµСЂР° ModelCalculationComponent
+ const bool calc_full_model = (ModelCalculationComponent.GetSize() == 0);
+ if(calc_full_model)
  {
   if(!Model->Calculate())
    return false;
  }
  else
  {
-  UEPtr<UContainer> destcont;
-  destcont=GetModel()->GetComponentL(ModelCalculationComponent);
+  // РСЃРїРѕР»СЊР·СѓРµРј РєСЌС€РёСЂРѕРІР°РЅРЅС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚ РІРјРµСЃС‚Рѕ РїРѕРІС‚РѕСЂРЅС‹С… РІС‹Р·РѕРІРѕРІ GetComponentL
+  if(!CachedCalculationComponent)
+  {
+   CachedCalculationComponent=GetModel()->GetComponentL(ModelCalculationComponent);
+  }
 
-  if(!destcont)
+  if(!CachedCalculationComponent)
    return false;
 
-  if(!destcont->Calculate())
+  if(!CachedCalculationComponent->Calculate())
    return false;
  }
 
- //for(size_t i=0;i<DataReaders.size();i++)
- // DataReaders[i]->Update();
+ // Update watch data readers after each calculation step
+ for(size_t dri=0;dri<DataReaders.size();dri++)
+ {
+  if(DataReaders[dri].first)
+   DataReaders[dri].first->AUpdate();
+ }
 
- // Если мы считаем всю модель, то расчитываем время модели здесь,
- // иначе мы ожидаем, что вызывающий модуль сам расчитает время модели
- if(ModelCalculationComponent.GetSize() == 0)
+ // Р•СЃР»Рё РЅРµ Р·Р°РґР°РЅ РґР»СЏ СЂР°СЃС‡РµС‚Р° С‚Рѕ СЂР°СЃСЃС‡РёС‚С‹РІР°РµС‚СЃСЏ РІСЃСЏ РјРѕРґРµР»СЊ С†РµР»РёРєРѕРј,
+ // РёРЅР°С‡Рµ СЂР°СЃСЃС‡РёС‚С‹РІР°РµС‚СЃСЏ С‚РѕР»СЊРєРѕ СѓРєР°Р·Р°РЅРЅС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚ Рё РµРіРѕ РґРѕС‡РµСЂРЅРёРµ РєРѕРјРїРѕРЅРµРЅС‚С‹
+ if(calc_full_model)
   IncreaseModelTimeByStep();
 
  return true;

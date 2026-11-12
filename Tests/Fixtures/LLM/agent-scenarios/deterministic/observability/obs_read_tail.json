@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "id": "obs_read_tail",
+  "tier": "deterministic",
+  "suite": "observability",
+  "registry_profile": "core",
+  "user_text": "покажи последние строки лога",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "read_system_log",
+          "arguments": {
+            "mode": "tail",
+            "max_lines": 80
+          }
+        }
+      ]
+    },
+    {
+      "text": "Краткий ответ по результатам tool."
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": [
+      "read_system_log"
+    ]
+  }
+}

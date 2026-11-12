@@ -9,15 +9,15 @@
 
 namespace RDK {
 
-/// Преобразовывает UBitmap в jpeg
-/// order определяет порядок следования цветовых каналов: RGB - true, BGR - false
+/// РџСЂРµРѕР±СЂР°Р·РѕРІС‹РІР°РµС‚ UBitmap РІ jpeg
+/// order РѕРїСЂРµРґРµР»СЏРµС‚ РїРѕСЂСЏРґРѕРє СЃР»РµРґРѕРІР°РЅРёСЏ С†РІРµС‚РѕРІС‹С… РєР°РЅР°Р»РѕРІ: RGB - true, BGR - false
 RDK_LIB_TYPE int ConvertBitmapToJpeg(const UBitmap &bmp, std::vector<uint8_t> &jpeg_buf, std::vector<uint8_t> &temp_buf, bool order, int quality=100);
 
-/// Преобразовывает jpeg в UBitmap
-/// order определяет порядок следования цветовых каналов: RGB - true, BGR - false
+/// РџСЂРµРѕР±СЂР°Р·РѕРІС‹РІР°РµС‚ jpeg РІ UBitmap
+/// order РѕРїСЂРµРґРµР»СЏРµС‚ РїРѕСЂСЏРґРѕРє СЃР»РµРґРѕРІР°РЅРёСЏ С†РІРµС‚РѕРІС‹С… РєР°РЅР°Р»РѕРІ: RGB - true, BGR - false
 RDK_LIB_TYPE int ConvertJpegToBitmap(const std::vector<uint8_t> &jpeg_buf, UBitmap &bmp, bool order);
 
-/// Возвращает разрешение изображения
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂР°Р·СЂРµС€РµРЅРёРµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 RDK_LIB_TYPE int ReadJpegSize(const std::vector<uint8_t> &jpeg_buf, int &width, int &height);
 
 }

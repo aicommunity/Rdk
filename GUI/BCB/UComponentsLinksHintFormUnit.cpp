@@ -16,7 +16,7 @@ __fastcall TUComponentsLinksHintForm::TUComponentsLinksHintForm(TComponent* Owne
 {
 }
 
-/// Îòîáðàæàåò ôîðìó
+/// ÐžÑ‚Ð¾Ð±Ñ€Ð°Ð¶Ð°ÐµÑ‚ Ñ„Ð¾Ñ€Ð¼Ñƒ
 void __fastcall  TUComponentsLinksHintForm::ShowLinks(const std::string &component_name,
 								const std::string &owner_name,
 								int x, int y)
@@ -43,7 +43,7 @@ void __fastcall  TUComponentsLinksHintForm::ShowLinks(const std::string &compone
  	+GroupBox2->Height-GroupBox2->ClientHeight+Height-ClientHeight+35;
 }
 
-/// Ðàñ÷èòûâàåò øèðèíó îêíà
+/// Ð Ð°ÑÑ‡Ð¸Ñ‚Ñ‹Ð²Ð°ÐµÑ‚ ÑˆÐ¸Ñ€Ð¸Ð½Ñƒ Ð¾ÐºÐ½Ð°
 int TUComponentsLinksHintForm::CalcFormWidth(void)
 {
  int input_width=0;
@@ -56,7 +56,7 @@ int TUComponentsLinksHintForm::CalcFormWidth(void)
  return ((output_width>input_width)?output_width:input_width)+60;
 }
 
-/// Ðàñ÷èòûâàåò âûñîòó òàáëèöû îòîáðàæåíèÿ âõîäîâ
+/// Ð Ð°ÑÑ‡Ð¸Ñ‚Ñ‹Ð²Ð°ÐµÑ‚ Ð²Ñ‹ÑÐ¾Ñ‚Ñƒ Ñ‚Ð°Ð±Ð»Ð¸Ñ†Ñ‹ Ð¾Ñ‚Ð¾Ð±Ñ€Ð°Ð¶ÐµÐ½Ð¸Ñ Ð²Ñ…Ð¾Ð´Ð¾Ð²
 int TUComponentsLinksHintForm::CalcInputsHeight(void)
 {
  int num_rows=InputsFrame->StringGrid->RowCount;
@@ -66,7 +66,7 @@ int TUComponentsLinksHintForm::CalcInputsHeight(void)
  return height;
 }
 
-/// Ðàñ÷èòûâàåò âûñîòó òàáëèöû îòîáðàæåíèÿ âûõîäîâ
+/// Ð Ð°ÑÑ‡Ð¸Ñ‚Ñ‹Ð²Ð°ÐµÑ‚ Ð²Ñ‹ÑÐ¾Ñ‚Ñƒ Ñ‚Ð°Ð±Ð»Ð¸Ñ†Ñ‹ Ð¾Ñ‚Ð¾Ð±Ñ€Ð°Ð¶ÐµÐ½Ð¸Ñ Ð²Ñ‹Ñ…Ð¾Ð´Ð¾Ð²
 int TUComponentsLinksHintForm::CalcOutputsHeight(void)
 {
  int num_rows=OutputsFrame->StringGrid->RowCount;

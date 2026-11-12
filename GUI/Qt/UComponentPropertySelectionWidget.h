@@ -13,21 +13,21 @@ class UComponentPropertySelectionWidget : public QDialog
     Q_OBJECT
 
 public:
-    explicit UComponentPropertySelectionWidget(QWidget *parent = 0, int mode = 0, RDK::UApplication *app = NULL);
+    explicit UComponentPropertySelectionWidget(QWidget *parent = 0, int mode = 0, RDK::UApplication *app = NULL, int treeExpansionPolicy = 0);
     virtual ~UComponentPropertySelectionWidget();
 
     UComponentsListWidget *componentsList;
 
 public slots:
-    ///считывание файлов настроек
+    ///СЃС‡РёС‚С‹РІР°РЅРёРµ С„Р°Р№Р»РѕРІ РЅР°СЃС‚СЂРѕРµРє
     void readSettings(QString file, QString group = "UComponentPropertySelectionWidget");
-    ///запись файлов настроек
+    ///Р·Р°РїРёСЃСЊ С„Р°Р№Р»РѕРІ РЅР°СЃС‚СЂРѕРµРє
     void writeSettings(QString file, QString group = "UComponentPropertySelectionWidget");
 
 private:
     Ui::UComponentPropertySelectionWidget *ui;
 
-    /// Экзепляр класса приложения
+    /// Р­РєР·РµРїР»СЏСЂ РєР»Р°СЃСЃР° РїСЂРёР»РѕР¶РµРЅРёСЏ
     RDK::UApplication *application;
 };
 

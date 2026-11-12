@@ -17,7 +17,7 @@ See file license.txt for more information
 namespace RDK {
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 /*MKalmanFilter::MKalmanFilter(void)
 {

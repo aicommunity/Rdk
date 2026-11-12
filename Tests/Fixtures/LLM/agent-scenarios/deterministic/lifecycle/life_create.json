@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "id": "life_create",
+  "tier": "deterministic",
+  "suite": "lifecycle",
+  "registry_profile": "core",
+  "user_text": "создай новый проект",
+  "session": {
+    "project_loaded": false,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "create_configuration",
+          "arguments": {
+            "autocreate_subdirectory": true
+          }
+        }
+      ]
+    },
+    {
+      "text": "Краткий ответ по результатам tool."
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": [
+      "create_configuration"
+    ],
+    "tools_forbidden": [
+      "add_component"
+    ]
+  }
+}

@@ -16,9 +16,9 @@ UClDescEditor::UClDescEditor(QWidget *parent, RDK::UApplication *app):
     connect(ClassDescriptionDisplay->GetUi()->pushButtonCancel, &QPushButton::clicked, this, &QWidget::close);
 
     ClassesListWidget = new UClassesListWidget(this,app);
-    // Îòêëþ÷åíèå popup ìåíþ è ñîîòâåòñâóþùåãî action
+    // ÐžÑ‚ÐºÐ»ÑŽÑ‡ÐµÐ½Ð¸Ðµ popup Ð¼ÐµÐ½ÑŽ Ð¸ ÑÐ¾Ð¾Ñ‚Ð²ÐµÑ‚ÑÐ²ÑƒÑŽÑ‰ÐµÐ³Ð¾ action
     ClassesListWidget->disable_cl_desc_popup_menu();
-    // Óáèðàåì âêëàäêó "Libs Control" ò.ê îíà íå íóæíà
+    // Ð£Ð±Ð¸Ñ€Ð°ÐµÐ¼ Ð²ÐºÐ»Ð°Ð´ÐºÑƒ "Libs Control" Ñ‚.Ðº Ð¾Ð½Ð° Ð½Ðµ Ð½ÑƒÐ¶Ð½Ð°
     ClassesListWidget->removeTab(2);
     ui->horizontalLayout_2->addWidget(ClassDescriptionDisplay);
     ui->horizontalLayout_2->addWidget(ClassesListWidget);

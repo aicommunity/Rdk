@@ -2,6 +2,7 @@
 #ifdef QT_GUI_LIB
 #include <UVisualControllerWidget.h>
 #endif
+#include "../../Deploy/Include/rdk_logging.h"
 
 UEngineControlQt::UEngineControlQt(QObject *parent):
     QObject(parent)
@@ -26,7 +27,9 @@ void UEngineControlQt::StartChannel(int channel_index)
         #ifdef QT_GUI_LIB
         UVisualControllerWidget::CalculationModeFlag=true;
         #endif
-        timer->start(1, this);
+        // Оптимизация: увеличен минимальный интервал с 1 мс до 16 мс для снижения нагрузки на UI поток
+        // 16 мс соответствует ~60 FPS, что достаточно для плавного обновления интерфейса
+        timer->start(16, this);
         break;
 
     case 1:
@@ -67,14 +70,14 @@ void UEngineControlQt::timerEvent(QTimerEvent *)
  }
  catch(RDK::UException &ex)
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControlQt::TimerTimer - ")+ex.what()).c_str());
+  RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControlQt::TimerTimer - ")+ex.what()).c_str());
  }
  catch(std::exception &ex)
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControlQt::TimerTimer - ")+ex.what()).c_str());
+  RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("UEngineControlQt::TimerTimer - ")+ex.what()).c_str());
  }
  catch(...)
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "UEngineControlQt::TimerTimer - unhandled exception");
+  RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, "UEngineControlQt::TimerTimer - unhandled exception");
  }
 }

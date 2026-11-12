@@ -2,7 +2,7 @@
 #define UCOMPONENTPROPERTYCHANGER_H
 
 #include "UVisualControllerWidget.h"
-#include "UComponentsListWidget.h"
+#include "UComponentsListWidgetModern.h"
 #include "UPropertyXMLWidget.h"
 
 namespace Ui {
@@ -17,13 +17,12 @@ public:
   explicit UComponentPropertyChanger(QWidget *parent = 0, RDK::UApplication *app = NULL);
   ~UComponentPropertyChanger();
 
-  /// запись файла настроек
+  /// Р·Р°РїРёСЃСЊ С„Р°Р№Р»Р° РЅР°СЃС‚СЂРѕРµРє
   virtual void ASaveParameters();
-  /// считывание файла настроек
+  /// СЃС‡РёС‚С‹РІР°РЅРёРµ С„Р°Р№Р»Р° РЅР°СЃС‚СЂРѕРµРє
   virtual void ALoadParameters();
 
 public slots:
-  void actionSet();
   void actionSetGlobal();
   void actionSetGlobalOwner();
   void actionShowXML();
@@ -31,7 +30,7 @@ public slots:
   void updateCurrentPropertyValue(QString value);
 
 public:
-  UComponentsListWidget *componentsList;
+  UComponentsListWidgetModern *componentsList;
 
 private:
   // methods
@@ -40,12 +39,13 @@ private:
   // data
   Ui::UComponentPropertyChanger *ui;
 
-  /// Указатель на диалоговое окошко отображения XML
+  /// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РґРёР°Р»РѕРіРѕРІРѕРµ РѕРєРѕС€РєРѕ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ XML
   UPropertyXMLWidget *propertyXML;
 
   // buffers
   QString componentName;
   QString propertyName;
+  QString m_currentPropertyValue;
 };
 
 #endif // UCOMPONENTPROPERTYCHANGER_H

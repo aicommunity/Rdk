@@ -4,9 +4,13 @@
 #include <QWizard>
 #include <QListWidgetItem>
 #include <QStringListModel>
+#include <QPlainTextEdit>
+#include <QPushButton>
 
 #include <rdk_application.h>
 #include "UClassesListWidget.h"
+
+class UMarkdownViewerWidget;
 
 
 
@@ -100,19 +104,19 @@ private slots:
 private:
   Ui::UCreateConfigurationWizardWidget *ui;
 
-  /// ������������ �������
+  /// Конфигурация сервера
   RDK::TProjectConfig ProjectConfig;
 
-  /// id �������� ������
+  /// id текущего канала
   int channelNumber;
 
-  /// ���� �������, ������� ���������� ��������� �� �����
+  /// Мапа моделей, которые необходимо загрузить из файла
   QMap<int, QString> modelsFromFile;
 
-  // ������ ��� ������ predefined structures
+  // Данные для списка predefined structures
   QStringList PredefinedStructuresData;
   QStringListModel stringListModelPredefinedStructures;
-  //������ ��� ������ Models from file
+  //Данные для списка Models from file
   QStringList ModelsFromFileData;
   QStringListModel stringListModelsFromFile;
 
@@ -122,6 +126,28 @@ private:
 
   bool ChangeCheckDebugStateChannel;
   bool ChangeCheckDebugState;
+
+  /// Виджет для отображения Markdown описания проекта
+  UMarkdownViewerWidget* markdownViewer;
+
+  /// Виджет для редактирования Markdown (показывается в режиме редактирования)
+  QPlainTextEdit* markdownEditor;
+
+  /// Кнопка переключения режимов просмотр/редактирование
+  QPushButton* toggleEditButton;
+
+  /// Текущий режим: true = редактирование, false = просмотр
+  bool isEditMode;
+
+  /// Путь к файлу README.md проекта
+  QString readmeFilePath;
+
+private slots:
+  /// Переключение между режимами просмотра и редактирования
+  void toggleEditMode();
+
+  /// Сохранение README.md при выходе из режима редактирования
+  void saveReadme();
 };
 
 #endif // UCREATEPROJECTWIZARDWIDGET_H

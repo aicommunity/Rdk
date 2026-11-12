@@ -3,7 +3,7 @@
 
 #include <QDebug>
 
-UComponentPropertySelectionWidget::UComponentPropertySelectionWidget(QWidget *parent, int mode, RDK::UApplication *app) :
+UComponentPropertySelectionWidget::UComponentPropertySelectionWidget(QWidget *parent, int mode, RDK::UApplication *app, int treeExpansionPolicy) :
     QDialog(parent),
     ui(new Ui::UComponentPropertySelectionWidget)
 {
@@ -11,8 +11,10 @@ UComponentPropertySelectionWidget::UComponentPropertySelectionWidget(QWidget *pa
     componentsList = NULL;
     application = app;
     componentsList = new UComponentsListWidget(this, application, 0);
-    //componentsList->UpdateInterval = 0;
+    // Отключаем автоматические обновления в диалоге, чтобы дерево не сворачивалось автоматически
+    componentsList->setUpdateInterval(0);
     componentsList->setVerticalOrientation(false);
+    componentsList->setTreeExpansionPolicy(treeExpansionPolicy);
     componentsList->openTabN(mode);
     ui->horizontalLayoutComponentsList->addWidget(componentsList);
     if(application)
@@ -21,6 +23,8 @@ UComponentPropertySelectionWidget::UComponentPropertySelectionWidget(QWidget *pa
                    application->GetProjectPath().c_str())+"settings.qt");
      componentsList->ALoadParameters();
     }
+    // Вызываем обновление интерфейса один раз для первоначальной загрузки дерева
+    componentsList->UpdateInterface(true);
 }
 
 UComponentPropertySelectionWidget::~UComponentPropertySelectionWidget()

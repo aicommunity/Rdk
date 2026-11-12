@@ -20,41 +20,41 @@ See file license.txt for more information
 
 namespace RDK {
 
-// Класс описания особенностей отображения заданного объекта
+// РљР»Р°СЃСЃ РѕРїРёСЃР°РЅРёСЏ РѕСЃРѕР±РµРЅРЅРѕСЃС‚РµР№ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ Р·Р°РґР°РЅРЅРѕРіРѕ РѕР±СЉРµРєС‚Р°
 class RDK_LIB_TYPE MGeometryDescription
 {
-public: // Данные
-// Цвет
+public: // Р”Р°РЅРЅС‹Рµ
+// Р¦РІРµС‚
 UColorT Color;
 
-// Толщина пера
+// РўРѕР»С‰РёРЅР° РїРµСЂР°
 int PenWidth;
 
-// Имя
+// РРјСЏ
 string Name;
 
-// Описание
+// РћРїРёСЃР°РЅРёРµ
 string Description;
 
-// Флаг видимости
+// Р¤Р»Р°Рі РІРёРґРёРјРѕСЃС‚Рё
 bool Visible;
 
-// Флаг отрисовки прицела на каждую отображемую точку
+// Р¤Р»Р°Рі РѕС‚СЂРёСЃРѕРІРєРё РїСЂРёС†РµР»Р° РЅР° РєР°Р¶РґСѓСЋ РѕС‚РѕР±СЂР°Р¶РµРјСѓСЋ С‚РѕС‡РєСѓ
 bool TargetPoints;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 MGeometryDescription(void)
 {
- // Цвет
+ // Р¦РІРµС‚
  Color=UColorT(0,0,255,0);
 
- // Толщина пера
+ // РўРѕР»С‰РёРЅР° РїРµСЂР°
  PenWidth=4;
 
- // Флаг видимости
+ // Р¤Р»Р°Рі РІРёРґРёРјРѕСЃС‚Рё
  Visible=true;
 
  TargetPoints=false;
@@ -71,19 +71,19 @@ virtual ~MGeometryDescription(void)
 
 MGeometryDescription& operator = (const MGeometryDescription& copy)
 {
- // Цвет
+ // Р¦РІРµС‚
  Color=copy.Color;
 
- // Толщина пера
+ // РўРѕР»С‰РёРЅР° РїРµСЂР°
  PenWidth=copy.PenWidth;
 
- // Имя
+ // РРјСЏ
  Name=copy.Name;
 
- // Описание
+ // РћРїРёСЃР°РЅРёРµ
  Description=copy.Description;
 
- // Флаг видимости
+ // Р¤Р»Р°Рі РІРёРґРёРјРѕСЃС‚Рё
  Visible=copy.Visible;
 
  TargetPoints=copy.TargetPoints;
@@ -94,23 +94,23 @@ MGeometryDescription& operator = (const MGeometryDescription& copy)
 
 };
 
-// Класс поддержки отрисовки графики
+// РљР»Р°СЃСЃ РїРѕРґРґРµСЂР¶РєРё РѕС‚СЂРёСЃРѕРІРєРё РіСЂР°С„РёРєРё
 template<class T, int Rows>
 class MGraphics
 {
-protected: // Данные
-// Модуль рисования
+protected: // Р”Р°РЅРЅС‹Рµ
+// РњРѕРґСѓР»СЊ СЂРёСЃРѕРІР°РЅРёСЏ
 UAGraphics *Graphics;
 
-// Список объектов отрисовки в заданном порядке
+// РЎРїРёСЃРѕРє РѕР±СЉРµРєС‚РѕРІ РѕС‚СЂРёСЃРѕРІРєРё РІ Р·Р°РґР°РЅРЅРѕРј РїРѕСЂСЏРґРєРµ
 std::vector<MGeometry<T,Rows> > Geometries;
 
-// Список описаний соответствующего объекта
+// РЎРїРёСЃРѕРє РѕРїРёСЃР°РЅРёР№ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµРіРѕ РѕР±СЉРµРєС‚Р°
 vector<MGeometryDescription> Descriptions;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 MGraphics(void);
 MGraphics(const MGraphics<T,Rows> &copy);
@@ -118,55 +118,55 @@ MGraphics(const MGraphics<T,Rows> &copy);
 // --------------------------
 
 // --------------------------
-// Методы управления данныим
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РёРј
 // --------------------------
-// Модуль рисования
+// РњРѕРґСѓР»СЊ СЂРёСЃРѕРІР°РЅРёСЏ
 UAGraphics* GetGraphics(void) const;
 bool SetGraphics(UAGraphics *graphics);
 
-// Возвращает заданный объект отрисовки по индексу
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р·Р°РґР°РЅРЅС‹Р№ РѕР±СЉРµРєС‚ РѕС‚СЂРёСЃРѕРІРєРё РїРѕ РёРЅРґРµРєСЃСѓ
 const MGeometry<T,Rows>& Geometry(size_t index) const;
 MGeometry<T,Rows>& Geometry(size_t index);
 
-// Возвращает описание заданного объекта отрисовки по индексу
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РѕРїРёСЃР°РЅРёРµ Р·Р°РґР°РЅРЅРѕРіРѕ РѕР±СЉРµРєС‚Р° РѕС‚СЂРёСЃРѕРІРєРё РїРѕ РёРЅРґРµРєСЃСѓ
 const MGeometryDescription& Description(size_t index) const;
 MGeometryDescription& Description(size_t index);
 
-// Возвращает число объектов отрисовки
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РѕР±СЉРµРєС‚РѕРІ РѕС‚СЂРёСЃРѕРІРєРё
 size_t GetNumGeometries(void) const;
 bool SetNumGeometries(size_t value);
 
-// Удаляет выбранный объект отрисовки
+// РЈРґР°Р»СЏРµС‚ РІС‹Р±СЂР°РЅРЅС‹Р№ РѕР±СЉРµРєС‚ РѕС‚СЂРёСЃРѕРІРєРё
 bool DelGeometry(size_t value);
 
-// Удаляет все объекты отрисовки по индексу
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ РѕР±СЉРµРєС‚С‹ РѕС‚СЂРёСЃРѕРІРєРё РїРѕ РёРЅРґРµРєСЃСѓ
 void Clear(void);
 // --------------------------
 
 // --------------------------
-// Методы рисования
+// РњРµС‚РѕРґС‹ СЂРёСЃРѕРІР°РЅРёСЏ
 // --------------------------
-// Отрисовывает все объекты
+// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ РІСЃРµ РѕР±СЉРµРєС‚С‹
 void Repaint(void);
 // --------------------------
 
 // --------------------------
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 // --------------------------
-// Оператор присваивания
-// Не копирует модуль рисования
+// РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
+// РќРµ РєРѕРїРёСЂСѓРµС‚ РјРѕРґСѓР»СЊ СЂРёСЃРѕРІР°РЅРёСЏ
 MGraphics<T,Rows>& operator = (const MGraphics<T,Rows> &copy);
 // --------------------------
 };
 
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 template<class T, int Rows>
 MGraphics<T,Rows>::MGraphics(void)
 {
- // Модуль рисования
+ // РњРѕРґСѓР»СЊ СЂРёСЃРѕРІР°РЅРёСЏ
  Graphics=0;
 }
 
@@ -184,9 +184,9 @@ MGraphics<T,Rows>::~MGraphics(void)
 // --------------------------
 
 // --------------------------
-// Методы управления данныим
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РёРј
 // --------------------------
-// Модуль рисования
+// РњРѕРґСѓР»СЊ СЂРёСЃРѕРІР°РЅРёСЏ
 template<class T, int Rows>
 UAGraphics* MGraphics<T,Rows>::GetGraphics(void) const
 {
@@ -203,7 +203,7 @@ bool MGraphics<T,Rows>::SetGraphics(UAGraphics *graphics)
  return true;
 }
 
-// Возвращает заданный объект отрисовки по индексу
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р·Р°РґР°РЅРЅС‹Р№ РѕР±СЉРµРєС‚ РѕС‚СЂРёСЃРѕРІРєРё РїРѕ РёРЅРґРµРєСЃСѓ
 template<class T, int Rows>
 const MGeometry<T,Rows>& MGraphics<T,Rows>::Geometry(size_t index) const
 {
@@ -216,7 +216,7 @@ MGeometry<T,Rows>& MGraphics<T,Rows>::Geometry(size_t index)
  return Geometries[index];
 }
 
-// Возвращает описание заданного объекта отрисовки по индексу
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РѕРїРёСЃР°РЅРёРµ Р·Р°РґР°РЅРЅРѕРіРѕ РѕР±СЉРµРєС‚Р° РѕС‚СЂРёСЃРѕРІРєРё РїРѕ РёРЅРґРµРєСЃСѓ
 template<class T, int Rows>
 const MGeometryDescription& MGraphics<T,Rows>::Description(size_t index) const
 {
@@ -229,7 +229,7 @@ MGeometryDescription& MGraphics<T,Rows>::Description(size_t index)
  return Descriptions[index];
 }
 
-// Возвращает число объектов отрисовки
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РѕР±СЉРµРєС‚РѕРІ РѕС‚СЂРёСЃРѕРІРєРё
 template<class T, int Rows>
 size_t MGraphics<T,Rows>::GetNumGeometries(void) const
 {
@@ -244,7 +244,7 @@ bool MGraphics<T,Rows>::SetNumGeometries(size_t value)
  return true;
 }
 
-// Удаляет выбранный объект отрисовки
+// РЈРґР°Р»СЏРµС‚ РІС‹Р±СЂР°РЅРЅС‹Р№ РѕР±СЉРµРєС‚ РѕС‚СЂРёСЃРѕРІРєРё
 template<class T, int Rows>
 bool MGraphics<T,Rows>::DelGeometry(size_t value)
 {
@@ -253,7 +253,7 @@ bool MGraphics<T,Rows>::DelGeometry(size_t value)
  return true;
 }
 
-// Удаляет все объекты отрисовки по индексу
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ РѕР±СЉРµРєС‚С‹ РѕС‚СЂРёСЃРѕРІРєРё РїРѕ РёРЅРґРµРєСЃСѓ
 template<class T, int Rows>
 void MGraphics<T,Rows>::Clear(void)
 {
@@ -263,9 +263,9 @@ void MGraphics<T,Rows>::Clear(void)
 // --------------------------
 
 // --------------------------
-// Методы рисования
+// РњРµС‚РѕРґС‹ СЂРёСЃРѕРІР°РЅРёСЏ
 // --------------------------
-// Отрисовывает все объекты
+// РћС‚СЂРёСЃРѕРІС‹РІР°РµС‚ РІСЃРµ РѕР±СЉРµРєС‚С‹
 template<class T, int Rows>
 void MGraphics<T,Rows>::Repaint(void)
 {
@@ -278,11 +278,11 @@ void MGraphics<T,Rows>::Repaint(void)
   {
    Graphics->SetPenColor(Descriptions[i].Color);
    Graphics->SetPenWidth(Descriptions[i].PenWidth);
-   // Считаем всю геометрию двумерной
+   // РЎС‡РёС‚Р°РµРј РІСЃСЋ РіРµРѕРјРµС‚СЂРёСЋ РґРІСѓРјРµСЂРЅРѕР№
 
    MGeometry<T,Rows> &geometry=Geometries[i];
    const std::vector<MVector<T,Rows> >& vertices=geometry.GetVertices();
-   // Отрисовываем точки
+   // РћС‚СЂРёСЃРѕРІС‹РІР°РµРј С‚РѕС‡РєРё
    for(size_t j=0;j<vertices.size();j++)
    {
 	const MVector<T,Rows>& vertex=vertices[j];
@@ -299,7 +299,7 @@ void MGraphics<T,Rows>::Repaint(void)
 	}
    }
 
-   // Отрисовываем контуры
+   // РћС‚СЂРёСЃРѕРІС‹РІР°РµРј РєРѕРЅС‚СѓСЂС‹
    Graphics->SetPenWidth(Descriptions[i].PenWidth);
    for(int j=0;j<int(geometry.GetNumBorders());j++)
    {
@@ -317,17 +317,17 @@ void MGraphics<T,Rows>::Repaint(void)
 // --------------------------
 
 // --------------------------
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 // --------------------------
-// Оператор присваивания
-// Не копирует модуль рисования
+// РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
+// РќРµ РєРѕРїРёСЂСѓРµС‚ РјРѕРґСѓР»СЊ СЂРёСЃРѕРІР°РЅРёСЏ
 template<class T, int Rows>
 MGraphics<T,Rows>& MGraphics<T,Rows>::operator = (const MGraphics<T,Rows> &copy)
 {
- // Список объектов отрисовки в заданном порядке
+ // РЎРїРёСЃРѕРє РѕР±СЉРµРєС‚РѕРІ РѕС‚СЂРёСЃРѕРІРєРё РІ Р·Р°РґР°РЅРЅРѕРј РїРѕСЂСЏРґРєРµ
  Geometries=copy.Geometries;
 
- // Список описаний соответствующего объекта
+ // РЎРїРёСЃРѕРє РѕРїРёСЃР°РЅРёР№ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµРіРѕ РѕР±СЉРµРєС‚Р°
  //Description=copy.Description;
 
  return *this;

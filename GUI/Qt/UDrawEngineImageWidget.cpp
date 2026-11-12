@@ -1,4 +1,8 @@
 #include "UDrawEngineImageWidget.h"
+#include "UEngineSelectionSync.h"
+#include "UQuickLinkDialog.h"
+#include "UStyleManager.h"
+#include "UModernDiagramWidget.h"
 
 #include <QDebug>
 #include <QByteArray>
@@ -10,13 +14,14 @@
 #include <QMessageBox>
 #include <QClipboard>
 #include <QFileDialog>
+#include <QPainter>
 
 UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
 {
  Application=NULL;
     setMinimumSize(QSize(300,350));
 
-    //<����������� ����>
+    //<контекстное меню>
     this->setContextMenuPolicy(Qt::CustomContextMenu);
     contextMenu = new QMenu(this);
 
@@ -39,11 +44,11 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     QAction *actionSeparator8 = new QAction(this);
     actionSeparator8->setSeparator(true);
 
-    //������� ������������ ����
+    //события контекстного меню
     actionViewOrBreakLink = new QAction(contextMenu);
     actionViewOrBreakLink->setText("View/Break link");
     actionCreateLink = new QAction(contextMenu);
-    actionCreateLink->setText("Create link");   
+    actionCreateLink->setText("Create link");
     actionFinishLink = new QAction(contextMenu);
     actionFinishLink->setText("Finish link");
     actionFinishLink->setEnabled(false);
@@ -73,6 +78,10 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     actionCloneComponent->setText("Clone");
     actionCloneComponent->setEnabled(true);
 
+    actionQuickLink = new QAction(contextMenu);
+    actionQuickLink->setText("Quick Link...");
+    actionQuickLink->setEnabled(true);
+
     QAction *actionRenameComponent = new QAction(contextMenu);
     actionRenameComponent->setText("Rename");
     QAction *actionClassDescription = new QAction(contextMenu);
@@ -92,12 +101,13 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     QAction *actionDefaultComponent = new QAction(contextMenu);
     actionDefaultComponent->setText("Default");
     QAction *actionGUI = new QAction(contextMenu);
-    actionGUI->setText("GUI (not implemented)");
-    actionGUI->setEnabled(false);
+    actionGUI->setText("GUI");
+    actionGUI->setToolTip("Open component GUI form");
+    actionGUI->setEnabled(true);
     QAction *actionCopyComponentXMLDescription= new QAction(contextMenu);
     actionCopyComponentXMLDescription->setText("Copy component XML description");;
 
-    //���������� � ����
+    //добавление в меню
     contextMenu->addAction(actionViewOrBreakLink);
     contextMenu->addAction(actionSeparator1);
     contextMenu->addAction(actionCreateLink);
@@ -128,8 +138,9 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     contextMenu->addAction(actionCopyComponentXMLDescription);
     contextMenu->addAction(actionSeparator8);
     contextMenu->addAction(actionCloneComponent);
+    contextMenu->addAction(actionQuickLink);
 
-    //�����
+    //связи
     connect(actionViewOrBreakLink, SIGNAL(triggered(bool)), this, SLOT(componentViewOrBreakLink()));
     connect(actionCreateLink, SIGNAL(triggered(bool)), this, SLOT(componentCreateLink()));
     connect(actionFinishLink, SIGNAL(triggered(bool)), this, SLOT(componentFinishLink()));
@@ -152,11 +163,18 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     connect(actionGUI, SIGNAL(triggered(bool)), this, SLOT(componentGUI()));
     connect(actionCopyComponentXMLDescription, SIGNAL(triggered(bool)), this, SLOT(componentCopyXMLDescription()));
     connect(actionCloneComponent, SIGNAL(triggered(bool)), this, SLOT(componentCloneComponent()));
-    //</����������� ����>
+    connect(actionQuickLink, SIGNAL(triggered(bool)), this, SLOT(componentQuickLink()));
+    //</контекстное меню>
+
+    // Инициализация переменных drag & drop для портов
+    isDraggingFromPort = false;
+    dragSourcePort = nullptr;
+    dragCurrentX = 0;
+    dragCurrentY = 0;
 
     setScaledContents(true);
 
-    //<��� �� �������>
+    //<код из билдера>
     Graph.SetCanvas(&GraphCanvas);
     FontType = "Tahoma";
     FontSize = 15;
@@ -166,7 +184,7 @@ UDrawEngineImageWidget::UDrawEngineImageWidget(QWidget *parent) : QLabel(parent)
     Graph.SetFont(&Font);
     DrawEngine.SetEngine(&Graph);
     DrawEngine.SetFonts(RDK::GetCoreLock()->GetFonts());
-    //</��� �� �������>
+    //</код из билдера>
     reDrawScheme(true);
     setAcceptDrops(true);
 }
@@ -185,6 +203,17 @@ UDrawEngineImageWidget::~UDrawEngineImageWidget()
 
 void UDrawEngineImageWidget::mousePressEvent(QMouseEvent *event)
 {
+    // Сначала проверяем, попали ли мы в порт
+    std::string portComponentName;
+    RDK::UGEPort* port = DrawEngine.FindPortAtPosition(event->x(), event->y(), portComponentName);
+
+    if(port && !port->IsInput && event->button() == Qt::LeftButton)
+    {
+        // Начинаем перетаскивание от выходного порта
+        startDragFromPort(QString::fromStdString(portComponentName), port);
+        return;
+    }
+
     selectedComponent = DrawEngine.FindComponent(event->x(), event->y());
     if(!selectedComponent.empty())
     {
@@ -249,11 +278,32 @@ void UDrawEngineImageWidget::mouseDoubleClickEvent(QMouseEvent *event)
 
 void UDrawEngineImageWidget::mouseReleaseEvent(QMouseEvent *event)
 {
+    // Если было перетаскивание от порта, пробуем завершить его
+    if(isDraggingFromPort)
+    {
+        if(event->button() == Qt::LeftButton)
+        {
+            finishDragToPort(event->x(), event->y());
+        }
+        else
+        {
+            cancelDrag();
+        }
+        return;
+    }
+
     saveComponentPosition(selectedComponent);
 }
 
 void UDrawEngineImageWidget::mouseMoveEvent(QMouseEvent *event)
 {
+    // Если перетаскиваем связь от порта
+    if(isDraggingFromPort)
+    {
+        updateDragLine(event->x(), event->y());
+        return;
+    }
+
     if(!selectedComponent.empty())
     {
         DrawEngine.MoveComponent(selectedComponent, event->x(), event->y());
@@ -268,7 +318,7 @@ void UDrawEngineImageWidget::dropEvent(QDropEvent *event)
     QString classname;
     dataStream >> classname;
 
-    // ���� ������������ �� �������, �� ������� �����
+    // Если конфигурация не открыта, то создать новую
     if(!Application->GetProjectOpenFlag())
     {
         QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Config not created. Auto-create one-channel configuration and model from this component?", QMessageBox::Yes|QMessageBox::Cancel);
@@ -276,27 +326,45 @@ void UDrawEngineImageWidget::dropEvent(QDropEvent *event)
         {
             std::string file_name;
 
-            QString default_path=QString::fromLocal8Bit((Application->GetWorkDirectory()+"/../../Configs/").c_str());
-            QDir path1(default_path);
-            if(!path1.exists(default_path))
+            QString configs_path=QString::fromLocal8Bit((Application->GetWorkDirectory()+"/../../Configs/").c_str());
+            QDir path1(configs_path);
+            if(!path1.exists(configs_path))
             {
-                default_path=QString::fromLocal8Bit((Application->GetWorkDirectory()+"/../../../Configs/").c_str());
-                QDir path2(default_path);
-                if(!path2.exists(default_path))
+                configs_path=QString::fromLocal8Bit((Application->GetWorkDirectory()+"/../../../Configs/").c_str());
+                QDir path2(configs_path);
+                if(!path2.exists(configs_path))
                 {
-                    default_path=QString::fromLocal8Bit(Application->GetWorkDirectory().c_str());
+                    configs_path=QString::fromLocal8Bit(Application->GetWorkDirectory().c_str());
+                }
+            }
+
+            QString default_path = configs_path;
+            if(!Application->GetUserName().empty())
+            {
+                std::string userPathRel = Application->GetUserConfigPath();
+                if(!userPathRel.empty())
+                {
+                    QString users_dir = configs_path + "Users";
+                    QDir pathUsers(users_dir);
+                    if(!pathUsers.exists())
+                        RDK::CreateNewDirectory(users_dir.toLocal8Bit());
+                    QString user_path = configs_path + QString::fromLocal8Bit(userPathRel.c_str());
+                    QDir pathUser(user_path);
+                    if(!pathUser.exists())
+                        RDK::CreateNewDirectory(user_path.toLocal8Bit());
+                    default_path = user_path;
                 }
             }
 
             std::string path_dialog=default_path.toUtf8().data();
 
-            // �������� ����� ������� �������������� ���� ����� ������������
+            // Создание папки проекта автоматическое либо выбор существующей
             if(QMessageBox::question(this, "Info", "Autocreate configuration folder?", QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
             {
                 time_t curr_time;
                 time(&curr_time);
 
-                // ���������� ����� � ���� �������� ������ ���� YYYY.MM.DD HH:MM:SS
+                // Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
                 std::string folder=RDK::get_text_time(curr_time, '.', '_');
                 path_dialog+=std::string("/Autocreate")+folder.c_str();
 
@@ -324,13 +392,13 @@ void UDrawEngineImageWidget::dropEvent(QDropEvent *event)
         return;
     }
 
-    //���� ������ �� ����������, �������� �� ������� �� ��
+    //если модель не существует, спросить не создать ли ее
     if(!Model_Check())
     {
         QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Model not exist. Create new model from this class?", QMessageBox::Yes|QMessageBox::Cancel);
         if (reply == QMessageBox::Yes)
         {
-            //������� ����� ������
+            //создать новую модель
             Model_Create(classname.toLocal8Bit());
             selectedComponent = "";
             DrawEngine.SelectSingleComponent(selectedComponent);
@@ -343,7 +411,7 @@ void UDrawEngineImageWidget::dropEvent(QDropEvent *event)
 
     if (event->mimeData()->hasFormat("Component"))
     {
-        const char* pname = Model_AddComponent(ComponentName.toLocal8Bit(), classname.toLocal8Bit());
+        const char* pname = Model_AddComponent("", classname.toLocal8Bit());
         if(pname)
         {
             std::string name=pname;
@@ -469,7 +537,7 @@ void UDrawEngineImageWidget::selectComponent(QString name)
     }
 }
 
-/// ������ ������ �����
+/// Меняет размер канвы
 void UDrawEngineImageWidget::ResizeCanvas(void)
 {
  int rec_width(width()), rec_height(height());
@@ -614,7 +682,7 @@ void UDrawEngineImageWidget::componentRename()
 
         emit updateComponentsList();
         reDrawScheme(true);
-        //������� ��������� � ����� ������
+        //выбрать компонент с новым именем
         selectComponent(ComponentName.isEmpty()? QString::fromStdString(new_name)
                                                : ComponentName + "." + QString::fromStdString(new_name));
         emit componentSelected(myLongName());
@@ -650,10 +718,17 @@ void UDrawEngineImageWidget::componentDelete()
     if(QApplication::keyboardModifiers() != Qt::ShiftModifier)
     {
         QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Are you sure you want to delete component "+selectedComponentLongName+"?", QMessageBox::Yes|QMessageBox::Cancel);
-        if (reply == QMessageBox::Cancel) return;
+        if (reply != QMessageBox::Yes) return;
     }
 
-    Model_DelComponent("", selectedComponentLongName.toLocal8Bit());
+    const int rc = Model_DelComponent("", selectedComponentLongName.toLocal8Bit());
+    if(rc != RDK_SUCCESS)
+    {
+        QMessageBox::warning(this, "Warning",
+            QString("Failed to delete component %1 (code %2).")
+                .arg(selectedComponentLongName).arg(rc));
+        return;
+    }
     RDK::UIVisualControllerStorage::UpdateInterface(true);
     //reDrawScheme(true);
 //    emit updateComponentsList();
@@ -684,13 +759,17 @@ void UDrawEngineImageWidget::componentCopyClassNameToClipboard()
 
 void UDrawEngineImageWidget::componentReset()
 {
-    Env_Reset(myLongName().toLocal8Bit());
+    const QString longName = myLongName();
+    Env_Reset(longName.toLocal8Bit());
+    UModernDiagramWidget::invalidatePortsCacheEverywhere(longName);
     emit updateComponentsList();
 }
 
 void UDrawEngineImageWidget::componentCalculate()
 {
-    Env_Calculate(myLongName().toLocal8Bit());
+    const QString longName = myLongName();
+    Env_Calculate(longName.toLocal8Bit());
+    UModernDiagramWidget::invalidatePortsCacheEverywhere(longName);
     RDK::UIVisualControllerStorage::UpdateInterface();
 }
 
@@ -720,12 +799,35 @@ void UDrawEngineImageWidget::componentDefault()
     if(owner)
      object->CreateLinks(links_list, owner);
 
+    UModernDiagramWidget::invalidatePortsCacheEverywhere(selectedComponentLongName);
     RDK::UIVisualControllerStorage::UpdateInterface(true);
 }
 
 void UDrawEngineImageWidget::componentGUI()
 {
- qDebug() << "component GUI";
+    const QString selectedComponentLongName = myLongName();
+    if(selectedComponentLongName.isEmpty())
+    {
+        QMessageBox::information(this, "Component GUI", "No component is selected.");
+        return;
+    }
+
+    const QString componentClassName = componentClassNameFromModelScope(
+        Core_GetSelectedChannelIndex(), selectedComponentLongName);
+
+    UComponentGuiContext context;
+    context.componentLongName = selectedComponentLongName;
+    context.componentClassName = componentClassName;
+    context.channelIndex = Core_GetSelectedChannelIndex();
+
+    emit openComponentGuiRequested(context);
+
+    if(receivers(SIGNAL(openComponentGuiRequested(UComponentGuiContext))) == 0)
+    {
+        QMessageBox::information(this,
+                                 "Component GUI",
+                                 "Component GUI handler is not connected for DrawEngine entrypoint.");
+    }
 }
 
 void UDrawEngineImageWidget::componentCopyXMLDescription()
@@ -751,6 +853,37 @@ void UDrawEngineImageWidget::componentCloneComponent()
  {
   reDrawScheme(true);
   emit updateComponentsList();
+ }
+}
+
+void UDrawEngineImageWidget::componentQuickLink()
+{
+ UQuickLinkDialog dialog(this, ComponentName, Application);
+
+ if(dialog.exec() == QDialog::Accepted)
+ {
+  QString srcComp = dialog.getSourceComponent();
+  QString srcProp = dialog.getSourceProperty();
+  QString dstComp = dialog.getTargetComponent();
+  QString dstProp = dialog.getTargetProperty();
+
+  if(!srcProp.isEmpty() && !dstProp.isEmpty())
+  {
+   int result = Model_CreateLinkByName(srcComp.toStdString().c_str(),
+                                       srcProp.toStdString().c_str(),
+                                       dstComp.toStdString().c_str(),
+                                       dstProp.toStdString().c_str());
+
+   if(result == RDK_SUCCESS)
+   {
+    reDrawScheme(true);
+    emit updateComponentsList();
+   }
+   else
+   {
+    QMessageBox::warning(this, tr("Error"), tr("Failed to create link"));
+   }
+  }
  }
 }
 
@@ -782,14 +915,171 @@ QString UDrawEngineImageWidget::myLongName()
 }
 
 
-/// ������������� ��������� �� ����
+/// Устанавливает указатель на ядро
 void UDrawEngineImageWidget::SetApplication(RDK::UApplication *app)
 {
  Application=app;
 }
 
-/// ������������ ��� ������� ����������
+/// Возвращается имя выбрано компонента
 const std::string UDrawEngineImageWidget::GetLongName()
 {
     return myLongName().toUtf8().data();
+}
+
+// ----------------------
+// Drag & Drop связей между портами
+// ----------------------
+void UDrawEngineImageWidget::startDragFromPort(const QString& componentName, RDK::UGEPort* port)
+{
+    isDraggingFromPort = true;
+    dragSourceComponent = componentName;
+    dragSourcePort = port;
+
+    // Получаем начальные координаты порта
+    RDK::UGEDescription& desc = DrawEngine.GetDescription(componentName.toStdString());
+    DrawEngine.GetPortCenter(desc, *port, dragCurrentX, dragCurrentY);
+
+    // Создаем оверлейное изображение для отрисовки временной линии
+    dragOverlayImage = QImage(width(), height(), QImage::Format_ARGB32);
+    dragOverlayImage.fill(Qt::transparent);
+
+    setCursor(Qt::CrossCursor);
+}
+
+void UDrawEngineImageWidget::updateDragLine(int x, int y)
+{
+    if(!isDraggingFromPort)
+        return;
+
+    dragCurrentX = x;
+    dragCurrentY = y;
+
+    // Перерисовываем схему с временной линией
+    paintDragLine();
+}
+
+bool UDrawEngineImageWidget::finishDragToPort(int x, int y)
+{
+    if(!isDraggingFromPort || !dragSourcePort)
+    {
+        cancelDrag();
+        return false;
+    }
+
+    // Ищем целевой порт
+    std::string targetComponentName;
+    RDK::UGEPort* targetPort = DrawEngine.FindPortAtPosition(x, y, targetComponentName);
+
+    if(targetPort && targetPort->IsInput)
+    {
+        // Создаем связь между портами
+        // Получаем полные пути к свойствам
+        QString sourceFullPath = dragSourceComponent;
+        if(!sourceFullPath.isEmpty())
+            sourceFullPath += ".";
+        sourceFullPath += QString::fromStdString(dragSourcePort->FullPath.empty() ?
+                                                 dragSourcePort->Name : dragSourcePort->FullPath);
+
+        QString targetFullPath = QString::fromStdString(targetComponentName);
+        if(!targetFullPath.isEmpty())
+            targetFullPath += ".";
+        targetFullPath += QString::fromStdString(targetPort->FullPath.empty() ?
+                                                 targetPort->Name : targetPort->FullPath);
+
+        // Используем API для создания связи
+        // Формат: component.property
+        std::string srcComp = dragSourceComponent.toStdString();
+        std::string srcProp = dragSourcePort->Name;
+        std::string dstComp = targetComponentName;
+        std::string dstProp = targetPort->Name;
+
+        // Получаем текущий контекст
+        std::string currentContext = ComponentName.toStdString();
+
+        // Создаем связь
+        int result = Model_CreateLinkByName(srcComp.c_str(), srcProp.c_str(),
+                                            dstComp.c_str(), dstProp.c_str());
+
+        cancelDrag();
+
+        if(result == RDK_SUCCESS)
+        {
+            // Обновляем отображение
+            reDrawScheme(true);
+            return true;
+        }
+        else
+        {
+            QMessageBox::warning(this, "Error", "Failed to create link between ports");
+            return false;
+        }
+    }
+
+    cancelDrag();
+    return false;
+}
+
+void UDrawEngineImageWidget::cancelDrag()
+{
+    isDraggingFromPort = false;
+    dragSourcePort = nullptr;
+    dragSourceComponent.clear();
+    dragOverlayImage = QImage();
+    setCursor(Qt::ArrowCursor);
+
+    // Перерисовываем без временной линии
+    reDrawScheme(false);
+}
+
+void UDrawEngineImageWidget::paintDragLine()
+{
+    if(!isDraggingFromPort || !dragSourcePort)
+        return;
+
+    // Перерисовываем основную схему
+    reDrawScheme(false, true);
+
+    // Получаем координаты исходного порта
+    RDK::UGEDescription& desc = DrawEngine.GetDescription(dragSourceComponent.toStdString());
+    int startX, startY;
+    DrawEngine.GetPortCenter(desc, *dragSourcePort, startX, startY);
+
+    // Рисуем временную линию на текущем изображении
+    QPixmap currentPixmap = grab();
+    QPainter painter(&currentPixmap);
+    UStyleManager* style = UStyleManager::instance();
+    painter.setPen(QPen(style->getDragLineColor(), style->getLinkWidth(), Qt::DashLine));
+
+    // Рисуем линию с изгибом (упрощенный вариант)
+    int dx = abs(dragCurrentX - startX);
+    if(dx > 50)
+    {
+        int midX = (startX + dragCurrentX) / 2;
+        painter.drawLine(startX, startY, midX, startY);
+        painter.drawLine(midX, startY, midX, dragCurrentY);
+        painter.drawLine(midX, dragCurrentY, dragCurrentX, dragCurrentY);
+    }
+    else
+    {
+        painter.drawLine(startX, startY, dragCurrentX, dragCurrentY);
+    }
+
+    // Проверяем, находится ли курсор над входным портом
+    std::string hoverComponentName;
+    RDK::UGEPort* hoverPort = DrawEngine.FindPortAtPosition(dragCurrentX, dragCurrentY, hoverComponentName);
+    if(hoverPort && hoverPort->IsInput)
+    {
+        // Подсвечиваем целевой порт
+        int hoverX, hoverY;
+        RDK::UGEDescription& hoverDesc = DrawEngine.GetDescription(hoverComponentName);
+        DrawEngine.GetPortCenter(hoverDesc, *hoverPort, hoverX, hoverY);
+
+        painter.setBrush(style->getPortHighlightColor());
+        painter.setPen(QPen(style->getPortInputHoverColor(), 2));
+        painter.drawEllipse(QPoint(hoverX, hoverY), hoverDesc.PortRadius + 2, hoverDesc.PortRadius + 2);
+    }
+
+    painter.end();
+    setPixmap(currentPixmap);
 }

@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "id": "graph_list_classes_filter",
+  "tier": "deterministic",
+  "suite": "graph",
+  "registry_profile": "full",
+  "user_text": "классы из PulseLib",
+  "session": {
+    "project_loaded": false,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "list_registered_classes",
+          "arguments": {
+            "library_filter": "PulseLib"
+          }
+        }
+      ]
+    },
+    {
+      "text": "Краткий ответ по результатам tool."
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": [
+      "list_registered_classes"
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "id": "ui_logger",
+  "tier": "deterministic",
+  "suite": "channels",
+  "registry_profile": "core",
+  "user_text": "покажи окно лога",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "show_ui_panel",
+          "arguments": {
+            "panel": "logger"
+          }
+        }
+      ]
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": [
+      "show_ui_panel"
+    ]
+  }
+}

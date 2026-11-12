@@ -1,0 +1,7 @@
+{
+  "from_long_name": "Model.Source1",
+  "from_property": "Output",
+  "to_long_name": "Model.Sink1",
+  "to_property": "Input",
+  "channel_index": 0
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Agent scenario fixture v1",
+  "type": "object",
+  "required": ["schema_version", "id", "tier", "user_text", "expect"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+    "tier": { "enum": ["deterministic", "e2e"] },
+    "user_text": { "type": "string", "minLength": 1 },
+    "suite": { "type": "string" },
+    "registry_profile": { "enum": ["core", "full"] },
+    "mock_script": { "type": "array" },
+    "expect": { "type": "object" },
+    "gui": {
+      "type": "object",
+      "properties": {
+        "focused_component_long_name": { "type": "string" },
+        "focused_class_name": { "type": "string" },
+        "project_xml_path": { "type": "string" },
+        "channel_index": { "type": "integer" }
+      }
+    },
+    "turns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "user_text": { "type": "string" },
+          "mock_script": { "type": "array" },
+          "confirm_pending": { "type": "boolean" },
+          "reload_persisted_session": { "type": "boolean" },
+          "expect": { "type": "object" }
+        }
+      }
+    },
+    "pre_resolved_entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "kind": { "type": "string" },
+          "query_key": { "type": "string" },
+          "canonical_value": { "type": "string" },
+          "channel_index": { "type": "integer" }
+        }
+      }
+    },
+    "e2e": { "type": "object" }
+  },
+  "additionalProperties": true
+}

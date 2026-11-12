@@ -82,7 +82,7 @@
     <bool>false</bool>
    </property>
    <property name="nativeMenuBar">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
@@ -96,9 +96,15 @@
      <addaction name="actionBuildMode2"/>
      <addaction name="actionBuildMode3"/>
     </widget>
+    <widget class="QMenu" name="menuRecentConfigs">
+     <property name="title">
+      <string>Recent Configs</string>
+     </property>
+    </widget>
     <addaction name="actionCreateSimple"/>
     <addaction name="actionCreateConfig"/>
     <addaction name="actionLoadConfig"/>
+    <addaction name="menuRecentConfigs"/>
     <addaction name="actionSaveConfig"/>
     <addaction name="actionAutocopyConfig"/>
     <addaction name="actionCopyConfig"/>
@@ -107,24 +113,6 @@
     <addaction name="separator"/>
     <addaction name="actionConfigOptions"/>
     <addaction name="actionApplicationOptions"/>
-    <addaction name="actionClassesDescriptio"/>
-    <addaction name="separator"/>
-    <addaction name="menuChooseBuildStorageMode"/>
-    <addaction name="separator"/>
-    <addaction name="actionCreateModel"/>
-    <addaction name="actionLoadModel"/>
-    <addaction name="actionSaveModel"/>
-    <addaction name="separator"/>
-    <addaction name="actionReloadParameters"/>
-    <addaction name="separator"/>
-    <addaction name="actionCaptureVideo"/>
-    <addaction name="actionOpenVideoFile"/>
-    <addaction name="actionOpenImage"/>
-    <addaction name="separator"/>
-    <addaction name="actionSaveCommonDescriptions"/>
-    <addaction name="actionSaveClassesDescriptions"/>
-    <addaction name="separator"/>
-    <addaction name="actionCreateSaveMockLibs"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -160,6 +148,9 @@
      <property name="enabled">
       <bool>false</bool>
      </property>
+     <property name="visible">
+      <bool>false</bool>
+     </property>
      <property name="title">
       <string>Broadcasters</string>
      </property>
@@ -178,6 +169,8 @@
     <addaction name="actionImagesFromWindow"/>
     <addaction name="menuNew_Tab"/>
     <addaction name="separator"/>
+    <addaction name="actionProjectDescription"/>
+    <addaction name="separator"/>
     <addaction name="actionEngineMonitor"/>
     <addaction name="actionVideoSources"/>
     <addaction name="actionVideoRegistration"/>
@@ -188,7 +181,6 @@
     <addaction name="actionPerformance"/>
     <addaction name="actionTestCreator"/>
     <addaction name="actionFavoriteInformation"/>
-    <addaction name="actionDrawEngine"/>
     <addaction name="actionProfiling"/>
     <addaction name="actionVASimpleSettings"/>
     <addaction name="separator"/>
@@ -201,6 +193,7 @@
     <property name="title">
      <string>Help</string>
     </property>
+    <addaction name="actionUserGuide"/>
     <addaction name="actionAbout"/>
    </widget>
    <addaction name="menuFile"/>
@@ -266,13 +259,13 @@
    </property>
    <property name="minimumSize">
     <size>
-     <width>50</width>
+     <width>150</width>
      <height>30</height>
     </size>
    </property>
    <property name="maximumSize">
     <size>
-     <width>50</width>
+     <width>200</width>
      <height>524287</height>
     </size>
    </property>
@@ -528,6 +521,14 @@
     <string>Watches</string>
    </property>
   </action>
+  <action name="actionProjectDescription">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Project Description</string>
+   </property>
+  </action>
   <action name="actionEngineMonitor">
    <property name="enabled">
     <bool>false</bool>
@@ -597,20 +598,6 @@
    </property>
    <property name="text">
     <string>Favorite Information</string>
-   </property>
-   <property name="visible">
-    <bool>false</bool>
-   </property>
-  </action>
-  <action name="actionDrawEngine">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>Draw Engine</string>
    </property>
    <property name="visible">
     <bool>false</bool>
@@ -841,6 +828,14 @@
    </property>
    <property name="visible">
     <bool>false</bool>
+   </property>
+  </action>
+  <action name="actionUserGuide">
+   <property name="text">
+    <string>User Guide</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
    </property>
   </action>
   <action name="actionAbout">

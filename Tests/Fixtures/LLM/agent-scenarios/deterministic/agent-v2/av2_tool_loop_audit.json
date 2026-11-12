@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "id": "av2_tool_loop_audit",
+  "tier": "deterministic",
+  "suite": "agent-v2",
+  "registry_profile": "core",
+  "user_text": "what components are on the diagram",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": "",
+    "NMSDK_LLM_INPUT_ENSEMBLE": "0",
+    "NMSDK_LLM_INPUT_ENSEMBLE_LLM": "0"
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "id": "c1",
+          "name": "get_net_snapshot",
+          "arguments": {
+            "channel_index": 0,
+            "max_components": 50
+          }
+        }
+      ]
+    }
+  ],
+  "expect": {
+    "orchestrator_ok": true,
+    "tools_invoked_any": ["get_net_snapshot"],
+    "tool_loop_entered": true,
+    "audit_events_any": ["tool_loop_entered", "unified_turn_started"],
+    "phase_entered": "Idle",
+    "turn_terminal": "Completed"
+  }
+}

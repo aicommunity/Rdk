@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "obs_disabled",
+  "tier": "deterministic",
+  "suite": "observability",
+  "registry_profile": "core",
+  "user_text": "привет",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": "",
+    "NMSDK_LLM_DISABLE_SYSTEM_LOG": "1"
+  },
+  "mock_script": [
+    {
+      "tool_calls": []
+    }
+  ],
+  "expect": {
+    "tools_forbidden": [
+      "read_system_log",
+      "get_system_log_policy"
+    ],
+    "provider_rounds_max": 2
+  }
+}

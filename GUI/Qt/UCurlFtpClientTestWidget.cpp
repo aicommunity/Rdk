@@ -6,6 +6,10 @@
 #include <QFileDialog>
 #include <QDir>
 #include <QMessageBox>
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4505 4456)
+#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -23,7 +27,7 @@ static size_t my_fwrite(void *buffer, size_t size, size_t nmemb, void *stream)
     //open file for writing
     out->stream = fopen(out->filename, "wb");
     if(!out->stream)
-      return -1; // failure, can't open file to write
+      return static_cast<size_t>(-1); // failure, can't open file to write
   }
   return fwrite(buffer, size, nmemb, out->stream);
 }
@@ -47,7 +51,7 @@ UCurlFtpClientTestWidget::UCurlFtpClientTestWidget(QWidget *parent, RDK::UApplic
   UpdateInterval = 0;
   setAccessibleName("UCurlFtpClientTestWidget");
 
-  //Инициализация curl, которую надо выполнить только один раз
+  //РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ curl, РєРѕС‚РѕСЂСѓСЋ РЅР°РґРѕ РІС‹РїРѕР»РЅРёС‚СЊ С‚РѕР»СЊРєРѕ РѕРґРёРЅ СЂР°Р·
   curl_global_init(CURL_GLOBAL_DEFAULT);
 
   connect(ui->pushButtonBrowse, SIGNAL(clicked()), this, SLOT(onPushButtonBrowseClick()));
@@ -99,7 +103,7 @@ void UCurlFtpClientTestWidget::onPushButtonSendFileClick()
 //    struct stat file_info;
     struct curl_slist *headerlist = NULL;
 
-    //Если понадобится - переименовать на удаленной машине.
+    //Р•СЃР»Рё РїРѕРЅР°РґРѕР±РёС‚СЃСЏ - РїРµСЂРµРёРјРµРЅРѕРІР°С‚СЊ РЅР° СѓРґР°Р»РµРЅРЅРѕР№ РјР°С€РёРЅРµ.
     //static const char* upload_as = ("RNFR "+ui->lineEditRemotePath->text()).toUtf8().constData();
     //static const char* rename_to = ("RNTO "+ui->lineEditRemotePath->text()).toUtf8().constData();
 
@@ -209,10 +213,10 @@ void UCurlFtpClientTestWidget::onPushButtonReceiveFileClick()
  if(rename)
  {
   int id=0;
-  QFileInfo fi(download_filename);
+  QFileInfo fiTemp(download_filename);
   do
   {
-    download_filename = fi.path()+"/"+"temp_"+QString::number(id);
+    download_filename = fiTemp.path()+"/"+"temp_"+QString::number(id);
     id+=1;
   }
   while(QFileInfo(download_filename).exists());
@@ -225,7 +229,7 @@ void UCurlFtpClientTestWidget::onPushButtonReceiveFileClick()
  curl = curl_easy_init();
  if(curl)
  {
-     // Положить ссылку на удаленный объект
+     // РџРѕР»РѕР¶РёС‚СЊ СЃСЃС‹Р»РєСѓ РЅР° СѓРґР°Р»РµРЅРЅС‹Р№ РѕР±СЉРµРєС‚
      curl_easy_setopt(curl, CURLOPT_URL, ui->lineEditRemotePath->text().toUtf8().constData());
      /* Define our callback to get called when there's data to be written */
      curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, my_fwrite);
@@ -249,11 +253,11 @@ void UCurlFtpClientTestWidget::onPushButtonReceiveFileClick()
  {
      fclose(ftp_file.stream);
  }
- //Тут еще переименование, копирование, обработка и тп??
+ //РўСѓС‚ РµС‰Рµ РїРµСЂРµРёРјРµРЅРѕРІР°РЅРёРµ, РєРѕРїРёСЂРѕРІР°РЅРёРµ, РѕР±СЂР°Р±РѕС‚РєР° Рё С‚Рї??
 
 }
 
-/// обновление интерфейса
+/// РѕР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
 void UCurlFtpClientTestWidget::AUpdateInterface()
 {
 
@@ -304,7 +308,7 @@ bool UCurlFtpClientTestWidget::DownloadZip(const QString &remote_url, const QStr
      if(fi.exists())
      {
       std::cout<<"File "<<fi.absoluteFilePath().toUtf8().constData()<< " already exists";
-      //Перекачивать мы не будем, мб потом еще каких-то проверок навертеть
+      //РџРµСЂРµРєР°С‡РёРІР°С‚СЊ РјС‹ РЅРµ Р±СѓРґРµРј, РјР± РїРѕС‚РѕРј РµС‰Рµ РєР°РєРёС…-С‚Рѕ РїСЂРѕРІРµСЂРѕРє РЅР°РІРµСЂС‚РµС‚СЊ
       return true;
      }
      else
@@ -328,8 +332,8 @@ bool UCurlFtpClientTestWidget::DownloadZip(const QString &remote_url, const QStr
      }
 
 
-     //Назвать как папку в папке стремно, требуется проверка в процессе отладки
-     //TODO: возможно, припиливать исходное имя файла?
+     //РќР°Р·РІР°С‚СЊ РєР°Рє РїР°РїРєСѓ РІ РїР°РїРєРµ СЃС‚СЂРµРјРЅРѕ, С‚СЂРµР±СѓРµС‚СЃСЏ РїСЂРѕРІРµСЂРєР° РІ РїСЂРѕС†РµСЃСЃРµ РѕС‚Р»Р°РґРєРё
+     //TODO: РІРѕР·РјРѕР¶РЅРѕ, РїСЂРёРїРёР»РёРІР°С‚СЊ РёСЃС…РѕРґРЅРѕРµ РёРјСЏ С„Р°Р№Р»Р°?
      QString fn = ls[ls.size()-1];
      QString filename = dst_zip_file+"/"+fn;
      QFileInfo fi2(filename);
@@ -345,10 +349,10 @@ bool UCurlFtpClientTestWidget::DownloadZip(const QString &remote_url, const QStr
     if(rename)
     {
      int id=0;
-     QFileInfo fi(download_filename);
+     QFileInfo fiTemp(download_filename);
      do
      {
-       download_filename = fi.path()+"/"+"temp_"+QString::number(id);
+       download_filename = fiTemp.path()+"/"+"temp_"+QString::number(id);
        id+=1;
      }
      while(QFileInfo(download_filename).exists());
@@ -362,10 +366,10 @@ bool UCurlFtpClientTestWidget::DownloadZip(const QString &remote_url, const QStr
 
     if(curl)
     {
-        // Положить ссылку на удаленный объект
+        // РџРѕР»РѕР¶РёС‚СЊ СЃСЃС‹Р»РєСѓ РЅР° СѓРґР°Р»РµРЅРЅС‹Р№ РѕР±СЉРµРєС‚
         curl_easy_setopt(curl, CURLOPT_URL, remote_url.toUtf8().constData());
 
-        // Добавляем функцию для отображения процесса
+        // Р”РѕР±Р°РІР»СЏРµРј С„СѓРЅРєС†РёСЋ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РїСЂРѕС†РµСЃСЃР°
         //curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, write_response);
 
         /* Define our callback to get called when there's data to be written */
@@ -391,7 +395,7 @@ bool UCurlFtpClientTestWidget::DownloadZip(const QString &remote_url, const QStr
         fclose(ftp_file.stream);
     }
 
-    //Тут еще переименование, копирование, обработка и тп??
+    //РўСѓС‚ РµС‰Рµ РїРµСЂРµРёРјРµРЅРѕРІР°РЅРёРµ, РєРѕРїРёСЂРѕРІР°РЅРёРµ, РѕР±СЂР°Р±РѕС‚РєР° Рё С‚Рї??
    return true;
 }
 
@@ -401,9 +405,7 @@ bool UCurlFtpClientTestWidget::UnpackZipFolder(const QString &local_zip_folder, 
     if(!dst_dir.exists())
         dst_dir.mkpath(dst_dir.path());
 
-    QString cmd = "unzip -o "+local_zip_folder+" -d " + local_dst_folder;
-
-    zip_process.start(cmd);
+    zip_process.start("unzip", QStringList() << "-o" << local_zip_folder << "-d" << local_dst_folder);
     while(!zip_process.waitForFinished(2))
     {
         QCoreApplication::processEvents();
@@ -413,10 +415,8 @@ bool UCurlFtpClientTestWidget::UnpackZipFolder(const QString &local_zip_folder, 
 
 bool UCurlFtpClientTestWidget::UnpackZipFile(const QString &local_zip_folder, const QString& local_dst_folder)
 {
-    //TODO: Убедиться, что файл залетает куда надо после распаковки
-    QString cmd = "unzip -o "+local_zip_folder+" -d " + local_dst_folder;
-
-    zip_process.start(cmd);
+    //TODO: РЈР±РµРґРёС‚СЊСЃСЏ, С‡С‚Рѕ С„Р°Р№Р» Р·Р°Р»РµС‚Р°РµС‚ РєСѓРґР° РЅР°РґРѕ РїРѕСЃР»Рµ СЂР°СЃРїР°РєРѕРІРєРё
+    zip_process.start("unzip", QStringList() << "-o" << local_zip_folder << "-d" << local_dst_folder);
     while(!zip_process.waitForFinished(2))
     {
         QCoreApplication::processEvents();
@@ -439,8 +439,8 @@ void UCurlFtpClientTestWidget::pushButtonModelExampleClicked()
     if(!du_d.exists())
         du_d.mkpath(du_d.path());
 
-    //Теперь шаг 1 - загрузить
-    //Предварительно - только если файла еще нет
+    //РўРµРїРµСЂСЊ С€Р°Рі 1 - Р·Р°РіСЂСѓР·РёС‚СЊ
+    //РџСЂРµРґРІР°СЂРёС‚РµР»СЊРЅРѕ - С‚РѕР»СЊРєРѕ РµСЃР»Рё С„Р°Р№Р»Р° РµС‰Рµ РЅРµС‚
     //if(!zd_fi.exists())
     {
         if(!DownloadZip(remote_ftp_zip_path, zip_download_path))
@@ -452,8 +452,8 @@ void UCurlFtpClientTestWidget::pushButtonModelExampleClicked()
     }
 
 
-    //Шаг 2 = распаковать
-    //Поехали распаковывать
+    //РЁР°Рі 2 = СЂР°СЃРїР°РєРѕРІР°С‚СЊ
+    //РџРѕРµС…Р°Р»Рё СЂР°СЃРїР°РєРѕРІС‹РІР°С‚СЊ
     //SetDeploymentState(DeploymentState::DS_UnpackData);
     if(!UnpackZipFolder(zip_download_path, du_d.path()))
     {
@@ -463,5 +463,9 @@ void UCurlFtpClientTestWidget::pushButtonModelExampleClicked()
     }
     qDebug()<<"Unpack SUCCESS";
 }
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #endif //UCurlFtpClientTestWidget_CPP

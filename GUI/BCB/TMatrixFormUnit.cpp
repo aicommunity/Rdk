@@ -19,8 +19,8 @@ __fastcall TMatrixForm::TMatrixForm(TComponent* Owner)
  PropertyType=0;
 }
 
-// Если force_update == true, то интерфейс обновляется
-// вне зависимости от UpdateInterval
+// Р•СЃР»Рё force_update == true, С‚Рѕ РёРЅС‚РµСЂС„РµР№СЃ РѕР±РЅРѕРІР»СЏРµС‚СЃСЏ
+// РІРЅРµ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ UpdateInterval
 void TMatrixForm::AUpdateInterface(void)
 {
  if(ComponentMatrixName.empty())
@@ -124,7 +124,7 @@ void TMatrixForm::AUpdateInterface(void)
  }
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TMatrixForm::AClearInterface(void)
 {
  ComponentMatrixName="";
@@ -133,7 +133,7 @@ void TMatrixForm::AClearInterface(void)
  PropertyType=0;
 }
 
-/// Выбирает матрицу для наблюдения
+/// Р’С‹Р±РёСЂР°РµС‚ РјР°С‚СЂРёС†Сѓ РґР»СЏ РЅР°Р±Р»СЋРґРµРЅРёСЏ
 bool TMatrixForm::SelectMatrix(const std::string &comp_name, const std::string &prop_name)
 {
  RDK::UELockPtr<RDK::UNet> model=RDK::GetModelLock<RDK::UNet>();

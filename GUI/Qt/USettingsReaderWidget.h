@@ -3,12 +3,12 @@
 
 #include "UVisualControllerWidget.h"
 
-/// Предоставляет возможность произволным класссам от QObject получать события load/save Parameters из RDK
+/// РџСЂРµРґРѕСЃС‚Р°РІР»СЏРµС‚ РІРѕР·РјРѕР¶РЅРѕСЃС‚СЊ РїСЂРѕРёР·РІРѕР»РЅС‹Рј РєР»Р°СЃСЃСЃР°Рј РѕС‚ QObject РїРѕР»СѓС‡Р°С‚СЊ СЃРѕР±С‹С‚РёСЏ load/save Parameters РёР· RDK
 ///
-/// Получает на вход объект и две функции, при событиях:
+/// РџРѕР»СѓС‡Р°РµС‚ РЅР° РІС…РѕРґ РѕР±СЉРµРєС‚ Рё РґРІРµ С„СѓРЅРєС†РёРё, РїСЂРё СЃРѕР±С‹С‚РёСЏС…:
 /// RDK::UIVisualControllerStorage::LoadParameters
 /// RDK::UIVisualControllerStorage::SaveParameters
-/// вызывает переданные ему в конструктор функции
+/// РІС‹Р·С‹РІР°РµС‚ РїРµСЂРµРґР°РЅРЅС‹Рµ РµРјСѓ РІ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ С„СѓРЅРєС†РёРё
 
 class USettingsReaderWidget : public UVisualControllerWidget
 {
@@ -21,15 +21,27 @@ public:
 
   }
 
-  /// запись файла настроек
+  /// Р·Р°РїРёСЃСЊ С„Р°Р№Р»Р° РЅР°СЃС‚СЂРѕРµРє (РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· SaveProject С‡РµСЂРµР· ASaveParameters(xml))
   virtual void ASaveParameters()
   {
     emit writeSetting();
   }
 
-  /// считывание файла настроек
+  virtual void ASaveParameters(RDK::USerStorageXML &xml) override
+  {
+    Q_UNUSED(xml);
+    emit writeSetting();
+  }
+
+  /// СЃС‡РёС‚С‹РІР°РЅРёРµ С„Р°Р№Р»Р° РЅР°СЃС‚СЂРѕРµРє (РІС‹Р·С‹РІР°РµС‚СЃСЏ РёР· OpenProject С‡РµСЂРµР· ALoadParameters(xml))
   virtual void ALoadParameters()
   {
+    emit readSetting();
+  }
+
+  virtual void ALoadParameters(RDK::USerStorageXML &xml) override
+  {
+    Q_UNUSED(xml);
     emit readSetting();
   }
 

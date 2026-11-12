@@ -7,9 +7,9 @@
 #include "UStorage.h"
 namespace RDK {
 
-/* Базовый класс описания исключений */
+/* Р‘Р°Р·РѕРІС‹Р№ РєР»Р°СЃСЃ РѕРїРёСЃР°РЅРёСЏ РёСЃРєР»СЋС‡РµРЅРёР№ */
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UComponentDescription::IException::IException(void)
 {
@@ -29,7 +29,7 @@ UComponentDescription::IException::~IException(void)
 /* ******************************** */
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UComponentDescription::UComponentDescription(void)
     : Storage(NULL)
@@ -53,9 +53,9 @@ UComponentDescription::~UComponentDescription(void)
 // --------------------------
 
 // --------------------------
-// Методы управления данными
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РґР°РЅРЅС‹РјРё
 // --------------------------
-// Имя класса
+// РРјСЏ РєР»Р°СЃСЃР°
 const std::string& UComponentDescription::GetClassNameValue(void) const
 {
  return ClassName;
@@ -70,7 +70,7 @@ void UComponentDescription::SetClassNameValue(const std::string& value)
  CreateProperties();
 }
 
-// Заголовок класса
+// Р—Р°РіРѕР»РѕРІРѕРє РєР»Р°СЃСЃР°
 const std::string& UComponentDescription::GetHeader(void) const
 {
  return Header;
@@ -84,7 +84,7 @@ void UComponentDescription::SetHeader(const std::string& value)
  Header=value;
 }
 
-// Описание
+// РћРїРёСЃР°РЅРёРµ
 const std::string& UComponentDescription::GetDescription(void) const
 {
  return Description;
@@ -98,13 +98,13 @@ void UComponentDescription::SetDescription(const std::string& value)
  Description=value;
 }
 
-// Установка указателя на хранилище
+// РЈСЃС‚Р°РЅРѕРІРєР° СѓРєР°Р·Р°С‚РµР»СЏ РЅР° С…СЂР°РЅРёР»РёС‰Рµ
 void UComponentDescription::SetStorage(UEPtr<UStorage> storage)
 {
     Storage = storage;
 }
 
-// Создание описаний свойств единожды (вызов к хранилищу)
+// РЎРѕР·РґР°РЅРёРµ РѕРїРёСЃР°РЅРёР№ СЃРІРѕР№СЃС‚РІ РµРґРёРЅРѕР¶РґС‹ (РІС‹Р·РѕРІ Рє С…СЂР°РЅРёР»РёС‰Сѓ)
 void UComponentDescription::CreateProperties()
 {
 
@@ -112,9 +112,9 @@ void UComponentDescription::CreateProperties()
 // --------------------------
 
 // --------------------------
-// Методы ввода вывода данными
+// РњРµС‚РѕРґС‹ РІРІРѕРґР° РІС‹РІРѕРґР° РґР°РЅРЅС‹РјРё
 // --------------------------
-// Сохраняет данные класса в XML
+// РЎРѕС…СЂР°РЅСЏРµС‚ РґР°РЅРЅС‹Рµ РєР»Р°СЃСЃР° РІ XML
 bool UComponentDescription::Save(USerStorageXML &xml)
 {
  xml.AddNode("ClassName");
@@ -131,7 +131,7 @@ bool UComponentDescription::Save(USerStorageXML &xml)
  return true;
 }
 
-// Загружает данные класса из XML
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РґР°РЅРЅС‹Рµ РєР»Р°СЃСЃР° РёР· XML
 bool UComponentDescription::Load(USerStorageXML &xml)
 {
  if(xml.SelectNode("ClassName"))

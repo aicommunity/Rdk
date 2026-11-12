@@ -68,6 +68,9 @@ bool InitFlag;
 protected:
 UGenericEvent* ThreadCalcCompleteEvent;
 
+/// Время последнего обновления интерфейса (для дебаунсинга)
+unsigned long long LastInterfaceUpdateTime;
+
 public: // Методы
 // --------------------------
 // Конструкторы и деструкторы

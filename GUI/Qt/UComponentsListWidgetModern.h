@@ -1,0 +1,408 @@
+#ifndef UCOMPONENTSLISTWIDGETMODERN_H
+#define UCOMPONENTSLISTWIDGETMODERN_H
+
+#include "UVisualControllerWidget.h"
+#include "UDrawEngineImageWidget.h"
+#include "UGuiModelSnapshot.h"
+#include "UComponentGuiContext.h"
+#include "UPropertyListOptions.h"
+#include "../../Core/Engine/UComponent.h"
+
+namespace RDK {
+class UContainerDescription;
+}
+
+#include <QLineEdit>
+#include <QTreeWidgetItem>
+#include <QMouseEvent>
+#include <QModelIndex>
+#include <QApplication>
+#include <QHeaderView>
+#include <QWidget>
+#include <QHBoxLayout>
+#include <QPushButton>
+#include <QLabel>
+#include <QToolButton>
+#include <QDialog>
+#include <QVBoxLayout>
+#include <QKeyEvent>
+#include <QSet>
+#include <QVector>
+#include <QStringList>
+#include <QPointer>
+
+class UPropertyXMLWidget;
+
+namespace Ui {
+class UComponentsListWidgetModern;
+}
+
+/// Виджет двигающий компоненты в QTreeWidget по шифту
+class UComponentListTreeWidgetModern :public QTreeWidget
+{
+    Q_OBJECT
+
+public:
+    explicit UComponentListTreeWidgetModern(QWidget *parent = 0):QTreeWidget(parent)
+    {
+        setContextMenuPolicy(Qt::ActionsContextMenu);
+        header()->setVisible(false);
+    }
+    virtual ~UComponentListTreeWidgetModern(){}
+
+signals:
+    void moveComponentUp();
+    void moveComponentDown();
+
+protected:
+    void keyPressEvent(QKeyEvent * event)
+    {
+        if(QApplication::keyboardModifiers() == Qt::ShiftModifier)
+        {
+            QTreeWidgetItem *item = currentItem();
+            if(!item) return;
+
+            if(event->key() == Qt::Key_Up)
+            {
+                emit moveComponentUp();
+                return;
+            }
+            if(event->key() == Qt::Key_Down)
+            {
+                emit moveComponentDown();
+                return;
+            }
+        }
+        QTreeWidget::keyPressEvent(event);
+    }
+};
+
+/// UComponentsListWidgetModern class - виджет отображения списка компонентов модели (UModel)
+///
+/// Древовидный список компонентов с учетом вложенности, в порядке расчета
+/// Содержит сигналы адресованные к схеме сети, но не содержит указателя на схему, сигналы связываются в UGEngineControllWidget.
+/// Modern версия с popup окном для дерева компонентов
+class UComponentsListWidgetModern : public UVisualControllerWidget
+{
+    Q_OBJECT
+
+public:
+    explicit UComponentsListWidgetModern(QWidget *parent = 0, RDK::UApplication* app = NULL, int channel_mode=0);
+    virtual ~UComponentsListWidgetModern();
+
+    /// Перерисовывает дерево текущего канала (С интерфейс с RDK)
+    void AUpdateInterface();
+
+    void AClearInterface();
+
+    /// запись файла настроек
+    virtual void ASaveParameters();
+    /// считывание файла настроек
+    virtual void ALoadParameters();
+
+    // Доступ к данным для других виджетов:
+
+    /// Устанавливает виджет в вертикальное положение
+    void setVerticalOrientation(bool vertical);
+
+    /// Возвращает полное имя выбранного компонента
+    QString getSelectedComponentLongName();
+
+    /// открывает определенную вкладку tabWidgetComponentInfo
+    ///
+    /// 0 - parameters
+    /// 1 - state
+    /// 2 - inputs
+    /// 3 - outputs
+    void openTabN(int n);
+
+    /// Возвращает индекс текущего окна
+    int currentTabIndex();
+
+    /// Mask for UPropertyXMLWidget (ptPubParameter / State / Input / Output).
+    int currentPropertyXmlMask() const;
+
+    /// Возвращает имя выбранного Property
+    QString getSelectedPropertyName();
+
+    /// Возвращает номер выбранного канала
+    int getSelectedChannelIndex();
+
+    /// Режим выбора канала
+    /// 0 - всегда работа с текущим каналом
+    /// 1 - работа с изначально заданным каналом
+    void setChannelMode(int mode);
+
+    /// Возвращает номер рабочего канала
+    /// используемый при отображении информации
+    int getWorkChannelIndex();
+
+    /// устанавливает доступность вкладок
+    void setEnableTabN(int n, bool enable);
+
+    /// Устанавливает режим видимости для виджета выбора канала расчёта
+    void setChannelsListVisible(bool value);
+
+    /// Дерево компонентов: false = компактный popup (☰), true = встроенное как в legacy picker
+    void setComponentTreeEmbedded(bool embedded);
+    bool isComponentTreeEmbedded() const { return m_componentTreeEmbedded; }
+
+    /// Пресет компоновки (Inspector — главная форма; PropertyPicker — мастер выбора свойства)
+    void setLayoutPreset(ComponentsListLayoutPreset preset);
+    ComponentsListLayoutPreset layoutPreset() const { return m_layoutPreset; }
+
+    /// Опции списка свойств (Tabbed / UnifiedGrouped + фильтры)
+    void setPropertyListOptions(const PropertyListOptions& opt);
+    PropertyListOptions propertyListOptions() const { return m_propertyListOptions; }
+
+    void setPropertyListPresentation(PropertyListPresentation mode);
+    void setVisiblePropertyGroups(PropertyGroupFlags flags);
+    void setWatchablePropertiesOnly(bool on);
+    void setPropertySubtitleMode(PropertySubtitleMode mode);
+    void setPropertyInlineEditEnabled(bool on);
+    void setPropertyValueColumnVisible(bool on);
+    void setExpandPropertyGroups(bool on);
+
+    /// Применить значение из inline-редактора (вызывается delegate)
+    bool applyPropertyValueFromEditor(QTreeWidgetItem* item, const QString& value);
+
+signals:
+    void componentSelected(QString name); //single click
+    void componentDoubleClick(QString name);
+    void updateScheme(bool forceUpdate);
+    void selectedPropertyValue(QString value);
+    void itemChanged(QTreeWidgetItem *item, int column);
+    void openComponentGuiRequested(const UComponentGuiContext& context);
+
+public slots:
+    void updateComponentsListFromScheme();
+    void componentSelectedFromScheme(QString name); //single click
+    void componentDoubleClickFromScheme(QString name);
+    void componentStapBackFromScheme();
+
+    void channelsListSelectionChanged();
+    void componentListItemSelectionChanged();
+    void onComponentItemClicked(QTreeWidgetItem* item, int column);
+    void reloadPropertys(bool forceReload = true);
+
+    void parametersListSelectionChanged();
+    void stateListSelectionChanged();
+    void inputsListSelectionChanged();
+    void outputsListSelectionChanged();
+    void favoritesListSelectionChanged();
+    void unifiedListSelectionChanged();
+
+    void parametersListItemChanged(QTreeWidgetItem *item, int column);
+    void favoritesListItemChanged(QTreeWidgetItem *item, int column);
+    void unifiedListItemChanged(QTreeWidgetItem *item, int column);
+    void stateListItemChanged(QTreeWidgetItem *item, int column);
+    void inputsListItemChanged(QTreeWidgetItem *item, int column);
+    void outputsListItemChanged(QTreeWidgetItem *item, int column);
+    void handleSnapshotUpdated(NMSDK::UGuiSnapshotPtr snapshot,
+                               const QStringList &added,
+                               const QStringList &removed,
+                               const QStringList &changed);
+    void handleFilterTextChanged(const QString &text);
+
+    /// Переключение между компактным и полным режимом отображения дерева
+    void toggleTreeViewMode();
+
+    /// Отправляет событие отрисовки выбранного компонента
+    void drawSelectedComponent(QModelIndex index);
+
+    //События контекстного меню
+    void componentMoveUp();
+    void componentMoveDown();
+    void componentRename();
+    void componentDelete();
+    void componentCopyNameToClipboard();
+    void componentCopyLongNameToClipboard();
+    void componentCopyClassNameToClipboard();
+    void componentReset();
+    void componentCalculate();
+    void componentInit();
+    void componentUnInit();
+    void componentGUI();
+
+    /// Внешняя установка UpdateInterval, для уменьшения нагрузки на ядро
+    void setUpdateInterval(long value);
+
+    void propertyCopyNameToClipboard();
+    void propertyCopyValueToClipboard();
+    void propertyPasteValueFromClipboard();
+    void propertyEditValue();
+    void propertyShowXml();
+
+private slots:
+    void on_actionReloadTree_triggered();
+
+    void on_tabWidgetComponentInfo_currentChanged(int index);
+
+    void on_actionDefaultAllParameters_triggered();
+
+    void onPropertyItemDoubleClicked(QTreeWidgetItem* item, int column);
+    void onPropertyHeaderSectionResized(int logicalIndex, int oldSize, int newSize);
+    void onFavoritesShowInAllSectionsToggled(bool checked);
+
+private:
+    /// Удаляет из переданных данных лидирующие переводы строк
+    std::string& EraseLeadEndls(std::string &value);
+
+    /// Удаляет из переданных данных лидирующие и завершающие переводы строк
+    std::string& EraseRangeEndls(std::string &value);
+
+    /// Если в переданных данных есть хотя бы один перевод строки, то заменяет текст
+    /// на "[SEE BELOW]"
+    std::string& PreparePropertyValueToListView(std::string &value);
+
+    void setupPropertyEditing();
+    void setupColumnWidthSync();
+    void syncPropertyColumnWidths(QTreeWidget* sourceTree, int logicalIndex, int newSize);
+    void applySharedColumnWidths(int nameWidth, int valueWidth, int typeWidth);
+
+    bool isMultilinePropertyValue(const QString& rawValue, const QString& displayValue) const;
+    bool beginPropertyValueEdit(QTreeWidgetItem* item);
+    bool commitPropertyValue(const QString& componentLongName, const QString& propertyName, const QString& value);
+    QString propertyComponentForItem(QTreeWidgetItem* item) const;
+    QString propertyNameForItem(QTreeWidgetItem* item) const;
+    QTreeWidget* currentPropertyTree() const;
+    QTreeWidgetItem* currentPropertyItem() const;
+
+    void updatePropertyItemDisplay(QTreeWidgetItem* item, const QString& rawValue);
+    void applyBoolCheckFlags(QTreeWidgetItem* item, bool checked);
+    bool parseBoolPropertyValue(const QString& raw) const;
+    bool commitBoolPropertyFromItem(QTreeWidgetItem* item,
+                                    const QString& componentLongName,
+                                    const QString& propertyName);
+    void refreshAfterComponentMutation(const QString& longName);
+    bool toggleBoolPropertyItem(QTreeWidgetItem* item);
+    QTreeWidget* propertyTreeFromFilterObject(QObject* obj) const;
+    bool handleBoolValueMouseEvent(QTreeWidget* tree, QMouseEvent* mouseEvent);
+
+private:
+
+    /// Имя компонента, чьи проперти отображены
+    QString currentDrawPropertyComponentName;
+
+    /// Выделенный компонент. Отличается от currentDrawPropertyComponentName, тем что переписывается
+    /// при componentListItemSelectionChanged, затем сравнивается с currentDrawPropertyComponentName,
+    /// таким образом избегается перерисовка при множественном выделении одного компонента.
+    QString selectedComponentLongName;
+
+    /// Флаг для предотвращения эмиссии componentSelected при программном обновлении выделения из схемы
+    bool m_isUpdatingFromScheme = false;
+
+    // имена выбранных строк Property
+    QString selectedParameterName;
+    QString selectedStateName;
+    QString selectedInputName;
+    QString selectedOutputName;
+    QString selectedFavName;
+    QString selectedUnifiedName;
+
+    /// Показывать favorite сразу в нескольких группах ролей (default true)
+    bool m_favoritesShowInAllSections = true;
+
+    PropertyListOptions m_propertyListOptions;
+    bool m_componentTreeEmbedded = false;
+    ComponentsListLayoutPreset m_layoutPreset = ComponentsListLayoutPreset::Inspector;
+    bool m_pickerLayoutApplied = false;
+    QWidget* m_unifiedPage = nullptr;
+    QTreeWidget* m_unifiedTree = nullptr;
+    int m_unifiedTabIndex = -1;
+    QVector<QWidget*> m_savedPropertyTabs;
+    QStringList m_savedPropertyTabLabels;
+
+    void applyPropertyListPresentationUi();
+    void ensureUnifiedPropertyPage();
+    void applyLayoutPresetUi();
+    void applyPropertyColumnLayout();
+    QString buildPropertySubtitle(const QString& propName,
+                                  const QString& typeName,
+                                  const QString& componentLongName) const;
+    void fillUnifiedPropertyTree(RDK::UContainer* cont,
+                                 const RDK::UComponent::VariableMapT& varMap,
+                                 const std::vector<RDK::NameT>& propOrder,
+                                 bool is_new_inputs,
+                                 bool is_new_outputs,
+                                 const std::map<std::string, std::string>& favorites,
+                                 RDK::UContainerDescription* class_desc);
+
+    bool m_syncingColumnWidths = false;
+
+    QAction* m_actionEditProperty = nullptr;
+    QAction* m_actionShowPropertyXml = nullptr;
+    QAction* m_actionFavoritesShowInAllSections = nullptr;
+    QPointer<UPropertyXMLWidget> m_propertyXmlDialog;
+
+    /// Текущий канал для виджета
+    int currentChannel;
+
+    /// Режим выбора канала
+    /// 0 - всегда работа с текущим каналом
+    /// 1 - работа с изначально заданным каналом
+    int channelMode;
+
+    /// Флаг видимости компонента выбора канала
+    bool channelsSelectionVisible;
+
+    /// Указатель на кастомный класс TreeWidget с перемещением компонентов при нажатом shift
+    UComponentListTreeWidgetModern *componentsTree;
+
+    /// Компонент владелец отрисованной схемы
+    QString currentDrawComponentName;
+
+    /// Скрытый рекурсивный метод заполнения списка компонентов
+    void addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem, const QSet<QString> &expandedItems);
+
+    /// Перерисовка виджета со списком каналов
+    void redrawChannelsList();
+
+    void rebuildTreeFromSnapshot(const NMSDK::UGuiSnapshotPtr &snapshot);
+    bool applyFilter(QTreeWidgetItem *item);
+    void restoreTreeSelection(const QString& oldRootItem, const QString& oldSelectedItem);
+    void schedulePropertyReloadRetry();
+    void scheduleTreeRebuildRetry();
+
+    static constexpr unsigned kModelLockTimeoutMs = 250;
+    static constexpr int kMaxPropertyReloadRetries = 5;
+    static constexpr int kMaxTreeRebuildRetries = 5;
+
+    int m_propertyReloadRetryCount = 0;
+    QString m_propertyReloadRetryTarget;
+    int m_treeRebuildRetryCount = 0;
+
+    Ui::UComponentsListWidgetModern *ui;
+    QLineEdit *filterLineEdit;
+    quint64 renderedSnapshotVersion;
+    NMSDK::UGuiSnapshotPtr lastSnapshot;
+    QString componentFilterText;
+
+    /// Кнопка переключения режимов
+    QToolButton *toggleModeButton;
+
+    /// Выпадающее окно для дерева компонентов
+    QDialog *treePopupDialog;
+    QWidget *treePopupContainer;
+    QVBoxLayout *treePopupLayout;
+
+    /// Показывает/скрывает popup окно с деревом
+    void showTreePopup();
+    void hideTreePopup();
+
+    /// Показать/скрыть вкладку Favorites и при необходимости сделать её первой и активной
+    void updateFavoritesTabVisibility(bool hasFavorites, bool selectFavorites);
+
+    /// Логический индекс вкладки свойств (0 Parameters .. 3 Outputs, 4 Favorites), независимо от порядка вкладок
+    int logicalTabIndexFromWidget(QWidget* tab) const;
+    QWidget* widgetFromLogicalTabIndex(int logicalIndex) const;
+
+protected:
+    /// Обработка клавиши Esc для закрытия popup
+    bool eventFilter(QObject *obj, QEvent *event) override;
+};
+
+
+
+#endif // UCOMPONENTSLISTWIDGETMODERN_H
+

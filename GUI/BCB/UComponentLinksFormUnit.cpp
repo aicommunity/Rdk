@@ -22,7 +22,7 @@ void TUComponentLinksForm::AUpdateInterface(void)
 
 }
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 TUComponentLinksForm* TUComponentLinksForm::New(TComponent *owner)
 {
  return new TUComponentLinksForm(owner);

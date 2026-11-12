@@ -12,45 +12,45 @@ namespace RDK {
 template<class T>
 class MDKalmanFilter
 {
-protected: // Параметры
-// Число состояний системы
+protected: // РџР°СЂР°РјРµС‚СЂС‹
+// Р§РёСЃР»Рѕ СЃРѕСЃС‚РѕСЏРЅРёР№ СЃРёСЃС‚РµРјС‹
 int NumStates;
 
-/// Число измеряемых величин
+/// Р§РёСЃР»Рѕ РёР·РјРµСЂСЏРµРјС‹С… РІРµР»РёС‡РёРЅ
 int NumMeasurements;
 
-// Счетчик итераций
+// РЎС‡РµС‚С‡РёРє РёС‚РµСЂР°С†РёР№
 int CalcCount;
 
-public: // Данные
+public: // Р”Р°РЅРЅС‹Рµ
 
-MDMatrix<T> FM;  // Матрица динамической модели системы
-MDMatrix<T> BM;  // Матрица применения управляющего воздействия
-MDMatrix<T> QM;  // Матрица ковариации шума процесса
-MDMatrix<T> HM;  // Матрица отношения измерений и состояний ?
-MDMatrix<T> RM;  // Матрица ковариации шума измерений
+MDMatrix<T> FM;  // РњР°С‚СЂРёС†Р° РґРёРЅР°РјРёС‡РµСЃРєРѕР№ РјРѕРґРµР»Рё СЃРёСЃС‚РµРјС‹
+MDMatrix<T> BM;  // РњР°С‚СЂРёС†Р° РїСЂРёРјРµРЅРµРЅРёСЏ СѓРїСЂР°РІР»СЏСЋС‰РµРіРѕ РІРѕР·РґРµР№СЃС‚РІРёСЏ
+MDMatrix<T> QM;  // РњР°С‚СЂРёС†Р° РєРѕРІР°СЂРёР°С†РёРё С€СѓРјР° РїСЂРѕС†РµСЃСЃР°
+MDMatrix<T> HM;  // РњР°С‚СЂРёС†Р° РѕС‚РЅРѕС€РµРЅРёСЏ РёР·РјРµСЂРµРЅРёР№ Рё СЃРѕСЃС‚РѕСЏРЅРёР№ ?
+MDMatrix<T> RM;  // РњР°С‚СЂРёС†Р° РєРѕРІР°СЂРёР°С†РёРё С€СѓРјР° РёР·РјРµСЂРµРЅРёР№
 
 protected:
-MDMatrix<T> Pk1; // Матрица ошибки в прошлый момент времени
-MDMatrix<T> Xk1; // Вектор состояния системы в прошлый момент времени
-MDMatrix<T> Uk1; // Вектор управляющего воздействия в прошлый момент времени
-MDMatrix<T> Z;   // Вектор состояния системы в текущий момент времени
+MDMatrix<T> Pk1; // РњР°С‚СЂРёС†Р° РѕС€РёР±РєРё РІ РїСЂРѕС€Р»С‹Р№ РјРѕРјРµРЅС‚ РІСЂРµРјРµРЅРё
+MDMatrix<T> Xk1; // Р’РµРєС‚РѕСЂ СЃРѕСЃС‚РѕСЏРЅРёСЏ СЃРёСЃС‚РµРјС‹ РІ РїСЂРѕС€Р»С‹Р№ РјРѕРјРµРЅС‚ РІСЂРµРјРµРЅРё
+MDMatrix<T> Uk1; // Р’РµРєС‚РѕСЂ СѓРїСЂР°РІР»СЏСЋС‰РµРіРѕ РІРѕР·РґРµР№СЃС‚РІРёСЏ РІ РїСЂРѕС€Р»С‹Р№ РјРѕРјРµРЅС‚ РІСЂРµРјРµРЅРё
+MDMatrix<T> Z;   // Р’РµРєС‚РѕСЂ СЃРѕСЃС‚РѕСЏРЅРёСЏ СЃРёСЃС‚РµРјС‹ РІ С‚РµРєСѓС‰РёР№ РјРѕРјРµРЅС‚ РІСЂРµРјРµРЅРё
 
-public: // Исключения
+public: // РСЃРєР»СЋС‡РµРЅРёСЏ
 class EKalmanGainOverflow: public EError {};
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 MDKalmanFilter(void) : NumStates(1), NumMeasurements(1), CalcCount(0), FM(NumStates, NumStates, 0.0),BM(NumStates, NumMeasurements, 0.0),QM(NumStates, NumStates, 0.0),HM(NumMeasurements, NumStates, 0.0),RM(NumMeasurements, NumMeasurements, 0.0),Pk1(NumStates, NumStates, 0.0),Xk1(NumStates, 1, 0.0),Uk1(NumStates, 1, 0.0),Z(NumMeasurements, 1, 0.0) {};
 virtual ~MDKalmanFilter(void) {};
 // --------------------------
 
 // --------------------------
-// Методы управления параметрами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
-// Задаем размерность матриц Калмана(кол-во прогнозируемых параметров)
+// Р—Р°РґР°РµРј СЂР°Р·РјРµСЂРЅРѕСЃС‚СЊ РјР°С‚СЂРёС† РљР°Р»РјР°РЅР°(РєРѕР»-РІРѕ РїСЂРѕРіРЅРѕР·РёСЂСѓРµРјС‹С… РїР°СЂР°РјРµС‚СЂРѕРІ)
 bool SetKalmanSize(int num_states, int num_measurements)
 {
  if(NumStates == num_states && NumMeasurements == num_measurements)
@@ -73,7 +73,7 @@ int GetNumMeasurements(void) const
  return NumMeasurements;
 }
 
-// Методы доступа к счетчику итераций
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє СЃС‡РµС‚С‡РёРєСѓ РёС‚РµСЂР°С†РёР№
 bool SetCalcCount(int value)
 {
  if(CalcCount==value)
@@ -88,7 +88,7 @@ int GetCalcCount(void) const
  return CalcCount;
 }
 
-// Задаем начальные параметры Фильтра Калмана
+// Р—Р°РґР°РµРј РЅР°С‡Р°Р»СЊРЅС‹Рµ РїР°СЂР°РјРµС‚СЂС‹ Р¤РёР»СЊС‚СЂР° РљР°Р»РјР°РЅР°
 const MDMatrix<double>& GetFM(void) const
 {
  return FM;
@@ -215,9 +215,9 @@ bool SetZ(const MDMatrix<double> &matrix)
  return true;
 }
 // --------------------------
-// Методы счета
+// РњРµС‚РѕРґС‹ СЃС‡РµС‚Р°
 // --------------------------
-// Изменение размера матриц
+// РР·РјРµРЅРµРЅРёРµ СЂР°Р·РјРµСЂР° РјР°С‚СЂРёС†
 bool KalmanResize(int num_states, int num_measurements)
 {
  if(NumStates == num_states && NumMeasurements == num_measurements)
@@ -240,7 +240,7 @@ bool KalmanResize(int num_states, int num_measurements)
  return true;
 }
 
-// Сброс всех матриц в нулевые значения
+// РЎР±СЂРѕСЃ РІСЃРµС… РјР°С‚СЂРёС† РІ РЅСѓР»РµРІС‹Рµ Р·РЅР°С‡РµРЅРёСЏ
 bool KalmanReset(const MDMatrix<T> &xk1, const MDMatrix<T> &pk1)
 {
  CalcCount=0;
@@ -253,7 +253,7 @@ bool KalmanReset(const MDMatrix<T> &xk1, const MDMatrix<T> &pk1)
  return true;
 }
 
-// Предсказание
+// РџСЂРµРґСЃРєР°Р·Р°РЅРёРµ
 MDMatrix<T> StatePrediction(const MDMatrix<T> &F, const MDMatrix<T> &B,
 					 const MDMatrix<T> &xk1, const MDMatrix<T> &uk1)
 {
@@ -271,7 +271,7 @@ MDMatrix<T> CovariationError(const MDMatrix<T> &F, const MDMatrix<T> &Pk1,
  return M2+Q; // PkL
 }
 
-// Корректировка
+// РљРѕСЂСЂРµРєС‚РёСЂРѕРІРєР°
 MDMatrix<T> KalmanGain(const MDMatrix<T> &PkL, const MDMatrix<T> &H,
 					 const MDMatrix<T> &R)
 {
@@ -317,7 +317,7 @@ MDMatrix<T> CovariationErrorUpdate(const MDMatrix<T> &Kk, const MDMatrix<T> &H,
  return (eye_matrix-Kk*H)*PkL; // Pk
 }
 
-//Калман предсказание без корректировки
+//РљР°Р»РјР°РЅ РїСЂРµРґСЃРєР°Р·Р°РЅРёРµ Р±РµР· РєРѕСЂСЂРµРєС‚РёСЂРѕРІРєРё
 void KalmanPredict(int i)
 {
  // prediction
@@ -338,7 +338,7 @@ void KalmanPredict(int i)
    */
  CalcCount++;
 }
-// Калман
+// РљР°Р»РјР°РЅ
 void KalmanCalculate(int i)
 {
  try

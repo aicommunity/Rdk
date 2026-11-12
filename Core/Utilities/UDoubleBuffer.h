@@ -56,11 +56,11 @@ UDoubleBuffer()
 ///----------------------------------------------------------------------
 bool Write(const T& src )
 {
-	TimedBuffer<T>* buff = GetPtrForWrite();
+	boost::lock_guard<boost::mutex> guard(mtx);
+	TimedBuffer<T>* buff = GetPtrForWriteUnsafe();
 	if(!buff)
 		return false;
 	buff->Data = src;
-	boost::lock_guard<boost::mutex> guard(mtx);
 	buff->Empty = false;
 	buff->Busy = false;
 	return true;
@@ -68,11 +68,11 @@ bool Write(const T& src )
 ///----------------------------------------------------------------------
 bool Read(T& dst)
 {
-	TimedBuffer<T>* buff = GetPtrForRead();
+	boost::lock_guard<boost::mutex> guard(mtx);
+	TimedBuffer<T>* buff = GetPtrForReadUnsafe();
 	if(!buff)
 		return false;
 	dst = buff->Data;
-	boost::lock_guard<boost::mutex> guard(mtx);
 	buff->Empty = true;
 	buff->Busy = false;
 	return true;
@@ -87,9 +87,9 @@ void Clear()
 ///----------------------------------------------------------------------
 /// Not memory safe methods
 ///----------------------------------------------------------------------
-TimedBuffer<T>* GetPtrForWrite()
+// Unsafe версии - требуют внешней блокировки мьютекса
+TimedBuffer<T>* GetPtrForWriteUnsafe()
 {
-	boost::lock_guard<boost::mutex> guard(mtx);
 	if(!A.Busy)
 	{
 		if(A.Empty)
@@ -143,10 +143,15 @@ TimedBuffer<T>* GetPtrForWrite()
 	}
     return 0;
 }
-///----------------------------------------------------------------------
-TimedBuffer<T>* GetPtrForRead()
+// Thread-safe версия для внешнего использования
+TimedBuffer<T>* GetPtrForWrite()
 {
 	boost::lock_guard<boost::mutex> guard(mtx);
+	return GetPtrForWriteUnsafe();
+}
+///----------------------------------------------------------------------
+TimedBuffer<T>* GetPtrForReadUnsafe()
+{
     if(A.TimeStamp>B.TimeStamp)
 	{
 		if(!A.Busy)
@@ -187,6 +192,12 @@ TimedBuffer<T>* GetPtrForRead()
 		}
 		return 0;
 	}
+}
+// Thread-safe версия для внешнего использования
+TimedBuffer<T>* GetPtrForRead()
+{
+	boost::lock_guard<boost::mutex> guard(mtx);
+	return GetPtrForReadUnsafe();
 }
 ///----------------------------------------------------------------------
 void MakeWrited(TimedBuffer<T>* buff)

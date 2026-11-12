@@ -31,14 +31,14 @@ See file license.txt for more information
 
 namespace RDK {
 
-// Системный буфер
+// РЎРёСЃС‚РµРјРЅС‹Р№ Р±СѓС„РµСЂ
 //string ustrbuf;
 //wstring uwstrbuf;
 // --------------------------------------------------
 
 
 
-// Выделяет дробную часть числа с точностью digs знаков после запятой
+// Р’С‹РґРµР»СЏРµС‚ РґСЂРѕР±РЅСѓСЋ С‡Р°СЃС‚СЊ С‡РёСЃР»Р° СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ digs Р·РЅР°РєРѕРІ РїРѕСЃР»Рµ Р·Р°РїСЏС‚РѕР№
 int fraction(double d, int digs)
 {
  d-=(int)d;
@@ -47,7 +47,7 @@ int fraction(double d, int digs)
  return int(d);
 }
 
-// Возвращает время в виде понятной строки вида YYYY.MM.DD HH:MM:SS
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РІ РІРёРґРµ РїРѕРЅСЏС‚РЅРѕР№ СЃС‚СЂРѕРєРё РІРёРґР° YYYY.MM.DD HH:MM:SS
 std::string get_text_time(time_t time_data, char date_sep, char time_sep)
 {
  std::string result;
@@ -79,8 +79,8 @@ std::string get_text_time(time_t time_data, char date_sep, char time_sep)
  return result;
 }
 
-/// Возвращает время в виде понятной строки вида YYYYy MMm DDd HHh MMm SS:MSMSs из времени в секундах
-/// отображает только те элементы времени, которые необходимы
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РІ РІРёРґРµ РїРѕРЅСЏС‚РЅРѕР№ СЃС‚СЂРѕРєРё РІРёРґР° YYYYy MMm DDd HHh MMm SS:MSMSs РёР· РІСЂРµРјРµРЅРё РІ СЃРµРєСѓРЅРґР°С…
+/// РѕС‚РѕР±СЂР°Р¶Р°РµС‚ С‚РѕР»СЊРєРѕ С‚Рµ СЌР»РµРјРµРЅС‚С‹ РІСЂРµРјРµРЅРё, РєРѕС‚РѕСЂС‹Рµ РЅРµРѕР±С…РѕРґРёРјС‹
 std::string get_text_time_from_seconds(double time_data, char date_sep, char time_sep, bool is_full_time)
 {
  std::string result;
@@ -131,7 +131,7 @@ std::string get_text_time_from_seconds(double time_data, char date_sep, char tim
 
 
 /*
-// Возвращает время в виде понятной строки вида YYYY/MM/DD HH:MM:SS,MS
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІСЂРµРјСЏ РІ РІРёРґРµ РїРѕРЅСЏС‚РЅРѕР№ СЃС‚СЂРѕРєРё РІРёРґР° YYYY/MM/DD HH:MM:SS,MS
 std::string get_text_current_time(char date_sep, char time_sep, char m_sec_sep, std::string additional_line)
 {
  std::string result;
@@ -163,11 +163,11 @@ std::string get_text_current_time(char date_sep, char time_sep, char m_sec_sep, 
 }*/
 	  /*
 #ifndef __BORLANDC__
-// Конвертация string<->wstring
-// Копипаста с http://habrahabr.ru/blogs/cpp/112997/
-//@brief Сужает широкую строку, используя локализацию loc
-//   @return Возвращает суженную строку или пустую суженную строку, в
-//   случае. если возникла ошибка
+// РљРѕРЅРІРµСЂС‚Р°С†РёСЏ string<->wstring
+// РљРѕРїРёРїР°СЃС‚Р° СЃ http://habrahabr.ru/blogs/cpp/112997/
+//@brief РЎСѓР¶Р°РµС‚ С€РёСЂРѕРєСѓСЋ СЃС‚СЂРѕРєСѓ, РёСЃРїРѕР»СЊР·СѓСЏ Р»РѕРєР°Р»РёР·Р°С†РёСЋ loc
+//   @return Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСѓР¶РµРЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ РёР»Рё РїСѓСЃС‚СѓСЋ СЃСѓР¶РµРЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ, РІ
+//   СЃР»СѓС‡Р°Рµ. РµСЃР»Рё РІРѕР·РЅРёРєР»Р° РѕС€РёР±РєР°
 std::string& narrow(const std::wstring& wstr, const std::locale& loc, std::string &result)
 {
   const size_t sz = wstr.length();
@@ -192,9 +192,9 @@ std::string& narrow(const std::wstring& wstr, const std::locale& loc, std::strin
   return result;
 }
 
-//@brief Расширяет строку, используя локализацию loc
-//   @return Возвращает расширенную строку или пустую расширенную строку, в
-//   случае, если возникла ошибка.
+//@brief Р Р°СЃС€РёСЂСЏРµС‚ СЃС‚СЂРѕРєСѓ, РёСЃРїРѕР»СЊР·СѓСЏ Р»РѕРєР°Р»РёР·Р°С†РёСЋ loc
+//   @return Р’РѕР·РІСЂР°С‰Р°РµС‚ СЂР°СЃС€РёСЂРµРЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ РёР»Рё РїСѓСЃС‚СѓСЋ СЂР°СЃС€РёСЂРµРЅРЅСѓСЋ СЃС‚СЂРѕРєСѓ, РІ
+//   СЃР»СѓС‡Р°Рµ, РµСЃР»Рё РІРѕР·РЅРёРєР»Р° РѕС€РёР±РєР°.
 std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring &result)
 {
   const size_t sz = str.length();
@@ -223,16 +223,16 @@ std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring
 
 #else
 
-// Конвертация string<->wstring
-// Игнорирует loc!
+// РљРѕРЅРІРµСЂС‚Р°С†РёСЏ string<->wstring
+// РРіРЅРѕСЂРёСЂСѓРµС‚ loc!
 std::string& narrow(const std::wstring& wstr, const std::locale& loc, std::string &result)
 {
   result=ws2s(wstr);
   return result;
 }
 
-//@brief Расширяет строку
-// Игнорирует loc!
+//@brief Р Р°СЃС€РёСЂСЏРµС‚ СЃС‚СЂРѕРєСѓ
+// РРіРЅРѕСЂРёСЂСѓРµС‚ loc!
 std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring &result)
 {
   result=s2ws(str);
@@ -242,7 +242,7 @@ std::wstring& widen(const std::string& str, const std::locale& loc, std::wstring
 #endif
        */
 
-/// Обрезает лидирующие и завершающие пробелы в строке
+/// РћР±СЂРµР·Р°РµС‚ Р»РёРґРёСЂСѓСЋС‰РёРµ Рё Р·Р°РІРµСЂС€Р°СЋС‰РёРµ РїСЂРѕР±РµР»С‹ РІ СЃС‚СЂРѕРєРµ
 RDK_LIB_TYPE std::string trim_spaces(const std::string &str)
 {
  std::string::size_type first_sym=str.find_first_not_of(" \r\n\t");
@@ -252,7 +252,7 @@ RDK_LIB_TYPE std::string trim_spaces(const std::string &str)
  return str.substr(first_sym,last_sym-first_sym+1);
 }
 
-/// Извлекает путь из полного имени файла
+/// РР·РІР»РµРєР°РµС‚ РїСѓС‚СЊ РёР· РїРѕР»РЅРѕРіРѕ РёРјРµРЅРё С„Р°Р№Р»Р°
 std::string extract_file_path(const std::string& full_name)
 {
 	 size_t pos = full_name.find_last_of("\\/");
@@ -262,7 +262,7 @@ std::string extract_file_path(const std::string& full_name)
 }
 
 
-/// Извлекает имя файла из полного имени файла
+/// РР·РІР»РµРєР°РµС‚ РёРјСЏ С„Р°Р№Р»Р° РёР· РїРѕР»РЅРѕРіРѕ РёРјРµРЅРё С„Р°Р№Р»Р°
 std::string extract_file_name(const std::string& full_name)
 {
 	 size_t pos = full_name.find_last_of("\\/");
@@ -271,7 +271,7 @@ std::string extract_file_name(const std::string& full_name)
 		 : full_name.substr(pos+1);
 }
 
-/// Извлекает имя файла из полного имени файла исключая расширение
+/// РР·РІР»РµРєР°РµС‚ РёРјСЏ С„Р°Р№Р»Р° РёР· РїРѕР»РЅРѕРіРѕ РёРјРµРЅРё С„Р°Р№Р»Р° РёСЃРєР»СЋС‡Р°СЏ СЂР°СЃС€РёСЂРµРЅРёРµ
 std::string extract_file_name_wo_ext(const std::string& full_name)
 {
      std::string file_name=extract_file_name(full_name);
@@ -282,7 +282,7 @@ std::string extract_file_name_wo_ext(const std::string& full_name)
          : file_name.substr(0,pos);
 }
 
-/// Извлекает расширение файла из имени файла
+/// РР·РІР»РµРєР°РµС‚ СЂР°СЃС€РёСЂРµРЅРёРµ С„Р°Р№Р»Р° РёР· РёРјРµРЅРё С„Р°Р№Р»Р°
 RDK_LIB_TYPE std::string extract_file_ext(const std::string& full_name)
 {
 	 size_t pos = full_name.find_last_of(".");
@@ -291,52 +291,87 @@ RDK_LIB_TYPE std::string extract_file_ext(const std::string& full_name)
 		 : full_name.substr(pos+1);
 }
 
-/// Модифицирует имя файла так, чтобы оно стало относительным относительно заданного пути
+/// РњРѕРґРёС„РёС†РёСЂСѓРµС‚ РёРјСЏ С„Р°Р№Р»Р° С‚Р°Рє, С‡С‚РѕР±С‹ РѕРЅРѕ СЃС‚Р°Р»Рѕ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅС‹Рј РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ Р·Р°РґР°РЅРЅРѕРіРѕ РїСѓС‚Рё
 RDK_LIB_TYPE string relative_file_path(const string &path, const string &relative_path_base)
 {
 	return replace_substring(path, relative_path_base, ".\\");
 }
 
 
-/// Заменяет все вхождения подстроки find_str на подстроку replace_str
+/// Р—Р°РјРµРЅСЏРµС‚ РІСЃРµ РІС…РѕР¶РґРµРЅРёСЏ РїРѕРґСЃС‚СЂРѕРєРё find_str РЅР° РїРѕРґСЃС‚СЂРѕРєСѓ replace_str
 RDK_LIB_TYPE string replace_substring(const string &src, const string &find_str, const string &replace_str )
 {
- std::string result(src);
- string::size_type i = 0;
-
- while ( ( i = result.find( find_str, i ) ) != result.npos )
+ // Р•СЃР»Рё РёСЃРєРѕРјР°СЏ РїРѕРґСЃС‚СЂРѕРєР° РїСѓСЃС‚Р° РёР»Рё СЂР°РІРЅР° РёСЃС…РѕРґРЅРѕР№, РІРѕР·РІСЂР°С‰Р°РµРј РёСЃС…РѕРґРЅСѓСЋ СЃС‚СЂРѕРєСѓ
+ if(find_str.empty() || find_str == replace_str)
+  return src;
+ 
+ // РџРѕРґСЃС‡РёС‚С‹РІР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ РІС…РѕР¶РґРµРЅРёР№ РґР»СЏ РїСЂРµРґРІР°СЂРёС‚РµР»СЊРЅРѕРіРѕ СЂРµР·РµСЂРІРёСЂРѕРІР°РЅРёСЏ РїР°РјСЏС‚Рё
+ string::size_type count = 0;
+ string::size_type pos = 0;
+ while((pos = src.find(find_str, pos)) != string::npos)
  {
-  result.replace( i, find_str.length(), replace_str);
-  i+=replace_str.length();
+  ++count;
+  pos += find_str.length();
  }
-
+ 
+ // Р•СЃР»Рё РІС…РѕР¶РґРµРЅРёР№ РЅРµС‚, РІРѕР·РІСЂР°С‰Р°РµРј РёСЃС…РѕРґРЅСѓСЋ СЃС‚СЂРѕРєСѓ
+ if(count == 0)
+  return src;
+ 
+ // Р’С‹С‡РёСЃР»СЏРµРј СЂР°Р·РјРµСЂ СЂРµР·СѓР»СЊС‚Р°С‚Р° Рё СЂРµР·РµСЂРІРёСЂСѓРµРј РїР°РјСЏС‚СЊ
+ size_t result_size = src.length() + count * (replace_str.length() - find_str.length());
+ std::string result;
+ result.reserve(result_size);
+ 
+ // Р’С‹РїРѕР»РЅСЏРµРј Р·Р°РјРµРЅСѓ Р·Р° РѕРґРёРЅ РїСЂРѕС…РѕРґ
+ pos = 0;
+ string::size_type prev_pos = 0;
+ while((pos = src.find(find_str, prev_pos)) != string::npos)
+ {
+  result.append(src, prev_pos, pos - prev_pos);
+  result.append(replace_str);
+  prev_pos = pos + find_str.length();
+ }
+ result.append(src, prev_pos);
+ 
  return result;
 }
 
 
-/// Загружает файл в строку
+/// Р—Р°РіСЂСѓР¶Р°РµС‚ С„Р°Р№Р» РІ СЃС‚СЂРѕРєСѓ
 RDK_LIB_TYPE bool LoadFile(const std::string &file_name, std::string &buffer)
 {
- std::ifstream t(file_name.c_str(), ios::in);
+ std::ifstream t(file_name.c_str(), ios::in | ios::binary);
 
- if(!t || t.fail() || t.bad())
+ if(!t.is_open())
  {
   buffer.clear();
   return false;
  }
 
+ // РџРѕР»СѓС‡Р°РµРј СЂР°Р·РјРµСЂ С„Р°Р№Р»Р°
  t.seekg(0, std::ios::end);
- if(t.fail() || t.bad())
-  return false;
- buffer.reserve(t.tellg());
+ std::streampos file_size = t.tellg();
+ if(file_size <= 0)
+ {
+  buffer.clear();
+  return true; // РџСѓСЃС‚РѕР№ С„Р°Р№Р» - РЅРµ РѕС€РёР±РєР°
+ }
+ 
  t.seekg(0, std::ios::beg);
- if(t.fail() || t.bad())
+ 
+ // Р РµР·РµСЂРІРёСЂСѓРµРј РїР°РјСЏС‚СЊ Рё С‡РёС‚Р°РµРј С„Р°Р№Р»
+ buffer.clear();
+ buffer.resize(static_cast<size_t>(file_size));
+ t.read(&buffer[0], file_size);
+ 
+ // РџСЂРѕРІРµСЂСЏРµРј СѓСЃРїРµС€РЅРѕСЃС‚СЊ С‡С‚РµРЅРёСЏ
+ if(t.gcount() != static_cast<std::streamsize>(file_size))
+ {
+  buffer.clear();
   return false;
-
- buffer.assign((std::istreambuf_iterator<char>(t)),
-			std::istreambuf_iterator<char>());
- if(t.fail() || t.bad())
-  return false;
+ }
+ 
  return true;
 }
 
@@ -344,41 +379,56 @@ bool LoadFileBin(const std::string &file_name, std::vector<uint8_t> &buffer)
 {
  std::ifstream t(file_name.c_str(), ios::in | ios::binary);
 
- if(!t || t.fail() || t.bad())
+ if(!t.is_open())
  {
   buffer.clear();
   return false;
  }
 
+ // РџРѕР»СѓС‡Р°РµРј СЂР°Р·РјРµСЂ С„Р°Р№Р»Р°
  t.seekg(0, std::ios::end);
- if(t.fail() || t.bad())
-  return false;
- buffer.reserve(t.tellg());
+ std::streampos file_size = t.tellg();
+ if(file_size <= 0)
+ {
+  buffer.clear();
+  return true; // РџСѓСЃС‚РѕР№ С„Р°Р№Р» - РЅРµ РѕС€РёР±РєР°
+ }
+ 
  t.seekg(0, std::ios::beg);
- if(t.fail() || t.bad())
+ 
+ // Р РµР·РµСЂРІРёСЂСѓРµРј РїР°РјСЏС‚СЊ Рё С‡РёС‚Р°РµРј С„Р°Р№Р»
+ buffer.clear();
+ buffer.resize(static_cast<size_t>(file_size));
+ t.read(reinterpret_cast<char*>(&buffer[0]), file_size);
+ 
+ // РџСЂРѕРІРµСЂСЏРµРј СѓСЃРїРµС€РЅРѕСЃС‚СЊ С‡С‚РµРЅРёСЏ
+ if(t.gcount() != static_cast<std::streamsize>(file_size))
+ {
+  buffer.clear();
   return false;
-
- buffer.assign((std::istreambuf_iterator<char>(t)),
-			std::istreambuf_iterator<char>());
- if(t.fail() || t.bad())
-  return false;
+ }
+ 
  return true;
 }
 
 
-/// Сохраняет файл из строки
+/// РЎРѕС…СЂР°РЅСЏРµС‚ С„Р°Р№Р» РёР· СЃС‚СЂРѕРєРё
 RDK_LIB_TYPE bool SaveFile(const std::string &file_name, const std::string &buffer)
 {
- std::ofstream t(file_name.c_str(), ios::trunc);
+ std::ofstream t(file_name.c_str(), ios::trunc | ios::binary);
 
- if(!t || t.fail() || t.bad())
+ if(!t.is_open())
  {
   return false;
  }
 
- t<<buffer;
- if(t.fail() || t.bad())
-  return false;
+ if(!buffer.empty())
+ {
+  t.write(buffer.c_str(), static_cast<std::streamsize>(buffer.size()));
+  if(!t.good())
+   return false;
+ }
+ 
  return true;
 }
 
@@ -386,15 +436,18 @@ bool SaveFileBin(const std::string &file_name, const std::vector<uint8_t> &buffe
 {
  std::ofstream t(file_name.c_str(), ios::trunc | ios::binary);
 
- if(!t || t.fail() || t.bad())
+ if(!t.is_open())
  {
   return false;
  }
 
  if(!buffer.empty())
-  t.write(reinterpret_cast<const char *>(&buffer[0]),buffer.size());
- if(t.fail() || t.bad())
-  return false;
+ {
+  t.write(reinterpret_cast<const char *>(&buffer[0]), static_cast<std::streamsize>(buffer.size()));
+  if(!t.good())
+   return false;
+ }
+ 
  return true;
 }
 

@@ -22,15 +22,15 @@ class TIdTcpResultBroadcasterFrame;
 
 class TTcpResultBroadcasterThread: public TResultBroadcasterThread
 {
-protected: // Параметры
-/// Адрес принимающей стороны
+protected: // РџР°СЂР°РјРµС‚СЂС‹
+/// РђРґСЂРµСЃ РїСЂРёРЅРёРјР°СЋС‰РµР№ СЃС‚РѕСЂРѕРЅС‹
 RDK::UELockVar<std::string> Address;
 
-/// Порт принимающей стороны
+/// РџРѕСЂС‚ РїСЂРёРЅРёРјР°СЋС‰РµР№ СЃС‚РѕСЂРѕРЅС‹
 RDK::UELockVar<int> Port;
 
-protected: // Данные
-// Управляющий фрейм
+protected: // Р”Р°РЅРЅС‹Рµ
+// РЈРїСЂР°РІР»СЏСЋС‰РёР№ С„СЂРµР№Рј
 TIdTcpResultBroadcasterFrame *Frame;
 
 RDK::UELockVar<bool> ConnectionEstablishedFlag;
@@ -41,16 +41,16 @@ TIdTCPClient *IdTCPClient;
 
 
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 __fastcall TTcpResultBroadcasterThread(TIdTcpResultBroadcasterFrame * frame, bool CreateSuspended);
 virtual __fastcall ~TTcpResultBroadcasterThread(void);
 // --------------------------
 
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
 virtual bool Init(const std::string &address, int port);
 virtual std::string GetAddress(void) const;
@@ -101,13 +101,13 @@ bool ConnectionEstablishedFlag;
 RDK::ULongTime LastSentTimeStamp;
 
 // --------------------------
-// Методы управления фреймом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ С„СЂРµР№РјРѕРј
 // --------------------------
-/// Инициализация канала связи в соответствии с настройками
+/// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РєР°РЅР°Р»Р° СЃРІСЏР·Рё РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ РЅР°СЃС‚СЂРѕР№РєР°РјРё
 bool Init(void);
 bool UnInit(void);
 
-/// Функция добавления метаданных в очередь на отправку в соответствии с настройками
+/// Р¤СѓРЅРєС†РёСЏ РґРѕР±Р°РІР»РµРЅРёСЏ РјРµС‚Р°РґР°РЅРЅС‹С… РІ РѕС‡РµСЂРµРґСЊ РЅР° РѕС‚РїСЂР°РІРєСѓ РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ РЅР°СЃС‚СЂРѕР№РєР°РјРё
 bool AddMetadata(int channel_index, double time_stamp);
 
 void ABeforeCalculate(void);
@@ -115,16 +115,16 @@ void AAfterCalculate(void);
 
 void AUpdateInterface(void);
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 virtual void AClearInterface(void);
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 virtual void ASaveParameters(RDK::USerStorageXML &xml);
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 virtual void ALoadParameters(RDK::USerStorageXML &xml);
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 TIdTcpResultBroadcasterFrame* New(TComponent *owner);
 // --------------------------
 };

@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QWaitCondition>
 #include <QImage>
-#include <QMutex>
+#include <QRecursiveMutex>
 
 #include <rdk_application.h>
 
@@ -40,7 +40,7 @@ public:
 
     bool getConnected() const;
 
-    QMutex *getMutex();
+    QRecursiveMutex *getMutex();
 
 signals:
     void imageLoaded(QImage *image);
@@ -54,7 +54,7 @@ private:
 
 
     //data
-    QMutex mutex;
+    QRecursiveMutex mutex;
 
     QString componentName;
     QString componentPropertyName;
@@ -63,11 +63,11 @@ private:
     bool showLegend;
     bool indChannels;
 
-    ///Размер отображаемого изображения
+    ///Р Р°Р·РјРµСЂ РѕС‚РѕР±СЂР°Р¶Р°РµРјРѕРіРѕ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
     ///
-    /// 0 - Полноразмерное отображение
-    /// 1 - растянуть, сохраняя пропорции
-    /// 2 - растянуть на всю область
+    /// 0 - РџРѕР»РЅРѕСЂР°Р·РјРµСЂРЅРѕРµ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ
+    /// 1 - СЂР°СЃС‚СЏРЅСѓС‚СЊ, СЃРѕС…СЂР°РЅСЏСЏ РїСЂРѕРїРѕСЂС†РёРё
+    /// 2 - СЂР°СЃС‚СЏРЅСѓС‚СЊ РЅР° РІСЃСЋ РѕР±Р»Р°СЃС‚СЊ
     int sizeMode;
 
     QImage srcImage;

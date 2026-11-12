@@ -41,20 +41,20 @@ class UServerTransportTcpQt: public QTcpServer, public RDK::UServerTransportTcp
 public:
     UServerTransportTcpQt();
     ~UServerTransportTcpQt();
-    /// Читает входящие байты из выбранного источника, контекст привязки
-    /// всегда определяется строкой вне зависимости от типа транспорта
+    /// Р§РёС‚Р°РµС‚ РІС…РѕРґСЏС‰РёРµ Р±Р°Р№С‚С‹ РёР· РІС‹Р±СЂР°РЅРЅРѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР°, РєРѕРЅС‚РµРєСЃС‚ РїСЂРёРІСЏР·РєРё
+    /// РІСЃРµРіРґР° РѕРїСЂРµРґРµР»СЏРµС‚СЃСЏ СЃС‚СЂРѕРєРѕР№ РІРЅРµ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РёРїР° С‚СЂР°РЅСЃРїРѕСЂС‚Р°
     virtual int ReadIncomingBytes(std::string &bind, std::vector<unsigned char> &bytes);
-    /// Отправить ответ на команду соответствующему получателю
+    /// РћС‚РїСЂР°РІРёС‚СЊ РѕС‚РІРµС‚ РЅР° РєРѕРјР°РЅРґСѓ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РµРјСѓ РїРѕР»СѓС‡Р°С‚РµР»СЋ
     virtual void SendResponseBuffer(std::vector<unsigned char> buffer, std::string &responce_addr);
-    /// Задает адрес и порт входящего интерфейса сервера
+    /// Р—Р°РґР°РµС‚ Р°РґСЂРµСЃ Рё РїРѕСЂС‚ РІС…РѕРґСЏС‰РµРіРѕ РёРЅС‚РµСЂС„РµР№СЃР° СЃРµСЂРІРµСЂР°
     virtual void SetServerBinding(std::string &interface_address, int port);
-    /// Получение адреса интерфейса управления сервером
+    /// РџРѕР»СѓС‡РµРЅРёРµ Р°РґСЂРµСЃР° РёРЅС‚РµСЂС„РµР№СЃР° СѓРїСЂР°РІР»РµРЅРёСЏ СЃРµСЂРІРµСЂРѕРј
     virtual std::string GetServerBindingInterfaceAddress(void);
-    /// Получить порт сервера
+    /// РџРѕР»СѓС‡РёС‚СЊ РїРѕСЂС‚ СЃРµСЂРІРµСЂР°
     int GetServerBindingPort(void) const;
-    /// Инициировать остановку сервера, отключить все приемники
+    /// РРЅРёС†РёРёСЂРѕРІР°С‚СЊ РѕСЃС‚Р°РЅРѕРІРєСѓ СЃРµСЂРІРµСЂР°, РѕС‚РєР»СЋС‡РёС‚СЊ РІСЃРµ РїСЂРёРµРјРЅРёРєРё
     virtual void ServerStop();
-    /// Инициировать запуск сервера
+    /// РРЅРёС†РёРёСЂРѕРІР°С‚СЊ Р·Р°РїСѓСЃРє СЃРµСЂРІРµСЂР°
     virtual void ServerStart();
     //virtual void ConnectClient(std::string &bind);
     //virtual void DisconnectClient(std::string &bind);
@@ -87,34 +87,34 @@ class RDK_LIB_TYPE UServerControlQt: public RDK::UServerControl
 {
 public:
 // --------------------------
-// Методы управления вещателями
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РІРµС‰Р°С‚РµР»СЏРјРё
 // --------------------------
-/// Регистрирует удаленный приемник метаданных
+/// Р РµРіРёСЃС‚СЂРёСЂСѓРµС‚ СѓРґР°Р»РµРЅРЅС‹Р№ РїСЂРёРµРјРЅРёРє РјРµС‚Р°РґР°РЅРЅС‹С…
 virtual int RegisterMetadataReceiver(const std::string &address, int port);
 
-/// Удаляет удаленный приемник метаданных
+/// РЈРґР°Р»СЏРµС‚ СѓРґР°Р»РµРЅРЅС‹Р№ РїСЂРёРµРјРЅРёРє РјРµС‚Р°РґР°РЅРЅС‹С…
 virtual int UnRegisterMetadataReceiver(const std::string &address, int port);
 // --------------------------
 
 private:
 // --------------------------
-/// Управление числом каналов
-/// Выполнение вспомогательных методов
-/// Вызывается из UApplication
+/// РЈРїСЂР°РІР»РµРЅРёРµ С‡РёСЃР»РѕРј РєР°РЅР°Р»РѕРІ
+/// Р’С‹РїРѕР»РЅРµРЅРёРµ РІСЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹С… РјРµС‚РѕРґРѕРІ
+/// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РёР· UApplication
 // --------------------------
 virtual bool ASetNumChannels(int old_num);
 virtual bool AInsertChannel(int index);
 virtual bool ADeleteChannel(int index);
 // --------------------------
 
-public: // TODO: костыль
+public: // TODO: РєРѕСЃС‚С‹Р»СЊ
 // --------------------------
-// Вспомогательные методы
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РјРµС‚РѕРґС‹
 // --------------------------
-// Метод, вызываемый после сброса модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ СЃР±СЂРѕСЃР° РјРѕРґРµР»Рё
 virtual void AfterReset(void);
 
-// Метод, вызываемый после шага расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ С€Р°РіР° СЂР°СЃС‡РµС‚Р°
 virtual void AfterCalculate(void);
 // --------------------------
 
@@ -124,27 +124,27 @@ virtual void AfterCalculate(void);
 
 class URpcDecoderCommonQt: public RDK::URpcDecoderCommon
 {
-/// Строка результирующего ответа от обработчика сервера
+/// РЎС‚СЂРѕРєР° СЂРµР·СѓР»СЊС‚РёСЂСѓСЋС‰РµРіРѕ РѕС‚РІРµС‚Р° РѕС‚ РѕР±СЂР°Р±РѕС‚С‡РёРєР° СЃРµСЂРІРµСЂР°
 std::string ControlResponseString;
 
 std::vector<RDK::UParamT> binary_data;
 
 public:
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 URpcDecoderCommonQt(void);
 virtual ~URpcDecoderCommonQt(void);
 // --------------------------
 
 // --------------------------
-// Методы управления командами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РєРѕРјР°РЅРґР°РјРё
 // --------------------------
-/// Проверяет, поддерживается ли команда диспетчером
-/// ожидает, что команда уже декодирована иначе всегда возвращает false
+/// РџСЂРѕРІРµСЂСЏРµС‚, РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ Р»Рё РєРѕРјР°РЅРґР° РґРёСЃРїРµС‚С‡РµСЂРѕРј
+/// РѕР¶РёРґР°РµС‚, С‡С‚Рѕ РєРѕРјР°РЅРґР° СѓР¶Рµ РґРµРєРѕРґРёСЂРѕРІР°РЅР° РёРЅР°С‡Рµ РІСЃРµРіРґР° РІРѕР·РІСЂР°С‰Р°РµС‚ false
 virtual bool IsCmdSupported(const RDK::UEPtr<RDK::URpcCommand> &command) const;
 
-/// Создает копию этого декодера
+/// РЎРѕР·РґР°РµС‚ РєРѕРїРёСЋ СЌС‚РѕРіРѕ РґРµРєРѕРґРµСЂР°
 virtual URpcDecoderCommonQt* New(void);
 
 virtual std::string ARemoteCall(const std::string &cmd, RDK::USerStorageXML &xml, const std::string &component_name, int engine_index, int &return_value);
@@ -174,11 +174,11 @@ public:
   explicit UTcpServerControlWidget(QWidget *parent = 0, RDK::UApplication *app = NULL);
   ~UTcpServerControlWidget();
 
-  /// запись файла настроек
+  /// Р·Р°РїРёСЃСЊ С„Р°Р№Р»Р° РЅР°СЃС‚СЂРѕРµРє
   virtual void ASaveParameters();
-  /// считывание файла настроек
+  /// СЃС‡РёС‚С‹РІР°РЅРёРµ С„Р°Р№Р»Р° РЅР°СЃС‚СЂРѕРµРє
   virtual void ALoadParameters();
-  /// обновление интерфейса
+  /// РѕР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
   virtual void AUpdateInterface();
 
 private slots:

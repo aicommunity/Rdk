@@ -10,8 +10,8 @@
 
 namespace RDK {
 
-/// Макрос для сокращение монотонного кода, не может использоваться в других местах программы
-/// ВНИМАНИЕ! содержит обращение к переменным, созданным вне макроса
+/// РњР°РєСЂРѕСЃ РґР»СЏ СЃРѕРєСЂР°С‰РµРЅРёРµ РјРѕРЅРѕС‚РѕРЅРЅРѕРіРѕ РєРѕРґР°, РЅРµ РјРѕР¶РµС‚ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ РІ РґСЂСѓРіРёС… РјРµСЃС‚Р°С… РїСЂРѕРіСЂР°РјРјС‹
+/// Р’РќРРњРђРќРР•! СЃРѕРґРµСЂР¶РёС‚ РѕР±СЂР°С‰РµРЅРёРµ Рє РїРµСЂРµРјРµРЅРЅС‹Рј, СЃРѕР·РґР°РЅРЅС‹Рј РІРЅРµ РјР°РєСЂРѕСЃР°
 #define TEST_PROPERTY_WITH_TYPE(type) \
   if(property->GetLanguageType() == typeid(type)) \
   { \
@@ -20,19 +20,19 @@ namespace RDK {
       if(compareProperties(*(reinterpret_cast<type*>(data)), \
                            testProperty.value, testProperty.delta)) \
       { \
-        MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("SUCCESS - porperty: "+ testProperty.component + "." + testProperty.property).c_str()); \
+        RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("SUCCESS - porperty: "+ testProperty.component + "." + testProperty.property).c_str()); \
         continue; \
       } \
       else \
       { \
-        MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property +", not the same as the current value! expected value is: "+ testProperty.value).c_str()); \
+        RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property +", not the same as the current value! expected value is: "+ testProperty.value).c_str()); \
         ++returnCode; \
         continue; \
       } \
     } \
     catch(boost::bad_lexical_cast &e) \
     { \
-      MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property + " error, application can't parse value, message :" + e.what()).c_str()); \
+      RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property + " error, application can't parse value, message :" + e.what()).c_str()); \
       ++returnCode; \
       continue; \
     } \
@@ -40,7 +40,7 @@ namespace RDK {
 
 
 // --------------------
-// Методы инициализации
+// РњРµС‚РѕРґС‹ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
 // --------------------
 UTest::UTest(void)
 {
@@ -56,13 +56,13 @@ UTest::UTest(const UEPtr<UApplication> &value)
   stepsMode = true;
 }
 
-/// Возвращает указатель на тестируемое приложение
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµСЃС‚РёСЂСѓРµРјРѕРµ РїСЂРёР»РѕР¶РµРЅРёРµ
   UEPtr<UApplication> UTest::GetApplication()
 {
   return Application;
 }
 
-/// Задает тестируемое приложение
+/// Р—Р°РґР°РµС‚ С‚РµСЃС‚РёСЂСѓРµРјРѕРµ РїСЂРёР»РѕР¶РµРЅРёРµ
 void UTest::SetApplication(const UEPtr<UApplication> &value)
 {
   if(Application == value)
@@ -84,23 +84,23 @@ UTest& UTest::operator = (const UTest &copy)
 }
 
 // --------------------
-// Методы тестирования
+// РњРµС‚РѕРґС‹ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ
 // --------------------
 
-/// Загрузка тестов
+/// Р—Р°РіСЂСѓР·РєР° С‚РµСЃС‚РѕРІ
 int UTest::LoadTest(string testFile)
 {
   testsFileName = testFile;
   RDK::USerStorageXML testXML;
   if(!testXML.LoadFromFile(testFile, "TestCase"))
   {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <TestCase> in Xml file").c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <TestCase> in Xml file").c_str());
     return 1;
   }
 
   if(!testXML.SelectNode("Header"))
   {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <Header> in Xml file").c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <Header> in Xml file").c_str());
     return 2;
   }
 
@@ -123,7 +123,7 @@ int UTest::LoadTest(string testFile)
   }
   catch(boost::bad_lexical_cast &e)
   {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " calcDuration empty, boost::lexical_cast error, message :" + e.what()).c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " calcDuration empty, boost::lexical_cast error, message :" + e.what()).c_str());
     calcDuration = 0;
   }
 
@@ -134,7 +134,7 @@ int UTest::LoadTest(string testFile)
   }
   else
   {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <ConfigFilePath> in Xml file").c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <ConfigFilePath> in Xml file").c_str());
     return 3;
   }
 
@@ -146,7 +146,7 @@ int UTest::LoadTest(string testFile)
       testXML.SelectNode("Property", i);
       std::string sValue;
 
-      // если внутри узла есть xml, то сохраняем эту xml, если нет то сохраняем данные из узла
+      // РµСЃР»Рё РІРЅСѓС‚СЂРё СѓР·Р»Р° РµСЃС‚СЊ xml, С‚Рѕ СЃРѕС…СЂР°РЅСЏРµРј СЌС‚Сѓ xml, РµСЃР»Рё РЅРµС‚ С‚Рѕ СЃРѕС…СЂР°РЅСЏРµРј РґР°РЅРЅС‹Рµ РёР· СѓР·Р»Р°
       if(testXML.SelectNode(0))
       {
         testXML.SaveFromNode(sValue);
@@ -170,20 +170,20 @@ int UTest::LoadTest(string testFile)
   }
   else
   {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <TestProperties> in Xml file").c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, (testsFileName + " UTest::LoadTest: can't find <TestProperties> in Xml file").c_str());
   }
   return RDK_SUCCESS;
 }
 
-/// Проводит тестирование
-/// Возвращает колличество неудачных проперти тестов
+/// РџСЂРѕРІРѕРґРёС‚ С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕР»Р»РёС‡РµСЃС‚РІРѕ РЅРµСѓРґР°С‡РЅС‹С… РїСЂРѕРїРµСЂС‚Рё С‚РµСЃС‚РѕРІ
 int UTest::ProcessTest()
 {
   int returnCode = RDK_SUCCESS;
 
   try
   {
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, std::string("Property test log: ").c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, std::string("Property test log: ").c_str());
 
     Application->OpenProject(testProjectFileName);
     /*std::vector<string> strs;
@@ -213,7 +213,7 @@ int UTest::ProcessTest()
 
     if(!model)
     {
-      MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, std::string("Model doesn't exist! Testing terminated!").c_str());
+      RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, std::string("Model doesn't exist! Testing terminated!").c_str());
       return -1;
     }
 
@@ -228,7 +228,7 @@ int UTest::ProcessTest()
 
       if(!component)
       {
-        MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - component: "+ testProperty.component +", doesn't exist!").c_str());
+        RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - component: "+ testProperty.component +", doesn't exist!").c_str());
         ++returnCode;
         continue;
       }
@@ -237,7 +237,7 @@ int UTest::ProcessTest()
 
       if(!property)
       {
-        MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property +", doesn't exist!").c_str());
+        RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property +", doesn't exist!").c_str());
         ++returnCode;
         continue;
       }
@@ -246,7 +246,7 @@ int UTest::ProcessTest()
 
       if(!data)
       {
-        MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property +", is NULL!").c_str());
+        RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("FAIL - porperty: "+ testProperty.component + "." + testProperty.property +", is NULL!").c_str());
         ++returnCode;
         continue;
       }
@@ -263,26 +263,26 @@ int UTest::ProcessTest()
 
 //      TEST_PROPERTY_WITH_TYPE(std::vector<RTV::TZoneExt>)
 
-      MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("WEIRD - porperty: "+ testProperty.component + "." + testProperty.property +", haven't compare function!").c_str());
+      RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, ("WEIRD - porperty: "+ testProperty.component + "." + testProperty.property +", haven't compare function!").c_str());
 
     }
   }
   catch(RDK::UException& e)
   {
     ++returnCode;
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("FAIL, exception catched UTest::ProcessTest - ")+e.what()).c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("FAIL, exception catched UTest::ProcessTest - ")+e.what()).c_str());
   }
   catch(std::exception& e)
   {
     ++returnCode;
-    MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("FAIL, exception catched UTest::ProcessTest - ")+e.what()).c_str());
+    RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_FATAL, (std::string("FAIL, exception catched UTest::ProcessTest - ")+e.what()).c_str());
   }
 
   return returnCode;
 }
 
 // --------------------
-// Вспомогательные методы
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РјРµС‚РѕРґС‹
 // --------------------
 
 bool UTest::compareProperties(bool value, std::string str, std::string delta)
@@ -385,15 +385,15 @@ bool UTest::compareProperties(MDMatrix<double> value, string str, string delta)
 
 
 // --------------------
-// Методы инициализации
+// РњРµС‚РѕРґС‹ РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
 // --------------------
-/// Возвращает указатель на тестируемое приложение
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµСЃС‚РёСЂСѓРµРјРѕРµ РїСЂРёР»РѕР¶РµРЅРёРµ
 UEPtr<UApplication> UTestManager::GetApplication(void)
 {
  return Application;
 }
 
-/// Задает тестируемое приложение
+/// Р—Р°РґР°РµС‚ С‚РµСЃС‚РёСЂСѓРµРјРѕРµ РїСЂРёР»РѕР¶РµРЅРёРµ
 void UTestManager::SetApplication(const UEPtr<UApplication> &value)
 {
  if(Application == value)
@@ -404,21 +404,21 @@ void UTestManager::SetApplication(const UEPtr<UApplication> &value)
 /// --------------------
 
 // --------------------
-// Методы тестирования
+// РњРµС‚РѕРґС‹ С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ
 // --------------------
-/// Загрузка тестов
+/// Р—Р°РіСЂСѓР·РєР° С‚РµСЃС‚РѕРІ
 int UTestManager::LoadTests(const std::string &file_name)
 {
  if(file_name.empty())
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, "Tests description file name is empty!");
+  RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, "Tests description file name is empty!");
   return 1001;
  }
 
  RDK::USerStorageXML testsXML;
  if(!testsXML.LoadFromFile(file_name, "UTestCases"))
  {
-   MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (file_name + " UTestManager::LoadTest: can't find <UTestCases> in Xml file").c_str());
+   RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, (file_name + " UTestManager::LoadTest: can't find <UTestCases> in Xml file").c_str());
    return 1002;
  }
 
@@ -440,7 +440,7 @@ int UTestManager::LoadTests(const std::string &file_name)
  int decode_main_file_res=DecodeMainTestDescriptionFile(test_file_names);
  if(decode_main_file_res != RDK_SUCCESS)
  {
-  MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (std::string("UTestManager::LoadTests - decode main file tests description file FAILED! Error code: ")+sntoa(decode_main_file_res)).c_str());
+  RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, (std::string("UTestManager::LoadTests - decode main file tests description file FAILED! Error code: ")+sntoa(decode_main_file_res)).c_str());
   return 1002;
  }
 
@@ -450,7 +450,7 @@ int UTestManager::LoadTests(const std::string &file_name)
   int decode_res=DecodeTestFile(test_file_names[i],test);
   if(decode_res != RDK_SUCCESS)
   {
-   MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, (std::string("UTestManager::LoadTests - decode test file ")+test_file_names[i]+std::string(" FAILED! Error code: ")+sntoa(decode_res)).c_str());
+   RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, (std::string("UTestManager::LoadTests - decode test file ")+test_file_names[i]+std::string(" FAILED! Error code: ")+sntoa(decode_res)).c_str());
    return 1003;
   }
  }*/
@@ -458,12 +458,12 @@ int UTestManager::LoadTests(const std::string &file_name)
 }
 
 
-/// Проводит тестирование
-/// Записывает в выходной массив результаты тестов
-/// Возвращает код ошибки тестирования
+/// РџСЂРѕРІРѕРґРёС‚ С‚РµСЃС‚РёСЂРѕРІР°РЅРёРµ
+/// Р—Р°РїРёСЃС‹РІР°РµС‚ РІ РІС‹С…РѕРґРЅРѕР№ РјР°СЃСЃРёРІ СЂРµР·СѓР»СЊС‚Р°С‚С‹ С‚РµСЃС‚РѕРІ
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕРґ РѕС€РёР±РєРё С‚РµСЃС‚РёСЂРѕРІР°РЅРёСЏ
 int UTestManager::ProcessTests(void)
 {
- MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, "UTestManager::ProcessTests called");
+ RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, "UTestManager::ProcessTests called");
 
  int returnCode = RDK_SUCCESS;
 
@@ -475,20 +475,20 @@ int UTestManager::ProcessTests(void)
 // --------------------
 
 // --------------------
-// Вспомогательные методы
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РјРµС‚РѕРґС‹
 // --------------------
-/// Декодирует корневой файл описания тестов
-/// Возвращает массив имен файлов с описаниями тестов
+/// Р”РµРєРѕРґРёСЂСѓРµС‚ РєРѕСЂРЅРµРІРѕР№ С„Р°Р№Р» РѕРїРёСЃР°РЅРёСЏ С‚РµСЃС‚РѕРІ
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РјР°СЃСЃРёРІ РёРјРµРЅ С„Р°Р№Р»РѕРІ СЃ РѕРїРёСЃР°РЅРёСЏРјРё С‚РµСЃС‚РѕРІ
 int UTestManager::DecodeMainTestDescriptionFile(std::vector<std::string> &test_file_names)
 {
- MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, "UTestManager::DecodeMainTestDescriptionFile called");
+ RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, "UTestManager::DecodeMainTestDescriptionFile called");
  return RDK_SUCCESS;
 }
 
-/// Декодирует тест
+/// Р”РµРєРѕРґРёСЂСѓРµС‚ С‚РµСЃС‚
 int UTestManager::DecodeTestFile(const std::string &test_file_name, UTest &test)
 {
- MLog_LogMessage(RDK_GLOB_MESSAGE, RDK_EX_INFO, "UTestManager::DecodeTestFile called");
+ RDK::Logging::ChannelLog(RDK_GLOB_MESSAGE, RDK_EX_INFO, "UTestManager::DecodeTestFile called");
  return RDK_SUCCESS;
 }
 

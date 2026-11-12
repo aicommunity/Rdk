@@ -37,7 +37,7 @@ public:		// User declarations
 	__fastcall TUComponentsControlForm(TComponent* Owner);
 
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 virtual TUComponentsControlForm* New(TComponent *owner=0);
 };
 //---------------------------------------------------------------------------

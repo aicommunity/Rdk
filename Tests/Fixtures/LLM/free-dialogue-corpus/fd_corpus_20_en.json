@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "fd_corpus_20_en",
+  "user_text": "explain how UNet works",
+  "lang": "en",
+  "tags": [
+    "free_dialogue",
+    "en"
+  ],
+  "expect": {
+    "orchestrator_ok": true,
+    "no_hard_task_path_fail": true
+  }
+}

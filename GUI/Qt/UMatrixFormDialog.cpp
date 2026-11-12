@@ -12,7 +12,7 @@ UMatrixFormDialog::UMatrixFormDialog(QWidget *parent) :
   //  connect(ui->buttonBox->Ok,SIGNAL(clicked()),this,SLOT(accept()));
  //   connect(cancel_button,SIGNAL(clicked()),this, SLOT(reject()));
 
-    // Таймер обновления отображаемых данных (каждые 300 мс)
+    // РўР°Р№РјРµСЂ РѕР±РЅРѕРІР»РµРЅРёСЏ РѕС‚РѕР±СЂР°Р¶Р°РµРјС‹С… РґР°РЅРЅС‹С… (РєР°Р¶РґС‹Рµ 300 РјСЃ)
     updateMatrixDataTimer.setInterval(300);
     updateMatrixDataTimer.setSingleShot(false);
     connect(&updateMatrixDataTimer, SIGNAL(timeout()), this, SLOT(UpdateMatrixData()));
@@ -38,7 +38,7 @@ void UMatrixFormDialog::UpdateMatrixData(void)
 
     ui->label->setText((ComponentMatrixName+std::string(":")+PropertyMatrixName).c_str());
 
-    // Уже выделенные ячейки
+    // РЈР¶Рµ РІС‹РґРµР»РµРЅРЅС‹Рµ СЏС‡РµР№РєРё
     QItemSelectionModel *sel_m = ui->tableWidget->selectionModel();
 
     std::vector<int> row_ids;
@@ -188,7 +188,7 @@ void UMatrixFormDialog::UpdateMatrixData(void)
     break;
     }
 
-    // Выделение уже выделенных
+    // Р’С‹РґРµР»РµРЅРёРµ СѓР¶Рµ РІС‹РґРµР»РµРЅРЅС‹С…
     for(int i = 0; i<row_ids.size(); i++)
     {
         QModelIndex temp = ui->tableWidget->model()->index(row_ids[i], col_ids[i]);
@@ -196,7 +196,7 @@ void UMatrixFormDialog::UpdateMatrixData(void)
     }
 }
 
-/// Выбирает матрицу для наблюдения
+/// Р’С‹Р±РёСЂР°РµС‚ РјР°С‚СЂРёС†Сѓ РґР»СЏ РЅР°Р±Р»СЋРґРµРЅРёСЏ
 bool UMatrixFormDialog::SelectMatrix(const std::string &comp_name, const std::string &prop_name)
 {
     RDK::UELockPtr<RDK::UNet> model=RDK::GetModelLock<RDK::UNet>();

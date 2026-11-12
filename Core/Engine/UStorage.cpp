@@ -19,16 +19,33 @@ See file license.txt for more information
 #include "ULibrary.h"
 #include "../../Deploy/Include/rdk_exceptions.h"
 #include "UEnvException.h"
+#include "../../Deploy/Include/rdk_init.h"
+#include "../../Deploy/Include/rdk_logging.h"
+#ifdef RDK_USE_GLOG
+#include <glog/logging.h>
+#endif
+#include <future>
+#include <mutex>
+#include <unordered_set>
+#include <sstream>
 
 namespace RDK {
 
+namespace {
+// Р”РёР°РіРЅРѕСЃС‚РёС‡РµСЃРєРёР№ СЂРµР¶РёРј С‚СЂР°СЃСЃРёСЂРѕРІРєРё TakeObject РІРѕ РІСЂРµРјСЏ Default() NNeuronLearner.
+// РџРѕРјРѕРіР°РµС‚ РїРѕРЅСЏС‚СЊ, РЅР° РєР°РєРѕРј "РІРЅСѓС‚СЂРµРЅРЅРµРј" TakeObject/Default РїСЂРѕРёСЃС…РѕРґРёС‚ AV/SEH.
+thread_local bool g_takeobject_trace_nneuronlearner_default = false;
+thread_local int g_takeobject_trace_depth = 0;
+thread_local std::string g_takeobject_trace_root_name;
+} // namespace
+
 /* *********************************************************************** */
 /* *********************************************************************** */
-// Элемент списка существующих объектов определенного класса
+// Р­Р»РµРјРµРЅС‚ СЃРїРёСЃРєР° СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёС… РѕР±СЉРµРєС‚РѕРІ РѕРїСЂРµРґРµР»РµРЅРЅРѕРіРѕ РєР»Р°СЃСЃР°
 // class UInstancesStorageElement
-// Методы
+// РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UInstancesStorageElement::UInstancesStorageElement(void)
  : UseFlag(false)
@@ -53,21 +70,21 @@ UInstancesStorageElement::~UInstancesStorageElement(void)
 // --------------------------
 
 // --------------------------
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 // --------------------------
-// Оператор присваивания
+// РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
 UInstancesStorageElement& UInstancesStorageElement::operator = (const UInstancesStorageElement &copy)
 {
- // Указатель на объект
+ // РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РѕР±СЉРµРєС‚
  Object=copy.Object;
 
- // Признак того свободен ли объект
+ // РџСЂРёР·РЅР°Рє С‚РѕРіРѕ СЃРІРѕР±РѕРґРµРЅ Р»Рё РѕР±СЉРµРєС‚
  UseFlag=copy.UseFlag;
 
  return *this;
 }
 
-// Операторы сравнения
+// РћРїРµСЂР°С‚РѕСЂС‹ СЃСЂР°РІРЅРµРЅРёСЏ
 bool UInstancesStorageElement::operator < (const UInstancesStorageElement &value)
 {
  return Object<value.Object;
@@ -102,13 +119,14 @@ bool UInstancesStorageElement::operator != (const UInstancesStorageElement &valu
 /* *************************************************************************** */
 // Class UStorage
 /* *************************************************************************** */
-// Методы
+// РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UStorage::UStorage(void)
 {
  LastClassId=0;
+ FuncProgressBarCallback=0;
 }
 
 UStorage::~UStorage(void)
@@ -118,11 +136,20 @@ UStorage::~UStorage(void)
   ClearObjectsStorage(true);
   ClearClassesStorage(true);
 
-  // Удаление всех библиотек
-  for(int i =0; i < int(CollectionList.size());i++)
+  // Р‘С‹СЃС‚СЂРѕРµ СѓРґР°Р»РµРЅРёРµ РІСЃРµС… Р±РёР±Р»РёРѕС‚РµРє Р±РµР· РІС‹Р·РѕРІР° DelAbandonedClasses() РІ С†РёРєР»Рµ
+  // Р­С‚Рѕ РєСЂРёС‚РёС‡РЅРѕ РґР»СЏ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚Рё - РёР·Р±РµРіР°РµРј O(n*m*k) СЃР»РѕР¶РЅРѕСЃС‚Рё
+  for(int i = 0; i < int(CollectionList.size()); i++)
   {
-      DelCollection(i);
+   if(CollectionList[i])
+   {
+    if(CollectionList[i]->GetType() == 2)
+     delete CollectionList[i];
+   }
   }
+  CollectionList.clear();
+
+  // РћРґРёРЅ РІС‹Р·РѕРІ DelAbandonedClasses() РІ РєРѕРЅС†Рµ РІРјРµСЃС‚Рѕ РІС‹Р·РѕРІР° РґР»СЏ РєР°Р¶РґРѕР№ Р±РёР±Р»РёРѕС‚РµРєРё
+  DelAbandonedClasses();
 
  }
  catch(EObjectStorageNotEmpty &ex)
@@ -149,9 +176,9 @@ UStorage::~UStorage(void)
 // --------------------------
 
 // --------------------------
-// Методы управления свойствами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃРІРѕР№СЃС‚РІР°РјРё
 // --------------------------
-// Возвращает последний использованный Id классов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїРѕСЃР»РµРґРЅРёР№ РёСЃРїРѕР»СЊР·РѕРІР°РЅРЅС‹Р№ Id РєР»Р°СЃСЃРѕРІ
 UId UStorage::GetLastClassId(void) const
 {
  return LastClassId;
@@ -159,21 +186,28 @@ UId UStorage::GetLastClassId(void) const
 // --------------------------
 
 // --------------------------
-// Методы доступа к таблицам соотвествий
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє С‚Р°Р±Р»РёС†Р°Рј СЃРѕРѕС‚РІРµСЃС‚РІРёР№
 // --------------------------
-// Возвращает Id класса по его имени
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ Id РєР»Р°СЃСЃР° РїРѕ РµРіРѕ РёРјРµРЅРё
 const UId& UStorage::FindClassId(const NameT &name) const
 {
- map<NameT,UId>::const_iterator I=ClassesLookupTable.find(name);
+ auto I=ClassesLookupTable.find(name);
  if(I == ClassesLookupTable.end())
   throw EClassNameNotExist(name);
  return I->second;
 }
 
-// Возвращает имя класса по его Id
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РєР»Р°СЃСЃР° РїРѕ РµРіРѕ Id
 const NameT UStorage::FindClassName(const UId &id) const
 {
- for(map<NameT,UId>::const_iterator I=ClassesLookupTable.begin(),
+ // РЎРїРµС†РёР°Р»СЊРЅР°СЏ РѕР±СЂР°Р±РѕС‚РєР° РґР»СЏ ForbiddenId - РІРѕР·РІСЂР°С‰Р°РµРј РїРѕРЅСЏС‚РЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ
+ // РІРјРµСЃС‚Рѕ РёСЃРєР»СЋС‡РµРЅРёСЏ, С‡С‚РѕР±С‹ РёР·Р±РµР¶Р°С‚СЊ РєР°СЃРєР°РґРЅС‹С… РѕС€РёР±РѕРє
+ if(id == ForbiddenId)
+ {
+  return std::string("(ForbiddenId/Uninitialized)");
+ }
+
+ for(auto I=ClassesLookupTable.begin(),
 									J=ClassesLookupTable.end();I != J;++I)
  {
   if(I->second == id)
@@ -185,10 +219,10 @@ const NameT UStorage::FindClassName(const UId &id) const
 
 
 // --------------------------
-// Методы управления хранилищем классов
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ С…СЂР°РЅРёР»РёС‰РµРј РєР»Р°СЃСЃРѕРІ
 // --------------------------
-// Добавляет образец класса объекта в хранилище
-// Возвращает id класса
+// Р”РѕР±Р°РІР»СЏРµС‚ РѕР±СЂР°Р·РµС† РєР»Р°СЃСЃР° РѕР±СЉРµРєС‚Р° РІ С…СЂР°РЅРёР»РёС‰Рµ
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ id РєР»Р°СЃСЃР°
 UId UStorage::AddClass(UEPtr<UComponentAbstractFactory> factory, const UId &classid)
 {
 // UEPtr<UStorage> storage=classtemplate->GetStorage();
@@ -206,13 +240,13 @@ UId UStorage::AddClass(UEPtr<UComponentAbstractFactory> factory, const UId &clas
  factory->SetClassId(id);
  LastClassId=id;
 
- // Заглушка!!! Это некоррректно, имени-то нет.
+ // Р—Р°РіР»СѓС€РєР°!!! Р­С‚Рѕ РЅРµРєРѕСЂСЂСЂРµРєС‚РЅРѕ, РёРјРµРЅРё-С‚Рѕ РЅРµС‚.
 // ClassesDescription[FindClassName(id)]=classtemplate->NewDescription();
 
  return id;
 }
 
-// Добавляет образец класса объекта в хранилище
+// Р”РѕР±Р°РІР»СЏРµС‚ РѕР±СЂР°Р·РµС† РєР»Р°СЃСЃР° РѕР±СЉРµРєС‚Р° РІ С…СЂР°РЅРёР»РёС‰Рµ
 UId UStorage::AddClass(UEPtr<UComponentAbstractFactory> factory, const string &classname, const UId &classid)
 {
  if(ClassesLookupTable.find(classname) != ClassesLookupTable.end())
@@ -221,15 +255,15 @@ UId UStorage::AddClass(UEPtr<UComponentAbstractFactory> factory, const string &c
  UId id=AddClass(factory,classid);
  ClassesLookupTable[classname]=id;
 
- // теперь ClassDescription не сохраняется
+ // С‚РµРїРµСЂСЊ ClassDescription РЅРµ СЃРѕС…СЂР°РЅСЏРµС‚СЃСЏ
 // ClassesDescription[classname]=factory->NewDescription();
 // ClassesDescription[classname]->SetClassNameValue(classname);
  return id;
 }
 
-// Удаляет образец класса объекта из хранилища
-// Если 'force' == true то принудительно удаляет из хранилища
-// все объекты этого класса
+// РЈРґР°Р»СЏРµС‚ РѕР±СЂР°Р·РµС† РєР»Р°СЃСЃР° РѕР±СЉРµРєС‚Р° РёР· С…СЂР°РЅРёР»РёС‰Р°
+// Р•СЃР»Рё 'force' == true С‚Рѕ РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕ СѓРґР°Р»СЏРµС‚ РёР· С…СЂР°РЅРёР»РёС‰Р°
+// РІСЃРµ РѕР±СЉРµРєС‚С‹ СЌС‚РѕРіРѕ РєР»Р°СЃСЃР°
 void UStorage::DelClass(const UId &classid, bool force)
 {
  UObjectsStorageIterator temp=ObjectsStorage.find(classid);
@@ -237,7 +271,7 @@ void UStorage::DelClass(const UId &classid, bool force)
  if(!force)
  {
   FreeObjectsStorageByClass(classid);
-  // Если после очистки у класса не осталось объектов
+  // Р•СЃР»Рё РїРѕСЃР»Рµ РѕС‡РёСЃС‚РєРё Сѓ РєР»Р°СЃСЃР° РЅРµ РѕСЃС‚Р°Р»РѕСЃСЊ РѕР±СЉРµРєС‚РѕРІ
   if(temp != ObjectsStorage.end() && temp->second.empty())
       ObjectsStorage.erase(temp);
   if(temp != ObjectsStorage.end() && temp->second.size() > 0)
@@ -245,11 +279,58 @@ void UStorage::DelClass(const UId &classid, bool force)
  }
  else
  {
+  // РљР РРўРР§РќРћ: РџСЂРё РїСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕРј СѓРґР°Р»РµРЅРёРё РєР»Р°СЃСЃР° СЃРЅР°С‡Р°Р»Р° РѕС‡РёС‰Р°РµРј UseFlag
+  // РґР»СЏ РІСЃРµС… РѕР±СЉРµРєС‚РѕРІ СЌС‚РѕРіРѕ РєР»Р°СЃСЃР°, РєРѕС‚РѕСЂС‹Рµ Р±РѕР»СЊС€Рµ РЅРµ РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ
+  if(temp != ObjectsStorage.end())
+  {
+   // РЈРґР°Р»РµРЅРѕ РёР·Р±С‹С‚РѕС‡РЅРѕРµ Р»РѕРіРёСЂРѕРІР°РЅРёРµ - СЃРѕР·РґР°РІР°Р»Рѕ СЃРїР°Рј РІ DEBUG Р»РѕРіР°С…
+
+   for(list<UInstancesStorageElement>::iterator I=temp->second.begin(),
+       J=temp->second.end(); I!=J; ++I)
+   {
+    if(I->UseFlag && I->Object)
+    {
+     try
+     {
+      UEPtr<UContainer> owner = I->Object->GetOwner();
+      bool activity = I->Object->Activity;
+
+      // Р•СЃР»Рё РѕР±СЉРµРєС‚ РЅРµ РёРјРµРµС‚ РІР»Р°РґРµР»СЊС†Р° Рё РЅРµ Р°РєС‚РёРІРµРЅ, РѕС‡РёС‰Р°РµРј UseFlag
+      if(!owner && !activity)
+      {
+       I->UseFlag = false;
+       // РЈРґР°Р»РµРЅРѕ РёР·Р±С‹С‚РѕС‡РЅРѕРµ Р»РѕРіРёСЂРѕРІР°РЅРёРµ - СЃРѕР·РґР°РІР°Р»Рѕ СЃРїР°Рј РІ DEBUG Р»РѕРіР°С…
+      }
+     }
+     catch(...)
+     {
+      // Р’ СЃР»СѓС‡Р°Рµ РѕС€РёР±РєРё РѕСЃС‚Р°РІР»СЏРµРј UseFlag РєР°Рє РµСЃС‚СЊ
+     }
+    }
+   }
+  }
+
   ClearObjectsStorageByClass(classid);
  }
 
  UClassesStorageIterator I=ClassesStorage.find(classid);
- std::string name=FindClassName(classid);
+ std::string name;
+
+ // РљР РРўРР§РќРћ: РџРѕР»СѓС‡Р°РµРј РёРјСЏ РєР»Р°СЃСЃР° РїРµСЂРµРґ СѓРґР°Р»РµРЅРёРµРј РёР· ClassesStorage
+ // Р•СЃР»Рё РєР»Р°СЃСЃ СѓР¶Рµ СѓРґР°Р»РµРЅ, РёСЃРїРѕР»СЊР·СѓРµРј Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅС‹Р№ СЃРїРѕСЃРѕР±
+ try
+ {
+  name=FindClassName(classid);
+ }
+ catch(...)
+ {
+  // Р•СЃР»Рё РєР»Р°СЃСЃ СѓР¶Рµ РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚, РёСЃРїРѕР»СЊР·СѓРµРј РїСѓСЃС‚РѕРµ РёРјСЏ
+  name = std::string("(unknown)");
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__,
+    std::string("Class with id ") + sntoa(classid) +
+    std::string(" not found in ClassesLookupTable"));
+ }
 
  if(I != ClassesStorage.end())
   ClassesStorage.erase(I);
@@ -271,12 +352,12 @@ void UStorage::DelClass(const UId &classid, bool force)
  }
 
 
- for(map<NameT,UId>::iterator I=ClassesLookupTable.begin(),
-							  J=ClassesLookupTable.end(); I!=J; ++I)
+ for(auto lookup_iter=ClassesLookupTable.begin(),
+							  lookup_end=ClassesLookupTable.end(); lookup_iter!=lookup_end; ++lookup_iter)
  {
-  if(I->second == classid)
-  {
-   ClassesLookupTable.erase(I);
+  if(lookup_iter->second == classid)
+   {
+    ClassesLookupTable.erase(lookup_iter);
    break;
   }
  }
@@ -286,7 +367,7 @@ void UStorage::DelClass(const UId &classid, bool force)
   lib->RemoveClassFromCompletedList(name);
 }
 
-// Проверяет наличие образца класса объекта в хранилище
+// РџСЂРѕРІРµСЂСЏРµС‚ РЅР°Р»РёС‡РёРµ РѕР±СЂР°Р·С†Р° РєР»Р°СЃСЃР° РѕР±СЉРµРєС‚Р° РІ С…СЂР°РЅРёР»РёС‰Рµ
 bool UStorage::CheckClass(const UId &classid) const
 {
  if(ClassesStorage.find(classid) == ClassesStorage.end())
@@ -297,14 +378,14 @@ bool UStorage::CheckClass(const UId &classid) const
 
 bool UStorage::CheckClass(const string &classname) const
 {
- map<NameT,UId>::const_iterator I=ClassesLookupTable.find(classname);
+ auto I=ClassesLookupTable.find(classname);
  if(I == ClassesLookupTable.end())
   return false;
  return true;
 
 }
 
-// Возвращает образец класса
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РѕР±СЂР°Р·РµС† РєР»Р°СЃСЃР°
 UEPtr<UComponentAbstractFactory> UStorage::GetComponentFactory(const UId &classid) const
 {
  UClassesStorageCIterator I=ClassesStorage.find(classid);
@@ -321,14 +402,14 @@ UEPtr<UComponentAbstractFactory> UStorage::GetComponentFactory(const std::string
  return GetComponentFactory(id);
 }
 
-// Возвращает число классов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ РєР»Р°СЃСЃРѕРІ
 int UStorage::GetNumClasses(void) const
 {
  return int(ClassesStorage.size());
 }
 
-// Возвращает список идентификаторов всех классов хранилища
-// Буфер 'buffer' будет очищен от предыдущих значений
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂРѕРІ РІСЃРµС… РєР»Р°СЃСЃРѕРІ С…СЂР°РЅРёР»РёС‰Р°
+// Р‘СѓС„РµСЂ 'buffer' Р±СѓРґРµС‚ РѕС‡РёС‰РµРЅ РѕС‚ РїСЂРµРґС‹РґСѓС‰РёС… Р·РЅР°С‡РµРЅРёР№
 void UStorage::GetClassIdList(std::vector<UId> &buffer) const
 {
  buffer.resize(0);
@@ -337,27 +418,25 @@ void UStorage::GetClassIdList(std::vector<UId> &buffer) const
   buffer.push_back(I->first);
 }
 
-// Возвращает список имен всех классов хранилища
-// Буфер 'buffer' будет очищен от предыдущих значений
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє РёРјРµРЅ РІСЃРµС… РєР»Р°СЃСЃРѕРІ С…СЂР°РЅРёР»РёС‰Р°
+// Р‘СѓС„РµСЂ 'buffer' Р±СѓРґРµС‚ РѕС‡РёС‰РµРЅ РѕС‚ РїСЂРµРґС‹РґСѓС‰РёС… Р·РЅР°С‡РµРЅРёР№
 void UStorage::GetClassNameList(vector<NameT> &buffer) const
 {
- map<NameT,UId>::const_iterator I,J;
-
- I=ClassesLookupTable.begin();
- J=ClassesLookupTable.end();
+ auto I=ClassesLookupTable.begin();
+ auto J=ClassesLookupTable.end();
  buffer.resize(0);
  buffer.reserve(ClassesLookupTable.size());
 
- for(map<NameT,UId>::const_iterator I=ClassesLookupTable.begin(),
-									J=ClassesLookupTable.end(); I!=J; ++I)
+ for(auto lookup_iter=ClassesLookupTable.begin(),
+									lookup_end=ClassesLookupTable.end(); lookup_iter!=lookup_end; ++lookup_iter)
  {
-  buffer.push_back(I->first);
+  buffer.push_back(lookup_iter->first);
  }
 }
 
 
 
-// Удаляет все не используемые образцы классов из хранилища
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ РЅРµ РёСЃРїРѕР»СЊР·СѓРµРјС‹Рµ РѕР±СЂР°Р·С†С‹ РєР»Р°СЃСЃРѕРІ РёР· С…СЂР°РЅРёР»РёС‰Р°
 void UStorage::FreeClassesStorage(bool force)
 {
  for(UClassesStorageCIterator I=ClassesStorage.begin(),
@@ -371,39 +450,41 @@ void UStorage::FreeClassesStorage(bool force)
  }
 }
 
-// Удаляет все образцы классов из хранилища
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ РѕР±СЂР°Р·С†С‹ РєР»Р°СЃСЃРѕРІ РёР· С…СЂР°РЅРёР»РёС‰Р°
 void UStorage::ClearClassesStorage(bool force)
 {
- for(UClassesStorageCIterator I=ClassesStorage.begin(),
- 							  J=ClassesStorage.end(); I!=J; ++I)
+ // РћРїС‚РёРјРёР·Р°С†РёСЏ: РѕР±СЉРµРґРёРЅСЏРµРј РїСЂРѕРІРµСЂРєСѓ Рё СѓРґР°Р»РµРЅРёРµ РІ РѕРґРёРЅ РїСЂРѕС…РѕРґ
+ UClassesStorageIterator I = ClassesStorage.begin();
+ while(I != ClassesStorage.end())
  {
+  // РџСЂРѕРІРµСЂРєР° РЅР°Р»РёС‡РёСЏ РѕР±СЉРµРєС‚РѕРІ (РµСЃР»Рё РЅСѓР¶РЅРѕ)
   UObjectsStorageIterator temp=ObjectsStorage.find(I->first);
   if(temp != ObjectsStorage.end() && temp->second.size() != 0)
   {
-   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Destory class which objecst in use: ")+FindClassName(I->first));
+   if(Logger)
+    Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("Destory class which objecst in use: ")+FindClassName(I->first));
    if(!force)
-	throw EObjectStorageNotEmpty(I->first);
-   else
-    break;
+   {
+    throw EObjectStorageNotEmpty(I->first);
+   }
+   // РџСЂРё force РїСЂРѕРїСѓСЃРєР°РµРј РїСЂРѕРІРµСЂРєСѓ Рё РїСЂРѕРґРѕР»Р¶Р°РµРј СѓРґР°Р»РµРЅРёРµ
   }
- }
 
- for(UClassesStorageCIterator I = ClassesStorage.begin(), J=ClassesStorage.end(); I != J; ++I)
- {
+  // РЈРґР°Р»РµРЅРёРµ РєР»Р°СЃСЃР°
   RDK_SYS_TRY
   {
    try
    {
-	if(I->second)
-	{
+    if(I->second)
+    {
      std::string name=FindClassName(I->first);
-	 delete I->second.Get();
-	}
+     delete I->second.Get();
+    }
    }
    catch(...)
    {
-	if(Logger)
-	 Logger->LogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("Exception raised when destroy class ")+FindClassName(I->first));
+    if(Logger)
+     Logger->LogMessageEx(RDK_EX_FATAL, __FUNCTION__, std::string("Exception raised when destroy class ")+FindClassName(I->first));
    }
   }
   RDK_SYS_CATCH
@@ -411,13 +492,17 @@ void UStorage::ClearClassesStorage(bool force)
    if(Logger)
     Logger->ProcessException(RDK::UExceptionWrapperSEH(GET_SYSTEM_EXCEPTION_DATA));
   }
- }
- ClassesStorage.clear();
 
- for(UClassesDescriptionCIterator I = ClassesDescription.begin(), J=ClassesDescription.end(); I != J; ++I)
+  // Р‘РµР·РѕРїР°СЃРЅРѕРµ СѓРґР°Р»РµРЅРёРµ РёР· map (erase РІРѕР·РІСЂР°С‰Р°РµС‚ СЃР»РµРґСѓСЋС‰РёР№ РёС‚РµСЂР°С‚РѕСЂ)
+  I = ClassesStorage.erase(I);
+ }
+
+ // ClassesStorage СѓР¶Рµ РѕС‡РёС‰РµРЅ РІ С†РёРєР»Рµ РІС‹С€Рµ
+
+ for(UClassesDescriptionCIterator descI = ClassesDescription.begin(), J=ClassesDescription.end(); descI != J; ++descI)
  {
-  if(I->second)
-   delete I->second.Get();
+  if(descI->second)
+   delete descI->second.Get();
  }
  ClassesDescription.clear();
  LastClassId=0;
@@ -425,26 +510,68 @@ void UStorage::ClearClassesStorage(bool force)
 // --------------------------
 
 // --------------------------
-// Методы управления хранилищем объектов
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ С…СЂР°РЅРёР»РёС‰РµРј РѕР±СЉРµРєС‚РѕРІ
 // --------------------------
-// Извлекает объект из хранилища
-// Возвращает указатель на свободный объект по имени класса
-// Выбранный объект помечается как занятый в хранилище
-// Флаг 'Activity' объекта выставляется в true
-// Если свободного объекта не существует он создается и добавляется
-// в хранилище
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ С…СЂР°РЅРёР»РёС‰РµРј РѕР±СЉРµРєС‚РѕРІ
+// --------------------------
+// РР·РІР»РµРєР°РµС‚ РѕР±СЉРµРєС‚ РёР· С…СЂР°РЅРёР»РёС‰Р°
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° СЃРІРѕР±РѕРґРЅС‹Р№ РѕР±СЉРµРєС‚ РїРѕ РёРјРµРЅРё РєР»Р°СЃСЃР°
+// Р’С‹Р±СЂР°РЅРЅС‹Р№ РѕР±СЉРµРєС‚ РїРѕРјРµС‡Р°РµС‚СЃСЏ РєР°Рє Р·Р°РЅСЏС‚С‹Р№ РІ С…СЂР°РЅРёР»РёС‰Рµ
+// Р¤Р»Р°Рі 'Activity' РѕР±СЉРµРєС‚Р° РІС‹СЃС‚Р°РІР»СЏРµС‚СЃСЏ РІ true
 UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponent> &prototype)
 {
+ // РџРѕРґРґРµСЂР¶РєР° РІР»РѕР¶РµРЅРЅРѕР№ С‚СЂР°СЃСЃРёСЂРѕРІРєРё (РїРѕРєР°Р·С‹РІР°РµС‚ РїРѕСЃР»РµРґРЅРёР№ СѓСЃРїРµС€РЅС‹Р№ С€Р°Рі РїРµСЂРµРґ РїР°РґРµРЅРёРµРј)
+ struct DepthGuard
+ {
+  DepthGuard() { ++g_takeobject_trace_depth; }
+  ~DepthGuard() { --g_takeobject_trace_depth; }
+ } depth_guard;
+
+ // Р—Р°С‰РёС‚Р° РѕС‚ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РЅРµРёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅРЅС‹С… РєР»Р°СЃСЃРѕРІ
+ if(classid == ForbiddenId)
+ {
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__,
+    std::string("Attempt to take object with ForbiddenId (0) - class not initialized"));
+  throw EClassIdNotExist(classid);
+ }
+
  UClassesStorageIterator tmplI=ClassesStorage.find(classid);
  if(tmplI == ClassesStorage.end())
+ {
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__,
+    std::string("Class with id ") + sntoa(classid) + std::string(" not found in Storage"));
   throw EClassIdNotExist(classid);
+ }
 
  UClassStorageElement tmpl=tmplI->second;
 
  UObjectsStorageIterator instances=ObjectsStorage.find(classid);
+ // Р”РёР°РіРЅРѕСЃС‚РёС‡РµСЃРєРѕРµ РёРјСЏ РєР»Р°СЃСЃР° РґР»СЏ Р»РѕРіРёСЂРѕРІР°РЅРёСЏ
+ std::string diag_class_name;
+ try
+ {
+  diag_class_name = FindClassName(classid);
+ }
+ catch(...)
+ {
+  diag_class_name = "<unknown>";
+ }
+
+ // Р•СЃР»Рё РјС‹ РЅР°С…РѕРґРёРјСЃСЏ РІРЅСѓС‚СЂРё Default() NNeuronLearner вЂ” РїРёС€РµРј РїРѕР»РЅС‹Р№ С‚СЂРµР№СЃ РІСЃРµС… TakeObject.
+ if(Logger && g_takeobject_trace_nneuronlearner_default)
+ {
+  std::ostringstream oss;
+  oss << "TakeObject trace (depth=" << g_takeobject_trace_depth
+      << ", root='" << g_takeobject_trace_root_name
+      << "'): request class '" << diag_class_name << "'";
+  Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, oss.str());
+ }
+
  if(instances != ObjectsStorage.end())
  {
-  UInstancesStorageElement* element=0;// Заглушка!! instances->FindFree();
+  UInstancesStorageElement* element=0;// Р—Р°РіР»СѓС€РєР°!! instances->FindFree();
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(),
               J=instances->second.end(); I!=J; ++I)
   {
@@ -462,11 +589,103 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
    if(obj)
    {
     element->UseFlag=true;
+
+    if(Logger)
+    {
+     Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+      std::string("TakeObject reuse path for class '") + diag_class_name + "'");
+    }
+
+    // РљР РРўРР§РќРћ: РЎРѕС…СЂР°РЅСЏРµРј ClassId РїРµСЂРµРґ РѕРїРµСЂР°С†РёСЏРјРё, РєРѕС‚РѕСЂС‹Рµ РјРѕРіСѓС‚ РµРіРѕ РёР·РјРµРЅРёС‚СЊ
+    UId saved_class_id = obj->GetClass();
+    if(saved_class_id == ForbiddenId || saved_class_id != classid)
+     saved_class_id = classid; // РСЃРїРѕР»СЊР·СѓРµРј РїСЂР°РІРёР»СЊРЅС‹Р№ classid РµСЃР»Рё С‚РµРєСѓС‰РёР№ РЅРµРІР°Р»РёРґРЅС‹Р№
+
+    if(Logger)
+    {
+     Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+      std::string("TakeObject before Default() for class '") + diag_class_name + "'");
+    }
+
+    // Р”Р»СЏ NNeuronLearner РІРєР»СЋС‡Р°РµРј СЂР°СЃС€РёСЂРµРЅРЅСѓСЋ С‚СЂР°СЃСЃРёСЂРѕРІРєСѓ РІР»РѕР¶РµРЅРЅС‹С… TakeObject РЅР° РІСЂРµРјСЏ Default().
+    struct TraceGuard
+    {
+     bool enabled = false;
+     TraceGuard(const std::string& class_name, const std::string& root_name)
+     {
+      if(class_name == "NNeuronLearner")
+      {
+       enabled = true;
+       g_takeobject_trace_nneuronlearner_default = true;
+       g_takeobject_trace_root_name = root_name;
+      }
+     }
+     ~TraceGuard()
+     {
+      if(enabled)
+      {
+       g_takeobject_trace_nneuronlearner_default = false;
+       g_takeobject_trace_root_name.clear();
+      }
+     }
+    } trace_guard(diag_class_name, obj->GetName());
+
+    if(Logger && trace_guard.enabled)
+    {
+     Logger->LogMessageEx(RDK_EX_DEBUG, "TakeObjectTrace",
+      std::string("Enter Default() for root '") + obj->GetName() + "'");
+    }
+
     obj->Default();
+
+    if(Logger && trace_guard.enabled)
+    {
+     Logger->LogMessageEx(RDK_EX_DEBUG, "TakeObjectTrace",
+      std::string("Exit Default() for root '") + obj->GetName() + "'");
+    }
+
+    if(Logger)
+    {
+     Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+      std::string("TakeObject after Default() for class '") + diag_class_name + "'");
+    }
+
     if(!prototype)
+    {
+     if(Logger)
+     {
+      Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+       std::string("TakeObject before ResetComponent() for class '") + diag_class_name + "'");
+     }
      tmpl->ResetComponent(static_pointer_cast<UComponent>(obj));
+     if(Logger)
+     {
+      Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+       std::string("TakeObject after ResetComponent() for class '") + diag_class_name + "'");
+     }
+    }
     else
+    {
+     if(Logger)
+     {
+      Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+       std::string("TakeObject before Copy() from prototype for class '") + diag_class_name + "'");
+     }
      dynamic_pointer_cast<const UContainer>(prototype)->Copy(obj,this);
+     if(Logger)
+     {
+      Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+       std::string("TakeObject after Copy() from prototype for class '") + diag_class_name + "'");
+     }
+    }
+
+    // РљР РРўРР§РќРћ: Р’РѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј ClassId РџРћРЎР›Р• РІСЃРµС… РѕРїРµСЂР°С†РёР№, РєРѕС‚РѕСЂС‹Рµ РјРѕРіСѓС‚ РµРіРѕ РёР·РјРµРЅРёС‚СЊ
+    UId current_class_id = obj->GetClass();
+    if(current_class_id == ForbiddenId || current_class_id != classid)
+    {
+     // Р’РѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј ClassId РёР· РїР°СЂР°РјРµС‚СЂР° classid
+     obj->SetClass(classid);
+    }
 
     obj->Activity = true;
    }
@@ -475,7 +694,7 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
  }
 
 
- // Если свободного объекта не нашли
+ // Р•СЃР»Рё СЃРІРѕР±РѕРґРЅРѕРіРѕ РѕР±СЉРµРєС‚Р° РЅРµ РЅР°С€Р»Рё
  UEPtr<UContainer> obj;
  if(prototype)
  {
@@ -497,6 +716,12 @@ UEPtr<UComponent> UStorage::TakeObject(const UId &classid, const UEPtr<UComponen
  obj->SetLogger(Logger);
  obj->Activity = true;
 
+ if(Logger)
+ {
+  Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+   std::string("TakeObject new-object path for class '") + diag_class_name + "'");
+ }
+
  return static_pointer_cast<UComponent>(obj);
 }
 
@@ -506,7 +731,7 @@ UEPtr<UComponent> UStorage::TakeObject(const NameT &classname, const UEPtr<UComp
 }
 
 
-// Возвращает Id класса, отвечающий объекту 'object'
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ Id РєР»Р°СЃСЃР°, РѕС‚РІРµС‡Р°СЋС‰РёР№ РѕР±СЉРµРєС‚Сѓ 'object'
 UId UStorage::FindClass(UEPtr<UComponent> object) const
 {
  if(!object)
@@ -515,7 +740,7 @@ UId UStorage::FindClass(UEPtr<UComponent> object) const
  return object->GetClass();
 }
 
-// Проверяет существует ли объект 'object' в хранилище
+// РџСЂРѕРІРµСЂСЏРµС‚ СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё РѕР±СЉРµРєС‚ 'object' РІ С…СЂР°РЅРёР»РёС‰Рµ
 bool UStorage::CheckObject(UEPtr<UContainer> object) const
 {
  if(!object)
@@ -534,7 +759,7 @@ bool UStorage::CheckObject(UEPtr<UContainer> object) const
  return false;
 }
 
-// Ищет фабрику, непосредственно хранящую заданный компонент
+// РС‰РµС‚ С„Р°Р±СЂРёРєСѓ, РЅРµРїРѕСЃСЂРµРґСЃС‚РІРµРЅРЅРѕ С…СЂР°РЅСЏС‰СѓСЋ Р·Р°РґР°РЅРЅС‹Р№ РєРѕРјРїРѕРЅРµРЅС‚
 UVirtualMethodFactory* UStorage::FindVirualMethodFactory(UEPtr<UContainer> object)
 {
  if(!object)
@@ -553,7 +778,7 @@ UVirtualMethodFactory* UStorage::FindVirualMethodFactory(UEPtr<UContainer> objec
  return 0;
 }
 
-// Вычисляет суммарное число объектов в хранилище
+// Р’С‹С‡РёСЃР»СЏРµС‚ СЃСѓРјРјР°СЂРЅРѕРµ С‡РёСЃР»Рѕ РѕР±СЉРµРєС‚РѕРІ РІ С…СЂР°РЅРёР»РёС‰Рµ
 int UStorage::CalcNumObjects(void) const
 {
  int result=0;
@@ -576,41 +801,180 @@ int UStorage::CalcNumObjects(const UId &classid) const
 
 size_t UStorage::CalcNumObjects(const string &classname) const
 {
- return CalcNumObjects(FindClassId(classname));
+ // Р”Р»СЏ СѓРґРѕР±СЃС‚РІР° РІС‹Р·С‹РІР°СЋС‰РёС…: РµСЃР»Рё РґР»СЏ РєР»Р°СЃСЃР° РїРѕРєР° РЅРµС‚ РЅРё РѕРґРЅРѕРіРѕ РѕР±СЉРµРєС‚Р°
+ // РІ ObjectsStorage, РІРѕР·РІСЂР°С‰Р°РµРј 0 РІРјРµСЃС‚Рѕ РІС‹Р±СЂР°СЃС‹РІР°РЅРёСЏ EClassIdNotExist.
+ try
+ {
+  return CalcNumObjects(FindClassId(classname));
+ }
+ catch (const EClassIdNotExist &)
+ {
+  return 0;
+ }
 }
 
 
-// Удаляет все свободные объекты из хранилища
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ СЃРІРѕР±РѕРґРЅС‹Рµ РѕР±СЉРµРєС‚С‹ РёР· С…СЂР°РЅРёР»РёС‰Р°
 void UStorage::FreeObjectsStorage(bool force)
 {
  for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
 				 								instances != iend; ++instances)
  {
-  std::string object_class_name=FindClassName(instances->first);
+  // РљР РРўРР§РќРћ: РџСЂРѕРІРµСЂСЏРµРј СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ РєР»Р°СЃСЃР° РїРµСЂРµРґ РїРѕРїС‹С‚РєРѕР№ РїРѕР»СѓС‡РёС‚СЊ РµРіРѕ РёРјСЏ
+  // Р•СЃР»Рё РєР»Р°СЃСЃ СѓР¶Рµ СѓРґР°Р»РµРЅ, РёСЃРїРѕР»СЊР·СѓРµРј Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅС‹Р№ СЃРїРѕСЃРѕР± РїРѕР»СѓС‡РµРЅРёСЏ РёРЅС„РѕСЂРјР°С†РёРё
+  std::string object_class_name;
+  UId class_id = instances->first;
+
+  try
+  {
+   // РџСЂРѕРІРµСЂСЏРµРј, СЃСѓС‰РµСЃС‚РІСѓРµС‚ Р»Рё РєР»Р°СЃСЃ РІ ClassesStorage
+   if(ClassesStorage.find(class_id) != ClassesStorage.end())
+   {
+    object_class_name = FindClassName(class_id);
+   }
+   else
+   {
+    // РљР»Р°СЃСЃ СѓР¶Рµ СѓРґР°Р»РµРЅ, РёСЃРїРѕР»СЊР·СѓРµРј Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅРѕРµ РёРјСЏ
+    object_class_name = std::string("(deleted class id=") + sntoa(class_id) + std::string(")");
+    if(Logger)
+     Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+      std::string("Class with id ") + sntoa(class_id) +
+      std::string(" already deleted, using alternative name"));
+   }
+  }
+  catch(...)
+  {
+   // Р’ СЃР»СѓС‡Р°Рµ РѕС€РёР±РєРё РёСЃРїРѕР»СЊР·СѓРµРј Р°Р»СЊС‚РµСЂРЅР°С‚РёРІРЅРѕРµ РёРјСЏ
+   object_class_name = std::string("(unknown class id=") + sntoa(class_id) + std::string(")");
+   if(Logger)
+    Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__,
+     std::string("Failed to get class name for id ") + sntoa(class_id) +
+     std::string(", using alternative name"));
+  }
+
   if(instances->second.empty())
    continue;
 
-  size_t size=instances->second.size();
   size_t count=0;
 
-  if(Logger)
-   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has begun");
+  // РЈРґР°Р»РµРЅРѕ РёР·Р±С‹С‚РѕС‡РЅРѕРµ Р»РѕРіРёСЂРѕРІР°РЅРёРµ - СЃРѕР·РґР°РІР°Р»Рѕ СЃРїР°Рј РІ INFO Р»РѕРіР°С…
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(); I != instances->second.end();)
   {
    std::string object_name=I->Object->GetName();
+   UEPtr<UContainer> object=I->Object;
+
+   // РљР РРўРР§РќРћ: РЎРЅР°С‡Р°Р»Р° РІРѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј ClassId Рё РїСЂРѕРІРµСЂСЏРµРј UseFlag РџР•Р Р•Р” Р»РѕРіРёСЂРѕРІР°РЅРёРµРј РѕС€РёР±РєРё
+   bool actually_in_use = false;
+   bool class_id_restored = false;
+   UId restored_class_id = ForbiddenId;
+
+   if(I->UseFlag)
+   {
+	try
+	{
+	 if(object)
+	 {
+	  // РљР РРўРР§РќРћ: РџСЂРѕРІРµСЂСЏРµРј РІР°Р»РёРґРЅРѕСЃС‚СЊ ClassId РѕР±СЉРµРєС‚Р° Рё РІРѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј РёР· РєР»СЋС‡Р° РєРѕРЅС‚РµР№РЅРµСЂР°
+	  UId object_class_id = object->GetClass();
+	  UId container_class_id = instances->first; // РљР»СЋС‡ РєРѕРЅС‚РµР№РЅРµСЂР° РІ ObjectsStorage
+
+	  // Р•СЃР»Рё ClassId = ForbiddenId РёР»Рё РЅРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚ РєР»СЋС‡Сѓ РєРѕРЅС‚РµР№РЅРµСЂР°, РІРѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј РµРіРѕ
+	  if(object_class_id == ForbiddenId || object_class_id != container_class_id)
+	  {
+	   // Р’РѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј ClassId РёР· РєР»СЋС‡Р° РєРѕРЅС‚РµР№РЅРµСЂР°
+	   object->SetClass(container_class_id);
+	   class_id_restored = true;
+	   restored_class_id = container_class_id;
+	   // РЈРґР°Р»РµРЅРѕ РёР·Р±С‹С‚РѕС‡РЅРѕРµ Р»РѕРіРёСЂРѕРІР°РЅРёРµ - СЃРѕР·РґР°РІР°Р»Рѕ СЃРїР°Рј РІ WARNING Р»РѕРіР°С…
+	   object_class_id = container_class_id;
+	  }
+	  else
+	  {
+	   restored_class_id = object_class_id;
+	  }
+
+	  // РџСЂРѕРІРµСЂСЏРµРј СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ РєР»Р°СЃСЃР°
+	  if(ClassesStorage.find(object_class_id) == ClassesStorage.end())
+	  {
+	   // РљР»Р°СЃСЃ РѕР±СЉРµРєС‚Р° СѓР¶Рµ СѓРґР°Р»РµРЅ, РѕР±СЉРµРєС‚ РІ РЅРµРІР°Р»РёРґРЅРѕРј СЃРѕСЃС‚РѕСЏРЅРёРё
+	   if(Logger)
+	    Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__,
+	     std::string("Object ") + object_name +
+	     std::string(" has class id ") + sntoa(object_class_id) +
+	     std::string(" which no longer exists - class was deleted"));
+	  }
+
+	  UEPtr<UContainer> owner = object->GetOwner();
+	  // Р•СЃР»Рё РѕР±СЉРµРєС‚ РёРјРµРµС‚ РІР»Р°РґРµР»СЊС†Р°, РѕРЅ РјРѕР¶РµС‚ Р±С‹С‚СЊ РІ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРё
+	  if(owner)
+	   actually_in_use = true;
+
+	  // Р”РѕРїРѕР»РЅРёС‚РµР»СЊРЅР°СЏ РїСЂРѕРІРµСЂРєР°: РµСЃР»Рё Activity=false Рё РЅРµС‚ РІР»Р°РґРµР»СЊС†Р°,
+	  // РѕР±СЉРµРєС‚ СЃРєРѕСЂРµРµ РІСЃРµРіРѕ РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ, РјРѕР¶РЅРѕ РѕС‡РёСЃС‚РёС‚СЊ UseFlag
+	  if(!actually_in_use && !object->Activity)
+	  {
+	   // РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРё РѕС‡РёС‰Р°РµРј UseFlag РґР»СЏ РѕР±СЉРµРєС‚РѕРІ Р±РµР· Р°РєС‚РёРІРЅС‹С… СЃСЃС‹Р»РѕРє
+	   I->UseFlag = false;
+	   // РЈРґР°Р»РµРЅРѕ РёР·Р±С‹С‚РѕС‡РЅРѕРµ Р»РѕРіРёСЂРѕРІР°РЅРёРµ - СЃРѕР·РґР°РІР°Р»Рѕ СЃРїР°Рј РІ DEBUG Р»РѕРіР°С…
+	  }
+	 }
+	}
+	catch(...)
+	{
+	 // Р’ СЃР»СѓС‡Р°Рµ РѕС€РёР±РєРё СЃС‡РёС‚Р°РµРј, С‡С‚Рѕ РѕР±СЉРµРєС‚ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ
+	 actually_in_use = true;
+	}
+   }
+
+   // Р›РѕРіРёСЂСѓРµРј РѕС€РёР±РєСѓ С‚РѕР»СЊРєРѕ РµСЃР»Рё UseFlag РІСЃРµ РµС‰Рµ true РїРѕСЃР»Рµ РїСЂРѕРІРµСЂРєРё Рё РѕС‡РёСЃС‚РєРё
    if(I->UseFlag && force)
    {
 	if(Logger)
-	 Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, std::string("FORCED destroy objects by name ")+object_name+": object in use!");
+	{
+	 std::string context_info = std::string("FORCED destroy objects by name ") + object_name + ": object in use!";
+
+	 // Р”РѕР±Р°РІР»СЏРµРј РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ РєРѕРЅС‚РµРєСЃС‚Рµ РёСЃРїРѕР»СЊР·РѕРІР°РЅРёСЏ РѕР±СЉРµРєС‚Р°
+	 try
+	 {
+	  if(object)
+	  {
+	   UEPtr<UContainer> owner = object->GetOwner();
+	   if(owner)
+	   {
+	    std::string owner_name = owner->GetName();
+	    context_info += std::string(" Owner=") + owner_name;
+	   }
+
+	   bool activity = object->Activity;
+	   context_info += std::string(" Activity=") + (activity ? "true" : "false");
+
+	   // РСЃРїРѕР»СЊР·СѓРµРј РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅРЅС‹Р№ ClassId (РµСЃР»Рё Р±С‹Р» РІРѕСЃСЃС‚Р°РЅРѕРІР»РµРЅ) РёР»Рё С‚РµРєСѓС‰РёР№
+	   UId current_class_id = restored_class_id != ForbiddenId ? restored_class_id : object->GetClass();
+	   if(current_class_id == 0)
+	    context_info += std::string(" ClassId=ForbiddenId(0)");
+	   else
+	   {
+	    context_info += std::string(" ClassId=") + sntoa(current_class_id);
+	    if(class_id_restored)
+	     context_info += std::string(" (restored)");
+	   }
+	  }
+	 }
+	 catch(...)
+	 {
+	  context_info += " (failed to get context info)";
+	 }
+
+	 Logger->LogMessageEx(RDK_EX_ERROR, __FUNCTION__, context_info);
+	}
    }
 
+   // РСЃРїРѕР»СЊР·СѓРµРј РѕР±РЅРѕРІР»РµРЅРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ UseFlag РїРѕСЃР»Рµ РІРѕР·РјРѕР¶РЅРѕР№ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРѕР№ РѕС‡РёСЃС‚РєРё
    if(!I->UseFlag || force)
    {
 	list<UInstancesStorageElement>::iterator K;
-	if(Logger)
-	 Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name);
+	// РЈРґР°Р»РµРЅРѕ РёР·Р±С‹С‚РѕС‡РЅРѕРµ Р»РѕРіРёСЂРѕРІР°РЅРёРµ - СЃРѕР·РґР°РІР°Р»Рѕ СЃРїР°Рј РІ INFO Р»РѕРіР°С…
 	K=I; ++K;
-	UEPtr<UContainer> object=I->Object;
 	PopObject(instances,I);
 	RDK_SYS_TRY
 	{
@@ -640,27 +1004,28 @@ void UStorage::FreeObjectsStorage(bool force)
    else
    {
 	++I;
+	// РЈРґР°Р»РµРЅРѕ РёР·Р±С‹С‚РѕС‡РЅРѕРµ Р»РѕРіРёСЂРѕРІР°РЅРёРµ - СЃРѕР·РґР°РІР°Р»Рѕ РѕРіСЂРѕРјРЅС‹Р№ С„Р»СѓРґ РІ Р»РѕРіР°С… (2431+ СЃРѕРѕР±С‰РµРЅРёР№)
+	// Р­С‚Рѕ РЅРѕСЂРјР°Р»СЊРЅРѕРµ РїРѕРІРµРґРµРЅРёРµ СЃРёСЃС‚РµРјС‹ - РѕР±СЉРµРєС‚С‹ РЅРµ СѓРЅРёС‡С‚РѕР¶Р°СЋС‚СЃСЏ, РµСЃР»Рё РѕРЅРё РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ
+//	if(!force)
+//	{
 //	if(!force)
 //	{
 //	 if(Logger)
-//	  Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name+" FAILED! Object in use.");
-//	}
    }
   }
 
 //  size_t end_size=instances->second.size();
 //  if(end_size>0)
+//  size_t end_size=instances->second.size();
+//  if(end_size>0)
 //  {
 //   if(Logger)
 //	Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Warning, some objects in use: ")+sntoa(end_size));
-//  }
-//  instances->second.clear();
-  if(Logger)
-   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+std::string(" has finished: ")+sntoa(count)+std::string("/")+sntoa(size));
+  // РЈРґР°Р»РµРЅРѕ РёР·Р±С‹С‚РѕС‡РЅРѕРµ Р»РѕРіРёСЂРѕРІР°РЅРёРµ - СЃРѕР·РґР°РІР°Р»Рѕ СЃРїР°Рј РІ INFO Р»РѕРіР°С…
  }
 }
 
-// Удаляет все свободные объекты заданного класса из хранилища
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ СЃРІРѕР±РѕРґРЅС‹Рµ РѕР±СЉРµРєС‚С‹ Р·Р°РґР°РЅРЅРѕРіРѕ РєР»Р°СЃСЃР° РёР· С…СЂР°РЅРёР»РёС‰Р°
 void UStorage::FreeObjectsStorageByClass(const UId &classid)
 {
     UObjectsStorageIterator instances=ObjectsStorage.find(classid);
@@ -672,11 +1037,9 @@ void UStorage::FreeObjectsStorageByClass(const UId &classid)
     if(instances->second.empty())
         return;
 
-    size_t size=instances->second.size();
     size_t count=0;
 
-    if(Logger)
-        Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+" has begun");
+    // РЈРґР°Р»РµРЅРѕ РёР·Р±С‹С‚РѕС‡РЅРѕРµ Р»РѕРіРёСЂРѕРІР°РЅРёРµ - СЃРѕР·РґР°РІР°Р»Рѕ СЃРїР°Рј РІ INFO Р»РѕРіР°С…
 
     for(list<UInstancesStorageElement>::iterator I=instances->second.begin(); I != instances->second.end();)
     {
@@ -690,8 +1053,7 @@ void UStorage::FreeObjectsStorageByClass(const UId &classid)
         if(!I->UseFlag)
         {
             list<UInstancesStorageElement>::iterator K;
-            if(Logger)
-                Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects by name ")+object_name);
+            // РЈРґР°Р»РµРЅРѕ РёР·Р±С‹С‚РѕС‡РЅРѕРµ Р»РѕРіРёСЂРѕРІР°РЅРёРµ - СЃРѕР·РґР°РІР°Р»Рѕ СЃРїР°Рј РІ INFO Р»РѕРіР°С…
             K=I; ++K;
             UEPtr<UContainer> object=I->Object;
             PopObject(instances,I);
@@ -728,49 +1090,88 @@ void UStorage::FreeObjectsStorageByClass(const UId &classid)
         }
     }
 
-    if(Logger)
-        Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Destroy objects of class ")+object_class_name+std::string(" has finished: ")+sntoa(count)+std::string("/")+sntoa(size));
+    // РЈРґР°Р»РµРЅРѕ РёР·Р±С‹С‚РѕС‡РЅРѕРµ Р»РѕРіРёСЂРѕРІР°РЅРёРµ - СЃРѕР·РґР°РІР°Р»Рѕ СЃРїР°Рј РІ INFO Р»РѕРіР°С…
 
 }
 
-// Удаляет все объекты из хранилища
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ РѕР±СЉРµРєС‚С‹ РёР· С…СЂР°РЅРёР»РёС‰Р°
 void UStorage::ClearObjectsStorage(bool force)
 {
  for(UObjectsStorageIterator instances=ObjectsStorage.begin(),iend=ObjectsStorage.end();
 												instances != iend; ++instances)
  {
   std::string object_class_name=FindClassName(instances->first);
-  if(Logger)
-   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Free objects of class ")+object_class_name+" has begun");
+  // РЈРґР°Р»РµРЅРѕ РёР·Р±С‹С‚РѕС‡РЅРѕРµ Р»РѕРіРёСЂРѕРІР°РЅРёРµ - СЃРѕР·РґР°РІР°Р»Рѕ СЃРїР°Рј РІ INFO Р»РѕРіР°С…
   for(list<UInstancesStorageElement>::iterator I=instances->second.begin(), J=instances->second.end(); I!=J; ++I)
   {
    std::string object_name=I->Object->GetName();
-   if(Logger)
-	Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Free objects by name ")+object_name);
+   // РЈРґР°Р»РµРЅРѕ РёР·Р±С‹С‚РѕС‡РЅРѕРµ Р»РѕРіРёСЂРѕРІР°РЅРёРµ - СЃРѕР·РґР°РІР°Р»Рѕ СЃРїР°Рј РІ INFO Р»РѕРіР°С…
    I->Object->Free();
   }
 
-  if(Logger)
-   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__, std::string("Free objects of class ")+object_class_name+" has finished");
+  // РЈРґР°Р»РµРЅРѕ РёР·Р±С‹С‚РѕС‡РЅРѕРµ Р»РѕРіРёСЂРѕРІР°РЅРёРµ - СЃРѕР·РґР°РІР°Р»Рѕ СЃРїР°Рј РІ INFO Р»РѕРіР°С…
  }
 
  FreeObjectsStorage(force);
 }
 
-// Удаляет все объекты заданного класса из хранилища
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ РѕР±СЉРµРєС‚С‹ Р·Р°РґР°РЅРЅРѕРіРѕ РєР»Р°СЃСЃР° РёР· С…СЂР°РЅРёР»РёС‰Р°
 void UStorage::ClearObjectsStorageByClass(const UId &classid)
 {
  UObjectsStorageIterator instances=ObjectsStorage.find(classid);
  if(instances ==ObjectsStorage.end())
   return;
 
+ // РљР РРўРР§РќРћ: РџРµСЂРµРґ СѓРґР°Р»РµРЅРёРµРј РєР»Р°СЃСЃР° РѕС‡РёС‰Р°РµРј UseFlag РґР»СЏ РѕР±СЉРµРєС‚РѕРІ Р±РµР· Р°РєС‚РёРІРЅС‹С… СЃСЃС‹Р»РѕРє
+ // Рё РІРѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј ClassId РѕР±СЉРµРєС‚РѕРІ РёР· РїР°СЂР°РјРµС‚СЂР° classid, С‡С‚РѕР±С‹ РѕРЅРё РЅРµ РїРѕС‚РµСЂСЏР»Рё СЃРІСЏР·СЊ СЃ Storage
  for(list<UInstancesStorageElement>::iterator I=instances->second.begin(), J=instances->second.end(); I!=J; ++I)
+ {
+  UEPtr<UContainer> object=I->Object;
+
+  // РљР РРўРР§РќРћ: РџСЂРѕРІРµСЂСЏРµРј Рё РІРѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј ClassId РѕР±СЉРµРєС‚Р° РёР· РїР°СЂР°РјРµС‚СЂР° classid
+  if(object)
+  {
+   UId object_class_id = object->GetClass();
+   if(object_class_id == ForbiddenId || object_class_id != classid)
+   {
+    // Р’РѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј ClassId РёР· РїР°СЂР°РјРµС‚СЂР° classid
+    object->SetClass(classid);
+    // РЈРґР°Р»РµРЅРѕ РёР·Р±С‹С‚РѕС‡РЅРѕРµ Р»РѕРіРёСЂРѕРІР°РЅРёРµ - СЃРѕР·РґР°РІР°Р»Рѕ СЃРїР°Рј РІ DEBUG Р»РѕРіР°С…
+   }
+  }
+
+  // РћС‡РёС‰Р°РµРј UseFlag РґР»СЏ РѕР±СЉРµРєС‚РѕРІ Р±РµР· Р°РєС‚РёРІРЅС‹С… СЃСЃС‹Р»РѕРє (Р±РµР· Owner Рё СЃ Activity=false)
+  if(I->UseFlag && object)
+  {
+   try
+   {
+    UEPtr<UContainer> owner = object->GetOwner();
+    bool activity = object->Activity;
+
+    // Р•СЃР»Рё РѕР±СЉРµРєС‚ РЅРµ РёРјРµРµС‚ РІР»Р°РґРµР»СЊС†Р° Рё РЅРµ Р°РєС‚РёРІРµРЅ, РѕРЅ Р±РѕР»СЊС€Рµ РЅРµ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ
+    if(!owner && !activity)
+    {
+     I->UseFlag = false;
+     // РЈРґР°Р»РµРЅРѕ РёР·Р±С‹С‚РѕС‡РЅРѕРµ Р»РѕРіРёСЂРѕРІР°РЅРёРµ - СЃРѕР·РґР°РІР°Р»Рѕ СЃРїР°Рј РІ DEBUG Р»РѕРіР°С…
+    }
+   }
+   catch(...)
+   {
+    // Р’ СЃР»СѓС‡Р°Рµ РѕС€РёР±РєРё РѕСЃС‚Р°РІР»СЏРµРј UseFlag РєР°Рє РµСЃС‚СЊ
+   }
+  }
+
+  // Р’С‹Р·С‹РІР°РµРј Free() РґР»СЏ РѕР±СЉРµРєС‚Р°
   I->Object->Free();
+
+  // РљР РРўРР§РќРћ: РќР• СЃР±СЂР°СЃС‹РІР°РµРј ClassId РѕР±СЉРµРєС‚Р° Р·РґРµСЃСЊ, С‚Р°Рє РєР°Рє РѕР±СЉРµРєС‚ РјРѕР¶РµС‚ РІСЃРµ РµС‰Рµ СЃСѓС‰РµСЃС‚РІРѕРІР°С‚СЊ
+  // Рё РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ. ClassId Р±СѓРґРµС‚ СЃРѕС…СЂР°РЅРµРЅ РґРѕ РїРѕР»РЅРѕРіРѕ СѓРЅРёС‡С‚РѕР¶РµРЅРёСЏ РѕР±СЉРµРєС‚Р°.
+ }
 
  ObjectsStorage.erase(instances);
 }
 
-/// Устанавливает состояние уже выданного компонента в состояние по умолчанию
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ СѓР¶Рµ РІС‹РґР°РЅРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° РІ СЃРѕСЃС‚РѕСЏРЅРёРµ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ
 void UStorage::DefaultObject(UEPtr<UContainer> object)
 {
  if(object->GetStorage() != this)
@@ -795,23 +1196,23 @@ void UStorage::DefaultObject(UEPtr<UContainer> object)
 // --------------------------
 
 // --------------------------
-// Методы управления описанием классов
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РѕРїРёСЃР°РЅРёРµРј РєР»Р°СЃСЃРѕРІ
 // --------------------------
 
-// Установка пути к папке с описаниями классов
+// --------------------------
 void UStorage::SetClDescPath(const std::string& value)
 {
     ClDesc = value;
 }
 
-// Получение пути к папке с описаниями классов
+// РџРѕР»СѓС‡РµРЅРёРµ РїСѓС‚Рё Рє РїР°РїРєРµ СЃ РѕРїРёСЃР°РЅРёСЏРјРё РєР»Р°СЃСЃРѕРІ
 const std::string UStorage::GetClDescPath() const
 {
     return ClDesc;
 }
 
-// Получение пути к папке с описанием конкретного класса
-// Также создаёт необходимые папки
+// РџРѕР»СѓС‡РµРЅРёРµ РїСѓС‚Рё Рє РїР°РїРєРµ СЃ РѕРїРёСЃР°РЅРёРµРј РєРѕРЅРєСЂРµС‚РЅРѕРіРѕ РєР»Р°СЃСЃР°
+// РўР°РєР¶Рµ СЃРѕР·РґР°С‘С‚ РЅРµРѕР±С…РѕРґРёРјС‹Рµ РїР°РїРєРё
 const std::string UStorage::GetCreateClDescPath(const std::string& class_name)
 {
     std::string path = "";
@@ -820,7 +1221,7 @@ const std::string UStorage::GetCreateClDescPath(const std::string& class_name)
     if(lib)
     {
         path = ClDesc;
-        // т.к. RDK::CreateNewDirectory делает mkdir, а не mkpath, необходимо по очереди создавать папки
+        // С‚.Рє. RDK::CreateNewDirectory РґРµР»Р°РµС‚ mkdir, Р° РЅРµ mkpath, РЅРµРѕР±С…РѕРґРёРјРѕ РїРѕ РѕС‡РµСЂРµРґРё СЃРѕР·РґР°РІР°С‚СЊ РїР°РїРєРё
         if(RDK::CreateNewDirectory(path.c_str())==0)
         {
             path += lib->GetName()+"/";
@@ -838,14 +1239,14 @@ const std::string UStorage::GetCreateClDescPath(const std::string& class_name)
     return "";
 }
 
-// Возвращает XML описание класса
-const UEPtr<UContainerDescription> UStorage::GetClassDescription(const std::string &classname, bool nothrow) const
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ XML РѕРїРёСЃР°РЅРёРµ РєР»Р°СЃСЃР°
+const UEPtr<UContainerDescription> UStorage::GetClassDescription(const std::string &classname, bool no_throw) const
 {
  UClassesDescriptionCIterator I=ClassesDescription.find(classname);
 
  if(I == ClassesDescription.end())
  {
-  if(nothrow)
+  if(no_throw)
    return 0;
   else
    throw EClassNameNotExist(classname);
@@ -854,8 +1255,8 @@ const UEPtr<UContainerDescription> UStorage::GetClassDescription(const std::stri
  return I->second;
 }
 
-// Устанавливает XML описание класса
-// Класс в хранилище должен существовать
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ XML РѕРїРёСЃР°РЅРёРµ РєР»Р°СЃСЃР°
+// РљР»Р°СЃСЃ РІ С…СЂР°РЅРёР»РёС‰Рµ РґРѕР»Р¶РµРЅ СЃСѓС‰РµСЃС‚РІРѕРІР°С‚СЊ
 void UStorage::SetClassDescription(const std::string &classname, const UEPtr<UContainerDescription>& description)
 {
  UClassesStorageIterator I=ClassesStorage.find(FindClassId(classname));
@@ -866,35 +1267,187 @@ void UStorage::SetClassDescription(const std::string &classname, const UEPtr<UCo
  ClassesDescription[classname]=description;
 }
 
-// Загрузка описаний классов из xml-описаний
+// Р—Р°РіСЂСѓР·РєР° РѕРїРёСЃР°РЅРёР№ РєР»Р°СЃСЃРѕРІ РёР· xml-РѕРїРёСЃР°РЅРёР№
 void UStorage::LoadClassesDescription()
 {
     std::vector<string> lib_names;
     RDK::FindFilesList(ClDesc, "*", false, lib_names);
+
+    // РљСЌС€РёСЂСѓРµРј СЂРµР·СѓР»СЊС‚Р°С‚С‹ FindFilesList РґР»СЏ РєР°Р¶РґРѕР№ Р±РёР±Р»РёРѕС‚РµРєРё, С‡С‚РѕР±С‹ РёР·Р±РµР¶Р°С‚СЊ РґРІРѕР№РЅРѕРіРѕ РІС‹Р·РѕРІР°
+    struct LibFileCache {
+        std::string lib_name;
+        std::string lib_cl_desc_path;
+        std::vector<string> cl_desc_files;
+    };
+
+    std::vector<LibFileCache> lib_files_cache;
+    size_t total_files = 0;
+
+    // РЎРѕР±РёСЂР°РµРј РІСЃРµ С„Р°Р№Р»С‹ Р·Р°СЂР°РЅРµРµ (РєСЌС€РёСЂРѕРІР°РЅРёРµ FindFilesList)
     for(std::vector<string>::iterator lib_name = lib_names.begin(); lib_name != lib_names.end(); ++lib_name)
     {
         std::string lib_cl_desc_path = ClDesc + *lib_name +"/ru-RU/";
-
         std::vector<string> cl_desc_files;
         RDK::FindFilesList(lib_cl_desc_path, "*.xml", true, cl_desc_files);
 
-        for(std::vector<string>::iterator cl_decs = cl_desc_files.begin(); cl_decs != cl_desc_files.end(); ++cl_decs)
+        if(!cl_desc_files.empty())
         {
-            USerStorageXML cl_desc_xml;
-            cl_desc_xml.LoadFromFile(lib_cl_desc_path+*cl_decs,"ClassDescription");
+            // РРіРЅРѕСЂРёСЂСѓРµРј РїСЂРѕРІРµСЂРєРё РґР»СЏ СѓСЃРєРѕСЂРµРЅРёСЏ Р·Р°РіСЂСѓР·РєРё
+        }
 
-            cl_desc_xml.SelectNodeForce("ClassName");
-            std::string class_name = cl_desc_xml.GetNodeText();
-            cl_desc_xml.SelectRoot();
+        LibFileCache cache;
+        cache.lib_name = *lib_name;
+        cache.lib_cl_desc_path = lib_cl_desc_path;
+        cache.cl_desc_files = std::move(cl_desc_files);
+        total_files += cache.cl_desc_files.size();
+        lib_files_cache.push_back(std::move(cache));
+    }
 
-            SetClassDescription(class_name, new RDK::UContainerDescription());
+    // РЎС‚СЂСѓРєС‚СѓСЂР° РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РёРЅС„РѕСЂРјР°С†РёРё Рѕ С„Р°Р№Р»Рµ РґР»СЏ РїР°СЂР°Р»Р»РµР»СЊРЅРѕР№ Р·Р°РіСЂСѓР·РєРё
+    struct FileLoadInfo {
+        std::string file_path;
+        std::string lib_cl_desc_path;
+        std::string file_name;
+    };
 
-            LoadClassDescription(class_name,cl_desc_xml);
+    // РЎРѕР±РёСЂР°РµРј РІСЃРµ РїСѓС‚Рё Рє С„Р°Р№Р»Р°Рј Р·Р°СЂР°РЅРµРµ
+    std::vector<FileLoadInfo> files_to_load;
+    files_to_load.reserve(total_files);
+
+    for(const auto& cache : lib_files_cache)
+    {
+        for(const auto& file_name : cache.cl_desc_files)
+        {
+            FileLoadInfo info;
+            info.file_path = cache.lib_cl_desc_path + file_name;
+            info.lib_cl_desc_path = cache.lib_cl_desc_path;
+            info.file_name = file_name;
+            files_to_load.push_back(std::move(info));
+        }
+    }
+
+    // РЎС‚СЂСѓРєС‚СѓСЂР° РґР»СЏ СЂРµР·СѓР»СЊС‚Р°С‚РѕРІ РїР°СЂР°Р»Р»РµР»СЊРЅРѕР№ Р·Р°РіСЂСѓР·РєРё
+    struct LoadedFileData {
+        std::string class_name;
+        std::string xml_string; // РЎРѕС…СЂР°РЅСЏРµРј XML РєР°Рє СЃС‚СЂРѕРєСѓ, С‡С‚РѕР±С‹ РёР·Р±РµР¶Р°С‚СЊ РїСЂРѕР±Р»РµРј СЃ РєРѕРїРёСЂРѕРІР°РЅРёРµРј
+        bool valid;
+
+        // РњРµС‚РѕРґ РґР»СЏ РїРѕР»СѓС‡РµРЅРёСЏ XML РѕР±СЉРµРєС‚Р°
+        USerStorageXML GetXML() const {
+            USerStorageXML xml;
+            if(!xml_string.empty())
+                xml.Load(xml_string, "ClassDescription");
+            return xml;
+        }
+    };
+
+    // РџР°СЂР°Р»Р»РµР»СЊРЅРѕ Р·Р°РіСЂСѓР¶Р°РµРј XML С„Р°Р№Р»С‹ (С‚РѕР»СЊРєРѕ С‡С‚РµРЅРёРµ, Р±РµР·РѕРїР°СЃРЅРѕ)
+    std::vector<std::future<LoadedFileData>> futures;
+    futures.reserve(files_to_load.size());
+
+    for(const auto& file_info : files_to_load)
+    {
+        futures.push_back(std::async(std::launch::async, [file_info]() {
+            LoadedFileData result;
+            result.valid = false;
+
+            try
+            {
+                // РљР°Р¶РґС‹Р№ РїРѕС‚РѕРє СЂР°Р±РѕС‚Р°РµС‚ СЃРѕ СЃРІРѕРµР№ РєРѕРїРёРµР№ XML СЃС‚СЂСѓРєС‚СѓСЂС‹
+                USerStorageXML xml;
+                if(!xml.LoadFromFile(file_info.file_path, "ClassDescription"))
+                {
+                    result.valid = false;
+                    return result;
+                }
+                // РџРѕСЃР»Рµ LoadFromFile РјС‹ РЅР°С…РѕРґРёРјСЃСЏ РІ РєРѕСЂРЅРµ СѓР·Р»Р° ClassDescription
+
+                // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РјС‹ РІ РїСЂР°РІРёР»СЊРЅРѕРј СѓР·Р»Рµ
+                std::string root_name = xml.GetNodeName();
+                if(root_name != "ClassDescription")
+                {
+                    // Р•СЃР»Рё РЅРµ РІ ClassDescription, РїС‹С‚Р°РµРјСЃСЏ РЅР°Р№С‚Рё РµРіРѕ
+                    xml.SelectRoot();
+                    if(!xml.SelectNode("ClassDescription"))
+                    {
+                        result.valid = false;
+                        return result;
+                    }
+                }
+
+                xml.SelectNodeForce("ClassName");
+                result.class_name = xml.GetNodeText();
+                // Р’РѕР·РІСЂР°С‰Р°РµРјСЃСЏ Рє РєРѕСЂРЅСЋ ClassDescription (РЅРµ Рє РєРѕСЂРЅСЋ РґРѕРєСѓРјРµРЅС‚Р°!)
+                // SelectUp() РІРµСЂРЅРµС‚ РЅР°СЃ РёР· ClassName РѕР±СЂР°С‚РЅРѕ Рє ClassDescription
+                xml.SelectUp();
+
+                // РЈР±РµР¶РґР°РµРјСЃСЏ, С‡С‚Рѕ РјС‹ РІ РєРѕСЂРЅРµ ClassDescription
+                xml.SelectRoot();
+
+                // РЎРѕС…СЂР°РЅСЏРµРј XML РєР°Рє СЃС‚СЂРѕРєСѓ, С‡С‚РѕР±С‹ РёР·Р±РµР¶Р°С‚СЊ РїСЂРѕР±Р»РµРј СЃ РєРѕРїРёСЂРѕРІР°РЅРёРµРј USerStorageXML
+                xml.SaveFromNode(result.xml_string);
+                result.valid = true;
+            }
+            catch(const std::exception&)
+            {
+                // РРіРЅРѕСЂРёСЂСѓРµРј РѕС€РёР±РєРё Р·Р°РіСЂСѓР·РєРё РѕС‚РґРµР»СЊРЅС‹С… С„Р°Р№Р»РѕРІ
+                result.valid = false;
+            }
+            catch(...)
+            {
+                // РРіРЅРѕСЂРёСЂСѓРµРј РґСЂСѓРіРёРµ РѕС€РёР±РєРё Р·Р°РіСЂСѓР·РєРё РѕС‚РґРµР»СЊРЅС‹С… С„Р°Р№Р»РѕРІ
+                result.valid = false;
+            }
+
+            return result;
+        }));
+    }
+
+    // РџРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕ РґРѕР±Р°РІР»СЏРµРј Р·Р°РіСЂСѓР¶РµРЅРЅС‹Рµ РѕРїРёСЃР°РЅРёСЏ РІ Storage (СЃ СЃРёРЅС…СЂРѕРЅРёР·Р°С†РёРµР№)
+    std::mutex desc_mutex;
+    size_t processed_files = 0;
+
+    for(auto& future : futures)
+    {
+        LoadedFileData loaded_data = future.get();
+
+        if(!loaded_data.valid)
+        {
+            continue;
+        }
+
+        // РЎРёРЅС…СЂРѕРЅРёР·РёСЂСѓРµРј РґРѕСЃС‚СѓРї Рє ClassesDescription
+        std::lock_guard<std::mutex> lock(desc_mutex);
+
+        try
+        {
+            SetClassDescription(loaded_data.class_name, new RDK::UContainerDescription());
+            USerStorageXML xml = loaded_data.GetXML();
+            LoadClassDescription(loaded_data.class_name, xml);
+        }
+        catch(const EClassNameNotExist&)
+        {
+            // РџСЂРѕРґРѕР»Р¶Р°РµРј Р·Р°РіСЂСѓР·РєСѓ РґСЂСѓРіРёС… РєР»Р°СЃСЃРѕРІ
+        }
+        catch(...)
+        {
+            // РџСЂРѕР±СЂР°СЃС‹РІР°РµРј РґСЂСѓРіРёРµ РёСЃРєР»СЋС‡РµРЅРёСЏ РґР°Р»СЊС€Рµ
+            throw;
+        }
+
+        // РћР±РЅРѕРІР»РµРЅРёРµ РїСЂРѕРіСЂРµСЃСЃР° РїРѕСЃР»Рµ РєР°Р¶РґРѕРіРѕ Р·Р°РіСЂСѓР¶РµРЅРЅРѕРіРѕ РѕРїРёСЃР°РЅРёСЏ РєР»Р°СЃСЃР° (19-20%)
+        processed_files++;
+        if(FuncProgressBarCallback && total_files > 0)
+        {
+            int progress = 19 + (int)(processed_files / total_files);
+            std::string msg = "Launching application: loading class descriptions (" +
+                             RDK::sntoa(processed_files) + "/" + RDK::sntoa(total_files) + ")...";
+            FuncProgressBarCallback(progress, msg);
         }
     }
 }
 
-// Сохраняет описание класса в файл на диск
+// РЎРѕС…СЂР°РЅСЏРµС‚ РѕРїРёСЃР°РЅРёРµ РєР»Р°СЃСЃР° РІ С„Р°Р№Р» РЅР° РґРёСЃРє
 void UStorage::SaveClassDescriptionToFile(const std::string &classname)
 {
     UEPtr<UContainerDescription> cl_desc = GetClassDescription(classname, true);
@@ -912,21 +1465,31 @@ void UStorage::SaveClassDescriptionToFile(const std::string &classname)
     }
 }
 
-// Сохраняет описание класса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РѕРїРёСЃР°РЅРёРµ РєР»Р°СЃСЃР° РІ xml
 void UStorage::SaveClassDescription(const std::string &classname,
 										USerStorageXML &xml)
 {
  GetClassDescription(classname)->Save(xml);
 }
 
-// Загружает описание класса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РѕРїРёСЃР°РЅРёРµ РєР»Р°СЃСЃР° РёР· xml
 void UStorage::LoadClassDescription(const std::string &classname,
 										USerStorageXML &xml)
 {
- GetClassDescription(classname)->Load(xml);
+ UEPtr<UContainerDescription> desc = GetClassDescription(classname, true);
+ if(!desc)
+ {
+  return;
+ }
+
+ // Р’РђР–РќРћ: xml СѓР¶Рµ РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ РїРѕР·РёС†РёРѕРЅРёСЂРѕРІР°РЅ РІ РєРѕСЂРЅРµ ClassDescription РїРѕСЃР»Рµ LoadFromFile
+ xml.SelectRoot(); // РЈР±РµР¶РґР°РµРјСЃСЏ, С‡С‚Рѕ РјС‹ РІ РєРѕСЂРЅРµ ClassDescription
+
+ // Р—Р°РіСЂСѓР¶Р°РµРј РѕРїРёСЃР°РЅРёРµ
+ desc->Load(xml);
 }
 
-// Сохраняет описание всех классов в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РѕРїРёСЃР°РЅРёРµ РІСЃРµС… РєР»Р°СЃСЃРѕРІ РІ xml
 void UStorage::SaveClassesDescription(USerStorageXML &xml)
 {
  for(UClassesDescriptionCIterator I = ClassesDescription.begin(), J=ClassesDescription.end(); I != J; ++I)
@@ -937,7 +1500,7 @@ void UStorage::SaveClassesDescription(USerStorageXML &xml)
  }
 }
 
-// Загружает описание всех классов из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РѕРїРёСЃР°РЅРёРµ РІСЃРµС… РєР»Р°СЃСЃРѕРІ РёР· xml
 void UStorage::LoadClassesDescription(USerStorageXML &xml)
 {
  for(UClassesDescriptionCIterator I = ClassesDescription.begin(), J=ClassesDescription.end(); I != J; ++I)
@@ -949,13 +1512,13 @@ void UStorage::LoadClassesDescription(USerStorageXML &xml)
  }
 }
 
-// Сохраняет общее описание всех классов в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РѕР±С‰РµРµ РѕРїРёСЃР°РЅРёРµ РІСЃРµС… РєР»Р°СЃСЃРѕРІ РІ xml
 bool UStorage::SaveCommonClassesDescription(USerStorageXML &xml)
 {
  xml.AddNode("Default");
 
  xml.AddNode("Properties");
- std::map<std::string, UPropertyDescription>::const_iterator I=CommonDescriptions.begin();
+ auto I=CommonDescriptions.begin();
  while(I != CommonDescriptions.end())
  {
   xml.AddNode(I->first);
@@ -972,7 +1535,7 @@ bool UStorage::SaveCommonClassesDescription(USerStorageXML &xml)
  return true;
 }
 
-// Загружает общее описание всех классов из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РѕР±С‰РµРµ РѕРїРёСЃР°РЅРёРµ РІСЃРµС… РєР»Р°СЃСЃРѕРІ РёР· xml
 bool UStorage::LoadCommonClassesDescription(USerStorageXML &xml)
 {
  if(xml.SelectNode("Default"))
@@ -1018,15 +1581,15 @@ bool UStorage::LoadCommonClassesDescription(USerStorageXML &xml)
 
 
 // --------------------------
-// Методы управления библиотеками
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ Р±РёР±Р»РёРѕС‚РµРєР°РјРё
 // --------------------------
-// Указатель на логгер
-UEPtr<ULoggerEnv> const UStorage::GetLogger(void) const
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ Р±РёР±Р»РёРѕС‚РµРєР°РјРё
+UEPtr<UExceptionLogger> const UStorage::GetLogger(void) const
 {
  return Logger;
 }
 
-bool UStorage::SetLogger(UEPtr<ULoggerEnv> logger)
+bool UStorage::SetLogger(UEPtr<UExceptionLogger> logger)
 {
  if(Logger == logger)
   return true;
@@ -1035,19 +1598,31 @@ bool UStorage::SetLogger(UEPtr<ULoggerEnv> logger)
  return true;
 }
 
-// Возвращает библиотеку по индексу
+/// РЈСЃС‚Р°РЅРѕРІРєР° callback РґР»СЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РїСЂРѕРіСЂРµСЃСЃР° РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
+void UStorage::SetProgressBarCallback(ProgressBarCallback callback)
+{
+    FuncProgressBarCallback = callback;
+}
+
+/// РџРѕР»СѓС‡РµРЅРёРµ callback РґР»СЏ РѕР±РЅРѕРІР»РµРЅРёСЏ РїСЂРѕРіСЂРµСЃСЃР° РёРЅРёС†РёР°Р»РёР·Р°С†РёРё
+ProgressBarCallback UStorage::GetProgressBarCallback() const
+{
+    return FuncProgressBarCallback;
+}
+
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р±РёР±Р»РёРѕС‚РµРєСѓ РїРѕ РёРЅРґРµРєСЃСѓ
 UEPtr<ULibrary> UStorage::GetCollection(int index)
 {
  return CollectionList[index];
 }
 
-// Возвращает число библиотек
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‡РёСЃР»Рѕ Р±РёР±Р»РёРѕС‚РµРє
 int UStorage::GetNumCollections(void) const
 {
  return int(CollectionList.size());
 }
 
-// Возвращает библиотеку по имени
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р±РёР±Р»РёРѕС‚РµРєСѓ РїРѕ РёРјРµРЅРё
 UEPtr<ULibrary> UStorage::GetCollection(const string &name)
 {
  for(size_t i=0;i<CollectionList.size();i++)
@@ -1060,19 +1635,19 @@ UEPtr<ULibrary> UStorage::GetCollection(const string &name)
  return 0;
 }
 
-// Возвращает имя библиотеки по индексу
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ Р±РёР±Р»РёРѕС‚РµРєРё РїРѕ РёРЅРґРµРєСЃСѓ
 const string& UStorage::GetCollectionName(int index)
 {
  return CollectionList[index]->GetName();
 }
 
-// Возвращает версию библиотеки по индексу
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІРµСЂСЃРёСЋ Р±РёР±Р»РёРѕС‚РµРєРё РїРѕ РёРЅРґРµРєСЃСѓ
 const string& UStorage::GetCollectionVersion(int index)
 {
  return CollectionList[index]->GetVersion();
 }
 
-// Очищает списки Complete и Incomplete во всех библиотеках
+// РћС‡РёС‰Р°РµС‚ СЃРїРёСЃРєРё Complete Рё Incomplete РІРѕ РІСЃРµС… Р±РёР±Р»РёРѕС‚РµРєР°С…
 void UStorage::ClearAllLibsClassesNameArrays(void)
 {
     for(size_t i=0;i<CollectionList.size();i++)
@@ -1082,8 +1657,8 @@ void UStorage::ClearAllLibsClassesNameArrays(void)
     }
 }
 
-// Возвращается строку имен библиотек конкретного типа, разделенных запятой
-// Буфер 'buffer' будет очищен от предыдущих значений
+// Р’РѕР·РІСЂР°С‰Р°РµС‚СЃСЏ СЃС‚СЂРѕРєСѓ РёРјРµРЅ Р±РёР±Р»РёРѕС‚РµРє РєРѕРЅРєСЂРµС‚РЅРѕРіРѕ С‚РёРїР°, СЂР°Р·РґРµР»РµРЅРЅС‹С… Р·Р°РїСЏС‚РѕР№
+// Р‘СѓС„РµСЂ 'buffer' Р±СѓРґРµС‚ РѕС‡РёС‰РµРЅ РѕС‚ РїСЂРµРґС‹РґСѓС‰РёС… Р·РЅР°С‡РµРЅРёР№
 void UStorage::GetLibsNameListByType(std::string &buffer, int type) const
 {
     buffer.clear();
@@ -1100,13 +1675,13 @@ void UStorage::GetLibsNameListByType(std::string &buffer, int type) const
          buffer.erase(buffer.length()-1);
 }
 
-/// Непосредственно добавялет новый образец класса в хранилище
+/// РќРµРїРѕСЃСЂРµРґСЃС‚РІРµРЅРЅРѕ РґРѕР±Р°РІСЏР»РµС‚ РЅРѕРІС‹Р№ РѕР±СЂР°Р·РµС† РєР»Р°СЃСЃР° РІ С…СЂР°РЅРёР»РёС‰Рµ
 bool UStorage::AddClassToCollection(const std::string &new_class_name, const std::string &new_comp_name, bool force_replace, UContainer *newclass, const std::string &lib_name)
 {
     if(new_class_name.empty())
         return false;
 
-    // Библиотека куда добавляеться класс
+    // Р‘РёР±Р»РёРѕС‚РµРєР° РєСѓРґР° РґРѕР±Р°РІР»СЏРµС‚СЊСЃСЏ РєР»Р°СЃСЃ
 	URuntimeLibrary *library = 0;
 
     for(size_t i=0;i<CollectionList.size();i++)
@@ -1119,7 +1694,7 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, const std
         }
     }
 
-    // Если не найдена или это не runtime библиотека
+    // Р•СЃР»Рё РЅРµ РЅР°Р№РґРµРЅР° РёР»Рё СЌС‚Рѕ РЅРµ runtime Р±РёР±Р»РёРѕС‚РµРєР°
     if(!library || (library->GetType()!=2))
     {
         if(Logger)
@@ -1127,19 +1702,19 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, const std
         return false;
     }
 
-    // Проверка на существование класса
+    // РџСЂРѕРІРµСЂРєР° РЅР° СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ РєР»Р°СЃСЃР°
     if(CheckClass(new_class_name))
     {
-        // Разрешена ли замена
+        // Р Р°Р·СЂРµС€РµРЅР° Р»Рё Р·Р°РјРµРЅР°
         if(force_replace)
         {
-            // Библиотека где класс уже существует
+            // Р‘РёР±Р»РёРѕС‚РµРєР° РіРґРµ РєР»Р°СЃСЃ СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
             URuntimeLibrary *lib = static_cast<URuntimeLibrary*>(FindCollection(new_class_name).Get());
             if(!lib)
                 return false;
             try
             {
-                //Сначала удаляем из нужной
+                //РЎРЅР°С‡Р°Р»Р° СѓРґР°Р»СЏРµРј РёР· РЅСѓР¶РЅРѕР№
                 if(!lib->DelClass(new_class_name))
                     return false;
             }
@@ -1155,8 +1730,8 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, const std
               Logger->LogMessage(RDK_EX_ERROR, __FUNCTION__, ex.what());
               return false;
             }
-            // Добавление в нужную
-            // AddNewClass сам запишет в Logger описания ошибок
+            // Р”РѕР±Р°РІР»РµРЅРёРµ РІ РЅСѓР¶РЅСѓСЋ
+            // AddNewClass СЃР°Рј Р·Р°РїРёС€РµС‚ РІ Logger РѕРїРёСЃР°РЅРёСЏ РѕС€РёР±РѕРє
             if(!library->AddNewClass(new_class_name, new_comp_name, newclass))
                 return false;
         }
@@ -1166,7 +1741,7 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, const std
         }
     }
     else
-    {   // AddNewClass сам запишет в Logger описания ошибок
+    {   // AddNewClass СЃР°Рј Р·Р°РїРёС€РµС‚ РІ Logger РѕРїРёСЃР°РЅРёСЏ РѕС€РёР±РѕРє
         if(!library->AddNewClass(new_class_name, new_comp_name, newclass))
             return false;
     }
@@ -1174,7 +1749,7 @@ bool UStorage::AddClassToCollection(const std::string &new_class_name, const std
     return true;
 }
 
-/// Удаляет образец класса из RT коллекции
+/// РЈРґР°Р»СЏРµС‚ РѕР±СЂР°Р·РµС† РєР»Р°СЃСЃР° РёР· RT РєРѕР»Р»РµРєС†РёРё
 bool UStorage::DelClassFromCollection(const std::string &class_name, const std::string &lib_name)
 {
 	URuntimeLibrary *library = 0;
@@ -1187,14 +1762,14 @@ bool UStorage::DelClassFromCollection(const std::string &class_name, const std::
             library = static_cast<URuntimeLibrary*>(lib.Get());
         }
     }
-    // Если не найдена или это не runtime библиотека
+    // Р•СЃР»Рё РЅРµ РЅР°Р№РґРµРЅР° РёР»Рё СЌС‚Рѕ РЅРµ runtime Р±РёР±Р»РёРѕС‚РµРєР°
     if(!library || (library->GetType()!=2))
     {
         if(Logger)
             Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Library \"" +library->GetName() +"\" doesn't exist or it isn't runtime library");
         return false;
     }
-    // Удаление компонента
+    // РЈРґР°Р»РµРЅРёРµ РєРѕРјРїРѕРЅРµРЅС‚Р°
     try
     {
         if(!library->DelClass(class_name))
@@ -1215,7 +1790,7 @@ bool UStorage::DelClassFromCollection(const std::string &class_name, const std::
     return true;
 }
 
-/// Создает новую библиотеку с заданным именем
+/// РЎРѕР·РґР°РµС‚ РЅРѕРІСѓСЋ Р±РёР±Р»РёРѕС‚РµРєСѓ СЃ Р·Р°РґР°РЅРЅС‹Рј РёРјРµРЅРµРј
 bool UStorage::CreateRuntimeCollection(const std::string &lib_name)
 {
     if(lib_name.empty())
@@ -1232,14 +1807,14 @@ bool UStorage::CreateRuntimeCollection(const std::string &lib_name)
         return false;
     }
 
-    //Создание папки библиотеки
+    //РЎРѕР·РґР°РЅРёРµ РїР°РїРєРё Р±РёР±Р»РёРѕС‚РµРєРё
     std::string lib_path = LibrariesPath + "RTlibs/" + lib_name;
 
 	URuntimeLibrary* lib=new URuntimeLibrary(lib_name,"", lib_path);
 
     if(AddCollection(lib))
 	{
-        //Создание папки библиотеки
+        //РЎРѕР·РґР°РЅРёРµ РїР°РїРєРё Р±РёР±Р»РёРѕС‚РµРєРё
         if(RDK::CreateNewDirectory(lib->GetLibPath().c_str())==0)
 		{
          lib->Upload(this);
@@ -1262,7 +1837,7 @@ bool UStorage::CreateRuntimeCollection(const std::string &lib_name)
     }
 }
 
-/// Удаляет runtime-библиотеку вместе с папкой
+/// РЈРґР°Р»СЏРµС‚ runtime-Р±РёР±Р»РёРѕС‚РµРєСѓ РІРјРµСЃС‚Рµ СЃ РїР°РїРєРѕР№
 bool UStorage::DeleteRuntimeCollection(const std::string &lib_name)
 {
     int index = -1;
@@ -1284,10 +1859,10 @@ bool UStorage::DeleteRuntimeCollection(const std::string &lib_name)
     }
 
     std::vector<ULibrary*>::iterator I=CollectionList.begin()+index;
-    // Если имя действительно runtime-библиотеки
+    // Р•СЃР»Рё РёРјСЏ РґРµР№СЃС‚РІРёС‚РµР»СЊРЅРѕ runtime-Р±РёР±Р»РёРѕС‚РµРєРё
     if((*I)->GetType() == 2)
     {
-        // Неудачная попытка удаления папки
+        // РќРµСѓРґР°С‡РЅР°СЏ РїРѕРїС‹С‚РєР° СѓРґР°Р»РµРЅРёСЏ РїР°РїРєРё
         if(!static_cast<URuntimeLibrary*>(*I)->DeleteOwnDirectory())
         {
             if(Logger)
@@ -1299,7 +1874,7 @@ bool UStorage::DeleteRuntimeCollection(const std::string &lib_name)
 
         try
         {
-        // внутри DelClass() может выбросить исключения (EObjectStorageNotEmpty или EClassIdNotExist)
+        // РІРЅСѓС‚СЂРё DelClass() РјРѕР¶РµС‚ РІС‹Р±СЂРѕСЃРёС‚СЊ РёСЃРєР»СЋС‡РµРЅРёСЏ (EObjectStorageNotEmpty РёР»Рё EClassIdNotExist)
         DelAbandonedClasses();
         }
         catch(EObjectStorageNotEmpty &ex)
@@ -1324,31 +1899,31 @@ bool UStorage::DeleteRuntimeCollection(const std::string &lib_name)
     }
 }
 
-// Установка пути к папкам библиотек
+// РЈСЃС‚Р°РЅРѕРІРєР° РїСѓС‚Рё Рє РїР°РїРєР°Рј Р±РёР±Р»РёРѕС‚РµРє
 void UStorage::SetLibrariesPath(const std::string& value)
 {
     LibrariesPath = value;
 }
 
-// Получение пути к папкам библиотек
+// РџРѕР»СѓС‡РµРЅРёРµ РїСѓС‚Рё Рє РїР°РїРєР°Рј Р±РёР±Р»РёРѕС‚РµРє
 const std::string UStorage::GetLibrariesPath() const
 {
     return LibrariesPath;
 }
 
-/// Инициализация существующих динамических библиотек
-/// Вызывается в Engine один раз
+/// РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёС… РґРёРЅР°РјРёС‡РµСЃРєРёС… Р±РёР±Р»РёРѕС‚РµРє
+/// Р’С‹Р·С‹РІР°РµС‚СЃСЏ РІ Engine РѕРґРёРЅ СЂР°Р·
 void UStorage::InitRTlibs(void)
 {
-    // Считывание имен библиотек из папки RTlibs
+    // РЎС‡РёС‚С‹РІР°РЅРёРµ РёРјРµРЅ Р±РёР±Р»РёРѕС‚РµРє РёР· РїР°РїРєРё RTlibs
     std::string lib_path = LibrariesPath + "RTlibs";
 
-    //Создание папки, если требуется
+    //РЎРѕР·РґР°РЅРёРµ РїР°РїРєРё, РµСЃР»Рё С‚СЂРµР±СѓРµС‚СЃСЏ
     if(RDK::CreateNewDirectory(lib_path.c_str()))
         return;
 
-    // Проход по всем существующим xml файлам в папке
-    // с записью их данных в строки ClassesStructures
+    // РџСЂРѕС…РѕРґ РїРѕ РІСЃРµРј СЃСѓС‰РµСЃС‚РІСѓСЋС‰РёРј xml С„Р°Р№Р»Р°Рј РІ РїР°РїРєРµ
+    // СЃ Р·Р°РїРёСЃСЊСЋ РёС… РґР°РЅРЅС‹С… РІ СЃС‚СЂРѕРєРё ClassesStructures
     std::vector<std::string> lib_names;
 
     if(RDK::FindFilesList(lib_path,"*",false,lib_names))
@@ -1358,20 +1933,38 @@ void UStorage::InitRTlibs(void)
         return;
     }
 
+    // РџСѓСЃС‚Р°СЏ РґРёСЂРµРєС‚РѕСЂРёСЏ - СЌС‚Рѕ РЅРѕСЂРјР°Р»СЊРЅРѕ, РЅРµ РѕС€РёР±РєР°
+    if (lib_names.empty())
+    {
+        if (Logger)
+            Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__,
+                "RTlibs directory is empty, skipping library loading");
+        return;
+    }
+
     for(size_t i = 0 ; i < lib_names.size(); i++)
     {
        LoadRuntimeCollection(lib_names[i]);
+
+       // РћР±РЅРѕРІР»РµРЅРёРµ РїСЂРѕРіСЂРµСЃСЃР° РїРѕСЃР»Рµ РєР°Р¶РґРѕР№ Р·Р°РіСЂСѓР¶РµРЅРЅРѕР№ Р±РёР±Р»РёРѕС‚РµРєРё (15-17%)
+       if(FuncProgressBarCallback && lib_names.size() > 0)
+       {
+           int progress = 15 + (int)((i + 1) * 2 / lib_names.size());
+           std::string msg = "Launching application: loading library " + lib_names[i] + " (" +
+                            RDK::sntoa(i + 1) + "/" + RDK::sntoa(lib_names.size()) + ")...";
+           FuncProgressBarCallback(progress, msg);
+       }
     }
 }
 
-/// Загружает runtime-библиотеку по её имени
+/// Р—Р°РіСЂСѓР¶Р°РµС‚ runtime-Р±РёР±Р»РёРѕС‚РµРєСѓ РїРѕ РµС‘ РёРјРµРЅРё
 bool UStorage::LoadRuntimeCollection(const std::string &lib_name)
 {
-    // Создание новой runtime-библиотеки
+    // РЎРѕР·РґР°РЅРёРµ РЅРѕРІРѕР№ runtime-Р±РёР±Р»РёРѕС‚РµРєРё
     if(lib_name.empty())
         return false;
 
-    // уже существует
+    // СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
     if(GetCollection(lib_name) != 0)
     {
         if(Logger)
@@ -1379,12 +1972,12 @@ bool UStorage::LoadRuntimeCollection(const std::string &lib_name)
         return false;
     }
 
-    //Создание папки библиотеки
+    //РЎРѕР·РґР°РЅРёРµ РїР°РїРєРё Р±РёР±Р»РёРѕС‚РµРєРё
     std::string lib_path = LibrariesPath + "RTlibs/" + lib_name;
 
     URuntimeLibrary* lib = new URuntimeLibrary(lib_name,"",lib_path);
 
-    // Загрузка описаний компонентов внутри библиотеки
+    // Р—Р°РіСЂСѓР·РєР° РѕРїРёСЃР°РЅРёР№ РєРѕРјРїРѕРЅРµРЅС‚РѕРІ РІРЅСѓС‚СЂРё Р±РёР±Р»РёРѕС‚РµРєРё
     if(!lib->LoadCompDescriptions())
     {
         if(Logger)
@@ -1409,11 +2002,11 @@ bool UStorage::LoadRuntimeCollection(const std::string &lib_name)
 }
 
 
-// Подключает динамическую библиотеку с набором образцов классов.
-// Если бибилиотека с таким именем уже существует то возвращает false.
-// Ответственность за освобождение памяти библиотекой лежит на вызывающей стороне.
-// Если force_build == true то немедленно осущетсвляет развертывание бибилотеки
-// в хранилище
+// РџРѕРґРєР»СЋС‡Р°РµС‚ РґРёРЅР°РјРёС‡РµСЃРєСѓСЋ Р±РёР±Р»РёРѕС‚РµРєСѓ СЃ РЅР°Р±РѕСЂРѕРј РѕР±СЂР°Р·С†РѕРІ РєР»Р°СЃСЃРѕРІ.
+// Р•СЃР»Рё Р±РёР±РёР»РёРѕС‚РµРєР° СЃ С‚Р°РєРёРј РёРјРµРЅРµРј СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚ С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ false.
+// РџРѕРґРєР»СЋС‡Р°РµС‚ РґРёРЅР°РјРёС‡РµСЃРєСѓСЋ Р±РёР±Р»РёРѕС‚РµРєСѓ СЃ РЅР°Р±РѕСЂРѕРј РѕР±СЂР°Р·С†РѕРІ РєР»Р°СЃСЃРѕРІ.
+// Р•СЃР»Рё Р±РёР±РёР»РёРѕС‚РµРєР° СЃ С‚Р°РєРёРј РёРјРµРЅРµРј СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚ С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ false.
+// РћС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚СЊ Р·Р° РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё Р±РёР±Р»РёРѕС‚РµРєРѕР№ Р»РµР¶РёС‚ РЅР° РІС‹Р·С‹РІР°СЋС‰РµР№ СЃС‚РѕСЂРѕРЅРµ.
 bool UStorage::AddCollection(ULibrary *library, bool force_build)
 {
  if(!library)
@@ -1429,31 +2022,58 @@ bool UStorage::AddCollection(ULibrary *library, bool force_build)
  }
 
  CollectionList.push_back(library);
+
+ // РћР±РЅРѕРІР»СЏРµРј РёРЅРґРµРєСЃ РєР»Р°СЃСЃРѕРІ -> Р±РёР±Р»РёРѕС‚РµРє РґР»СЏ РѕРїС‚РёРјРёР·Р°С†РёРё РїРѕРёСЃРєР°
+ // Р­С‚Рѕ РїРѕР·РІРѕР»СЏРµС‚ FindCollection() СЂР°Р±РѕС‚Р°С‚СЊ Р·Р° O(1) РІРјРµСЃС‚Рѕ O(m)
+ const std::vector<std::string>& complete_classes = newlib->GetComplete();
+ for(const auto& class_name : complete_classes)
+ {
+  ClassLibraryIndex[class_name] = newlib;
+ }
+
  if(force_build)
   BuildStorage();
  return true;
 }
 
-// Удаляет подключенную библиотеку из списка по индексу
-// Ответственность за освобождение памяти библиотекой лежит на вызывающей стороне.
+// РЈРґР°Р»СЏРµС‚ РїРѕРґРєР»СЋС‡РµРЅРЅСѓСЋ Р±РёР±Р»РёРѕС‚РµРєСѓ РёР· СЃРїРёСЃРєР° РїРѕ РёРЅРґРµРєСЃСѓ
+// РћС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚СЊ Р·Р° РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё Р±РёР±Р»РёРѕС‚РµРєРѕР№ Р»РµР¶РёС‚ РЅР° РІС‹Р·С‹РІР°СЋС‰РµР№ СЃС‚РѕСЂРѕРЅРµ.
 bool UStorage::DelCollection(int index)
 {
  if(index < 0 || index >= int(CollectionList.size()))
   return false;
  std::vector<ULibrary*>::iterator I=CollectionList.begin()+index;
+ UEPtr<ULibrary> lib_to_remove = *I;
+
+ // РЈРґР°Р»СЏРµРј Р±РёР±Р»РёРѕС‚РµРєСѓ РёР· РёРЅРґРµРєСЃР° РєР»Р°СЃСЃРѕРІ -> Р±РёР±Р»РёРѕС‚РµРє
+ if(lib_to_remove)
+ {
+  const std::vector<std::string>& complete_classes = lib_to_remove->GetComplete();
+  for(const auto& class_name : complete_classes)
+  {
+   // РЈРґР°Р»СЏРµРј С‚РѕР»СЊРєРѕ РµСЃР»Рё СЌС‚Рѕ С‚Р° Р¶Рµ Р±РёР±Р»РёРѕС‚РµРєР° (РЅР° СЃР»СѓС‡Р°Р№ РґСѓР±Р»РёРєР°С‚РѕРІ)
+   auto index_it = ClassLibraryIndex.find(class_name);
+   if(index_it != ClassLibraryIndex.end() && index_it->second == lib_to_remove)
+   {
+    ClassLibraryIndex.erase(index_it);
+   }
+  }
+ }
+
  if((*I)->GetType() == 2)
  {
   //static_cast<URuntimeLibrary*>(*I)->DeleteOwnDirectory();
   delete *I;
  }
  CollectionList.erase(I);
- DelAbandonedClasses();
+ // РЈР±СЂР°РЅРѕ: DelAbandonedClasses() - РІС‹Р·С‹РІР°СЋС‰РёР№ РєРѕРґ РґРѕР»Р¶РµРЅ СЃР°Рј РІС‹Р·С‹РІР°С‚СЊ DelAbandonedClasses() РїСЂРё РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚Рё
+ // Р­С‚Рѕ РєСЂРёС‚РёС‡РЅРѕ РґР»СЏ РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚Рё - РёР·Р±РµРіР°РµРј РјРЅРѕР¶РµСЃС‚РІРµРЅРЅС‹С… РІС‹Р·РѕРІРѕРІ РїСЂРё СѓРґР°Р»РµРЅРёРё РЅРµСЃРєРѕР»СЊРєРёС… Р±РёР±Р»РёРѕС‚РµРє
  return true;
 }
 
 bool UStorage::InitMockLibs(void)
 {
-    // Папка с библиотеками-заглушками и файл
+    // РџР°РїРєР° СЃ Р±РёР±Р»РёРѕС‚РµРєР°РјРё-Р·Р°РіР»СѓС€РєР°РјРё Рё С„Р°Р№Р»
     std::string lib_path = LibrariesPath + "/MockLibs/";
     std::string lib_list_file = lib_path + "0_LibList.xml";
 
@@ -1467,20 +2087,20 @@ bool UStorage::InitMockLibs(void)
 
     USerStorageXML CompDesctips;
 
-    // Создание библиотек поочередно
+    // РЎРѕР·РґР°РЅРёРµ Р±РёР±Р»РёРѕС‚РµРє РїРѕРѕС‡РµСЂРµРґРЅРѕ
     for(int i = 0, size = LibList.GetNumNodes() ; i < size; i++)
     {
         if(!LibList.SelectNode(i))
             continue;
         std::string lib_name = LibList.GetNodeText();
 
-        // Если такая библиотека-заглушка есть
+        // Р•СЃР»Рё С‚Р°РєР°СЏ Р±РёР±Р»РёРѕС‚РµРєР°-Р·Р°РіР»СѓС€РєР° РµСЃС‚СЊ
         if(lib_name.empty() || GetCollection(lib_name) != 0)
             continue;
 
         UMockLibrary* lib_mock=new UMockLibrary(lib_name, "", lib_path);
 
-        // Заполнение описаний классов
+        // Р—Р°РїРѕР»РЅРµРЅРёРµ РѕРїРёСЃР°РЅРёР№ РєР»Р°СЃСЃРѕРІ
         if(!CompDesctips.LoadFromFile(lib_path+"/"+lib_name+".xml","MockLib"))
         {
             if(Logger)
@@ -1507,13 +2127,13 @@ bool UStorage::CreateMockLibs(void)
     if(Logger)
         Logger->LogMessage(RDK_EX_DEBUG, std::string("Creating Mock Libraries from Static Libraries"));
 
-    // Создание библиотек-заглушек из статических библиотек
+    // РЎРѕР·РґР°РЅРёРµ Р±РёР±Р»РёРѕС‚РµРє-Р·Р°РіР»СѓС€РµРє РёР· СЃС‚Р°С‚РёС‡РµСЃРєРёС… Р±РёР±Р»РёРѕС‚РµРє
     for(size_t i=0;i<CollectionList.size();i++)
     {
         UEPtr<ULibrary> lib=CollectionList[i];
         if(lib && lib->GetType()==0)
         {
-            // Создание папки библиотеки, если требуется
+            // РЎРѕР·РґР°РЅРёРµ РїР°РїРєРё Р±РёР±Р»РёРѕС‚РµРєРё, РµСЃР»Рё С‚СЂРµР±СѓРµС‚СЃСЏ
             std::string lib_path = LibrariesPath + "MockLibs/";
 
             if(RDK::CreateNewDirectory(lib_path.c_str()))
@@ -1523,16 +2143,16 @@ bool UStorage::CreateMockLibs(void)
                 return false;
             }
 
-            // имя библиотеки-заглушки
+            // РёРјСЏ Р±РёР±Р»РёРѕС‚РµРєРё-Р·Р°РіР»СѓС€РєРё
             std::string lib_name = lib->GetName()+"_Mock";
 
-            // Если такая библиотека-заглушка есть
+            // Р•СЃР»Рё С‚Р°РєР°СЏ Р±РёР±Р»РёРѕС‚РµРєР°-Р·Р°РіР»СѓС€РєР° РµСЃС‚СЊ
             if(GetCollection(lib_name) != 0)
                 continue;
 
             UMockLibrary* lib_mock=new UMockLibrary(lib_name, "", lib_path);
 
-            // Заполнение описаний классов
+            // Р—Р°РїРѕР»РЅРµРЅРёРµ РѕРїРёСЃР°РЅРёР№ РєР»Р°СЃСЃРѕРІ
             lib->FillMockLibrary(lib_mock);
 
             if(!AddCollection(lib_mock))
@@ -1550,20 +2170,20 @@ bool UStorage::SaveMockLibs(void)
     if(Logger)
         Logger->LogMessage(RDK_EX_DEBUG, std::string("Starting saving Mock Libraries to files"));
 
-    // Сохранения списка библиотек-заглушек по порядку (такой же как в CollectionList)
+    // РЎРѕС…СЂР°РЅРµРЅРёСЏ СЃРїРёСЃРєР° Р±РёР±Р»РёРѕС‚РµРє-Р·Р°РіР»СѓС€РµРє РїРѕ РїРѕСЂСЏРґРєСѓ (С‚Р°РєРѕР№ Р¶Рµ РєР°Рє РІ CollectionList)
     USerStorageXML LibList;
     LibList.Create("LibraryList");
 
     std::string lib_name = "";
 
-    // Сохранение библиотек в отдельные файлы
+    // РЎРѕС…СЂР°РЅРµРЅРёРµ Р±РёР±Р»РёРѕС‚РµРє РІ РѕС‚РґРµР»СЊРЅС‹Рµ С„Р°Р№Р»С‹
     for(size_t i=0;i<CollectionList.size();i++)
     {
         UEPtr<ULibrary> lib=CollectionList[i];
 
         if(lib && lib->GetType()==3)
         {
-            // Библиотека куда добавляется класс
+            // Р‘РёР±Р»РёРѕС‚РµРєР° РєСѓРґР° РґРѕР±Р°РІР»СЏРµС‚СЃСЏ РєР»Р°СЃСЃ
             UMockLibrary *library = 0;
             library = dynamic_cast<UMockLibrary*>(lib.Get());
 
@@ -1583,8 +2203,8 @@ bool UStorage::SaveMockLibs(void)
     return true;
 }
 
-// Удаляет подключенную библиотеку из списка по имени
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
+// РЈРґР°Р»СЏРµС‚ РїРѕРґРєР»СЋС‡РµРЅРЅСѓСЋ Р±РёР±Р»РёРѕС‚РµРєСѓ РёР· СЃРїРёСЃРєР° РїРѕ РёРјРµРЅРё
+// РћС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚СЊ Р·Р° РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё Р»РµР¶РёС‚ РЅР° РІС‹Р·С‹РІР°СЋС‰РµР№ СЃС‚РѕСЂРѕРЅРµ.
 bool UStorage::DelCollection(const string &name)
 {
  for(size_t i=0;i<CollectionList.size();i++)
@@ -1597,8 +2217,8 @@ bool UStorage::DelCollection(const string &name)
  return true;
 }
 
-// Удаляет из списка все библиотеки
-// Ответственность за освобождение памяти лежит на вызывающей стороне.
+// РЈРґР°Р»СЏРµС‚ РёР· СЃРїРёСЃРєР° РІСЃРµ Р±РёР±Р»РёРѕС‚РµРєРё
+// РћС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚СЊ Р·Р° РѕСЃРІРѕР±РѕР¶РґРµРЅРёРµ РїР°РјСЏС‚Рё Р»РµР¶РёС‚ РЅР° РІС‹Р·С‹РІР°СЋС‰РµР№ СЃС‚РѕСЂРѕРЅРµ.
 bool UStorage::DelAllCollections(void)
 {
  CollectionList.clear();
@@ -1606,20 +2226,20 @@ bool UStorage::DelAllCollections(void)
  return true;
 }
 
-// Уставнока необходимого режима сборки
+// РЈСЃС‚Р°РІРЅРѕРєР° РЅРµРѕР±С…РѕРґРёРјРѕРіРѕ СЂРµР¶РёРјР° СЃР±РѕСЂРєРё
 void UStorage::SetBuildMode(int mode)
 {
     BuildMode = mode;
 }
 
-// Получение текущего режима сборки
+// РџРѕР»СѓС‡РµРЅРёРµ С‚РµРєСѓС‰РµРіРѕ СЂРµР¶РёРјР° СЃР±РѕСЂРєРё
 int UStorage::GetBuildMode()
 {
     return BuildMode;
 }
 
-// Заполняет хранилище данными библиотек
-// Операция предварительно уничтожает модель и очищает хранилище
+// Р—Р°РїРѕР»РЅСЏРµС‚ С…СЂР°РЅРёР»РёС‰Рµ РґР°РЅРЅС‹РјРё Р±РёР±Р»РёРѕС‚РµРє
+// РћРїРµСЂР°С†РёСЏ РїСЂРµРґРІР°СЂРёС‚РµР»СЊРЅРѕ СѓРЅРёС‡С‚РѕР¶Р°РµС‚ РјРѕРґРµР»СЊ Рё РѕС‡РёС‰Р°РµС‚ С…СЂР°РЅРёР»РёС‰Рµ
 bool UStorage::BuildStorage(void)
 {
  ClearAllLibsClassesNameArrays();
@@ -1627,19 +2247,19 @@ bool UStorage::BuildStorage(void)
  {
  case 1:
  {
-     BuildStorage(0); // сборка статических библиотек
-     BuildStorage(2); // сборка runtime-библиотек
+     BuildStorage(0); // СЃР±РѕСЂРєР° СЃС‚Р°С‚РёС‡РµСЃРєРёС… Р±РёР±Р»РёРѕС‚РµРє
+     BuildStorage(2); // СЃР±РѕСЂРєР° runtime-Р±РёР±Р»РёРѕС‚РµРє
      break;
  }
 
  case 2:
  {
-     BuildStorage(0); // сборка статических библиотек
+     BuildStorage(0); // СЃР±РѕСЂРєР° СЃС‚Р°С‚РёС‡РµСЃРєРёС… Р±РёР±Р»РёРѕС‚РµРє
 
-     // Иницилазиация мок-либ
+     // СЃР±РѕСЂРєР° СЃС‚Р°С‚РёС‡РµСЃРєРёС… Р±РёР±Р»РёРѕС‚РµРє
      if(InitMockLibs())
      {
-        BuildStorage(3); // сборка mock-библиотек
+        BuildStorage(3); // СЃР±РѕСЂРєР° mock-Р±РёР±Р»РёРѕС‚РµРє
      }
      else
      {
@@ -1647,15 +2267,15 @@ bool UStorage::BuildStorage(void)
              Logger->LogMessage(RDK_EX_ERROR, std::string("Mock Libraries will not be built because of error in Mock Libraries Initialization"));
      }
 
-     BuildStorage(2); // сборка runtime-библиотек
+     BuildStorage(2); // СЃР±РѕСЂРєР° runtime-Р±РёР±Р»РёРѕС‚РµРє
      break;
  }
  case 3:
  {
-     // Иницилазиация мок-либ
+     // РРЅРёС†РёР»Р°Р·РёР°С†РёСЏ РјРѕРє-Р»РёР±
      if(InitMockLibs())
      {
-        BuildStorage(3); // сборка mock-библиотек
+        BuildStorage(3); // СЃР±РѕСЂРєР° mock-Р±РёР±Р»РёРѕС‚РµРє
      }
      else
      {
@@ -1663,7 +2283,7 @@ bool UStorage::BuildStorage(void)
              Logger->LogMessage(RDK_EX_ERROR, std::string("Mock Libraries will not be built because of error in Mock Libraries Initialization"));
      }
 
-     BuildStorage(2); // сборка runtime-библиотек
+     BuildStorage(2); // СЃР±РѕСЂРєР° runtime-Р±РёР±Р»РёРѕС‚РµРє
      break;
  }
  }
@@ -1671,14 +2291,23 @@ bool UStorage::BuildStorage(void)
  return true;
 }
 
-// Заполняет хранилище данными библиотек конктретного типа
-// Тип библиотеки:
-// 0 - Внутренняя библиотека (собрана вместе с ядром)
-// 1 - Внешняя библиотека (загружена из внешней dll)
-// 2 - Библиотека, созданная во время выполнения
-// 3 - Библиотека-заглушка (все компоненты-заглушки)
+// Р—Р°РїРѕР»РЅСЏРµС‚ С…СЂР°РЅРёР»РёС‰Рµ РґР°РЅРЅС‹РјРё Р±РёР±Р»РёРѕС‚РµРє РєРѕРЅРєС‚СЂРµС‚РЅРѕРіРѕ С‚РёРїР°
+// РўРёРї Р±РёР±Р»РёРѕС‚РµРєРё:
+// Р—Р°РїРѕР»РЅСЏРµС‚ С…СЂР°РЅРёР»РёС‰Рµ РґР°РЅРЅС‹РјРё Р±РёР±Р»РёРѕС‚РµРє РєРѕРЅРєС‚СЂРµС‚РЅРѕРіРѕ С‚РёРїР°
+// РўРёРї Р±РёР±Р»РёРѕС‚РµРєРё:
+// 0 - Р’РЅСѓС‚СЂРµРЅРЅСЏСЏ Р±РёР±Р»РёРѕС‚РµРєР° (СЃРѕР±СЂР°РЅР° РІРјРµСЃС‚Рµ СЃ СЏРґСЂРѕРј)
+// 1 - Р’РЅРµС€РЅСЏСЏ Р±РёР±Р»РёРѕС‚РµРєР° (Р·Р°РіСЂСѓР¶РµРЅР° РёР· РІРЅРµС€РЅРµР№ dll)
 bool UStorage::BuildStorage(int lib_type)
 {
+    // РџРѕРґСЃС‡РёС‚С‹РІР°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ Р±РёР±Р»РёРѕС‚РµРє РЅСѓР¶РЅРѕРіРѕ С‚РёРїР° РґР»СЏ РїСЂРѕРіСЂРµСЃСЃР°
+    size_t total_libs = 0;
+    for(size_t i=0;i<CollectionList.size();i++)
+    {
+        if(CollectionList[i] && CollectionList[i]->GetType()==lib_type)
+            total_libs++;
+    }
+
+    size_t processed_libs = 0;
     for(size_t i=0;i<CollectionList.size();i++)
     {
      UEPtr<ULibrary> lib=CollectionList[i];
@@ -1697,16 +2326,27 @@ bool UStorage::BuildStorage(int lib_type)
       else
        Logger->LogMessage(RDK_EX_WARNING, lib->GetName()+std::string(" core version compatibility DOES NOT checked."));
 
-      Logger->LogMessage(RDK_EX_DEBUG, std::string("Adding components from ")+lib->GetName()+" collection...");
       unsigned long long total_used_memory_before(0);
       unsigned long long largest_free_block_before(0);
       ReadUsedMemoryInfo(total_used_memory_before, largest_free_block_before);
 
-      CollectionList[i]->Upload(this);
+      try {
+        CollectionList[i]->Upload(this);
+      }
+      catch(const std::exception& e) {
+        if(Logger)
+          Logger->LogMessage(RDK_EX_ERROR, std::string("Exception in Upload() for ") + lib->GetName() + ": " + e.what());
+      }
+      catch(...) {
+        if(Logger)
+          Logger->LogMessage(RDK_EX_ERROR, std::string("Unknown exception in Upload() for ") + lib->GetName());
+      }
       unsigned long long total_used_memory_after(0);
       unsigned long long largest_free_block_after(0);
       if(ReadUsedMemoryInfo(total_used_memory_after, largest_free_block_after))
        Logger->LogMessage(RDK_EX_DEBUG, lib->GetName()+std::string(" eats ")+sntoa(total_used_memory_after-total_used_memory_before)+std::string(" bytes of RAM. Largest RAM block decreased to ")+sntoa(largest_free_block_before-largest_free_block_after)+" bytes");
+      
+      processed_libs++;
 
       Logger->LogMessage(RDK_EX_DEBUG, std::string("Successfully added [")+sntoa(lib->GetComplete().size())+std::string("]: ")+concat_strings(lib->GetComplete(),std::string(",")));
       if(!lib->GetIncomplete().empty())
@@ -1717,34 +2357,79 @@ bool UStorage::BuildStorage(int lib_type)
       IncompletedClassNames.insert(IncompletedClassNames.end(),
                                 lib->GetIncomplete().begin(),
                                 lib->GetIncomplete().end());
+
+      // РћР±РЅРѕРІР»РµРЅРёРµ РїСЂРѕРіСЂРµСЃСЃР° РїРѕСЃР»Рµ РєР°Р¶РґРѕР№ РѕР±СЂР°Р±РѕС‚Р°РЅРЅРѕР№ Р±РёР±Р»РёРѕС‚РµРєРё (17-19%)
+      processed_libs++;
+      if(FuncProgressBarCallback && total_libs > 0)
+      {
+          int progress = 17 + (int)(processed_libs * 2 / total_libs);
+          std::string msg = "Launching application: building library " + lib->GetName() + " (" +
+                           RDK::sntoa(processed_libs) + "/" + RDK::sntoa(total_libs) + ")...";
+          FuncProgressBarCallback(progress, msg);
+      }
      }
     }
 
     return true;
 }
 
-/// Удаляет все образцы классов, для которых нет библиотек
-/// а также все связанные образцы
+/// РЈРґР°Р»СЏРµС‚ РІСЃРµ РѕР±СЂР°Р·С†С‹ РєР»Р°СЃСЃРѕРІ, РґР»СЏ РєРѕС‚РѕСЂС‹С… РЅРµС‚ Р±РёР±Р»РёРѕС‚РµРє
+/// Р° С‚Р°РєР¶Рµ РІСЃРµ СЃРІСЏР·Р°РЅРЅС‹Рµ РѕР±СЂР°Р·С†С‹
 void UStorage::DelAbandonedClasses(void)
 {
+ // РћРїС‚РёРјРёР·Р°С†РёСЏ: СЃС‚СЂРѕРёРј РёРЅРґРµРєСЃ РєР»Р°СЃСЃРѕРІ -> Р±РёР±Р»РёРѕС‚РµРє РѕРґРёРЅ СЂР°Р· РїРµСЂРµРґ С†РёРєР»РѕРј
+ // Р­С‚Рѕ СѓРјРµРЅСЊС€Р°РµС‚ СЃР»РѕР¶РЅРѕСЃС‚СЊ СЃ O(n*m) РґРѕ O(n+m), РіРґРµ n - РєР»Р°СЃСЃС‹, m - Р±РёР±Р»РёРѕС‚РµРєРё
+ std::unordered_set<std::string> classes_with_libs;
+ classes_with_libs.reserve(ClassesStorage.size());
+
+ // РџСЂРѕС…РѕРґРёРј РїРѕ РІСЃРµРј Р±РёР±Р»РёРѕС‚РµРєР°Рј Рё СЃРѕР±РёСЂР°РµРј РёРјРµРЅР° РєР»Р°СЃСЃРѕРІ
+ for(size_t i=0; i<CollectionList.size(); i++)
+ {
+  UEPtr<ULibrary> lib = CollectionList[i];
+  if(lib)
+  {
+   // РџРѕР»СѓС‡Р°РµРј СЃРїРёСЃРѕРє РєР»Р°СЃСЃРѕРІ Р±РёР±Р»РёРѕС‚РµРєРё
+   const std::vector<std::string>& complete_classes = lib->GetComplete();
+   for(const auto& class_name : complete_classes)
+   {
+    classes_with_libs.insert(class_name);
+   }
+  }
+ }
+
+ // РўРµРїРµСЂСЊ РїСЂРѕС…РѕРґРёРј РїРѕ РєР»Р°СЃСЃР°Рј Рё СѓРґР°Р»СЏРµРј С‚РѕР»СЊРєРѕ С‚Рµ, РґР»СЏ РєРѕС‚РѕСЂС‹С… РЅРµС‚ Р±РёР±Р»РёРѕС‚РµРє
  UClassesStorageIterator I=ClassesStorage.begin(),J;
  while(I != ClassesStorage.end())
  {
   J=I; ++J;
-  if(!FindCollection(I->first))
+  std::string class_name = FindClassName(I->first);
+  // РСЃРїРѕР»СЊР·СѓРµРј РёРЅРґРµРєСЃ РІРјРµСЃС‚Рѕ РІС‹Р·РѕРІР° FindCollection() РґР»СЏ РєР°Р¶РґРѕРіРѕ РєР»Р°СЃСЃР°
+  if(classes_with_libs.find(class_name) == classes_with_libs.end())
    DelClass(I->first,true);
   I=J;
  }
 }
 
-/// Возвращает указатель на библиотеку класса по имени класса
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° Р±РёР±Р»РёРѕС‚РµРєСѓ РєР»Р°СЃСЃР° РїРѕ РёРјРµРЅРё РєР»Р°СЃСЃР°
 UEPtr<ULibrary> UStorage::FindCollection(const std::string &class_name)
 {
+ // РћРїС‚РёРјРёР·Р°С†РёСЏ: РёСЃРїРѕР»СЊР·СѓРµРј РёРЅРґРµРєСЃ РґР»СЏ O(1) РїРѕРёСЃРєР° РІРјРµСЃС‚Рѕ O(m) Р»РёРЅРµР№РЅРѕРіРѕ РїРѕРёСЃРєР°
+ auto index_it = ClassLibraryIndex.find(class_name);
+ if(index_it != ClassLibraryIndex.end())
+ {
+  return index_it->second;
+ }
+
+ // Fallback: РµСЃР»Рё РёРЅРґРµРєСЃ РЅРµ СЃРѕРґРµСЂР¶РёС‚ РєР»Р°СЃСЃ (РЅР°РїСЂРёРјРµСЂ, РїСЂРё СЃС‚Р°СЂС‹С… РґР°РЅРЅС‹С…), РёСЃРїРѕР»СЊР·СѓРµРј Р»РёРЅРµР№РЅС‹Р№ РїРѕРёСЃРє
  for(size_t i=0;i<CollectionList.size();i++)
  {
   UEPtr<ULibrary> lib=CollectionList[i];
-  if(lib->IsClassNamePresent(class_name))
+  if(lib && lib->IsClassNamePresent(class_name))
+  {
+   // РћР±РЅРѕРІР»СЏРµРј РёРЅРґРµРєСЃ РґР»СЏ Р±СѓРґСѓС‰РёС… РІС‹Р·РѕРІРѕРІ
+   ClassLibraryIndex[class_name] = lib;
    return lib;
+  }
  }
  return 0;
 }
@@ -1755,8 +2440,8 @@ UEPtr<ULibrary> UStorage::FindCollection(const UId &classid)
 }
 
 
-/// Формирует список зависимостей класса компонента от библиотек
-/// Метод не очищает переданный список библиотек, а только пополняет его
+/// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃРїРёСЃРѕРє Р·Р°РІРёСЃРёРјРѕСЃС‚РµР№ РєР»Р°СЃСЃР° РєРѕРјРїРѕРЅРµРЅС‚Р° РѕС‚ Р±РёР±Р»РёРѕС‚РµРє
+/// РњРµС‚РѕРґ РЅРµ РѕС‡РёС‰Р°РµС‚ РїРµСЂРµРґР°РЅРЅС‹Р№ СЃРїРёСЃРѕРє Р±РёР±Р»РёРѕС‚РµРє, Р° С‚РѕР»СЊРєРѕ РїРѕРїРѕР»РЅСЏРµС‚ РµРіРѕ
 void UStorage::FindComponentDependencies(const std::string &class_name, std::vector<std::pair<std::string,std::string> > &dependencies)
 {
  UEPtr<RDK::UVirtualMethodFactory> factory=dynamic_pointer_cast<RDK::UVirtualMethodFactory>(GetComponentFactory(class_name));
@@ -1779,18 +2464,38 @@ void UStorage::FindComponentDependencies(const std::string &class_name, std::vec
 // --------------------------
 
 // --------------------------
-// Скрытые методы управления хранилищем объектов
-// Выводит уже созданный объект из хранилища и возвращает
-// его classid
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ С…СЂР°РЅРёР»РёС‰РµРј РѕР±СЉРµРєС‚РѕРІ
 // --------------------------
-// Добавляет уже созданный объект в хранилище
-// Если объект уже принадлежит иному хранилищу то возвращает false
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ С…СЂР°РЅРёР»РёС‰РµРј РѕР±СЉРµРєС‚РѕРІ
+// Р’С‹РІРѕРґРёС‚ СѓР¶Рµ СЃРѕР·РґР°РЅРЅС‹Р№ РѕР±СЉРµРєС‚ РёР· С…СЂР°РЅРёР»РёС‰Р° Рё РІРѕР·РІСЂР°С‰Р°РµС‚
+// РµРіРѕ classid
+// --------------------------
 void UStorage::PushObject(const UId &classid, UEPtr<UContainer> object)
 {
  UInstancesStorage &instances=ObjectsStorage[classid];
 
+ // РљР РРўРР§РќРћ: Р’Р°Р»РёРґР°С†РёСЏ ClassId РѕР±СЉРµРєС‚Р° РїРµСЂРµРґ РґРѕР±Р°РІР»РµРЅРёРµРј РІ Storage
+ if(object)
+ {
+  UId object_class_id = object->GetClass();
+  if(object_class_id != classid)
+  {
+   // Р•СЃР»Рё ClassId РЅРµ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓРµС‚, СѓСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїСЂР°РІРёР»СЊРЅС‹Р№
+   if(Logger && object_class_id != ForbiddenId)
+   {
+    Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__,
+     std::string("Object ") + object->GetName() +
+     std::string(" ClassId mismatch: expected ") + sntoa(classid) +
+     std::string(", got ") + sntoa(object_class_id) + std::string(" - correcting"));
+   }
+   object->SetClass(classid);
+  }
+ }
+
  UInstancesStorageElement element(object,true);
- instances.insert(instances.end(),element);
+ UInstancesStorageIterator it = instances.insert(instances.end(),element);
+ // Update index map
+ ObjectsIndex[object] = it;
  //list<UInstancesStorageElement>::iterator instI=instances.insert(instances.end(),element);
  //object->SetObjectIterator(&(*instI));
  object->SetClass(classid);
@@ -1798,76 +2503,157 @@ void UStorage::PushObject(const UId &classid, UEPtr<UContainer> object)
  object->SetStorage(this);
 }
 
-// Выводит уже созданный объект из хранилища и возвращает
-// его classid
-// В случае ошибки возвращает ForbiddenId
+// Р’С‹РІРѕРґРёС‚ СѓР¶Рµ СЃРѕР·РґР°РЅРЅС‹Р№ РѕР±СЉРµРєС‚ РёР· С…СЂР°РЅРёР»РёС‰Р° Рё РІРѕР·РІСЂР°С‰Р°РµС‚
+// РµРіРѕ classid
+// Р’С‹РІРѕРґРёС‚ СѓР¶Рµ СЃРѕР·РґР°РЅРЅС‹Р№ РѕР±СЉРµРєС‚ РёР· С…СЂР°РЅРёР»РёС‰Р° Рё РІРѕР·РІСЂР°С‰Р°РµС‚
 UId UStorage::PopObject(UEPtr<UContainer> object)
 {
  UObjectsStorageIterator instances=ObjectsStorage.find(object->GetClass());
  if(instances == ObjectsStorage.end())
   return ForbiddenId;
 
- for(list<UInstancesStorageElement>::iterator I=instances->second.begin(),
-						J=instances->second.end(); I!=J; ++I)
+ // Use index map for O(1) lookup
+ auto index_it = ObjectsIndex.find(object);
+ if(index_it != ObjectsIndex.end())
  {
-  if(I->Object == object)
-   return PopObject(instances, I);
+  UInstancesStorageIterator list_it = index_it->second;
+  // Verify iterator is still valid
+  if(list_it != instances->second.end() && list_it->Object == object)
+  {
+   ObjectsIndex.erase(index_it);
+   return PopObject(instances, list_it);
+  }
+  else
+  {
+   // Index is stale, remove it
+   ObjectsIndex.erase(index_it);
+  }
  }
 
- return ForbiddenId;
-}
-
-// Перемещает объект в другое хранилище
-void UStorage::MoveObject(UEPtr<UContainer> object, UEPtr<UStorage> newstorage)
-{
- newstorage->PushObject(PopObject(object),object);
-}
-
-// Возвращает объект в хранилище
-// Выбранный объект помечается как свободный в хранилище
-// Флаг 'Activity' объекта выставляется в false
-void UStorage::ReturnObject(UEPtr<UComponent> object)
-{
- UEPtr<UContainer> obj=dynamic_pointer_cast<UContainer>(object);
-
- obj->Activity = false;
- obj->BreakOwner();
-
- UObjectsStorageIterator instances=ObjectsStorage.find(object->GetClass());
- if(instances == ObjectsStorage.end())
-  return;
-
+ // Fallback to linear search if index is missing or stale
  for(list<UInstancesStorageElement>::iterator I=instances->second.begin(),
 						J=instances->second.end(); I!=J; ++I)
  {
   if(I->Object == object)
   {
+   ObjectsIndex.erase(object); // Remove from index if present
+   return PopObject(instances, I);
+  }
+ }
+
+ return ForbiddenId;
+}
+
+// РџРµСЂРµРјРµС‰Р°РµС‚ РѕР±СЉРµРєС‚ РІ РґСЂСѓРіРѕРµ С…СЂР°РЅРёР»РёС‰Рµ
+void UStorage::MoveObject(UEPtr<UContainer> object, UEPtr<UStorage> newstorage)
+{
+ newstorage->PushObject(PopObject(object),object);
+}
+
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РѕР±СЉРµРєС‚ РІ С…СЂР°РЅРёР»РёС‰Рµ
+// Р’С‹Р±СЂР°РЅРЅС‹Р№ РѕР±СЉРµРєС‚ РїРѕРјРµС‡Р°РµС‚СЃСЏ РєР°Рє СЃРІРѕР±РѕРґРЅС‹Р№ РІ С…СЂР°РЅРёР»РёС‰Рµ
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РѕР±СЉРµРєС‚ РІ С…СЂР°РЅРёР»РёС‰Рµ
+void UStorage::ReturnObject(UEPtr<UComponent> object)
+{
+ UEPtr<UContainer> obj=dynamic_pointer_cast<UContainer>(object);
+
+ if(!obj)
+ {
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_WARNING, __FUNCTION__,
+    std::string("Attempt to return null object"));
+  return;
+ }
+
+ obj->Activity = false;
+ obj->BreakOwner();
+
+ UId class_id = object->GetClass();
+
+ // Р•СЃР»Рё ClassId = ForbiddenId, РѕР±СЉРµРєС‚ СѓР¶Рµ Р±С‹Р» СѓРґР°Р»РµРЅ РёР· С…СЂР°РЅРёР»РёС‰Р°
+ if(class_id == ForbiddenId)
+ {
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+    std::string("Object ") + obj->GetName() + std::string(" has ForbiddenId - already removed from storage"));
+  return;
+ }
+
+ UObjectsStorageIterator instances=ObjectsStorage.find(class_id);
+ if(instances == ObjectsStorage.end())
+ {
+  if(Logger)
+   Logger->LogMessageEx(RDK_EX_DEBUG, __FUNCTION__,
+    std::string("Object ") + obj->GetName() + std::string(" class not found in ObjectsStorage"));
+  return;
+ }
+
+ // Use index map for O(log n) lookup
+ auto index_it = ObjectsIndex.find(obj);
+ if(index_it != ObjectsIndex.end())
+ {
+  UInstancesStorageIterator list_it = index_it->second;
+  // Verify iterator is still valid
+  if(list_it != instances->second.end() && list_it->Object == obj)
+  {
+   // Update index map
+   ObjectsIndex[obj] = list_it;
+   // РљР РРўРР§РќРћ: РћС‡РёС‰Р°РµРј UseFlag, С‡С‚РѕР±С‹ РѕР±СЉРµРєС‚ РјРѕРі Р±С‹С‚СЊ РїРµСЂРµРёСЃРїРѕР»СЊР·РѕРІР°РЅ
+   list_it->UseFlag=false;
+   // РЈРґР°Р»РµРЅРѕ РёР·Р±С‹С‚РѕС‡РЅРѕРµ Р»РѕРіРёСЂРѕРІР°РЅРёРµ - СЃРѕР·РґР°РІР°Р»Рѕ СЃРїР°Рј РІ INFO Р»РѕРіР°С…
+   return;
+  }
+  else
+  {
+   // Index is stale, remove it
+   ObjectsIndex.erase(index_it);
+  }
+ }
+
+ // Fallback to linear search if index is missing or stale
+ for(list<UInstancesStorageElement>::iterator I=instances->second.begin(),
+					J=instances->second.end(); I!=J; ++I)
+ {
+  if(I->Object == obj)
+  {
+   // Update index map
+   ObjectsIndex[obj] = I;
+   // РљР РРўРР§РќРћ: РћС‡РёС‰Р°РµРј UseFlag, С‡С‚РѕР±С‹ РѕР±СЉРµРєС‚ РјРѕРі Р±С‹С‚СЊ РїРµСЂРµРёСЃРїРѕР»СЊР·РѕРІР°РЅ
    I->UseFlag=false;
+   // РЈРґР°Р»РµРЅРѕ РёР·Р±С‹С‚РѕС‡РЅРѕРµ Р»РѕРіРёСЂРѕРІР°РЅРёРµ - СЃРѕР·РґР°РІР°Р»Рѕ СЃРїР°Рј РІ INFO Р»РѕРіР°С…
    break;
   }
  }
 }
 
-// В случае ошибки возвращает ForbiddenId
+// Р’ СЃР»СѓС‡Р°Рµ РѕС€РёР±РєРё РІРѕР·РІСЂР°С‰Р°РµС‚ ForbiddenId
 UId UStorage::PopObject(UObjectsStorageIterator instance_iterator, list<UInstancesStorageElement>::iterator object_iterator)
 {
  UEPtr<UContainer> object=object_iterator->Object;
 
+ // Remove from index map
+ ObjectsIndex.erase(object);
  instance_iterator->second.erase(object_iterator);
 
  UId classid=object->GetClass();
  //object->SetObjectIterator(0);
  object->SetStorage(0);
- object->SetClass(ForbiddenId);
+
+ // РќР• СЃР±СЂР°СЃС‹РІР°РµРј ClassId РЅР° ForbiddenId Р·РґРµСЃСЊ, С‚Р°Рє РєР°Рє РѕР±СЉРµРєС‚ РјРѕР¶РµС‚ РІСЃРµ РµС‰Рµ СЃСѓС‰РµСЃС‚РІРѕРІР°С‚СЊ
+ // Рё РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊСЃСЏ. ClassId Р±СѓРґРµС‚ СЃР±СЂРѕС€РµРЅ С‚РѕР»СЊРєРѕ РїСЂРё РїРѕР»РЅРѕРј СѓРЅРёС‡С‚РѕР¶РµРЅРёРё РѕР±СЉРµРєС‚Р°
+ // РІ РґРµСЃС‚СЂСѓРєС‚РѕСЂРµ РёР»Рё СЏРІРЅРѕРј СѓРґР°Р»РµРЅРёРё. Р­С‚Рѕ РїСЂРµРґРѕС‚РІСЂР°С‰Р°РµС‚ РѕС€РёР±РєРё EClassIdNotExist
+ // РїСЂРё РїРѕРїС‹С‚РєРµ РїРѕР»СѓС‡РёС‚СЊ РёРјСЏ РєР»Р°СЃСЃР° С‡РµСЂРµР· FindClassName().
+ // object->SetClass(ForbiddenId);
+
  return classid;
 }
 // --------------------------
 
 
 // --------------------------
-// Скрытые методы таблицы соответствий классов
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ С‚Р°Р±Р»РёС†С‹ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёР№ РєР»Р°СЃСЃРѕРІ
 // --------------------------
-// Добавляет класс с именем 'name' в таблицу соответствий
+// РЎРєСЂС‹С‚С‹Рµ РјРµС‚РѕРґС‹ С‚Р°Р±Р»РёС†С‹ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёР№ РєР»Р°СЃСЃРѕРІ
 UId UStorage::AddLookupClass(const NameT &name)
 {
  if(ClassesLookupTable.find(name) != ClassesLookupTable.end())
@@ -1878,10 +2664,10 @@ UId UStorage::AddLookupClass(const NameT &name)
  return LastClassId+1;
 }
 
-// Удаляет класс с именем 'name' из таблицы соотвествий
+// РЈРґР°Р»СЏРµС‚ РєР»Р°СЃСЃ СЃ РёРјРµРЅРµРј 'name' РёР· С‚Р°Р±Р»РёС†С‹ СЃРѕРѕС‚РІРµСЃС‚РІРёР№
 void UStorage::DelLookupClass(const NameT &name)
 {
- map<NameT,UId>::iterator I=ClassesLookupTable.find(name);
+ auto I=ClassesLookupTable.find(name);
 
  if(I == ClassesLookupTable.end())
   throw EClassNameNotExist(name);
@@ -1891,19 +2677,19 @@ void UStorage::DelLookupClass(const NameT &name)
 // --------------------------
 
 // --------------------------
-// Методы для работы с компонентами-заглушками (UMockUnet)
+// РњРµС‚РѕРґС‹ РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ РєРѕРјРїРѕРЅРµРЅС‚Р°РјРё-Р·Р°РіР»СѓС€РєР°РјРё (UMockUnet)
 // --------------------------
-// Добавление функции-создателя свойств для UMockUnet в массив в Storage
+// РњРµС‚РѕРґС‹ РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ РєРѕРјРїРѕРЅРµРЅС‚Р°РјРё-Р·Р°РіР»СѓС€РєР°РјРё (UMockUnet)
 bool UStorage::AddCrPropMockFunc(funcCrPropMock func_ptr)
 {
-    // Нулевой указатель
+    // РќСѓР»РµРІРѕР№ СѓРєР°Р·Р°С‚РµР»СЊ
     if(func_ptr == 0)
     {
         if(Logger)
             Logger->LogMessage(RDK_EX_DEBUG, __FUNCTION__, "Trying to add null function to FunctionsCrPropMock list in Storage");
         return false;
     }
-    // Если уже существует
+    // Р•СЃР»Рё СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
     if(std::find(FunctionsCrPropMock.begin(), FunctionsCrPropMock.end(), func_ptr) != FunctionsCrPropMock.end())
     {
         if(Logger)
@@ -1915,101 +2701,12 @@ bool UStorage::AddCrPropMockFunc(funcCrPropMock func_ptr)
     return true;
 }
 
-// Получение массива функций-создателей свойств для UMockUnet
+// РџРѕР»СѓС‡РµРЅРёРµ РјР°СЃСЃРёРІР° С„СѓРЅРєС†РёР№-СЃРѕР·РґР°С‚РµР»РµР№ СЃРІРѕР№СЃС‚РІ РґР»СЏ UMockUnet
 const std::list<funcCrPropMock>& UStorage::GetFunctionsCrPropMock() const
 {
     return FunctionsCrPropMock;
 }
 
-/* *************************************************************************** */
-              /*
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UStorage::EClassIdNotExist::EClassIdNotExist(UId id)
- : Id(id)
-{
-
-}
-// --------------------------
-
-// --------------------------
-// Методы формирования лога
-// --------------------------
-// Формирует строку лога об исключении
-std::string UStorage::EClassIdNotExist::CreateLogMessage(void) const
-{
- return Exception::CreateLogMessage()+std::string(" Id=")+sntoa(Id);
-}
-// --------------------------
-
-// Попытка работы с классом по имени, отсутствующему в хранилище
-//class UStorage::EClassNameNotExist: public EError
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UStorage::EClassNameNotExist::EClassNameNotExist(const std::string &name)
-: Name(name)
-{
-}
-// --------------------------
-
-// --------------------------
-// Методы формирования лога
-// --------------------------
-// Формирует строку лога об исключении
-std::string UStorage::EClassNameNotExist::CreateLogMessage(void) const
-{
- return Exception::CreateLogMessage()+std::string(" Name=")+Name;
-}
-// --------------------------
-
-// Некорректное имя класса
-// class UStorage::EInvalidClassName: public EError
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UStorage::EInvalidClassName::EInvalidClassName(const std::string &name)
-: Name(name)
-{
-}
-// --------------------------
-
-// --------------------------
-// Методы формирования лога
-// --------------------------
-// Формирует строку лога об исключении
-std::string UStorage::EInvalidClassName::CreateLogMessage(void) const
-{
- return Exception::CreateLogMessage()+std::string(" Name=")+Name;
-}
-// --------------------------
-
-
-
-// Класс с заданным именем уже существует
-//class UStorage::EClassNameAlredyExist: public EError
-// --------------------------
-// Конструкторы и деструкторы
-// --------------------------
-UStorage::EClassNameAlreadyExist::EClassNameAlreadyExist(const std::string &name)
-: Name(name)
-{
-}
-// --------------------------
-
-// --------------------------
-// Методы формирования лога
-// --------------------------
-// Формирует строку лога об исключении
-std::string UStorage::EClassNameAlreadyExist::CreateLogMessage(void) const
-{
- return Exception::CreateLogMessage()+std::string(" Name=")+Name;
-}
-// --------------------------
-       */
-}
-
+} // namespace RDK
 
 #endif
-

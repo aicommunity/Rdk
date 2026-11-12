@@ -17,15 +17,15 @@ __fastcall TUClassesDescriptionsFrame::TUClassesDescriptionsFrame(TComponent* Ow
 }
 
 // -----------------------------
-// Методы управления визуальным интерфейсом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РІРёР·СѓР°Р»СЊРЅС‹Рј РёРЅС‚РµСЂС„РµР№СЃРѕРј
 // -----------------------------
-// Метод, вызываемый после сброса модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ СЃР±СЂРѕСЃР° РјРѕРґРµР»Рё
 void TUClassesDescriptionsFrame::AAfterReset(void)
 {
 
 }
 
-// Обновление интерфейса
+// РћР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
 void TUClassesDescriptionsFrame::AUpdateInterface(void)
 {
  if(CurrentClassName.Length() == 0)
@@ -80,19 +80,19 @@ void TUClassesDescriptionsFrame::AUpdateInterface(void)
 
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TUClassesDescriptionsFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
 
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TUClassesDescriptionsFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
 
 }
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 TUClassesDescriptionsFrame* TUClassesDescriptionsFrame::New(TComponent *owner)
 {
  return new TUClassesDescriptionsFrame(owner);

@@ -18,15 +18,15 @@
 
 namespace RDK {
 
-// Возвращает текущее время в миллисекундах от некоторого фиксированного момента
-// (зависит от реализации)
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСѓС‰РµРµ РІСЂРµРјСЏ РІ РјРёР»Р»РёСЃРµРєСѓРЅРґР°С… РѕС‚ РЅРµРєРѕС‚РѕСЂРѕРіРѕ С„РёРєСЃРёСЂРѕРІР°РЅРЅРѕРіРѕ РјРѕРјРµРЅС‚Р°
+// (Р·Р°РІРёСЃРёС‚ РѕС‚ СЂРµР°Р»РёР·Р°С†РёРё)
 unsigned long long GetCurrentStartupTime(void)
 {
  return GetTickCount();
 }
 
-// Записывает в seconds и useconds текущие значения секунд и микросекунд,
-// прошедших с некоторого фиксированного момента
+// Р—Р°РїРёСЃС‹РІР°РµС‚ РІ seconds Рё useconds С‚РµРєСѓС‰РёРµ Р·РЅР°С‡РµРЅРёСЏ СЃРµРєСѓРЅРґ Рё РјРёРєСЂРѕСЃРµРєСѓРЅРґ,
+// РїСЂРѕС€РµРґС€РёС… СЃ РЅРµРєРѕС‚РѕСЂРѕРіРѕ С„РёРєСЃРёСЂРѕРІР°РЅРЅРѕРіРѕ РјРѕРјРµРЅС‚Р°
 void GetTimeOfDayInMicroseconds(unsigned long long &seconds, unsigned long long &useconds)
 {
  FILETIME ft;
@@ -46,7 +46,7 @@ void GetTimeOfDayInMicroseconds(unsigned long long &seconds, unsigned long long 
  useconds = (unsigned long long)(tmpres % 1000000UL);
 }
 
-// Вычисляет разницу во времени в миллисекундах
+// Р’С‹С‡РёСЃР»СЏРµС‚ СЂР°Р·РЅРёС†Сѓ РІРѕ РІСЂРµРјРµРЅРё РІ РјРёР»Р»РёСЃРµРєСѓРЅРґР°С…
 unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long time2)
 {
  if(time1>time2)
@@ -55,7 +55,7 @@ unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long tim
   return time2-time1;
 }
 
-/// Возвращает локальное время в днях (с точностью до миллисекунд) от начала времен
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р»РѕРєР°Р»СЊРЅРѕРµ РІСЂРµРјСЏ РІ РґРЅСЏС… (СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ РґРѕ РјРёР»Р»РёСЃРµРєСѓРЅРґ) РѕС‚ РЅР°С‡Р°Р»Р° РІСЂРµРјРµРЅ
 double GetVariantLocalTime(void)
 {
  SYSTEMTIME loc_time;
@@ -66,17 +66,17 @@ double GetVariantLocalTime(void)
 }
 
 
-// Усыпляет процесс на заданное число миллисекунд
+// РЈСЃС‹РїР»СЏРµС‚ РїСЂРѕС†РµСЃСЃ РЅР° Р·Р°РґР°РЅРЅРѕРµ С‡РёСЃР»Рѕ РјРёР»Р»РёСЃРµРєСѓРЅРґ
 void Sleep(int value)
 {
  ::Sleep(value);
 }                                  
 
-// Создает каталог
-// Возвращает 0 в случае успеха или если каталог уже существует
-// 1 - если уже существует файл с таким именем
-// 2 - если такой путь не существует
-// 3 - если произошла другая ошибка
+// РЎРѕР·РґР°РµС‚ РєР°С‚Р°Р»РѕРі
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ 0 РІ СЃР»СѓС‡Р°Рµ СѓСЃРїРµС…Р° РёР»Рё РµСЃР»Рё РєР°С‚Р°Р»РѕРі СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
+// 1 - РµСЃР»Рё СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚ С„Р°Р№Р» СЃ С‚Р°РєРёРј РёРјРµРЅРµРј
+// 2 - РµСЃР»Рё С‚Р°РєРѕР№ РїСѓС‚СЊ РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
+// 3 - РµСЃР»Рё РїСЂРѕРёР·РѕС€Р»Р° РґСЂСѓРіР°СЏ РѕС€РёР±РєР°
 int CreateNewDirectory(const char* path)
 {
  DWORD dwFileAttributes = GetFileAttributesA(path);
@@ -99,7 +99,7 @@ int CreateNewDirectory(const char* path)
 //---------------------------------------------------------------------------
 
 
-// Получает список файлов или каталогов по заданному пути
+// РџРѕР»СѓС‡Р°РµС‚ СЃРїРёСЃРѕРє С„Р°Р№Р»РѕРІ РёР»Рё РєР°С‚Р°Р»РѕРіРѕРІ РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ РїСѓС‚Рё
 int FindFilesList(const std::string &path, const std::string &mask, bool isfile, std::vector<std::string> &results)
 {
    results.clear();
@@ -147,7 +147,7 @@ int RdkCopyFile(const std::string &source_file, const std::string &dest_file)
  return 0;
 }
 
-/// Перемещает файл
+/// РџРµСЂРµРјРµС‰Р°РµС‚ С„Р°Р№Р»
 int RdkMoveFile(const std::string &source_file, const std::string &dest_file)
 {
  DWORD error=0;
@@ -178,12 +178,12 @@ int CopyDir(const std::string &source_dir, const std::string &dest_dir, const st
  return error;
 }
 
-/// Функция осуществляет вывод в отладочный лог, если сборка в отладке
+/// Р¤СѓРЅРєС†РёСЏ РѕСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РІС‹РІРѕРґ РІ РѕС‚Р»Р°РґРѕС‡РЅС‹Р№ Р»РѕРі, РµСЃР»Рё СЃР±РѕСЂРєР° РІ РѕС‚Р»Р°РґРєРµ
 void RdkDebuggerMessage(const std::string &message)
 {
 }
 
-/// Функция создает загрузчика динамических библиотек и вызывает для него Load(dll_name)
+/// Р¤СѓРЅРєС†РёСЏ СЃРѕР·РґР°РµС‚ Р·Р°РіСЂСѓР·С‡РёРєР° РґРёРЅР°РјРёС‡РµСЃРєРёС… Р±РёР±Р»РёРѕС‚РµРє Рё РІС‹Р·С‹РІР°РµС‚ РґР»СЏ РЅРµРіРѕ Load(dll_name)
 RDK_LIB_TYPE UDllLoader* UCreateAndLoadDllLoader(const std::string &dll_name)
 {
     UDllLoader * loader = new UDllLoaderWin(dll_name);
@@ -191,7 +191,7 @@ RDK_LIB_TYPE UDllLoader* UCreateAndLoadDllLoader(const std::string &dll_name)
 	return loader;
 }
 
-/// Функция разрушения объекта загрузчика динамических бибилиотек, НЕ выгружает библиотеку
+/// Р¤СѓРЅРєС†РёСЏ СЂР°Р·СЂСѓС€РµРЅРёСЏ РѕР±СЉРµРєС‚Р° Р·Р°РіСЂСѓР·С‡РёРєР° РґРёРЅР°РјРёС‡РµСЃРєРёС… Р±РёР±РёР»РёРѕС‚РµРє, РќР• РІС‹РіСЂСѓР¶Р°РµС‚ Р±РёР±Р»РёРѕС‚РµРєСѓ
 RDK_LIB_TYPE void UDestroyDllLoader(UDllLoader *handle)
 {
     if (handle)
@@ -275,8 +275,8 @@ unsigned long long GetLargestFreeMemRegion(LPVOID *lpBaseAddr)
 }
 #endif
 
-/// Возвращает объем используемой приложением памяти
-/// Если не удалось определить то возвращает false
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РѕР±СЉРµРј РёСЃРїРѕР»СЊР·СѓРµРјРѕР№ РїСЂРёР»РѕР¶РµРЅРёРµРј РїР°РјСЏС‚Рё
+/// Р•СЃР»Рё РЅРµ СѓРґР°Р»РѕСЃСЊ РѕРїСЂРµРґРµР»РёС‚СЊ С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ false
 bool ReadUsedMemoryInfo(unsigned long long &total_used_memory, unsigned long long &largest_free_block)
 {
  total_used_memory=GetMemoryUsedInfo();

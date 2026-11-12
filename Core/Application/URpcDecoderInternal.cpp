@@ -11,7 +11,7 @@
 namespace RDK {
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 URpcDecoderInternal::URpcDecoderInternal(void)
 {
@@ -25,16 +25,16 @@ URpcDecoderInternal::~URpcDecoderInternal(void)
 // --------------------------
 
 // --------------------------
-// Методы управления командами
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РєРѕРјР°РЅРґР°РјРё
 // --------------------------
-/// Создает копию этого декодера
+/// РЎРѕР·РґР°РµС‚ РєРѕРїРёСЋ СЌС‚РѕРіРѕ РґРµРєРѕРґРµСЂР°
 URpcDecoderInternal* URpcDecoderInternal::New(void)
 {
  return new URpcDecoderInternal;
 }
 
-/// Проверяет, поддерживается ли команда диспетчером
-/// ожидает, что команда уже декодирована иначе всегда возвращает false
+/// РџСЂРѕРІРµСЂСЏРµС‚, РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ Р»Рё РєРѕРјР°РЅРґР° РґРёСЃРїРµС‚С‡РµСЂРѕРј
+/// РѕР¶РёРґР°РµС‚, С‡С‚Рѕ РєРѕРјР°РЅРґР° СѓР¶Рµ РґРµРєРѕРґРёСЂРѕРІР°РЅР° РёРЅР°С‡Рµ РІСЃРµРіРґР° РІРѕР·РІСЂР°С‰Р°РµС‚ false
 bool URpcDecoderInternal::IsCmdSupported(const UEPtr<URpcCommand> &command) const
 {
  if(!command || !command->IsDecoded)
@@ -152,21 +152,21 @@ bool URpcDecoderInternal::IsCmdSupported(const UEPtr<URpcCommand> &command) cons
  return true;
 }
 
-/// Осуществляет декодирование и вызов команды по текущим данным
-/// Возвращает false если команда не поддерживается
+/// РћСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РґРµРєРѕРґРёСЂРѕРІР°РЅРёРµ Рё РІС‹Р·РѕРІ РєРѕРјР°РЅРґС‹ РїРѕ С‚РµРєСѓС‰РёРј РґР°РЅРЅС‹Рј
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ false РµСЃР»Рё РєРѕРјР°РЅРґР° РЅРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ
 bool URpcDecoderInternal::AProcessCommand(const UEPtr<URpcCommand> &command)
 {
  if(!command)
  {
-  // Ошибка - команда не задана
+  // РћС€РёР±РєР° - РєРѕРјР°РЅРґР° РЅРµ Р·Р°РґР°РЅР°
   return false;
  }
 
  UEPtr<URpcCommandInternal> cmd=dynamic_pointer_cast<URpcCommandInternal>(command);
  if(!cmd)
  {
-  // Ошибка - команда не поддерживается декодером
-  MLog_LogMessage(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Internal Decoder : Command internal structure not supported. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command=")+command->FunctionName).c_str());
+  // РћС€РёР±РєР° - РєРѕРјР°РЅРґР° РЅРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ РґРµРєРѕРґРµСЂРѕРј
+  RDK::Logging::ChannelLog(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Internal Decoder : Command internal structure not supported. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command=")+command->FunctionName).c_str());
   return false;
  }
 
@@ -188,7 +188,7 @@ bool URpcDecoderInternal::AProcessCommand(const UEPtr<URpcCommand> &command)
 
  if(cmd->ResponseStatus == 2001)
  {
-  MLog_LogMessage(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Internal Decoder: Unknown command. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command=")+command->FunctionName).c_str());
+  RDK::Logging::ChannelLog(command->ChannelIndex, RDK_EX_WARNING, (std::string("RPC Internal Decoder: Unknown command. CmdId=")+sntoa(command->GetCmdId())+std::string(" Command=")+command->FunctionName).c_str());
   return false;
  }
 

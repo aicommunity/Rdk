@@ -6,22 +6,45 @@
 #include <QMenu>
 #include <QToolButton>
 #include <QList>
+#include <QSet>
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QClipboard>
 #include <QScrollBar>
+#include <QSignalBlocker>
+#include <QHeaderView>
+#include <QVBoxLayout>
+
+#include "UGuiTelemetry.h"
+#include "UEngineSelectionSync.h"
+#include "UComponentGuiService.h"
+#include "UComponentFormRegistry.h"
+#include "Plot/PlotDocument.h"
+#include "UModernDiagramWidget.h"
+#include <QTimer>
 
 UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication *app, int channel_mode) :
     UVisualControllerWidget(parent, app),
     ui(new Ui::UComponentsListWidget)
 {
     channelMode=channel_mode;
+    m_treeExpansionPolicy=0;
     CheckModelFlag=false;
     ui->setupUi(this);
 
     componentsTree = new UComponentListTreeWidget(this);
-    //ui->verticalLayoutTreeWidget->setMargin(0);
-    ui->horizontalLayoutTreeWidget->addWidget(componentsTree);
+    QWidget *treeContainer = new QWidget(this);
+    QVBoxLayout *treeLayout = new QVBoxLayout(treeContainer);
+    treeLayout->setContentsMargins(0,0,0,0);
+    filterLineEdit = new QLineEdit(treeContainer);
+    filterLineEdit->setObjectName(QStringLiteral("componentsFilterLineEdit"));
+    filterLineEdit->setPlaceholderText(tr("Фильтр компонентов..."));
+    filterLineEdit->setClearButtonEnabled(true);
+    treeLayout->addWidget(filterLineEdit);
+    treeLayout->addWidget(componentsTree);
+    ui->horizontalLayoutTreeWidget->addWidget(treeContainer);
+    connect(filterLineEdit, &QLineEdit::textChanged,
+            this, &UComponentsListWidget::handleFilterTextChanged);
     connect(componentsTree, SIGNAL(moveComponentUp()), this, SLOT(componentMoveUp()));
     connect(componentsTree, SIGNAL(moveComponentDown()), this, SLOT(componentMoveDown()));
 
@@ -30,20 +53,26 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication 
     channelsSelectionVisible = false;
 
     UpdateInterval = -1;
-    setAccessibleName("UComponentsListWidget"); // ��� ������ ��� ������������
+    setAccessibleName("UComponentsListWidget"); // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     //readSettings(app, settingsGroup);
+
+    renderedSnapshotVersion = 0;
+    lastSnapshot = NMSDK::UGuiModelSnapshot::Instance().CurrentSnapshot();
+    componentFilterText.clear();
+    connect(&NMSDK::UGuiModelSnapshot::Instance(), &NMSDK::UGuiModelSnapshot::SnapshotUpdated,
+            this, &UComponentsListWidget::handleSnapshotUpdated);
 
     UpdateInterface(true);
 
-    //��������� �������� ������
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     connect(componentsTree, SIGNAL(itemSelectionChanged()),
             this, SLOT(componentListItemSelectionChanged()));
 
-    //��������� ����������� �������� ������ �� ���������
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     connect(componentsTree, SIGNAL(doubleClicked(QModelIndex)),
             this, SLOT(drawSelectedComponent(QModelIndex)));
 
-    //��������� ��������� propertys
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ propertys
     connect(ui->treeWidgetParameters, SIGNAL(itemSelectionChanged()),
             this, SLOT(parametersListSelectionChanged()));
     connect(ui->treeWidgetState, SIGNAL(itemSelectionChanged()),
@@ -60,10 +89,10 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication 
     connect(ui->treeWidgetFavorites, SIGNAL(itemChanged(QTreeWidgetItem *, int )),
             this, SLOT(favoritesListItemChanged(QTreeWidgetItem *, int )));
 
-    //��������� ������
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     connect(ui->listWidgetChannelSelection, SIGNAL(itemSelectionChanged()), this, SLOT(channelsListSelectionChanged()));
 
-    //����������� ���� ��� ������ �����������
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     QAction *actionSeparator1 = new QAction(this);
     actionSeparator1->setSeparator(true);
     QAction *actionSeparator2 = new QAction(this);
@@ -93,7 +122,7 @@ UComponentsListWidget::UComponentsListWidget(QWidget *parent, RDK::UApplication 
     componentsTree->addAction(ui->actionComponentGUI);
     componentsTree->addAction(actionSeparator5);
     componentsTree->addAction(ui->actionReloadTree);
-    ui->actionComponentGUI->setEnabled(false); // ��� ����������, �� ����� ������ � enable
+    ui->actionComponentGUI->setEnabled(false); // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ enable
     connect(ui->actionComponentMoveUp, SIGNAL(triggered()), this, SLOT(componentMoveUp()));
     connect(ui->actionComponentMoveDown, SIGNAL(triggered()), this, SLOT(componentMoveDown()));
     connect(ui->actionComponentRename, SIGNAL(triggered()), this, SLOT(componentRename()));
@@ -146,22 +175,98 @@ void UComponentsListWidget::updateComponentsListFromScheme()
 
 void UComponentsListWidget::AUpdateInterface()
 {
-    QString oldRootItem = currentDrawComponentName,
-            oldSelectedItem = selectedComponentLongName;
+    NMSDK::UGuiTelemetryScope telemetry(QStringLiteral("UComponentsList"), accessibleName());
 
-    // ���� �� ������ ������ �� treeWidget'��
+    QString oldRootItem = currentDrawComponentName;
+    QString oldSelectedItem = selectedComponentLongName;
+
     int componentsListScrollMaximum = componentsTree->verticalScrollBar()->maximum();
     int componentsListScrollPosition = componentsTree->verticalScrollBar()->value();
 
-    componentsTree->clear();
+    // Сохраняем состояние развернутости всех узлов перед очисткой дерева
+    // Только если UpdateInterval != 0 (т.е. не в диалоге), чтобы не перезаписывать ручные изменения пользователя
+    QSet<QString> expandedItems;
+    if(UpdateInterval.Get() != 0)
+    {
+        QTreeWidgetItemIterator iterator(componentsTree);
+        while(*iterator)
+        {
+            QTreeWidgetItem *item = *iterator;
+            if(item->isExpanded() && item->childCount() > 0)
+            {
+                QString itemName = item->data(0, Qt::UserRole).toString();
+                if(!itemName.isEmpty())
+                {
+                    expandedItems.insert(itemName);
+                }
+            }
+            ++iterator;
+        }
+    }
 
-    //���������� ������
-    QTreeWidgetItem *rootItem = new QTreeWidgetItem(componentsTree);
-    rootItem->setText(0, "Model");
-    rootItem->setExpanded(false);
-    addComponentSons("", rootItem, oldRootItem, oldSelectedItem);
+    QTreeWidgetItem *rootItem = nullptr;
 
-    // ���� �� ������ ������ �� treeWidget'��
+    if(lastSnapshot && !lastSnapshot->Components.isEmpty())
+    {
+        rebuildTreeFromSnapshot(lastSnapshot);
+        restoreTreeSelection(oldRootItem, oldSelectedItem);
+        m_treeRebuildRetryCount = 0;
+        if(componentsTree->topLevelItemCount() > 0)
+            rootItem = componentsTree->topLevelItem(0);
+    }
+    else
+    {
+        componentsTree->clear();
+
+        rootItem = new QTreeWidgetItem(componentsTree);
+        rootItem->setText(0, "Model");
+        rootItem->setData(0, Qt::UserRole, QString());
+        rootItem->setExpanded(true);
+        addComponentSons("", rootItem, oldRootItem, oldSelectedItem, expandedItems);
+        m_treeRebuildRetryCount = 0;
+    }
+
+    // Восстанавливаем состояние развернутости узлов только если UpdateInterval != 0
+    if(UpdateInterval.Get() != 0)
+    {
+        if(!expandedItems.isEmpty())
+        {
+            // Восстанавливаем сохраненное состояние развернутости
+            QTreeWidgetItemIterator restoreIterator(componentsTree);
+            while(*restoreIterator)
+            {
+                QTreeWidgetItem *item = *restoreIterator;
+                QString itemName = item->data(0, Qt::UserRole).toString();
+                if(expandedItems.contains(itemName))
+                {
+                    item->setExpanded(true);
+                }
+                ++restoreIterator;
+            }
+        }
+        else
+        {
+            // При первой загрузке в главном окне разворачиваем все дерево
+            componentsTree->expandAll();
+        }
+    }
+    else if(rootItem)
+    {
+        // В диалоге: по умолчанию разворачиваем всё дерево; при policy 1 — только Model и при одном компоненте его
+        if (m_treeExpansionPolicy == 1)
+        {
+            rootItem->setExpanded(true);
+            if (rootItem->childCount() == 1)
+                rootItem->child(0)->setExpanded(true);
+        }
+        else
+        {
+            componentsTree->expandAll();
+        }
+    }
+
+    if(rootItem)
+        applyFilter(rootItem);
     componentsTree->verticalScrollBar()->setMaximum(componentsListScrollMaximum);
     componentsTree->verticalScrollBar()->setValue(componentsListScrollPosition);
 
@@ -170,7 +275,6 @@ void UComponentsListWidget::AUpdateInterface()
       redrawChannelsList();
     }
 }
-
 void UComponentsListWidget::AClearInterface()
 {
  componentsTree->clear();
@@ -290,16 +394,16 @@ int UComponentsListWidget::getSelectedChannelIndex()
     return currentChannel;
 }
 
-/// ����� ������ ������
-/// 0 - ������ ������ � ������� �������
-/// 1 - ������ � ���������� �������� �������
+/// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+/// 0 - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+/// 1 - пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 void UComponentsListWidget::setChannelMode(int mode)
 {
  channelMode=mode;
 }
 
-/// ���������� ����� �������� ������
-/// ������������ ��� ����������� ����������
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 int UComponentsListWidget::getWorkChannelIndex()
 {
  return (channelMode == 0)?Core_GetSelectedChannelIndex():currentChannel;
@@ -323,13 +427,69 @@ void UComponentsListWidget::componentListItemSelectionChanged()
 {
     QTreeWidgetItem * item = componentsTree->currentItem();
     if(!item) return;
-    
+
     selectedComponentLongName = item->data(0,Qt::UserRole).toString();
+    m_propertyReloadRetryCount = 0;
+    m_propertyReloadRetryTarget = selectedComponentLongName;
 
+    // Do not Env_Select on selection (TD-111 reverted): FindComponent stays at Model.
     reloadPropertys();
-
-    // ������� ����� �������� �������
     emit componentSelected(selectedComponentLongName);
+}
+
+void UComponentsListWidget::schedulePropertyReloadRetry()
+{
+    if(m_propertyReloadRetryTarget != selectedComponentLongName)
+    {
+        m_propertyReloadRetryCount = 0;
+        m_propertyReloadRetryTarget = selectedComponentLongName;
+    }
+    if(m_propertyReloadRetryCount >= kMaxPropertyReloadRetries)
+        return;
+
+    ++m_propertyReloadRetryCount;
+    QTimer::singleShot(200, this, [this]() {
+        if(m_propertyReloadRetryTarget != selectedComponentLongName)
+            return;
+        reloadPropertys(true);
+    });
+}
+
+void UComponentsListWidget::scheduleTreeRebuildRetry()
+{
+    if(m_treeRebuildRetryCount >= kMaxTreeRebuildRetries)
+        return;
+
+    ++m_treeRebuildRetryCount;
+    QTimer::singleShot(200, this, [this]() {
+        UpdateInterface(true);
+    });
+}
+
+void UComponentsListWidget::restoreTreeSelection(const QString& oldRootItem,
+                                               const QString& oldSelectedItem)
+{
+    const QString selectName = !oldSelectedItem.isEmpty() ? oldSelectedItem : oldRootItem;
+    if(selectName.isEmpty())
+        return;
+
+    QTreeWidgetItemIterator iterator(componentsTree);
+    while(*iterator)
+    {
+        if((*iterator)->data(0, Qt::UserRole).toString() == selectName)
+        {
+            QTreeWidgetItem* item = *iterator;
+            while(item)
+            {
+                item->setExpanded(true);
+                item = item->parent();
+            }
+            componentsTree->setCurrentItem(*iterator);
+            componentsTree->scrollToItem(*iterator, QAbstractItemView::EnsureVisible);
+            return;
+        }
+        ++iterator;
+    }
 }
 
 void UComponentsListWidget::reloadPropertys(bool forceReload)
@@ -337,31 +497,26 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
     if(currentDrawPropertyComponentName == selectedComponentLongName && !forceReload)
       return;
 
-    currentDrawPropertyComponentName = selectedComponentLongName;
+    const QString targetComponent = selectedComponentLongName;
 
     std::map<std::string, std::string> Favorites;
+    // описание класса компонента, нужно ниже для проверки алиасов избранных свойств
+    RDK::UEPtr<RDK::UContainerDescription> class_desc;
 
-    //Class
-    const char *className=MModel_GetComponentClassName(getWorkChannelIndex(), currentDrawPropertyComponentName.toLocal8Bit());
+    const QString classNameStr =
+        componentClassNameFromModelScope(getWorkChannelIndex(), targetComponent);
 
-    if(className)
+    if(!classNameStr.isEmpty())
     {
-        auto class_desc = RDK::GetStorageLock()->GetClassDescription(className, true);
+        class_desc = RDK::GetStorageLock()->GetClassDescription(classNameStr.toLocal8Bit().constData(), true);
 
         if(class_desc)
             Favorites = class_desc->GetFavorites();
 
-        ui->labelComponentClassName->setText(className);
+        ui->labelComponentClassName->setText(classNameStr);
     }
-    Engine_FreeBufString(className);
 
-    ui->treeWidgetParameters->clear();
-    ui->treeWidgetState->clear();
-    ui->treeWidgetInputs->clear();
-    ui->treeWidgetOutputs->clear();
-    ui->treeWidgetFavorites->clear();
-
-    // ���� �� ������ ������ �� treeWidget'��
+    // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ treeWidget'пїЅпїЅ
     int paramScrollPosition = ui->treeWidgetParameters->verticalScrollBar()->value(),
         stateScrollPosition = ui->treeWidgetState->verticalScrollBar()->value(),
         inputsScrollPosition = ui->treeWidgetInputs->verticalScrollBar()->value(),
@@ -371,27 +526,45 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
     try
     {
      UpdateInterfaceFlag=true;
-        RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(getWorkChannelIndex());
+        // Use timeout to avoid blocking UI for too long during calculation
+        RDK::UELockPtr<RDK::UContainer> model =
+            RDK::GetModelLockTimeout(getWorkChannelIndex(), kModelLockTimeoutMs);
+        if (!model) {
+            UpdateInterfaceFlag=false;
+            schedulePropertyReloadRetry();
+            return;
+        }
 
         RDK::UEPtr<RDK::UContainer> cont;
-        if (currentDrawPropertyComponentName.isEmpty())
+        if (targetComponent.isEmpty())
             cont = model.Get();
         else
-            cont = model->GetComponentL(currentDrawPropertyComponentName.toLocal8Bit().constData(), true);
+            cont = model->GetComponentL(targetComponent.toLocal8Bit().constData(), true);
 
         if(!cont)
         {
          UpdateInterfaceFlag=false;
+         schedulePropertyReloadRetry();
          return;
         }
-        RDK::UComponent::VariableMapT varMap = cont->GetPropertiesList();
+
+    ui->treeWidgetParameters->clear();
+    ui->treeWidgetState->clear();
+    ui->treeWidgetInputs->clear();
+    ui->treeWidgetOutputs->clear();
+    ui->treeWidgetFavorites->clear();
+        const RDK::UComponent::VariableMapT& varMap = cont->GetPropertiesList();
+        const std::vector<RDK::NameT>& propOrder = cont->GetPropertiesOrder();
         std::string buffer;
 
         bool is_new_outputs(false);
         bool is_new_inputs(false);
 
-        for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end(); ++i)
+        for(size_t oi = 0; oi < propOrder.size(); ++oi)
         {
+            RDK::UComponent::VariableMapCIteratorT i = varMap.find(propOrder[oi]);
+            if(i == varMap.end())
+             continue;
             if (i->second.CheckMask(ptPubInput))
             {
              std::string::size_type k=i->first.find("DataInput");
@@ -410,42 +583,21 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
              break;
         }
 
-        for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end();)
+        for(size_t oi = 0; oi < propOrder.size(); ++oi)
         {
-            if (i->second.CheckMask(ptPubInput) && is_new_inputs)
-            {
-             std::string::size_type k=i->first.find("DataInput");
-             if(k == 0)
-             {
-              std::map<RDK::NameT,RDK::UVariable>::iterator j=i; ++j;
-              varMap.erase(i);
-              i=j;
-             }
-             else
-              ++i;
-            }
-            else
-            if (i->second.CheckMask(ptPubOutput) && is_new_outputs)
-            {
-             std::string::size_type k=i->first.find("DataOutput");
-             if(k == 0)
-             {
-              std::map<RDK::NameT,RDK::UVariable>::iterator j=i; ++j;
-              varMap.erase(i);
-              i=j;
-             }
-             else
-              ++i;
-            }
-            else
-            {
-             ++i;
-            }
-        }
+            RDK::UComponent::VariableMapCIteratorT i = varMap.find(propOrder[oi]);
+            if(i == varMap.end())
+             continue;
+            if (i->second.CheckMask(ptPubInput) && is_new_inputs && i->first.find("DataInput") == 0)
+             continue;
+            if (i->second.CheckMask(ptPubOutput) && is_new_outputs && i->first.find("DataOutput") == 0)
+             continue;
 
-
-        for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end(); ++i)
-        {
+            if (m_watchablePropertiesOnly && i->second.Property
+                && !NMSDK::Plot::isWatchableLanguageType(i->second.Property->GetLanguageType()))
+            {
+                continue;
+            }
             if (i->second.CheckMask(ptPubParameter) && ui->tabWidgetComponentInfo->currentIndex() == 0)
             {
                 QTreeWidgetItem* parametersItem = new QTreeWidgetItem(ui->treeWidgetParameters);
@@ -512,23 +664,53 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
 
             QString favoriteName = QString::fromLocal8Bit(i->first.c_str());
             QString favoritePath = QString::fromLocal8Bit(i->second.c_str());
-            favoritePath.replace("{CompName}", currentDrawPropertyComponentName);
+            favoritePath.replace("{CompName}", targetComponent);
 
-            favoriteItem->setText(0, favoriteName);
+            // Проверяем, является ли это алиасом
+            bool isAlias = class_desc && class_desc->IsFavoriteAlias(i->first);
+            if (isAlias)
+            {
+                // Добавляем пометку "[Alias]" к имени
+                favoriteItem->setText(0, favoriteName + " [Alias]");
+            }
+            else
+            {
+                favoriteItem->setText(0, favoriteName);
+            }
+
             favoriteItem->setText(1, favoritePath);
 
             favoriteItem->setToolTip(0, favoritePath);
             favoriteItem->setToolTip(1, favoritePath);
 
-            // Parse path
-            QStringList vals = favoritePath.split(":");
-
+            // Parse path - для алиасов путь может быть в формате "ComponentPath.PropertyName"
             QString component_long_name;
             QString prop_name;
-            if(vals.size()==2)
+
+            if (isAlias && class_desc)
             {
-                component_long_name = vals[0];
-                prop_name = vals[1];
+                // Для алиаса разбираем путь через ParseFavoritePath
+                std::string componentPath, propertyName;
+                if (class_desc->ParseFavoritePath(i->second, componentPath, propertyName))
+                {
+                    // Формируем полный путь: текущий компонент + путь к вложенному компоненту
+                    component_long_name = targetComponent;
+                    if (!componentPath.empty())
+                    {
+                        component_long_name += "." + QString::fromStdString(componentPath);
+                    }
+                    prop_name = QString::fromStdString(propertyName);
+                }
+            }
+            else
+            {
+                // Старый формат: "ComponentName:PropertyName"
+                QStringList vals = favoritePath.split(":");
+                if(vals.size()==2)
+                {
+                    component_long_name = vals[0];
+                    prop_name = vals[1];
+                }
             }
 
             RDK::UEPtr<RDK::UContainer> child_cont;
@@ -562,7 +744,7 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
 
         }
 
-        // ���� �� ������ ������ �� treeWidget'��
+        // пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ treeWidget'пїЅпїЅ
         ui->treeWidgetParameters->verticalScrollBar()->setMaximum(paramScrollPosition);
         ui->treeWidgetParameters->verticalScrollBar()->setValue(paramScrollPosition);
         ui->treeWidgetState->verticalScrollBar()->setMaximum(stateScrollPosition);
@@ -573,17 +755,23 @@ void UComponentsListWidget::reloadPropertys(bool forceReload)
         ui->treeWidgetOutputs->verticalScrollBar()->setValue(outputsScrollPosition);
         ui->treeWidgetFavorites->verticalScrollBar()->setMaximum(favoritesScrollPosition);
         ui->treeWidgetFavorites->verticalScrollBar()->setValue(favoritesScrollPosition);
+        currentDrawPropertyComponentName = targetComponent;
+        m_propertyReloadRetryCount = 0;
         UpdateInterfaceFlag=false;
+        if (m_watchablePropertiesOnly)
+            applyWatchableColumnLayout();
     }
     catch (RDK::UException &exception)
     {
      UpdateInterfaceFlag=false;
-        Log_LogMessage(exception.GetType(), (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        schedulePropertyReloadRetry();
+        RDK::Logging::SystemLog(exception.GetType(), (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     catch (std::exception &exception)
     {
      UpdateInterfaceFlag=false;
-        Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        schedulePropertyReloadRetry();
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
 }
 
@@ -608,7 +796,14 @@ void UComponentsListWidget::parametersListItemChanged(QTreeWidgetItem *item, int
  {
   if(UpdateInterfaceFlag)
    return;
-  RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(getWorkChannelIndex());
+  // Use timeout to avoid blocking UI during calculation
+  RDK::UELockPtr<RDK::UContainer> model =
+      RDK::GetModelLockTimeout(getWorkChannelIndex(), kModelLockTimeoutMs);
+  if (!model)
+  {
+   schedulePropertyReloadRetry();
+   return;
+  }
 
   RDK::UEPtr<RDK::UContainer> cont;
   if (currentDrawPropertyComponentName.isEmpty())
@@ -639,11 +834,11 @@ void UComponentsListWidget::parametersListItemChanged(QTreeWidgetItem *item, int
  }
 catch (RDK::UException &exception)
 {
-    Log_LogMessage(exception.GetType(), (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+    RDK::Logging::SystemLog(exception.GetType(), (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
 }
 catch (std::exception &exception)
 {
-    Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+    RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
 }
 }
 
@@ -718,19 +913,55 @@ try
      if(!item)
         return;
 
-     // Parse path
-     QStringList vals = item->text(1).split(":");
+     const QString classNameStr =
+         componentClassNameFromModelScope(getWorkChannelIndex(), currentDrawPropertyComponentName);
+     RDK::UEPtr<RDK::UContainerDescription> class_desc;
+     if(!classNameStr.isEmpty())
+         class_desc = RDK::GetStorageLock()->GetClassDescription(classNameStr.toLocal8Bit().constData(), true);
 
+     QString favoritePath = item->text(1);
+     QString favoriteName = item->text(0);
+     // Убираем пометку [Alias] если есть
+     favoriteName = favoriteName.replace(" [Alias]", "");
+
+     // Parse path
      QString component_long_name;
      QString prop_name;
-     if(vals.size()==2)
+
+     bool isAlias = class_desc && class_desc->IsFavoriteAlias(favoriteName.toStdString());
+     if (isAlias && class_desc)
      {
-         component_long_name = vals[0];
-         prop_name = vals[1];
+         // Для алиаса разбираем путь через ParseFavoritePath
+         std::string componentPath, propertyName;
+         std::string pathStd = favoritePath.toStdString();
+         if (class_desc->ParseFavoritePath(pathStd, componentPath, propertyName))
+         {
+             // Формируем полный путь: текущий компонент + путь к вложенному компоненту
+             component_long_name = currentDrawPropertyComponentName;
+             if (!componentPath.empty())
+             {
+                 component_long_name += "." + QString::fromStdString(componentPath);
+             }
+             prop_name = QString::fromStdString(propertyName);
+         }
+     }
+     else
+     {
+         // Старый формат: "ComponentName:PropertyName"
+         QStringList vals = favoritePath.split(":");
+         if(vals.size()==2)
+         {
+             component_long_name = vals[0];
+             prop_name = vals[1];
+         }
      }
 
 
-     RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(getWorkChannelIndex());
+     // Use timeout to avoid blocking UI during calculation
+     RDK::UELockPtr<RDK::UContainer> model =
+         RDK::GetModelLockTimeout(getWorkChannelIndex(), kModelLockTimeoutMs);
+     if (!model)
+      return;
 
      RDK::UEPtr<RDK::UContainer> cont;
 
@@ -765,29 +996,192 @@ try
       property->ReadFromMemory(&value);
      }
 }
+
 catch (RDK::UException &exception)
 {
-    Log_LogMessage(exception.GetType(), (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+    RDK::Logging::SystemLog(exception.GetType(), (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
 }
 catch (std::exception &exception)
 {
-    Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+    RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-UComponentsList Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
 }
 
+}
+
+void UComponentsListWidget::handleSnapshotUpdated(NMSDK::UGuiSnapshotPtr snapshot,
+                                                  const QStringList &,
+                                                  const QStringList &,
+                                                  const QStringList &)
+{
+    lastSnapshot = snapshot;
+    if (!snapshot)
+        return;
+
+    // В диалоге (UpdateInterval == 0) не обновляем интерфейс автоматически,
+    // чтобы не перезаписывать ручные изменения пользователя
+    if(UpdateInterval.Get() == 0)
+        return;
+
+    if (UpdateInterfaceFlag) {
+        QMetaObject::invokeMethod(this, [this]() { UpdateInterface(true); }, Qt::QueuedConnection);
+    } else {
+        UpdateInterface(true);
+    }
+}
+
+void UComponentsListWidget::handleFilterTextChanged(const QString &text)
+{
+    componentFilterText = text.trimmed();
+
+    // В диалоге сохраняем состояние развернутости перед применением фильтра
+    // и восстанавливаем после, чтобы не терять ручные изменения пользователя
+    QSet<QString> expandedItems;
+    if(UpdateInterval.Get() == 0)
+    {
+        QTreeWidgetItemIterator iterator(componentsTree);
+        while(*iterator)
+        {
+            QTreeWidgetItem *item = *iterator;
+            if(item->isExpanded() && item->childCount() > 0)
+            {
+                QString itemName = item->data(0, Qt::UserRole).toString();
+                if(!itemName.isEmpty())
+                {
+                    expandedItems.insert(itemName);
+                }
+            }
+            ++iterator;
+        }
+    }
+
+    applyFilter(componentsTree->invisibleRootItem());
+
+    // Восстанавливаем состояние развернутости в диалоге после применения фильтра
+    if(UpdateInterval.Get() == 0 && !expandedItems.isEmpty())
+    {
+        QTreeWidgetItemIterator restoreIterator(componentsTree);
+        while(*restoreIterator)
+        {
+            QTreeWidgetItem *item = *restoreIterator;
+            QString itemName = item->data(0, Qt::UserRole).toString();
+            if(expandedItems.contains(itemName))
+            {
+                item->setExpanded(true);
+            }
+            ++restoreIterator;
+        }
+    }
+}
+
+void UComponentsListWidget::rebuildTreeFromSnapshot(const NMSDK::UGuiSnapshotPtr &snapshot)
+{
+    if (!snapshot)
+        return;
+
+    const int scrollMax = componentsTree->verticalScrollBar()->maximum();
+    const int scrollPos = componentsTree->verticalScrollBar()->value();
+
+    QSignalBlocker blocker(componentsTree);
+    componentsTree->clear();
+
+    auto *rootItem = new QTreeWidgetItem(componentsTree);
+    rootItem->setText(0, tr("Model"));
+    rootItem->setData(0, Qt::UserRole, QString());
+    rootItem->setExpanded(true);
+
+    QHash<QString, QTreeWidgetItem*> items;
+    items.insert(QString(), rootItem);
+
+    // Pass 1: create all items detached; sibling order comes from ComponentOrder (not QHash::keys).
+    const auto& componentNames = snapshot->ComponentOrder;
+    for (const QString &name : componentNames) {
+        const auto summary = snapshot->Components.value(name);
+        auto *item = new QTreeWidgetItem();
+        item->setText(0, summary.ShortName);
+        item->setToolTip(0, summary.LongName + QStringLiteral("\n") + summary.ClassName);
+        item->setData(0, Qt::UserRole, summary.LongName);
+        items.insert(summary.LongName, item);
+    }
+
+    // Pass 2: attach under parent (or Model root).
+    for (const QString &name : componentNames) {
+        const auto summary = snapshot->Components.value(name);
+        QTreeWidgetItem *item = items.value(summary.LongName);
+        if (!item || item == rootItem)
+            continue;
+        QTreeWidgetItem *parent = items.value(summary.ParentName, rootItem);
+        if (!parent)
+            parent = rootItem;
+        parent->addChild(item);
+    }
+
+    applyFilter(rootItem);
+    componentsTree->verticalScrollBar()->setMaximum(scrollMax);
+    componentsTree->verticalScrollBar()->setValue(scrollPos);
+
+    if(channelsSelectionVisible)
+    {
+      redrawChannelsList();
+    }
+}
+
+bool UComponentsListWidget::applyFilter(QTreeWidgetItem *item)
+{
+    if (!item)
+        return false;
+
+    bool matches = componentFilterText.isEmpty()
+            || item->text(0).contains(componentFilterText, Qt::CaseInsensitive)
+            || item->data(0, Qt::UserRole).toString().contains(componentFilterText, Qt::CaseInsensitive);
+
+    bool childMatches = false;
+    for (int i = 0; i < item->childCount(); ++i) {
+        childMatches |= applyFilter(item->child(i));
+    }
+
+    const bool isRoot = item->data(0, Qt::UserRole).toString().isEmpty();
+    const bool visible = matches || childMatches || isRoot;
+    item->setHidden(!visible);
+    // Разворачиваем узлы только если есть активный фильтр (не пустая строка)
+    // Это позволяет пользователю вручную управлять развернутостью при отсутствии фильтра
+    if (visible && matches && !isRoot && !componentFilterText.isEmpty()) {
+        item->setExpanded(true);
+    }
+    return visible;
 }
 
 void UComponentsListWidget::componentSelectedFromScheme(QString name)
 {
+    const QString resolvedName =
+        resolveComponentLongNameFromModelRoot(getWorkChannelIndex(), name);
+
+    m_propertyReloadRetryCount = 0;
+    m_propertyReloadRetryTarget = resolvedName;
+    selectedComponentLongName = resolvedName;
+    currentDrawComponentName = resolvedName;
+
+    componentsTree->blockSignals(true);
+
     QTreeWidgetItemIterator iterator(componentsTree);
     while(*iterator)
     {
-        if((*iterator)->data(0, Qt::UserRole) == name)
+        if((*iterator)->data(0, Qt::UserRole).toString() == resolvedName)
         {
+            QTreeWidgetItem *item = *iterator;
+            while(item)
+            {
+                item->setExpanded(true);
+                item = item->parent();
+            }
             componentsTree->setCurrentItem(*iterator);
-            return;
+            componentsTree->scrollToItem(*iterator, QAbstractItemView::EnsureVisible);
+            break;
         }
         ++iterator;
     }
+
+    componentsTree->blockSignals(false);
+    reloadPropertys(true);
 }
 
 void UComponentsListWidget::componentDoubleClickFromScheme(QString name)
@@ -809,10 +1203,12 @@ void UComponentsListWidget::componentDoubleClickFromScheme(QString name)
 void UComponentsListWidget::componentStapBackFromScheme()
 {
     QStringList list = currentDrawComponentName.split(".");
-    QString leaveComponent = list.last();
+    if(list.isEmpty())
+        return;
     list.pop_back();
     currentDrawComponentName = list.join(".");
-    componentSelectedFromScheme(leaveComponent);
+    componentSelectedFromScheme(currentDrawComponentName);
+    emit componentSelected(currentDrawComponentName);
 }
 
 void UComponentsListWidget::channelsListSelectionChanged()
@@ -881,12 +1277,19 @@ void UComponentsListWidget::componentDelete()
         if(QApplication::keyboardModifiers() != Qt::ShiftModifier)
         {
             QMessageBox::StandardButton reply = QMessageBox::question(this, "Warning", "Are you sure you want to delete component "+selectedComponentLongName+"?", QMessageBox::Yes|QMessageBox::Cancel);
-            if (reply == QMessageBox::Cancel) return;
+            if (reply != QMessageBox::Yes) return;
         }
 
-        MModel_DelComponent(getWorkChannelIndex(), "", selectedComponentLongName.toLocal8Bit());
+        const int rc = MModel_DelComponent(getWorkChannelIndex(), "", selectedComponentLongName.toLocal8Bit());
+        if(rc != RDK_SUCCESS)
+        {
+            QMessageBox::warning(this, "Warning",
+                QString("Failed to delete component %1 (code %2).")
+                    .arg(selectedComponentLongName).arg(rc));
+            return;
+        }
         RDK::UIVisualControllerStorage::UpdateInterface(true);
-//        emit updateScheme(true);
+        emit updateScheme(true);
     }
 }
 
@@ -906,13 +1309,13 @@ void UComponentsListWidget::componentCopyLongNameToClipboard()
 
 void UComponentsListWidget::componentCopyClassNameToClipboard()
 {
-    const char *className=MModel_GetComponentClassName(getWorkChannelIndex(), selectedComponentLongName.toLocal8Bit());
-    if(className)
+    const QString className =
+        componentClassNameFromModelScope(getWorkChannelIndex(), selectedComponentLongName);
+    if(!className.isEmpty())
     {
         QClipboard *clipboard = QApplication::clipboard();
-        clipboard->setText(QString(className));
+        clipboard->setText(className);
     }
-    Engine_FreeBufString(className);
 }
 
 void UComponentsListWidget::componentReset()
@@ -920,6 +1323,7 @@ void UComponentsListWidget::componentReset()
     if(componentsTree->currentItem())
     {
         Env_Reset(selectedComponentLongName.toLocal8Bit());
+        UModernDiagramWidget::invalidatePortsCacheEverywhere(selectedComponentLongName);
         UpdateInterface(true);
     }
 }
@@ -929,6 +1333,7 @@ void UComponentsListWidget::componentCalculate()
     if(componentsTree->currentItem())
     {
         Env_Calculate(selectedComponentLongName.toLocal8Bit());
+        UModernDiagramWidget::invalidatePortsCacheEverywhere(selectedComponentLongName);
         RDK::UIVisualControllerStorage::UpdateInterface();
     }
 }
@@ -953,7 +1358,31 @@ void UComponentsListWidget::componentUnInit()
 
 void UComponentsListWidget::componentGUI()
 {
-  qDebug() << "component GUI";
+    if(!componentsTree->currentItem() || selectedComponentLongName.isEmpty())
+        return;
+
+    const QString componentClassName =
+        componentClassNameFromModelScope(getWorkChannelIndex(), selectedComponentLongName);
+
+    UComponentGuiContext context;
+    context.componentLongName = selectedComponentLongName;
+    context.componentClassName = componentClassName;
+    context.channelIndex = Core_GetSelectedChannelIndex();
+
+    emit openComponentGuiRequested(context);
+
+    if(receivers(SIGNAL(openComponentGuiRequested(UComponentGuiContext))) == 0)
+    {
+        if(!UComponentFormRegistry::instance().canOpen(context))
+        {
+            QMessageBox::information(this, "Component GUI", "Component GUI form is not registered for this class.");
+            return;
+        }
+        static UComponentGuiService fallbackService;
+        fallbackService.setApplication(application);
+        if(!fallbackService.createOrActivate(this, context))
+            QMessageBox::information(this, "Component GUI", "Failed to open component GUI form.");
+    }
 }
 
 void UComponentsListWidget::setUpdateInterval(long value)
@@ -961,9 +1390,60 @@ void UComponentsListWidget::setUpdateInterval(long value)
   UpdateInterval = value;
 }
 
-void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem)
+void UComponentsListWidget::setTreeExpansionPolicy(int policy)
 {
- RDK::UELockPtr<RDK::UEngine> engine=RDK::GetEngineLock<RDK::UEngine>(getWorkChannelIndex());
+    m_treeExpansionPolicy = policy;
+}
+
+void UComponentsListWidget::setWatchablePropertiesOnly(bool on)
+{
+    if (m_watchablePropertiesOnly == on)
+    {
+        applyWatchableColumnLayout();
+        return;
+    }
+    m_watchablePropertiesOnly = on;
+    reloadPropertys(true);
+    applyWatchableColumnLayout();
+}
+
+void UComponentsListWidget::applyWatchableColumnLayout()
+{
+    auto applyTree = [this](QTreeWidget* tw) {
+        if (!tw || tw->columnCount() < 1)
+            return;
+        if (tw->columnCount() >= 3)
+            tw->setColumnHidden(2, m_watchablePropertiesOnly);
+        if (m_watchablePropertiesOnly)
+        {
+            tw->header()->setStretchLastSection(false);
+            tw->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+            if (tw->columnCount() >= 2)
+                tw->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+            // Name gets most of the width
+            const int w = qMax(tw->viewport()->width(), 200);
+            tw->setColumnWidth(0, (w * 2) / 3);
+            if (tw->columnCount() >= 2)
+                tw->setColumnWidth(1, w / 3);
+        }
+    };
+    applyTree(ui->treeWidgetParameters);
+    applyTree(ui->treeWidgetState);
+    applyTree(ui->treeWidgetInputs);
+    applyTree(ui->treeWidgetOutputs);
+    applyTree(ui->treeWidgetFavorites);
+}
+
+void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetItem *treeWidgetFather, QString oldRootItem, QString oldSelectedItem, const QSet<QString> &expandedItems)
+{
+ // Use timeout to avoid blocking UI during calculation
+ RDK::UELockPtr<RDK::UEngine> engine=
+     RDK::GetEngineLockTimeout<RDK::UEngine>(getWorkChannelIndex(), kModelLockTimeoutMs);
+ if (!engine)
+ {
+  scheduleTreeRebuildRetry();
+  return;
+ }
     const char * stringBuff = MModel_GetComponentsNameList(getWorkChannelIndex(), componentName.toLocal8Bit());
     QStringList componentNames = QString(stringBuff).split(",");
     Engine_FreeBufString(stringBuff);
@@ -971,25 +1451,37 @@ void UComponentsListWidget::addComponentSons(QString componentName, QTreeWidgetI
     if(!componentNames.empty()&&componentNames[0]!="")
     {
         QString father;
-        if(treeWidgetFather) treeWidgetFather->setExpanded(false);
+        // Не сворачиваем родительский узел принудительно - состояние развернутости будет восстановлено позже
+        // if(treeWidgetFather) treeWidgetFather->setExpanded(false);
         if(!componentName.isEmpty()) father = componentName + ".";
         foreach(str, componentNames)
         {
             QTreeWidgetItem* childItem = new QTreeWidgetItem(treeWidgetFather);
             childItem->setText(0, str);
-            childItem->setData(0, Qt::UserRole, father+str);
-            if(oldRootItem == father+str)
+            QString fullName = father+str;
+            childItem->setData(0, Qt::UserRole, fullName);
+
+            // Устанавливаем состояние развернутости на основе сохраненного состояния
+            // Если expandedItems пустой (диалог), не устанавливаем состояние здесь - оно будет установлено позже через expandAll()
+            if(!expandedItems.isEmpty() && expandedItems.contains(fullName))
             {
-                componentsTree->setCurrentItem(childItem);
-                childItem->setExpanded(false);
-            }
-            if(oldSelectedItem == father+str)
-            {
-                componentsTree->setCurrentItem(childItem);
-                childItem->setExpanded(false);
+                childItem->setExpanded(true);
             }
 
-            addComponentSons(father+str, childItem, oldRootItem, oldSelectedItem);
+            if(oldRootItem == fullName)
+            {
+                componentsTree->setCurrentItem(childItem);
+                // Не сворачиваем выбранный элемент принудительно - пользователь может захотеть видеть его развернутым
+                // childItem->setExpanded(false);
+            }
+            if(oldSelectedItem == fullName)
+            {
+                componentsTree->setCurrentItem(childItem);
+                // Не сворачиваем выбранный элемент принудительно - пользователь может захотеть видеть его развернутым
+                // childItem->setExpanded(false);
+            }
+
+            addComponentSons(father+str, childItem, oldRootItem, oldSelectedItem, expandedItems);
         }
     }
 }
@@ -1008,7 +1500,7 @@ void UComponentsListWidget::redrawChannelsList()
   }
 }
 
-/// ������� �� ���������� ������ ���������� �������� �����
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 std::string& UComponentsListWidget::EraseLeadEndls(std::string &value)
 {
  std::string::size_type data_i=value.find_first_of("\n");
@@ -1019,7 +1511,7 @@ std::string& UComponentsListWidget::EraseLeadEndls(std::string &value)
  return value;
 }
 
-/// ������� �� ���������� ������ ���������� � ����������� �������� �����
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 std::string& UComponentsListWidget::EraseRangeEndls(std::string &value)
 {
  std::string::size_type data_i=value.find_first_of("\n");
@@ -1036,8 +1528,8 @@ std::string& UComponentsListWidget::EraseRangeEndls(std::string &value)
  return value;
 }
 
-/// ���� � ���������� ������ ���� ���� �� ���� ������� ������, �� �������� �����
-/// �� "[SEE BELOW]"
+/// пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+/// пїЅпїЅ "[SEE BELOW]"
 std::string& UComponentsListWidget::PreparePropertyValueToListView(std::string &value)
 {
  EraseRangeEndls(value);
@@ -1200,6 +1692,7 @@ void UComponentsListWidget::on_actionDefaultAllParameters_triggered()
         storage->DefaultObject(object);
         if(owner)
          object->CreateLinks(links_list, owner);
+        UModernDiagramWidget::invalidatePortsCacheEverywhere(selectedComponentLongName);
         RDK::UIVisualControllerStorage::UpdateInterface(true);
     }
 }

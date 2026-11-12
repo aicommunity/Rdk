@@ -7,32 +7,32 @@
 namespace RDK {
 
 // --------------------------
-// Методы доступа к ядру без блокировки
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє СЏРґСЂСѓ Р±РµР· Р±Р»РѕРєРёСЂРѕРІРєРё
 // --------------------------
-// Возвращает ссылку на версию ядра
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° РІРµСЂСЃРёСЋ СЏРґСЂР°
 const RDK::UVersion& RDK_CALL GetCoreVersion(void)
 {
  return RdkCoreManager.GetVersion();
 }
 
-// Возвращает ссылку на указатель ядра
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ СЏРґСЂР°
 RDK::UEPtr<URdkCoreManager> RDK_CALL GetCore(void)
 {
  return &RdkCoreManager;
 }
 
-// Возвращает указатель на логгер
-RDK::UEPtr<RDK::ULoggerEnv> RDK_CALL GetLogger(void)
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° Р»РѕРіРіРµСЂ
+RDK::UEPtr<RDK::UExceptionLogger> RDK_CALL GetLogger(void)
 {
  return RdkCoreManager.GetLogger();
 }
 
-RDK::UEPtr<RDK::ULoggerEnv> RDK_CALL GetLogger(int channel_index)
+RDK::UEPtr<RDK::UExceptionLogger> RDK_CALL GetLogger(int channel_index)
 {
  return RdkCoreManager.GetLogger(channel_index);
 }
 
-// Возвращает ссылку на указатель управляющего ядра
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ СѓРїСЂР°РІР»СЏСЋС‰РµРіРѕ СЏРґСЂР°
 RDK::UEPtr<RDK::UEngine>& RDK_CALL GetEngine(void)
 {
  return RdkCoreManager.GetEngine();
@@ -44,7 +44,7 @@ RDK::UEPtr<RDK::UEngine> RDK_CALL GetEngine(int channel_index)
 }
 
 
-// Возвращает ссылку на указатель среды выполнения
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ СЃСЂРµРґС‹ РІС‹РїРѕР»РЅРµРЅРёСЏ
 RDK::UEPtr<RDK::UEnvironment>& RDK_CALL GetEnvironment(void)
 {
  return RdkCoreManager.GetEnvironment();
@@ -55,7 +55,7 @@ RDK::UEPtr<RDK::UEnvironment> RDK_CALL GetEnvironment(int channel_index)
  return RdkCoreManager.GetEnvironment(channel_index);
 }
 
-// Возвращает ссылку на указатель хранилища
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ С…СЂР°РЅРёР»РёС‰Р°
 RDK::UEPtr<RDK::UStorage>& RDK_CALL GetStorage(void)
 {
  return RdkCoreManager.GetStorage();
@@ -66,7 +66,7 @@ RDK::UEPtr<RDK::UStorage> RDK_CALL GetStorage(int channel_index)
  return RdkCoreManager.GetStorage(channel_index);
 }
 
-// Возвращает указатель на текущую модель
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµРєСѓС‰СѓСЋ РјРѕРґРµР»СЊ
 RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(void)
 {
  return RdkCoreManager.GetModel();
@@ -79,9 +79,9 @@ RDK::UEPtr<RDK::UContainer> RDK_CALL GetModel(int channel_index)
 // --------------------------
 
 // --------------------------
-// Методы доступа к каналам с блокировкой
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РєР°РЅР°Р»Р°Рј СЃ Р±Р»РѕРєРёСЂРѕРІРєРѕР№
 // --------------------------
-// Возвращает ссылку на указатель ядра
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ СЏРґСЂР°
 RDK::UELockPtr<URdkCoreManager> RDK_CALL GetCoreLock(void)
 {
 #ifdef RDK_ENGINE_UNLOCKED
@@ -91,7 +91,7 @@ RDK::UELockPtr<URdkCoreManager> RDK_CALL GetCoreLock(void)
 #endif
 }
 
-// Возвращает ссылку на указатель управляющего ядра
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ СѓРїСЂР°РІР»СЏСЋС‰РµРіРѕ СЏРґСЂР°
 RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLock(void)
 {
  return RdkCoreManager.GetEngineLock();
@@ -112,7 +112,7 @@ RDK::UELockPtr<RDK::UEngine> RDK_CALL GetEngineLockTimeout(int channel_index, un
  return RdkCoreManager.GetEngineLockTimeout(channel_index, timeout);
 }
 
-// Возвращает ссылку на указатель среды выполнения
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ СЃСЂРµРґС‹ РІС‹РїРѕР»РЅРµРЅРёСЏ
 RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(void)
 {
  return RdkCoreManager.GetEnvironmentLock();
@@ -123,7 +123,7 @@ RDK::UELockPtr<RDK::UEnvironment> RDK_CALL GetEnvironmentLock(int channel_index)
  return RdkCoreManager.GetEnvironmentLock(channel_index);
 }
 
-// Возвращает ссылку на указатель хранилища
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° СѓРєР°Р·Р°С‚РµР»СЊ С…СЂР°РЅРёР»РёС‰Р°
 RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(void)
 {
  return RdkCoreManager.GetStorageLock();
@@ -134,7 +134,7 @@ RDK::UELockPtr<RDK::UStorage> RDK_CALL GetStorageLock(int channel_index)
  return RdkCoreManager.GetStorageLock(channel_index);
 }
 
-// Возвращает указатель на текущую модель
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµРєСѓС‰СѓСЋ РјРѕРґРµР»СЊ
 RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLock(void)
 {
  return RdkCoreManager.GetModelLock();
@@ -149,14 +149,30 @@ RDK::UELockPtr<RDK::UContainer> RDK_CALL GetModelLockTimeout(int channel_index, 
 {
  return RdkCoreManager.GetModelLockTimeout(channel_index,timeout);
 }
+
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµРєСѓС‰СѓСЋ РјРѕРґРµР»СЊ СЃ shared (read-only) Р±Р»РѕРєРёСЂРѕРІРєРѕР№
+RDK::UESharedLockPtr<RDK::UContainer> RDK_CALL GetModelReadLock(void)
+{
+ return RdkCoreManager.GetModelReadLock();
+}
+
+RDK::UESharedLockPtr<RDK::UContainer> RDK_CALL GetModelReadLock(int channel_index)
+{
+ return RdkCoreManager.GetModelReadLock(channel_index);
+}
+
+RDK::UESharedLockPtr<RDK::UContainer> RDK_CALL GetModelReadLockTimeout(int channel_index, unsigned timeout)
+{
+ return RdkCoreManager.GetModelReadLockTimeout(channel_index, timeout);
+}
 // --------------------------
 
 
 // --------------------------
-// Методы доступа к щрифтам
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє С‰СЂРёС„С‚Р°Рј
 // --------------------------
-/// Возвращает ссылку на шрифты
-/// (не потокобезопасно!)
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° С€СЂРёС„С‚С‹
+/// (РЅРµ РїРѕС‚РѕРєРѕР±РµР·РѕРїР°СЃРЅРѕ!)
 RDK::UBitmapFontCollection& GetFonts(void)
 {
  return RdkCoreManager.GetFonts();
@@ -164,7 +180,7 @@ RDK::UBitmapFontCollection& GetFonts(void)
 // --------------------------
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 EEnginePropertyNotFound::EEnginePropertyNotFound(const std::string &component_name, const std::string &property_name)
 : ComponentName(component_name), PropertyName(property_name)
@@ -178,9 +194,9 @@ EEnginePropertyNotFound::~EEnginePropertyNotFound(void) throw()
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string EEnginePropertyNotFound::CreateLogMessage(void) const
 {
  return EError::CreateLogMessage()+std::string(" ComponentName=")+ComponentName+
@@ -189,7 +205,7 @@ std::string EEnginePropertyNotFound::CreateLogMessage(void) const
 // --------------------------
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 EEnginePropertyDecodeLoadFail::EEnginePropertyDecodeLoadFail(const std::string &xml_data, const std::string &variable_type)
 : XmlData(xml_data), VariableType(variable_type)
@@ -203,9 +219,9 @@ EEnginePropertyDecodeLoadFail::~EEnginePropertyDecodeLoadFail(void) throw()
 // --------------------------
 
 // --------------------------
-// Методы формирования лога
+// РњРµС‚РѕРґС‹ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р»РѕРіР°
 // --------------------------
-// Формирует строку лога об исключении
+// Р¤РѕСЂРјРёСЂСѓРµС‚ СЃС‚СЂРѕРєСѓ Р»РѕРіР° РѕР± РёСЃРєР»СЋС‡РµРЅРёРё
 std::string EEnginePropertyDecodeLoadFail::CreateLogMessage(void) const
 {
  return EError::CreateLogMessage()+std::string(" XmlData=")+XmlData+

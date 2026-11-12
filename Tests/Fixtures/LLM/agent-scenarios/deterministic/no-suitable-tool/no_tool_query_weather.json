@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "id": "no_tool_query_weather",
+  "tier": "deterministic",
+  "suite": "no-suitable-tool",
+  "registry_profile": "core",
+  "user_text": "покажи погоду в Москве",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "text": "В NeuroModeler нет инструмента для погоды."
+    }
+  ],
+  "expect": {
+    "orchestrator_ok": true,
+    "provider_rounds_max": 1,
+    "tools_invoked_count_max": 0,
+    "expect_intent": "query"
+  },
+  "tags": [
+    "no_tool"
+  ]
+}

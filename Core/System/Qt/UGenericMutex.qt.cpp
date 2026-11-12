@@ -3,7 +3,12 @@
 // ---------------------------------------------------------------------------
 
 #include "../UGenericMutex.h"
+#include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QRecursiveMutex>
+#else
 #include <QReadWriteLock>
+#endif
 #include <QMutex>
 #include <QWaitCondition>
 #include <QAtomicInt>
@@ -13,85 +18,128 @@
 class RDK_LIB_TYPE UGenericMutexQt: public UGenericMutex
 {
 private:
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+QRecursiveMutex m_mutex;
+#else
 QReadWriteLock m_mutex;
+#endif
 
 public:
 UGenericMutexQt();
-virtual ~UGenericMutexQt();
-
-virtual bool wait(int timeout);
+virtual ~UGenericMutexQt() noexcept;
 
 virtual bool shared_lock(unsigned timeout=RDK_MUTEX_TIMEOUT);
-virtual bool shared_unlock(void);
+virtual bool shared_unlock() noexcept;
 
 virtual bool exclusive_lock(unsigned timeout=RDK_MUTEX_TIMEOUT);
-virtual bool exclusive_unlock(void);
+virtual bool exclusive_unlock() noexcept;
+
+private:
+UGenericMutexQt(const UGenericMutexQt &copy) = delete;
+UGenericMutexQt& operator = (const UGenericMutexQt &copy) = delete;
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+static bool lockRecursive(QRecursiveMutex& mutex, unsigned timeout);
+#endif
 };
 
 
-UGenericMutexQt::UGenericMutexQt() : m_mutex(QReadWriteLock::Recursive)
+UGenericMutexQt::UGenericMutexQt()
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    : m_mutex(QReadWriteLock::Recursive)
+#endif
 {
-    //mutex.lock();
 }
 
-UGenericMutexQt::~UGenericMutexQt()
+UGenericMutexQt::~UGenericMutexQt() noexcept
 {
-    //m_mutex.unlock();
-    //m_mutex.try
-
-    /*try
-    {
-        m_mutex.unlock();
-    }
-    catch(...)
-    {
-
-    }*/
+ // Qt mutex types release locks automatically on destruction.
 }
 
-bool UGenericMutexQt::wait(int timeout)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+bool UGenericMutexQt::lockRecursive(QRecursiveMutex& mutex, unsigned timeout)
 {
- /*if (WaitForSingleObject(m_UnlockEvent, timeout) != WAIT_TIMEOUT)
+ if(timeout == RDK_MUTEX_TIMEOUT)
  {
+  mutex.lock();
   return true;
- } */
- return m_mutex.tryLockForWrite(timeout);
+ }
+ return mutex.tryLock(static_cast<int>(timeout));
 }
+#endif
 
 bool UGenericMutexQt::shared_lock(unsigned timeout)
 {
- if(timeout == RDK_MUTEX_TIMEOUT)
-  m_mutex.lockForRead();
- else
+ try
  {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  return lockRecursive(m_mutex, timeout);
+#else
+  if(timeout == RDK_MUTEX_TIMEOUT)
+  {
+   m_mutex.lockForRead();
+   return true;
+  }
   return m_mutex.tryLockForRead(timeout);
+#endif
  }
-
-    return true;
+ catch(...)
+ {
+  // Qt может выбросить исключение при ошибке блокировки
+  return false;
+ }
 }
 
-bool UGenericMutexQt::shared_unlock(void)
+bool UGenericMutexQt::shared_unlock() noexcept
 {
-    m_mutex.unlock();
-    return true;
+ try
+ {
+  m_mutex.unlock();
+  return true;
+ }
+ catch(...)
+ {
+  // В noexcept функции не можем выбросить исключение
+  // Qt обычно не бросает исключения из unlock, но на всякий случай
+  return false;
+ }
 }
 
 bool UGenericMutexQt::exclusive_lock(unsigned timeout)
 {
- if(timeout == RDK_MUTEX_TIMEOUT)
-  m_mutex.lockForWrite();
- else
+ try
  {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+  return lockRecursive(m_mutex, timeout);
+#else
+  if(timeout == RDK_MUTEX_TIMEOUT)
+  {
+   m_mutex.lockForWrite();
+   return true;
+  }
   return m_mutex.tryLockForWrite(timeout);
+#endif
  }
-
- return true;
+ catch(...)
+ {
+  // Qt может выбросить исключение при ошибке блокировки
+  return false;
+ }
 }
 
-bool UGenericMutexQt::exclusive_unlock(void)
+bool UGenericMutexQt::exclusive_unlock() noexcept
 {
-    m_mutex.unlock();
-    return true;
+ try
+ {
+  m_mutex.unlock();
+  return true;
+ }
+ catch(...)
+ {
+  // В noexcept функции не можем выбросить исключение
+  // Qt обычно не бросает исключения из unlock, но на всякий случай
+  return false;
+ }
 }
 
 
@@ -105,32 +153,36 @@ protected:
     QAtomicInt isReseted;
 
 public:
-    UGenericEventQt();
-    virtual ~UGenericEventQt();
+    UGenericEventQt() noexcept;
+    virtual ~UGenericEventQt() noexcept;
 
-    virtual bool set(void);
-    virtual bool reset(void);
+    virtual bool set() noexcept;
+    virtual bool reset() noexcept;
     virtual bool wait(unsigned wait_time);
+
+private:
+    UGenericEventQt(const UGenericEventQt &copy) = delete;
+    UGenericEventQt& operator = (const UGenericEventQt &copy) = delete;
 };
 
-UGenericEventQt::UGenericEventQt()
+UGenericEventQt::UGenericEventQt() noexcept
 {
     isReseted = 0;
 }
 
-UGenericEventQt::~UGenericEventQt()
+UGenericEventQt::~UGenericEventQt() noexcept
 {
 
 }
 
-bool UGenericEventQt::set(void)
+bool UGenericEventQt::set() noexcept
 {
     condition.wakeAll();
     //isReseted = 0;
     return true;
 }
 
-bool UGenericEventQt::reset(void)
+bool UGenericEventQt::reset() noexcept
 {
     isReseted = 1;
     return true;
@@ -160,56 +212,57 @@ protected:
 HANDLE Event;
 
 public:
-UGenericEventQt();
-virtual ~UGenericEventQt();
+UGenericEventQt() noexcept;
+virtual ~UGenericEventQt() noexcept;
 
-virtual bool set(void);
-virtual bool reset(void);
+virtual bool set() noexcept;
+virtual bool reset() noexcept;
 virtual bool wait(unsigned wait_time);
 
-
 private:
-UGenericEventQt(const UGenericEventQt &copy);
-UGenericEventQt& operator = (const UGenericEventQt &copy);
+UGenericEventQt(const UGenericEventQt &copy) = delete;
+UGenericEventQt& operator = (const UGenericEventQt &copy) = delete;
 };
-UGenericEventQt::UGenericEventQt()
+UGenericEventQt::UGenericEventQt() noexcept
 {
- Event=CreateEvent(0,TRUE,TRUE,0);
+ Event = CreateEvent(nullptr, TRUE, TRUE, nullptr);
+ if(!Event)
+ {
+  // В случае ошибки Event будет nullptr, что будет проверяться в методах
+ }
 }
 
-UGenericEventQt::~UGenericEventQt()
+UGenericEventQt::~UGenericEventQt() noexcept
 {
  if(Event)
+ {
   CloseHandle(Event);
+  Event = nullptr;
+ }
 }
 
-bool UGenericEventQt::set(void)
+bool UGenericEventQt::set() noexcept
 {
- SetEvent(Event);
- return true;
+ if(!Event)
+  return false;
+ return SetEvent(Event) != FALSE;
 }
 
-bool UGenericEventQt::reset(void)
+bool UGenericEventQt::reset() noexcept
 {
- ResetEvent(Event);
- return true;
+ if(!Event)
+  return false;
+ return ResetEvent(Event) != FALSE;
 }
 
 bool UGenericEventQt::wait(unsigned wait_time)
 {
- if(WaitForSingleObject(Event,wait_time) == WAIT_TIMEOUT)
+ if(!Event)
   return false;
- return true;
-}
-
-UGenericEventQt::UGenericEventQt(const UGenericEventQt &copy)
-{
-
-}
-
-UGenericEventQt& UGenericEventQt::operator = (const UGenericEventQt &copy)
-{
- return *this;
+ DWORD result = WaitForSingleObject(Event, wait_time);
+ if(result == WAIT_TIMEOUT)
+  return false;
+ return result == WAIT_OBJECT_0;
 }
 
     #elif defined(__GNUC__)
@@ -224,63 +277,56 @@ protected:
 neosmart::neosmart_event_t Event;
 
 public:
- UGenericEventQt();
- virtual ~UGenericEventQt();
+ UGenericEventQt() noexcept;
+ virtual ~UGenericEventQt() noexcept;
 
- virtual bool set(void);
- virtual bool reset(void);
+ virtual bool set() noexcept;
+ virtual bool reset() noexcept;
  virtual bool wait(unsigned wait_time);
 
-
 private:
- UGenericEventQt(const UGenericEventQt &copy);
- UGenericEventQt& operator = (const UGenericEventQt &copy);
+ UGenericEventQt(const UGenericEventQt &copy) = delete;
+ UGenericEventQt& operator = (const UGenericEventQt &copy) = delete;
 };
 
-UGenericEventQt::UGenericEventQt()
+UGenericEventQt::UGenericEventQt() noexcept
 {
- Event=neosmart::CreateEvent(true,true);
- //Event=CreateEvent(0,FALSE,TRUE,0);
-
- // Может быть удобно реализовать с помощью
- // condition variables и pthread_cond_timedwait
+ Event = neosmart::CreateEvent(true, true);
 }
 
-UGenericEventQt::~UGenericEventQt()
+UGenericEventQt::~UGenericEventQt() noexcept
 {
- neosmart::DestroyEvent(Event);
+ if(Event)
+ {
+  neosmart::DestroyEvent(Event);
+  Event = nullptr;
+ }
 }
 
-bool UGenericEventQt::set(void)
+bool UGenericEventQt::set() noexcept
 {
+ if(!Event)
+  return false;
  neosmart::SetEvent(Event);
  return true;
 }
 
-bool UGenericEventQt::reset(void)
+bool UGenericEventQt::reset() noexcept
 {
+ if(!Event)
+  return false;
  neosmart::ResetEvent(Event);
  return true;
 }
 
 bool UGenericEventQt::wait(unsigned wait_time)
 {
- if(neosmart::WaitForEvent(Event,wait_time) == WAIT_TIMEOUT)
+ if(!Event)
+  return false;
+ if(neosmart::WaitForEvent(Event, wait_time) == WAIT_TIMEOUT)
   return false;
  return true;
-// return false;
 }
-
-UGenericEventQt::UGenericEventQt(const UGenericEventQt &copy)
-{
-
-}
-
-UGenericEventQt& UGenericEventQt::operator = (const UGenericEventQt &copy)
-{
- return *this;
-}
-
 
     #endif
 #endif

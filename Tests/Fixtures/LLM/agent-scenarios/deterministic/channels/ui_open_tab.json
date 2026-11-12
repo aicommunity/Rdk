@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "id": "ui_open_tab",
+  "tier": "deterministic",
+  "suite": "channels",
+  "registry_profile": "core",
+  "user_text": "открой вкладку Source1",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "open_component_gui_tab",
+          "arguments": {
+            "long_name": "Model.Source1"
+          }
+        }
+      ]
+    },
+    {
+      "text": "Краткий ответ по результатам tool."
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": [
+      "open_component_gui_tab"
+    ]
+  }
+}

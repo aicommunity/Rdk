@@ -7,72 +7,86 @@
 RDK_LIB_TYPE std::map<int,TUThreadInfo> GlobalThreadInfoMap;
 #endif
 
-UGenericMutex::UGenericMutex()
+UGenericMutex::UGenericMutex() noexcept
 #ifdef RDK_MUTEX_DEADLOCK_DEBUG
 : DebugId(-1)
 #endif
 {}
 
-UGenericMutex::~UGenericMutex()
+UGenericMutex::~UGenericMutex() noexcept
 {}
 
-UGenericEvent::UGenericEvent()
+UGenericEvent::UGenericEvent() noexcept
 {
 
 }
 
-UGenericEvent::~UGenericEvent()
+UGenericEvent::~UGenericEvent() noexcept
 {
 
 }
 
 UGenericMutexExclusiveLocker::UGenericMutexExclusiveLocker(UGenericMutex *m)
+ : m_mutex(nullptr), m_locked(false)
 {
  if(m)
  {
-  m->exclusive_lock();
-  m_mutex = m;
+  m_locked = m->exclusive_lock();
+  if(m_locked)
+  {
+   m_mutex = m;
+  }
+  else
+  {
+   // Блокировка не удалась - не сохраняем указатель, чтобы не разблокировать в деструкторе
+   m_mutex = nullptr;
+  }
  }
  else
-  m_mutex = 0;
+ {
+  m_mutex = nullptr;
+ }
 }
 
-UGenericMutexExclusiveLocker::~UGenericMutexExclusiveLocker()
+UGenericMutexExclusiveLocker::~UGenericMutexExclusiveLocker() noexcept
 {
- if(m_mutex)
+ if(m_mutex && m_locked)
+ {
   m_mutex->exclusive_unlock();
+ }
 }
-
-UGenericMutexExclusiveLocker::UGenericMutexExclusiveLocker(const UGenericMutexExclusiveLocker &m)
-{};
-
-UGenericMutexExclusiveLocker& UGenericMutexExclusiveLocker::operator = (const UGenericMutexExclusiveLocker &m)
-{ return *this; };
 
 
 
 UGenericMutexSharedLocker::UGenericMutexSharedLocker(UGenericMutex *m)
+ : m_mutex(nullptr), m_locked(false)
 {
  if(m)
  {
-  m->shared_lock();
-  m_mutex = m;
+  m_locked = m->shared_lock();
+  if(m_locked)
+  {
+   m_mutex = m;
+  }
+  else
+  {
+   // Блокировка не удалась - не сохраняем указатель, чтобы не разблокировать в деструкторе
+   m_mutex = nullptr;
+  }
  }
  else
-  m_mutex = 0;
+ {
+  m_mutex = nullptr;
+ }
 }
 
-UGenericMutexSharedLocker::~UGenericMutexSharedLocker()
+UGenericMutexSharedLocker::~UGenericMutexSharedLocker() noexcept
 {
- if(m_mutex)
+ if(m_mutex && m_locked)
+ {
   m_mutex->shared_unlock();
+ }
 }
-
-UGenericMutexSharedLocker::UGenericMutexSharedLocker(const UGenericMutexSharedLocker &m)
-{};
-
-UGenericMutexSharedLocker& UGenericMutexSharedLocker::operator = (const UGenericMutexSharedLocker &m)
-{ return *this; };
 
 
 UGenericEvent* UCreateEvent(bool initial_state)

@@ -7,6 +7,7 @@
 #include <QDir>
 #include <QDateTime>
 
+#include "NmsdkQtCompat.h"
 #include "UWatchTab.h"
 #include "UVisualControllerMainWidget.h"
 
@@ -15,10 +16,10 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class UWatch; }
 QT_END_NAMESPACE
 
-using namespace QtCharts;
+NMSDK_QT_CHARTS_USE_NS
 
 //////////////////////////////////////////////////////////////////////////////
-// Отдельное окно для отображения графиков по заданному источнику данных
+// РћС‚РґРµР»СЊРЅРѕРµ РѕРєРЅРѕ РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РіСЂР°С„РёРєРѕРІ РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ РёСЃС‚РѕС‡РЅРёРєСѓ РґР°РЅРЅС‹С…
 //////////////////////////////////////////////////////////////////////////////
 
 
@@ -30,48 +31,57 @@ public:
     UWatch(QWidget *parent = nullptr, RDK::UApplication* app = NULL);
     ~UWatch();
     UWatchTab *getCurrentTab();
+    /// Create first tab if empty (LLM / host helpers).
+    UWatchTab *ensureCurrentTab();
 
-    // Обновление интерфейса
+    // РћР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
     virtual void AUpdateInterface(void);
 
-    // Возврат интерфейса в исходное состояние
+    // Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
     virtual void AClearInterface(void);
 
-    // Метод, вызываемый после загрузки проекта
+    // РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ Р·Р°РіСЂСѓР·РєРё РїСЂРѕРµРєС‚Р°
     virtual void AAfterLoadProject(void);
 
-    // Метод, вызываемый перед закрытием проекта
+    // РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ Р·Р°РєСЂС‹С‚РёРµРј РїСЂРѕРµРєС‚Р°
     virtual void ABeforeCloseProject(void);
 
-    // Метод, вызываемый перед сбросом модели
+    // РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ СЃР±СЂРѕСЃРѕРј РјРѕРґРµР»Рё
     virtual void ABeforeReset(void);
 
-    // Метод, вызываемый после сброса модели
+    // РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ СЃР±СЂРѕСЃР° РјРѕРґРµР»Рё
     virtual void AAfterReset(void);
 
-    // Метод, вызываемый перед шагом расчета
+    // РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ С€Р°РіРѕРј СЂР°СЃС‡РµС‚Р°
     virtual void ABeforeCalculate(void);
 
-    // Метод, вызываемый после шага расчета
+    // РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ С€Р°РіР° СЂР°СЃС‡РµС‚Р°
     virtual void AAfterCalculate(void);
 
-    // Сохраняет параметры интерфейса в xml
+    // РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
     virtual void ASaveParameters(RDK::USerStorageXML &xml);
 
-    // Загружает параметры интерфейса из xml
+    // Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
     virtual void ALoadParameters(RDK::USerStorageXML &xml);
+    
+    // РћР±РЅРѕРІР»РµРЅРёРµ С‚РµРјС‹ - РїСЂРёРјРµРЅСЏРµС‚ СЃС‚РёР»Рё РєРѕ РІСЃРµРј С‚Р°Р±Р°Рј Рё РіСЂР°С„РёРєР°Рј
+    void updateTheme();
 
 private slots:
     void on_actionCreate_tab_triggered();
-    void on_actionSeries_option_triggered();
-    void on_actionCharts_option_triggered();
+    void on_actionLayout_settings_triggered();
+    void on_actionChart_settings_triggered();
+    void on_actionSeries_settings_triggered();
+    void on_actionSave_chart_triggered();
+    void on_actionSave_all_charts_triggered();
+    void on_actionQuick_save_triggered();
     void on_tabWidget_tabCloseRequested(int index);
 
 
     void on_tabWidget_currentChanged(int index);
 
 private:
-    // Список табов с графиками
+    // РЎРїРёСЃРѕРє С‚Р°Р±РѕРІ СЃ РіСЂР°С„РёРєР°РјРё
     QVector <UWatchTab*> tab;
 
     void createTab();

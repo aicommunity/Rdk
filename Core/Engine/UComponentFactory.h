@@ -8,7 +8,7 @@ namespace RDK {
 
  extern const UId ForbiddenId;
 
- /// Абстрактная фабрика
+ /// РђР±СЃС‚СЂР°РєС‚РЅР°СЏ С„Р°Р±СЂРёРєР°
  class UComponentAbstractFactory
  {
  protected:
@@ -20,13 +20,13 @@ namespace RDK {
   UComponentAbstractFactory(UStorage* storage);
   virtual ~UComponentAbstractFactory();
 
-  /// Создание компонента
+  /// РЎРѕР·РґР°РЅРёРµ РєРѕРјРїРѕРЅРµРЅС‚Р°
   virtual UEPtr<UComponent> New() = 0;
 
-  /// Создание компонента с копированием в него компонента @param prototype
+  /// РЎРѕР·РґР°РЅРёРµ РєРѕРјРїРѕРЅРµРЅС‚Р° СЃ РєРѕРїРёСЂРѕРІР°РЅРёРµРј РІ РЅРµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° @param prototype
   virtual UEPtr<UComponent> Prototype(UEPtr<UComponent> prototype) = 0;
 
-  /// Сбрасывает объект к исходному состоянию, которое зависит от порождающей фабрики
+  /// РЎР±СЂР°СЃС‹РІР°РµС‚ РѕР±СЉРµРєС‚ Рє РёСЃС…РѕРґРЅРѕРјСѓ СЃРѕСЃС‚РѕСЏРЅРёСЋ, РєРѕС‚РѕСЂРѕРµ Р·Р°РІРёСЃРёС‚ РѕС‚ РїРѕСЂРѕР¶РґР°СЋС‰РµР№ С„Р°Р±СЂРёРєРё
   virtual void ResetComponent(UEPtr<UComponent> component) const = 0;
 
   // ClassId set/get
@@ -34,7 +34,7 @@ namespace RDK {
   UId GetClassId() const;
  };
 
- /// Фабрика, основанная на виртуальном методе (старый механизм работы)
+ /// Р¤Р°Р±СЂРёРєР°, РѕСЃРЅРѕРІР°РЅРЅР°СЏ РЅР° РІРёСЂС‚СѓР°Р»СЊРЅРѕРј РјРµС‚РѕРґРµ (СЃС‚Р°СЂС‹Р№ РјРµС…Р°РЅРёР·Рј СЂР°Р±РѕС‚С‹)
  class UVirtualMethodFactory : public UComponentAbstractFactory
  {
  protected:
@@ -55,7 +55,7 @@ namespace RDK {
   void FreeComponent();
  };
 
- /// Фабрика, основанная на статическом фабричном методе
+ /// Р¤Р°Р±СЂРёРєР°, РѕСЃРЅРѕРІР°РЅРЅР°СЏ РЅР° СЃС‚Р°С‚РёС‡РµСЃРєРѕРј С„Р°Р±СЂРёС‡РЅРѕРј РјРµС‚РѕРґРµ
  class UComponentFactoryMethod : public UComponentAbstractFactory
  {
  protected:

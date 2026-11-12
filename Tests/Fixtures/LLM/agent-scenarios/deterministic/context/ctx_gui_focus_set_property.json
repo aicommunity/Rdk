@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "id": "ctx_gui_focus_set_property",
+  "tier": "deterministic",
+  "suite": "context",
+  "registry_profile": "core",
+  "user_text": "измени параметр у выделенного компонента",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true,
+    "auto_apply_writes": true
+  },
+  "gui": {
+    "focused_component_long_name": "/ch0/Neuron1",
+    "channel_index": 0
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "set_property",
+          "arguments": {
+            "long_name": "/ch0/Neuron1",
+            "property_name": "bias",
+            "value": 1.0,
+            "channel_index": 0
+          }
+        }
+      ]
+    },
+    {
+      "text": "Готово."
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": ["set_property"]
+  }
+}

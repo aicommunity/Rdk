@@ -19,7 +19,7 @@ __fastcall TUComponentsControlForm::TUComponentsControlForm(TComponent* Owner)
 {
 }
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 TUComponentsControlForm* TUComponentsControlForm::New(TComponent *owner)
 {
  return new TUComponentsControlForm(owner);

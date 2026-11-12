@@ -19,7 +19,7 @@ TUWatchFrame *UWatchFrame;
 
 //---------------------------------------------------------------------------
 /*
-   Методы класса TUWatchInfo
+   РњРµС‚РѕРґС‹ РєР»Р°СЃСЃР° TUWatchInfo
 */
 //---------------------------------------------------------------------------
 TUWatchInfo::TUWatchInfo(void)
@@ -38,7 +38,7 @@ TUWatchInfo::TUWatchInfo(void)
 
  Visible=true;
 
- // Координаты выхода, хранящего данные по оси Y для случая MDMatrix
+ // РљРѕРѕСЂРґРёРЅР°С‚С‹ РІС‹С…РѕРґР°, С…СЂР°РЅСЏС‰РµРіРѕ РґР°РЅРЅС‹Рµ РїРѕ РѕСЃРё Y РґР»СЏ СЃР»СѓС‡Р°СЏ MDMatrix
  MRow=0;
  MCol=0;
  MVectorIndexX=0;
@@ -132,12 +132,12 @@ __fastcall TUWatchFrame::~TUWatchFrame(void)
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
-// Методы
+// РњРµС‚РѕРґС‹
 // ------------------------------
-// Методы управления состоянием
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃРѕСЃС‚РѕСЏРЅРёРµРј
 // ------------------------------
-// Возвращает 'true', если данные в сериях были изменены,
-// или если серии были добавлены/удалены
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ 'true', РµСЃР»Рё РґР°РЅРЅС‹Рµ РІ СЃРµСЂРёСЏС… Р±С‹Р»Рё РёР·РјРµРЅРµРЅС‹,
+// РёР»Рё РµСЃР»Рё СЃРµСЂРёРё Р±С‹Р»Рё РґРѕР±Р°РІР»РµРЅС‹/СѓРґР°Р»РµРЅС‹
 bool __fastcall TUWatchFrame::GetModifyState(void)
 {
  if(ModifyState)
@@ -151,9 +151,9 @@ bool __fastcall TUWatchFrame::GetModifyState(void)
 // ------------------------------
 
 // ------------------------------
-// Методы настройки отображения
+// РњРµС‚РѕРґС‹ РЅР°СЃС‚СЂРѕР№РєРё РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
 // ------------------------------
-// Включает/отключает автомасштабирование по оси X
+// Р’РєР»СЋС‡Р°РµС‚/РѕС‚РєР»СЋС‡Р°РµС‚ Р°РІС‚РѕРјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёРµ РїРѕ РѕСЃРё X
 void __fastcall TUWatchFrame::SetXAutoScale(bool value)
 {
  if(value)
@@ -168,13 +168,13 @@ void __fastcall TUWatchFrame::SetXAutoScale(bool value)
  }
 }
 
-// Возвращает состояние автомасштабирования по оси X
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ Р°РІС‚РѕРјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёСЏ РїРѕ РѕСЃРё X
 bool __fastcall TUWatchFrame::GetXAutoScale(void)
 {
  return Chart1->TopAxis->Automatic;
 }
 
-// Включает/отключает автомасштабирование по оси Y
+// Р’РєР»СЋС‡Р°РµС‚/РѕС‚РєР»СЋС‡Р°РµС‚ Р°РІС‚РѕРјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёРµ РїРѕ РѕСЃРё Y
 void __fastcall TUWatchFrame::SetYAutoScale(bool value)
 {
  if(value)
@@ -189,13 +189,13 @@ void __fastcall TUWatchFrame::SetYAutoScale(bool value)
  }
 }
 
-// Возвращает состояние автомасштабирования по оси Y
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ Р°РІС‚РѕРјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёСЏ РїРѕ РѕСЃРё Y
 bool __fastcall TUWatchFrame::GetYAutoScale(void)
 {
  return Chart1->LeftAxis->Automatic;
 }
 
-// Устанавливает границы изменения по оси X
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РіСЂР°РЅРёС†С‹ РёР·РјРµРЅРµРЅРёСЏ РїРѕ РѕСЃРё X
 void __fastcall TUWatchFrame::SetXMin(double value)
 {
   Chart1->TopAxis->Minimum=value;
@@ -208,7 +208,7 @@ void __fastcall TUWatchFrame::SetXMax(double value)
   Chart1->BottomAxis->Maximum=value;
 }
 
-// Устанавливает границы изменения по оси Y
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РіСЂР°РЅРёС†С‹ РёР·РјРµРЅРµРЅРёСЏ РїРѕ РѕСЃРё Y
 void __fastcall TUWatchFrame::SetYMin(double value)
 {
   Chart1->LeftAxis->Minimum=value;
@@ -221,7 +221,7 @@ void __fastcall TUWatchFrame::SetYMax(double value)
   Chart1->RightAxis->Maximum=value;
 }
 
-// Возвращает границы изменения по оси X
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РіСЂР°РЅРёС†С‹ РёР·РјРµРЅРµРЅРёСЏ РїРѕ РѕСЃРё X
 double __fastcall TUWatchFrame::GetXMin(void)
 {
  return Chart1->TopAxis->Minimum;
@@ -232,7 +232,7 @@ double __fastcall TUWatchFrame::GetXMax(void)
  return Chart1->TopAxis->Maximum;
 }
 
-// Возвращает границы изменения по оси Y
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РіСЂР°РЅРёС†С‹ РёР·РјРµРЅРµРЅРёСЏ РїРѕ РѕСЃРё Y
 double __fastcall TUWatchFrame::GetYMin(void)
 {
  return Chart1->LeftAxis->Minimum;
@@ -243,7 +243,7 @@ double __fastcall TUWatchFrame::GetYMax(void)
  return Chart1->LeftAxis->Maximum;
 }
 
-// Устанавливает заголовок графика
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р·Р°РіРѕР»РѕРІРѕРє РіСЂР°С„РёРєР°
 void __fastcall TUWatchFrame::SetGraphTitle(AnsiString title)
 {
  Chart1->Title->Text->Clear();
@@ -255,7 +255,7 @@ void __fastcall TUWatchFrame::SetGraphTitle(AnsiString title)
   Chart1->Title->Visible=true;
 }
 
-// Устанавливает видимость подписей по осям
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІРёРґРёРјРѕСЃС‚СЊ РїРѕРґРїРёСЃРµР№ РїРѕ РѕСЃСЏРј
 void __fastcall TUWatchFrame::SetXLabelVisible(bool value)
 {
  Chart1->BottomAxis->Labels=value;
@@ -266,7 +266,7 @@ void __fastcall TUWatchFrame::SetYLabelVisible(bool value)
  Chart1->LeftAxis->Labels=value;
 }
 
-// Возвращает видимость подписей по осям
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІРёРґРёРјРѕСЃС‚СЊ РїРѕРґРїРёСЃРµР№ РїРѕ РѕСЃСЏРј
 bool __fastcall TUWatchFrame::GetXLabelVisible(void)
 {
  return Chart1->BottomAxis->Labels;
@@ -277,7 +277,7 @@ bool __fastcall TUWatchFrame::GetYLabelVisible(void)
  return Chart1->LeftAxis->Labels;
 }
 
-// Устанавливает подписи по осям
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РїРѕРґРїРёСЃРё РїРѕ РѕСЃСЏРј
 void __fastcall TUWatchFrame::SetXLabelTitle(AnsiString value)
 {
  Chart1->BottomAxis->Title->Caption=value;
@@ -288,7 +288,7 @@ void __fastcall TUWatchFrame::SetYLabelTitle(AnsiString value)
  Chart1->LeftAxis->Title->Caption=value;
 }
 
-// Возвращает подписи по осям
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїРѕРґРїРёСЃРё РїРѕ РѕСЃСЏРј
 AnsiString __fastcall TUWatchFrame::GetXLabelTitle(void)
 {
  return Chart1->BottomAxis->Title->Caption;
@@ -299,26 +299,26 @@ AnsiString __fastcall TUWatchFrame::GetYLabelTitle(void)
  return Chart1->LeftAxis->Title->Caption;
 }
 
-// Устанавливает видимость легенды
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РІРёРґРёРјРѕСЃС‚СЊ Р»РµРіРµРЅРґС‹
 void __fastcall TUWatchFrame::SetLegendVisible(bool value)
 {
  Chart1->Legend->Visible=value;
  Chart1->Legend->DividingLines->Visible=false;
 }
 
-// Возвращает видимость легенды
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РІРёРґРёРјРѕСЃС‚СЊ Р»РµРіРµРЅРґС‹
 bool __fastcall TUWatchFrame::GetLegendVisible(void)
 {
  return Chart1->Legend->Visible;
 }
 
-// Устанавливает положение легенды
-// 0 - Слева
-// 1 - Слева (на графике)
-// 2 - Справа
-// 3 - Справа (на графике)
-// 4 - Сверху
-// 5 - Снизу
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РїРѕР»РѕР¶РµРЅРёРµ Р»РµРіРµРЅРґС‹
+// 0 - РЎР»РµРІР°
+// 1 - РЎР»РµРІР° (РЅР° РіСЂР°С„РёРєРµ)
+// 2 - РЎРїСЂР°РІР°
+// 3 - РЎРїСЂР°РІР° (РЅР° РіСЂР°С„РёРєРµ)
+// 4 - РЎРІРµСЂС…Сѓ
+// 5 - РЎРЅРёР·Сѓ
 void __fastcall TUWatchFrame::SetLegendPosition(int value)
 {
  switch(value)
@@ -355,7 +355,7 @@ void __fastcall TUWatchFrame::SetLegendPosition(int value)
  }
 }
 
-// Возвращает положение легенды
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїРѕР»РѕР¶РµРЅРёРµ Р»РµРіРµРЅРґС‹
 int __fastcall TUWatchFrame::GetLegendPosition(void)
 {
  switch(Chart1->Legend->Alignment)
@@ -381,13 +381,13 @@ int __fastcall TUWatchFrame::GetLegendPosition(void)
  return -1;
 }
 
-// Возвращает интервал наблюдения
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅС‚РµСЂРІР°Р» РЅР°Р±Р»СЋРґРµРЅРёСЏ
 double __fastcall TUWatchFrame::GetWatchInterval(void)
 {
  return WatchInterval;
 }
 
-// Устанавливает интервал наблюдения
+// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РёРЅС‚РµСЂРІР°Р» РЅР°Р±Р»СЋРґРµРЅРёСЏ
 void __fastcall TUWatchFrame::SetWatchInterval(double value)
 {
  if(WatchInterval == value)
@@ -398,7 +398,7 @@ void __fastcall TUWatchFrame::SetWatchInterval(double value)
   NameList[i].WatchInterval = WatchInterval;
 }
 
-// Размер кеша отображаемых данных
+// Р Р°Р·РјРµСЂ РєРµС€Р° РѕС‚РѕР±СЂР°Р¶Р°РµРјС‹С… РґР°РЅРЅС‹С…
 int TUWatchFrame::GetCacheSize(void) const
 {
  return CacheSize;
@@ -416,7 +416,7 @@ bool TUWatchFrame::SetCacheSize(int value)
  return true;
 }
 
-// Автоматически подстраивать верхнюю и нижнюю границы оси
+// РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРё РїРѕРґСЃС‚СЂР°РёРІР°С‚СЊ РІРµСЂС…РЅСЋСЋ Рё РЅРёР¶РЅСЋСЋ РіСЂР°РЅРёС†С‹ РѕСЃРё
 bool TUWatchFrame::GetAutoMinYValue(void) const
 {
  return AutoMinYValue;
@@ -441,9 +441,9 @@ void TUWatchFrame::SetAutoMaxYValue(bool value)
 // ------------------------------
 
 // ------------------------------
-// Методы управления наблюдениями
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РЅР°Р±Р»СЋРґРµРЅРёСЏРјРё
 // ------------------------------
-// Возвращает данные наблюдения
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РґР°РЅРЅС‹Рµ РЅР°Р±Р»СЋРґРµРЅРёСЏ
 TUWatchInfo* __fastcall TUWatchFrame::Get(int seriesindex)
 {
  if(seriesindex < 0 || seriesindex >= (int)NameList.size())
@@ -452,19 +452,19 @@ TUWatchInfo* __fastcall TUWatchFrame::Get(int seriesindex)
  return &NameList[seriesindex];
 }
 
-// Возвращает общее число данных наблюдения
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РѕР±С‰РµРµ С‡РёСЃР»Рѕ РґР°РЅРЅС‹С… РЅР°Р±Р»СЋРґРµРЅРёСЏ
 int __fastcall TUWatchFrame::GetNumWatches(void)
 {
  return (int)NameList.size();
 }
 
 
-// Добавление нового наблюдения
+// Р”РѕР±Р°РІР»РµРЅРёРµ РЅРѕРІРѕРіРѕ РЅР°Р±Р»СЋРґРµРЅРёСЏ
 int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
 {
  SelectedSeriesIndex=-1;
 
- // Проверяем, есть ли серия с такими же данными
+ // РџСЂРѕРІРµСЂСЏРµРј, РµСЃС‚СЊ Р»Рё СЃРµСЂРёСЏ СЃ С‚Р°РєРёРјРё Р¶Рµ РґР°РЅРЅС‹РјРё
  int seriesindex=-1;
 
  vector<TUWatchInfo>::iterator I;
@@ -491,7 +491,7 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
 	data->SetTimeInterval(wd.WatchInterval);
    }
 
- // Добавляем новый график
+ // Р”РѕР±Р°РІР»СЏРµРј РЅРѕРІС‹Р№ РіСЂР°С„РёРє
  TFastLineSeries *ser;
 
  ser=new TFastLineSeries(Chart1);
@@ -502,19 +502,19 @@ int __fastcall TUWatchFrame::Add(TUWatchInfo& wd)
  ser->Pen->Style=wd.Style;
  ser->Pen->Width=wd.LineWidth;
 
- // ...заносим точки в серию
+ // ...Р·Р°РЅРѕСЃРёРј С‚РѕС‡РєРё РІ СЃРµСЂРёСЋ
  StepUpdate();
 
 // AddSeries(NameList.size()-1);
 
- // ... добавляем остальное...
+ // ... РґРѕР±Р°РІР»СЏРµРј РѕСЃС‚Р°Р»СЊРЅРѕРµ...
 
  ModifyState=true;
  return seriesindex;
 }
 
-// Добавление нового наблюдения по имени компонента и индексу выхода
-// Возвращает индекс серии
+// Р”РѕР±Р°РІР»РµРЅРёРµ РЅРѕРІРѕРіРѕ РЅР°Р±Р»СЋРґРµРЅРёСЏ РїРѕ РёРјРµРЅРё РєРѕРјРїРѕРЅРµРЅС‚Р° Рё РёРЅРґРµРєСЃСѓ РІС‹С…РѕРґР°
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅРґРµРєСЃ СЃРµСЂРёРё
 int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yname, const string &xoutput, const string &youtput, int mrow, int mcol, double yshift, TPenStyle style, TColor color)
 {
  SelectedSeriesIndex=-1;
@@ -541,7 +541,7 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
    wd.Legend=yname+std::string(":")+youtput;
  }
 
- if(color == 0) // Подбор подходящего цвета
+ if(color == 0) // РџРѕРґР±РѕСЂ РїРѕРґС…РѕРґСЏС‰РµРіРѕ С†РІРµС‚Р°
   wd.Color=Chart1->GetFreeSeriesColor(true);
  else
   wd.Color=color;
@@ -586,7 +586,7 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
  {
  }
 
- if(color == 0) // Подбор подходящего цвета
+ if(color == 0) // РџРѕРґР±РѕСЂ РїРѕРґС…РѕРґСЏС‰РµРіРѕ С†РІРµС‚Р°
   wd.Color=Chart1->GetFreeSeriesColor(true);
  else
   wd.Color=color;
@@ -601,7 +601,7 @@ int __fastcall TUWatchFrame::Add(int type, const string &xname, const string &yn
 }
     */
 
-// Удаление наблюдения
+// РЈРґР°Р»РµРЅРёРµ РЅР°Р±Р»СЋРґРµРЅРёСЏ
 void __fastcall TUWatchFrame::Del(int seriesindex)
 {
  if(seriesindex >= (int)NameList.size())
@@ -613,7 +613,7 @@ void __fastcall TUWatchFrame::Del(int seriesindex)
  ser=Chart1->Series[seriesindex];
  Chart1->RemoveSeries(ser);
  delete ser;
- // ...... остальное удаляем
+ // ...... РѕСЃС‚Р°Р»СЊРЅРѕРµ СѓРґР°Р»СЏРµРј
 
  vector<TUWatchInfo>::iterator I=NameList.begin();
 
@@ -623,7 +623,7 @@ void __fastcall TUWatchFrame::Del(int seriesindex)
  ModifyState=true;
 }
 
-// Удаляет все наблюдения
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ РЅР°Р±Р»СЋРґРµРЅРёСЏ
 void __fastcall TUWatchFrame::Clear(void)
 {
  SelectedSeriesIndex=-1;
@@ -643,15 +643,15 @@ void __fastcall TUWatchFrame::Clear(void)
    ModifyState=true;
   }
 
- // ...... остальное удаляем
+ // ...... РѕСЃС‚Р°Р»СЊРЅРѕРµ СѓРґР°Р»СЏРµРј
  NameList.clear();
 
  ModifyState=true;
 }
 
-// Отключает отображение серии
-// используется при обновлении данных
-// если seriesindex < 0 то отключает все серии
+// РћС‚РєР»СЋС‡Р°РµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ СЃРµСЂРёРё
+// РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РѕР±РЅРѕРІР»РµРЅРёРё РґР°РЅРЅС‹С…
+// РµСЃР»Рё seriesindex < 0 С‚Рѕ РѕС‚РєР»СЋС‡Р°РµС‚ РІСЃРµ СЃРµСЂРёРё
 void __fastcall TUWatchFrame::SeriesDisable(int seriesindex)
 {
  if(seriesindex >= (int)NameList.size())
@@ -666,9 +666,9 @@ void __fastcall TUWatchFrame::SeriesDisable(int seriesindex)
   Chart1->Series[seriesindex]->Active=false;
 }
 
-// Включает отображение серии
-// используется при обновлении данных
-// если seriesindex < 0 то включает все серии
+// Р’РєР»СЋС‡Р°РµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅРёРµ СЃРµСЂРёРё
+// РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ РїСЂРё РѕР±РЅРѕРІР»РµРЅРёРё РґР°РЅРЅС‹С…
+// РµСЃР»Рё seriesindex < 0 С‚Рѕ РІРєР»СЋС‡Р°РµС‚ РІСЃРµ СЃРµСЂРёРё
 void __fastcall TUWatchFrame::SeriesEnable(int seriesindex)
 {
  if(seriesindex >= Chart1->SeriesCount())
@@ -683,7 +683,7 @@ void __fastcall TUWatchFrame::SeriesEnable(int seriesindex)
   Chart1->Series[seriesindex]->Active=true;
 }
 
-// Обновление информации за 'stepcount' прошедших шагов интегрирования
+// РћР±РЅРѕРІР»РµРЅРёРµ РёРЅС„РѕСЂРјР°С†РёРё Р·Р° 'stepcount' РїСЂРѕС€РµРґС€РёС… С€Р°РіРѕРІ РёРЅС‚РµРіСЂРёСЂРѕРІР°РЅРёСЏ
 void __fastcall TUWatchFrame::StepUpdate(void)
 {
  RDK::UELockPtr<RDK::UEnvironment> env=RDK::GetEnvironmentLock();
@@ -691,7 +691,7 @@ void __fastcall TUWatchFrame::StepUpdate(void)
  {
   TUWatchInfo *wd;
 
-  // Корректируем информацию в сериях
+  // РљРѕСЂСЂРµРєС‚РёСЂСѓРµРј РёРЅС„РѕСЂРјР°С†РёСЋ РІ СЃРµСЂРёСЏС…
   wd=&NameList[seriesindex];
 
   if(Chart1->SeriesCount()<=seriesindex)
@@ -728,7 +728,7 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 
    wd->XYSize=data_size;
 
-  // Смотрим способ обновления данных наблюдения...
+  // РЎРјРѕС‚СЂРёРј СЃРїРѕСЃРѕР± РѕР±РЅРѕРІР»РµРЅРёСЏ РґР°РЅРЅС‹С… РЅР°Р±Р»СЋРґРµРЅРёСЏ...
   static_cast<TFastLineSeries*>(series)->AutoRepaint=false;
 
   if(wd->XYSize>0 && wd->X.get_length() == wd->XYSize)
@@ -750,10 +750,10 @@ void __fastcall TUWatchFrame::StepUpdate(void)
 }
 // ------------------------------
 
-// Удаляет данные всех наблюдений
+// РЈРґР°Р»СЏРµС‚ РґР°РЅРЅС‹Рµ РІСЃРµС… РЅР°Р±Р»СЋРґРµРЅРёР№
 void __fastcall TUWatchFrame::Reset(void)
 {
- // Корректируем информацию в сериях
+ // РљРѕСЂСЂРµРєС‚РёСЂСѓРµРј РёРЅС„РѕСЂРјР°С†РёСЋ РІ СЃРµСЂРёСЏС…
  for(int i=0;i<Chart1->SeriesCount();i++)
   {
    Chart1->Series[i]->Clear();
@@ -785,13 +785,13 @@ void __fastcall TUWatchFrame::Reset(void)
  {
   TUWatchInfo *wd;
 
-  // Корректируем информацию в сериях
+  // РљРѕСЂСЂРµРєС‚РёСЂСѓРµРј РёРЅС„РѕСЂРјР°С†РёСЋ РІ СЃРµСЂРёСЏС…
   wd=&NameList[seriesindex];
  }
 }
 
 
-// Возвращает копию списка всех наблюдаемых серий
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕРїРёСЋ СЃРїРёСЃРєР° РІСЃРµС… РЅР°Р±Р»СЋРґР°РµРјС‹С… СЃРµСЂРёР№
 void __fastcall TUWatchFrame::GetWatchList(map<int, TUWatchInfo> &buffer)
 {
  buffer.clear();
@@ -799,7 +799,7 @@ void __fastcall TUWatchFrame::GetWatchList(map<int, TUWatchInfo> &buffer)
   buffer[i]=NameList[i];
 }
 
-// Возвращает копию списка всех видимых серий
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕРїРёСЋ СЃРїРёСЃРєР° РІСЃРµС… РІРёРґРёРјС‹С… СЃРµСЂРёР№
 void __fastcall TUWatchFrame::GetVisibleList(map<int, TUWatchInfo> &buffer)
 {
  buffer.clear();
@@ -808,7 +808,7 @@ void __fastcall TUWatchFrame::GetVisibleList(map<int, TUWatchInfo> &buffer)
    buffer[i]=NameList[i];
 }
 
-// Возвращает копию списка всех невидимых серий
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕРїРёСЋ СЃРїРёСЃРєР° РІСЃРµС… РЅРµРІРёРґРёРјС‹С… СЃРµСЂРёР№
 void __fastcall TUWatchFrame::GetInvisibleList(map<int, TUWatchInfo> &buffer)
 {
  buffer.clear();
@@ -818,7 +818,7 @@ void __fastcall TUWatchFrame::GetInvisibleList(map<int, TUWatchInfo> &buffer)
 }
 
 
-// Заменяет подпись по выбранной серией
+// Р—Р°РјРµРЅСЏРµС‚ РїРѕРґРїРёСЃСЊ РїРѕ РІС‹Р±СЂР°РЅРЅРѕР№ СЃРµСЂРёРµР№
 void __fastcall TUWatchFrame::ChangeLegend(int seriesindex, string legend)
 {
  if(seriesindex >= (int)NameList.size())
@@ -830,12 +830,12 @@ void __fastcall TUWatchFrame::ChangeLegend(int seriesindex, string legend)
 
  Chart1->Series[seriesindex]->Title=legend.c_str();
  ModifyState=true;
- // ...Тут остальные обновления
+ // ...РўСѓС‚ РѕСЃС‚Р°Р»СЊРЅС‹Рµ РѕР±РЅРѕРІР»РµРЅРёСЏ
 
  NameList[seriesindex].Legend=legend;
 }
 
-// Заменяет цвет выбранной серии
+// Р—Р°РјРµРЅСЏРµС‚ С†РІРµС‚ РІС‹Р±СЂР°РЅРЅРѕР№ СЃРµСЂРёРё
 void __fastcall TUWatchFrame::ChangeColor(int seriesindex, TColor color)
 {
  if(seriesindex >= (int)NameList.size())
@@ -849,12 +849,12 @@ void __fastcall TUWatchFrame::ChangeColor(int seriesindex, TColor color)
  Chart1->Series[seriesindex]->SeriesColor=color;
  Chart1->Series[seriesindex]->Pen->Color=color;
  ModifyState=true;
- // ...Тут остальные обновления
+ // ...РўСѓС‚ РѕСЃС‚Р°Р»СЊРЅС‹Рµ РѕР±РЅРѕРІР»РµРЅРёСЏ
 
  NameList[seriesindex].Color=color;
 }
 
-// Заменяет тип линии выбранной серии
+// Р—Р°РјРµРЅСЏРµС‚ С‚РёРї Р»РёРЅРёРё РІС‹Р±СЂР°РЅРЅРѕР№ СЃРµСЂРёРё
 void __fastcall TUWatchFrame::ChangeLineStyle(int seriesindex, TPenStyle style)
 {
  if(seriesindex >= (int)NameList.size())
@@ -865,12 +865,12 @@ void __fastcall TUWatchFrame::ChangeLineStyle(int seriesindex, TPenStyle style)
 
  Chart1->Series[seriesindex]->Pen->Style=style;
  ModifyState=true;
- // ...Тут остальные обновления
+ // ...РўСѓС‚ РѕСЃС‚Р°Р»СЊРЅС‹Рµ РѕР±РЅРѕРІР»РµРЅРёСЏ
 
  NameList[seriesindex].Style=style;
 }
 
-// Изменяет информацио о видимости серии
+// РР·РјРµРЅСЏРµС‚ РёРЅС„РѕСЂРјР°С†РёРѕ Рѕ РІРёРґРёРјРѕСЃС‚Рё СЃРµСЂРёРё
 void __fastcall TUWatchFrame::ChangeVisible(int seriesindex, bool visible)
 {
  if(seriesindex < 0 || seriesindex >= (int)NameList.size())
@@ -881,7 +881,7 @@ void __fastcall TUWatchFrame::ChangeVisible(int seriesindex, bool visible)
 }
 
 
-// Изменяет смещение по оси Y
+// РР·РјРµРЅСЏРµС‚ СЃРјРµС‰РµРЅРёРµ РїРѕ РѕСЃРё Y
 void __fastcall TUWatchFrame::ChangeYShift(int seriesindex, double yshift)
 {
  if(seriesindex >= (int)NameList.size())
@@ -891,13 +891,13 @@ void __fastcall TUWatchFrame::ChangeYShift(int seriesindex, double yshift)
   return;
 
  ModifyState=true;
- // ...Тут остальные обновления
+ // ...РўСѓС‚ РѕСЃС‚Р°Р»СЊРЅС‹Рµ РѕР±РЅРѕРІР»РµРЅРёСЏ
 
  NameList[seriesindex].YShift=yshift;
 }
 
 
-// Изменяет толщину линии
+// РР·РјРµРЅСЏРµС‚ С‚РѕР»С‰РёРЅСѓ Р»РёРЅРёРё
 void __fastcall  TUWatchFrame::ChangeLineWidth(int seriesindex, int width)
 {
  if(seriesindex >= (int)NameList.size())
@@ -908,7 +908,7 @@ void __fastcall  TUWatchFrame::ChangeLineWidth(int seriesindex, int width)
 
  Chart1->Series[seriesindex]->Pen->Width=width;
  ModifyState=true;
- // ...Тут остальные обновления
+ // ...РўСѓС‚ РѕСЃС‚Р°Р»СЊРЅС‹Рµ РѕР±РЅРѕРІР»РµРЅРёСЏ
 
  NameList[seriesindex].LineWidth=width;
 }
@@ -917,15 +917,15 @@ void __fastcall  TUWatchFrame::ChangeLineWidth(int seriesindex, int width)
 //---------------------------------------------------------------------------
 
 // -----------------------------
-// Методы визуального управления
+// РњРµС‚РѕРґС‹ РІРёР·СѓР°Р»СЊРЅРѕРіРѕ СѓРїСЂР°РІР»РµРЅРёСЏ
 // -----------------------------
-// Изменение данных серий
+// РР·РјРµРЅРµРЅРёРµ РґР°РЅРЅС‹С… СЃРµСЂРёР№
 void __fastcall TUWatchFrame::TBSeriesModify(TObject *Sender)
 {
  USeriesControlForm->Execute(this);
 }
 
-// Сохранение графика в файл
+// РЎРѕС…СЂР°РЅРµРЅРёРµ РіСЂР°С„РёРєР° РІ С„Р°Р№Р»
 /*void __fastcall TWatchFrame::TBGraphSave(TObject *Sender)
 {
  if(!SaveDialog1->Execute())
@@ -934,7 +934,7 @@ void __fastcall TUWatchFrame::TBSeriesModify(TObject *Sender)
  Chart1->SaveToBitmapFile(SaveDialog1->FileName);
 } */
 
-// Сохраняет изображение графика в bmp
+// РЎРѕС…СЂР°РЅСЏРµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РіСЂР°С„РёРєР° РІ bmp
 bool TUWatchFrame::SaveToBitmap(const AnsiString &filename)
 {
  if(filename == "")
@@ -944,7 +944,7 @@ bool TUWatchFrame::SaveToBitmap(const AnsiString &filename)
  return true;
 }
 
-// Сохраняет изображение в метафайл
+// РЎРѕС…СЂР°РЅСЏРµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІ РјРµС‚Р°С„Р°Р№Р»
 bool TUWatchFrame::SaveToMetafile(const AnsiString &filename)
 {
  if(filename == "")
@@ -954,7 +954,7 @@ bool TUWatchFrame::SaveToMetafile(const AnsiString &filename)
  return true;
 }
 
-// Сохраняет изображение графика в jpeg
+// РЎРѕС…СЂР°РЅСЏРµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РіСЂР°С„РёРєР° РІ jpeg
 bool TUWatchFrame::SaveToJpeg(const AnsiString &filename)
 {
  if(filename == "")
@@ -976,7 +976,7 @@ bool TUWatchFrame::SaveToJpeg(const AnsiString &filename)
  return true;
 }
 
-// Сохраняет изображение с выбором типа из диалога
+// РЎРѕС…СЂР°РЅСЏРµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ СЃ РІС‹Р±РѕСЂРѕРј С‚РёРїР° РёР· РґРёР°Р»РѕРіР°
 bool TUWatchFrame::Save(void)
 {
  SavePictureDialog->DefaultExt="";
@@ -1012,28 +1012,28 @@ bool TUWatchFrame::Save(void)
 // -------------------------
 
 // -----------------------------
-// Методы управления визуальным интерфейсом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РІРёР·СѓР°Р»СЊРЅС‹Рј РёРЅС‚РµСЂС„РµР№СЃРѕРј
 // -----------------------------
-// Метод, вызываемый после сброса модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ СЃР±СЂРѕСЃР° РјРѕРґРµР»Рё
 void TUWatchFrame::AAfterReset(void)
 {
  Reset();
 }
 
-// Обновление интерфейса
+// РћР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
 void TUWatchFrame::AUpdateInterface(void)
 {
  StepUpdate();
  Chart1->Repaint();
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TUWatchFrame::AClearInterface(void)
 {
  Clear();
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TUWatchFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
  char *out=0;
@@ -1049,7 +1049,7 @@ void TUWatchFrame::ASaveParameters(RDK::USerStorageXML &xml)
  UShowProgressBarForm->ResetBarStatus(1,0,NameList.size());
 
  xml.DelNodeInternalContent();
- // Пробегаем по списку всех открытых серий
+ // РџСЂРѕР±РµРіР°РµРј РїРѕ СЃРїРёСЃРєСѓ РІСЃРµС… РѕС‚РєСЂС‹С‚С‹С… СЃРµСЂРёР№
  for(int seriesindex=0;seriesindex<(int)NameList.size();seriesindex++)
   {
    UShowProgressBarForm->SetBarHeader(1,s+" - "+NameList[seriesindex].Legend.c_str()+":");
@@ -1112,7 +1112,7 @@ void TUWatchFrame::ASaveParameters(RDK::USerStorageXML &xml)
  ModifyState=false;
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TUWatchFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  map<string,TUWatchInfo*>::iterator I;

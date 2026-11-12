@@ -13,36 +13,36 @@
 class RDK_LIB_TYPE UEngineControlVcl: public RDK::UEngineControl
 {
 protected:
-/// Таймер для однопоточного режима
+/// РўР°Р№РјРµСЂ РґР»СЏ РѕРґРЅРѕРїРѕС‚РѕС‡РЅРѕРіРѕ СЂРµР¶РёРјР°
 QTimer *Timer;
 
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UEngineControlVcl(void);
 virtual ~UEngineControlVcl(void);
 // --------------------------
 
 // --------------------------
-// Методы управления
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // --------------------------
-/// Создание нового треда расчета
+/// РЎРѕР·РґР°РЅРёРµ РЅРѕРІРѕРіРѕ С‚СЂРµРґР° СЂР°СЃС‡РµС‚Р°
 virtual RDK::UEngineControlThread* CreateEngineThread(RDK::UEngineControl* engine_control, int channel_index);
 
-/// Создание нового треда расчета
+/// РЎРѕР·РґР°РЅРёРµ РЅРѕРІРѕРіРѕ С‚СЂРµРґР° СЂР°СЃС‡РµС‚Р°
 virtual RDK::UEngineStateThread* CreateEngineStateThread(RDK::UEngineControl* engine_control);
 
-/// Запускает аналитику выбранного канала, или всех, если channel_index == -1
+/// Р—Р°РїСѓСЃРєР°РµС‚ Р°РЅР°Р»РёС‚РёРєСѓ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°, РёР»Рё РІСЃРµС…, РµСЃР»Рё channel_index == -1
 virtual void StartChannel(int channel_index);
 
-/// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
+/// РћСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р°РЅР°Р»РёС‚РёРєСѓ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°, РёР»Рё РІСЃРµС…, РµСЃР»Рё channel_index == -1
 virtual void PauseChannel(int channel_index);
 // --------------------------
 
 protected:
-/// Функция таймера
+/// Р¤СѓРЅРєС†РёСЏ С‚Р°Р№РјРµСЂР°
 void TimerTimer(void);
 };
 

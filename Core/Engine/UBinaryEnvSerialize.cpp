@@ -27,31 +27,6 @@ USerStorageBinary& operator >> (USerStorageBinary& storage, UBMColorModel &data)
 {
  return USimpleFromStorage(storage,data);
 } */
-	   /*
-// UItemData
-USerStorageBinary& operator << (USerStorageBinary& storage, const UItemData &data)
-{
- storage<<data.GetSize();
- storage<<data.GetDataSize();
- for(int i=0;i<data.GetByteSize();i++)
-  storage<<data.UChar[i];
-
- return storage;
-}
-
-USerStorageBinary& operator >> (USerStorageBinary& storage, UItemData &data)
-{
- int temp;
- storage>>temp;
- data.Resize(temp);
- storage>>temp;
- data.SetDataSize(temp);
- for(int i=0;i<data.GetByteSize();i++)
-  storage>>data.UChar[i];
-
- return storage;
-}
-         */
 }
 
 #endif

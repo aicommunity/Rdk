@@ -1,0 +1,18 @@
+[
+  {"query": "UApplication", "expected_subpath": "Rdk/Core/Application", "scope": "all"},
+  {"query": "UApplication GetWorkDirectory", "expected_subpath": "Rdk/Core/Application", "scope": "all"},
+  {"query": "ULLMAgentOrchestrator", "expected_subpath": "Rdk/LLM/Core/Orchestrator", "scope": "all"},
+  {"query": "create_configuration tool", "expected_subpath": "Application-Commands", "scope": "docs"},
+  {"query": "search_project_docs", "expected_subpath": "Tools-Contracts", "scope": "docs"},
+  {"query": "HardwareLib", "expected_subpath": "Rdk-HardwareLib/Docs", "scope": "docs"},
+  {"query": "PulseLib", "expected_subpath": "Nmsdk-PulseLib/Docs", "scope": "docs"},
+  {"query": "MotionControlLib", "expected_subpath": "Nmsdk-MotionControlLib/Docs", "scope": "docs"},
+  {"query": "NeuroModeler", "expected_subpath": "App/NeuroModeler", "scope": "all"},
+  {"query": "policy engine write tools", "expected_subpath": "Policy-and-Safety", "scope": "docs"},
+  {"query": "HITL confirmation", "expected_subpath": "Agent-Interaction", "scope": "docs"},
+  {"query": "knowledge catalog", "expected_subpath": "Knowledge-Sources", "scope": "docs"},
+  {"query": "URdkApplicationCommands", "expected_subpath": "URdkApplicationCommands", "scope": "all"},
+  {"query": "list_registered_classes", "expected_subpath": "Tools-Contracts", "scope": "docs"},
+  {"query": "llm write tools backlog", "expected_subpath": "Write-Tools-Backlog", "scope": "docs"},
+  {"query": "set_property write tool", "expected_subpath": "Tools-Contracts", "scope": "docs"}
+]

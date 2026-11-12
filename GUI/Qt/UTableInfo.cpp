@@ -11,20 +11,20 @@ UTableInfo::UTableInfo(QWidget *parent, RDK::UApplication *app) :
 {
     setAccessibleName("UTableInfo");
     ui->setupUi(this);
-    //столбцы
+    //СЃС‚РѕР»Р±С†С‹
     ui->tableWidget->setColumnCount(6);
-    //строки
+    //СЃС‚СЂРѕРєРё
     ui->tableWidget->setRowCount(0);
-    // Разрешаем выделение только одного элемента
+    // Р Р°Р·СЂРµС€Р°РµРј РІС‹РґРµР»РµРЅРёРµ С‚РѕР»СЊРєРѕ РѕРґРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р°
     ui->tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
-    // Разрешаем выделение построчно
+    // Р Р°Р·СЂРµС€Р°РµРј РІС‹РґРµР»РµРЅРёРµ РїРѕСЃС‚СЂРѕС‡РЅРѕ
     ui->tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-    // Разрешаем изменять ширину колонок
+    // Р Р°Р·СЂРµС€Р°РµРј РёР·РјРµРЅСЏС‚СЊ С€РёСЂРёРЅСѓ РєРѕР»РѕРЅРѕРє
 //    ui->tableWidget->horizontalHeader()->setStretchFirstSection(true);
   //  ui->tableWidget->setColumnWidth(0, 200);
   //  ui->tableWidget->setColumnWidth(1, 40);
 
-    //Заголовки
+    //Р—Р°РіРѕР»РѕРІРєРё
     QStringList headers;
     headers<<"Component name"<<"Min, ms"<<"Max, ms"<<"Avg, ms"<<"Min Int., ms"<<"Max Int., ms"<<"Avg Int., ms";
     ui->tableWidget->setHorizontalHeaderLabels(headers);
@@ -32,28 +32,28 @@ UTableInfo::UTableInfo(QWidget *parent, RDK::UApplication *app) :
     //ui->tableWidget->setItem(1,0, new QTableWidgetItem("Model"));
     ui->tableWidget->setColumnWidth(0, 200);
 
-    //Добавление действий по правой кнопке
+    //Р”РѕР±Р°РІР»РµРЅРёРµ РґРµР№СЃС‚РІРёР№ РїРѕ РїСЂР°РІРѕР№ РєРЅРѕРїРєРµ
     addAction(ui->actionSelectComponent);
     addAction(ui->actionselectAllComponents);
     addAction(ui->actionDeleteAll);
     addAction(ui->actionAddGroupComponents);
 
 
-    //Соединение действия выше и слотав котором выполняется действие, кпо щелчку
+    //РЎРѕРµРґРёРЅРµРЅРёРµ РґРµР№СЃС‚РІРёСЏ РІС‹С€Рµ Рё СЃР»РѕС‚Р°РІ РєРѕС‚РѕСЂРѕРј РІС‹РїРѕР»РЅСЏРµС‚СЃСЏ РґРµР№СЃС‚РІРёРµ, РєРїРѕ С‰РµР»С‡РєСѓ
     connect(ui->actionSelectComponent, SIGNAL(triggered()), this, SLOT(slotSelectComponent()));
     connect(ui->actionselectAllComponents, SIGNAL(triggered()), this, SLOT(slotSelectAllComponents()));
     connect(ui->actionDeleteAll, SIGNAL(triggered()), this, SLOT(slotDeleteAll()));
     connect(ui->actionAddGroupComponents, SIGNAL(triggered()), this, SLOT(slotAddGroupComponents()));
 
-    //столбцы
+    //СЃС‚РѕР»Р±С†С‹
     ui->tableWidget_2->setColumnCount(5);
-    //строки
+    //СЃС‚СЂРѕРєРё
     ui->tableWidget_2->setRowCount(0);
-    // Разрешаем выделение только одного элемента
+    // Р Р°Р·СЂРµС€Р°РµРј РІС‹РґРµР»РµРЅРёРµ С‚РѕР»СЊРєРѕ РѕРґРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р°
     ui->tableWidget_2->setSelectionMode(QAbstractItemView::SingleSelection);
-    // Разрешаем выделение построчно
+    // Р Р°Р·СЂРµС€Р°РµРј РІС‹РґРµР»РµРЅРёРµ РїРѕСЃС‚СЂРѕС‡РЅРѕ
     ui->tableWidget_2->setSelectionBehavior(QAbstractItemView::SelectRows);
-    // Разрешаем изменять ширину колонок
+    // Р Р°Р·СЂРµС€Р°РµРј РёР·РјРµРЅСЏС‚СЊ С€РёСЂРёРЅСѓ РєРѕР»РѕРЅРѕРє
 //    ui->tableWidget_2->horizontalHeader()->setStretchFirstSection(true);
 //    ui->tableWidget_2->setColumnWidth(0, 200);
 //    ui->tableWidget_2->setColumnWidth(1, 40);
@@ -84,7 +84,7 @@ void UTableInfo::AUpdateInterface()
     std::list<std::pair<std::string, RDK::UPerfomanceResults> > comp_perfomance = profiler->GetComponentsProfilerOutputData();
     std::list<std::pair<std::string, RDK::UPerfomanceResults> >::iterator cI=comp_perfomance.begin(),cJ=comp_perfomance.end();
 
-    // Обновляем список производительности компонент
+    // РћР±РЅРѕРІР»СЏРµРј СЃРїРёСЃРѕРє РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚Рё РєРѕРјРїРѕРЅРµРЅС‚
     int rowCount =ui->tableWidget->rowCount();
     for (int j=rowCount-1; j>=0; j--)
     {
@@ -94,7 +94,7 @@ void UTableInfo::AUpdateInterface()
 
     for(int i=0;cI != cJ;++cI, i++)
     {
-        // Вставляем строку
+        // Р’СЃС‚Р°РІР»СЏРµРј СЃС‚СЂРѕРєСѓ
         ui->tableWidget->insertRow(i);
         QString a =  cI->first.c_str();
         a.remove("\r\n");
@@ -109,7 +109,7 @@ void UTableInfo::AUpdateInterface()
         ui->tableWidget->setItem(i,6, new QTableWidgetItem(QString::number(cI->second.AvgInterval*1000)));
     }
 
-    // Обновляем список производительности Gui
+    // РћР±РЅРѕРІР»СЏРµРј СЃРїРёСЃРѕРє РїСЂРѕРёР·РІРѕРґРёС‚РµР»СЊРЅРѕСЃС‚Рё Gui
     std::list<std::pair<std::string, RDK::UPerfomanceResults> > gui_perfomance=profiler->GetGuiProfilerOutputData();
     std::list<std::pair<std::string, RDK::UPerfomanceResults> >::iterator gI=gui_perfomance.begin(),gJ=gui_perfomance.end();
 
@@ -123,7 +123,7 @@ void UTableInfo::AUpdateInterface()
 
     for(int i=0;gI != gJ;++gI, i++)
     {
-        // Вставляем строку
+        // Р’СЃС‚Р°РІР»СЏРµРј СЃС‚СЂРѕРєСѓ
         ui->tableWidget_2->insertRow(i);
         QString a =  gI->first.c_str();
         a.remove("\r\n");

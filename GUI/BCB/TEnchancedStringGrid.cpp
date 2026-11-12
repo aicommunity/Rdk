@@ -117,7 +117,7 @@ void TProperty::SetBool(bool value) {
 bool TProperty::GetBool() {
 	bool err;
 	bool ret = StringToBool(m_value, err);
-	return (ret); // что с ошибками творить?!
+	return (ret); // С‡С‚Рѕ СЃ РѕС€РёР±РєР°РјРё С‚РІРѕСЂРёС‚СЊ?!
 }
 //---------------------------------------------------------------------------
 void TProperty::SetString(String value) {
@@ -258,7 +258,7 @@ bool TPropertyStorage::AddPropertyByIndex(int id, TProperty p)
 {
    if(id<this->Size())
    {
-	   m_storage.insert(m_storage.begin()+id, p); //Возможно ошибка
+	   m_storage.insert(m_storage.begin()+id, p); //Р’РѕР·РјРѕР¶РЅРѕ РѕС€РёР±РєР°
 	   return true;
    }
    else
@@ -274,7 +274,7 @@ bool TPropertyStorage::GetPropertyByIndex(int id, TProperty *p)
 		//TProperty *p1;
 		//p1 =
 		*p = TProperty(m_storage.at(id));
-		   //Возможно ошибка
+		   //Р’РѕР·РјРѕР¶РЅРѕ РѕС€РёР±РєР°
 	   return true;
    }
    else
@@ -289,7 +289,7 @@ bool TPropertyStorage::SetPropertyByIndex(int id, TProperty p)
    {
 	   m_storage.erase(m_storage.begin()+id);
 	   m_storage.insert(m_storage.begin()+id, p);
-		   //Возможно ошибка
+		   //Р’РѕР·РјРѕР¶РЅРѕ РѕС€РёР±РєР°
 	   return true;
    }
    else

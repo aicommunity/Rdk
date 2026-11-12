@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "suites": [
+    {
+      "id": "session-persist-pending",
+      "ctest": "Test_LLM_SessionPersist",
+      "gtest_filter": "LLMSessionPersist.RoundTripPendingToolArguments",
+      "priority": "P0"
+    },
+    {
+      "id": "session-redaction",
+      "ctest": "Test_LLM_SessionPersist",
+      "gtest_filter": "LLMSessionPersist.RedactsSensitiveMessageContentOnPersist",
+      "priority": "P0"
+    },
+    {
+      "id": "idempotency-cache",
+      "ctest": "Test_LLM_ToolGateway",
+      "gtest_filter": "LLMToolGateway.IdempotencyReturnsCachedResult",
+      "priority": "P0"
+    },
+    {
+      "id": "rollback-failure-surface",
+      "ctest": "Test_LLM_Orchestrator",
+      "gtest_filter": "LLMOrchestrator.RollbackReportsFailureWhenCompensationFails",
+      "priority": "P0"
+    },
+    {
+      "id": "cancel-isolation",
+      "ctest": "Test_LLM_Orchestrator",
+      "gtest_filter": "LLMOrchestrator.CancelSessionDoesNotAffectOtherSessions",
+      "priority": "P1"
+    },
+    {
+      "id": "argument-validator-strict",
+      "ctest": "Test_LLM_ArgumentValidator",
+      "gtest_filter": "LLMArgumentValidator.EnforcesTypeEnumAndNumericRange",
+      "priority": "P1"
+    },
+    {
+      "id": "adversarial-injection-fixtures",
+      "ctest": "Test_LLM_AdversarialFixtures",
+      "gtest_filter": "LLMAdversarialFixtures.SanitizerNeutralizesInjectionPayloads",
+      "priority": "P1"
+    }
+  ]
+}

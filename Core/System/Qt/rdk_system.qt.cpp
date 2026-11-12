@@ -18,8 +18,8 @@
 
 namespace RDK {
 
-// Возвращает текущее время в миллисекундах от некоторого фиксированного момента
-// (зависит от реализации)
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСѓС‰РµРµ РІСЂРµРјСЏ РІ РјРёР»Р»РёСЃРµРєСѓРЅРґР°С… РѕС‚ РЅРµРєРѕС‚РѕСЂРѕРіРѕ С„РёРєСЃРёСЂРѕРІР°РЅРЅРѕРіРѕ РјРѕРјРµРЅС‚Р°
+// (Р·Р°РІРёСЃРёС‚ РѕС‚ СЂРµР°Р»РёР·Р°С†РёРё)
 unsigned long long GetCurrentStartupTime(void)
 {
  /*QDateTime timedata = QDateTime::currentDateTime();
@@ -30,8 +30,8 @@ unsigned long long GetCurrentStartupTime(void)
  return QDateTime::currentMSecsSinceEpoch();
 }
 
-// Записывает в seconds и useconds текущие значения секунд и микросекунд,
-// прошедших с некоторого фиксированного момента
+// Р—Р°РїРёСЃС‹РІР°РµС‚ РІ seconds Рё useconds С‚РµРєСѓС‰РёРµ Р·РЅР°С‡РµРЅРёСЏ СЃРµРєСѓРЅРґ Рё РјРёРєСЂРѕСЃРµРєСѓРЅРґ,
+// РїСЂРѕС€РµРґС€РёС… СЃ РЅРµРєРѕС‚РѕСЂРѕРіРѕ С„РёРєСЃРёСЂРѕРІР°РЅРЅРѕРіРѕ РјРѕРјРµРЅС‚Р°
 void GetTimeOfDayInMicroseconds(unsigned long long &seconds, unsigned long long &useconds)
 {
  unsigned long long currentTime = GetCurrentStartupTime();
@@ -39,7 +39,7 @@ void GetTimeOfDayInMicroseconds(unsigned long long &seconds, unsigned long long 
  useconds = (currentTime % 1000) * 1000;
 }
 
-// Вычисляет разницу во времени в миллисекундах
+// Р’С‹С‡РёСЃР»СЏРµС‚ СЂР°Р·РЅРёС†Сѓ РІРѕ РІСЂРµРјРµРЅРё РІ РјРёР»Р»РёСЃРµРєСѓРЅРґР°С…
 unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long time2)
 {
  if(time1>time2)
@@ -49,7 +49,7 @@ unsigned long long CalcDiffTime(unsigned long long time1, unsigned long long tim
 }
 
 
-/// Возвращает локальное время в днях (с точностью до миллисекунд) от начала времен
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ Р»РѕРєР°Р»СЊРЅРѕРµ РІСЂРµРјСЏ РІ РґРЅСЏС… (СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ РґРѕ РјРёР»Р»РёСЃРµРєСѓРЅРґ) РѕС‚ РЅР°С‡Р°Р»Р° РІСЂРµРјРµРЅ
 double GetVariantLocalTime(void)
 {
     return static_cast<double>(QDateTime::currentMSecsSinceEpoch())/86400000.0;
@@ -57,7 +57,7 @@ double GetVariantLocalTime(void)
 }
 
 
-// Усыпляет процесс на заданное число миллисекунд
+// РЈСЃС‹РїР»СЏРµС‚ РїСЂРѕС†РµСЃСЃ РЅР° Р·Р°РґР°РЅРЅРѕРµ С‡РёСЃР»Рѕ РјРёР»Р»РёСЃРµРєСѓРЅРґ
 void Sleep(int value)
 {
  QWaitCondition sleep;
@@ -67,23 +67,23 @@ void Sleep(int value)
  mutex.unlock();
 }
 
-// Создает каталог
-// Возвращает 0 в случае успеха или если каталог уже существует
-// 1 - если уже существует файл с таким именем
-// 2 - если такой путь не существует
-// 3 - если произошла другая ошибка
+// РЎРѕР·РґР°РµС‚ РєР°С‚Р°Р»РѕРі
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ 0 РІ СЃР»СѓС‡Р°Рµ СѓСЃРїРµС…Р° РёР»Рё РµСЃР»Рё РєР°С‚Р°Р»РѕРі СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
+// 1 - РµСЃР»Рё СѓР¶Рµ СЃСѓС‰РµСЃС‚РІСѓРµС‚ С„Р°Р№Р» СЃ С‚Р°РєРёРј РёРјРµРЅРµРј
+// 2 - РµСЃР»Рё С‚Р°РєРѕР№ РїСѓС‚СЊ РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
+// 3 - РµСЃР»Рё РїСЂРѕРёР·РѕС€Р»Р° РґСЂСѓРіР°СЏ РѕС€РёР±РєР°
 int CreateNewDirectory(const char* path)
 {
- //Проверить существование директории
+ //РџСЂРѕРІРµСЂРёС‚СЊ СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ РґРёСЂРµРєС‚РѕСЂРёРё
  QDir dir(path);
  QString dirName = dir.dirName();
  if(dir.exists())
 	return 0;
- //Проверить существование пути
+ //РџСЂРѕРІРµСЂРёС‚СЊ СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ РїСѓС‚Рё
  dir.cdUp();
  if(!dir.exists())
 	return 2;
- //Проверить существоание файла
+ //РџСЂРѕРІРµСЂРёС‚СЊ СЃСѓС‰РµСЃС‚РІРѕР°РЅРёРµ С„Р°Р№Р»Р°
  QString tstp = QString(path)+QString(".*");
  QFileInfoList list = dir.entryInfoList();
  for(int i = 0; i<list.size();i++)
@@ -97,8 +97,8 @@ int CreateNewDirectory(const char* path)
   return 3;
 }
 
-// Удаляет все файлы в директории
-// И саму директорию, если в ней были только файлы
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ С„Р°Р№Р»С‹ РІ РґРёСЂРµРєС‚РѕСЂРёРё
+// Р СЃР°РјСѓ РґРёСЂРµРєС‚РѕСЂРёСЋ, РµСЃР»Рё РІ РЅРµР№ Р±С‹Р»Рё С‚РѕР»СЊРєРѕ С„Р°Р№Р»С‹
 int DeleteDirectory(const char* path)
 {
     QDir dir(path);
@@ -112,11 +112,11 @@ int DeleteDirectory(const char* path)
     return 0;
 }
 
-// Удаляет файл
+// РЈРґР°Р»СЏРµС‚ С„Р°Р№Р»
 int RemoveFile(const char* path)
 {
     QFile file(path);
-    // Если файла не существует
+    // Р•СЃР»Рё С„Р°Р№Р»Р° РЅРµ СЃСѓС‰РµСЃС‚РІСѓРµС‚
     if(!file.exists())
         return 0;
 
@@ -126,14 +126,14 @@ int RemoveFile(const char* path)
         return 1;
 }
 
-// Получает список файлов или каталогов по заданному пути
+// РџРѕР»СѓС‡Р°РµС‚ СЃРїРёСЃРѕРє С„Р°Р№Р»РѕРІ РёР»Рё РєР°С‚Р°Р»РѕРіРѕРІ РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ РїСѓС‚Рё
 int FindFilesList(const std::string &path, const std::string &mask, bool isfile, std::vector<std::string> &results)
 {
- //Проверить существование директории
+ //РџСЂРѕРІРµСЂРёС‚СЊ СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ РґРёСЂРµРєС‚РѕСЂРёРё
  QDir dir(path.c_str());
  if(!dir.exists())
   return 1;
- //Получить список файлов
+ //РџРѕР»СѓС‡РёС‚СЊ СЃРїРёСЃРѕРє С„Р°Р№Р»РѕРІ
  QFileInfoList list = dir.entryInfoList(QStringList(mask.c_str()));
  for(int i = 0; i<list.size();i++)
  {
@@ -165,7 +165,7 @@ int RdkCopyFile(const std::string &source_file, const std::string &dest_file)
  return 0;
 }
 
-/// Перемещает файл
+/// РџРµСЂРµРјРµС‰Р°РµС‚ С„Р°Р№Р»
 int RdkMoveFile(const std::string &source_file, const std::string &dest_file)
 {
  QString src=QString::fromLocal8Bit(source_file.c_str());
@@ -193,13 +193,13 @@ int CopyDir(const std::string &source_dir, const std::string &dest_dir, const st
 }
 
 
-/// Функция осуществляет вывод в отладочный лог, если сборка в отладке
+/// Р¤СѓРЅРєС†РёСЏ РѕСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РІС‹РІРѕРґ РІ РѕС‚Р»Р°РґРѕС‡РЅС‹Р№ Р»РѕРі, РµСЃР»Рё СЃР±РѕСЂРєР° РІ РѕС‚Р»Р°РґРєРµ
 void RdkDebuggerMessage(const std::string &message)
 {
     qDebug() << QString::fromLocal8Bit(message.c_str());
 }
 
-/// Функция создает загрузчика динамических библиотек и вызывает для него Load(dll_name)
+/// Р¤СѓРЅРєС†РёСЏ СЃРѕР·РґР°РµС‚ Р·Р°РіСЂСѓР·С‡РёРєР° РґРёРЅР°РјРёС‡РµСЃРєРёС… Р±РёР±Р»РёРѕС‚РµРє Рё РІС‹Р·С‹РІР°РµС‚ РґР»СЏ РЅРµРіРѕ Load(dll_name)
 RDK_LIB_TYPE UDllLoader* UCreateAndLoadDllLoader(const std::string &dll_name)
 {
     UDllLoader *loader = new UDllLoaderQt(dll_name);
@@ -207,22 +207,22 @@ RDK_LIB_TYPE UDllLoader* UCreateAndLoadDllLoader(const std::string &dll_name)
     return loader;
 }
 
-/// Функция разрушения объекта загрузчика динамических бибилиотек, НЕ выгружает библиотеку
+/// Р¤СѓРЅРєС†РёСЏ СЂР°Р·СЂСѓС€РµРЅРёСЏ РѕР±СЉРµРєС‚Р° Р·Р°РіСЂСѓР·С‡РёРєР° РґРёРЅР°РјРёС‡РµСЃРєРёС… Р±РёР±РёР»РёРѕС‚РµРє, РќР• РІС‹РіСЂСѓР¶Р°РµС‚ Р±РёР±Р»РёРѕС‚РµРєСѓ
 RDK_LIB_TYPE void UDestroyDllLoader(UDllLoader *handle)
 {
     if(handle)
         delete handle;
 }
 
-/// Возвращает объем используемой приложением памяти
-/// Если не удалось определить то возвращает false
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РѕР±СЉРµРј РёСЃРїРѕР»СЊР·СѓРµРјРѕР№ РїСЂРёР»РѕР¶РµРЅРёРµРј РїР°РјСЏС‚Рё
+/// Р•СЃР»Рё РЅРµ СѓРґР°Р»РѕСЃСЊ РѕРїСЂРµРґРµР»РёС‚СЊ С‚Рѕ РІРѕР·РІСЂР°С‰Р°РµС‚ false
 bool ReadUsedMemoryInfo(unsigned long long &total_used_memory, unsigned long long &largest_free_block)
 {
  return false;
 }
 
 
-/// Преобразует широкую строку в обычную
+/// РџСЂРµРѕР±СЂР°Р·СѓРµС‚ С€РёСЂРѕРєСѓСЋ СЃС‚СЂРѕРєСѓ РІ РѕР±С‹С‡РЅСѓСЋ
 std::string& narrow(const std::wstring& wstr, std::string &result, unsigned codepage)
 {
  QString qs(QString::fromStdWString(wstr));
@@ -253,7 +253,7 @@ std::string& narrow(const std::wstring& wstr, const std::locale& loc, std::strin
 }
 
 
-/// Преобразует обычную строку в широкую
+/// РџСЂРµРѕР±СЂР°Р·СѓРµС‚ РѕР±С‹С‡РЅСѓСЋ СЃС‚СЂРѕРєСѓ РІ С€РёСЂРѕРєСѓСЋ
 std::wstring& widen(const std::string& str, std::wstring &result, unsigned codepage)
 {
  QString qs(QString::fromStdString(str.c_str()));

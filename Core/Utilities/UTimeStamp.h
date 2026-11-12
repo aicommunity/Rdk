@@ -25,7 +25,7 @@ using namespace std;
 
 struct RDK_LIB_TYPE UTimeStamp
 {
-public: // Данные
+public: // Р”Р°РЅРЅС‹Рµ
 int Hours;
 unsigned char Minutes;
 unsigned char Seconds;
@@ -33,9 +33,9 @@ unsigned char Frames;
 
 double FPS;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 UTimeStamp(void);
 UTimeStamp(const UTimeStamp &copy);
@@ -45,22 +45,22 @@ UTimeStamp(long frames, double fps);
 // --------------------------
 
 // --------------------------
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 // --------------------------
-// Оператор присваивания
+// РћРїРµСЂР°С‚РѕСЂ РїСЂРёСЃРІР°РёРІР°РЅРёСЏ
 UTimeStamp& operator = (const UTimeStamp &copy);
 UTimeStamp& operator = (double seconds);
 
-// Оператор преобразования в секунды
+// РћРїРµСЂР°С‚РѕСЂ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёСЏ РІ СЃРµРєСѓРЅРґС‹
 double operator()(void) const;
 
-// Операторы сравнения
+// РћРїРµСЂР°С‚РѕСЂС‹ СЃСЂР°РІРЅРµРЅРёСЏ
 bool operator == (const UTimeStamp &copy);
 bool operator != (const UTimeStamp &copy);
 bool operator < (const UTimeStamp &copy);
 bool operator > (const UTimeStamp &copy);
 
-// Арифметические операторы
+// РђСЂРёС„РјРµС‚РёС‡РµСЃРєРёРµ РѕРїРµСЂР°С‚РѕСЂС‹
 UTimeStamp& operator -= (const UTimeStamp &copy);
 UTimeStamp& operator -= (double seconds);
 friend UTimeStamp operator - (const UTimeStamp &copy1,const UTimeStamp &copy2);
@@ -73,8 +73,8 @@ friend UTimeStamp operator + (const UTimeStamp &copy1,const UTimeStamp &copy2);
 friend UTimeStamp operator + (const UTimeStamp &copy,double seconds);
 friend UTimeStamp operator + (double seconds,const UTimeStamp &copy);
 
-// Операторы ввода вывода в строку
-// Разделитель':'
+// РћРїРµСЂР°С‚РѕСЂС‹ РІРІРѕРґР° РІС‹РІРѕРґР° РІ СЃС‚СЂРѕРєСѓ
+// Р Р°Р·РґРµР»РёС‚РµР»СЊ':'
 string& operator >> (string &str) const;
 UTimeStamp& operator << (const string &str);
 // --------------------------

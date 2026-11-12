@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "id": "ctx_query_prefetch",
+  "tier": "deterministic",
+  "suite": "context",
+  "registry_profile": "core",
+  "user_text": "что такое ArduinoBoard",
+  "session": {
+    "project_loaded": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": "",
+    "NMSDK_LLM_QUERY_PREFETCH_DOCS": "1"
+  },
+  "mock_script": [
+    {
+      "text": "ArduinoBoard is a hardware abstraction class."
+    }
+  ],
+  "expect": {
+    "orchestrator_ok": true,
+    "system_prompt_contains_any": ["search_project_docs"]
+  }
+}

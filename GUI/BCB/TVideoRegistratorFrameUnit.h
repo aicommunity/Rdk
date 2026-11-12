@@ -45,79 +45,79 @@ class TVideoOutputFrame;
 
 class TVideoGetBitmapFrameThread : public TThread
 {
-protected: // Параметры
-/// Источник видео
+protected: // РџР°СЂР°РјРµС‚СЂС‹
+/// РСЃС‚РѕС‡РЅРёРє РІРёРґРµРѕ
 int SourceMode;
 
-/// Индекс канала в библиотеке аналитики, управляемый тредом
+/// РРЅРґРµРєСЃ РєР°РЅР°Р»Р° РІ Р±РёР±Р»РёРѕС‚РµРєРµ Р°РЅР°Р»РёС‚РёРєРё, СѓРїСЂР°РІР»СЏРµРјС‹Р№ С‚СЂРµРґРѕРј
 int ChannelIndex;
 
-protected: // Данные
-/// Данные изображения
+protected: // Р”Р°РЅРЅС‹Рµ
+/// Р”Р°РЅРЅС‹Рµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 RDK::UBitmap Source[2];
 
-/// Указатель на текущее изображение для чтения
+/// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµРєСѓС‰РµРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РґР»СЏ С‡С‚РµРЅРёСЏ
 RDK::UBitmap* ReadSource;
 
-/// Указатель на текущее изображение для записи
+/// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° С‚РµРєСѓС‰РµРµ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РґР»СЏ Р·Р°РїРёСЃРё
 RDK::UBitmap* WriteSource;
 
-/// Указатель на владельца
+/// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РІР»Р°РґРµР»СЊС†Р°
 TTVideoRegistratorFrame *Frame;
 
-protected: // События
-/// Снимается на время захвата кадра
+protected: // РЎРѕР±С‹С‚РёСЏ
+/// РЎРЅРёРјР°РµС‚СЃСЏ РЅР° РІСЂРµРјСЏ Р·Р°С…РІР°С‚Р° РєР°РґСЂР°
 HANDLE FrameNotInProgress;
 
-/// Выставлено всегда. Сбрасывается на время доступа к изображению
+/// Р’С‹СЃС‚Р°РІР»РµРЅРѕ РІСЃРµРіРґР°. РЎР±СЂР°СЃС‹РІР°РµС‚СЃСЏ РЅР° РІСЂРµРјСЏ РґРѕСЃС‚СѓРїР° Рє РёР·РѕР±СЂР°Р¶РµРЅРёСЋ
 HANDLE SourceUnlock;
 HANDLE SourceWriteUnlock;
 
-/// Сбрасывается на время ожидания расчета
+/// РЎР±СЂР°СЃС‹РІР°РµС‚СЃСЏ РЅР° РІСЂРµРјСЏ РѕР¶РёРґР°РЅРёСЏ СЂР°СЃС‡РµС‚Р°
 HANDLE CalcCompleteEvent;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 __fastcall TVideoGetBitmapFrameThread(TTVideoRegistratorFrame *frame, bool CreateSuspended);
 virtual __fastcall ~TVideoGetBitmapFrameThread(void);
 // --------------------------
 
 // --------------------------
-// Управление параметрами
+// РЈРїСЂР°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
-/// Источник видео
+/// РСЃС‚РѕС‡РЅРёРє РІРёРґРµРѕ
 int GetSourceMode(void) const;
 
-/// Индекс канала в библиотеке аналитики, управляемый тредом
+/// РРЅРґРµРєСЃ РєР°РЅР°Р»Р° РІ Р±РёР±Р»РёРѕС‚РµРєРµ Р°РЅР°Р»РёС‚РёРєРё, СѓРїСЂР°РІР»СЏРµРјС‹Р№ С‚СЂРµРґРѕРј
 int GetChannelIndex(void) const;
 bool SetChannelIndex(int value);
 // --------------------------
 
 // --------------------------
-// Управление данными
+// РЈРїСЂР°РІР»РµРЅРёРµ РґР°РЅРЅС‹РјРё
 // --------------------------
-/// Указатель на владельца
+/// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° РІР»Р°РґРµР»СЊС†Р°
 TTVideoRegistratorFrame* GetFrame(void) const;
 bool SetFrame(TTVideoRegistratorFrame * frame);
 // --------------------------
 
 // --------------------------
-// Управление событиями
+// РЈРїСЂР°РІР»РµРЅРёРµ СЃРѕР±С‹С‚РёСЏРјРё
 // --------------------------
-/// Выставляется по завершении захвата нового кадра
+/// Р’С‹СЃС‚Р°РІР»СЏРµС‚СЃСЏ РїРѕ Р·Р°РІРµСЂС€РµРЅРёРё Р·Р°С…РІР°С‚Р° РЅРѕРІРѕРіРѕ РєР°РґСЂР°
 HANDLE GetFrameNotInProgress(void) const;
 
-/// Выставлено всегда. Сбрасывается на время доступа к изображению
+/// Р’С‹СЃС‚Р°РІР»РµРЅРѕ РІСЃРµРіРґР°. РЎР±СЂР°СЃС‹РІР°РµС‚СЃСЏ РЅР° РІСЂРµРјСЏ РґРѕСЃС‚СѓРїР° Рє РёР·РѕР±СЂР°Р¶РµРЅРёСЋ
 HANDLE GetSourceUnlock(void) const;
 
-/// Сбрасывается на время ожидания расчета
+/// РЎР±СЂР°СЃС‹РІР°РµС‚СЃСЏ РЅР° РІСЂРµРјСЏ РѕР¶РёРґР°РЅРёСЏ СЂР°СЃС‡РµС‚Р°
 HANDLE GetCalcCompleteEvent(void) const;
 // --------------------------
 
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
 virtual void __fastcall Start(void);
 
@@ -131,37 +131,37 @@ virtual void __fastcall Calculate(void)=0;
 
 virtual void __fastcall Execute(void);
 
-/// Возвращает копию изображения с блокировкой
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РєРѕРїРёСЋ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ СЃ Р±Р»РѕРєРёСЂРѕРІРєРѕР№
 bool ReadSourceSafe(RDK::UBitmap& dest, bool reflect);
 bool ReadSourceSafe(Graphics::TBitmap *dest, bool reflect);
 
-/// Записывает изображение в тред с блокировкой
+/// Р—Р°РїРёСЃС‹РІР°РµС‚ РёР·РѕР±СЂР°Р¶РµРЅРёРµ РІ С‚СЂРµРґ СЃ Р±Р»РѕРєРёСЂРѕРІРєРѕР№
 bool WriteSourceSafe(const RDK::UBitmap& src, bool reflect);
 bool WriteSourceSafe(Graphics::TBitmap *src, bool reflect);
 };
 //---------------------------------------------------------------------------
 class TVideoGetBitmapFrameFromVideoThread : public TVideoGetBitmapFrameThread
 {
-protected:// Параметры
+protected:// РџР°СЂР°РјРµС‚СЂС‹
 int FrameIndex;
 
-protected: // Временные изображения
+protected: // Р’СЂРµРјРµРЅРЅС‹Рµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 RDK::UBitmap TempBitmap;
 
-protected: // Данные
-// Источник данных
+protected: // Р”Р°РЅРЅС‹Рµ
+// РСЃС‚РѕС‡РЅРёРє РґР°РЅРЅС‹С…
 TVideoOutputFrame* VideoOutputFrame;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 __fastcall TVideoGetBitmapFrameFromVideoThread(TTVideoRegistratorFrame *frame, bool CreateSuspended);
 virtual __fastcall ~TVideoGetBitmapFrameFromVideoThread(void);
 // --------------------------
 
 // --------------------------
-// Управление параметрами
+// РЈРїСЂР°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
 bool SetFrameIndex(const int &value);
 const int& GetFrameIndex(void) const;
@@ -169,7 +169,7 @@ const int& GetFrameIndex(void) const;
 bool SetVideoFrame(TVideoOutputFrame* videoFrame);
 TVideoOutputFrame* GetVideoFrame(void) const;
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
 virtual void __fastcall Start(void);
 
@@ -185,22 +185,22 @@ virtual void __fastcall Calculate(void);
 
 class TVideoGetBitmapFrameFromComponentThread : public TVideoGetBitmapFrameThread
 {
-protected: // Временные изображения
+protected: // Р’СЂРµРјРµРЅРЅС‹Рµ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 RDK::UBitmap TempSource;
 RDK::UBitmap TempBitmap;
 
-// Данные о компоненте источнике
+// Р”Р°РЅРЅС‹Рµ Рѕ РєРѕРјРїРѕРЅРµРЅС‚Рµ РёСЃС‚РѕС‡РЅРёРєРµ
 std::string ComponentName;
 std::string PropertyName;
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 __fastcall TVideoGetBitmapFrameFromComponentThread(TTVideoRegistratorFrame *frame, bool CreateSuspended);
 virtual __fastcall ~TVideoGetBitmapFrameFromComponentThread(void);
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
 virtual void __fastcall Start(void);
 
@@ -213,7 +213,7 @@ virtual void __fastcall AfterCalculate(void);
 virtual void __fastcall Calculate(void);
 // --------------------------
 // --------------------------
-// Управление параметрами
+// РЈРїСЂР°РІР»РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР°РјРё
 // --------------------------
 bool SetComponentName(const std::string &comp_name);
 const std::string GetComponentName(void);
@@ -319,96 +319,96 @@ __published:	// IDE-managed Components
 
 private:	// User declarations
 public:		// User declarations
-// Индекс этого источника на форме всех источников
+// РРЅРґРµРєСЃ СЌС‚РѕРіРѕ РёСЃС‚РѕС‡РЅРёРєР° РЅР° С„РѕСЂРјРµ РІСЃРµС… РёСЃС‚РѕС‡РЅРёРєРѕРІ
 int FrameIndex;
 
-// Источник
+// РСЃС‚РѕС‡РЅРёРє
 // 0 - bmp handle from component
 // 1 - bmp handle from frame
 int Mode;
 
-// Поток получения кадра
+// РџРѕС‚РѕРє РїРѕР»СѓС‡РµРЅРёСЏ РєР°РґСЂР°
 TVideoGetBitmapFrameThread *BitmapFrameThread;
 
-// Указатель на форму выбора компоненты-источника
+// РЈРєР°Р·Р°С‚РµР»СЊ РЅР° С„РѕСЂРјСѓ РІС‹Р±РѕСЂР° РєРѕРјРїРѕРЅРµРЅС‚С‹-РёСЃС‚РѕС‡РЅРёРєР°
 TUComponentsListForm *MyComponentsListForm;
 
-// Данные
-// Хранилище декодированного в TBitmap кадра с камеры
+// Р”Р°РЅРЅС‹Рµ
+// РҐСЂР°РЅРёР»РёС‰Рµ РґРµРєРѕРґРёСЂРѕРІР°РЅРЅРѕРіРѕ РІ TBitmap РєР°РґСЂР° СЃ РєР°РјРµСЂС‹
 TBitmap *InputFrameBitmap;
 
-// Недекодированный кадр с камеры
+// РќРµРґРµРєРѕРґРёСЂРѕРІР°РЅРЅС‹Р№ РєР°РґСЂ СЃ РєР°РјРµСЂС‹
 unsigned char *frame;
 
-// Массив хранения кодов ошибок и сообщений
+// РњР°СЃСЃРёРІ С…СЂР°РЅРµРЅРёСЏ РєРѕРґРѕРІ РѕС€РёР±РѕРє Рё СЃРѕРѕР±С‰РµРЅРёР№
 std::map<int, std::string> Errors;
 
-// Флаг инициализации камеры
-// true если инициализированна
+// Р¤Р»Р°Рі РёРЅРёС†РёР°Р»РёР·Р°С†РёРё РєР°РјРµСЂС‹
+// true РµСЃР»Рё РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°РЅРЅР°
 bool InitCamFlag;
 
-// Флаг работы камеры
-// true если запущена
+// Р¤Р»Р°Рі СЂР°Р±РѕС‚С‹ РєР°РјРµСЂС‹
+// true РµСЃР»Рё Р·Р°РїСѓС‰РµРЅР°
 bool StartCamFlag;
 
-// Флаг показа preview
+// Р¤Р»Р°Рі РїРѕРєР°Р·Р° preview
 bool PreviewFlag;
 
-// Методы
+// РњРµС‚РѕРґС‹
 void __fastcall AssignListToComboBox (TComboBox* ComboBox, String List, int Index);
 
-// Заполнение массива ошибок
+// Р—Р°РїРѕР»РЅРµРЅРёРµ РјР°СЃСЃРёРІР° РѕС€РёР±РѕРє
 void FillErrorsArray(void);
 
-// Логгирование ошибок
+// Р›РѕРіРіРёСЂРѕРІР°РЅРёРµ РѕС€РёР±РѕРє
 bool WriteLogMessage(const int &err);
 
-// Установка флага показа preview
+// РЈСЃС‚Р°РЅРѕРІРєР° С„Р»Р°РіР° РїРѕРєР°Р·Р° preview
 bool SetPreviewFlag(const bool &value);
 
-// Инициализирует
+// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚
 int Init(void);
 
-// Деинициализирует
+// Р”РµРёРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚
 int UnInit(void);
 
-// Инициализирует настройки direct network streaming TVideoGrabber
+// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РЅР°СЃС‚СЂРѕР№РєРё direct network streaming TVideoGrabber
 int InitStreamingSettings(void);
 
-// Инициализирует настройки записи в файл TVideoGrabber
+// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РЅР°СЃС‚СЂРѕР№РєРё Р·Р°РїРёСЃРё РІ С„Р°Р№Р» TVideoGrabber
 int InitRecordingSettings(void);
 
-// Получает кадр с камеры через DLL и пишет его в InputFrameBitmap
+// РџРѕР»СѓС‡Р°РµС‚ РєР°РґСЂ СЃ РєР°РјРµСЂС‹ С‡РµСЂРµР· DLL Рё РїРёС€РµС‚ РµРіРѕ РІ InputFrameBitmap
 int GetBitmapFrame(void);
 
-// Создание и подготовка TBitmap InputFrameBitmap для хранения кадра с камеры
+// РЎРѕР·РґР°РЅРёРµ Рё РїРѕРґРіРѕС‚РѕРІРєР° TBitmap InputFrameBitmap РґР»СЏ С…СЂР°РЅРµРЅРёСЏ РєР°РґСЂР° СЃ РєР°РјРµСЂС‹
 int PrepareBitmapFrame(void);
 
-// Установка фрейма источника при работе от фрейма
+// РЈСЃС‚Р°РЅРѕРІРєР° С„СЂРµР№РјР° РёСЃС‚РѕС‡РЅРёРєР° РїСЂРё СЂР°Р±РѕС‚Рµ РѕС‚ С„СЂРµР№РјР°
 bool SetVideoFrameSource(TVideoOutputFrame* sourceFrame);
 TVideoOutputFrame* GetVideoFrameSourc(void);
 
 
 void __fastcall RefreshDeviceControls (void);
 // -----------------------------
-// Методы управления визуальным интерфейсом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РІРёР·СѓР°Р»СЊРЅС‹Рј РёРЅС‚РµСЂС„РµР№СЃРѕРј
 // -----------------------------
-// Метод, вызываемый перед сбросом
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ СЃР±СЂРѕСЃРѕРј
 void ABeforeReset(void);
 
-// Метод, вызываемый перед шагом расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ С€Р°РіРѕРј СЂР°СЃС‡РµС‚Р°
 virtual void ABeforeCalculate(void);
 
-// Метод, вызываемый после шага расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ С€Р°РіР° СЂР°СЃС‡РµС‚Р°
 virtual void AAfterCalculate(void);
 
-// Обновление интерфейса
+// РћР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
 virtual void AUpdateInterface(void);
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 virtual void ASaveParameters(RDK::USerStorageXML &xml);
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 virtual void ALoadParameters(RDK::USerStorageXML &xml);
 // -----------------------------
 

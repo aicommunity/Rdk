@@ -9,12 +9,12 @@ namespace RDK {
 template<typename T>
 class UELockPtr: protected UEPtr<T>
 {
-/// Мьютекс для блокировки
+/// РњСЊСЋС‚РµРєСЃ РґР»СЏ Р±Р»РѕРєРёСЂРѕРІРєРё
 UGenericMutex* Mutex;
 
 public:
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 private:
 UELockPtr(void);
@@ -34,7 +34,7 @@ virtual ~UELockPtr(void);
 // --------------------------
 
 // --------------------------
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 // --------------------------
 bool operator ! (void) const;
 
@@ -63,15 +63,15 @@ UEPtr<T>& operator = (T *p);
 // --------------------------
 
 // --------------------------
-// Методы
+// РњРµС‚РѕРґС‹
 // --------------------------
-/// Принудительное отключение обертки от данных без снятия блокировки
+/// РџСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕРµ РѕС‚РєР»СЋС‡РµРЅРёРµ РѕР±РµСЂС‚РєРё РѕС‚ РґР°РЅРЅС‹С… Р±РµР· СЃРЅСЏС‚РёСЏ Р±Р»РѕРєРёСЂРѕРІРєРё
 void ForceForget(void);
 // --------------------------
 };
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 /*
 template<typename T>
@@ -144,7 +144,7 @@ UELockPtr<T>::~UELockPtr(void)
 // --------------------------
 
 // --------------------------
-// Операторы
+// РћРїРµСЂР°С‚РѕСЂС‹
 // --------------------------
 template<typename T>
 T* UELockPtr<T>::Get(void) const
@@ -205,11 +205,204 @@ UELockPtr<T>::UELockPtr(UELockPtr<T> const &p)
 // --------------------------
 
 // --------------------------
-// Методы
+// РњРµС‚РѕРґС‹
 // --------------------------
-/// Принудительное отключение обертки от данных без снятия блокировки
+/// РџСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕРµ РѕС‚РєР»СЋС‡РµРЅРёРµ РѕР±РµСЂС‚РєРё РѕС‚ РґР°РЅРЅС‹С… Р±РµР· СЃРЅСЏС‚РёСЏ Р±Р»РѕРєРёСЂРѕРІРєРё
 template<typename T>
 void UELockPtr<T>::ForceForget(void)
+{
+ this->PData=0;
+ Mutex=0;
+}
+// --------------------------
+
+// =============================================================================
+// UESharedLockPtr - RAII wrapper for read-only (shared) mutex locks
+// Allows multiple readers to access data simultaneously
+// =============================================================================
+template<typename T>
+class UESharedLockPtr: protected UEPtr<T>
+{
+/// РњСЊСЋС‚РµРєСЃ РґР»СЏ Р±Р»РѕРєРёСЂРѕРІРєРё
+UGenericMutex* Mutex;
+
+public:
+// --------------------------
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
+// --------------------------
+private:
+UESharedLockPtr(void);
+UESharedLockPtr(const UEPtr<T> &p);
+UESharedLockPtr(const T* p);
+UESharedLockPtr(UEPtr<T> &p);
+UESharedLockPtr(T* p);
+public:
+explicit UESharedLockPtr(UGenericMutex* mutex);
+UESharedLockPtr(UGenericMutex* mutex, T* pdata);
+UESharedLockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata);
+UESharedLockPtr(UGenericMutex* mutex, T* pdata, unsigned timeout);
+UESharedLockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata, unsigned timeout);
+UESharedLockPtr(const UESharedLockPtr<T> &p);
+virtual ~UESharedLockPtr(void);
+// --------------------------
+
+// --------------------------
+// РћРїРµСЂР°С‚РѕСЂС‹
+// --------------------------
+bool operator ! (void) const;
+
+operator bool (void) const;
+
+const T* operator -> (void) const;
+
+const T& operator * (void) const;
+
+const T* Get(void) const;
+
+bool operator == (const T *p) const
+{ return this->PData == p; };
+
+bool operator != (const T *p) const
+{ return this->PData != p; };
+
+private:
+UESharedLockPtr<T>& operator = (const UESharedLockPtr<T> &p);
+UEPtr<T>& operator = (const UEPtr<T> &p);
+UEPtr<T>& operator = (const T *p);
+UEPtr<T>& operator = (UEPtr<T> &p);
+UEPtr<T>& operator = (T *p);
+
+// --------------------------
+// РњРµС‚РѕРґС‹
+// --------------------------
+/// РџСЂРёРЅСѓРґРёС‚РµР»СЊРЅРѕРµ РѕС‚РєР»СЋС‡РµРЅРёРµ РѕР±РµСЂС‚РєРё РѕС‚ РґР°РЅРЅС‹С… Р±РµР· СЃРЅСЏС‚РёСЏ Р±Р»РѕРєРёСЂРѕРІРєРё
+void ForceForget(void);
+// --------------------------
+};
+
+// --------------------------
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹ UESharedLockPtr
+// --------------------------
+template<typename T>
+UESharedLockPtr<T>::UESharedLockPtr(UGenericMutex* mutex)
+ : Mutex(mutex)
+{
+ if(Mutex)
+  Mutex->shared_lock();
+}
+
+template<typename T>
+UESharedLockPtr<T>::UESharedLockPtr(UGenericMutex* mutex, T* pdata)
+ : UEPtr<T>(pdata), Mutex(mutex)
+{
+ if(Mutex)
+  Mutex->shared_lock();
+}
+
+template<typename T>
+UESharedLockPtr<T>::UESharedLockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata)
+ : UEPtr<T>(pdata.Get()), Mutex(mutex)
+{
+ if(Mutex)
+  Mutex->shared_lock();
+}
+
+template<typename T>
+UESharedLockPtr<T>::UESharedLockPtr(UGenericMutex* mutex, T* pdata, unsigned timeout)
+ : UEPtr<T>(pdata), Mutex(mutex)
+{
+ if(Mutex)
+ {
+  if(!Mutex->shared_lock(timeout))
+   this->PData=0;
+ }
+}
+
+template<typename T>
+UESharedLockPtr<T>::UESharedLockPtr(UGenericMutex* mutex, const UEPtr<T> &pdata, unsigned timeout)
+ : UEPtr<T>(pdata.Get()), Mutex(mutex)
+{
+ if(Mutex)
+ {
+  if(!Mutex->shared_lock(timeout))
+   this->PData=0;
+ }
+}
+
+template<typename T>
+UESharedLockPtr<T>::UESharedLockPtr(const UESharedLockPtr<T> &p)
+ : UEPtr<T>(p), Mutex(p.Mutex)
+{
+ const_cast<UESharedLockPtr<T>&>(p).ForceForget();
+}
+
+template<typename T>
+UESharedLockPtr<T>::~UESharedLockPtr(void)
+{
+ if(Mutex)
+  Mutex->shared_unlock();
+ Mutex=0;
+}
+// --------------------------
+
+// --------------------------
+// РћРїРµСЂР°С‚РѕСЂС‹ UESharedLockPtr
+// --------------------------
+template<typename T>
+const T* UESharedLockPtr<T>::Get(void) const
+{
+ return this->PData;
+}
+
+template<typename T>
+bool UESharedLockPtr<T>::operator ! (void) const
+{ return (this->PData)?false:true; };
+
+template<typename T>
+UESharedLockPtr<T>::operator bool (void) const
+{ return (this->PData)?true:false; };
+
+template<typename T>
+const T* UESharedLockPtr<T>::operator -> (void) const
+{
+ if(!this->PData)
+#if defined(__GNUC__)
+  throw typename UESharedLockPtr<T>::EUsingZeroPtr();
+#else
+  throw UESharedLockPtr<T>::EUsingZeroPtr();
+#endif
+
+ return this->PData;
+};
+
+template<typename T>
+const T& UESharedLockPtr<T>::operator * (void) const
+{
+ if(!this->PData)
+#if defined(__GNUC__)
+  throw typename UESharedLockPtr<T>::EUsingZeroPtr();
+#else
+  throw UESharedLockPtr<T>::EUsingZeroPtr();
+#endif
+
+ return *this->PData;
+};
+
+template<typename T>
+UESharedLockPtr<T>& UESharedLockPtr<T>::operator = (const UESharedLockPtr<T> &p)
+{
+ this->PData=p;
+ Mutex=p.Mutex;
+ p.ForceForget();
+ return *this;
+};
+// --------------------------
+
+// --------------------------
+// РњРµС‚РѕРґС‹ UESharedLockPtr
+// --------------------------
+template<typename T>
+void UESharedLockPtr<T>::ForceForget(void)
 {
  this->PData=0;
  Mutex=0;

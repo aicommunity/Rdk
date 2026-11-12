@@ -5,54 +5,54 @@
 
 namespace RDK {
 
-// Отвечает за создание функции для формирования базовых свойств
+// РћС‚РІРµС‡Р°РµС‚ Р·Р° СЃРѕР·РґР°РЅРёРµ С„СѓРЅРєС†РёРё РґР»СЏ С„РѕСЂРјРёСЂРѕРІР°РЅРёСЏ Р±Р°Р·РѕРІС‹С… СЃРІРѕР№СЃС‚РІ
 class UBasePropCreatorStd: public UBasePropCreatorTempl
 {
 
 public:
-    // Основная функция создания свойств всех возможных типов (добавляется в Storage)
+    // РћСЃРЅРѕРІРЅР°СЏ С„СѓРЅРєС†РёСЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІ РІСЃРµС… РІРѕР·РјРѕР¶РЅС‹С… С‚РёРїРѕРІ (РґРѕР±Р°РІР»СЏРµС‚СЃСЏ РІ Storage)
     static bool BaseCrPropMock(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
 
-    // Функция вызывает необходимые фукнции в зависимости от типа (строка) свойства
+    // Р¤СѓРЅРєС†РёСЏ РІС‹Р·С‹РІР°РµС‚ РЅРµРѕР±С…РѕРґРёРјС‹Рµ С„СѓРєРЅС†РёРё РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РёРїР° (СЃС‚СЂРѕРєР°) СЃРІРѕР№СЃС‚РІР°
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
     static void CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype);
 
-	// Функция для создания свойства типа list
+	// Р¤СѓРЅРєС†РёСЏ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІР° С‚РёРїР° list
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
     static void CreatePropertyList(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype);
 
-    // Функция для создания свойства типа std::pair
+    // Р¤СѓРЅРєС†РёСЏ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІР° С‚РёРїР° std::pair
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
     static void CreatePropertyPair(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype);
 
-    // Функция для создания свойства типа std::map
+    // Р¤СѓРЅРєС†РёСЏ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІР° С‚РёРїР° std::map
     template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
     static void CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype);
 
 };
 
 
-// Функция вызывает необходимые фукнции в зависимости от типа (строка) свойства
+// Р¤СѓРЅРєС†РёСЏ РІС‹Р·С‹РІР°РµС‚ РЅРµРѕР±С…РѕРґРёРјС‹Рµ С„СѓРєРЅС†РёРё РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ С‚РёРїР° (СЃС‚СЂРѕРєР°) СЃРІРѕР№СЃС‚РІР°
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
 void UBasePropCreatorStd::CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype)
 {
     std::string type = serstorage->GetNodeAttribute("Type");
 
-    // Для list
+    // Р”Р»СЏ list
     if(type == "std::list")
     {
         CreatePropertyList<PropType, TypeInt>(serstorage,mock_unet, ptype);
         return;
     }
 
-    // Для pair
+    // Р”Р»СЏ pair
     if(type == "std::pair")
     {
         CreatePropertyPair<PropType, TypeInt>(serstorage,mock_unet, ptype);
         return;
     }
 /*
-    // Для map
+    // Р”Р»СЏ map
     if(type == "std::map")
     {
         CreatePropertyMap<PropType, TypeInt>(serstorage,mock_unet, ptype);
@@ -60,14 +60,14 @@ void UBasePropCreatorStd::CreateProperty(RDK::USerStorageXML* serstorage, RDK::U
     }*/
 }
 
- // Функция для создания свойства типа list
+ // Р¤СѓРЅРєС†РёСЏ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІР° С‚РёРїР° list
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
 void UBasePropCreatorStd::CreatePropertyList(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype)
 {
     std::string prop_name = serstorage->GetNodeName();
     int size=serstorage->GetNumNodes();
-    // если вектор пуст берем тип - elemType
-    // если есть элементы берем тип элементов
+    // РµСЃР»Рё РІРµРєС‚РѕСЂ РїСѓСЃС‚ Р±РµСЂРµРј С‚РёРї - elemType
+    // РµСЃР»Рё РµСЃС‚СЊ СЌР»РµРјРµРЅС‚С‹ Р±РµСЂРµРј С‚РёРї СЌР»РµРјРµРЅС‚РѕРІ
     std::string type;
     if(size == 0)
     {
@@ -87,7 +87,7 @@ void UBasePropCreatorStd::CreatePropertyList(RDK::USerStorageXML* serstorage, RD
     }
 }
 
-// Функция для создания свойства типа std::pair
+// Р¤СѓРЅРєС†РёСЏ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІР° С‚РёРїР° std::pair
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
 void UBasePropCreatorStd::CreatePropertyPair(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype)
 {
@@ -156,7 +156,7 @@ void UBasePropCreatorStd::CreatePropertyPair(RDK::USerStorageXML* serstorage, RD
     }
 }
 
-// Функция для создания свойства типа std::map
+// Р¤СѓРЅРєС†РёСЏ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СЃРІРѕР№СЃС‚РІР° С‚РёРїР° std::map
 template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
 void UBasePropCreatorStd::CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet, unsigned int ptype)
 {
@@ -167,7 +167,7 @@ void UBasePropCreatorStd::CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK
 
     int size=serstorage->GetNumNodes();
 
-    //Если есть элементы
+    //Р•СЃР»Рё РµСЃС‚СЊ СЌР»РµРјРµРЅС‚С‹
     if(serstorage->SelectNode("elem",size-1))
     {
         size=serstorage->GetNumNodes();
@@ -213,13 +213,13 @@ void UBasePropCreatorStd::CreatePropertyMap(RDK::USerStorageXML* serstorage, RDK
 
         if(second_type.find("MDVector",0) == 0)
         {
-            // Удаление слова MDVector
+            // РЈРґР°Р»РµРЅРёРµ СЃР»РѕРІР° MDVector
             size_t pos = second_type.find("MDVector");
             if (pos != std::string::npos)
             {
                 second_type.erase(pos, std::string("MDVector").length());
             }
-            // Удаление символов '<' и '>'
+            // РЈРґР°Р»РµРЅРёРµ СЃРёРјРІРѕР»РѕРІ '<' Рё '>'
             second_type.erase(std::remove(second_type.begin(), second_type.end(), '>'), second_type.end());
             second_type.erase(std::remove(second_type.begin(), second_type.end(), '<'), second_type.end());
 

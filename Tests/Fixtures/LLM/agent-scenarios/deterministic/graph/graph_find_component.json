@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "id": "graph_find_component",
+  "tier": "deterministic",
+  "suite": "graph",
+  "registry_profile": "core",
+  "user_text": "найди компонент Source1",
+  "session": {
+    "project_loaded": true,
+    "llm_write_enabled": true
+  },
+  "env": {
+    "NMSDK_LLM_INTENT_LLM": ""
+  },
+  "mock_script": [
+    {
+      "tool_calls": [
+        {
+          "name": "find_component",
+          "arguments": {
+            "query": "Source1",
+            "channel_index": 0
+          }
+        }
+      ]
+    },
+    {
+      "text": "Краткий ответ по результатам tool."
+    }
+  ],
+  "expect": {
+    "tools_invoked_any": [
+      "find_component"
+    ]
+  }
+}

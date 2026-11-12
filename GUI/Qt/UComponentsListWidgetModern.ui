@@ -1,0 +1,563 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>UComponentsListWidgetModern</class>
+ <widget class="QWidget" name="UComponentsListWidgetModern">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>404</width>
+    <height>480</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_7">
+   <property name="spacing">
+    <number>4</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <widget class="QWidget" name="verticalLayoutWidget_2">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayoutTreeWidget">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QListWidget" name="listWidgetChannelSelection">
+           <property name="minimumSize">
+            <size>
+             <width>150</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>180</width>
+             <height>16777215</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="labelComponentClassName">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+             <horstretch>1</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>24</height>
+            </size>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::Box</enum>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="textInteractionFlags">
+            <set>Qt::TextSelectableByMouse</set>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QWidget" name="treeContainer" native="true">
+         <layout class="QVBoxLayout" name="treeContainerLayout">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="verticalLayoutWidget">
+      <layout class="QVBoxLayout" name="verticalLayout_2">
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QTabWidget" name="tabWidgetComponentInfo">
+         <property name="tabPosition">
+          <enum>QTabWidget::South</enum>
+         </property>
+         <property name="tabShape">
+          <enum>QTabWidget::Rounded</enum>
+         </property>
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <widget class="QWidget" name="tabParameters">
+          <attribute name="title">
+           <string>Parameters</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout_5">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QTreeWidget" name="treeWidgetParameters">
+             <property name="contextMenuPolicy">
+              <enum>Qt::ActionsContextMenu</enum>
+             </property>
+             <column>
+              <property name="text">
+               <string>Name</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Value</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tabState">
+          <attribute name="title">
+           <string>State</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QTreeWidget" name="treeWidgetState">
+             <property name="contextMenuPolicy">
+              <enum>Qt::ActionsContextMenu</enum>
+             </property>
+             <column>
+              <property name="text">
+               <string>Name</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Value</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tabInputs">
+          <attribute name="title">
+           <string>Inputs</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout_4">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QTreeWidget" name="treeWidgetInputs">
+             <property name="contextMenuPolicy">
+              <enum>Qt::ActionsContextMenu</enum>
+             </property>
+             <column>
+              <property name="text">
+               <string>Name</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Value</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Type</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tabOutputs">
+          <attribute name="title">
+           <string>Outputs</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout_6">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QTreeWidget" name="treeWidgetOutputs">
+             <property name="contextMenuPolicy">
+              <enum>Qt::ActionsContextMenu</enum>
+             </property>
+             <column>
+              <property name="text">
+               <string>Name</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Value</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Type</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tabFavorites">
+          <attribute name="title">
+           <string>Favorites</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayout_8">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QTreeWidget" name="treeWidgetFavorites">
+             <property name="columnCount">
+              <number>2</number>
+             </property>
+             <attribute name="headerStretchLastSection">
+              <bool>false</bool>
+             </attribute>
+             <column>
+              <property name="text">
+               <string>Name</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>Value</string>
+              </property>
+             </column>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+  <action name="actionSetGlobalParameters">
+   <property name="text">
+    <string>Set Global</string>
+   </property>
+  </action>
+  <action name="actionSetGlobalOwnerParameters">
+   <property name="text">
+    <string>Set Global Owner</string>
+   </property>
+  </action>
+  <action name="actionReloadParameters">
+   <property name="text">
+    <string>Reload</string>
+   </property>
+  </action>
+  <action name="actionDefaultAllParameters">
+   <property name="text">
+    <string>Default</string>
+   </property>
+   <property name="toolTip">
+    <string>Set component parameters to default values</string>
+   </property>
+  </action>
+  <action name="actionSetGlobalState">
+   <property name="text">
+    <string>Set Global</string>
+   </property>
+  </action>
+  <action name="actionSetGlobalOwnerState">
+   <property name="text">
+    <string>Set Global Owner</string>
+   </property>
+  </action>
+  <action name="actionReloadState">
+   <property name="text">
+    <string>Reload</string>
+   </property>
+  </action>
+  <action name="actionDefaultAllState">
+   <property name="text">
+    <string>Default All</string>
+   </property>
+  </action>
+  <action name="actionSetGlobalInputs">
+   <property name="text">
+    <string>Set Global</string>
+   </property>
+  </action>
+  <action name="actionSetGlobalOwnerInputs">
+   <property name="text">
+    <string>Set Global Owner</string>
+   </property>
+  </action>
+  <action name="actionReloadInputs">
+   <property name="text">
+    <string>Reload</string>
+   </property>
+  </action>
+  <action name="actionDefaultAllInputs">
+   <property name="text">
+    <string>Default All</string>
+   </property>
+  </action>
+  <action name="actionSetGlobalOutputs">
+   <property name="text">
+    <string>Set Global</string>
+   </property>
+  </action>
+  <action name="actionSetGlobalOwnerOutputs">
+   <property name="text">
+    <string>Set Global Owner</string>
+   </property>
+  </action>
+  <action name="actionReloadOutputs">
+   <property name="text">
+    <string>Reload</string>
+   </property>
+  </action>
+  <action name="actionDefaultAllOutputs">
+   <property name="text">
+    <string>Default All</string>
+   </property>
+  </action>
+  <action name="actionComponentMoveUp">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Move up</string>
+   </property>
+  </action>
+  <action name="actionComponentMoveDown">
+   <property name="text">
+    <string>Move down</string>
+   </property>
+  </action>
+  <action name="actionComponentRename">
+   <property name="text">
+    <string>Rename</string>
+   </property>
+  </action>
+  <action name="actionComponentDelete">
+   <property name="text">
+    <string>Delete</string>
+   </property>
+  </action>
+  <action name="actionComponentReset">
+   <property name="text">
+    <string>Reset</string>
+   </property>
+  </action>
+  <action name="actionComponentCalculate">
+   <property name="text">
+    <string>Calculate</string>
+   </property>
+  </action>
+  <action name="actionComponentGUI">
+   <property name="text">
+    <string>GUI</string>
+   </property>
+  </action>
+  <action name="actionCopyNameToClipboard">
+   <property name="text">
+    <string>Copy name to Clipboard</string>
+   </property>
+  </action>
+  <action name="actionCopyLongNameToClipboard">
+   <property name="text">
+    <string>Copy long name to Clipboard</string>
+   </property>
+  </action>
+  <action name="actionCopyClassNameToClipboard">
+   <property name="text">
+    <string>Copy class to Clipboard</string>
+   </property>
+  </action>
+  <action name="actionShowParametersXML">
+   <property name="text">
+    <string>Show XML</string>
+   </property>
+  </action>
+  <action name="actionShowStateXML">
+   <property name="text">
+    <string>Show XML</string>
+   </property>
+   <property name="toolTip">
+    <string>Show XML</string>
+   </property>
+  </action>
+  <action name="actionShowInputsXML">
+   <property name="text">
+    <string>Show XML</string>
+   </property>
+   <property name="toolTip">
+    <string>Show XML</string>
+   </property>
+  </action>
+  <action name="actionShowOutputsXML">
+   <property name="text">
+    <string>Show XML</string>
+   </property>
+   <property name="toolTip">
+    <string>Show XML</string>
+   </property>
+  </action>
+  <action name="actionComponentInit">
+   <property name="text">
+    <string>Init</string>
+   </property>
+   <property name="toolTip">
+    <string>Call Init method for component</string>
+   </property>
+  </action>
+  <action name="actionComponentUnInit">
+   <property name="text">
+    <string>UnInit</string>
+   </property>
+   <property name="toolTip">
+    <string>Call UnInit method for component</string>
+   </property>
+  </action>
+  <action name="actionCopyPropertyNameToClipboard">
+   <property name="text">
+    <string>Copy Name To Clipboard</string>
+   </property>
+   <property name="toolTip">
+    <string>Copy Name To Clipboard</string>
+   </property>
+  </action>
+  <action name="actionCopyPropertyValueToClipboard">
+   <property name="text">
+    <string>Copy Value To Clipboard</string>
+   </property>
+   <property name="toolTip">
+    <string>Copy Value To Clipboard</string>
+   </property>
+  </action>
+  <action name="actionPastePropertyValueFromClipboard">
+   <property name="text">
+    <string>Paste Value From Clipboard</string>
+   </property>
+   <property name="toolTip">
+    <string>Paste Value From Clipboard</string>
+   </property>
+  </action>
+  <action name="actionReloadTree">
+   <property name="text">
+    <string>Reload Tree</string>
+   </property>
+   <property name="toolTip">
+    <string>Reload components tree</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

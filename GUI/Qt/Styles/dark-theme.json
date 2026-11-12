@@ -1,0 +1,110 @@
+{
+  "name": "Modern Dark",
+  "description": "Sleek dark theme inspired by modern IDEs",
+  
+  "node": {
+    "fill": "#282C34",
+    "fillSelected": "#2C313A",
+    "border": "#61AFEF",
+    "borderSelected": "#7EC0F3",
+    "borderWidth": 2.0,
+    "cornerRadius": 10.0,
+    "gradientTop": "#2C313A",
+    "gradientBottom": "#282C34"
+  },
+  
+  "port": {
+    "inputNormal": "#98C379",
+    "inputHover": "#B5D99C",
+    "outputNormal": "#61AFEF",
+    "outputHover": "#7EC0F3",
+    "radius": 5.0,
+    "hoverRadius": 7.0
+  },
+  
+  "link": {
+    "solid": "#61AFEF",
+    "dashed": "#7EC0F3",
+    "width": 2.5,
+    "arrowSize": 8.0
+  },
+  
+  "drag": {
+    "lineColor": "#61AFEFC0",
+    "portHighlight": "#98C37980"
+  },
+  
+  "text": {
+    "primary": "#ABB2BF",
+    "secondary": "#5C6370",
+    "accent": "#61AFEF",
+    "onAccent": "#21252B"
+  },
+  
+  "general": {
+    "background": "#21252B",
+    "backgroundAlt": "#282C34",
+    "accent": "#61AFEF",
+    "accentLight": "#2C313A",
+    "selection": "#2C313A",
+    "border": "#3E4451",
+    "borderFocus": "#61AFEF"
+  },
+  
+  "chart": {
+    "background": "#282C34",
+    "axis": "#ABB2BF",
+    "grid": "#3E4451",
+    "title": "#ABB2BF",
+    "label": "#5C6370",
+    "seriesColors": [
+      "#E06C75",
+      "#BE5046",
+      "#E5C07B",
+      "#D19A66",
+      "#98C379",
+      "#56B6C2",
+      "#61AFEF",
+      "#528BCC",
+      "#C678DD",
+      "#A06CD5",
+      "#ABB2BF",
+      "#5C6370",
+      "#D19A66",
+      "#E5C07B",
+      "#E06C75"
+    ]
+  },
+  
+  "disabled": {
+    "text": "#5C6370",
+    "background": "#21252B",
+    "border": "#3E4451"
+  },
+  
+  "effects": {
+    "shadowColor": "#00000040",
+    "shadowBlur": 16.0,
+    "shadowOffsetX": 0.0,
+    "shadowOffsetY": 6.0,
+    "glowColor": "#61AFEF30",
+    "glowRadius": 8.0
+  },
+  
+  "gradients": {
+    "nodeTop": "#2C313A",
+    "nodeBottom": "#282C34",
+    "buttonTop": "#61AFEF",
+    "buttonBottom": "#528BCC",
+    "dockTitleTop": "#2C313A",
+    "dockTitleBottom": "#282C34",
+    "headerTop": "#21252B",
+    "headerBottom": "#1E2127"
+  },
+  
+  "success": "#98C379",
+  "warning": "#E5C07B",
+  "error": "#E06C75",
+  "info": "#61AFEF"
+}
+

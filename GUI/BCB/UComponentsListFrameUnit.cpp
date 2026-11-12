@@ -22,7 +22,7 @@
 #pragma resource "*.dfm"
 TUComponentsListFrame *UComponentsListFrame;
 
-// Собственно список форм
+// РЎРѕР±СЃС‚РІРµРЅРЅРѕ СЃРїРёСЃРѕРє С„РѕСЂРј
 std::map<std::string, TUVisualControllerForm*> TUComponentsListFrame::ComponentControllers;
 
 using namespace RDK;
@@ -41,7 +41,7 @@ __fastcall TUComponentsListFrame::TUComponentsListFrame(TComponent* Owner)
 }
 //---------------------------------------------------------------------------
 
-// Перерисовывает путь до текущего узла
+// РџРµСЂРµСЂРёСЃРѕРІС‹РІР°РµС‚ РїСѓС‚СЊ РґРѕ С‚РµРєСѓС‰РµРіРѕ СѓР·Р»Р°
 void __fastcall TUComponentsListFrame::UpdatePath(void)
 {
  UpdateInterfaceFlag=true;
@@ -62,7 +62,7 @@ void __fastcall TUComponentsListFrame::UpdatePath(void)
  UpdateInterfaceFlag=false;
 }
 
-// Отрисовка фрейма
+// РћС‚СЂРёСЃРѕРІРєР° С„СЂРµР№РјР°
 void TUComponentsListFrame::AUpdateInterface(void)
 {
  if(!Model_Check())
@@ -149,7 +149,7 @@ void TUComponentsListFrame::AUpdateInterface(void)
   UpdateNiceStatesList(EnchancedSG2);
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TUComponentsListFrame::AClearInterface(void)
 {
  SelectedComponentName.clear();
@@ -186,13 +186,13 @@ void TUComponentsListFrame::AClearInterface(void)
  NiceStateValRichEdit->Lines->Clear();
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TUComponentsListFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
 
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TUComponentsListFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  SelectedComponentName.clear();
@@ -206,7 +206,7 @@ void TUComponentsListFrame::ALoadParameters(RDK::USerStorageXML &xml)
 
 }
 
-// Обновляет параметры компонента
+// РћР±РЅРѕРІР»СЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РєРѕРјРїРѕРЅРµРЅС‚Р°
 void TUComponentsListFrame::UpdateParameters(void)
 {
  if(PageControl1->ActivePage != TabSheet1)
@@ -247,7 +247,7 @@ void TUComponentsListFrame::UpdateParameters(void)
 }
 
 
-// Обновляет состояние компонента
+// РћР±РЅРѕРІР»СЏРµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ РєРѕРјРїРѕРЅРµРЅС‚Р°
 void TUComponentsListFrame::UpdateState(void)
 {
  if(PageControl1->ActivePage == TabSheet2)
@@ -299,7 +299,7 @@ void TUComponentsListFrame::UpdateState(void)
  }
 }
 
-// Обновляет данные ввода-вывода
+// РћР±РЅРѕРІР»СЏРµС‚ РґР°РЅРЅС‹Рµ РІРІРѕРґР°-РІС‹РІРѕРґР°
 void TUComponentsListFrame::UpdateIO(void)
 {
  if(PageControl1->ActivePage != TabSheet3)
@@ -425,7 +425,7 @@ __finally
  UpdateInterfaceFlag=false;
 }
 
-// Обновляет данные измененного списка параметров
+// РћР±РЅРѕРІР»СЏРµС‚ РґР°РЅРЅС‹Рµ РёР·РјРµРЅРµРЅРЅРѕРіРѕ СЃРїРёСЃРєР° РїР°СЂР°РјРµС‚СЂРѕРІ
 void TUComponentsListFrame::UpdateNiceParamsList(TEnchancedSG *frame)
 {
  if(PageControl1->ActivePage != TabSheet6)
@@ -549,7 +549,7 @@ __finally
  UpdateInterfaceFlag=false;
 }
 
-// Обновляет данные переделанного списка переменных состояния
+// РћР±РЅРѕРІР»СЏРµС‚ РґР°РЅРЅС‹Рµ РїРµСЂРµРґРµР»Р°РЅРЅРѕРіРѕ СЃРїРёСЃРєР° РїРµСЂРµРјРµРЅРЅС‹С… СЃРѕСЃС‚РѕСЏРЅРёСЏ
 void TUComponentsListFrame::UpdateNiceStatesList(TEnchancedSG *frame)
 {
  if(PageControl1->ActivePage != TabSheet7)
@@ -668,7 +668,7 @@ __finally
  UpdateInterfaceFlag=false;
 }
 
-// Обновляет длинные имена выбранных компонент
+// РћР±РЅРѕРІР»СЏРµС‚ РґР»РёРЅРЅС‹Рµ РёРјРµРЅР° РІС‹Р±СЂР°РЅРЅС‹С… РєРѕРјРїРѕРЅРµРЅС‚
 void TUComponentsListFrame::UpdateSelectedComponentInfo(void)
 {
  if(!Core_IsChannelInit())
@@ -702,21 +702,21 @@ void TUComponentsListFrame::UpdateSelectedComponentInfo(void)
 }
 
 // -----------------------
-// Методы доступа к физическим данным
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє С„РёР·РёС‡РµСЃРєРёРј РґР°РЅРЅС‹Рј
 // -----------------------
-// Возвращает id выбранного компонента
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ id РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 const std::string TUComponentsListFrame::GetSelectedComponentId(void) const
 {
  return AnsiString(StringGrid->Cells[0][StringGrid->Row]).c_str();
 }
 
-// Возвращает имя выбранного компонента
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРјСЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 const std::string TUComponentsListFrame::GetSelectedComponentName(void) const
 {
  return AnsiString(StringGrid->Cells[1][StringGrid->Row]).c_str();
 }
 
-// Выбирает компонент по заданному короткому имени
+// Р’С‹Р±РёСЂР°РµС‚ РєРѕРјРїРѕРЅРµРЅС‚ РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ РєРѕСЂРѕС‚РєРѕРјСѓ РёРјРµРЅРё
 void TUComponentsListFrame::SetSelectedComponentName(const std::string &name)
 {
  for(int i=0;i<StringGrid->RowCount;i++)
@@ -731,44 +731,44 @@ void TUComponentsListFrame::SetSelectedComponentName(const std::string &name)
  }
 }
 
-// Длинное имя выделенного компонента
+// Р”Р»РёРЅРЅРѕРµ РёРјСЏ РІС‹РґРµР»РµРЅРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 const std::string& TUComponentsListFrame::GetSelectedComponentLongName(void) const
 {
  return SelectedComponentName;
 }
 
-// Длинный строковой Id выделенного компонента
+// Р”Р»РёРЅРЅС‹Р№ СЃС‚СЂРѕРєРѕРІРѕР№ Id РІС‹РґРµР»РµРЅРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 const std::string& TUComponentsListFrame::GetSelectedComponentLongId(void) const
 {
  return SelectedComponentId;
 }
 
-// Имя выделенного параметра выделенного компонента
+// РРјСЏ РІС‹РґРµР»РµРЅРЅРѕРіРѕ РїР°СЂР°РјРµС‚СЂР° РІС‹РґРµР»РµРЅРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 const std::string& TUComponentsListFrame::GetSelectedComponentParameterName(void) const
 {
  return SelectedComponentParameterName;
 }
 
-// Имя выделенной переменной состояния выделенного компонента
+// РРјСЏ РІС‹РґРµР»РµРЅРЅРѕР№ РїРµСЂРµРјРµРЅРЅРѕР№ СЃРѕСЃС‚РѕСЏРЅРёСЏ РІС‹РґРµР»РµРЅРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 const std::string& TUComponentsListFrame::GetSelectedComponentStateName(void) const
 {
  return SelectedComponentStateName;
 }
 
-// Длинное имя текущего компонента
+// Р”Р»РёРЅРЅРѕРµ РёРјСЏ С‚РµРєСѓС‰РµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 const std::string& TUComponentsListFrame::GetCurrentComponentName(void) const
 {
  return CurrentComponentName;
 }
 
-// Опускается на уровень вниз по имени выбранного компонента
+// РћРїСѓСЃРєР°РµС‚СЃСЏ РЅР° СѓСЂРѕРІРµРЅСЊ РІРЅРёР· РїРѕ РёРјРµРЅРё РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 void TUComponentsListFrame::SelectComponentByName(const std::string& name)
 {
  SetSelectedComponentName(name);
  StringGridDblClick(this);
 }
 
-// Поднимается на уровень вверх
+// РџРѕРґРЅРёРјР°РµС‚СЃСЏ РЅР° СѓСЂРѕРІРµРЅСЊ РІРІРµСЂС…
 void TUComponentsListFrame::SelectUp(void)
 {
  std::string curr_name=CurrentComponentName;
@@ -778,50 +778,50 @@ void TUComponentsListFrame::SelectUp(void)
  SetSelectedComponentName(curr_name);
 }
 
-// Длинный строковой id текущего компонента
+// Р”Р»РёРЅРЅС‹Р№ СЃС‚СЂРѕРєРѕРІРѕР№ id С‚РµРєСѓС‰РµРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 const std::string& TUComponentsListFrame::GetCurrentComponentId(void) const
 {
  return CurrentComponentId;
 }
 
-// Выбранный выход объекта
+// Р’С‹Р±СЂР°РЅРЅС‹Р№ РІС‹С…РѕРґ РѕР±СЉРµРєС‚Р°
 const std::string& TUComponentsListFrame::GetSelectedComponentOutput(void) const
 {
  return SelectedComponentOutput;
 }
 
-// Выбранный вход объекта
+// Р’С‹Р±СЂР°РЅРЅС‹Р№ РІС…РѕРґ РѕР±СЉРµРєС‚Р°
 const std::string& TUComponentsListFrame::GetSelectedComponentInput(void) const
 {
  return SelectedComponentInput;
 }
 
 
-// Имя выделенного свойства (независимо от того чем оно является)
+// РРјСЏ РІС‹РґРµР»РµРЅРЅРѕРіРѕ СЃРІРѕР№СЃС‚РІР° (РЅРµР·Р°РІРёСЃРёРјРѕ РѕС‚ С‚РѕРіРѕ С‡РµРј РѕРЅРѕ СЏРІР»СЏРµС‚СЃСЏ)
 const std::string& TUComponentsListFrame::GetSelectedComponentPropertyName(void) const
 {
  return SelectedComponentPropertyName;
 }
 
-// Включение-выключение отображения параметров в виде xml
+// Р’РєР»СЋС‡РµРЅРёРµ-РІС‹РєР»СЋС‡РµРЅРёРµ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ РІ РІРёРґРµ xml
 bool TUComponentsListFrame::GetShowXMLComponentParameters(void) const
 {
  return ShowXMLComponentParameters;
 }
 
-// Возвращает флаг запрета редактирования дерева узлов
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С„Р»Р°Рі Р·Р°РїСЂРµС‚Р° СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ РґРµСЂРµРІР° СѓР·Р»РѕРІ
 bool TUComponentsListFrame::GetTreeReadOnlyFlag(void)
 {
  return TreeReadOnlyFlag;
 }
 
-// Возвращает флаг запрета редактирования параметров
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С„Р»Р°Рі Р·Р°РїСЂРµС‚Р° СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ
 bool TUComponentsListFrame::GetParamReadOnlyFlag(void)
 {
  return ParamReadOnlyFlag;
 }
 
-// Возвращает признак наличия изменений в данных
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїСЂРёР·РЅР°Рє РЅР°Р»РёС‡РёСЏ РёР·РјРµРЅРµРЅРёР№ РІ РґР°РЅРЅС‹С…
 bool TUComponentsListFrame::GetRegistryModified(void)
 {
  return RegistryModified;
@@ -830,9 +830,9 @@ bool TUComponentsListFrame::GetRegistryModified(void)
 
 
 // -----------------------
-// Методы управления физическими данными
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ С„РёР·РёС‡РµСЃРєРёРјРё РґР°РЅРЅС‹РјРё
 // -----------------------
-// Очищает список изменений реестра
+// РћС‡РёС‰Р°РµС‚ СЃРїРёСЃРѕРє РёР·РјРµРЅРµРЅРёР№ СЂРµРµСЃС‚СЂР°
 void __fastcall TUComponentsListFrame::ClearDiffRegistry(void)
 {
 // DiffRegistry.Clear();
@@ -847,7 +847,7 @@ bool __fastcall TUComponentsListFrame::SetCurrentSubTree(std::string &fullname)
  return true;
 }
 
-// Включение-выключение отображения параметров в виде xml
+// Р’РєР»СЋС‡РµРЅРёРµ-РІС‹РєР»СЋС‡РµРЅРёРµ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ РІ РІРёРґРµ xml
 void TUComponentsListFrame::SetShowXMLComponentParameters(bool flag)
 {
  ShowXMLComponentParameters=flag;
@@ -1164,7 +1164,7 @@ void __fastcall TUComponentsListFrame::ParametersHeaderControlSectionClick(THead
  else
  if(Section->Index == 2)
  {
-  if(Application->MessageBox(L"Значения всех параметров этого компонента будут заменены на значения по умолчанию", L"Предупреждение", MB_YESNO) == ID_YES)
+  if(Application->MessageBox(L"Р—РЅР°С‡РµРЅРёСЏ РІСЃРµС… РїР°СЂР°РјРµС‚СЂРѕРІ СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° Р±СѓРґСѓС‚ Р·Р°РјРµРЅРµРЅС‹ РЅР° Р·РЅР°С‡РµРЅРёСЏ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ", L"РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ", MB_YESNO) == ID_YES)
   {
    Env_Default(GetSelectedComponentLongName().c_str(), false);
    Env_Reset(GetSelectedComponentLongName().c_str());
@@ -1174,7 +1174,7 @@ void __fastcall TUComponentsListFrame::ParametersHeaderControlSectionClick(THead
  else
  if(Section->Index == 3)
  {
-  if(Application->MessageBox(L"Значения всех параметров этого компонента и его дочерних компонент будут заменены на значения по умолчанию", L"Предупреждение", MB_YESNO) == ID_YES)
+  if(Application->MessageBox(L"Р—РЅР°С‡РµРЅРёСЏ РІСЃРµС… РїР°СЂР°РјРµС‚СЂРѕРІ СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° Рё РµРіРѕ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚ Р±СѓРґСѓС‚ Р·Р°РјРµРЅРµРЅС‹ РЅР° Р·РЅР°С‡РµРЅРёСЏ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ", L"РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ", MB_YESNO) == ID_YES)
   {
    Env_Default(GetSelectedComponentLongName().c_str(), true);
    Env_Reset(GetSelectedComponentLongName().c_str());
@@ -1224,7 +1224,7 @@ void __fastcall TUComponentsListFrame::HeaderControl3SectionClick(THeaderControl
  else
  if(Section->Index == 4)
  {
-  if(Application->MessageBox(L"Значения всех параметров этого компонента будут заменены на значения по умолчанию", L"Предупреждение", MB_YESNO) == ID_YES)
+  if(Application->MessageBox(L"Р—РЅР°С‡РµРЅРёСЏ РІСЃРµС… РїР°СЂР°РјРµС‚СЂРѕРІ СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° Р±СѓРґСѓС‚ Р·Р°РјРµРЅРµРЅС‹ РЅР° Р·РЅР°С‡РµРЅРёСЏ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ", L"РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ", MB_YESNO) == ID_YES)
   {
    Env_Default(GetSelectedComponentLongName().c_str(), false);
    UpdateParameters();
@@ -1233,7 +1233,7 @@ void __fastcall TUComponentsListFrame::HeaderControl3SectionClick(THeaderControl
  else
  if(Section->Index == 5)
  {
-  if(Application->MessageBox(L"Значения всех параметров этого компонента и его дочерних компонент будут заменены на значения по умолчанию", L"Предупреждение", MB_YESNO) == ID_YES)
+  if(Application->MessageBox(L"Р—РЅР°С‡РµРЅРёСЏ РІСЃРµС… РїР°СЂР°РјРµС‚СЂРѕРІ СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° Рё РµРіРѕ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚ Р±СѓРґСѓС‚ Р·Р°РјРµРЅРµРЅС‹ РЅР° Р·РЅР°С‡РµРЅРёСЏ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ", L"РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ", MB_YESNO) == ID_YES)
   {
    Env_Default(GetSelectedComponentLongName().c_str(), true);
    Env_Reset(GetSelectedComponentLongName().c_str());
@@ -1494,7 +1494,7 @@ void __fastcall TUComponentsListFrame::HeaderControl2SectionClick(THeaderControl
  else
  if(Section->Index == 4)
  {
-  if(Application->MessageBox(L"Значения всех параметров этого компонента будут заменены на значения по умолчанию", L"Предупреждение", MB_YESNO) == ID_YES)
+  if(Application->MessageBox(L"Р—РЅР°С‡РµРЅРёСЏ РІСЃРµС… РїР°СЂР°РјРµС‚СЂРѕРІ СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° Р±СѓРґСѓС‚ Р·Р°РјРµРЅРµРЅС‹ РЅР° Р·РЅР°С‡РµРЅРёСЏ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ", L"РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ", MB_YESNO) == ID_YES)
   {
    Env_Default(GetSelectedComponentLongName().c_str(), false);
    UpdateParameters();
@@ -1503,7 +1503,7 @@ void __fastcall TUComponentsListFrame::HeaderControl2SectionClick(THeaderControl
  else
  if(Section->Index == 5)
  {
-  if(Application->MessageBox(L"Значения всех параметров этого компонента и его дочерних компонент будут заменены на значения по умолчанию", L"Предупреждение", MB_YESNO) == ID_YES)
+  if(Application->MessageBox(L"Р—РЅР°С‡РµРЅРёСЏ РІСЃРµС… РїР°СЂР°РјРµС‚СЂРѕРІ СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р° Рё РµРіРѕ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚ Р±СѓРґСѓС‚ Р·Р°РјРµРЅРµРЅС‹ РЅР° Р·РЅР°С‡РµРЅРёСЏ РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ", L"РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ", MB_YESNO) == ID_YES)
   {
    Env_Default(GetSelectedComponentLongName().c_str(), true);
    Env_Reset(GetSelectedComponentLongName().c_str());

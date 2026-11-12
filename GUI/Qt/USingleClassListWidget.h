@@ -13,9 +13,9 @@ namespace Ui {
 class USingleClassListWidget;
 }
 
-/// USingleClassListWidget class - виджет отображения класса и его вложенных компонентов
-/// Урезанная версия UComponentsListWidget
-/// Древовидный список компонентов с учетом вложенности, в порядке расчета
+/// USingleClassListWidget class - РІРёРґР¶РµС‚ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ РєР»Р°СЃСЃР° Рё РµРіРѕ РІР»РѕР¶РµРЅРЅС‹С… РєРѕРјРїРѕРЅРµРЅС‚РѕРІ
+/// РЈСЂРµР·Р°РЅРЅР°СЏ РІРµСЂСЃРёСЏ UComponentsListWidget
+/// Р”СЂРµРІРѕРІРёРґРЅС‹Р№ СЃРїРёСЃРѕРє РєРѕРјРїРѕРЅРµРЅС‚РѕРІ СЃ СѓС‡РµС‚РѕРј РІР»РѕР¶РµРЅРЅРѕСЃС‚Рё, РІ РїРѕСЂСЏРґРєРµ СЂР°СЃС‡РµС‚Р°
 class USingleClassListWidget : public UVisualControllerWidget
 {
     Q_OBJECT
@@ -24,15 +24,15 @@ public:
     explicit USingleClassListWidget(std::string class_name, QWidget *parent = 0, RDK::UApplication* app = NULL);
     virtual ~USingleClassListWidget();
 
-    /// запись файла настроек
+    /// Р·Р°РїРёСЃСЊ С„Р°Р№Р»Р° РЅР°СЃС‚СЂРѕРµРє
     virtual void ASaveParameters();
-    /// считывание файла настроек
+    /// СЃС‡РёС‚С‹РІР°РЅРёРµ С„Р°Р№Р»Р° РЅР°СЃС‚СЂРѕРµРє
     virtual void ALoadParameters();
 
-    /// Изменение класса для отображения
+    /// РР·РјРµРЅРµРЅРёРµ РєР»Р°СЃСЃР° РґР»СЏ РѕС‚РѕР±СЂР°Р¶РµРЅРёСЏ
     void ChangeClass(std::string class_name);
 
-    /// Возвращает полное имя выбранного компонента
+    /// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїРѕР»РЅРѕРµ РёРјСЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
     QString getSelectedComponentLongName();
 
 public slots:
@@ -40,38 +40,38 @@ public slots:
 
     void parametersListSelectionChanged();
 
-    /// Обновление отображаемого дерева компонентов
+    /// РћР±РЅРѕРІР»РµРЅРёРµ РѕС‚РѕР±СЂР°Р¶Р°РµРјРѕРіРѕ РґРµСЂРµРІР° РєРѕРјРїРѕРЅРµРЅС‚РѕРІ
     void reloadClassTree();
 
-    /// Обновления отображаемыех свойств
+    /// РћР±РЅРѕРІР»РµРЅРёСЏ РѕС‚РѕР±СЂР°Р¶Р°РµРјС‹РµС… СЃРІРѕР№СЃС‚РІ
     void reloadPropertys();
 
-    /// Внешняя установка UpdateInterval, для уменьшения нагрузки на ядро
+    /// Р’РЅРµС€РЅСЏСЏ СѓСЃС‚Р°РЅРѕРІРєР° UpdateInterval, РґР»СЏ СѓРјРµРЅСЊС€РµРЅРёСЏ РЅР°РіСЂСѓР·РєРё РЅР° СЏРґСЂРѕ
     void setUpdateInterval(long value);
 
 signals:
     void parameterChanged(QString path);
 
 private:
-    /// Название класса
+    /// РќР°Р·РІР°РЅРёРµ РєР»Р°СЃСЃР°
     std::string ClassName;
 
-    /// Имя выделенного КЛАССА
+    /// РРјСЏ РІС‹РґРµР»РµРЅРЅРѕРіРѕ РљР›РђРЎРЎРђ
     QString selectedClass;
 
-    /// Длинное имя выделеннного КОМПОНЕНТА относительно базового класса
+    /// Р”Р»РёРЅРЅРѕРµ РёРјСЏ РІС‹РґРµР»РµРЅРЅРЅРѕРіРѕ РљРћРњРџРћРќР•РќРўРђ РѕС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕ Р±Р°Р·РѕРІРѕРіРѕ РєР»Р°СЃСЃР°
     QString selectedComponentLong;
 
-    /// имена выбранной строки Property
+    /// РёРјРµРЅР° РІС‹Р±СЂР°РЅРЅРѕР№ СЃС‚СЂРѕРєРё Property
     QString selectedParameterName;
 
-    /// Дерево компонентов
+    /// Р”РµСЂРµРІРѕ РєРѕРјРїРѕРЅРµРЅС‚РѕРІ
     QTreeWidget *componentsTree;
 
-    /// Скрытый рекурсивный метод заполнения списка компонентов
+    /// РЎРєСЂС‹С‚С‹Р№ СЂРµРєСѓСЂСЃРёРІРЅС‹Р№ РјРµС‚РѕРґ Р·Р°РїРѕР»РЅРµРЅРёСЏ СЃРїРёСЃРєР° РєРѕРјРїРѕРЅРµРЅС‚РѕРІ
     void addComponentSons(RDK::UEPtr<RDK::UContainer> cont, QString componentName, QTreeWidgetItem *treeWidgetFather);
 
-    /// Расчет текущего полного пути для выбранного компонента
+    /// Р Р°СЃС‡РµС‚ С‚РµРєСѓС‰РµРіРѕ РїРѕР»РЅРѕРіРѕ РїСѓС‚Рё РґР»СЏ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
     QString CalSelectedParameterPath();
 
     Ui::USingleClassListWidget *ui;

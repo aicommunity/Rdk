@@ -68,15 +68,11 @@ USerStorageXML& operator << (USerStorageXML& storage, const MMatrix<T,Rows,Cols>
  storage.SetNodeAttribute("Rows",sntoa(Rows));
  storage.SetNodeAttribute("Cols",sntoa(Cols));
 
- stream<<endl;
  for(unsigned i=0;i<Rows;i++)
  {
-  for(unsigned j=0;j<Cols;j++)
-  {
-   stream<<data.Data[i][j]<<"\t";
-  }
-  if(i<Rows-1)
-   stream<<endl;
+  AppendMatrixTextRow(stream, (int)Cols, [&](unsigned j) { stream << data.Data[i][j]; });
+  if(i+1<Rows)
+   stream<<'\n';
  }
 
  storage.SetNodeText(stream.str());
@@ -87,8 +83,9 @@ USerStorageXML& operator << (USerStorageXML& storage, const MMatrix<T,Rows,Cols>
 template<typename T, unsigned Rows, unsigned Cols>
 USerStorageXML& operator >> (USerStorageXML& storage, MMatrix<T,Rows,Cols> &data)
 {
-// std::string rvalue=storage.GetNodeText();
- std::stringstream stream(storage.GetNodeText().c_str());
+ std::string text=storage.GetNodeText();
+ MatrixNodeTextTrimInPlace(text);
+ std::stringstream stream(text);
 
  for(unsigned i=0;i<Rows;i++)
  {
@@ -177,15 +174,11 @@ USerStorageXML& operator << (USerStorageXML& storage, const MDMatrix<T> &data)
 
  std::stringstream stream;
 
- stream<<endl;
  for(int i=0;i<rows;i++)
  {
-  for(int j=0;j<cols;j++)
-  {
-   stream<<data(i,j)<<"\t";
-  }
-  if(i<rows-1)
-   stream<<endl;
+  AppendMatrixTextRow(stream, cols, [&](int j) { stream << data(i, j); });
+  if(i+1<rows)
+   stream<<'\n';
  }
 
  storage.SetNodeText(stream.str());
@@ -203,8 +196,9 @@ USerStorageXML& operator >> (USerStorageXML& storage, MDMatrix<T> &data)
 
  data.Resize(rows,cols);
 
-// std::string rvalue=storage.GetNodeText();
- std::stringstream stream(storage.GetNodeText().c_str());
+ std::string text=storage.GetNodeText();
+ MatrixNodeTextTrimInPlace(text);
+ std::stringstream stream(text);
 
  for(int i=0;i<rows;i++)
  {
@@ -242,7 +236,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const MVertex<T, Rows> &da
 template<typename T, int Rows>
 USerStorageXML& operator >> (USerStorageXML& storage, MVertex<T, Rows> &data)
 {
- //Временные переменные
+ //Р’СЂРµРјРµРЅРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ
  std::vector<MVector<T,Rows> > varVertexVector;
  std::vector<std::string> varNames;
 
@@ -290,7 +284,7 @@ USerStorageXML& operator << (USerStorageXML& storage, const MGeometry<T, Rows> &
 template<typename T, int Rows>
 USerStorageXML& operator >> (USerStorageXML& storage, MGeometry<T, Rows> &data)
 {
- //Временные переменные
+ //Р’СЂРµРјРµРЅРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ
  std::vector<MVector<T,Rows> > varVertices;
  std::vector<std::string> varVerticesNames;
  std::vector<MBorder> varBorders;
@@ -324,8 +318,8 @@ USerStorageXML& operator >> (USerStorageXML& storage, MGeometry<T, Rows> &data)
 }
 
 /*
-/// Предупреждение: эта функция предполагает, что в строке содержится матрица
-/// той же размерности, что и принимающая переменная
+/// РџСЂРµРґСѓРїСЂРµР¶РґРµРЅРёРµ: СЌС‚Р° С„СѓРЅРєС†РёСЏ РїСЂРµРґРїРѕР»Р°РіР°РµС‚, С‡С‚Рѕ РІ СЃС‚СЂРѕРєРµ СЃРѕРґРµСЂР¶РёС‚СЃСЏ РјР°С‚СЂРёС†Р°
+/// С‚РѕР№ Р¶Рµ СЂР°Р·РјРµСЂРЅРѕСЃС‚Рё, С‡С‚Рѕ Рё РїСЂРёРЅРёРјР°СЋС‰Р°СЏ РїРµСЂРµРјРµРЅРЅР°СЏ
 template<typename T>
 bool VarFromStrRaw(const std::string &str, MDMatrix<T> &value)
 {

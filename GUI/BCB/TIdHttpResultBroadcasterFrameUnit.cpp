@@ -13,7 +13,7 @@
 #pragma resource "*.dfm"
 TIdHttpResultBroadcasterFrame *IdHttpResultBroadcasterFrame;
 
-/// Экземпляр класса контроллера расчета
+/// Р­РєР·РµРјРїР»СЏСЂ РєР»Р°СЃСЃР° РєРѕРЅС‚СЂРѕР»Р»РµСЂР° СЂР°СЃС‡РµС‚Р°
 extern UEngineControlVcl RdkEngineControl;
 //---------------------------------------------------------------------------
 __fastcall TIdHttpResultBroadcasterFrame::TIdHttpResultBroadcasterFrame(TComponent* Owner)
@@ -41,7 +41,7 @@ __fastcall TIdHttpResultBroadcasterFrame::~TIdHttpResultBroadcasterFrame(void)
 //---------------------------------------------------------------------------
 
 // --------------------------
-// Методы управления фреймом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ С„СЂРµР№РјРѕРј
 // --------------------------
 void TIdHttpResultBroadcasterFrame::ABeforeCalculate(void)
 {
@@ -166,13 +166,13 @@ void TIdHttpResultBroadcasterFrame::AUpdateInterface(void)
 
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TIdHttpResultBroadcasterFrame::AClearInterface(void)
 {
 }
 
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TIdHttpResultBroadcasterFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteString("ServerAddress",AnsiString(ServerAddressLabeledEdit->Text).c_str());
@@ -185,7 +185,7 @@ void TIdHttpResultBroadcasterFrame::ASaveParameters(RDK::USerStorageXML &xml)
  xml.WriteInteger("ChannelIndex",StrToInt(ChannelIndexLabeledEdit->Text));
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TIdHttpResultBroadcasterFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  ServerAddressLabeledEdit->Text=xml.ReadString("ServerAddress","").c_str();
@@ -202,7 +202,7 @@ IdHTTP->ReadTimeout=10;
 }
 
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 TIdHttpResultBroadcasterFrame* TIdHttpResultBroadcasterFrame::New(TComponent *owner)
 {
  return new TIdHttpResultBroadcasterFrame(owner);

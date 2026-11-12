@@ -67,6 +67,10 @@
 //#include <memory.h>
 #include <assert.h>
 #include <stdio.h>
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4458 4706)
+#endif
 #include <string.h>
 #include <stdlib.h>
 
@@ -3019,3 +3023,6 @@ unsigned char *XMLParserBase64Tool::decode(XMLCSTR data, int *outlen, XMLError *
     return (unsigned char*)buf;
 }
 
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif

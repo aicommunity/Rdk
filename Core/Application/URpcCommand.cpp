@@ -6,7 +6,7 @@
 namespace RDK {
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 URpcCommand::URpcCommand(void)
  : CmdId(0), ChannelIndex(-1), IsPrepared(false), IsDecoded(false), IsProcessed(false)
@@ -21,33 +21,33 @@ URpcCommand::~URpcCommand(void)
 // --------------------------
 
 // --------------------------
-// Методы доступа к данным
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РґР°РЅРЅС‹Рј
 // --------------------------
-/// Идентификатор получателя ответа
+/// РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РїРѕР»СѓС‡Р°С‚РµР»СЏ РѕС‚РІРµС‚Р°
 const std::string& URpcCommand::GetRecepientId(void) const
 {
  return RecepientId;
 }
 
-/// Идентификатор команды
+/// РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ РєРѕРјР°РЅРґС‹
 unsigned URpcCommand::GetCmdId(void) const
 {
  return CmdId;
 }
 
-/// Имя функции
+/// РРјСЏ С„СѓРЅРєС†РёРё
 const std::string& URpcCommand::GetFunctionName(void) const
 {
  return FunctionName;
 }
 
-/// Индекс канала
+/// РРЅРґРµРєСЃ РєР°РЅР°Р»Р°
 int URpcCommand::GetChannelIndex(void) const
 {
  return ChannelIndex;
 }
 
-/// Имя компонента
+/// РРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°
 const std::string& URpcCommand::GetComponentName(void) const
 {
  return ComponentName;
@@ -56,9 +56,9 @@ const std::string& URpcCommand::GetComponentName(void) const
 
 
 // --------------------------
-// Методы декодирования
+// РњРµС‚РѕРґС‹ РґРµРєРѕРґРёСЂРѕРІР°РЅРёСЏ
 // --------------------------
-/// Инициализирует процесс обработки новой команды
+/// РРЅРёС†РёР°Р»РёР·РёСЂСѓРµС‚ РїСЂРѕС†РµСЃСЃ РѕР±СЂР°Р±РѕС‚РєРё РЅРѕРІРѕР№ РєРѕРјР°РЅРґС‹
 void URpcCommand::PrepareProcess(void)
 {
  if(IsPrepared)
@@ -73,7 +73,7 @@ void URpcCommand::PrepareProcess(void)
  IsPrepared=true;
 }
 
-/// Осуществляет декодирование основных данных и заполняет соответствующие поля
+/// РћСЃСѓС‰РµСЃС‚РІР»СЏРµС‚ РґРµРєРѕРґРёСЂРѕРІР°РЅРёРµ РѕСЃРЅРѕРІРЅС‹С… РґР°РЅРЅС‹С… Рё Р·Р°РїРѕР»РЅСЏРµС‚ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёРµ РїРѕР»СЏ
 bool URpcCommand::DecodeBasicData(void)
 {
  if(IsDecoded)

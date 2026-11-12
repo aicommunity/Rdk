@@ -11,16 +11,16 @@ UComponentLinksWidget::UComponentLinksWidget(QWidget *parent, RDK::UApplication 
     ui(new Ui::UComponentLinksWidget)
 {
     ui->setupUi(this);
-    UpdateInterval = 0; //�� ��������� ������ �� ����� ����
-    setAccessibleName("UComponentLinksWidget"); // ��� ������ ��� ������������
+    UpdateInterval = 0; //пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+    setAccessibleName("UComponentLinksWidget"); // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     ui->treeWidgetInputs->header()->setVisible(true);
     ui->treeWidgetOutputs->header()->setVisible(true);
 
-    //������ ��������
+    //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     connect(ui->pushButtonCancel, SIGNAL(pressed()), this, SIGNAL(closeWindow()));
-    //�������� �����
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     connect(ui->pushButtonCreateLink, SIGNAL(pressed()), this, SLOT(createLink()));
-    //���������� �����
+    //пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
     connect(ui->pushButtonBreakLink, SIGNAL(pressed()), this, SLOT(breakLink()));
 
     connect(ui->treeWidgetOutputs, SIGNAL(itemSelectionChanged()), this, SLOT(output1ItemSelectionChanged()));
@@ -211,23 +211,23 @@ void UComponentLinksWidget::initWidget(QString singleComponentName)
     UpdateInterface(true);
 }
 
-void UComponentLinksWidget::initWidget(QString firstComponentName, QString secondComponentName)
+void UComponentLinksWidget::initWidget(QString firstComponentNameParam, QString secondComponentNameParam)
 {
-    this->firstComponentName = firstComponentName;
-    this->secondComponentName = secondComponentName;
-    ui->labelOutputsComponentName->setText(firstComponentName);
-    ui->labelInputsComponentName->setText(secondComponentName);
+    this->firstComponentName = firstComponentNameParam;
+    this->secondComponentName = secondComponentNameParam;
+    ui->labelOutputsComponentName->setText(firstComponentNameParam);
+    ui->labelInputsComponentName->setText(secondComponentNameParam);
     //connect(ui->pushButtonCreateLink, SIGNAL(pressed()), this, SLOT(createLink()));
     mode = 2;
     UpdateInterface(true);
 }
 
-void UComponentLinksWidget::initWidget(QString firstComponentName, QString secondComponentName, int dlg_mode)
+void UComponentLinksWidget::initWidget(QString firstComponentNameParam, QString secondComponentNameParam, int dlg_mode)
 {
-    this->firstComponentName = firstComponentName;
-    this->secondComponentName = secondComponentName;
-    ui->labelOutputsComponentName->setText(firstComponentName);
-    ui->labelInputsComponentName->setText(secondComponentName);
+    this->firstComponentName = firstComponentNameParam;
+    this->secondComponentName = secondComponentNameParam;
+    ui->labelOutputsComponentName->setText(firstComponentNameParam);
+    ui->labelInputsComponentName->setText(secondComponentNameParam);
     //connect(ui->pushButtonCreateLink, SIGNAL(pressed()), this, SLOT(switchLink()));
     mode = dlg_mode;
     UpdateInterface(true);
@@ -244,7 +244,7 @@ void UComponentLinksWidget::unInit()
     ui->treeWidgetLinks->clear();
 }
 
-///������������ ���������� �����
+///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
 void UComponentLinksWidget::switchLink()
 {
     QString output1Component, outputName1, output2Component, outputName2;
@@ -482,13 +482,17 @@ void UComponentLinksWidget::addParameters(QString componentName, QTreeWidgetItem
         RDK::UELockPtr<RDK::UContainer> model = RDK::GetModelLock(Core_GetSelectedChannelIndex());
         RDK::UEPtr<RDK::UContainer> cont = model->GetComponentL(componentName.toLocal8Bit().constData(), true);
         if(!cont) return;
-        RDK::UComponent::VariableMapT varMap = cont->GetPropertiesList();
+        const RDK::UComponent::VariableMapT& varMap = cont->GetPropertiesList();
+        const std::vector<RDK::NameT>& propOrder = cont->GetPropertiesOrder();
 
         bool is_new_outputs(false);
         bool is_new_inputs(false);
 
-        for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end(); ++i)
+        for(size_t oi = 0; oi < propOrder.size(); ++oi)
         {
+            RDK::UComponent::VariableMapCIteratorT i = varMap.find(propOrder[oi]);
+            if(i == varMap.end())
+             continue;
             if (i->second.CheckMask(ptPubInput))
             {
              std::string::size_type k=i->first.find("DataInput");
@@ -507,42 +511,16 @@ void UComponentLinksWidget::addParameters(QString componentName, QTreeWidgetItem
              break;
         }
 
-        for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end();)
+        for(size_t oi = 0; oi < propOrder.size(); ++oi)
         {
-            if (i->second.CheckMask(ptPubInput) && is_new_inputs)
-            {
-             std::string::size_type k=i->first.find("DataInput");
-             if(k == 0)
-             {
-              std::map<RDK::NameT,RDK::UVariable>::iterator j=i; ++j;
-              varMap.erase(i);
-              i=j;
-             }
-             else
-              ++i;
-            }
-            else
-            if (i->second.CheckMask(ptPubOutput) && is_new_outputs)
-            {
-             std::string::size_type k=i->first.find("DataOutput");
-             if(k == 0)
-             {
-              std::map<RDK::NameT,RDK::UVariable>::iterator j=i; ++j;
-              varMap.erase(i);
-              i=j;
-             }
-             else
-              ++i;
-            }
-            else
-            {
-             ++i;
-            }
-        }
+            RDK::UComponent::VariableMapCIteratorT i = varMap.find(propOrder[oi]);
+            if(i == varMap.end())
+             continue;
+            if (i->second.CheckMask(ptPubInput) && is_new_inputs && i->first.find("DataInput") == 0)
+             continue;
+            if (i->second.CheckMask(ptPubOutput) && is_new_outputs && i->first.find("DataOutput") == 0)
+             continue;
 
-
-        for(std::map<RDK::NameT,RDK::UVariable>::iterator i = varMap.begin(); i != varMap.end(); ++i)
-        {
             if (i->second.CheckMask(firstTypeMask))
             {
                 QTreeWidgetItem* firstChildPropertyItem = new QTreeWidgetItem(firstTreeWidgetItemFather);
@@ -566,11 +544,11 @@ void UComponentLinksWidget::addParameters(QString componentName, QTreeWidgetItem
     }
     catch (RDK::UException &exception)
     {
-        Log_LogMessage(exception.GetType(), (std::string("GUI-UComponentsLinks Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(exception.GetType(), (std::string("GUI-UComponentsLinks Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     catch (std::exception &exception)
     {
-        Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-UComponentsLinks Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-UComponentsLinks Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
 }
 
@@ -606,11 +584,11 @@ void UComponentLinksWidget::addLinks(QString componentName)
     }
     catch (RDK::UException &exception)
     {
-        Log_LogMessage(exception.GetType(), (std::string("GUI-UComponentsLinks Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(exception.GetType(), (std::string("GUI-UComponentsLinks Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
     catch (std::exception &exception)
     {
-        Log_LogMessage(RDK_EX_ERROR, (std::string("GUI-UComponentsLinks Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
+        RDK::Logging::SystemLog(RDK_EX_ERROR, (std::string("GUI-UComponentsLinks Exception: (Name=")+std::string(accessibleName().toLocal8Bit().constData())+std::string(") ")+exception.what()).c_str());
     }
 }
 

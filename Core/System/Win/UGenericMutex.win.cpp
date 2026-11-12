@@ -11,24 +11,26 @@
 class RDK_LIB_TYPE UGenericMutexWin: public UGenericMutex
 {
 private:
-void* m_UnlockEvent;
-
-DWORD Pid;
+SRWLOCK m_lock;
+CONDITION_VARIABLE m_condition;
+#ifdef RDK_MUTEX_DEADLOCK_DEBUG
+DWORD m_exclusive_owner; // ID потока, владеющего exclusive блокировкой
+int m_shared_count; // Количество shared блокировок (для отладки)
+#endif
 
 public:
 UGenericMutexWin();
-virtual ~UGenericMutexWin();
+virtual ~UGenericMutexWin() noexcept;
 
 virtual bool shared_lock(unsigned timeout=RDK_MUTEX_TIMEOUT);
-virtual bool shared_unlock(void);
+virtual bool shared_unlock() noexcept;
 
 virtual bool exclusive_lock(unsigned timeout=RDK_MUTEX_TIMEOUT);
-virtual bool exclusive_unlock(void);
+virtual bool exclusive_unlock() noexcept;
 
 private:
-UGenericMutexWin(const UGenericMutexWin &copy);
-UGenericMutexWin& operator = (const UGenericMutexWin &copy);
-
+UGenericMutexWin(const UGenericMutexWin &copy) = delete;
+UGenericMutexWin& operator = (const UGenericMutexWin &copy) = delete;
 };
 
 class RDK_LIB_TYPE UGenericEventWin: public UGenericEvent
@@ -50,194 +52,352 @@ UGenericEventWin(const UGenericEventWin &copy);
 UGenericEventWin& operator = (const UGenericEventWin &copy);
 };
 
-UGenericMutexWin::UGenericMutexWin()
- : Pid(0)
+UGenericMutexWin::UGenericMutexWin() noexcept
+#ifdef RDK_MUTEX_DEADLOCK_DEBUG
+ : m_exclusive_owner(0), m_shared_count(0)
+#endif
 {
- m_UnlockEvent = CreateMutex(0, FALSE, 0);
+ InitializeSRWLock(&m_lock);
+ InitializeConditionVariable(&m_condition);
 }
 
-UGenericMutexWin::~UGenericMutexWin()
+UGenericMutexWin::~UGenericMutexWin() noexcept
 {
- BOOL res=CloseHandle(m_UnlockEvent);
-// if(!res)
-//  throw 1; // TODO: !!!
+ // SRWLOCK и CONDITION_VARIABLE не требуют явного освобождения
+ // Проверка на заблокированный мьютекс невозможна без дополнительной логики
 }
 
 bool UGenericMutexWin::shared_lock(unsigned timeout)
 {
 using namespace std;
- if(!m_UnlockEvent)
-  return false;
-
 #ifdef RDK_MUTEX_DEADLOCK_DEBUG
- DWORD res=WaitForSingleObject(m_UnlockEvent, 60000);
-#else
- DWORD res=WaitForSingleObject(m_UnlockEvent, (timeout==RDK_MUTEX_TIMEOUT)?INFINITE:timeout);
+ DWORD current_pid = GetCurrentThreadId();
 #endif
- if (res == WAIT_OBJECT_0)
+
+ if(timeout == RDK_MUTEX_TIMEOUT)
  {
-  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
-  Pid=GetCurrentThreadId();
+  AcquireSRWLockShared(&m_lock);
+#ifdef RDK_MUTEX_DEADLOCK_DEBUG
+  m_shared_count++;
   if(DebugId>=0)
   {
    fstream file((RDK::sntoa(DebugId,2)+".lock.txt").c_str(),ios::out | ios::app);
    if(file)
    {
-	std::map<int,TUThreadInfo>::const_iterator I=GlobalThreadInfoMap.find(Pid);
+	std::map<int,TUThreadInfo>::const_iterator I=GlobalThreadInfoMap.find(current_pid);
 	string name;
 	if(I != GlobalThreadInfoMap.end())
 	 name=I->second.Name;
-	file<<Pid<<" "<<name<<": lock"<<endl;
+	file<<current_pid<<" "<<name<<": shared_lock"<<endl;
 	file.flush();
    }
   }
-  #endif
+#endif
   return true;
  }
  else
  {
-  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
-  Pid=GetCurrentThreadId();
+  // Для таймаута используем TryAcquireSRWLockShared с polling
+  DWORD start_time = GetTickCount();
+  DWORD elapsed = 0;
+  bool acquired = false;
+
+  while(elapsed < timeout)
+  {
+   if(TryAcquireSRWLockShared(&m_lock))
+   {
+    acquired = true;
+    break;
+   }
+   
+   // Небольшая задержка перед следующей попыткой
+   DWORD remaining = timeout - elapsed;
+   DWORD sleep_time = (remaining < 10) ? remaining : 10;
+   if(sleep_time > 0)
+   {
+    Sleep(sleep_time);
+   }
+   
+   elapsed = GetTickCount() - start_time;
+   // Защита от переполнения GetTickCount
+   if(elapsed > timeout)
+    break;
+  }
+
+  if(!acquired)
+  {
+#ifdef RDK_MUTEX_DEADLOCK_DEBUG
+   if(DebugId>=0)
+   {
+    fstream file((RDK::sntoa(DebugId,2)+".lock.txt").c_str(),ios::out | ios::app);
+    if(file)
+    {
+	 std::map<int,TUThreadInfo>::const_iterator I=GlobalThreadInfoMap.find(current_pid);
+	 string name;
+	 if(I != GlobalThreadInfoMap.end())
+	  name=I->second.Name;
+	 file<<current_pid<<" "<<name<<": shared_lock timeout"<<endl;
+	 file.flush();
+    }
+   }
+#endif
+   return false;
+  }
+
+#ifdef RDK_MUTEX_DEADLOCK_DEBUG
+  m_shared_count++;
   if(DebugId>=0)
   {
    fstream file((RDK::sntoa(DebugId,2)+".lock.txt").c_str(),ios::out | ios::app);
    if(file)
    {
-	std::map<int,TUThreadInfo>::const_iterator I=GlobalThreadInfoMap.find(Pid);
+	std::map<int,TUThreadInfo>::const_iterator I=GlobalThreadInfoMap.find(current_pid);
 	string name;
 	if(I != GlobalThreadInfoMap.end())
 	 name=I->second.Name;
-	file<<Pid<<" "<<name<<": deadlock. res="<<RDK::sntoa(res)<<endl;
+	file<<current_pid<<" "<<name<<": shared_lock"<<endl;
 	file.flush();
-	file.close();
    }
   }
-  #endif
-  return false;
+#endif
+  return true;
  }
- return false;
 }
 
-bool UGenericMutexWin::shared_unlock(void)
+bool UGenericMutexWin::shared_unlock() noexcept
 {
 using namespace std;
- if(!m_UnlockEvent)
-  return true;
-
- #ifdef RDK_MUTEX_DEADLOCK_DEBUG
+#ifdef RDK_MUTEX_DEADLOCK_DEBUG
+ DWORD current_pid = GetCurrentThreadId();
+ if(m_shared_count <= 0)
+ {
+  // Попытка разблокировать незаблокированный мьютекс
   if(DebugId>=0)
   {
    fstream file((RDK::sntoa(DebugId,2)+".lock.txt").c_str(),ios::out | ios::app);
    if(file)
    {
-	std::map<int,TUThreadInfo>::const_iterator I=GlobalThreadInfoMap.find(Pid);
+	std::map<int,TUThreadInfo>::const_iterator I=GlobalThreadInfoMap.find(current_pid);
 	string name;
 	if(I != GlobalThreadInfoMap.end())
 	 name=I->second.Name;
-	file<<Pid<<" "<<name<<": unlock"<<endl;
+	file<<current_pid<<" "<<name<<": shared_unlock failed - not locked"<<endl;
 	file.flush();
    }
   }
- #endif
- BOOL res=ReleaseMutex(m_UnlockEvent);
-
- #ifdef RDK_MUTEX_DEADLOCK_DEBUG
- DWORD error=GetLastError();
- #endif
- if(res != TRUE)
- {
-  #ifdef RDK_MUTEX_DEADLOCK_DEBUG
-  if(DebugId>=0)
-  {
-   fstream file((RDK::sntoa(DebugId,2)+".lock.txt").c_str(),ios::out | ios::app);
-   if(file)
-   {
-	std::map<int,TUThreadInfo>::const_iterator I=GlobalThreadInfoMap.find(Pid);
-	string old_name, new_name;
-	if(I != GlobalThreadInfoMap.end())
-	 old_name=I->second.Name;
-
-	int new_id=GetCurrentThreadId();
-	I=GlobalThreadInfoMap.find(new_id);
-	if(I != GlobalThreadInfoMap.end())
-	 new_name=I->second.Name;
-
-	file<<"fail unlock old PID="<<RDK::sntoa(Pid)<<" "<<old_name<<" curr Pid="<<RDK::sntoa(new_id)<<" "<<new_name<<" Error="<<RDK::sntoa(error)<<endl;
-	file.flush();
-	file.close();
-   }
-  }
-  #endif
   return false;
  }
- #ifdef RDK_MUTEX_DEADLOCK_DEBUG
- Pid=0;
- #endif
-
+ m_shared_count--;
+ if(DebugId>=0)
+ {
+  fstream file((RDK::sntoa(DebugId,2)+".lock.txt").c_str(),ios::out | ios::app);
+  if(file)
+  {
+   std::map<int,TUThreadInfo>::const_iterator I=GlobalThreadInfoMap.find(current_pid);
+   string name;
+   if(I != GlobalThreadInfoMap.end())
+	name=I->second.Name;
+   file<<current_pid<<" "<<name<<": shared_unlock"<<endl;
+   file.flush();
+  }
+ }
+#endif
+ ReleaseSRWLockShared(&m_lock);
+ WakeAllConditionVariable(&m_condition);
  return true;
 }
 
 bool UGenericMutexWin::exclusive_lock(unsigned timeout)
 {
- return shared_lock(timeout);
+using namespace std;
+#ifdef RDK_MUTEX_DEADLOCK_DEBUG
+ DWORD current_pid = GetCurrentThreadId();
+#endif
+
+ if(timeout == RDK_MUTEX_TIMEOUT)
+ {
+  AcquireSRWLockExclusive(&m_lock);
+#ifdef RDK_MUTEX_DEADLOCK_DEBUG
+  m_exclusive_owner = current_pid;
+  if(DebugId>=0)
+  {
+   fstream file((RDK::sntoa(DebugId,2)+".lock.txt").c_str(),ios::out | ios::app);
+   if(file)
+   {
+	std::map<int,TUThreadInfo>::const_iterator I=GlobalThreadInfoMap.find(current_pid);
+	string name;
+	if(I != GlobalThreadInfoMap.end())
+	 name=I->second.Name;
+	file<<current_pid<<" "<<name<<": exclusive_lock"<<endl;
+	file.flush();
+   }
+  }
+#endif
+  return true;
+ }
+ else
+ {
+  // Для таймаута используем TryAcquireSRWLockExclusive с polling
+  DWORD start_time = GetTickCount();
+  DWORD elapsed = 0;
+  bool acquired = false;
+
+  while(elapsed < timeout)
+  {
+   if(TryAcquireSRWLockExclusive(&m_lock))
+   {
+    acquired = true;
+    break;
+   }
+   
+   // Небольшая задержка перед следующей попыткой
+   DWORD remaining = timeout - elapsed;
+   DWORD sleep_time = (remaining < 10) ? remaining : 10;
+   if(sleep_time > 0)
+   {
+    Sleep(sleep_time);
+   }
+   
+   elapsed = GetTickCount() - start_time;
+   // Защита от переполнения GetTickCount
+   if(elapsed > timeout)
+    break;
+  }
+
+  if(!acquired)
+  {
+#ifdef RDK_MUTEX_DEADLOCK_DEBUG
+   if(DebugId>=0)
+   {
+    fstream file((RDK::sntoa(DebugId,2)+".lock.txt").c_str(),ios::out | ios::app);
+    if(file)
+    {
+	 std::map<int,TUThreadInfo>::const_iterator I=GlobalThreadInfoMap.find(current_pid);
+	 string name;
+	 if(I != GlobalThreadInfoMap.end())
+	  name=I->second.Name;
+	 file<<current_pid<<" "<<name<<": exclusive_lock timeout"<<endl;
+	 file.flush();
+    }
+   }
+#endif
+   return false;
+  }
+
+#ifdef RDK_MUTEX_DEADLOCK_DEBUG
+  m_exclusive_owner = current_pid;
+  if(DebugId>=0)
+  {
+   fstream file((RDK::sntoa(DebugId,2)+".lock.txt").c_str(),ios::out | ios::app);
+   if(file)
+   {
+	std::map<int,TUThreadInfo>::const_iterator I=GlobalThreadInfoMap.find(current_pid);
+	string name;
+	if(I != GlobalThreadInfoMap.end())
+	 name=I->second.Name;
+	file<<current_pid<<" "<<name<<": exclusive_lock"<<endl;
+	file.flush();
+   }
+  }
+#endif
+  return true;
+ }
 }
 
-bool UGenericMutexWin::exclusive_unlock()
+bool UGenericMutexWin::exclusive_unlock() noexcept
 {
- return shared_unlock();
-}
-
-UGenericMutexWin::UGenericMutexWin(const UGenericMutexWin &copy)
-{
-
-}
-
-UGenericMutexWin& UGenericMutexWin::operator = (const UGenericMutexWin &copy)
-{
- return *this;
+using namespace std;
+#ifdef RDK_MUTEX_DEADLOCK_DEBUG
+ DWORD current_pid = GetCurrentThreadId();
+ if(m_exclusive_owner != current_pid && m_exclusive_owner != 0)
+ {
+  // Попытка разблокировать мьютекс, заблокированный другим потоком
+  if(DebugId>=0)
+  {
+   fstream file((RDK::sntoa(DebugId,2)+".lock.txt").c_str(),ios::out | ios::app);
+   if(file)
+   {
+	std::map<int,TUThreadInfo>::const_iterator I=GlobalThreadInfoMap.find(current_pid);
+	string name;
+	if(I != GlobalThreadInfoMap.end())
+	 name=I->second.Name;
+	I=GlobalThreadInfoMap.find(m_exclusive_owner);
+	string owner_name;
+	if(I != GlobalThreadInfoMap.end())
+	 owner_name=I->second.Name;
+	file<<current_pid<<" "<<name<<": exclusive_unlock failed - owned by "<<m_exclusive_owner<<" "<<owner_name<<endl;
+	file.flush();
+   }
+  }
+  return false;
+ }
+ m_exclusive_owner = 0;
+ if(DebugId>=0)
+ {
+  fstream file((RDK::sntoa(DebugId,2)+".lock.txt").c_str(),ios::out | ios::app);
+  if(file)
+  {
+   std::map<int,TUThreadInfo>::const_iterator I=GlobalThreadInfoMap.find(current_pid);
+   string name;
+   if(I != GlobalThreadInfoMap.end())
+	name=I->second.Name;
+   file<<current_pid<<" "<<name<<": exclusive_unlock"<<endl;
+   file.flush();
+  }
+ }
+#endif
+ ReleaseSRWLockExclusive(&m_lock);
+ WakeAllConditionVariable(&m_condition);
+ return true;
 }
 
 
 // ---------------------------------------------------------------------------
-UGenericEventWin::UGenericEventWin()
+UGenericEventWin::UGenericEventWin() noexcept
 {
- Event=CreateEvent(0,TRUE,TRUE,0);
+ Event = CreateEvent(nullptr, TRUE, TRUE, nullptr);
+ if(!Event)
+ {
+  // В случае ошибки Event будет nullptr, что будет проверяться в методах
+ }
 }
 
-UGenericEventWin::~UGenericEventWin()
+UGenericEventWin::~UGenericEventWin() noexcept
 {
  if(Event)
+ {
   CloseHandle(Event);
+  Event = nullptr;
+ }
 }
 
-bool UGenericEventWin::set(void)
+bool UGenericEventWin::set() noexcept
 {
- SetEvent(Event);
- return true;
+ if(!Event)
+  return false;
+ return SetEvent(Event) != FALSE;
 }
 
-bool UGenericEventWin::reset(void)
+bool UGenericEventWin::reset() noexcept
 {
- ResetEvent(Event);
- return true;
+ if(!Event)
+  return false;
+ return ResetEvent(Event) != FALSE;
 }
 
 bool UGenericEventWin::wait(unsigned wait_time)
 {
- if(WaitForSingleObject(Event,wait_time) == WAIT_TIMEOUT)
+ if(!Event)
   return false;
- return true;
+ DWORD result = WaitForSingleObject(Event, wait_time);
+ if(result == WAIT_TIMEOUT)
+  return false;
+ return result == WAIT_OBJECT_0;
 }
 
-UGenericEventWin::UGenericEventWin(const UGenericEventWin &copy)
-{
+UGenericEventWin::UGenericEventWin(const UGenericEventWin &copy) = delete;
 
-}
-
-UGenericEventWin& UGenericEventWin::operator = (const UGenericEventWin &copy)
-{
- return *this;
-}
+UGenericEventWin& UGenericEventWin::operator = (const UGenericEventWin &copy) = delete;
 
 // ---------------------------------------------------------------------------
 UGenericMutex* UCreateMutex(void)
@@ -264,3 +424,4 @@ void UDestroyEvent(UGenericEvent* event)
 
 
 #endif
+

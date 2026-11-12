@@ -15,7 +15,7 @@ __fastcall TIdTcpResultBroadcasterForm::TIdTcpResultBroadcasterForm(TComponent* 
 {
 }
 
-/// Функция добавления метаданных в очередь на отправку в соответствии с настройками
+/// Р¤СѓРЅРєС†РёСЏ РґРѕР±Р°РІР»РµРЅРёСЏ РјРµС‚Р°РґР°РЅРЅС‹С… РІ РѕС‡РµСЂРµРґСЊ РЅР° РѕС‚РїСЂР°РІРєСѓ РІ СЃРѕРѕС‚РІРµС‚СЃС‚РІРёРё СЃ РЅР°СЃС‚СЂРѕР№РєР°РјРё
 bool TIdTcpResultBroadcasterForm::AddMetadata(int channel_index, double time_stamp)
 {
  bool res=true;
@@ -26,7 +26,7 @@ bool TIdTcpResultBroadcasterForm::AddMetadata(int channel_index, double time_sta
  return res;
 }
 
-/// Инициирует процедуру отправки метаданных
+/// РРЅРёС†РёРёСЂСѓРµС‚ РїСЂРѕС†РµРґСѓСЂСѓ РѕС‚РїСЂР°РІРєРё РјРµС‚Р°РґР°РЅРЅС‹С…
 bool TIdTcpResultBroadcasterForm::SendMetadata(void)
 {
  for(size_t i=0;i<Broadcasters.size();i++)
@@ -36,24 +36,24 @@ bool TIdTcpResultBroadcasterForm::SendMetadata(void)
 }
 
 
-// Метод, вызываемый перед шагом расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ С€Р°РіРѕРј СЂР°СЃС‡РµС‚Р°
 void TIdTcpResultBroadcasterForm::ABeforeCalculate(void)
 {
 }
 
-// Обновляет интерфейс
+// РћР±РЅРѕРІР»СЏРµС‚ РёРЅС‚РµСЂС„РµР№СЃ
 void TIdTcpResultBroadcasterForm::AUpdateInterface(void)
 {
  BroadcastEnabledCheckBox->Checked=GetBroadcastEnableFlag();
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TIdTcpResultBroadcasterForm::AASaveParameters(RDK::USerStorageXML &xml)
 {
  xml.WriteInteger("NumBroadcasters",GetNumBroadcasters());
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TIdTcpResultBroadcasterForm::AALoadParameters(RDK::USerStorageXML &xml)
 {
  int num=xml.ReadInteger("NumBroadcasters",1);
@@ -63,19 +63,19 @@ void TIdTcpResultBroadcasterForm::AALoadParameters(RDK::USerStorageXML &xml)
  UpdateInterface();
 }
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 TIdTcpResultBroadcasterForm* TIdTcpResultBroadcasterForm::New(TComponent *owner)
 {
  return new TIdTcpResultBroadcasterForm(owner);
 }
 
-// Число вещателей
+// Р§РёСЃР»Рѕ РІРµС‰Р°С‚РµР»РµР№
 int TIdTcpResultBroadcasterForm::GetNumBroadcasters(void) const
 {
  return PageControl->PageCount;
 }
 
-// Добавляет новый вещатель
+// Р”РѕР±Р°РІР»СЏРµС‚ РЅРѕРІС‹Р№ РІРµС‰Р°С‚РµР»СЊ
 void TIdTcpResultBroadcasterForm::AddBroadcaster(void)
 {
  TTabSheet *sheet=new TTabSheet(PageControl);
@@ -94,7 +94,7 @@ void TIdTcpResultBroadcasterForm::AddBroadcaster(void)
  PageControl->Pages[index]->Caption=IntToStr(int(index));
 }
 
-// Удаляет вещатель
+// РЈРґР°Р»СЏРµС‚ РІРµС‰Р°С‚РµР»СЊ
 void TIdTcpResultBroadcasterForm::DelBroadcaster(int index)
 {
  if(index<0 || index >=int(Broadcasters.size()))
@@ -106,7 +106,7 @@ void TIdTcpResultBroadcasterForm::DelBroadcaster(int index)
  delete PageControl->Pages[index];
 }
 
-// Удаляет все вещатели
+// РЈРґР°Р»СЏРµС‚ РІСЃРµ РІРµС‰Р°С‚РµР»Рё
 void TIdTcpResultBroadcasterForm::ClearBroadcasters(void)
 {
  for(size_t i=0;i<Broadcasters.size();i++)
@@ -119,13 +119,13 @@ void TIdTcpResultBroadcasterForm::ClearBroadcasters(void)
  Broadcasters.clear();
 }
 
-// Возвращает индекс текущего активного (выбранного) вещателя
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅРґРµРєСЃ С‚РµРєСѓС‰РµРіРѕ Р°РєС‚РёРІРЅРѕРіРѕ (РІС‹Р±СЂР°РЅРЅРѕРіРѕ) РІРµС‰Р°С‚РµР»СЏ
 int TIdTcpResultBroadcasterForm::GetActiveBroadcaster(void) const
 {
  return PageControl->ActivePageIndex;
 }
 
-// Возвращает фрейм вещателя
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С„СЂРµР№Рј РІРµС‰Р°С‚РµР»СЏ
 TIdTcpResultBroadcasterFrame* TIdTcpResultBroadcasterForm::GetBroadcasterFrame(int index)
 {
  if(index<0 || index >=int(Broadcasters.size()))
@@ -134,7 +134,7 @@ TIdTcpResultBroadcasterFrame* TIdTcpResultBroadcasterForm::GetBroadcasterFrame(i
  return Broadcasters[index];
 }
 
-// Возвращает индекс фрейма вещателя
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅРґРµРєСЃ С„СЂРµР№РјР° РІРµС‰Р°С‚РµР»СЏ
 int TIdTcpResultBroadcasterForm::GetBroadcasterFrameIndex(TIdTcpResultBroadcasterFrame* frame)
 {
  for(int i=0;i<GetNumBroadcasters();i++)
@@ -144,7 +144,7 @@ int TIdTcpResultBroadcasterForm::GetBroadcasterFrameIndex(TIdTcpResultBroadcaste
  return -1;
 }
 
-// Возвращает фрейм активного (выбранного) вещателя
+// Р’РѕР·РІСЂР°С‰Р°РµС‚ С„СЂРµР№Рј Р°РєС‚РёРІРЅРѕРіРѕ (РІС‹Р±СЂР°РЅРЅРѕРіРѕ) РІРµС‰Р°С‚РµР»СЏ
 TIdTcpResultBroadcasterFrame* TIdTcpResultBroadcasterForm::GetActiveBroadcasterFrame(void)
 {
  if(GetActiveBroadcaster()>=0)
@@ -153,7 +153,7 @@ TIdTcpResultBroadcasterFrame* TIdTcpResultBroadcasterForm::GetActiveBroadcasterF
  return 0;
 }
 
-/// Возвращает фрейм вещателя по заданному IP и порту
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ С„СЂРµР№Рј РІРµС‰Р°С‚РµР»СЏ РїРѕ Р·Р°РґР°РЅРЅРѕРјСѓ IP Рё РїРѕСЂС‚Сѓ
 TIdTcpResultBroadcasterFrame* TIdTcpResultBroadcasterForm::FindBroadcasterFrame(const std::string &address, int port)
 {
  for(int i=0;i<GetNumBroadcasters();i++)
@@ -168,7 +168,7 @@ TIdTcpResultBroadcasterFrame* TIdTcpResultBroadcasterForm::FindBroadcasterFrame(
 
 
 
-// Подключает вещатель, или все, если index == -1
+// РџРѕРґРєР»СЋС‡Р°РµС‚ РІРµС‰Р°С‚РµР»СЊ, РёР»Рё РІСЃРµ, РµСЃР»Рё index == -1
 void TIdTcpResultBroadcasterForm::Connect(int index)
 {
  if(index>=0 && index<GetNumBroadcasters())
@@ -180,7 +180,7 @@ void TIdTcpResultBroadcasterForm::Connect(int index)
  }
 }
 
-// Отключает вещатель, или все, если index == -1
+// РћС‚РєР»СЋС‡Р°РµС‚ РІРµС‰Р°С‚РµР»СЊ, РёР»Рё РІСЃРµ, РµСЃР»Рё index == -1
 void TIdTcpResultBroadcasterForm::Disconnect(int index)
 {
  if(index>=0 && index<GetNumBroadcasters())
@@ -192,7 +192,7 @@ void TIdTcpResultBroadcasterForm::Disconnect(int index)
  }
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TIdTcpResultBroadcasterForm::AClearInterface(void)
 {
  ClearBroadcasters();

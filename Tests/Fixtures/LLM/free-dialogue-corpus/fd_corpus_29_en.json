@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "fd_corpus_29_en",
+  "user_text": "can I rollback changes?",
+  "lang": "en",
+  "tags": [
+    "free_dialogue",
+    "en"
+  ],
+  "expect": {
+    "orchestrator_ok": true,
+    "no_hard_task_path_fail": true
+  }
+}

@@ -1,6 +1,8 @@
 #ifndef UDLL_LOADER_GCC_CPP
 #define UDLL_LOADER_GCC_CPP
 
+#ifndef _WIN32
+
 #include "../UDllLoader.h"
 #include <dlfcn.h>
 #include <string>
@@ -20,8 +22,8 @@ public:
 	virtual bool Load(const std::string &dll_name);
     virtual bool isLoaded();
 
-    /// Уменьшит счетчик подключения библиотеки, если счетчик станет нулём - выгрузит библиотеку,
-    /// не выгрузит библиотеку, пока на все Load не вызовется UnLoad
+    /// РЈРјРµРЅСЊС€РёС‚ СЃС‡РµС‚С‡РёРє РїРѕРґРєР»СЋС‡РµРЅРёСЏ Р±РёР±Р»РёРѕС‚РµРєРё, РµСЃР»Рё СЃС‡РµС‚С‡РёРє СЃС‚Р°РЅРµС‚ РЅСѓР»С‘Рј - РІС‹РіСЂСѓР·РёС‚ Р±РёР±Р»РёРѕС‚РµРєСѓ,
+    /// РЅРµ РІС‹РіСЂСѓР·РёС‚ Р±РёР±Р»РёРѕС‚РµРєСѓ, РїРѕРєР° РЅР° РІСЃРµ Load РЅРµ РІС‹Р·РѕРІРµС‚СЃСЏ UnLoad
 	virtual bool UnLoad(void);
 	virtual void * Resolve(const std::string &symbol);
     virtual std::string GetErrorString();
@@ -91,4 +93,6 @@ std::string UDllLoaderGcc::GetErrorString()
     return dlerror();
 }
 
-#endif
+#endif // _WIN32
+
+#endif // UDLL_LOADER_GCC_CPP

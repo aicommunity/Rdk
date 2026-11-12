@@ -50,7 +50,7 @@ UImagesWidget::UImagesWidget(QWidget *parent, RDK::UApplication* app) :
     rowsCounter = 1;
     addSingleItem(0, 0);
 
-    //главное контекстное меню
+    //РіР»Р°РІРЅРѕРµ РєРѕРЅС‚РµРєСЃС‚РЅРѕРµ РјРµРЅСЋ
     QAction *actionSeparator1 = new QAction(this);
     actionSeparator1->setSeparator(true);
     QAction *actionSeparator2 = new QAction(this);
@@ -81,7 +81,7 @@ UImagesWidget::UImagesWidget(QWidget *parent, RDK::UApplication* app) :
     connect(ui->actionDeleteColumn, SIGNAL(triggered(bool)), this, SLOT(actionDeleteColumn()));
     connect(ui->actionDeleteRow, SIGNAL(triggered(bool)), this, SLOT(actionDeleteRow()));
 
-    //связывание виджетов нижней панельки
+    //СЃРІСЏР·С‹РІР°РЅРёРµ РІРёРґР¶РµС‚РѕРІ РЅРёР¶РЅРµР№ РїР°РЅРµР»СЊРєРё
     connect(ui->radioButtonOriginalSize, SIGNAL(clicked(bool)), this, SLOT(setOriginalSize()));
     connect(ui->radioButtonTiledSize, SIGNAL(clicked(bool)), this, SLOT(setTiledSize()));
     connect(ui->radioButtonPropSize, SIGNAL(clicked(bool)), this, SLOT(setPropSize()));
@@ -89,7 +89,7 @@ UImagesWidget::UImagesWidget(QWidget *parent, RDK::UApplication* app) :
     connect(ui->checkBoxIndChannels, SIGNAL(toggled(bool)), this, SLOT(setIndChannels(bool)));
 
 
-    //создание первого окошка
+    //СЃРѕР·РґР°РЅРёРµ РїРµСЂРІРѕРіРѕ РѕРєРѕС€РєР°
     /*USingleImageWidget *item = addSingleItem(0, 0);
     item->setSelected(true);
     selectedImage = item;*/
@@ -108,7 +108,7 @@ void UImagesWidget::AUpdateInterface()
 
 }
 
-///Задает размещение окошек в окне @param layoutW на @param layoutH
+///Р—Р°РґР°РµС‚ СЂР°Р·РјРµС‰РµРЅРёРµ РѕРєРѕС€РµРє РІ РѕРєРЅРµ @param layoutW РЅР° @param layoutH
 void UImagesWidget::SetImageLayout(int layoutW, int layoutH)
 {
     clearImagesWidget();
@@ -123,7 +123,7 @@ void UImagesWidget::SetImageLayout(int layoutW, int layoutH)
     }
 }
 
-/// Задать параметры захвата для текущего окна - номер канала, имя компонента, свойство
+/// Р—Р°РґР°С‚СЊ РїР°СЂР°РјРµС‚СЂС‹ Р·Р°С…РІР°С‚Р° РґР»СЏ С‚РµРєСѓС‰РµРіРѕ РѕРєРЅР° - РЅРѕРјРµСЂ РєР°РЅР°Р»Р°, РёРјСЏ РєРѕРјРїРѕРЅРµРЅС‚Р°, СЃРІРѕР№СЃС‚РІРѕ
 void UImagesWidget::selectCapture(const int channelNum, QString componentLongName, QString propertyName)
 {
     USingleImageWidget *item = selectedImage;
@@ -255,7 +255,7 @@ void UImagesWidget::setDrawRects(bool value, int imageNum)
   FORWARD_TO_USINGLEIMAGE(ui->gridLayoutImages, selectedImage, imageNum, setDrawRects(value))
 }
 
-///Извлекает настоящую ширину изображения
+///РР·РІР»РµРєР°РµС‚ РЅР°СЃС‚РѕСЏС‰СѓСЋ С€РёСЂРёРЅСѓ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 int UImagesWidget::GetImageWidth(int imageNum)
 {
     if (imageNum == -1 && selectedImage)
@@ -275,7 +275,7 @@ int UImagesWidget::GetImageWidth(int imageNum)
     }
  return 0;
 }
-///Извлекает настоящую высоту изображения
+///РР·РІР»РµРєР°РµС‚ РЅР°СЃС‚РѕСЏС‰СѓСЋ РІС‹СЃРѕС‚Сѓ РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
 int UImagesWidget::GetImageHeight(int imageNum)
 {
     if (imageNum == -1 && selectedImage)
@@ -349,8 +349,8 @@ void UImagesWidget::ALoadParameters(RDK::USerStorageXML &xml)
       break;
   }
 
-  //окошки images
-  //зачистка
+  //РѕРєРѕС€РєРё images
+  //Р·Р°С‡РёСЃС‚РєР°
   clearImagesWidget();
 
   columnsCounter = xml.ReadInteger("columnsCounter",0);
@@ -362,7 +362,7 @@ void UImagesWidget::ALoadParameters(RDK::USerStorageXML &xml)
       addSingleItem(0, 0);
   }
 
-  //заполнение
+  //Р·Р°РїРѕР»РЅРµРЅРёРµ
   if(xml.SelectNode("ImgData"))
   {
    int index=0;
@@ -383,7 +383,7 @@ void UImagesWidget::ALoadParameters(RDK::USerStorageXML &xml)
   }
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void UImagesWidget::AClearInterface(void)
 {
   clearImagesWidget();

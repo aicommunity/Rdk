@@ -20,7 +20,7 @@ private:	// User declarations
 public:		// User declarations
 	__fastcall TUComponentsPerformanceForm(TComponent* Owner);
 
-// Создание копии этого компонента
+// РЎРѕР·РґР°РЅРёРµ РєРѕРїРёРё СЌС‚РѕРіРѕ РєРѕРјРїРѕРЅРµРЅС‚Р°
 virtual TUComponentsPerformanceForm* New(TComponent *owner=0);
 };
 //---------------------------------------------------------------------------

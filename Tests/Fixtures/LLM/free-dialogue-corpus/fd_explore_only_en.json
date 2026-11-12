@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "fd_explore_only_en",
+  "user_text": "just look at the diagram",
+  "lang": "en",
+  "tags": [
+    "free_dialogue",
+    "en",
+    "edge"
+  ],
+  "expect": {
+    "orchestrator_ok": true,
+    "no_hard_task_path_fail": true,
+    "intent_hint": "query"
+  }
+}

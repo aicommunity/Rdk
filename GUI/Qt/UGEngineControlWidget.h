@@ -1,16 +1,30 @@
 #ifndef UGENGINECONTROLWIDGET_H
 #define UGENGINECONTROLWIDGET_H
 
+#include <QAction>
 #include <QMainWindow>
 #include <QSettings>
 #include <QMdiSubWindow>
+#include <QKeyEvent>
+#include <QString>
+#include <QKeySequence>
+#include <QVector>
+#include <QHash>
+#include <QPointer>
+#include <QSet>
+#include <QPair>
+#include <QPoint>
+#include <QToolBar>
 
 #include <rdk_application.h>
 
+#include <functional>
+
 #include "UVisualControllerMainWidget.h"
 #include "UComponentsListWidget.h"
-#include "UDrawEngineWidget.h"
+#include "UModernDiagramContainerWidget.h"
 #include "UComponentLinksWidget.h"
+#include "UBreadcrumbsWidget.h"
 #include "UImagesWidget.h"
 #include "UCalculationChannelsWidget.h"
 #include "UEngineControlQt.h"
@@ -20,27 +34,38 @@
 #include "UCreateTestWidget.h"
 #include "UStatusPanel.h"
 #include "USettingsReaderWidget.h"
-#include "UGraphWidget.h"
 #include "UTableInfo.h"
-#include "UWatchFormWidget.h"
 #include "UWatch.h"
 #include "UClDescEditor.h"
 #include "UTcpServerControlWidget.h"
 //////////////////////////
 #include "UCurlFtpClientTestWidget.h"
 #include "UAboutDialog.h"
+#include "UHelpWindow.h"
+#include "UMarkdownDocWindow.h"
+#include "UClassDescriptionDisplay.h"
+#include "UProjectDescriptionWindow.h"
+#include "UComponentGuiService.h"
+#include "UComponentGuiContext.h"
+#include "UComponentGuiTabHostWidget.h"
+
+class UGuiShellController;
+class QMenu;
 
 #ifndef RDK_DISABLE_EXT_GUI
 #include "UVideoAnalyticsSimpleSettingsWidget.h"
 #endif
 
+#include "../../LLM/Core/LlmTypes.h"
+
 namespace Ui {
 class UGEngineControllWidget;
 }
+class QMimeData;
 
 struct USubTabDescription
 {
-/// ��� �������
+/// пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 QString Name;
 
 QMdiSubWindow *SubWindow;
@@ -60,18 +85,34 @@ USubTabDescriptionImages(void)
 {};
 };
 
-struct USubTabDescriptionWatches: public USubTabDescription
+// Размещение пользовательского виджета в UGEngineControlWidget
+enum class UCustomWidgetPlacement
 {
-UGraphWidget* Watches;
-
-USubTabDescriptionWatches(void)
-    : USubTabDescription(),Watches(NULL)
-{};
+    Dock,
+    Mdi
 };
 
-/// UGEngineControllWidget class - ������� ���� ����������
+// Описатель пользовательского виджета, который может быть зарегистрирован
+// в UGEngineControlWidget и создан по требованию из меню/toolbar.
+struct UCustomWidgetDescriptor
+{
+    QString id;   // стабильный идентификатор
+    QString title;
+
+    std::function<UVisualControllerWidget*(RDK::UApplication*)> factory;
+
+    UCustomWidgetPlacement placement = UCustomWidgetPlacement::Dock;
+    Qt::DockWidgetArea defaultDockArea = Qt::RightDockWidgetArea;
+    bool singleInstance = true;
+
+    QString menuPath;     // например, "Window/NeuroModeler/Manipulator"
+    QString toolbarGroup; // опционально: имя группы/toolbar
+    QKeySequence shortcut;
+};
+
+/// UGEngineControllWidget class - пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
 ///
-/// �������� ��������� �� ��� ������ ���� � ��������� �� � ������� �������� � ������.
+/// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ.
 
 class UGEngineControlWidget : public UVisualControllerMainWidget
 {
@@ -81,11 +122,50 @@ public:
     explicit UGEngineControlWidget(QWidget *parent = 0, RDK::UApplication *app = NULL);
     virtual ~UGEngineControlWidget();
 
-    ///���������� ������ � ������������� �������
+    ///пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void showChannelsWidget(void);
 
-    ///��������� ������ �� �������� ��������� (���� ������ �� ������������� �� ������ ����)
+    /// загрузка проекта извне (используется, например, пунктами меню и автозагрузкой)
     void loadProjectExternal(const QString &config_path);
+
+    /// Open help window (public method for use by child widgets). Empty topic → index.
+    void openHelpWindow(const QString& topic = QString());
+
+    /// DD-DOC-001: open class ClDesc panel / markdown documentation viewer.
+    void openClassDescriptionWindow(const std::string& class_name);
+    bool openMarkdownDocWindow(const QString& absPath, const QString& title = QString());
+
+    // Регистрация пользовательского виджета (дополнительного окна/панели),
+    // который затем создаётся по требованию из меню/toolbar.
+    void registerCustomWidget(const UCustomWidgetDescriptor &descriptor);
+    void appendMenuAction(const QString& menuPath, QAction* action);
+    void appendMenuSeparator(const QString& menuPath);
+    void showCustomWidgetById(const QString& id);
+
+    UModernDiagramContainerWidget* modernDiagramContainer() const { return modernDiagram; }
+
+    void setShellController(UGuiShellController* shell);
+    UGuiShellController* shellController() const { return m_shell; }
+
+    /// Hide/show menuBar, mainToolBar, breadcrumbs, statusBar (widgets stay alive).
+    void setHostChromeVisible(bool visible);
+    /// Pause / writeSettings / CloseProject — shared exit path for shell.
+    void performSessionTeardown();
+    void notifyShellMenusChanged();
+
+    QToolBar* primaryToolBar() const;
+    QMenu* windowMenu() const;
+    RDK::UApplication* engineApplication() const { return application; }
+
+    /// Max model time toolbar control (host + Control Bar twin).
+    QWidget* createMaxCalcTimeWidget(QWidget* parent);
+    void syncMaxCalcTimeFromProject();
+    void applyMaxCalcTime(double seconds);
+
+    /// Re-home logger dock for Studio vs Control Bar shell preset.
+    void ensureLoggerForShellPreset();
+    /// Refresh host/Control Bar window titles after preset or project change.
+    void syncShellWindowTitles();
 
 #ifndef RDK_DISABLE_EXT_GUI
     void setExternVideoAnalyticsSimpleWidget(UVideoAnalyticsSimpleSettingsWidget *externalWidget);
@@ -98,10 +178,48 @@ public slots:
     void readSettings();
     void writeSettings();
 
+    // Theme switching
+    void switchToTheme(const QString& themeName);
+
     void showLinksForSingleComponent(QString componentName);
     void showLinksForTwoComponents(QString firstComponentName, QString secondComponentName);
     void switchLinksForTwoComponents(QString firstComponentName, QString secondComponentName);
+    void openComponentGuiFromScheme(const UComponentGuiContext& context);
 
+    /// LLM presentation sink helpers (main-thread UI refresh after configuration tools).
+    void refreshLlmPresentationShell();
+    void refreshLlmPresentationDiagram();
+    void registerRecentConfigurationPath(const QString& path);
+
+    void showLlmUiPanel(RDK::LLM::LLMUiPanel panel);
+    nlohmann::json listLlmUiPanelsState() const;
+    void setLlmActiveChannel(int channel_index);
+
+    /// LLM Watch series / MDI (GUI thread only).
+    nlohmann::json llmWatchAddSeries(const std::string& surface, int mdi_id, int tab_index,
+                                     int chart_index, int channel_index, const QString& longName,
+                                     const QString& propertyName, int jx, int jy);
+    nlohmann::json llmWatchListSeries(const std::string& surface, int mdi_id, int tab_index,
+                                      int chart_index);
+    nlohmann::json llmWatchRemoveSeries(const std::string& surface, int mdi_id, int tab_index,
+                                        int chart_index, int serie_index, const QString& longName,
+                                        const QString& propertyName);
+    nlohmann::json llmWatchClearSeries(const std::string& surface, int mdi_id, int tab_index,
+                                       int chart_index);
+    nlohmann::json llmWatchSetPanelVizKind(const std::string& surface, int mdi_id, int tab_index,
+                                           int chart_index, const QString& vizKind);
+    nlohmann::json llmWatchSetSeriesBinding(const std::string& surface, int mdi_id, int tab_index,
+                                            int chart_index, int serie_index, int channel_index,
+                                            const QString& yLongName, const QString& yProperty,
+                                            int yJx, int yJy,
+                                            const QString& xLongName, const QString& xProperty,
+                                            int xJx, int xJy, const QString& vizKind);
+    nlohmann::json llmWatchMdiList();
+    nlohmann::json llmWatchMdiCreate(int grid_rows = 1, int grid_cols = 1,
+                                     const QString& title = QString());
+    bool llmWatchMdiFocus(int mdi_id);
+    bool llmWatchMdiClose(int mdi_id);
+    UWatchTab* llmWatchResolveTab(const std::string& surface, int mdi_id, int tab_index);
 
     // actions:
 
@@ -139,6 +257,7 @@ public slots:
     void actionTestCreator();
     void actionWatchWindow();
     void actionNewWatches();
+    void actionProjectDescription();
     void actionProfiling();
     void actionTcpServer();
 #ifndef RDK_DISABLE_EXT_GUI
@@ -155,135 +274,219 @@ private slots:
     void updateChannelsVisibility();
 
 
-    /// ������� ������ ����������� ��������
+    /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void delImagesWidged(size_t index);
     void delImagesWidgetSlot(QObject* obj);
 
-    /// ������� ������ ����������� ��������
+    /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void delWatchesWidgetSlot(QObject* obj);
     void delWatchesWidged(size_t index);
 
     void on_actionAbout_triggered();
+    void on_actionUserGuide_triggered();
 
     void on_actionWatches_triggered();
 
     void on_actionImages_triggered();
 
+    // обработчик нажатий на actions зарегистрированных пользовательских виджетов
+    void handleCustomWidgetActionTriggered();
+
 private:
+    static const int kMaxRecentConfigs = 10;
+    static const int kComponentGuiLayoutSchemaVersion = 1;
+
+    // Helper methods
+    void createThemeMenu();
+    void updateThemeMenuState();
+    void updateRecentConfigsMenu();
+    void addToRecentConfigs(const QString& path);
+    /// Force breadcrumbs onto its own row under mainToolBar (survives restoreState).
+    void ensureBreadcrumbsToolBarRow();
+    void setupMaxCalcTimeToolBar();
+    QMainWindow* loggerDockHost() const;
+    void rehomeLoggerDock(QMainWindow* target, bool floating);
+    void syncStripLoggerExpanded();
+
     // data
     Ui::UGEngineControllWidget *ui;
+    UGuiShellController* m_shell = nullptr;
+    bool m_maxCalcSyncing = false;
+    QList<QPointer<QWidget>> m_maxCalcTimeWidgets;
+
+    // Theme menu actions
+    QAction* m_lightThemeAction;
+    QAction* m_darkThemeAction;
 
     // widgets
     USettingsReaderWidget *settings;
     UComponentPropertyChanger *propertyChanger;
-    UDrawEngineWidget *drawEngine;
+    UModernDiagramContainerWidget *modernDiagram;
+    UBreadcrumbsWidget *breadcrumbsWidget;
+    QToolBar *breadcrumbsToolBar;
     UComponentLinksWidget *componentLinks;
     UImagesWidget *images;
     QMainWindow *imagesWindow;
     QMainWindow *clDescWindow;
-    QMainWindow *graphWindow;
     QMainWindow *profilingWindow;
     UCalculationChannelsWidget *channels;
     ULoggerWidget *logger;
     UCreateConfigurationWizardWidget *createConfigurationWizardWidget;
     UCreateTestWidget *createTestWidget;
     UStatusPanel *statusPanel;
-    UGraphWidget *graphWindowWidget;
- //   UWatchFormWidget *watchFormWidget;
     UTableInfo *profilingWindowWidget;
     UWatch *watchWindow;
+    UProjectDescriptionWindow *projectDescriptionWindow;
     UClDescEditor *clDesc;
     QMainWindow *tcpServerControlWindow;
     UTcpServerControlWidget *tcpServerControlWidget;
     UAboutDialog *aboutDialog;
+    UHelpWindow *helpWindow;
+    UMarkdownDocWindow* markdownDocWindow = nullptr;
 #ifndef RDK_DISABLE_EXT_GUI
     UVideoAnalyticsSimpleSettingsWidget *videoAnalyticsSimpleWidget;
 #endif
     UCurlFtpClientTestWidget *curlFtpClientTestWidget;
 
-    /// ������ �������� ����������� ��������
+    /// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     std::vector<UImagesWidget*> imagesVector;
 
-    /// ������ �������� ����������� ��������
+    /// пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     std::vector<UWatchTab*> watchesVector;
 
 
-    /// �������� ������ ����������
+    /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     RDK::UApplication *application;
+
+    // зарегистрированные пользовательские виджеты
+    QVector<UCustomWidgetDescriptor> customWidgets;
+    // активные экземпляры по id; QPointer обнуляется при удалении виджета
+    QHash<QString, QList<QPointer<UVisualControllerWidget>>> customWidgetInstances;
+    UComponentGuiService m_componentGuiService;
+    bool m_componentSpecialFormsEnabled = true;
+    bool m_componentSpecialFormsMotionControlEnabled = true;
+    bool m_componentSpecialFormsPulseLibEnabled = true;
+    bool m_componentSpecialFormsBasicLibEnabled = true;
+    bool m_componentSpecialFormsCvBasicLibEnabled = true;
+    bool m_componentSpecialFormsHardwareLibEnabled = true;
+    QHash<QString, QPointer<UComponentGuiTabHostWidget>> m_componentGuiTabHosts;
+    QPointer<QMainWindow> m_componentGuiSecondaryHostWindow;
+    QPointer<UComponentGuiTabHostWidget> m_componentGuiSecondaryTabHost;
+
+    // служебный метод для создания/активации пользовательского виджета
+    void createOrActivateCustomWidget(const QString &id);
+    UComponentGuiTabHostWidget* ensureComponentGuiTabHost(const QString& hostId);
+    UComponentGuiTabHostWidget* ensureComponentGuiSecondaryTabHost();
+    void saveComponentGuiLayoutToXml(RDK::USerStorageXML &xml);
+    void loadComponentGuiLayoutFromXml(RDK::USerStorageXML &xml);
+    void writeComponentGuiSettings(QSettings& projectSettings);
+    void readComponentGuiSettings(QSettings& projectSettings);
+    QString hostModeToString(UComponentGuiHostMode mode) const;
+    UComponentGuiHostMode hostModeFromString(const QString& mode) const;
+    void showComponentGuiHostMenu(UVisualControllerWidget* widget, const QPoint& globalPos);
+    bool resolveComponentGuiWidgetContext(UVisualControllerWidget* widget,
+                                          UComponentGuiContext& context,
+                                          UComponentGuiHostMode* mode = nullptr) const;
+    void promptAndOpenComponentGuiTabHost();
+    UComponentGuiTabHostWidget* findComponentGuiTabHost(const QString& hostId) const;
+    QStringList componentGuiTabHostIds() const;
+    bool moveContextToTabHost(const UComponentGuiContext& context, const QString& hostId);
+    bool moveContextToSecondaryHost(const UComponentGuiContext& context);
+    void wireComponentGuiTabHostPruning(UComponentGuiTabHostWidget* host);
+    void pruneEmptyTabHostSlotsForContext(const UComponentGuiContext& context);
+    void startComponentGuiDrag(const UComponentGuiContext& context, QWidget* dragSource, bool detachOnIgnoredDrop);
+    void ensureComponentGuiDragSourcesInstalled(UVisualControllerWidget* widget);
+    void installDragFilterRecursively(QWidget* root);
+    void ensureComponentGuiQuickActionsInstalled(UVisualControllerWidget* widget);
+    void positionComponentGuiQuickActions(UVisualControllerWidget* widget);
+    void showComponentGuiSecondaryHostWindow();
+    bool handleDropToSecondaryHost(const QMimeData* mimeData);
+    bool handleDropToTabHost(const QMimeData* mimeData, const QString& hostId);
+    QString resolveTabHostDropTargetAtCursor() const;
+    bool isCursorOverSecondaryHost() const;
 
     // methods
 
-    ///if chanelIndex == -1 ��������� ��� ������ �������
+    ///if chanelIndex == -1 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void startChannel(int chanelIndex);
 
-    ///if chanelIndex == -1 ������������� ��� ������ �������
+    ///if chanelIndex == -1 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void pauseChannel(int chanelIndex);
 
-    ///if chanelIndex == -1 ���������� ��� ������ �������
+    ///if chanelIndex == -1 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void resetChannel(int chanelIndex);
 
-    ///if chanelIndex == -1 ������ ��� �� ��� ������ �������
+    ///if chanelIndex == -1 пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void calcOneStepChannel(int chanelIndex);
 
-    ///������� � �������� ���������� ���� ��� ���������� UVisualControllerWidget
+    ///пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ UVisualControllerWidget
     void execDialogUVisualControllWidget(UVisualControllerWidget* widget);
 
-    /// ��������� ����� ������ ����������� ��������
+    /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void addImagesWidged();
 
-    /// ��������� ����� ������ ����������� ��������
+    /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     void addWatchesWidged();
 
-    /// ��������� ����� ������, ������ �������
-    /// � ����� � ���� Choose Storage Build Mode [N]
-    /// ����� ����� ����� ������ ������ (����������)
+    /// пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    /// пїЅ пїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅ Choose Storage Build Mode [N]
+    /// пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ)
     void updateShemeClassesList();
 
-    // ���������� ����������
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     virtual void AUpdateInterface(void);
 
-    // ������� ���������� � �������� ���������
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     virtual void AClearInterface(void);
 
-    // �����, ���������� ����� �������� �������
+    // пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     virtual void AAfterLoadProject(void);
 
-    // �����, ���������� ����� ��������� �������
+    // пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     virtual void ABeforeCloseProject(void);
 
-    // �����, ���������� ����� ������� ������
+    // пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     virtual void ABeforeReset(void);
 
-    // �����, ���������� ����� ������ ������
+    // пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
     virtual void AAfterReset(void);
 
-    // �����, ���������� ����� ����� �������
+    // пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     virtual void ABeforeCalculate(void);
 
-    // �����, ���������� ����� ���� �������
+    // пїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
     virtual void AAfterCalculate(void);
 
-    // ��������� ��������� ���������� � xml
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ xml
     virtual void ASaveParameters(RDK::USerStorageXML &xml);
 
-    // ��������� ��������� ���������� �� xml
+    // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅ xml
     virtual void ALoadParameters(RDK::USerStorageXML &xml);
 
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
+    bool eventFilter(QObject* watched, QEvent* event) override;
 
+private:
+    QPoint m_componentGuiTabDragStartPos;
+    int m_componentGuiTabDragIndex = -1;
+    QPoint m_componentGuiWidgetDragStartPos;
+    QPointer<QObject> m_componentGuiWidgetDragPressedObject;
 
 };
 
-/// �� ������������� QMdiSubwindow ��� ����������� ����� ������
+/// пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ QMdiSubwindow пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 class SubWindowCloseIgnore: public QMdiSubWindow
 {
 public:
-    explicit SubWindowCloseIgnore(QWidget *parent = 0, Qt::WindowFlags flags = 0):QMdiSubWindow(parent, flags){}
+    explicit SubWindowCloseIgnore(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags()):QMdiSubWindow(parent, flags){}
 protected:
-    void closeEvent(QCloseEvent *event){event->ignore();}
+    void closeEvent(QCloseEvent *event) override {event->ignore();}
+    void keyPressEvent(QKeyEvent *event) override;
 };
 
 /*
-/// �� ������������� QMdiSubwindow ��� ����������� ����� ������
+/// пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ QMdiSubwindow пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
 class SubWindowCloseExt: public QMdiSubWindow
 {
 public:

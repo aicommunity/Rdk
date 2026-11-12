@@ -1,0 +1,4 @@
+{
+  "phrase": "что такое ArduinoBoard",
+  "expect_intent": "query"
+}

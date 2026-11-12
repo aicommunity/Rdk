@@ -36,7 +36,7 @@ __fastcall TVideoOutputToolsForm::TVideoOutputToolsForm(TComponent* Owner,
 
 }
 
-// Ñîçäàíèå êîïèè ýòîãî êîìïîíåíòà
+// Ð¡Ð¾Ð·Ð´Ð°Ð½Ð¸Ðµ ÐºÐ¾Ð¿Ð¸Ð¸ ÑÑ‚Ð¾Ð³Ð¾ ÐºÐ¾Ð¼Ð¿Ð¾Ð½ÐµÐ½Ñ‚Ð°
 TVideoOutputToolsForm* TVideoOutputToolsForm::New(TComponent *owner)
 {
  return 0;
@@ -125,7 +125,7 @@ void __fastcall TVideoOutputToolsForm::EditPointButtonClick(TObject *Sender)
 /* if(PointFlag == 2 || PointsCheckListBox->ItemIndex<0)
  {
   PointFlag=0;
-  EditPointButton->Caption="Ïðàâèòü òî÷êó";
+  EditPointButton->Caption="ÐŸÑ€Ð°Ð²Ð¸Ñ‚ÑŒ Ñ‚Ð¾Ñ‡ÐºÑƒ";
   MyVideoOutputFrame->UpdateVideo();
   if(PointsCheckListBox->ItemIndex <PointsCheckListBox->Items->Count-1)
    PointsCheckListBox->ItemIndex=PointsCheckListBox->ItemIndex+1;
@@ -141,19 +141,19 @@ void __fastcall TVideoOutputToolsForm::EditPointButtonClick(TObject *Sender)
 // MyVideoOutputFrame->UpdateVideo();
 // PointIndex=PointsCheckListBox->ItemIndex;
 
-// EditPointButton->Caption="Ðåäàêòèðîâàíèå...";
+// EditPointButton->Caption="Ð ÐµÐ´Ð°ÐºÑ‚Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ðµ...";
 }
 //---------------------------------------------------------------------------
 void __fastcall TVideoOutputToolsForm::EditFigureButtonClick(TObject *Sender)
 {
 /* if(FigureFlag)
  {
-  EditFigureButton->Caption="Ïðàâèòü ôèãóðó";
+  EditFigureButton->Caption="ÐŸÑ€Ð°Ð²Ð¸Ñ‚ÑŒ Ñ„Ð¸Ð³ÑƒÑ€Ñƒ";
   FigureFlag=false;
  }
  else
  {
-  EditFigureButton->Caption="Ðåäàêòèðîâàíèå";
+  EditFigureButton->Caption="Ð ÐµÐ´Ð°ÐºÑ‚Ð¸Ñ€Ð¾Ð²Ð°Ð½Ð¸Ðµ";
   FigureFlag=true;
  }*/
 }

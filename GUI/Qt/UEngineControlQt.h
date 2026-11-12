@@ -12,10 +12,10 @@ public:
     UEngineControlQt(QObject *parent = 0);
     virtual ~UEngineControlQt();
 
-    /// Запускает аналитику выбранного канала, или всех, если channel_index == -1
+    /// Р—Р°РїСѓСЃРєР°РµС‚ Р°РЅР°Р»РёС‚РёРєСѓ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°, РёР»Рё РІСЃРµС…, РµСЃР»Рё channel_index == -1
     virtual void StartChannel(int channel_index);
 
-    /// Останавливает аналитику выбранного канала, или всех, если channel_index == -1
+    /// РћСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ Р°РЅР°Р»РёС‚РёРєСѓ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РєР°РЅР°Р»Р°, РёР»Рё РІСЃРµС…, РµСЃР»Рё channel_index == -1
     virtual void PauseChannel(int channel_index);
 
 public slots:

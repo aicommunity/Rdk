@@ -1,7 +1,6 @@
 #include "UStatusPanel.h"
 #include "ui_UStatusPanel.h"
-
-#include <QMessageBox>
+#include "UGuiModelSnapshot.h"
 
 UStatusPanel::UStatusPanel(QWidget *parent, RDK::UApplication *app) :
   UVisualControllerWidget(parent, app),
@@ -12,18 +11,16 @@ UStatusPanel::UStatusPanel(QWidget *parent, RDK::UApplication *app) :
 
   ui->setupUi(this);
 
+  // Скрыты в статусбаре; настройки по-прежнему из проекта / wizard
+  ui->checkBoxDetailedLog->hide();
+  ui->checkBoxAutosaveStates->hide();
+
   AAfterLoadProject();
 
-  // checkboxes
-  connect(ui->checkBoxShowDebugMessages    , SIGNAL(toggled(bool)), this, SLOT(setShowDebugMessages(bool)));
-  connect(ui->checkBoxDetailedLog          , SIGNAL(toggled(bool)), this, SLOT(setDetailedLog(bool)));
-  connect(ui->checkBoxAutoupdateProperties , SIGNAL(toggled(bool)), this, SLOT(setAutoupdateProperties(bool)));
-  connect(ui->checkBoxAutosaveStates       , SIGNAL(toggled(bool)), this, SLOT(setAutosaveStates(bool)));
-  connect(ui->checkBoxAutosaveProject      , SIGNAL(toggled(bool)), this, SLOT(setAutosaveProject(bool)));
-
-  // radioButtons
-  connect(ui->radioButtonMultiThreaded, SIGNAL(clicked(bool)), this, SLOT(setThreadMode()));
-  connect(ui->radioButtonSingleThreaded, SIGNAL(clicked(bool)), this, SLOT(setThreadMode()));
+  connect(ui->checkBoxShowDebugMessages, SIGNAL(toggled(bool)), this, SLOT(setShowDebugMessages(bool)));
+  connect(ui->checkBoxDetailedLog, SIGNAL(toggled(bool)), this, SLOT(setDetailedLog(bool)));
+  connect(ui->checkBoxAutosaveStates, SIGNAL(toggled(bool)), this, SLOT(setAutosaveStates(bool)));
+  connect(ui->checkBoxAutosaveProject, SIGNAL(toggled(bool)), this, SLOT(setAutosaveProject(bool)));
 }
 
 UStatusPanel::~UStatusPanel()
@@ -59,7 +56,13 @@ void UStatusPanel::AUpdateInterface()
   }
 
   int num_objects = Storage_CalcNumObjects();
-  int num_model_components = RDK::GetModelLock()->GetNumAllComponents();
+
+  // Use lock-free snapshot to get component count instead of blocking GetModelLock
+  int num_model_components = 0;
+  NMSDK::UGuiSnapshotPtr snapshot = NMSDK::UGuiModelSnapshot::Instance().CurrentSnapshot();
+  if (snapshot) {
+    num_model_components = snapshot->Components.size();
+  }
 
   ui->labelObjects->setText("Objects: "+  QString::fromLocal8Bit(RDK::sntoa(num_model_components).c_str()) + "/" + QString::fromLocal8Bit(RDK::sntoa(num_objects).c_str()));
 }
@@ -73,19 +76,6 @@ void UStatusPanel::AAfterLoadProject()
   ui->checkBoxDetailedLog->setChecked(static_cast<bool>(config.DebugSysEventsMask));
   ui->checkBoxAutosaveStates->setChecked(config.ProjectAutoSaveStatesFlag);
   ui->checkBoxAutosaveProject->setChecked(config.ProjectAutoSaveFlag);
-
-  if(config.MultiThreadingMode)
-  {
-   if(config.MultiThreadingMode != ((ui->radioButtonMultiThreaded->isChecked())?1:0))
-    ui->radioButtonMultiThreaded->setChecked(true);
-  }
-  else
-    ui->radioButtonSingleThreaded->setChecked(true);
-}
-
-void UStatusPanel::ChangeAutoupdateProperties(bool value)
-{
- ui->checkBoxAutoupdateProperties->setChecked(value);
 }
 
 void UStatusPanel::setShowDebugMessages(bool checked)
@@ -112,7 +102,6 @@ void UStatusPanel::setShowDebugMessages(bool checked)
   MLog_SetDebugMode(RDK_GLOB_MESSAGE, config.DebugMode);
 
   application->SetProjectConfig(config);
-//  application->SaveProjectConfig();
 }
 
 void UStatusPanel::setDetailedLog(bool checked)
@@ -143,12 +132,6 @@ void UStatusPanel::setDetailedLog(bool checked)
   MLog_SetDebugMode(RDK_GLOB_MESSAGE, config.DebugSysEventsMask);
 
   application->SetProjectConfig(config);
-//  application->SaveProjectConfig();
-}
-
-void UStatusPanel::setAutoupdateProperties(bool checked)
-{
-  emit setPropertyUpdateInterval(checked ? 500 : 0);
 }
 
 void UStatusPanel::setAutosaveStates(bool checked)
@@ -163,7 +146,6 @@ void UStatusPanel::setAutosaveStates(bool checked)
   config.ProjectAutoSaveStatesFlag = checked;
 
   application->SetProjectConfig(config);
-//  application->SaveProjectConfig();
 }
 
 void UStatusPanel::setAutosaveProject(bool checked)
@@ -179,24 +161,4 @@ void UStatusPanel::setAutosaveProject(bool checked)
 
   application->SetProjectConfig(config);
   application->SaveProjectConfig();
-}
-
-void UStatusPanel::setThreadMode()
-{
-  if(!application) return;
-
-  RDK::TProjectConfig config = application->GetProjectConfig();
-  config.MultiThreadingMode = static_cast<int>(ui->radioButtonMultiThreaded->isChecked());
-
-  application->SetProjectConfig(config);
-  emit saveConfig();
-
-  if(QMessageBox::question(this, "Warning", "The configuration has been updated and saved. You need to reopen it. Reopen now?",
-                           QMessageBox::Yes|QMessageBox::No) == QMessageBox::Yes)
-  {
-   std::string project_file_name=application->GetProjectPath()+application->GetProjectFileName();
-   application->CloseProject();
-   application->OpenProject(project_file_name);
-    //QApplication::quit();
-  }
 }

@@ -10,7 +10,7 @@
 #pragma resource "*.dfm"
 TApplicationOptionsFrame *ApplicationOptionsFrame;
 
-/// Экзепляр класса приложения
+/// Р­РєР·РµРїР»СЏСЂ РєР»Р°СЃСЃР° РїСЂРёР»РѕР¶РµРЅРёСЏ
 extern RDK::UApplication RdkApplication;
 
 //---------------------------------------------------------------------------
@@ -21,15 +21,15 @@ __fastcall TApplicationOptionsFrame::TApplicationOptionsFrame(TComponent* Owner)
 }
 
 // -----------------------------
-// Методы управления визуальным интерфейсом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РІРёР·СѓР°Р»СЊРЅС‹Рј РёРЅС‚РµСЂС„РµР№СЃРѕРј
 // -----------------------------
-// Метод, вызываемый после сброса модели
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ СЃР±СЂРѕСЃР° РјРѕРґРµР»Рё
 void TApplicationOptionsFrame::AAfterReset(void)
 {
 
 }
 
-// Обновление интерфейса
+// РћР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
 void TApplicationOptionsFrame::AUpdateInterface(void)
 {
  if(!UGEngineControlForm)
@@ -45,19 +45,19 @@ void TApplicationOptionsFrame::AUpdateInterface(void)
  ProjectHistorySpinEdit->Value=RdkApplication.GetLastProjectsListMaxSize();
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TApplicationOptionsFrame::AClearInterface(void)
 {
 
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TApplicationOptionsFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
 
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TApplicationOptionsFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
 

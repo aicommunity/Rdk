@@ -37,7 +37,7 @@ __fastcall TUStringListInputForm::TUStringListInputForm(TComponent* Owner)
 {
 }
 
-/// Число параметров
+/// Р§РёСЃР»Рѕ РїР°СЂР°РјРµС‚СЂРѕРІ
 int TUStringListInputForm::GetNumParameters(void)
 {
  return int(ParametersList.size());
@@ -55,7 +55,7 @@ bool TUStringListInputForm::SetNumParameters(int value)
  return true;
 }
 
-/// Имя параметра с заданным индексом
+/// РРјСЏ РїР°СЂР°РјРµС‚СЂР° СЃ Р·Р°РґР°РЅРЅС‹Рј РёРЅРґРµРєСЃРѕРј
 const std::string& TUStringListInputForm::GetParameterName(int index)
 {
  return ParametersList[index].Name;
@@ -70,7 +70,7 @@ bool TUStringListInputForm::SetParameterName(int index, const std::string &value
  return true;
 }
 
-/// Значение параметра с заданным индексом
+/// Р—РЅР°С‡РµРЅРёРµ РїР°СЂР°РјРµС‚СЂР° СЃ Р·Р°РґР°РЅРЅС‹Рј РёРЅРґРµРєСЃРѕРј
 const std::string& TUStringListInputForm::GetParameterValue(int index)
 {
  if(index <0 || index >=int(ParametersList.size()))
@@ -91,7 +91,7 @@ bool TUStringListInputForm::SetParameterValue(int index, const std::string &valu
  return true;
 }
 
-/// Заголовок окна
+/// Р—Р°РіРѕР»РѕРІРѕРє РѕРєРЅР°
 std::string TUStringListInputForm::GetCaption(void)
 {
  return AnsiString(Caption).c_str();
@@ -103,7 +103,7 @@ bool TUStringListInputForm::SetCaption(const std::string &value)
  return true;
 }
 
-/// Обновляет интерфейс
+/// РћР±РЅРѕРІР»СЏРµС‚ РёРЅС‚РµСЂС„РµР№СЃ
 void TUStringListInputForm::AUpdateInterface(void)
 {
  StringGrid->RowCount=ParametersList.size()+1;

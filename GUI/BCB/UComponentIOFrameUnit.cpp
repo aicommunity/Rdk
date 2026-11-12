@@ -23,24 +23,24 @@ __fastcall TUComponentIOFrame::TUComponentIOFrame(TComponent* Owner)
 // -----------------
 
 // -----------------
-// Методы управления
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // -----------------
-// Очищает таблицу
+// РћС‡РёС‰Р°РµС‚ С‚Р°Р±Р»РёС†Сѓ
 void __fastcall TUComponentIOFrame::Clear(void)
 {
  StringGrid->RowCount=1;
  StringGrid->ColCount=1;
 }
 
-// Заполняет таблицу входами сети
+// Р—Р°РїРѕР»РЅСЏРµС‚ С‚Р°Р±Р»РёС†Сѓ РІС…РѕРґР°РјРё СЃРµС‚Рё
 void __fastcall TUComponentIOFrame::ShowInputs(void)
 {
  int current_row=StringGrid->Row;
 
  StringGrid->ColCount=4;
  StringGrid->Cells[1][0]="#";
- StringGrid->Cells[2][0]="Вход";
- StringGrid->Cells[3][0]="Имя входа";
+ StringGrid->Cells[2][0]="Р’С…РѕРґ";
+ StringGrid->Cells[3][0]="РРјСЏ РІС…РѕРґР°";
 
  RDK::ULongIdVector buffer;
 
@@ -73,15 +73,15 @@ void __fastcall TUComponentIOFrame::ShowInputs(void)
   StringGrid->Row=current_row;
 }
 
-// Заполняет таблицу выходами сети
+// Р—Р°РїРѕР»РЅСЏРµС‚ С‚Р°Р±Р»РёС†Сѓ РІС‹С…РѕРґР°РјРё СЃРµС‚Рё
 void __fastcall TUComponentIOFrame::ShowOutputs(void)
 {        
  int current_row=StringGrid->Row;
 
  StringGrid->ColCount=4;
  StringGrid->Cells[1][0]="#";
- StringGrid->Cells[2][0]="Выход";
- StringGrid->Cells[3][0]="Имя выхода";
+ StringGrid->Cells[2][0]="Р’С‹С…РѕРґ";
+ StringGrid->Cells[3][0]="РРјСЏ РІС‹С…РѕРґР°";
 
  RDK::ULongIdVector buffer;
 
@@ -114,14 +114,14 @@ void __fastcall TUComponentIOFrame::ShowOutputs(void)
   StringGrid->Row=current_row;
 }
 
-// Заполняет таблицу входами и выходами сети
+// Р—Р°РїРѕР»РЅСЏРµС‚ С‚Р°Р±Р»РёС†Сѓ РІС…РѕРґР°РјРё Рё РІС‹С…РѕРґР°РјРё СЃРµС‚Рё
 void __fastcall TUComponentIOFrame::ShowInputsOutputs(void)
 {
  int current_row=StringGrid->Row;
 
  StringGrid->ColCount=4;
  StringGrid->Cells[1][0]="#In";
- StringGrid->Cells[2][0]="Имя";
+ StringGrid->Cells[2][0]="РРјСЏ";
  StringGrid->Cells[3][0]="#Out";
 
  RDK::ULongIdVector itemsbuffer;
@@ -192,17 +192,17 @@ void __fastcall TUComponentIOFrame::ShowInputsOutputs(void)
   StringGrid->Row=current_row;
 }
 
-// Заполняет таблицу установленными связями
+// Р—Р°РїРѕР»РЅСЏРµС‚ С‚Р°Р±Р»РёС†Сѓ СѓСЃС‚Р°РЅРѕРІР»РµРЅРЅС‹РјРё СЃРІСЏР·СЏРјРё
 void __fastcall TUComponentIOFrame::ShowLinks(void)
 {
  int current_row=StringGrid->Row;
  StringGrid->ColCount=7;
  StringGrid->Cells[1][0]="Out #";
  StringGrid->Cells[2][0]="In #";
- StringGrid->Cells[3][0]="Выход";
- StringGrid->Cells[4][0]="Имя выхода";
- StringGrid->Cells[5][0]="Вход";
- StringGrid->Cells[6][0]="Имя входа";
+ StringGrid->Cells[3][0]="Р’С‹С…РѕРґ";
+ StringGrid->Cells[4][0]="РРјСЏ РІС‹С…РѕРґР°";
+ StringGrid->Cells[5][0]="Р’С…РѕРґ";
+ StringGrid->Cells[6][0]="РРјСЏ РІС…РѕРґР°";
 
  RDK::UStringLinksList linkslist;
  std::string stringid;
@@ -252,7 +252,7 @@ void __fastcall TUComponentIOFrame::ShowLinks(void)
   StringGrid->Row=current_row;
 }
 
-// Заполняет таблицу входящими связями
+// Р—Р°РїРѕР»РЅСЏРµС‚ С‚Р°Р±Р»РёС†Сѓ РІС…РѕРґСЏС‰РёРјРё СЃРІСЏР·СЏРјРё
 void __fastcall TUComponentIOFrame::ShowInputLinks(void)
 {
  int current_row=StringGrid->Row;
@@ -318,7 +318,7 @@ void __fastcall TUComponentIOFrame::ShowInputLinks(void)
   StringGrid->Row=current_row;
 }
 
-// Заполняет таблицу исходящими связями
+// Р—Р°РїРѕР»РЅСЏРµС‚ С‚Р°Р±Р»РёС†Сѓ РёСЃС…РѕРґСЏС‰РёРјРё СЃРІСЏР·СЏРјРё
 void __fastcall TUComponentIOFrame::ShowOutputLinks(void)
 {
  int current_row=StringGrid->Row;
@@ -389,7 +389,7 @@ void __fastcall TUComponentIOFrame::ShowOutputLinks(void)
 
 
 
-// Декодирует список свойств-входов/выходов в map
+// Р”РµРєРѕРґРёСЂСѓРµС‚ СЃРїРёСЃРѕРє СЃРІРѕР№СЃС‚РІ-РІС…РѕРґРѕРІ/РІС‹С…РѕРґРѕРІ РІ map
 void TUComponentIOFrame::DecodePropertiesIOList(const std::string &source, std::map<int, std::string> &result)
 {
  result.clear();
@@ -447,9 +447,9 @@ void TUComponentIOFrame::DecodePropertiesIOList(const std::string &source, std::
 // -----------------
 
 // -----------------
-// Вспомогательные методы управления
+// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Рµ РјРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ
 // -----------------
-// Отображает данные выходов в таблицу
+// РћС‚РѕР±СЂР°Р¶Р°РµС‚ РґР°РЅРЅС‹Рµ РІС‹С…РѕРґРѕРІ РІ С‚Р°Р±Р»РёС†Сѓ
 void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::ULongIdVector &linkslist)
 {
  std::string stringid;
@@ -501,7 +501,7 @@ void __fastcall TUComponentIOFrame::ShowOutputs(TStringGrid *string_grid, RDK::U
 
 }
 
-// Отображает данные входов в таблицу
+// РћС‚РѕР±СЂР°Р¶Р°РµС‚ РґР°РЅРЅС‹Рµ РІС…РѕРґРѕРІ РІ С‚Р°Р±Р»РёС†Сѓ
 void __fastcall TUComponentIOFrame::ShowInputs(TStringGrid *string_grid, RDK::ULongIdVector &linkslist)
 {
  std::string stringid;
@@ -551,21 +551,21 @@ void __fastcall TUComponentIOFrame::ShowInputs(TStringGrid *string_grid, RDK::UL
 
 
 // -----------------------------
-// Методы управления визуальным интерфейсом
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ РІРёР·СѓР°Р»СЊРЅС‹Рј РёРЅС‚РµСЂС„РµР№СЃРѕРј
 // -----------------------------
-// Метод, вызываемый перед шагом расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРµСЂРµРґ С€Р°РіРѕРј СЂР°СЃС‡РµС‚Р°
 void TUComponentIOFrame::ABeforeCalculate(void)
 {
 
 }
 
-// Метод, вызываемый после шага расчета
+// РњРµС‚РѕРґ, РІС‹Р·С‹РІР°РµРјС‹Р№ РїРѕСЃР»Рµ С€Р°РіР° СЂР°СЃС‡РµС‚Р°
 void TUComponentIOFrame::AAfterCalculate(void)
 {
 
 }
 
-// Обновление интерфейса
+// РћР±РЅРѕРІР»РµРЅРёРµ РёРЅС‚РµСЂС„РµР№СЃР°
 void TUComponentIOFrame::AUpdateInterface(void)
 {
  Clear();
@@ -599,20 +599,20 @@ void TUComponentIOFrame::AUpdateInterface(void)
  FrameResize(this);
 }
 
-// Возврат интерфейса в исходное состояние
+// Р’РѕР·РІСЂР°С‚ РёРЅС‚РµСЂС„РµР№СЃР° РІ РёСЃС…РѕРґРЅРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 void TUComponentIOFrame::AClearInterface(void)
 {
  ViewComponentOwnerLongId="";
  ViewComponentLongId="";
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TUComponentIOFrame::ASaveParameters(RDK::USerStorageXML &xml)
 {
 
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TUComponentIOFrame::ALoadParameters(RDK::USerStorageXML &xml)
 {
  ViewComponentOwnerLongId="";

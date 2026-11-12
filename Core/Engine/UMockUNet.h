@@ -3,39 +3,39 @@
 
 #include "UNet.h"
 
-// RTV для UBVSObject
+// RTV РґР»СЏ UBVSObject
 //#include "../../../Libraries/Rtv-BasicLib/Core/RTVSupport.h"
 
 // RDK include
 //#include "../../../Libraries/Rdk-PtzCameraControlLib/Core/UBPtzCameraControlPelco.h"
 
-// Сериализация компонента UBVSObject
+// РЎРµСЂРёР°Р»РёР·Р°С†РёСЏ РєРѕРјРїРѕРЅРµРЅС‚Р° UBVSObject
 //#include "../../../Libraries/Rtv-BasicLib/Core/RTVXMLSerialize.h"
 
 namespace RDK {
 
 class RDK_LIB_TYPE UMockUNet: public UNet
 {
-protected: // Основные свойства
+protected: // РћСЃРЅРѕРІРЅС‹Рµ СЃРІРѕР№СЃС‚РІР°
 
-public: // Методы
+public: // РњРµС‚РѕРґС‹
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 
 UMockUNet(RDK::USerStorageXML *serstorage=0, UStorage* storage = 0);
 virtual ~UMockUNet(void);
 
-// Выделяет память для новой чистой копии объекта этого класса
+// Р’С‹РґРµР»СЏРµС‚ РїР°РјСЏС‚СЊ РґР»СЏ РЅРѕРІРѕР№ С‡РёСЃС‚РѕР№ РєРѕРїРёРё РѕР±СЉРµРєС‚Р° СЌС‚РѕРіРѕ РєР»Р°СЃСЃР°
 virtual UMockUNet* New(void);
 
-// Загружает все внутренние данные компонента, и всех его дочерних компонент, исключая
-// переменные состояния из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РІСЃРµ РІРЅСѓС‚СЂРµРЅРЅРёРµ РґР°РЅРЅС‹Рµ РєРѕРјРїРѕРЅРµРЅС‚Р°, Рё РІСЃРµС… РµРіРѕ РґРѕС‡РµСЂРЅРёС… РєРѕРјРїРѕРЅРµРЅС‚, РёСЃРєР»СЋС‡Р°СЏ
+// РїРµСЂРµРјРµРЅРЅС‹Рµ СЃРѕСЃС‚РѕСЏРЅРёСЏ РёР· xml
 bool LoadComponent(RDK::USerStorageXML *serstorage, bool links);
 
 
 private:
-// Описание класса (отсюда формируются свойства)
+// РћРїРёСЃР°РЅРёРµ РєР»Р°СЃСЃР° (РѕС‚СЃСЋРґР° С„РѕСЂРјРёСЂСѓСЋС‚СЃСЏ СЃРІРѕР№СЃС‚РІР°)
 USerStorageXML ClassDesriptionXML;
 
 };

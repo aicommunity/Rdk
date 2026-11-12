@@ -37,10 +37,10 @@
 #include "TUVisualControllerFrameUnit.h"
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 
-// Формирует из xml описания и временной метки пакет метаданных
+// Р¤РѕСЂРјРёСЂСѓРµС‚ РёР· xml РѕРїРёСЃР°РЅРёСЏ Рё РІСЂРµРјРµРЅРЅРѕР№ РјРµС‚РєРё РїР°РєРµС‚ РјРµС‚Р°РґР°РЅРЅС‹С…
 void EncodeMetaPackage(const std::string &xml_description, long long time_stamp, int channel_index, std::string &metadata);
 
-// Формирует из пакета метаданных xml описание и временную метку
+// Р¤РѕСЂРјРёСЂСѓРµС‚ РёР· РїР°РєРµС‚Р° РјРµС‚Р°РґР°РЅРЅС‹С… xml РѕРїРёСЃР°РЅРёРµ Рё РІСЂРµРјРµРЅРЅСѓСЋ РјРµС‚РєСѓ
 void DecodeMetaPackage(const std::string &metadata, std::string &xml_description, long long &time_stamp, int &channel_index);
 
 //---------------------------------------------------------------------------
@@ -66,22 +66,22 @@ std::map<std::string,std::vector<char> > ParsedRequestArgs;
 RDK::UBitmap TempUBitmap;
 
 // --------------------------
-// Методы управления сервером
+// РњРµС‚РѕРґС‹ СѓРїСЂР°РІР»РµРЅРёСЏ СЃРµСЂРІРµСЂРѕРј
 // --------------------------
-/// Возвращает порт
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ РїРѕСЂС‚
 int GetListenPort(void) const;
 
-/// Устанавливает новый порт
-/// Возвращает 0 в случае успеха
+/// РЈСЃС‚Р°РЅР°РІР»РёРІР°РµС‚ РЅРѕРІС‹Р№ РїРѕСЂС‚
+/// Р’РѕР·РІСЂР°С‰Р°РµС‚ 0 РІ СЃР»СѓС‡Р°Рµ СѓСЃРїРµС…Р°
 int SetListenPort(int port);
 
 void Init(void);
 void UnInit(void);
 
-/// Включает сервер
+/// Р’РєР»СЋС‡Р°РµС‚ СЃРµСЂРІРµСЂ
 int ServerListenOn(void);
 
-/// Выключает сервер
+/// Р’С‹РєР»СЋС‡Р°РµС‚ СЃРµСЂРІРµСЂ
 int ServerListenOff(void);
 // --------------------------
 

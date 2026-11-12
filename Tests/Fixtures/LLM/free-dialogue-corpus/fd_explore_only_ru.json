@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "id": "fd_explore_only_ru",
+  "user_text": "просто посмотри что на схеме",
+  "lang": "ru",
+  "tags": [
+    "free_dialogue",
+    "ru",
+    "edge"
+  ],
+  "expect": {
+    "orchestrator_ok": true,
+    "no_hard_task_path_fail": true,
+    "intent_hint": "query"
+  }
+}

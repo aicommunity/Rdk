@@ -4,7 +4,7 @@
 #include "UCreatorPropTemplate.h"
 namespace RDK {
 
-// Отвечает за создание функции для формирования базовых свойств
+// Base class for property creator template for component property creation
 class UBasePropCreatorTempl
 {
 
@@ -15,12 +15,12 @@ public:
 
 	static const std::vector<std::string>& GetForbiddenOutputs();
 
-	// Функция вызывает необходимые фукнции в зависимости от типа (строка) свойства
+	// Template method for creating component properties based on type (legacy)
  //	template <template<typename, typename, unsigned int> class PropType, unsigned int TypeInt>
  //	static void CreateProperty(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
 };
 
-// Основная функция создания свойств всех возможных типов (добавляется в Storage)
+// Template function for creating all properties for component (connected to Storage)
 template <class CreatorT>
 bool BaseCrPropMockTempl(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet);
 
@@ -28,14 +28,14 @@ bool BaseCrPropMockTempl(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_u
 template <class CreatorT>
 bool BaseCrPropMockTempl(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_unet)
 {
- // Проход по ТИПАМ свойств: Paramenters -> State -> Input -> Output
+ // Process in reverse order: Parameters -> State -> Input -> Output
  for(int i = serstorage->GetNumNodes() - 1; i >= 0; i--)
  {
   if(!serstorage->SelectNode(i))
    return false;
   std::string prop_type = serstorage->GetNodeName();
 
-  // Проход по конкретным свойствам внутри типа (в обратном порядке)
+  // Process all properties of this type (in reverse order)
   for(int j = 0, props = serstorage->GetNumNodes(); j < props; j++)
   {
    try{
@@ -46,45 +46,44 @@ bool BaseCrPropMockTempl(RDK::USerStorageXML* serstorage, RDK::UMockUNet* mock_u
     unsigned int io_type    = RDK::atoi(serstorage->GetNodeAttribute("IoType"));
     if(prop_type == "Parameters")
     {
-     CreatorT::template CreateProperty<ULProperty,ptPubParameter>(serstorage,mock_unet,p_type);
+     CreatorT::template CreateProperty<UProperty,ptPubParameter>(serstorage,mock_unet,p_type);
     }
     else if(prop_type == "State")
     {
-     CreatorT::template CreateProperty<ULProperty,ptPubState>(serstorage,mock_unet,p_type);
+     CreatorT::template CreateProperty<UProperty,ptPubState>(serstorage,mock_unet,p_type);
     }
     else if(prop_type == "Input")
     {
-     // проверки на запрещенные имена
+     // Check for forbidden names
      if(std::find(UBasePropCreatorTempl::GetForbiddenInputs().begin(), UBasePropCreatorTempl::GetForbiddenInputs().end(),serstorage->GetNodeName()) != UBasePropCreatorTempl::GetForbiddenInputs().end())
      {
       serstorage->SelectUp();
       continue;
      }
-     // UPropertyInputData
-     if((io_type & (ipSingle | ipData)) == (ipSingle | ipData))
+     // Unified Input property creation
+     // All property types now use UProperty directly
+     // Check only ipData (ipComp removed as legacy)
+     if((io_type & ipDataRange) == ipDataRange)
      {
-      CreatorT::template CreateProperty<UPropertyInputData,ptPubInput>(serstorage,mock_unet,p_type);
+      // Vector property
+      CreatorT::template CreateProperty<UProperty,ptPubInput>(serstorage,mock_unet,p_type);
       serstorage->SelectUp();
       continue;
      }
-     // UPropertyInputCData
-     if((io_type & (ipRange  | ipData)) == (ipRange  | ipData))
-     {
-      CreatorT::template CreateProperty<UPropertyInputCData,ptPubInput>(serstorage,mock_unet,p_type);
-      serstorage->SelectUp();
-      continue;
-     }
-     CreatorT::template CreateProperty<UPropertyInputData,ptPubInput>(serstorage,mock_unet,p_type);
+     // Regular property
+     CreatorT::template CreateProperty<UProperty,ptPubInput>(serstorage,mock_unet,p_type);
     }
     else if(prop_type == "Output")
     {
-     // проверки на запрещенные имена
+     // Check for forbidden names
      if(std::find(UBasePropCreatorTempl::GetForbiddenOutputs().begin(),UBasePropCreatorTempl::GetForbiddenOutputs().end(),serstorage->GetNodeName()) != UBasePropCreatorTempl::GetForbiddenOutputs().end())
      {
       serstorage->SelectUp();
       continue;
      }
-     CreatorT::template CreateProperty<UPropertyOutputData,ptPubOutput>(serstorage,mock_unet,p_type);
+     // Unified Output property creation
+     // All property types now use UProperty directly
+     CreatorT::template CreateProperty<UProperty,ptPubOutput>(serstorage,mock_unet,p_type);
     }
    }
    catch(UComponent::EPropertyNameAlreadyExist& )

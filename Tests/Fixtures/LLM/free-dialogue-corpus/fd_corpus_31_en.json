@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "id": "fd_corpus_31_en",
+  "user_text": "what does validate_configuration do?",
+  "lang": "en",
+  "tags": [
+    "free_dialogue",
+    "en"
+  ],
+  "expect": {
+    "orchestrator_ok": true,
+    "no_hard_task_path_fail": true
+  }
+}

@@ -9,14 +9,14 @@
 #include "../../Deploy/Include/rdk_cpp_initdll.h"
 //---------------------------------------------------------------------------
 
-/// Экземпляр класса контроллера расчета
+/// Р­РєР·РµРјРїР»СЏСЂ РєР»Р°СЃСЃР° РєРѕРЅС‚СЂРѕР»Р»РµСЂР° СЂР°СЃС‡РµС‚Р°
 extern UEngineControlVcl RdkEngineControl;
 
-/// Экзепляр класса приложения
+/// Р­РєР·РµРїР»СЏСЂ РєР»Р°СЃСЃР° РїСЂРёР»РѕР¶РµРЅРёСЏ
 extern RDK::UApplication RdkApplication;
 
 // --------------------------
-// Конструкторы и деструкторы
+// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂС‹ Рё РґРµСЃС‚СЂСѓРєС‚РѕСЂС‹
 // --------------------------
 __fastcall TResultBroadcasterThread::TResultBroadcasterThread(bool CreateSuspended)
 : TThread(CreateSuspended)
@@ -41,7 +41,7 @@ __fastcall TResultBroadcasterThread::~TResultBroadcasterThread(void)
 // --------------------------
 
 // --------------------------
-// Управление потоком
+// РЈРїСЂР°РІР»РµРЅРёРµ РїРѕС‚РѕРєРѕРј
 // --------------------------
 bool __fastcall TResultBroadcasterThread::GenerateSendString(void)
 {
@@ -142,7 +142,7 @@ void __fastcall TResultBroadcasterThread::Execute(void)
  }
 }
 
-/// Добавляет метаданные в очередь
+/// Р”РѕР±Р°РІР»СЏРµС‚ РјРµС‚Р°РґР°РЅРЅС‹Рµ РІ РѕС‡РµСЂРµРґСЊ
 bool __fastcall TResultBroadcasterThread::AddMetadataSafe(int channel_index, double time_stamp, const std::string &component_name, const std::string &property_name)
 {
  if(!SendEnableFlag)
@@ -165,7 +165,7 @@ bool __fastcall TResultBroadcasterThread::AddMetadataSafe(int channel_index, dou
 
  TServerMetadata meta;
 
- meta.TimeStamp=time_stamp*86400.0*1000.0; // TODO: Тут надо переделать ответную часть на variant-время и потом домножение можно будет убрать
+ meta.TimeStamp=time_stamp*86400.0*1000.0; // TODO: РўСѓС‚ РЅР°РґРѕ РїРµСЂРµРґРµР»Р°С‚СЊ РѕС‚РІРµС‚РЅСѓСЋ С‡Р°СЃС‚СЊ РЅР° variant-РІСЂРµРјСЏ Рё РїРѕС‚РѕРј РґРѕРјРЅРѕР¶РµРЅРёРµ РјРѕР¶РЅРѕ Р±СѓРґРµС‚ СѓР±СЂР°С‚СЊ
 
  meta.ServerId="";
 
@@ -185,7 +185,7 @@ bool __fastcall TResultBroadcasterThread::AddMetadataSafe(int channel_index, dou
  return true;
 }
 
-/// Флаг разрешения отправки
+/// Р¤Р»Р°Рі СЂР°Р·СЂРµС€РµРЅРёСЏ РѕС‚РїСЂР°РІРєРё
 bool TResultBroadcasterThread::GetSendEnableFlag(void) const
 {
  return SendEnableFlag;
@@ -214,7 +214,7 @@ __fastcall TBroadcasterForm::~TBroadcasterForm(void)
 
 
 // ---------------------------
-// Методы доступа к параметрам
+// РњРµС‚РѕРґС‹ РґРѕСЃС‚СѓРїР° Рє РїР°СЂР°РјРµС‚СЂР°Рј
 // ---------------------------
 bool TBroadcasterForm::GetBroadcastEnableFlag(void) const
 {
@@ -237,7 +237,7 @@ bool TBroadcasterForm::SetBroadcastEnableFlag(bool value)
 // ---------------------------
 
 // --------------------------
-/// Управление контроллером движка
+/// РЈРїСЂР°РІР»РµРЅРёРµ РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРј РґРІРёР¶РєР°
 // --------------------------
 RDK::UEngineControl* TBroadcasterForm::GetEngineControl(void)
 {
@@ -272,14 +272,14 @@ bool TBroadcasterForm::UnRegisterFromEngineControl(void)
  return true;
 }
 
-// Сохраняет параметры интерфейса в xml
+// РЎРѕС…СЂР°РЅСЏРµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РІ xml
 void TBroadcasterForm::ASaveParameters(RDK::USerStorageXML &xml)
 {
  AASaveParameters(xml);
  xml.WriteBool("BroadcastEnableFlag",GetBroadcastEnableFlag());
 }
 
-// Загружает параметры интерфейса из xml
+// Р—Р°РіСЂСѓР¶Р°РµС‚ РїР°СЂР°РјРµС‚СЂС‹ РёРЅС‚РµСЂС„РµР№СЃР° РёР· xml
 void TBroadcasterForm::ALoadParameters(RDK::USerStorageXML &xml)
 {
  AALoadParameters(xml);

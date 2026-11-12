@@ -29,19 +29,19 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
         <property name="spacing">
-         <number>0</number>
+    <number>0</number>
         </property>
         <property name="leftMargin">
-         <number>1</number>
+    <number>1</number>
         </property>
         <property name="topMargin">
-         <number>1</number>
+    <number>1</number>
         </property>
         <property name="rightMargin">
-         <number>1</number>
+    <number>1</number>
         </property>
         <property name="bottomMargin">
-         <number>1</number>
+    <number>1</number>
         </property>
         <item>
          <widget class="QLabel" name="labelOutputsComponentName">
@@ -90,19 +90,19 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <property name="spacing">
-         <number>0</number>
+    <number>0</number>
         </property>
         <property name="leftMargin">
-         <number>1</number>
+    <number>1</number>
         </property>
         <property name="topMargin">
-         <number>1</number>
+    <number>1</number>
         </property>
         <property name="rightMargin">
-         <number>1</number>
+    <number>1</number>
         </property>
         <property name="bottomMargin">
-         <number>1</number>
+    <number>1</number>
         </property>
         <item>
          <widget class="QLabel" name="labelInputsComponentName">
@@ -154,19 +154,19 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_3">
        <property name="spacing">
-        <number>0</number>
+    <number>0</number>
        </property>
        <property name="leftMargin">
-        <number>1</number>
+    <number>1</number>
        </property>
        <property name="topMargin">
-        <number>1</number>
+    <number>1</number>
        </property>
        <property name="rightMargin">
-        <number>1</number>
+    <number>1</number>
        </property>
        <property name="bottomMargin">
-        <number>1</number>
+    <number>1</number>
        </property>
        <item>
         <widget class="QTreeWidget" name="treeWidgetLinks">
@@ -199,13 +199,13 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <property name="topMargin">
-      <number>8</number>
+    <number>4</number>
      </property>
      <property name="rightMargin">
-      <number>2</number>
+    <number>2</number>
      </property>
      <property name="bottomMargin">
-      <number>2</number>
+    <number>2</number>
      </property>
      <item>
       <spacer name="horizontalSpacer">
