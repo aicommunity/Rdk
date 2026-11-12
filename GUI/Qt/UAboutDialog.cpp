@@ -2,6 +2,14 @@
 #include "ui_UAboutDialog.h"
 #include "rdk.h"
 
+#if defined(NMSDK_GENERATED_BUILD_VERSION)
+#include "NmsdkBuildVersion.h"
+#endif
+
+#ifndef RDK_APP_VERSION
+#define RDK_APP_VERSION "0.0.0.0 (unknown:unknown)"
+#endif
+
 UAboutDialog::UAboutDialog(QWidget *parent, RDK::UApplication *app) :
     QDialog(parent),
     ui(new Ui::AboutDialog)
@@ -19,7 +27,11 @@ UAboutDialog::UAboutDialog(QWidget *parent, RDK::UApplication *app) :
     ui->label_2->setText(QCoreApplication::applicationVersion());
 
     // Версия сборки
+#if defined(NMSDK_GENERATED_BUILD_VERSION)
+    ui->label_4->setText(QString::fromUtf8(nmsdk::build_version()));
+#else
     ui->label_4->setText(RDK_APP_VERSION);
+#endif
 
     // Пользователь
     QString user_text;
