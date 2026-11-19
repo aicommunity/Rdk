@@ -855,6 +855,13 @@ bool UNet::LoadComponent(RDK::USerStorageXML *serstorage, bool links, void* diag
 
   SetName(serstorage->GetNodeName());
 
+  // Full graph loading replaces the previous bindings. Detach them before
+  // assigning local input values: connected properties otherwise keep reading
+  // the old source while SetComponentProperties applies the saved document.
+  // Use the same native detachment as Copy, retaining the existing property /
+  // child construction order. LoadComponentProperties remains an overlay.
+  DisconnectPropertyDataSources();
+
   for(unsigned int i=0, mask=1;i<7;i++, mask<<=1)
   {
    if(serstorage->SelectNode(UVariable::GetPropertyTypeNameByType(mask)))
