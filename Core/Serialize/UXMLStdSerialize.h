@@ -136,10 +136,17 @@ template<typename T>
 USerStorageXML& USimpleFromStorage (USerStorageXML& storage, T &data)
 {
  std::string text = storage.GetNodeText();
- // Для целых чисел используем оптимизированную функцию
+ // Keep the full width of every supported integral property. atoi returns
+ // int, so it can corrupt unsigned masks and 64-bit values during native
+ // CopyProperties/XML loading before the cast to T takes place.
  if constexpr (std::is_integral_v<T>)
  {
-  data = (T)RDK::atoi(text);
+  // Preserve the existing decimal-prefix parsing convention (whitespace,
+  // optional sign and trailing text); this is not a strict config validator.
+  if constexpr (std::is_signed_v<T>)
+   data = static_cast<T>(std::strtoll(text.c_str(), nullptr, 10));
+  else
+   data = static_cast<T>(std::strtoull(text.c_str(), nullptr, 10));
  }
  else
  {
