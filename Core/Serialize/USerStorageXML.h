@@ -51,7 +51,8 @@ mutable std::string SBuffer;
 mutable std::wstring WBuffer,WBuffer2;
 #endif
 
-// Кэш для оптимизации навигации и работы со строками
+// Кэш текущего курсора. Все изменения узла и переходы сбрасывают его;
+// одинаковые имена узлов не являются идентификатором узла.
 mutable std::string CachedNodeName;
 mutable std::string CachedNodeText;
 mutable XMLNode CachedNode; // Узел, для которого кэшированы данные
@@ -67,6 +68,9 @@ mutable bool PathCached;
 mutable std::map<std::string, std::string> CachedAttributes;
 mutable XMLNode CachedAttributesNode;
 mutable bool AttributesCached;
+
+// Не меняет XML или позицию курсора. Вызывать до мутации/смены узла.
+void InvalidateNodeCache(void);
 
 
 public: // Методы
