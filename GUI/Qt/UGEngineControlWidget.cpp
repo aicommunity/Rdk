@@ -21,7 +21,10 @@
 #include <QCloseEvent>
 #include <QThread>
 #include <QFileDialog>
+#include <QFile>
 #include <QFileInfo>
+#include <QScreen>
+#include <QStatusBar>
 #include <QDir>
 #include <QMessageBox>
 #include <QTimer>
@@ -617,62 +620,64 @@ void UGEngineControlWidget::actionLoadConfig()
 
     if (fileName.isEmpty())
       return;
-    try
-    {
-      if(watchWindow == NULL)
-      {
-          watchWindow = new UWatch(this);
-          watchWindow->setWindowTitle("Watch window");
-      }
-
-
-      application->OpenProject(fileName.toLocal8Bit().constData());
-      UpdateInterface();
-
+     if (openProjectFromGui(fileName))
       registrySettings.setValue("LastConfigDialogDir", QFileInfo(fileName).absolutePath());
-
-      addToRecentConfigs(fileName);
-
-      /*QStringList list = configFileName.split("/");
-      list.pop_back();*/
-
-      RDK::UIVisualControllerStorage::UpdateInterface(true);
-    }
-    catch(RDK::UException& e)
-    {
-      QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
-    }
-    catch(std::exception& e)
-    {
-      QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
-    }
 }
 
 void UGEngineControlWidget::loadProjectExternal(const QString &config_path)
 {
- try
- {
-  if (watchWindow == NULL)
-  {
-      watchWindow = new UWatch(this);
-      watchWindow->setWindowTitle("Watch window");
-  }
+    openProjectFromGui(config_path);
+}
 
-  application->OpenProject(config_path.toLocal8Bit().constData());
-  UpdateInterface();
+bool UGEngineControlWidget::openProjectFromGui(const QString& path)
+{
+    QFile file(path);
+    if (!QFileInfo(file).isFile() || !file.open(QIODevice::ReadOnly))
+    {
+        const QString message = tr("Cannot read configuration: %1").arg(QDir::toNativeSeparators(path));
+        statusBar()->showMessage(message, 10000);
+        qWarning().noquote() << message;
+        return false;
+    }
+    file.close();
 
-  addToRecentConfigs(config_path);
+    RDK::TProjectLoadDiagnostics diagnostics;
+    bool loaded = false;
+    try
+    {
+        if (!watchWindow)
+        {
+            watchWindow = new UWatch(this, application);
+            watchWindow->setWindowTitle(tr("Watch window"));
+        }
+        loaded = application->OpenProject(path.toLocal8Bit().constData(), &diagnostics);
+    }
+    catch (const std::exception& error)
+    {
+        diagnostics.errors.emplace_back(error.what());
+    }
 
-  RDK::UIVisualControllerStorage::UpdateInterface(true);
- }
- catch(RDK::UException& e)
- {
-  QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
- }
- catch(std::exception& e)
- {
-  QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
- }
+    UpdateInterface();
+    RDK::UIVisualControllerStorage::UpdateInterface(true);
+    const bool projectOpen = application->GetProjectOpenFlag();
+    if (loaded && projectOpen && diagnostics.isValid
+        && diagnostics.channelsLoaded == diagnostics.channelsTotal)
+    {
+        addToRecentConfigs(path);
+        return true;
+    }
+
+    const QString message = projectOpen
+        ? tr("Configuration opened with problems (%1 of %2 channels): %3")
+              .arg(diagnostics.channelsLoaded).arg(diagnostics.channelsTotal).arg(path)
+        : tr("Could not open configuration: %1").arg(path);
+    const QString detail = diagnostics.errors.empty()
+        ? message : message + QStringLiteral(" — ") + QString::fromStdString(diagnostics.errors.front());
+    statusBar()->showMessage(detail, 15000);
+    qWarning().noquote() << message;
+    for (const auto& error : diagnostics.errors)
+        qWarning().noquote() << QString::fromStdString(error);
+    return false;
 }
 
 void UGEngineControlWidget::refreshLlmPresentationShell()
@@ -1909,21 +1914,35 @@ void UGEngineControlWidget::actionTestCreator()
 
 void UGEngineControlWidget::actionWatchWindow()
 {
-    if(watchWindow != NULL)
+    if (!watchWindow)
     {
-        watchWindow->show();
-        watchWindow->showNormal();
-        watchWindow->raise();
-        watchWindow->activateWindow();
+        watchWindow = new UWatch(this, application);
+        watchWindow->setWindowTitle(tr("Watch window"));
     }
-    else
+    watchWindow->setWindowState(watchWindow->windowState() & ~Qt::WindowMinimized);
+    watchWindow->show();
+    if (!watchWindow->isMaximized() && !watchWindow->isFullScreen())
     {
-        watchWindow = new UWatch(this);
-        watchWindow->setWindowTitle("Watch window");
-        watchWindow->show();
-        watchWindow->raise();
-        watchWindow->activateWindow();
+        const QRect frame = watchWindow->frameGeometry();
+        const QRect titleArea(frame.topLeft(), QSize(frame.width(), style()->pixelMetric(QStyle::PM_TitleBarHeight)));
+        const auto screens = QGuiApplication::screens();
+        const bool reachable = std::any_of(screens.cbegin(), screens.cend(), [&](QScreen* screen) {
+            const QRect visible = screen->availableGeometry().intersected(titleArea);
+            return visible.height() >= titleArea.height() / 2 && visible.width() >= qMin(80, titleArea.width());
+        });
+        if (!reachable)
+        {
+            QScreen* target = screen() ? screen() : QGuiApplication::primaryScreen();
+            if (target)
+            {
+                const QRect area = target->availableGeometry();
+                watchWindow->resize(watchWindow->size().boundedTo(area.size()));
+                watchWindow->move(area.topLeft() + QPoint(16, 16));
+            }
+        }
     }
+    watchWindow->raise();
+    watchWindow->activateWindow();
 }
 
 void UGEngineControlWidget::actionProjectDescription()
@@ -3823,8 +3842,8 @@ void UGEngineControlWidget::switchToTheme(const QString& themeName)
     }
     else
     {
-        QMessageBox::warning(this, tr("Theme Error"),
-            tr("Failed to switch to theme: %1").arg(themeName));
+        statusBar()->showMessage(tr("Theme unavailable: %1. See the log for checked locations.")
+                                     .arg(themeName), 10000);
     }
 }
 

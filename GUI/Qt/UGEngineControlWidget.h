@@ -127,6 +127,7 @@ public:
 
     /// загрузка проекта извне (используется, например, пунктами меню и автозагрузкой)
     void loadProjectExternal(const QString &config_path);
+    bool openProjectFromGui(const QString& path);
 
     /// Open help window (public method for use by child widgets). Empty topic → index.
     void openHelpWindow(const QString& topic = QString());

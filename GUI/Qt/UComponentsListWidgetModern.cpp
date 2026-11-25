@@ -2676,41 +2676,21 @@ void UComponentsListWidgetModern::showTreePopup()
     }
 
     // Вычисляем размер и позицию popup
-    QPoint globalPos = toggleModeButton->mapToGlobal(QPoint(0, toggleModeButton->height()));
-
-    // Современный способ получения геометрии экрана без использования устаревшего QDesktopWidget
-    QScreen *screen = nullptr;
-    if (window()) {
-        screen = window()->screen();
-    }
-    if (!screen) {
+    const QRect anchor(toggleModeButton->mapToGlobal(QPoint()), toggleModeButton->size());
+    QScreen* screen = QGuiApplication::screenAt(anchor.center());
+    if (!screen)
         screen = QGuiApplication::primaryScreen();
-    }
-
-    QRect screenGeometry;
-    if (screen) {
-        // Используем перегрузку без аргументов (совместимо с Qt 5.15.2)
-        screenGeometry = screen->availableGeometry();
-    } else {
-        // Резервный вариант на случай отсутствия данных об экране
-        screenGeometry = QRect(globalPos.x(), globalPos.y(), 800, 600);
-    }
-
-    // Ширина popup = минимальная ширина
-    int popupWidth = 300;
-    // Высота = доступная высота экрана минус позиция минус отступ
-    int popupHeight = qMin(screenGeometry.height() - globalPos.y() - 10, 600);
-    popupHeight = qMax(popupHeight, 200); // Минимальная высота
-
-    // Проверяем, не выходит ли popup за границы экрана
-    if (globalPos.x() + popupWidth > screenGeometry.right()) {
-        globalPos.setX(screenGeometry.right() - popupWidth);
-    }
-    if (globalPos.x() < screenGeometry.left()) {
-        globalPos.setX(screenGeometry.left());
-    }
-
-    treePopupDialog->setGeometry(globalPos.x(), globalPos.y(), popupWidth, popupHeight);
+    const QRect area = screen ? screen->availableGeometry()
+                              : QRect(anchor.bottomLeft(), QSize(800, 600));
+    const int width = qMin(300, area.width());
+    const int below = qMax(0, area.bottom() - anchor.bottom());
+    const int above = qMax(0, anchor.top() - area.top());
+    const bool openBelow = below >= qMin(600, area.height()) || below >= above;
+    const int height = qMin(600, qMin(area.height(), qMax(200, openBelow ? below : above)));
+    const int x = qBound(area.left(), anchor.left(), area.right() - width + 1);
+    const int requestedY = openBelow ? anchor.bottom() + 1 : anchor.top() - height;
+    const int y = qBound(area.top(), requestedY, area.bottom() - height + 1);
+    treePopupDialog->setGeometry(x, y, width, height);
     treePopupDialog->show();
     treePopupDialog->raise();
     treePopupDialog->activateWindow();
