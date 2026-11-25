@@ -85,7 +85,11 @@ void PlotSettingsSidePanel::buildUi()
     m_tabs->setElideMode(Qt::ElideNone);
 
     // --- Chart page ---
-    m_chartPage = new QWidget(m_tabs);
+    auto* chartScroll = new QScrollArea(m_tabs);
+    chartScroll->setWidgetResizable(true);
+    chartScroll->setFrameShape(QFrame::NoFrame);
+    m_chartPage = new QWidget(chartScroll);
+    chartScroll->setWidget(m_chartPage);
     auto* chartLayout = new QVBoxLayout(m_chartPage);
     chartLayout->setContentsMargins(4, 8, 4, 4);
     chartLayout->setSpacing(8);
@@ -236,7 +240,7 @@ void PlotSettingsSidePanel::buildUi()
     connect(m_seriesList, &QListWidget::currentRowChanged,
             this, &PlotSettingsSidePanel::onSeriesSelectionChanged);
 
-    m_tabs->addTab(m_chartPage, tr("Chart"));
+    m_tabs->addTab(chartScroll, tr("Chart"));
     m_tabs->addTab(m_seriesPage, tr("Series"));
     connect(m_tabs, &QTabWidget::currentChanged, this, &PlotSettingsSidePanel::onTabChanged);
     root->addWidget(m_tabs, 1);

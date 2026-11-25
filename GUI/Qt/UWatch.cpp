@@ -1,5 +1,6 @@
 #include "UWatch.h"
 #include "ui_UWatch.h"
+#include "WindowWorkArea.h"
 #include <QDebug>
 #include <QStringList>
 #include <QStyle>
@@ -7,7 +8,10 @@
 #include <QTimer>
 #include <QFileDialog>
 #include <QDir>
+#include <QEvent>
 #include <QMessageBox>
+#include <QScreen>
+#include <QWindow>
 
 UWatch::UWatch(QWidget *parent, RDK::UApplication* app)
     : UVisualControllerMainWidget(parent, app), ui(new Ui::UWatch)
@@ -25,6 +29,73 @@ UWatch::UWatch(QWidget *parent, RDK::UApplication* app)
 UWatch::~UWatch()
 {
     delete ui;
+}
+
+bool UWatch::event(QEvent* event)
+{
+    const bool handled = UVisualControllerMainWidget::event(event);
+    switch (event->type())
+    {
+    case QEvent::Show:
+    case QEvent::WindowStateChange:
+    case QEvent::LayoutRequest:
+        scheduleScreenFit();
+        break;
+    default:
+        break;
+    }
+    return handled;
+}
+
+void UWatch::scheduleScreenFit()
+{
+    if (!isVisible() || m_screenFitScheduled)
+        return;
+    m_screenFitScheduled = true;
+    QTimer::singleShot(0, this, [this]() {
+        m_screenFitScheduled = false;
+        fitToScreen();
+    });
+}
+
+void UWatch::fitToScreen()
+{
+    QWindow* window = windowHandle();
+    if (!isVisible() || !window || !isWindow())
+        return;
+    if (!m_screenChanged)
+        m_screenChanged = connect(window, &QWindow::screenChanged, this, &UWatch::scheduleScreenFit);
+
+    QScreen* target = window->screen();
+    if (m_fitScreen != target)
+    {
+        disconnect(m_workAreaChanged);
+        disconnect(m_dpiChanged);
+        m_fitScreen = target;
+        if (target)
+        {
+            m_workAreaChanged = connect(target, &QScreen::availableGeometryChanged,
+                                        this, &UWatch::scheduleScreenFit);
+            m_dpiChanged = connect(target, &QScreen::logicalDotsPerInchChanged,
+                                   this, &UWatch::scheduleScreenFit);
+        }
+    }
+    if (!target || isMinimized() || isMaximized() || isFullScreen())
+        return;
+
+    // Both geometries are in Qt's logical coordinates for the window's current screen.
+    const QRect workArea = target->availableGeometry();
+    const QRect frame = frameGeometry();
+    const QRect fitted = NMSDK::Gui::fitWindowFrameToWorkArea(frame, workArea);
+    if (fitted.size() != frame.size())
+    {
+        const QSize frameMargins = frame.size() - size();
+        resize((fitted.size() - frameMargins).expandedTo(QSize(1, 1)));
+    }
+    const QRect resizedFrame = frameGeometry();
+    const QRect placed = NMSDK::Gui::fitWindowFrameToWorkArea(resizedFrame, workArea);
+    if (placed.topLeft() != resizedFrame.topLeft())
+        move(placed.topLeft());
 }
 
 UWatchTab *UWatch::getCurrentTab()
@@ -127,7 +198,7 @@ void UWatch::createTab()
 
     //создаем каждую новую вкладку с именем tab + номер
     // accessibleName задаём сразу: CalcFullName() → ключ XML Interface.xml
-    tab.push_back(new UWatchTab(this));
+    tab.push_back(new UWatchTab(this, application));
     tab.last()->setAccessibleName(tabKey);
 
     ui->tabWidget->addTab(tab.last(), tabKey);

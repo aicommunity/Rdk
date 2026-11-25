@@ -389,7 +389,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
         syncStripLoggerExpanded();
     });
 
-    watchWindow = new UWatch(this);
+    watchWindow = new UWatch(this, application);
     watchWindow->setWindowTitle("Watch window");
     watchWindow->hide();
 
@@ -1812,13 +1812,17 @@ void UGEngineControlWidget::runStepBatch(quint64 generation)
 
     QElapsedTimer budget;
     budget.start();
+    using StepResult = RDK::UEngineControl::ModelStepResult;
+    StepResult result = StepResult::Unavailable;
     try
     {
         do
         {
-            application->StepChannel(-1);
+            result = application->GetEngineControl()->StepModelChannels(-1);
             if (generation != m_stepBatchGeneration)
                 return;
+            if (result != StepResult::Advanced)
+                break;
             ++m_stepsExecuted;
         } while (m_stepsExecuted < m_stepsRequested && budget.elapsed() < 8);
     }
@@ -1828,10 +1832,21 @@ void UGEngineControlWidget::runStepBatch(quint64 generation)
         statusBar()->showMessage(tr("Step run failed: %1").arg(QString::fromLocal8Bit(error.what())), 15000);
         return;
     }
+    if (result != StepResult::Advanced)
+    {
+        m_stepsRequested = 0;
+        RDK::UIVisualControllerStorage::UpdateInterface(true);
+        const QString message = result == StepResult::TimeLimitReached
+            ? tr("Step run stopped at the model time limit after %1 steps.")
+            : tr("Step run stopped after %1 steps. No channel advanced.");
+        statusBar()->showMessage(message.arg(m_stepsExecuted), 8000);
+        return;
+    }
     if (m_stepsExecuted == m_stepsRequested)
     {
-        statusBar()->showMessage(tr("Step run finished: %1 requested steps.").arg(m_stepsExecuted), 8000);
         m_stepsRequested = 0;
+        RDK::UIVisualControllerStorage::UpdateInterface(true);
+        statusBar()->showMessage(tr("Step run finished: %1 model steps.").arg(m_stepsExecuted), 8000);
         return;
     }
     statusBar()->showMessage(tr("Step run: %1 of %2. Use Pause to stop.").arg(m_stepsExecuted).arg(m_stepsRequested));
@@ -1844,7 +1859,8 @@ void UGEngineControlWidget::cancelStepBatch()
         return;
     ++m_stepBatchGeneration;
     m_stepsRequested = 0;
-    statusBar()->showMessage(tr("Step run stopped after %1 calls.").arg(m_stepsExecuted), 8000);
+    RDK::UIVisualControllerStorage::UpdateInterface(true);
+    statusBar()->showMessage(tr("Step run stopped after %1 model steps.").arg(m_stepsExecuted), 8000);
 }
 
 // window menu action
@@ -2003,26 +2019,7 @@ void UGEngineControlWidget::actionWatchWindow()
     }
     watchWindow->setWindowState(watchWindow->windowState() & ~Qt::WindowMinimized);
     watchWindow->show();
-    if (!watchWindow->isMaximized() && !watchWindow->isFullScreen())
-    {
-        const QRect frame = watchWindow->frameGeometry();
-        const QRect titleArea(frame.topLeft(), QSize(frame.width(), style()->pixelMetric(QStyle::PM_TitleBarHeight)));
-        const auto screens = QGuiApplication::screens();
-        const bool reachable = std::any_of(screens.cbegin(), screens.cend(), [&](QScreen* screen) {
-            const QRect visible = screen->availableGeometry().intersected(titleArea);
-            return visible.height() >= titleArea.height() / 2 && visible.width() >= qMin(80, titleArea.width());
-        });
-        if (!reachable)
-        {
-            QScreen* target = screen() ? screen() : QGuiApplication::primaryScreen();
-            if (target)
-            {
-                const QRect area = target->availableGeometry();
-                watchWindow->resize(watchWindow->size().boundedTo(area.size()));
-                watchWindow->move(area.topLeft() + QPoint(16, 16));
-            }
-        }
-    }
+    watchWindow->scheduleScreenFit();
     watchWindow->raise();
     watchWindow->activateWindow();
 }
@@ -2170,7 +2167,12 @@ void UGEngineControlWidget::calcOneStepChannel(int chanelIndex)
     if(!application->GetProjectOpenFlag())
         return;
 
-    application->StepChannel(chanelIndex);
+    const auto result = application->GetEngineControl()->StepModelChannels(chanelIndex);
+    RDK::UIVisualControllerStorage::UpdateInterface(true);
+    if (result == RDK::UEngineControl::ModelStepResult::TimeLimitReached)
+        statusBar()->showMessage(tr("Model time limit reached."), 8000);
+    else if (result == RDK::UEngineControl::ModelStepResult::Unavailable)
+        statusBar()->showMessage(tr("No idle channel advanced."), 8000);
 }
 
 /// Добавляет новый виджет в imagesVector
@@ -2230,7 +2232,7 @@ void UGEngineControlWidget::addWatchesWidged()
         index = watchesVector.back()->accessibleName().replace("Watches_","").toInt()+1;
 
     //создаем каждую новый виджет с именем Watches + номер
-    watchesVector.push_back(new UWatchTab(this));
+    watchesVector.push_back(new UWatchTab(this, application));
     watchesVector.back()->setAccessibleName(QString("Watches_")+RDK::sntoa(index).c_str());
     watchesVector.back()->setWindowTitle(QString("Watches_")+RDK::sntoa(index).c_str());
 

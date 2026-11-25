@@ -6,6 +6,7 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QDateTime>
+#include <QPointer>
 
 #include "NmsdkQtCompat.h"
 #include "UWatchTab.h"
@@ -17,6 +18,8 @@ namespace Ui { class UWatch; }
 QT_END_NAMESPACE
 
 NMSDK_QT_CHARTS_USE_NS
+
+class QScreen;
 
 //////////////////////////////////////////////////////////////////////////////
 // Отдельное окно для отображения графиков по заданному источнику данных
@@ -33,6 +36,7 @@ public:
     UWatchTab *getCurrentTab();
     /// Create first tab if empty (LLM / host helpers).
     UWatchTab *ensureCurrentTab();
+    void scheduleScreenFit();
 
     // Обновление интерфейса
     virtual void AUpdateInterface(void);
@@ -67,6 +71,9 @@ public:
     // Обновление темы - применяет стили ко всем табам и графикам
     void updateTheme();
 
+protected:
+    bool event(QEvent* event) override;
+
 private slots:
     void on_actionCreate_tab_triggered();
     void on_actionLayout_settings_triggered();
@@ -86,6 +93,13 @@ private:
 
     void createTab();
     void deleteTab(int index);
+    void fitToScreen();
+
+    QPointer<QScreen> m_fitScreen;
+    QMetaObject::Connection m_screenChanged;
+    QMetaObject::Connection m_workAreaChanged;
+    QMetaObject::Connection m_dpiChanged;
+    bool m_screenFitScheduled = false;
 
     Ui::UWatch *ui;
 };

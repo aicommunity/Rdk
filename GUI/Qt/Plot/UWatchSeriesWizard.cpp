@@ -1230,7 +1230,6 @@ int UWatchSeriesWizard::applyToChart(UWatchChart* chart) const
             return 0;
         if (!chart->canAddVizKind(r.viz))
             return 0;
-        int created = 0;
         for (const NMSDK::Plot::PropertyRef& ref : r.presetBindings)
         {
             if (r.viz != NMSDK::Plot::VizKind::TimeSeries)
@@ -1239,15 +1238,17 @@ int UWatchSeriesWizard::applyToChart(UWatchChart* chart) const
                 qWarning() << "Watch preset: XY vizKind not applied in v1 apply path";
                 break;
             }
+            const int previousCount = chart->countSeries();
             chart->createSerie(r.channel, ref.component, ref.property, QString(),
                                ref.jx, ref.jy, t, r.yShift);
+            if (chart->countSeries() == previousCount)
+                continue;
             const int idx = chart->countSeries() - 1;
-            if (created == 0 && !r.seriesName.isEmpty() && r.presetBindings.size() == 1)
+            if (!r.seriesName.isEmpty() && r.presetBindings.size() == 1)
                 chart->setSerieName(idx, r.seriesName);
             else if (!r.seriesName.isEmpty())
-                chart->setSerieName(idx, r.seriesName + QStringLiteral(" / %1").arg(ref.property));
+                chart->setSerieName(idx, chart->getSerieName(idx) + QStringLiteral(" / ") + r.seriesName);
             applyColor(idx);
-            ++created;
         }
         if (r.applyYRange && r.yMin < r.yMax)
         {

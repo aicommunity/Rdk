@@ -441,7 +441,7 @@ QString defaultWatchPresetsPath(RDK::UApplication* app)
     if (app && !app->GetWatchPresetsPath().empty())
     {
         const QString configured = QString::fromStdString(app->GetWatchPresetsPath());
-        if (QDir::cleanPath(configured) != QStringLiteral("../../WatchPresets") || QDir(configured).exists())
+        if (QDir::cleanPath(configured) != QStringLiteral("../../WatchPresets"))
             return configured;
         const QDir appDir(QCoreApplication::applicationDirPath());
         const QString packaged = appDir.filePath(QStringLiteral("WatchPresets"));
