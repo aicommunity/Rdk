@@ -18,6 +18,7 @@
 #include <QDir>
 #include <QDateTime>
 #include <QMessageBox>
+#include <QToolTip>
 #include <QtGlobal>
 #include <cstdio>
 
@@ -64,6 +65,7 @@ void UWatchTab::createGraph()
 {
     graph.push_back(new NMSDK::Plot::PlotSurface(this));
     graph.last()->setChartIndex(graph.count()-1);
+    graph.last()->setChartTitle(tr("Grid graph %1").arg(graph.count()));
 
     connect(graph.last(), SIGNAL(addSerieSignal(int)), this, SLOT(createSelectionDialogSlot(int)));
     connect(graph.last(), SIGNAL(openSettingsPanel(int,bool)), this, SLOT(openSettingsPanelSlot(int,bool)));
@@ -548,27 +550,46 @@ bool UWatchTab::exportChartToPath(int chartIndex, const QString& path)
     return graph[chartIndex]->exportImage(path);
 }
 
-int UWatchTab::exportAllChartsToDirectory(const QString& dirPath, const QString& extension)
+QString UWatchTab::exportGeneratedChart(int index, const QDir& dir, const QString& stem)
 {
-    QDir dir(dirPath);
-    if (!dir.exists() && !dir.mkpath(QStringLiteral(".")))
-        return 0;
-    const QString ext = extension.startsWith(QLatin1Char('.'))
-                            ? extension.mid(1)
-                            : extension;
+    const QString base = dir.filePath(stem);
+    QString path = base + QStringLiteral(".png");
+    for (int suffix = 2; QFileInfo::exists(path); ++suffix)
+        path = base + QStringLiteral("_%1.png").arg(suffix);
+    return graph[index]->exportNewImage(path) ? path : QString();
+}
+
+void UWatchTab::exportChartBatch(const QString& dirPath, const QString& timestamp)
+{
+    const QDir dir(dirPath);
     int saved = 0;
+    QStringList failed;
     for (int i = 0; i < graph.count(); ++i)
     {
         if (!graph[i])
             continue;
-        const QString name = QStringLiteral("%1_%2.%3")
-                                 .arg(i + 1, 2, 10, QLatin1Char('0'))
-                                 .arg(graph[i]->sanitizedTitleForFile())
-                                 .arg(ext);
-        if (graph[i]->exportImage(dir.filePath(name)))
+        const QString name = QStringLiteral("%1_%2").arg(i + 1, 2, 10, QLatin1Char('0'))
+                                 .arg(graph[i]->sanitizedTitleForFile());
+        const QString stem = timestamp.isEmpty() ? name : name + QLatin1Char('_') + timestamp;
+        if (!exportGeneratedChart(i, dir, stem).isEmpty())
             ++saved;
+        else
+            failed.append(stem + QStringLiteral(".png"));
     }
-    return saved;
+    QString result = tr("Saved %1 of %2 charts to %3.")
+                         .arg(saved).arg(saved + failed.size()).arg(QDir::toNativeSeparators(dirPath));
+    if (!failed.isEmpty())
+    {
+        result += tr("\nFailed to save: %1").arg(failed.join(QStringLiteral(", ")));
+        QMessageBox::warning(this, tr("Save charts"), result);
+    }
+    else
+        QToolTip::showText(QCursor::pos(), result, this);
+}
+
+void UWatchTab::exportAllChartsToDirectory(const QString& dirPath)
+{
+    exportChartBatch(dirPath);
 }
 
 void UWatchTab::onSaveChartAsRequested(int chartIndex)
@@ -631,36 +652,11 @@ QString UWatchTab::ensureQuickSaveSessionDir()
     return m_quickSaveDir;
 }
 
-int UWatchTab::quickSaveAllCharts()
+void UWatchTab::quickSaveAllCharts()
 {
     const QString dir = ensureQuickSaveSessionDir();
-    if (dir.isEmpty())
-        return 0;
-    const QString tick = QDateTime::currentDateTime().toString(QStringLiteral("HH-mm-ss"));
-    int saved = 0;
-    if (countGraphs() == 1)
-    {
-        UWatchChart* chart = getChart(0);
-        if (!chart)
-            return 0;
-        const QString path = dir + QStringLiteral("chart_%1.png").arg(tick);
-        if (exportChartToPath(0, path))
-            ++saved;
-        return saved;
-    }
-    for (int i = 0; i < graph.count(); ++i)
-    {
-        if (!graph[i])
-            continue;
-        const QString path = dir
-                             + QStringLiteral("%1_%2_%3.png")
-                                   .arg(i + 1, 2, 10, QLatin1Char('0'))
-                                   .arg(graph[i]->sanitizedTitleForFile())
-                                   .arg(tick);
-        if (exportChartToPath(i, path))
-            ++saved;
-    }
-    return saved;
+    if (!dir.isEmpty())
+        exportChartBatch(dir, QDateTime::currentDateTime().toString(QStringLiteral("HH-mm-ss")));
 }
 
 bool UWatchTab::quickSaveOneChart(int chartIndex)
@@ -672,16 +668,16 @@ bool UWatchTab::quickSaveOneChart(int chartIndex)
     if (!chart)
         return false;
     const QString tick = QDateTime::currentDateTime().toString(QStringLiteral("HH-mm-ss"));
-    const QString path = dir
-                         + QStringLiteral("%1_%2_%3.png")
-                               .arg(chartIndex + 1, 2, 10, QLatin1Char('0'))
-                               .arg(chart->sanitizedTitleForFile())
-                               .arg(tick);
-    if (!exportChartToPath(chartIndex, path))
+    const QString stem = QStringLiteral("%1_%2_%3")
+                             .arg(chartIndex + 1, 2, 10, QLatin1Char('0'))
+                             .arg(chart->sanitizedTitleForFile(), tick);
+    const QString path = exportGeneratedChart(chartIndex, QDir(dir), stem);
+    if (path.isEmpty())
     {
-        QMessageBox::warning(this, tr("Quick save"), tr("Failed to save chart."));
+        QMessageBox::warning(this, tr("Quick save"), tr("Failed to save %1 in %2.").arg(stem, dir));
         return false;
     }
+    QToolTip::showText(QCursor::pos(), tr("Saved %1").arg(QDir::toNativeSeparators(path)), this);
     return true;
 }
 
@@ -844,9 +840,6 @@ void UWatchTab::createGridLayout(int rowNumber, int colNumber)
         QList<int> sizes;
         for(int j=0; j < colNumber; j++)
         {
-            //createGraph();
-            graph[k]->setChartTitle(QString("Grid graph %1").arg(QString::number((i)*colNumber+j+1)));
-
             rowSplitter[i]->addWidget(graph[k]);
             sizes.push_back(width/colNumber);
             k++;
@@ -1057,9 +1050,8 @@ void UWatchTab::applyPlotDocument(const NMSDK::Plot::PlotDocument& doc)
                 continue;
             if (!serie.visual.displayName.isEmpty())
                 chart->setSerieName(idx, serie.visual.displayName);
-            chart->setSerieWidth(idx, serie.visual.width);
-            chart->setSerieLineType(idx, static_cast<Qt::PenStyle>(serie.visual.penStyle));
-            chart->getSerie(idx)->setColor(serie.visual.color);
+            chart->setSerieStyle(idx, serie.visual.color, serie.visual.width,
+                                static_cast<Qt::PenStyle>(serie.visual.penStyle));
             chart->getSerie(idx)->windowSize = serie.binding.windowSize;
             chart->getSerie(idx)->xyMinIntervalMs = serie.binding.xyMinIntervalMs;
             chart->getSerie(idx)->xyMinDistance = serie.binding.xyMinDistance;

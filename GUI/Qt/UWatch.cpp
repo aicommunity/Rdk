@@ -105,9 +105,7 @@ void UWatch::on_actionSave_all_charts_triggered()
     if (dir.isEmpty())
         return;
 
-    const int n = current_tab->exportAllChartsToDirectory(dir, QStringLiteral("png"));
-    if (n <= 0)
-        QMessageBox::warning(this, tr("Save all charts"), tr("No charts were saved."));
+    current_tab->exportAllChartsToDirectory(dir);
 }
 
 void UWatch::on_actionQuick_save_triggered()
@@ -115,9 +113,7 @@ void UWatch::on_actionQuick_save_triggered()
     UWatchTab* current_tab = getCurrentTab();
     if (!current_tab || current_tab->countGraphs() <= 0)
         return;
-    const int n = current_tab->quickSaveAllCharts();
-    if (n <= 0)
-        return; // errors already shown when path missing
+    current_tab->quickSaveAllCharts();
 }
 
 void UWatch::createTab()

@@ -1,5 +1,4 @@
 #include "UWatchLayoutDialog.h"
-
 #include "../UWatchTab.h"
 
 #include <QComboBox>
@@ -9,6 +8,7 @@
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QPushButton>
 #include <QSpinBox>
 #include <QVBoxLayout>
 
@@ -106,6 +106,11 @@ void UWatchLayoutDialog::buildUi()
             this, &UWatchLayoutDialog::onCustomSpinChanged);
     connect(m_colsSpin, QOverload<int>::of(&QSpinBox::valueChanged),
             this, &UWatchLayoutDialog::onCustomSpinChanged);
+    m_removalNote = new QLabel(this);
+    m_removalNote->setWordWrap(true);
+    m_removalNote->setTextFormat(Qt::PlainText);
+    root->insertWidget(root->indexOf(buttons), m_removalNote);
+    m_applyButton = buttons->button(QDialogButtonBox::Ok);
     connect(buttons, &QDialogButtonBox::accepted, this, &UWatchLayoutDialog::acceptAndApply);
     connect(buttons, &QDialogButtonBox::rejected, this, &QDialog::reject);
 }
@@ -195,6 +200,19 @@ void UWatchLayoutDialog::updatePreview(int rows, int cols)
     }
     rows = qBound(1, rows, 8);
     cols = qBound(1, cols, 8);
+    QStringList removed;
+    if (m_tab)
+    {
+        for (int index = rows * cols; index < m_tab->countGraphs(); ++index)
+        {
+            const QString title = m_tab->getChart(index)->getChartTitle();
+            removed.append(title.isEmpty() ? tr("Chart %1").arg(index + 1) : title);
+        }
+    }
+    m_removalNote->setVisible(!removed.isEmpty());
+    m_removalNote->setText(removed.isEmpty() ? QString()
+        : tr("Charts to be removed: %1").arg(removed.join(QStringLiteral(", "))));
+    m_applyButton->setText(removed.isEmpty() ? tr("OK") : tr("Remove charts and apply"));
     for (int r = 0; r < rows; ++r)
     {
         for (int c = 0; c < cols; ++c)
@@ -218,7 +236,8 @@ void UWatchLayoutDialog::acceptAndApply()
     }
     const auto grid = currentGrid();
     m_tab->saveUpdateInterval(m_intervalSpin->value());
-    m_tab->createGridLayout(grid.first, grid.second);
+    if (grid.first != m_tab->getRowNumber() || grid.second != m_tab->getColNumber())
+        m_tab->createGridLayout(grid.first, grid.second);
     m_tab->syncDocumentFromCharts();
     accept();
 }

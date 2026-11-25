@@ -65,8 +65,8 @@ public:
     /// Ensures session folder `<SavedWatches>/<datetime>/`; empty on failure.
     QString ensureQuickSaveSessionDir();
     bool exportChartToPath(int chartIndex, const QString& path);
-    int exportAllChartsToDirectory(const QString& dirPath, const QString& extension = QStringLiteral("png"));
-    int quickSaveAllCharts();
+    void exportAllChartsToDirectory(const QString& dirPath);
+    void quickSaveAllCharts();
     bool quickSaveOneChart(int chartIndex);
 
     virtual void ASaveParameters(RDK::USerStorageXML &xml);
@@ -88,6 +88,8 @@ private:
     void updateInspectorSplitterSizes(bool show);
     void updateExpandActionsVisibility();
     void restoreExpandedSplitterSizes();
+    QString exportGeneratedChart(int index, const QDir& dir, const QString& stem);
+    void exportChartBatch(const QString& dirPath, const QString& timestamp = QString());
 
     int tabColNumber=0;
     int tabRowNumber=0;
