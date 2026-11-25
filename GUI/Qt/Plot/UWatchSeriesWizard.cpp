@@ -12,6 +12,7 @@
 #include "rdk.h"
 #include <rdk_application.h>
 #include "../../Core/Engine/UContainerDescription.h"
+#include "../../Core/Engine/UController.h"
 #include "../../Core/Engine/UStorage.h"
 
 #include <QAbstractButton>
@@ -30,6 +31,7 @@
 #include <QLocale>
 #include <QMessageBox>
 #include <QPixmap>
+#include <QPushButton>
 #include <QRadioButton>
 #include <QScrollArea>
 #include <QFrame>
@@ -38,7 +40,36 @@
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QWizardPage>
+#include <algorithm>
 namespace watch_wizard {
+
+QString firstUnavailableSource(const UWatchSeriesWizardResult& result)
+{
+    if (result.manualBindings.isEmpty())
+        return {};
+
+    if (result.channel != Core_GetSelectedChannelIndex())
+        return QObject::tr("The active channel changed. Select the sources again.");
+
+    const auto model = RDK::GetModelLock<RDK::UContainer>(result.channel);
+    if (!model)
+        return QObject::tr("The selected channel is unavailable.");
+
+    for (const auto& ref : result.manualBindings)
+    {
+        const auto component = model->GetComponentL(ref.component.toStdString(), true);
+        const auto property = component ? component->FindProperty(ref.property.toStdString())
+                                        : RDK::UEPtr<RDK::UIProperty>();
+        RDK::UControllerDataReader probe;
+        if (!property || !probe.Configure(component, property))
+            return QObject::tr("Source %1.%2 is unavailable.").arg(ref.component, ref.property);
+        probe.SetMatrixCoord(ref.jx, ref.jy);
+        if (!probe.Update())
+            return QObject::tr("Source %1.%2 (%3, %4) is unavailable.")
+                .arg(ref.component, ref.property).arg(ref.jx).arg(ref.jy);
+    }
+    return {};
+}
 
 MatrixPickMode formToPickMode(UWatchSeriesWizardResult::Form form)
 {
@@ -194,8 +225,10 @@ private:
                             static_cast<int>(UWatchSeriesWizardResult::Form::WholeRow));
             m_form->addItem(QObject::tr("Whole column → multiple series"),
                             static_cast<int>(UWatchSeriesWizardResult::Form::WholeColumn));
+            m_form->addItem(QObject::tr("Several properties or components"),
+                            static_cast<int>(UWatchSeriesWizardResult::Form::SeveralSources));
             m_form->setEnabled(true);
-            m_hint->setText(QObject::tr("Y(t): one property vs time. Matrix forms can create several series."));
+            m_hint->setText(QObject::tr("Y(t): select one or more properties to plot against time."));
         }
         else
         {
@@ -237,7 +270,47 @@ public:
         if (wizard)
             m_picker->configureForWatch(wizard->app(), true);
 
+        m_sourcesPanel = new QWidget(this);
+        auto* sourcesLayout = new QVBoxLayout(m_sourcesPanel);
+        sourcesLayout->setContentsMargins(0, 0, 0, 0);
+        m_sources = new QListWidget(m_sourcesPanel);
+        m_sources->setAccessibleName(tr("Selected Watch sources"));
+        m_sources->setMaximumHeight(100);
+        sourcesLayout->addWidget(m_sources);
+        auto* buttons = new QHBoxLayout;
+        m_addSource = new QPushButton(tr("Add selected source"), m_sourcesPanel);
+        m_removeSource = new QPushButton(tr("Remove from list"), m_sourcesPanel);
+        buttons->addWidget(m_addSource);
+        buttons->addWidget(m_removeSource);
+        buttons->addStretch();
+        sourcesLayout->addLayout(buttons);
+        root->addWidget(m_sourcesPanel);
+        m_sourcesPanel->hide();
+
         connect(m_picker, &UWatchSourcePickerWidget::selectionChanged, this, [this]() {
+            notifyComplete();
+        });
+        connect(m_sources, &QListWidget::currentRowChanged, this, [this](int) {
+            notifyComplete();
+        });
+        connect(m_addSource, &QPushButton::clicked, this, [this]() {
+            if (!canAddSource())
+                return;
+            const auto ref = selectedSource();
+            m_sourceChannel = m_picker->channelIndex();
+            m_bindings.push_back(ref);
+            m_sources->addItem(QStringLiteral("%1.%2 (%3, %4)")
+                                   .arg(ref.component, ref.property).arg(ref.jx).arg(ref.jy));
+            m_sources->setCurrentRow(m_sources->count() - 1);
+            notifyComplete();
+        });
+        connect(m_removeSource, &QPushButton::clicked, this, [this]() {
+            const int row = m_sources->currentRow();
+            if (row >= 0)
+            {
+                m_bindings.removeAt(row);
+                delete m_sources->takeItem(row);
+            }
             notifyComplete();
         });
     }
@@ -247,11 +320,15 @@ public:
         const auto viz = m_wizard->selectedViz();
         const auto form = m_wizard->selectedForm();
         const bool xy = (viz != NMSDK::Plot::VizKind::TimeSeries);
+        m_chooseSeveral = form == UWatchSeriesWizardResult::Form::SeveralSources;
+        m_sourcesPanel->setVisible(m_chooseSeveral);
         setTitle(xy ? QObject::tr("Y source") : QObject::tr("Y(t) source"));
         setSubTitle(xy ? QObject::tr("Select the Y property for the XY pair.")
                        : QObject::tr("Select the Y property vs time."));
         m_picker->setMatrixPickMode(formToPickMode(form));
         m_picker->setTimeSeriesCompactMode(!xy);
+        if (m_chooseSeveral)
+            setSubTitle(tr("Add properties from the active channel to the list. Each source becomes a separate series."));
         if (xy && (form == UWatchSeriesWizardResult::Form::WholeRow
                    || form == UWatchSeriesWizardResult::Form::WholeColumn))
         {
@@ -264,6 +341,8 @@ public:
 
     bool isComplete() const override
     {
+        if (m_chooseSeveral)
+            return !m_bindings.isEmpty() && m_sourceChannel == Core_GetSelectedChannelIndex();
         return m_picker && m_picker->isComplete();
     }
 
@@ -279,10 +358,35 @@ public:
     }
 
     UWatchSourcePickerWidget* picker() const { return m_picker; }
+    const QVector<NMSDK::Plot::PropertyRef>& sources() const { return m_bindings; }
+    int sourceChannel() const { return m_sourceChannel; }
 
 private:
+    NMSDK::Plot::PropertyRef selectedSource() const
+    {
+        const auto cells = m_picker->cells();
+        const auto cell = cells.isEmpty() ? UWatchMatrixSelector::CellRef{0, 0} : cells.front();
+        return {m_picker->componentLongName(), m_picker->propertyName(),
+                cell.jx, cell.jy, NMSDK::Plot::SliceKind::Cell};
+    }
+
+    bool canAddSource() const
+    {
+        if (!m_chooseSeveral || !m_picker->isComplete()
+            || m_picker->channelIndex() != Core_GetSelectedChannelIndex()
+            || (!m_bindings.isEmpty() && m_picker->channelIndex() != m_sourceChannel))
+            return false;
+        const auto selected = selectedSource();
+        return std::none_of(m_bindings.cbegin(), m_bindings.cend(), [&selected](const auto& ref) {
+            return ref.component == selected.component && ref.property == selected.property
+                && ref.jx == selected.jx && ref.jy == selected.jy;
+        });
+    }
+
     void notifyComplete()
     {
+        m_addSource->setEnabled(canAddSource());
+        m_removeSource->setEnabled(m_sources->currentRow() >= 0);
         emit completeChanged();
         if (QWizard* w = wizard())
         {
@@ -293,6 +397,13 @@ private:
 
     UWatchSeriesWizard* m_wizard = nullptr;
     UWatchSourcePickerWidget* m_picker = nullptr;
+    QWidget* m_sourcesPanel = nullptr;
+    QListWidget* m_sources = nullptr;
+    QPushButton* m_addSource = nullptr;
+    QPushButton* m_removeSource = nullptr;
+    QVector<NMSDK::Plot::PropertyRef> m_bindings;
+    int m_sourceChannel = -1;
+    bool m_chooseSeveral = false;
 };
 
 class XSourcePage : public QWizardPage
@@ -619,7 +730,8 @@ private:
         double ymin = -1.0;
         double ymax = 1.0;
         QString yNote;
-        const bool hasY = lookupClDescrRange(r.yComponent, r.yProperty, r.channel, ymin, ymax, yNote);
+        const bool hasY = r.manualBindings.size() <= 1
+            && lookupClDescrRange(r.yComponent, r.yProperty, r.channel, ymin, ymax, yNote);
         if (hasY)
         {
             m_yMin->setValue(ymin);
@@ -743,7 +855,7 @@ public:
 
     bool isComplete() const override
     {
-        return !componentLongName().isEmpty() && !m_className.isEmpty();
+        return !m_className.isEmpty();
     }
 
     int nextId() const override
@@ -756,7 +868,7 @@ private:
     {
         m_className.clear();
         const QString longName = componentLongName();
-        if (longName.isEmpty() || !m_wizard)
+        if (!m_picker->hasSelectedComponent())
         {
             m_classLabel->setText(QObject::tr("No component selected."));
             return;
@@ -1023,6 +1135,18 @@ void UWatchSeriesWizard::captureYSourceIntoResult()
     if (!y)
         return;
 
+    m_result.manualBindings.clear();
+    if (m_result.form == UWatchSeriesWizardResult::Form::SeveralSources && !yPage->sources().isEmpty())
+    {
+        m_result.manualBindings = yPage->sources();
+        const auto& first = m_result.manualBindings.front();
+        m_result.channel = yPage->sourceChannel();
+        m_result.yComponent = first.component;
+        m_result.yProperty = first.property;
+        m_result.yCells = {{first.jx, first.jy}};
+        return;
+    }
+
     m_result.channel = y->channelIndex();
     m_result.yComponent = y->componentLongName();
     m_result.yProperty = y->propertyName();
@@ -1139,12 +1263,23 @@ int UWatchSeriesWizard::applyToChart(UWatchChart* chart) const
 
     if (r.viz == NMSDK::Plot::VizKind::TimeSeries)
     {
-        for (const auto& c : r.yCells)
+        if (!watch_wizard::firstUnavailableSource(r).isEmpty())
+            return 0;
+        auto bindings = r.manualBindings;
+        if (bindings.isEmpty())
         {
-            chart->createSerie(r.channel, r.yComponent, r.yProperty, QString(),
-                               c.jx, c.jy, t, r.yShift);
+            for (const auto& cell : r.yCells)
+                bindings.push_back({r.yComponent, r.yProperty, cell.jx, cell.jy});
+        }
+        for (const auto& ref : bindings)
+        {
+            const int count = chart->countSeries();
+            chart->createSerie(r.channel, ref.component, ref.property, QString(),
+                               ref.jx, ref.jy, t, r.yShift);
+            if (chart->countSeries() == count)
+                continue;
             const int idx = chart->countSeries() - 1;
-            if (!r.seriesName.isEmpty() && r.yCells.size() == 1)
+            if (!r.seriesName.isEmpty() && bindings.size() == 1)
                 chart->setSerieName(idx, r.seriesName);
             applyColor(idx);
         }
@@ -1247,6 +1382,12 @@ void UWatchSeriesWizard::accept()
     if (m_result.viz != NMSDK::Plot::VizKind::TimeSeries
         && (m_result.xComponent.isEmpty() || m_result.xProperty.isEmpty()))
         return;
+    const QString unavailable = watch_wizard::firstUnavailableSource(m_result);
+    if (!unavailable.isEmpty())
+    {
+        QMessageBox::warning(this, tr("Watch sources"), unavailable);
+        return;
+    }
 
     QWizard::accept();
 }

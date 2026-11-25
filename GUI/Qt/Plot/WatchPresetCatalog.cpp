@@ -367,10 +367,10 @@ QVector<NMSDK::Plot::PropertyRef> WatchPresetCatalog::resolve(const WatchPreset&
                                                               QString* errorOut) const
 {
     QVector<NMSDK::Plot::PropertyRef> out;
-    if (rootLongName.isEmpty() || preset.series.isEmpty())
+    if (preset.series.isEmpty())
     {
         if (errorOut)
-            *errorOut = QObject::tr("Missing component or empty preset.");
+            *errorOut = QObject::tr("Empty preset.");
         return {};
     }
 
@@ -387,7 +387,12 @@ QVector<NMSDK::Plot::PropertyRef> WatchPresetCatalog::resolve(const WatchPreset&
     {
         QString full = rootLongName;
         if (!s.path.isEmpty())
-            full = rootLongName + QLatin1Char('.') + s.path;
+            full = rootLongName.isEmpty() ? s.path : rootLongName + QLatin1Char('.') + s.path;
+        if (full.isEmpty())
+        {
+            failures << QObject::tr("Model.%1 (direct root property is unsupported)").arg(s.property);
+            continue;
+        }
 
         RDK::UEPtr<RDK::UContainer> cont = model->GetComponentL(full.toStdString(), true);
         if (!cont)

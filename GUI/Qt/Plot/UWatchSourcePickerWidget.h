@@ -33,6 +33,7 @@ public:
 
     int channelIndex() const;
     QString componentLongName() const;
+    bool hasSelectedComponent() const;
     QString propertyName() const;
     QVector<UWatchMatrixSelector::CellRef> cells() const;
     bool isComplete() const;

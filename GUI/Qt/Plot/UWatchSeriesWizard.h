@@ -31,13 +31,15 @@ struct UWatchSeriesWizardResult
         SingleCell = 0,
         MultiCells = 1,
         WholeRow = 2,
-        WholeColumn = 3
+        WholeColumn = 3,
+        SeveralSources = 4
     } form = Form::SingleCell;
 
     int channel = 0;
     QString yComponent;
     QString yProperty;
     QVector<UWatchMatrixSelector::CellRef> yCells;
+    QVector<NMSDK::Plot::PropertyRef> manualBindings;
     QString xComponent;
     QString xProperty;
     UWatchMatrixSelector::CellRef xCell{};
