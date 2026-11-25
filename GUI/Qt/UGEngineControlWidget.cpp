@@ -1769,10 +1769,22 @@ void UGEngineControlWidget::actionStep()
   calcOneStepChannel(-1);
 }
 
+static bool singleThreadCalculationRunning(RDK::UApplication* application)
+{
+    // The single-thread engine is scheduled by Qt's timer, not a channel worker.
+    return application->GetEngineControl()->GetThreadMode() == 0
+        && UVisualControllerWidget::CalculationModeFlag.Get();
+}
+
 void UGEngineControlWidget::actionRunNSteps()
 {
     if (!application->GetProjectOpenFlag() || m_stepsRequested)
         return;
+    if (singleThreadCalculationRunning(application))
+    {
+        statusBar()->showMessage(tr("Pause calculation before running steps."), 8000);
+        return;
+    }
     for (int channel = 0; channel < application->GetNumChannels(); ++channel)
     {
         const auto state = application->CheckCalcState(channel);
@@ -1804,7 +1816,7 @@ void UGEngineControlWidget::runStepBatch(quint64 generation)
 {
     if (generation != m_stepBatchGeneration || !m_stepsRequested)
         return;
-    if (!application->GetProjectOpenFlag())
+    if (!application->GetProjectOpenFlag() || singleThreadCalculationRunning(application))
     {
         cancelStepBatch();
         return;
@@ -2166,6 +2178,11 @@ void UGEngineControlWidget::calcOneStepChannel(int chanelIndex)
     cancelStepBatch();
     if(!application->GetProjectOpenFlag())
         return;
+    if (singleThreadCalculationRunning(application))
+    {
+        statusBar()->showMessage(tr("Pause calculation before running steps."), 8000);
+        return;
+    }
 
     const auto result = application->GetEngineControl()->StepModelChannels(chanelIndex);
     RDK::UIVisualControllerStorage::UpdateInterface(true);
