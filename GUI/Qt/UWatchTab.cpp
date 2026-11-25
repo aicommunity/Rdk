@@ -66,6 +66,9 @@ void UWatchTab::createGraph()
     graph.push_back(new NMSDK::Plot::PlotSurface(this));
     graph.last()->setChartIndex(graph.count()-1);
     graph.last()->setChartTitle(tr("Grid graph %1").arg(graph.count()));
+    connect(graph.last(), &UWatchChart::viewportChanged, this, [this]() {
+        UpdateInterface(true);
+    }, Qt::QueuedConnection);
 
     connect(graph.last(), SIGNAL(addSerieSignal(int)), this, SLOT(createSelectionDialogSlot(int)));
     connect(graph.last(), SIGNAL(openSettingsPanel(int,bool)), this, SLOT(openSettingsPanelSlot(int,bool)));
@@ -179,8 +182,12 @@ void UWatchTab::AUpdateInterface()
             }
             else
             {
-                samplePoints = NMSDK::Plot::sampleTimeSeries(
-                    env.Get(), dto, current_serie->YShift);
+                UWatchChart* chart = graph[graphIndex];
+                if (chart->checkZoomed())
+                    samplePoints = NMSDK::Plot::sampleTimeSeries(env.Get(), dto, current_serie->YShift,
+                                                                 chart->getAxisXmin(), chart->getAxisXmax());
+                else
+                    samplePoints = NMSDK::Plot::sampleTimeSeries(env.Get(), dto, current_serie->YShift);
             }
 
             if (!current_serie->isMatrixSliceXY())
@@ -199,41 +206,7 @@ void UWatchTab::AUpdateInterface()
 
             if (!samplePoints.isEmpty())
             {
-                // XY is sorted by X — never incremental-append (new point may land mid-series).
-                if (isXY)
-                {
-                    current_serie->replace(samplePoints);
-                }
-                else
-                {
-                    // Incremental append when only one new point; else full replace.
-                    const int oldCount = current_serie->count();
-                    const int newCount = samplePoints.size();
-                    if (oldCount > 0 && newCount == oldCount + 1
-                        && current_serie->at(oldCount - 1) == samplePoints.at(oldCount - 1))
-                    {
-                        current_serie->append(samplePoints.last());
-                    }
-                    else
-                    {
-                        const int decimationThreshold = 8000;
-                        if (newCount > decimationThreshold)
-                        {
-                            QVector<QPointF> decimated;
-                            const int step = (newCount + decimationThreshold - 1) / decimationThreshold;
-                            decimated.reserve(newCount / step + 1);
-                            for (int p = 0; p < newCount; p += step)
-                                decimated.push_back(samplePoints.at(p));
-                            if (decimated.last() != samplePoints.last())
-                                decimated.push_back(samplePoints.last());
-                            current_serie->replace(decimated);
-                        }
-                        else
-                        {
-                            current_serie->replace(samplePoints);
-                        }
-                    }
-                }
+                current_serie->replace(samplePoints);
 
                 if (!isXY)
                 {
@@ -323,8 +296,8 @@ void UWatchTab::AUpdateInterface()
                 if (graph[graphIndex]->countSeries() > 0)
                 {
                     UWatchSerie* s0 = graph[graphIndex]->getSerie(0);
-                    RDK::UControllerDataReader* rd = s0 ? s0->data_reader : nullptr;
-                    if (!rd && s0 && env)
+                    RDK::UControllerDataReader* rd = nullptr;
+                    if (s0 && env)
                     {
                         rd = env->GetDataReader(
                             s0->nameComponent.toStdString(),

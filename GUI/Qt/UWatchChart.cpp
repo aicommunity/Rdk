@@ -381,11 +381,7 @@ void UWatchChart::createSerieXY(int channelIndex,
     }
 
     if (!NMSDK::Plot::isXYFamily(vizKind))
-    {
         setVizKind(viz);
-        if (getAxisXName() == QStringLiteral("time, sec"))
-            setAxisXname(QStringLiteral("X"));
-    }
     connectSerieTooltip(series.last());
     emit UpdateTabGuiSignal(false);
 }
@@ -487,6 +483,8 @@ void UWatchChart::updateTimeIntervals(double value)
     setAxisXrange(value);
 
     RDK::UELockPtr<RDK::UEnvironment> env = RDK::GetEnvironmentLock();
+    if (!env)
+        return;
     for (int i = 0; i < series.size(); i++)
     {
         UWatchSerie* serie = series[i];
@@ -496,20 +494,11 @@ void UWatchChart::updateTimeIntervals(double value)
         if (NMSDK::Plot::isXYFamily(serie->vizKind))
             continue;
 
-        RDK::UControllerDataReader* reader = serie->data_reader;
-        if (env)
-        {
-            RDK::UControllerDataReader* live = env->GetDataReader(
-                serie->nameComponent.toStdString(),
-                serie->nameProperty.toStdString(),
-                serie->Jx < 0 ? 0 : serie->Jx,
-                serie->Jy < 0 ? 0 : serie->Jy);
-            if (live)
-            {
-                reader = live;
-                serie->data_reader = live;
-            }
-        }
+        RDK::UControllerDataReader* reader = env->GetDataReader(
+            serie->nameComponent.toStdString(),
+            serie->nameProperty.toStdString(),
+            serie->Jx < 0 ? 0 : serie->Jx,
+            serie->Jy < 0 ? 0 : serie->Jy);
         if (!reader)
             continue;
 
@@ -569,6 +558,7 @@ void UWatchChart::updateAxes(double x_min, double x_max, double y_min, double y_
     {
         restoreInitialAxesState();
         setInteractionTrackLatest(true);
+        emit viewportChanged();
         emit UpdateTabGuiSignal(false);
         return;
     }
@@ -585,6 +575,7 @@ void UWatchChart::updateAxes(double x_min, double x_max, double y_min, double y_
     setAxisYmin(y_min);
     setAxisYmax(y_max);
 
+    emit viewportChanged();
     emit UpdateTabGuiSignal(false);
 }
 
@@ -919,16 +910,11 @@ void UWatchChart::onModeExpand()
 
 void UWatchChart::setVizKind(NMSDK::Plot::VizKind kind)
 {
+    const bool defaultTimeAxis = !NMSDK::Plot::isXYFamily(vizKind)
+        && NMSDK::Plot::isXYFamily(kind) && getAxisXName() == QStringLiteral("time, sec");
     vizKind = kind;
-    for (int i = 0; i < series.size(); ++i)
-    {
-        if (series[i]
-            && series[i]->vizKind == NMSDK::Plot::VizKind::TimeSeries
-            && (kind == NMSDK::Plot::VizKind::XYLine || kind == NMSDK::Plot::VizKind::XYScatter))
-        {
-            // Keep existing time series as-is; panel-level viz is a default for new series.
-        }
-    }
+    if (defaultTimeAxis)
+        setAxisXname(QStringLiteral("X"));
 }
 
 bool UWatchChart::isLegendVisible() const
@@ -994,6 +980,7 @@ void UWatchChart::resetViewport()
     isAxisXtrackable = true;
     if (actTrack)
         actTrack->setChecked(true);
+    emit viewportChanged();
     emit UpdateTabGuiSignal(false);
 }
 

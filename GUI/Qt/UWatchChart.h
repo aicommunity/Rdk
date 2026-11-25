@@ -237,6 +237,7 @@ private slots:
 signals:
     void addSerieSignal(int someIndex);
     void UpdateTabGuiSignal(bool force_update);
+    void viewportChanged();
     void openSettingsPanel(int chartIndex, bool seriesPage);
     void chartActivated(int chartIndex);
     void expandToggleRequested(int chartIndex);

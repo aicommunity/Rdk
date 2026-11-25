@@ -6,6 +6,7 @@
 #include <QPointF>
 #include <QVector>
 #include <QtGlobal>
+#include <limits>
 
 namespace RDK
 {
@@ -23,7 +24,9 @@ RDK::UControllerDataReader* getPropertyReader(RDK::UEnvironment* env, const Prop
 
 QVector<QPointF> sampleTimeSeries(RDK::UEnvironment* env,
                                   const PlotSeries& series,
-                                  double yOffset);
+                                  double yOffset,
+                                  double viewMin = -std::numeric_limits<double>::infinity(),
+                                  double viewMax = std::numeric_limits<double>::infinity());
 
 QVector<QPointF> samplePropertyPair(RDK::UEnvironment* env,
                                     const PlotSeries& series,

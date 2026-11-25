@@ -553,6 +553,7 @@ void PlotSettingsSidePanel::applyChartLive()
     chart->setLegendVisible(m_legendVisible->isChecked());
     chart->setTitleVisible(m_titleVisible->isChecked());
     chart->setVizKind(viz);
+    m_axisXEdit->setText(chart->getAxisXName());
     chart->fixInitialAxesState();
     m_tab->syncDocumentFromCharts();
     updateHero();

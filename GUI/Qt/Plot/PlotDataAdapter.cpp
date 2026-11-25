@@ -1,4 +1,5 @@
 #include "PlotDataAdapter.h"
+#include "TimeSeriesEnvelope.h"
 
 #include "../../Core/Engine/UController.h"
 #include "../../Core/Engine/UEnvironment.h"
@@ -54,45 +55,14 @@ static QVector<QPointF> sortedByAscendingX(const QVector<QPointF>& ring)
 
 QVector<QPointF> sampleTimeSeries(RDK::UEnvironment* env,
                                   const PlotSeries& series,
-                                  double yOffset)
+                                  double yOffset,
+                                  double viewMin,
+                                  double viewMax)
 {
-    QVector<QPointF> points;
     RDK::UControllerDataReader* reader = getPropertyReader(env, series.binding.y.prop);
     if (!reader)
-        return points;
-
-    // Pass-through: reader owns history (TimeInterval / NumPoints). Do not trim by
-    // windowSize or TimeInterval again — that competed with Track and clipped ends.
-    const std::list<double>& XData = reader->XData;
-    const std::list<double>& YData = reader->YData;
-    const int n = static_cast<int>(qMin(XData.size(), YData.size()));
-    if (n <= 0)
-        return points;
-
-    // Draw-budget decimation only; always keep first and last samples.
-    constexpr int kDrawBudget = 8000;
-    points.reserve(n > kDrawBudget ? kDrawBudget + 1 : n);
-    if (n <= kDrawBudget)
-    {
-        auto itx = XData.begin();
-        auto ity = YData.begin();
-        for (int i = 0; i < n; ++i, ++itx, ++ity)
-            points.push_back(QPointF(*itx, *ity + yOffset));
-    }
-    else
-    {
-        const int step = (n + kDrawBudget - 1) / kDrawBudget;
-        auto itx = XData.begin();
-        auto ity = YData.begin();
-        for (int i = 0; i < n; ++i, ++itx, ++ity)
-        {
-            if (i == 0 || i == n - 1 || (i % step) == 0)
-                points.push_back(QPointF(*itx, *ity + yOffset));
-        }
-        if (points.size() >= 2 && points[points.size() - 2] == points.last())
-            points.remove(points.size() - 2);
-    }
-    return points;
+        return {};
+    return timeSeriesEnvelope(reader->XData, reader->YData, yOffset, viewMin, viewMax);
 }
 
 QVector<QPointF> samplePropertyPair(RDK::UEnvironment* env,
