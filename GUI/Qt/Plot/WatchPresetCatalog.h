@@ -50,6 +50,8 @@ public:
 
     void setRootPath(const QString& absoluteOrRelativePath);
     QString rootPath() const { return m_rootPath; }
+    bool rootAvailable() const { return m_rootAvailable; }
+    QStringList failedFiles() const { return m_failedFiles; }
 
     /// Reload from disk (skips meta/ and draft/). Loads composition.json from root.
     bool reload();
@@ -78,6 +80,8 @@ private:
                                          const QString& newId);
 
     QString m_rootPath;
+    bool m_rootAvailable = false;
+    QStringList m_failedFiles;
     QHash<QString, QVector<WatchPreset>> m_byClass;
     QHash<QString, QVector<WatchCompositionSlot>> m_parentSlots;
     QHash<QString, QVector<WatchCompositionSlot>> m_membraneSlots;

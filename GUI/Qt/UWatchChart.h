@@ -94,7 +94,7 @@ public:
     void setSerieLineType(int serieIndex, Qt::PenStyle lineType);
     void setSerieWidth(int serieIndex, int width);
     void setSerieStyle(int serieIndex, QColor color, int width, Qt::PenStyle lineType);
-    void setSerieYshift(int serieIndex, int y_shift);
+    void setSerieYshift(int serieIndex, double y_shift);
 
     void fixInitialAxesState();
     void restoreInitialAxesState();
@@ -135,6 +135,7 @@ public:
 
     /// Export chart view to PNG/JPEG/SVG by path suffix. Returns false on failure.
     bool exportImage(const QString& path) const;
+    bool exportNewImage(const QString& path) const;
     QString sanitizedTitleForFile() const;
 
     void setExpandActionVisible(bool visible);
@@ -163,6 +164,7 @@ public:
 
 
 private:
+    bool renderImage(QIODevice& output, const QString& suffix) const;
     Ui::UWatchChart *ui;
 
     //все график, оси, скороллбар и их расположение
@@ -188,6 +190,7 @@ private:
 
     NMSDK::Plot::VizKind vizKind = NMSDK::Plot::VizKind::TimeSeries;
     bool m_legendVisible = true;
+    QString m_chartTitle;
     bool m_titleVisible = true;
     bool m_selected = false;
 
@@ -234,6 +237,7 @@ private slots:
 signals:
     void addSerieSignal(int someIndex);
     void UpdateTabGuiSignal(bool force_update);
+    void viewportChanged();
     void openSettingsPanel(int chartIndex, bool seriesPage);
     void chartActivated(int chartIndex);
     void expandToggleRequested(int chartIndex);

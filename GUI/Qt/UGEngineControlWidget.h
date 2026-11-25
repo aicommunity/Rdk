@@ -127,6 +127,7 @@ public:
 
     /// загрузка проекта извне (используется, например, пунктами меню и автозагрузкой)
     void loadProjectExternal(const QString &config_path);
+    bool openProjectFromGui(const QString& path);
 
     /// Open help window (public method for use by child widgets). Empty topic → index.
     void openHelpWindow(const QString& topic = QString());
@@ -468,6 +469,11 @@ protected:
     bool eventFilter(QObject* watched, QEvent* event) override;
 
 private:
+    void runStepBatch(quint64 generation);
+    void cancelStepBatch();
+    quint64 m_stepBatchGeneration = 0;
+    unsigned m_stepsRequested = 0;
+    unsigned m_stepsExecuted = 0;
     QPoint m_componentGuiTabDragStartPos;
     int m_componentGuiTabDragIndex = -1;
     QPoint m_componentGuiWidgetDragStartPos;

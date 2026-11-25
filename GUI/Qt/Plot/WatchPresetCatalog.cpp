@@ -9,6 +9,7 @@
 
 #include <QDir>
 #include <QFile>
+#include <QCoreApplication>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -25,7 +26,7 @@ WatchPresetCatalog& WatchPresetCatalog::instance()
 
 void WatchPresetCatalog::setRootPath(const QString& absoluteOrRelativePath)
 {
-    m_rootPath = absoluteOrRelativePath;
+    m_rootPath = QFileInfo(absoluteOrRelativePath).absoluteFilePath();
 }
 
 NMSDK::Plot::VizKind WatchPresetCatalog::vizFromString(const QString& s)
@@ -168,16 +169,21 @@ bool WatchPresetCatalog::reload()
     m_parentSlots.clear();
     m_membraneSlots.clear();
     m_families.clear();
+    m_failedFiles.clear();
+    m_rootAvailable = !m_rootPath.isEmpty() && QFileInfo(m_rootPath).isDir()
+                      && QFileInfo(m_rootPath).isReadable();
     if (m_rootPath.isEmpty())
         return false;
     QDir root(m_rootPath);
-    if (!root.exists())
+    if (!m_rootAvailable)
     {
         qWarning() << "WatchPresetCatalog: root missing" << m_rootPath;
         return false;
     }
 
-    loadComposition(root.filePath(QStringLiteral("composition.json")));
+    const QString composition = root.filePath(QStringLiteral("composition.json"));
+    if (QFileInfo::exists(composition) && !loadComposition(composition))
+        m_failedFiles.append(composition);
 
     static const QStringList kSkip = {
         QStringLiteral("meta"),
@@ -194,6 +200,8 @@ bool WatchPresetCatalog::reload()
         {
             if (loadFile(fi.absoluteFilePath()))
                 ++loaded;
+            else
+                m_failedFiles.append(fi.absoluteFilePath());
         }
     }
     return loaded > 0;
@@ -359,10 +367,10 @@ QVector<NMSDK::Plot::PropertyRef> WatchPresetCatalog::resolve(const WatchPreset&
                                                               QString* errorOut) const
 {
     QVector<NMSDK::Plot::PropertyRef> out;
-    if (rootLongName.isEmpty() || preset.series.isEmpty())
+    if (preset.series.isEmpty())
     {
         if (errorOut)
-            *errorOut = QObject::tr("Missing component or empty preset.");
+            *errorOut = QObject::tr("Empty preset.");
         return {};
     }
 
@@ -379,7 +387,12 @@ QVector<NMSDK::Plot::PropertyRef> WatchPresetCatalog::resolve(const WatchPreset&
     {
         QString full = rootLongName;
         if (!s.path.isEmpty())
-            full = rootLongName + QLatin1Char('.') + s.path;
+            full = rootLongName.isEmpty() ? s.path : rootLongName + QLatin1Char('.') + s.path;
+        if (full.isEmpty())
+        {
+            failures << QObject::tr("Model.%1 (direct root property is unsupported)").arg(s.property);
+            continue;
+        }
 
         RDK::UEPtr<RDK::UContainer> cont = model->GetComponentL(full.toStdString(), true);
         if (!cont)
@@ -426,7 +439,14 @@ QVector<NMSDK::Plot::PropertyRef> WatchPresetCatalog::resolve(const WatchPreset&
 QString defaultWatchPresetsPath(RDK::UApplication* app)
 {
     if (app && !app->GetWatchPresetsPath().empty())
-        return QString::fromStdString(app->GetWatchPresetsPath());
+    {
+        const QString configured = QString::fromStdString(app->GetWatchPresetsPath());
+        if (QDir::cleanPath(configured) != QStringLiteral("../../WatchPresets"))
+            return configured;
+        const QDir appDir(QCoreApplication::applicationDirPath());
+        const QString packaged = appDir.filePath(QStringLiteral("WatchPresets"));
+        return QDir(packaged).exists() ? packaged : configured;
+    }
     // Sibling of typical ClDescPath ../../ClDesc/ → ../../WatchPresets/
     if (app && !app->GetClDescPath().empty())
     {

@@ -161,28 +161,8 @@ void UStyleManager::setDefaults()
     m_themeName = "Modern Light";
 }
 
-bool UStyleManager::loadTheme(const QString& themeJsonPath)
+void UStyleManager::applyThemeColors(const QJsonObject& root)
 {
-    QFile file(themeJsonPath);
-    if (!file.open(QIODevice::ReadOnly))
-    {
-        qWarning() << "UStyleManager: Cannot open theme file:" << themeJsonPath;
-        return false;
-    }
-    
-    QByteArray data = file.readAll();
-    file.close();
-    
-    QJsonParseError parseError;
-    QJsonDocument doc = QJsonDocument::fromJson(data, &parseError);
-    if (parseError.error != QJsonParseError::NoError)
-    {
-        qWarning() << "UStyleManager: JSON parse error:" << parseError.errorString();
-        return false;
-    }
-    
-    QJsonObject root = doc.object();
-    
     // Parse node colors
     if (root.contains("node"))
     {
@@ -294,41 +274,6 @@ bool UStyleManager::loadTheme(const QString& themeJsonPath)
     
     // Parse theme name
     m_themeName = root["name"].toString(m_themeName);
-    
-    qDebug() << "UStyleManager: Theme loaded from" << themeJsonPath << "(" << m_themeName << ")";
-    return true;
-}
-
-bool UStyleManager::loadStyleSheet(const QString& qssPath)
-{
-    QFile file(qssPath);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        qWarning() << "UStyleManager: Cannot open stylesheet:" << qssPath;
-        return false;
-    }
-    
-    m_styleSheet = QString::fromUtf8(file.readAll());
-    file.close();
-
-    // setStyleSheet(string) loses the QSS file base path — resolve icon urls.
-    const QString stylesDir = QFileInfo(qssPath).absolutePath();
-    const QString iconsDir = QDir(stylesDir).filePath(QStringLiteral("icons"));
-    m_styleSheet.replace(QStringLiteral("url(icons/"),
-                         QStringLiteral("url(%1/").arg(QDir::fromNativeSeparators(iconsDir)));
-    
-    qDebug() << "UStyleManager: Stylesheet loaded from" << qssPath;
-    return true;
-}
-
-void UStyleManager::applyGlobalStyleSheet(QApplication* app)
-{
-    if (app && !m_styleSheet.isEmpty())
-    {
-        app->setStyleSheet(m_styleSheet);
-        qDebug() << "UStyleManager: Global stylesheet applied";
-    }
-    applySystemUiFonts(app);
 }
 
 void UStyleManager::applySystemUiFonts(QApplication* app)
@@ -506,64 +451,55 @@ QLinearGradient UStyleManager::getHeaderGradient(const QRectF& rect) const
     return gradient;
 }
 
-QString UStyleManager::getStylesPath() const
-{
-    if (!m_stylesPath.isEmpty())
-        return m_stylesPath;
-    
-    // Find Styles directory relative to Bin/ (not Bin/Platform/Linux/)
-    QString appDir = QCoreApplication::applicationDirPath();
-    
-    // If we're in Bin/Platform/Linux/, go up to Bin/Styles/
-    if (appDir.contains("/Platform/"))
-    {
-        QDir dir(appDir);
-        dir.cdUp(); // Bin/Platform/
-        dir.cdUp(); // Bin/
-        return dir.absolutePath() + "/Styles/";
-    }
-    else
-    {
-        // Fallback: try relative to application directory
-        return appDir + "/Styles/";
-    }
-}
-
 bool UStyleManager::switchTheme(const QString& themeName, QApplication* app)
 {
-    QString stylesPath = getStylesPath();
-    
-    QString qssFile, jsonFile;
-    
-    if (themeName == "dark" || themeName == "Modern Dark")
+    if (!app)
+        return false;
+    const QDir appDir(QCoreApplication::applicationDirPath());
+    QStringList candidates;
+    if (!m_stylesPath.isEmpty())
+        candidates << m_stylesPath;
+    if (appDir.absolutePath().contains(QStringLiteral("/Platform/"), Qt::CaseInsensitive))
+        candidates << QDir::cleanPath(appDir.filePath(QStringLiteral("../../Styles")));
+    candidates << appDir.filePath(QStringLiteral("Styles"));
+    QDir ancestor = appDir;
+    while (ancestor.cdUp())
     {
-        qssFile = stylesPath + "dark.qss";
-        jsonFile = stylesPath + "dark-theme.json";
+        if (ancestor.dirName().compare(QStringLiteral("Platform"), Qt::CaseInsensitive) == 0)
+        {
+            if (ancestor.cdUp() && ancestor.dirName().compare(QStringLiteral("Bin"), Qt::CaseInsensitive) == 0)
+                candidates << ancestor.filePath(QStringLiteral("Styles"));
+            break;
+        }
     }
-    else // default to light
+    candidates.removeDuplicates();
+
+    const bool dark = themeName == QStringLiteral("dark") || themeName == QStringLiteral("Modern Dark");
+    for (const QString& path : candidates)
     {
-        qssFile = stylesPath + "default.qss";
-        jsonFile = stylesPath + "theme.json";
-    }
-    
-    // Reset to defaults first
-    setDefaults();
-    
-    // Load new theme
-    bool themeLoaded = loadTheme(jsonFile);
-    bool qssLoaded = loadStyleSheet(qssFile);
-    
-    if (themeLoaded && qssLoaded && app)
-    {
-        applyGlobalStyleSheet(app);
-        m_stylesPath = stylesPath; // Cache the path
-        qDebug() << "UStyleManager: Switched to theme:" << m_themeName << "from" << stylesPath;
+        const QDir dir(path);
+        QFile json(dir.filePath(dark ? QStringLiteral("dark-theme.json") : QStringLiteral("theme.json")));
+        QFile qss(dir.filePath(dark ? QStringLiteral("dark.qss") : QStringLiteral("default.qss")));
+        if (!json.open(QIODevice::ReadOnly) || !qss.open(QIODevice::ReadOnly | QIODevice::Text))
+            continue;
+        const QJsonDocument theme = QJsonDocument::fromJson(json.readAll());
+        QString stylesheet = QString::fromUtf8(qss.readAll());
+        if (!theme.isObject() || theme.object().isEmpty() || stylesheet.trimmed().isEmpty()
+            || json.error() != QFileDevice::NoError || qss.error() != QFileDevice::NoError)
+            continue;
+
+        stylesheet.replace(QStringLiteral("url(icons/"),
+                           QStringLiteral("url(%1/").arg(dir.filePath(QStringLiteral("icons"))));
+        setDefaults();
+        applyThemeColors(theme.object());
+        m_styleSheet = stylesheet;
+        app->setStyleSheet(m_styleSheet);
+        applySystemUiFonts(app);
+        m_stylesPath = path;
         return true;
     }
-    
-    qWarning() << "UStyleManager: Failed to switch theme to:" << themeName;
-    qWarning() << "  QSS file:" << qssFile << (QFile::exists(qssFile) ? "exists" : "NOT FOUND");
-    qWarning() << "  JSON file:" << jsonFile << (QFile::exists(jsonFile) ? "exists" : "NOT FOUND");
+
+    qWarning() << "UStyleManager: No usable theme" << themeName << "in" << candidates;
     return false;
 }
 

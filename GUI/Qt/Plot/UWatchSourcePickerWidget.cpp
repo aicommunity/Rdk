@@ -165,7 +165,7 @@ void UWatchSourcePickerWidget::updateBindingFromList()
 
     bool watchable = false;
     {
-        RDK::UELockPtr<RDK::UNet> model = RDK::GetModelLock<RDK::UNet>();
+        RDK::UELockPtr<RDK::UNet> model = RDK::GetModelLock<RDK::UNet>(channelIndex());
         if (model)
         {
             RDK::UContainer* cont = model->GetComponentL(comp.toStdString());
@@ -194,9 +194,20 @@ void UWatchSourcePickerWidget::updateReadout()
         return;
     const QString comp = componentLongName();
     const QString prop = propertyName();
-    if (comp.isEmpty() || prop.isEmpty())
+    if (prop.isEmpty())
     {
         m_bindingReadout->setText(tr("No property selected"));
+        return;
+    }
+    if (comp.isEmpty())
+    {
+        m_bindingReadout->setText(tr("The data reader does not support Model.%1. "
+                                     "Choose a child component to add a series.").arg(prop));
+        return;
+    }
+    if (!m_matrix->isReady() && cells().isEmpty())
+    {
+        m_bindingReadout->setText(tr("Choose a valid cell or numeric property in %1.").arg(comp));
         return;
     }
     const auto cellList = cells();
@@ -230,6 +241,11 @@ int UWatchSourcePickerWidget::channelIndex() const
 QString UWatchSourcePickerWidget::componentLongName() const
 {
     return m_list ? m_list->getSelectedComponentLongName() : QString();
+}
+
+bool UWatchSourcePickerWidget::hasSelectedComponent() const
+{
+    return m_list && m_list->hasSelectedComponent();
 }
 
 QString UWatchSourcePickerWidget::propertyName() const

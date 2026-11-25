@@ -1,4 +1,5 @@
 #include "UWatchChart.h"
+#include <QSaveFile>
 #include "ui_UWatchChart.h"
 #include "UStyleManager.h"
 #include <QPainter>
@@ -156,7 +157,9 @@ void UWatchChart::applyTheme()
 
 void UWatchChart::setChartTitle(QString title)
 {
-    chart->setTitle(title);
+    m_chartTitle = title;
+    if (m_titleVisible)
+        chart->setTitle(m_chartTitle);
 }
 
 void UWatchChart::setChartIndex(int index)
@@ -206,14 +209,14 @@ int UWatchChart::suggestAutoColorIndex(int serieIndex) const
 
 void UWatchChart::setSerieLineType(int serieIndex, Qt::PenStyle lineType)
 {
-    QPen pen;
+    QPen pen = series[serieIndex]->pen();
     pen.setStyle(lineType);
       series[serieIndex]->setPen(pen);
 }
 
 void UWatchChart::setSerieWidth(int serieIndex, int width)
 {
-    QPen pen;
+    QPen pen = series[serieIndex]->pen();
     pen.setWidth(width);
     series[serieIndex]->setPen(pen);
 }
@@ -227,9 +230,15 @@ void UWatchChart::setSerieStyle(int serieIndex, QColor color, int width, Qt::Pen
     series[serieIndex]->setPen(pen);
 }
 
-void UWatchChart::setSerieYshift(int serieIndex, int y_shift)
+void UWatchChart::setSerieYshift(int serieIndex, double y_shift)
 {
-    series[serieIndex]->YShift = y_shift;
+    UWatchSerie* serie = series[serieIndex];
+    const double delta = y_shift - serie->YShift;
+    if (delta == 0.0)
+        return;
+    serie->YShift = y_shift;
+    for (QPointF& point : serie->xyRing)
+        point.ry() += delta;
 }
 
 void UWatchChart::fixInitialAxesState()
@@ -373,7 +382,6 @@ void UWatchChart::createSerieXY(int channelIndex,
 
     if (!NMSDK::Plot::isXYFamily(vizKind))
         setVizKind(viz);
-    setAxisXname(QStringLiteral("X"));
     connectSerieTooltip(series.last());
     emit UpdateTabGuiSignal(false);
 }
@@ -475,6 +483,8 @@ void UWatchChart::updateTimeIntervals(double value)
     setAxisXrange(value);
 
     RDK::UELockPtr<RDK::UEnvironment> env = RDK::GetEnvironmentLock();
+    if (!env)
+        return;
     for (int i = 0; i < series.size(); i++)
     {
         UWatchSerie* serie = series[i];
@@ -484,20 +494,11 @@ void UWatchChart::updateTimeIntervals(double value)
         if (NMSDK::Plot::isXYFamily(serie->vizKind))
             continue;
 
-        RDK::UControllerDataReader* reader = serie->data_reader;
-        if (env)
-        {
-            RDK::UControllerDataReader* live = env->GetDataReader(
-                serie->nameComponent.toStdString(),
-                serie->nameProperty.toStdString(),
-                serie->Jx < 0 ? 0 : serie->Jx,
-                serie->Jy < 0 ? 0 : serie->Jy);
-            if (live)
-            {
-                reader = live;
-                serie->data_reader = live;
-            }
-        }
+        RDK::UControllerDataReader* reader = env->GetDataReader(
+            serie->nameComponent.toStdString(),
+            serie->nameProperty.toStdString(),
+            serie->Jx < 0 ? 0 : serie->Jx,
+            serie->Jy < 0 ? 0 : serie->Jy);
         if (!reader)
             continue;
 
@@ -557,6 +558,7 @@ void UWatchChart::updateAxes(double x_min, double x_max, double y_min, double y_
     {
         restoreInitialAxesState();
         setInteractionTrackLatest(true);
+        emit viewportChanged();
         emit UpdateTabGuiSignal(false);
         return;
     }
@@ -573,13 +575,14 @@ void UWatchChart::updateAxes(double x_min, double x_max, double y_min, double y_
     setAxisYmin(y_min);
     setAxisYmax(y_max);
 
+    emit viewportChanged();
     emit UpdateTabGuiSignal(false);
 }
 
 
 QString UWatchChart::getChartTitle()
 {
-    return chart->title();
+    return m_chartTitle;
 }
 
 UWatchSerie *UWatchChart::getSerie(int index)
@@ -811,7 +814,7 @@ void UWatchChart::quickSaveChartSlot()
 
 QString UWatchChart::sanitizedTitleForFile() const
 {
-    QString title = chart ? chart->title() : QStringLiteral("chart");
+    QString title = m_chartTitle;
     for (QChar& c : title)
     {
         if (QStringLiteral("\\/:*?\"<>|").contains(c))
@@ -825,15 +828,32 @@ QString UWatchChart::sanitizedTitleForFile() const
 
 bool UWatchChart::exportImage(const QString& path) const
 {
-    if (!chartView || path.isEmpty())
+    QSaveFile file(path);
+    if (!file.open(QIODevice::WriteOnly))
         return false;
+    return renderImage(file, QFileInfo(path).suffix().toLower()) && file.commit();
+}
 
-    const QFileInfo fi(path);
-    const QString suffix = fi.suffix().toLower();
+bool UWatchChart::exportNewImage(const QString& path) const
+{
+    QFile file(path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::NewOnly))
+        return false;
+    const bool written = renderImage(file, QFileInfo(path).suffix().toLower()) && file.flush();
+    file.close();
+    if (!written)
+        file.remove();
+    return written;
+}
+
+bool UWatchChart::renderImage(QIODevice& output, const QString& suffix) const
+{
+    if (!chartView)
+        return false;
     if (suffix == QLatin1String("svg"))
     {
         QSvgGenerator generator;
-        generator.setFileName(path);
+        generator.setOutputDevice(&output);
         const QSize sz = chartView->size().expandedTo(QSize(64, 64));
         generator.setSize(sz);
         generator.setViewBox(QRect(QPoint(0, 0), sz));
@@ -843,8 +863,7 @@ bool UWatchChart::exportImage(const QString& path) const
         if (!painter.begin(&generator))
             return false;
         chartView->render(&painter);
-        painter.end();
-        return QFileInfo::exists(path);
+        return painter.end() && output.pos() > 0;
     }
 
     const QPixmap shot = chartView->grab();
@@ -855,7 +874,7 @@ bool UWatchChart::exportImage(const QString& path) const
         format = "JPEG";
     else if (suffix == QLatin1String("bmp"))
         format = "BMP";
-    return shot.save(path, format);
+    return shot.save(&output, format);
 }
 
 void UWatchChart::setExpandActionVisible(bool visible)
@@ -891,16 +910,11 @@ void UWatchChart::onModeExpand()
 
 void UWatchChart::setVizKind(NMSDK::Plot::VizKind kind)
 {
+    const bool defaultTimeAxis = !NMSDK::Plot::isXYFamily(vizKind)
+        && NMSDK::Plot::isXYFamily(kind) && getAxisXName() == QStringLiteral("time, sec");
     vizKind = kind;
-    for (int i = 0; i < series.size(); ++i)
-    {
-        if (series[i]
-            && series[i]->vizKind == NMSDK::Plot::VizKind::TimeSeries
-            && (kind == NMSDK::Plot::VizKind::XYLine || kind == NMSDK::Plot::VizKind::XYScatter))
-        {
-            // Keep existing time series as-is; panel-level viz is a default for new series.
-        }
-    }
+    if (defaultTimeAxis)
+        setAxisXname(QStringLiteral("X"));
 }
 
 bool UWatchChart::isLegendVisible() const
@@ -923,10 +937,8 @@ bool UWatchChart::isTitleVisible() const
 void UWatchChart::setTitleVisible(bool visible)
 {
     m_titleVisible = visible;
-    if (!chart)
-        return;
-    if (!visible)
-        chart->setTitle(QString());
+    if (chart)
+        chart->setTitle(visible ? m_chartTitle : QString());
 }
 
 void UWatchChart::setInteractionTrackLatest(bool track)
@@ -968,6 +980,7 @@ void UWatchChart::resetViewport()
     isAxisXtrackable = true;
     if (actTrack)
         actTrack->setChecked(true);
+    emit viewportChanged();
     emit UpdateTabGuiSignal(false);
 }
 
@@ -1006,6 +1019,8 @@ void UWatchChart::connectSerieTooltip(UWatchSerie* serie)
                           .arg(serie->name())
                           .arg(point.x(), 0, 'g', 6)
                           .arg(point.y(), 0, 'g', 6);
+        if (!serie->isOnline)
+            tip += tr("\nSource unavailable");
         tip += QStringLiteral("\nY: %1.%2[%3,%4]")
                    .arg(serie->nameComponent, serie->nameProperty)
                    .arg(serie->Jx)
@@ -1030,7 +1045,7 @@ NMSDK::Plot::PlotPanel UWatchChart::toPlotPanel() const
     NMSDK::Plot::PlotPanel panel;
     panel.id = QStringLiteral("graph_%1").arg(chartIndex);
     panel.viz = vizKind;
-    panel.title = chart ? chart->title() : QString();
+    panel.title = m_chartTitle;
     panel.axisXName = axisX ? axisX->titleText() : QString();
     panel.axisYName = axisY ? axisY->titleText() : QString();
     panel.axisYMin = axisY ? axisY->min() : -1.0;

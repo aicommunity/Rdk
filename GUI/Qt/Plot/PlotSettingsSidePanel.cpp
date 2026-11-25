@@ -23,6 +23,7 @@
 #include <QMessageBox>
 #include <QPixmap>
 #include <QPushButton>
+#include <QScrollArea>
 #include <QShortcut>
 #include <QSignalBlocker>
 #include <QSpinBox>
@@ -84,7 +85,11 @@ void PlotSettingsSidePanel::buildUi()
     m_tabs->setElideMode(Qt::ElideNone);
 
     // --- Chart page ---
-    m_chartPage = new QWidget(m_tabs);
+    auto* chartScroll = new QScrollArea(m_tabs);
+    chartScroll->setWidgetResizable(true);
+    chartScroll->setFrameShape(QFrame::NoFrame);
+    m_chartPage = new QWidget(chartScroll);
+    chartScroll->setWidget(m_chartPage);
     auto* chartLayout = new QVBoxLayout(m_chartPage);
     chartLayout->setContentsMargins(4, 8, 4, 4);
     chartLayout->setSpacing(8);
@@ -158,16 +163,24 @@ void PlotSettingsSidePanel::buildUi()
     auto* seriesLayout = new QVBoxLayout(m_seriesPage);
     seriesLayout->setContentsMargins(4, 8, 4, 4);
     seriesLayout->setSpacing(8);
+    auto* scroll = new QScrollArea(m_seriesPage);
+    scroll->setWidgetResizable(true);
+    scroll->setFrameShape(QFrame::NoFrame);
+    auto* seriesContent = new QWidget;
+    auto* contentLayout = new QVBoxLayout(seriesContent);
+    contentLayout->setContentsMargins(0, 0, 0, 0);
+    scroll->setWidget(seriesContent);
+    seriesLayout->addWidget(scroll, 1);
 
-    auto* listBox = new QGroupBox(tr("Series"), m_seriesPage);
+    auto* listBox = new QGroupBox(tr("Series"), seriesContent);
     auto* listLayout = new QVBoxLayout(listBox);
     listLayout->setContentsMargins(8, 8, 8, 8);
     m_seriesList = new QListWidget(listBox);
     m_seriesList->setMinimumHeight(120);
     listLayout->addWidget(m_seriesList);
-    seriesLayout->addWidget(listBox, 1);
+    contentLayout->addWidget(listBox, 1);
 
-    auto* selectedBox = new QGroupBox(tr("Selected series"), m_seriesPage);
+    auto* selectedBox = new QGroupBox(tr("Selected series"), seriesContent);
     auto* selectedForm = new QFormLayout(selectedBox);
     styleForm(selectedForm);
     m_serieName = new QLineEdit(selectedBox);
@@ -175,6 +188,7 @@ void PlotSettingsSidePanel::buildUi()
     m_channelSpin->setRange(0, 255);
     m_yShift = new QDoubleSpinBox(selectedBox);
     m_yShift->setLocale(QLocale::c());
+    m_yShift->setDecimals(3);
     m_yShift->setRange(-1e9, 1e9);
     m_bindingLabel = new QLabel(selectedBox);
     m_bindingLabel->setWordWrap(true);
@@ -212,7 +226,7 @@ void PlotSettingsSidePanel::buildUi()
     colorRow->addStretch(1);
     selectedForm->addRow(tr("Color"), colorRow);
 
-    seriesLayout->addWidget(selectedBox);
+    contentLayout->addWidget(selectedBox);
 
     m_addSerieBtn = new QPushButton(tr("Add series…"), m_seriesPage);
     seriesLayout->addWidget(m_addSerieBtn);
@@ -226,7 +240,7 @@ void PlotSettingsSidePanel::buildUi()
     connect(m_seriesList, &QListWidget::currentRowChanged,
             this, &PlotSettingsSidePanel::onSeriesSelectionChanged);
 
-    m_tabs->addTab(m_chartPage, tr("Chart"));
+    m_tabs->addTab(chartScroll, tr("Chart"));
     m_tabs->addTab(m_seriesPage, tr("Series"));
     connect(m_tabs, &QTabWidget::currentChanged, this, &PlotSettingsSidePanel::onTabChanged);
     root->addWidget(m_tabs, 1);
@@ -255,7 +269,16 @@ void PlotSettingsSidePanel::connectLiveApply()
 
     connect(m_serieName, &QLineEdit::editingFinished, this, seriesLive);
     connect(m_channelSpin, QOverload<int>::of(&QSpinBox::valueChanged), this, seriesLive);
-    connect(m_yShift, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, seriesLive);
+    connect(m_yShift, &QDoubleSpinBox::editingFinished, this, [this]() {
+        if (m_refreshing || !m_tab || m_chartIndex < 0 || m_chartIndex >= m_tab->countGraphs())
+            return;
+        UWatchChart* chart = m_tab->getChart(m_chartIndex);
+        if (!chart || m_serieIndex < 0 || m_serieIndex >= chart->countSeries())
+            return;
+        chart->setSerieYshift(m_serieIndex, m_yShift->value());
+        m_tab->syncDocumentFromCharts();
+        emit requestApply();
+    });
     if (m_serieColorGroup)
     {
         connect(m_serieColorGroup, QOverload<int>::of(&QButtonGroup::idClicked),
@@ -534,6 +557,7 @@ void PlotSettingsSidePanel::applyChartLive()
     chart->setLegendVisible(m_legendVisible->isChecked());
     chart->setTitleVisible(m_titleVisible->isChecked());
     chart->setVizKind(viz);
+    m_axisXEdit->setText(chart->getAxisXName());
     chart->fixInitialAxesState();
     m_tab->syncDocumentFromCharts();
     updateHero();
@@ -554,7 +578,6 @@ void PlotSettingsSidePanel::applySeriesLive()
         return;
     chart->setSerieName(m_serieIndex, m_serieName->text());
     s->indexChannel = m_channelSpin->value();
-    chart->setSerieYshift(m_serieIndex, static_cast<int>(m_yShift->value()));
     m_tab->syncDocumentFromCharts();
     if (m_serieIndex >= 0 && m_serieIndex < m_seriesList->count())
     {

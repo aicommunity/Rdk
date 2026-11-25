@@ -9,6 +9,8 @@ class QComboBox;
 class QSpinBox;
 class QFrame;
 class QGridLayout;
+class QLabel;
+class QPushButton;
 
 /// Compact modal dialog for tab-scoped layout (grid + update interval).
 class UWatchLayoutDialog : public QDialog
@@ -38,6 +40,8 @@ private:
     QSpinBox* m_intervalSpin = nullptr;
     QFrame* m_previewFrame = nullptr;
     QGridLayout* m_previewGrid = nullptr;
+    QLabel* m_removalNote = nullptr;
+    QPushButton* m_applyButton = nullptr;
     bool m_updatingPreset = false;
 };
 

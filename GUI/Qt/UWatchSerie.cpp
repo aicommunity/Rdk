@@ -1,5 +1,4 @@
 #include "UWatchSerie.h"
-#include <QPen>
 #include <QtGlobal>
 
 UWatchSerie::UWatchSerie()
@@ -9,20 +8,10 @@ UWatchSerie::UWatchSerie()
 
 void UWatchSerie::setOnlineStatus(bool online)
 {
-    if (isOnline == online) {
+    if (isOnline == online)
         return;
-    }
-
     isOnline = online;
-    QPen pen = this->pen();
-
-    if (online) {
-        pen.setStyle(Qt::SolidLine);
-    } else {
-        pen.setStyle(Qt::DashLine);
-    }
-
-    this->setPen(pen);
+    setOpacity(online ? 1.0 : 0.45);
 }
 
 NMSDK::Plot::DataBinding UWatchSerie::toBinding() const

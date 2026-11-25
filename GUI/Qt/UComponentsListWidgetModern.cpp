@@ -44,14 +44,64 @@
 #include <QAbstractItemView>
 #include <QListView>
 #include <QHeaderView>
+#include <iomanip>
+#include <limits>
+#include <locale>
+#include <sstream>
 
 #include "../../Deploy/Include/rdk_error_codes.h"
 #include "../../Core/Utilities/USupport.h"
 #include "../../Core/Engine/UComponent.h"
 #include "../../Core/Engine/UNet.h"
 #include "../../Core/Engine/UContainerDescription.h"
+#include "../../Core/Math/MDMatrix.h"
 
 namespace {
+
+template<class Number>
+QString formatNumericMatrix(RDK::UIProperty& property)
+{
+    const auto* data = static_cast<const RDK::MDMatrix<Number>*>(property.GetMemoryArea());
+    if (!data)
+        return {};
+    const auto& matrix = *data;
+    std::ostringstream stream;
+    stream.imbue(std::locale::classic());
+    stream << std::setprecision(std::numeric_limits<Number>::max_digits10);
+    for (int row = 0; row < matrix.GetRows(); ++row)
+    {
+        if (row)
+            stream << '\n';
+        for (int col = 0; col < matrix.GetCols(); ++col)
+        {
+            if (col)
+                stream << ' ';
+            stream << matrix(row, col);
+        }
+    }
+    return QString::fromStdString(stream.str());
+}
+
+QString numericMatrixEditorText(int channel, const QString& component, const QString& propertyName)
+{
+    auto model = RDK::GetModelLockTimeout(channel, 25);
+    if (!model)
+        return {};
+    RDK::UEPtr<RDK::UContainer> container = component.isEmpty()
+        ? RDK::UEPtr<RDK::UContainer>(model.Get())
+        : model->GetComponentL(component.toLocal8Bit().constData(), true);
+    if (!container)
+        return {};
+    RDK::UEPtr<RDK::UIProperty> property = container->FindProperty(propertyName.toStdString());
+    if (!property)
+        return {};
+    const auto& type = property->GetLanguageType();
+    if (type == typeid(RDK::MDMatrix<double>))
+        return formatNumericMatrix<double>(*property);
+    if (type == typeid(RDK::MDMatrix<int>))
+        return formatNumericMatrix<int>(*property);
+    return {};
+}
 
 bool fetchPropertyValueFromModel(int channel,
                                  const QString& componentLongName,
@@ -725,7 +775,8 @@ void UComponentsListWidgetModern::AUpdateInterface()
     m_isUpdatingFromScheme = true;
     componentsTree->blockSignals(true);
 
-    if(lastSnapshot && !lastSnapshot->Components.isEmpty())
+    if(lastSnapshot && lastSnapshot->ChannelIndex == getWorkChannelIndex()
+       && !lastSnapshot->Components.isEmpty())
     {
         rebuildTreeFromSnapshot(lastSnapshot);
         if(expandedItems.isEmpty())
@@ -870,6 +921,11 @@ void UComponentsListWidgetModern::setVerticalOrientation(bool vertical)
         ui->splitter->setOrientation(Qt::Vertical);
     else
         ui->splitter->setOrientation(Qt::Horizontal);
+}
+
+bool UComponentsListWidgetModern::hasSelectedComponent() const
+{
+    return componentsTree && componentsTree->currentItem();
 }
 
 QString UComponentsListWidgetModern::getSelectedComponentLongName()
@@ -2020,9 +2076,10 @@ void UComponentsListWidgetModern::handleSnapshotUpdated(NMSDK::UGuiSnapshotPtr s
                                                   const QStringList &removed,
                                                   const QStringList &changed)
 {
-    lastSnapshot = snapshot;
-    if (!snapshot)
+    if (!snapshot || snapshot->ChannelIndex != getWorkChannelIndex())
         return;
+    lastSnapshot = snapshot;
+    refreshVisibleScalarProperties();
 
     // Structural rebuild only when components added/removed/renamed (fingerprint).
     // Property-value ticks must not clear()/rebuild the tree (expand flicker).
@@ -2676,41 +2733,21 @@ void UComponentsListWidgetModern::showTreePopup()
     }
 
     // Вычисляем размер и позицию popup
-    QPoint globalPos = toggleModeButton->mapToGlobal(QPoint(0, toggleModeButton->height()));
-
-    // Современный способ получения геометрии экрана без использования устаревшего QDesktopWidget
-    QScreen *screen = nullptr;
-    if (window()) {
-        screen = window()->screen();
-    }
-    if (!screen) {
+    const QRect anchor(toggleModeButton->mapToGlobal(QPoint()), toggleModeButton->size());
+    QScreen* screen = QGuiApplication::screenAt(anchor.center());
+    if (!screen)
         screen = QGuiApplication::primaryScreen();
-    }
-
-    QRect screenGeometry;
-    if (screen) {
-        // Используем перегрузку без аргументов (совместимо с Qt 5.15.2)
-        screenGeometry = screen->availableGeometry();
-    } else {
-        // Резервный вариант на случай отсутствия данных об экране
-        screenGeometry = QRect(globalPos.x(), globalPos.y(), 800, 600);
-    }
-
-    // Ширина popup = минимальная ширина
-    int popupWidth = 300;
-    // Высота = доступная высота экрана минус позиция минус отступ
-    int popupHeight = qMin(screenGeometry.height() - globalPos.y() - 10, 600);
-    popupHeight = qMax(popupHeight, 200); // Минимальная высота
-
-    // Проверяем, не выходит ли popup за границы экрана
-    if (globalPos.x() + popupWidth > screenGeometry.right()) {
-        globalPos.setX(screenGeometry.right() - popupWidth);
-    }
-    if (globalPos.x() < screenGeometry.left()) {
-        globalPos.setX(screenGeometry.left());
-    }
-
-    treePopupDialog->setGeometry(globalPos.x(), globalPos.y(), popupWidth, popupHeight);
+    const QRect area = screen ? screen->availableGeometry()
+                              : QRect(anchor.bottomLeft(), QSize(800, 600));
+    const int width = qMin(300, area.width());
+    const int below = qMax(0, area.bottom() - anchor.bottom());
+    const int above = qMax(0, anchor.top() - area.top());
+    const bool openBelow = below >= qMin(600, area.height()) || below >= above;
+    const int height = qMin(600, qMin(area.height(), qMax(200, openBelow ? below : above)));
+    const int x = qBound(area.left(), anchor.left(), area.right() - width + 1);
+    const int requestedY = openBelow ? anchor.bottom() + 1 : anchor.top() - height;
+    const int y = qBound(area.top(), requestedY, area.bottom() - height + 1);
+    treePopupDialog->setGeometry(x, y, width, height);
     treePopupDialog->show();
     treePopupDialog->raise();
     treePopupDialog->activateWindow();
@@ -3478,6 +3515,62 @@ QTreeWidget* UComponentsListWidgetModern::currentPropertyTree() const
     return nullptr;
 }
 
+void UComponentsListWidgetModern::refreshVisibleScalarProperties()
+{
+    QTreeWidget* tree = currentPropertyTree();
+    if (!tree || !tree->isVisible() || UpdateInterfaceFlag
+        || treeHasOpenPropertyEditor(tree) || QApplication::activeModalWidget())
+        return;
+
+    auto model = RDK::GetModelLockTimeout(getWorkChannelIndex(), 5);
+    if (!model)
+        return;
+    const QSignalBlocker blocked(tree);
+    const QRect viewport = tree->viewport()->rect();
+    QTreeWidgetItem* first = tree->itemAt(QPoint(2, 0));
+    if (!first)
+        first = tree->topLevelItem(0);
+    for (auto* item = first; item; item = tree->itemBelow(item))
+    {
+        const QRect row = tree->visualItemRect(item);
+        if (row.top() > viewport.bottom())
+            break;
+        if (item->childCount() || !row.intersects(viewport))
+            continue;
+        const QString name = propertyNameForItem(item);
+        const QString componentName = propertyComponentForItem(item);
+        RDK::UEPtr<RDK::UContainer> component = componentName.isEmpty()
+            ? RDK::UEPtr<RDK::UContainer>(model.Get())
+            : model->GetComponentL(componentName.toLocal8Bit().constData(), true);
+        const auto property = component ? component->FindProperty(name.toStdString())
+                                        : RDK::UEPtr<RDK::UIProperty>();
+        if (!property)
+            continue;
+        const auto& type = property->GetLanguageType();
+        if (type == typeid(bool) && item->data(1, Qt::CheckStateRole).isValid())
+        {
+            const auto* value = static_cast<const bool*>(property->GetMemoryArea());
+            if (value)
+            {
+                const QString text = *value ? QStringLiteral("true") : QStringLiteral("false");
+                if (text != item->data(1, Qt::UserRole).toString())
+                {
+                    item->setCheckState(1, *value ? Qt::Checked : Qt::Unchecked);
+                    updatePropertyItemDisplay(item, text);
+                }
+            }
+        }
+        else if (RDK::isScalarWatchableLanguageType(type))
+        {
+            std::string value;
+            component->GetPropertyValue(name.toStdString(), value);
+            const QString text = QString::fromStdString(value);
+            if (text != item->data(1, Qt::UserRole).toString())
+                updatePropertyItemDisplay(item, text);
+        }
+    }
+}
+
 QTreeWidgetItem* UComponentsListWidgetModern::currentPropertyItem() const
 {
     QTreeWidget* tree = currentPropertyTree();
@@ -3615,11 +3708,15 @@ bool UComponentsListWidgetModern::beginPropertyValueEdit(QTreeWidgetItem* item)
     if(prop.isEmpty())
         return false;
 
-    const QString raw = item->data(1, Qt::UserRole).toString();
+    QString raw = item->data(1, Qt::UserRole).toString();
     const QString display = item->text(1);
     QTreeWidget* tree = item->treeWidget();
     if(!tree)
         return false;
+
+    const QString precise = numericMatrixEditorText(getWorkChannelIndex(), propertyComponentForItem(item), prop);
+    if (!precise.isNull())
+        raw = precise;
 
     if(isMultilinePropertyValue(raw, display))
     {
@@ -3633,11 +3730,23 @@ bool UComponentsListWidgetModern::beginPropertyValueEdit(QTreeWidgetItem* item)
                 edited = QString::fromLocal8Bit(normalized.c_str());
             }
         }
+        const QString original = edited;
+        tree->setCurrentItem(item, 1);
+        const QPersistentModelIndex editorIndex(tree->currentIndex());
         if(!editMultilineValueDialog(this, edited))
             return false;
-        return applyPropertyValueFromEditor(item, edited);
+        if (edited == original)
+            return true;
+        if (!editorIndex.isValid())
+            return false;
+        return applyPropertyValueFromEditor(propertyItemFromIndex(tree, editorIndex), edited);
     }
 
+    if (!precise.isNull())
+    {
+        const QSignalBlocker blocker(tree);
+        item->setData(1, Qt::UserRole, raw);
+    }
     // Гарантируем editable на Value-колонке перед открытием редактора
     item->setFlags((item->flags() | Qt::ItemIsEditable | Qt::ItemIsSelectable) & ~Qt::ItemIsUserCheckable);
     tree->setCurrentItem(item);

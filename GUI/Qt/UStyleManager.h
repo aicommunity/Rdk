@@ -23,11 +23,6 @@ class UStyleManager
 public:
     static UStyleManager* instance();
     
-    // Загрузка конфигурации
-    bool loadTheme(const QString& themeJsonPath);
-    bool loadStyleSheet(const QString& qssPath);
-    void applyGlobalStyleSheet(QApplication* app);
-
     /// Sync QApplication font with the desktop UI font and polish dock/MDI titles.
     void applySystemUiFonts(QApplication* app);
     QFont titleBarFont() const;
@@ -36,7 +31,6 @@ public:
     // Переключение темы
     bool switchTheme(const QString& themeName, QApplication* app);
     QStringList getAvailableThemes() const;
-    QString getStylesPath() const;
     
     // Получение stylesheet для виджетов
     QString getStyleSheet() const { return m_styleSheet; }
@@ -123,6 +117,7 @@ private:
     UStyleManager& operator=(const UStyleManager&) = delete;
     
     void setDefaults();
+    void applyThemeColors(const QJsonObject& root);
     QColor parseColor(const QJsonObject& obj, const QString& key, const QColor& defaultColor);
     double parseDouble(const QJsonObject& obj, const QString& key, double defaultValue);
     QVector<QColor> parseColorArray(const QJsonObject& obj, const QString& key, const QVector<QColor>& defaultColors);

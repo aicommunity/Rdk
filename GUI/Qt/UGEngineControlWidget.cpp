@@ -8,12 +8,15 @@
 #include "UGuiShellTypes.h"
 #include "UEngineControlStripWidget.h"
 #include "UComponentGuiDockChrome.h"
+#include "UGuiModelSnapshot.h"
+#include "UModernDiagramWidget.h"
 
 
 #include <rdk_application.h>
 #include <QSettings>
 #include <QDebug>
 #include <QDateTime>
+#include <QElapsedTimer>
 #include <QDialog>
 #include <QHBoxLayout>
 #include <QDockWidget>
@@ -21,7 +24,10 @@
 #include <QCloseEvent>
 #include <QThread>
 #include <QFileDialog>
+#include <QFile>
 #include <QFileInfo>
+#include <QScreen>
+#include <QStatusBar>
 #include <QDir>
 #include <QMessageBox>
 #include <QTimer>
@@ -255,6 +261,21 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
             modernDiagram, SLOT(componentSingleClick(QString)));
     connect(propertyChanger->componentsList, SIGNAL(updateScheme(bool)),
             modernDiagram, SLOT(updateScheme(bool)));
+    connect(&NMSDK::UGuiModelSnapshot::Instance(), &NMSDK::UGuiModelSnapshot::SnapshotUpdated,
+            this, [this](NMSDK::UGuiSnapshotPtr snapshot, const QStringList& added,
+                         const QStringList& removed, const QStringList&) {
+        if (!snapshot || snapshot->ChannelIndex != Core_GetSelectedChannelIndex()
+            || !modernDiagram || !modernDiagram->isVisible() || !application->GetProjectOpenFlag())
+            return;
+        const QString scope = modernDiagram->modernDiagramWidget()->diagramScopeLongName();
+        const auto inScope = [&scope](const QString& name) {
+            const int separator = name.lastIndexOf(QLatin1Char('.'));
+            return (separator < 0 ? QString() : name.left(separator)) == scope;
+        };
+        if (std::any_of(added.cbegin(), added.cend(), inScope)
+            || std::any_of(removed.cbegin(), removed.cend(), inScope))
+            modernDiagram->updateScheme(false);
+    }, Qt::QueuedConnection);
     connect(propertyChanger->componentsList, &UComponentsListWidgetModern::openComponentGuiRequested,
             this, &UGEngineControlWidget::openComponentGuiFromScheme);
 
@@ -368,7 +389,7 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
         syncStripLoggerExpanded();
     });
 
-    watchWindow = new UWatch(this);
+    watchWindow = new UWatch(this, application);
     watchWindow->setWindowTitle("Watch window");
     watchWindow->hide();
 
@@ -617,62 +638,64 @@ void UGEngineControlWidget::actionLoadConfig()
 
     if (fileName.isEmpty())
       return;
-    try
-    {
-      if(watchWindow == NULL)
-      {
-          watchWindow = new UWatch(this);
-          watchWindow->setWindowTitle("Watch window");
-      }
-
-
-      application->OpenProject(fileName.toLocal8Bit().constData());
-      UpdateInterface();
-
+     if (openProjectFromGui(fileName))
       registrySettings.setValue("LastConfigDialogDir", QFileInfo(fileName).absolutePath());
-
-      addToRecentConfigs(fileName);
-
-      /*QStringList list = configFileName.split("/");
-      list.pop_back();*/
-
-      RDK::UIVisualControllerStorage::UpdateInterface(true);
-    }
-    catch(RDK::UException& e)
-    {
-      QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
-    }
-    catch(std::exception& e)
-    {
-      QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
-    }
 }
 
 void UGEngineControlWidget::loadProjectExternal(const QString &config_path)
 {
- try
- {
-  if (watchWindow == NULL)
-  {
-      watchWindow = new UWatch(this);
-      watchWindow->setWindowTitle("Watch window");
-  }
+    openProjectFromGui(config_path);
+}
 
-  application->OpenProject(config_path.toLocal8Bit().constData());
-  UpdateInterface();
+bool UGEngineControlWidget::openProjectFromGui(const QString& path)
+{
+    QFile file(path);
+    if (!QFileInfo(file).isFile() || !file.open(QIODevice::ReadOnly))
+    {
+        const QString message = tr("Cannot read configuration: %1").arg(QDir::toNativeSeparators(path));
+        statusBar()->showMessage(message, 10000);
+        qWarning().noquote() << message;
+        return false;
+    }
+    file.close();
 
-  addToRecentConfigs(config_path);
+    RDK::TProjectLoadDiagnostics diagnostics;
+    bool loaded = false;
+    try
+    {
+        if (!watchWindow)
+        {
+            watchWindow = new UWatch(this, application);
+            watchWindow->setWindowTitle(tr("Watch window"));
+        }
+        loaded = application->OpenProject(path.toLocal8Bit().constData(), &diagnostics);
+    }
+    catch (const std::exception& error)
+    {
+        diagnostics.errors.emplace_back(error.what());
+    }
 
-  RDK::UIVisualControllerStorage::UpdateInterface(true);
- }
- catch(RDK::UException& e)
- {
-  QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
- }
- catch(std::exception& e)
- {
-  QMessageBox::critical(this,"Error at load project", QString(e.what()), QMessageBox::Ok);
- }
+    UpdateInterface();
+    RDK::UIVisualControllerStorage::UpdateInterface(true);
+    const bool projectOpen = application->GetProjectOpenFlag();
+    if (loaded && projectOpen && diagnostics.isValid
+        && diagnostics.channelsLoaded == diagnostics.channelsTotal)
+    {
+        addToRecentConfigs(path);
+        return true;
+    }
+
+    const QString message = projectOpen
+        ? tr("Configuration opened with problems (%1 of %2 channels): %3")
+              .arg(diagnostics.channelsLoaded).arg(diagnostics.channelsTotal).arg(path)
+        : tr("Could not open configuration: %1").arg(path);
+    const QString detail = diagnostics.errors.empty()
+        ? message : message + QStringLiteral(" — ") + QString::fromStdString(diagnostics.errors.front());
+    statusBar()->showMessage(detail, 15000);
+    qWarning().noquote() << message;
+    for (const auto& error : diagnostics.errors)
+        qWarning().noquote() << QString::fromStdString(error);
+    return false;
 }
 
 void UGEngineControlWidget::refreshLlmPresentationShell()
@@ -1746,18 +1769,110 @@ void UGEngineControlWidget::actionStep()
   calcOneStepChannel(-1);
 }
 
+static bool singleThreadCalculationRunning(RDK::UApplication* application)
+{
+    // The single-thread engine is scheduled by Qt's timer, not a channel worker.
+    return application->GetEngineControl()->GetThreadMode() == 0
+        && UVisualControllerWidget::CalculationModeFlag.Get();
+}
+
 void UGEngineControlWidget::actionRunNSteps()
 {
-  bool ok;
-  QString text = QInputDialog::getText(this, tr("Run several steps"),
-                                       tr("Enter steps number: "), QLineEdit::Normal,
-                                       "", &ok);
-  unsigned int stepsCounter = text.toUInt();
-  if (ok && stepsCounter > 0)
-  {
-    for(unsigned int i = 0; i < stepsCounter; ++i)
-      application->StepChannel(-1);
-  }
+    if (!application->GetProjectOpenFlag() || m_stepsRequested)
+        return;
+    if (singleThreadCalculationRunning(application))
+    {
+        statusBar()->showMessage(tr("Pause calculation before running steps."), 8000);
+        return;
+    }
+    for (int channel = 0; channel < application->GetNumChannels(); ++channel)
+    {
+        const auto state = application->CheckCalcState(channel);
+        if (state == RDK::UEngineControl::csRunning || state == RDK::UEngineControl::csHanging)
+        {
+            statusBar()->showMessage(tr("Pause calculation before running steps."), 8000);
+            return;
+        }
+    }
+    bool accepted = false;
+    const QString text = QInputDialog::getText(this, tr("Run several steps"),
+        tr("Enter steps number: "), QLineEdit::Normal, QString(), &accepted);
+    if (!accepted || !application->GetProjectOpenFlag())
+        return;
+    bool numeric = false;
+    const unsigned count = text.toUInt(&numeric);
+    if (!numeric || count == 0)
+    {
+        statusBar()->showMessage(tr("Enter a positive integer number of steps."), 8000);
+        return;
+    }
+    m_stepsRequested = count;
+    m_stepsExecuted = 0;
+    const quint64 generation = ++m_stepBatchGeneration;
+    QTimer::singleShot(0, this, [this, generation]() { runStepBatch(generation); });
+}
+
+void UGEngineControlWidget::runStepBatch(quint64 generation)
+{
+    if (generation != m_stepBatchGeneration || !m_stepsRequested)
+        return;
+    if (!application->GetProjectOpenFlag() || singleThreadCalculationRunning(application))
+    {
+        cancelStepBatch();
+        return;
+    }
+
+    QElapsedTimer budget;
+    budget.start();
+    using StepResult = RDK::UEngineControl::ModelStepResult;
+    StepResult result = StepResult::Unavailable;
+    try
+    {
+        do
+        {
+            result = application->GetEngineControl()->StepModelChannels(-1);
+            if (generation != m_stepBatchGeneration)
+                return;
+            if (result != StepResult::Advanced)
+                break;
+            ++m_stepsExecuted;
+        } while (m_stepsExecuted < m_stepsRequested && budget.elapsed() < 8);
+    }
+    catch (const std::exception& error)
+    {
+        cancelStepBatch();
+        statusBar()->showMessage(tr("Step run failed: %1").arg(QString::fromLocal8Bit(error.what())), 15000);
+        return;
+    }
+    if (result != StepResult::Advanced)
+    {
+        m_stepsRequested = 0;
+        RDK::UIVisualControllerStorage::UpdateInterface(true);
+        const QString message = result == StepResult::TimeLimitReached
+            ? tr("Step run stopped at the model time limit after %1 steps.")
+            : tr("Step run stopped after %1 steps. No channel advanced.");
+        statusBar()->showMessage(message.arg(m_stepsExecuted), 8000);
+        return;
+    }
+    if (m_stepsExecuted == m_stepsRequested)
+    {
+        m_stepsRequested = 0;
+        RDK::UIVisualControllerStorage::UpdateInterface(true);
+        statusBar()->showMessage(tr("Step run finished: %1 model steps.").arg(m_stepsExecuted), 8000);
+        return;
+    }
+    statusBar()->showMessage(tr("Step run: %1 of %2. Use Pause to stop.").arg(m_stepsExecuted).arg(m_stepsRequested));
+    QTimer::singleShot(0, this, [this, generation]() { runStepBatch(generation); });
+}
+
+void UGEngineControlWidget::cancelStepBatch()
+{
+    if (!m_stepsRequested)
+        return;
+    ++m_stepBatchGeneration;
+    m_stepsRequested = 0;
+    RDK::UIVisualControllerStorage::UpdateInterface(true);
+    statusBar()->showMessage(tr("Step run stopped after %1 model steps.").arg(m_stepsExecuted), 8000);
 }
 
 // window menu action
@@ -1909,21 +2024,16 @@ void UGEngineControlWidget::actionTestCreator()
 
 void UGEngineControlWidget::actionWatchWindow()
 {
-    if(watchWindow != NULL)
+    if (!watchWindow)
     {
-        watchWindow->show();
-        watchWindow->showNormal();
-        watchWindow->raise();
-        watchWindow->activateWindow();
+        watchWindow = new UWatch(this, application);
+        watchWindow->setWindowTitle(tr("Watch window"));
     }
-    else
-    {
-        watchWindow = new UWatch(this);
-        watchWindow->setWindowTitle("Watch window");
-        watchWindow->show();
-        watchWindow->raise();
-        watchWindow->activateWindow();
-    }
+    watchWindow->setWindowState(watchWindow->windowState() & ~Qt::WindowMinimized);
+    watchWindow->show();
+    watchWindow->scheduleScreenFit();
+    watchWindow->raise();
+    watchWindow->activateWindow();
 }
 
 void UGEngineControlWidget::actionProjectDescription()
@@ -2038,6 +2148,7 @@ void UGEngineControllWidget::actionVASimpleSettings()
 
 void UGEngineControlWidget::startChannel(int chanelIndex)
 {
+    cancelStepBatch();
     if(!application->GetProjectOpenFlag())
         return;
 
@@ -2046,6 +2157,7 @@ void UGEngineControlWidget::startChannel(int chanelIndex)
 
 void UGEngineControlWidget::pauseChannel(int chanelIndex)
 {
+    cancelStepBatch();
     if(!application->GetProjectOpenFlag())
         return;
 
@@ -2054,6 +2166,7 @@ void UGEngineControlWidget::pauseChannel(int chanelIndex)
 
 void UGEngineControlWidget::resetChannel(int chanelIndex)
 {
+    cancelStepBatch();
     if(!application->GetProjectOpenFlag())
         return;
 
@@ -2062,10 +2175,21 @@ void UGEngineControlWidget::resetChannel(int chanelIndex)
 
 void UGEngineControlWidget::calcOneStepChannel(int chanelIndex)
 {
+    cancelStepBatch();
     if(!application->GetProjectOpenFlag())
         return;
+    if (singleThreadCalculationRunning(application))
+    {
+        statusBar()->showMessage(tr("Pause calculation before running steps."), 8000);
+        return;
+    }
 
-    application->StepChannel(chanelIndex);
+    const auto result = application->GetEngineControl()->StepModelChannels(chanelIndex);
+    RDK::UIVisualControllerStorage::UpdateInterface(true);
+    if (result == RDK::UEngineControl::ModelStepResult::TimeLimitReached)
+        statusBar()->showMessage(tr("Model time limit reached."), 8000);
+    else if (result == RDK::UEngineControl::ModelStepResult::Unavailable)
+        statusBar()->showMessage(tr("No idle channel advanced."), 8000);
 }
 
 /// Добавляет новый виджет в imagesVector
@@ -2125,7 +2249,7 @@ void UGEngineControlWidget::addWatchesWidged()
         index = watchesVector.back()->accessibleName().replace("Watches_","").toInt()+1;
 
     //создаем каждую новый виджет с именем Watches + номер
-    watchesVector.push_back(new UWatchTab(this));
+    watchesVector.push_back(new UWatchTab(this, application));
     watchesVector.back()->setAccessibleName(QString("Watches_")+RDK::sntoa(index).c_str());
     watchesVector.back()->setWindowTitle(QString("Watches_")+RDK::sntoa(index).c_str());
 
@@ -2692,6 +2816,7 @@ void UGEngineControlWidget::AAfterLoadProject(void)
 // Метод, вызываемый перед закрытием проекта
 void UGEngineControlWidget::ABeforeCloseProject(void)
 {
+    cancelStepBatch();
     writeSettings();
     m_componentGuiService.clearAllInstances();
     m_componentGuiTabHosts.clear();
@@ -2700,7 +2825,7 @@ void UGEngineControlWidget::ABeforeCloseProject(void)
 // Метод, вызываемый перед сбросом модели
 void UGEngineControlWidget::ABeforeReset(void)
 {
-
+    cancelStepBatch();
 }
 
 // Метод, вызываемый после сброса модели
@@ -3823,8 +3948,8 @@ void UGEngineControlWidget::switchToTheme(const QString& themeName)
     }
     else
     {
-        QMessageBox::warning(this, tr("Theme Error"),
-            tr("Failed to switch to theme: %1").arg(themeName));
+        statusBar()->showMessage(tr("Theme unavailable: %1. See the log for checked locations.")
+                                     .arg(themeName), 10000);
     }
 }
 
