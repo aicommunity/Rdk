@@ -8,12 +8,15 @@
 #include "UGuiShellTypes.h"
 #include "UEngineControlStripWidget.h"
 #include "UComponentGuiDockChrome.h"
+#include "UGuiModelSnapshot.h"
+#include "UModernDiagramWidget.h"
 
 
 #include <rdk_application.h>
 #include <QSettings>
 #include <QDebug>
 #include <QDateTime>
+#include <QElapsedTimer>
 #include <QDialog>
 #include <QHBoxLayout>
 #include <QDockWidget>
@@ -258,6 +261,21 @@ UGEngineControlWidget::UGEngineControlWidget(QWidget *parent, RDK::UApplication 
             modernDiagram, SLOT(componentSingleClick(QString)));
     connect(propertyChanger->componentsList, SIGNAL(updateScheme(bool)),
             modernDiagram, SLOT(updateScheme(bool)));
+    connect(&NMSDK::UGuiModelSnapshot::Instance(), &NMSDK::UGuiModelSnapshot::SnapshotUpdated,
+            this, [this](NMSDK::UGuiSnapshotPtr snapshot, const QStringList& added,
+                         const QStringList& removed, const QStringList&) {
+        if (!snapshot || snapshot->ChannelIndex != Core_GetSelectedChannelIndex()
+            || !modernDiagram || !modernDiagram->isVisible() || !application->GetProjectOpenFlag())
+            return;
+        const QString scope = modernDiagram->modernDiagramWidget()->diagramScopeLongName();
+        const auto inScope = [&scope](const QString& name) {
+            const int separator = name.lastIndexOf(QLatin1Char('.'));
+            return (separator < 0 ? QString() : name.left(separator)) == scope;
+        };
+        if (std::any_of(added.cbegin(), added.cend(), inScope)
+            || std::any_of(removed.cbegin(), removed.cend(), inScope))
+            modernDiagram->updateScheme(false);
+    }, Qt::QueuedConnection);
     connect(propertyChanger->componentsList, &UComponentsListWidgetModern::openComponentGuiRequested,
             this, &UGEngineControlWidget::openComponentGuiFromScheme);
 
@@ -1753,16 +1771,80 @@ void UGEngineControlWidget::actionStep()
 
 void UGEngineControlWidget::actionRunNSteps()
 {
-  bool ok;
-  QString text = QInputDialog::getText(this, tr("Run several steps"),
-                                       tr("Enter steps number: "), QLineEdit::Normal,
-                                       "", &ok);
-  unsigned int stepsCounter = text.toUInt();
-  if (ok && stepsCounter > 0)
-  {
-    for(unsigned int i = 0; i < stepsCounter; ++i)
-      application->StepChannel(-1);
-  }
+    if (!application->GetProjectOpenFlag() || m_stepsRequested)
+        return;
+    for (int channel = 0; channel < application->GetNumChannels(); ++channel)
+    {
+        const auto state = application->CheckCalcState(channel);
+        if (state == RDK::UEngineControl::csRunning || state == RDK::UEngineControl::csHanging)
+        {
+            statusBar()->showMessage(tr("Pause calculation before running steps."), 8000);
+            return;
+        }
+    }
+    bool accepted = false;
+    const QString text = QInputDialog::getText(this, tr("Run several steps"),
+        tr("Enter steps number: "), QLineEdit::Normal, QString(), &accepted);
+    if (!accepted || !application->GetProjectOpenFlag())
+        return;
+    bool numeric = false;
+    const unsigned count = text.toUInt(&numeric);
+    if (!numeric || count == 0)
+    {
+        statusBar()->showMessage(tr("Enter a positive integer number of steps."), 8000);
+        return;
+    }
+    m_stepsRequested = count;
+    m_stepsExecuted = 0;
+    const quint64 generation = ++m_stepBatchGeneration;
+    QTimer::singleShot(0, this, [this, generation]() { runStepBatch(generation); });
+}
+
+void UGEngineControlWidget::runStepBatch(quint64 generation)
+{
+    if (generation != m_stepBatchGeneration || !m_stepsRequested)
+        return;
+    if (!application->GetProjectOpenFlag())
+    {
+        cancelStepBatch();
+        return;
+    }
+
+    QElapsedTimer budget;
+    budget.start();
+    try
+    {
+        do
+        {
+            application->StepChannel(-1);
+            if (generation != m_stepBatchGeneration)
+                return;
+            ++m_stepsExecuted;
+        } while (m_stepsExecuted < m_stepsRequested && budget.elapsed() < 8);
+    }
+    catch (const std::exception& error)
+    {
+        cancelStepBatch();
+        statusBar()->showMessage(tr("Step run failed: %1").arg(QString::fromLocal8Bit(error.what())), 15000);
+        return;
+    }
+    if (m_stepsExecuted == m_stepsRequested)
+    {
+        statusBar()->showMessage(tr("Step run finished: %1 requested steps.").arg(m_stepsExecuted), 8000);
+        m_stepsRequested = 0;
+        return;
+    }
+    statusBar()->showMessage(tr("Step run: %1 of %2. Use Pause to stop.").arg(m_stepsExecuted).arg(m_stepsRequested));
+    QTimer::singleShot(0, this, [this, generation]() { runStepBatch(generation); });
+}
+
+void UGEngineControlWidget::cancelStepBatch()
+{
+    if (!m_stepsRequested)
+        return;
+    ++m_stepBatchGeneration;
+    m_stepsRequested = 0;
+    statusBar()->showMessage(tr("Step run stopped after %1 calls.").arg(m_stepsExecuted), 8000);
 }
 
 // window menu action
@@ -2057,6 +2139,7 @@ void UGEngineControllWidget::actionVASimpleSettings()
 
 void UGEngineControlWidget::startChannel(int chanelIndex)
 {
+    cancelStepBatch();
     if(!application->GetProjectOpenFlag())
         return;
 
@@ -2065,6 +2148,7 @@ void UGEngineControlWidget::startChannel(int chanelIndex)
 
 void UGEngineControlWidget::pauseChannel(int chanelIndex)
 {
+    cancelStepBatch();
     if(!application->GetProjectOpenFlag())
         return;
 
@@ -2073,6 +2157,7 @@ void UGEngineControlWidget::pauseChannel(int chanelIndex)
 
 void UGEngineControlWidget::resetChannel(int chanelIndex)
 {
+    cancelStepBatch();
     if(!application->GetProjectOpenFlag())
         return;
 
@@ -2081,6 +2166,7 @@ void UGEngineControlWidget::resetChannel(int chanelIndex)
 
 void UGEngineControlWidget::calcOneStepChannel(int chanelIndex)
 {
+    cancelStepBatch();
     if(!application->GetProjectOpenFlag())
         return;
 
@@ -2711,6 +2797,7 @@ void UGEngineControlWidget::AAfterLoadProject(void)
 // Метод, вызываемый перед закрытием проекта
 void UGEngineControlWidget::ABeforeCloseProject(void)
 {
+    cancelStepBatch();
     writeSettings();
     m_componentGuiService.clearAllInstances();
     m_componentGuiTabHosts.clear();
@@ -2719,7 +2806,7 @@ void UGEngineControlWidget::ABeforeCloseProject(void)
 // Метод, вызываемый перед сбросом модели
 void UGEngineControlWidget::ABeforeReset(void)
 {
-
+    cancelStepBatch();
 }
 
 // Метод, вызываемый после сброса модели

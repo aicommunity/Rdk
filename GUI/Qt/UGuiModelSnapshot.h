@@ -67,6 +67,7 @@ struct UGuiPropertyValue
 struct UGuiSnapshot
 {
     quint64 Version = 0;
+    int ChannelIndex = -1;
     QDateTime Timestamp;
     QHash<QString, UGuiComponentSummary> Components;
     /// DFS preorder of LongName matching CollectComponent / GetComponentsList order.
@@ -119,7 +120,7 @@ private slots:
 private:
     void ensureRunning() const;
     explicit UGuiModelSnapshot(QObject* parent = nullptr);
-    void RefreshSnapshot();
+    void RefreshSnapshot(int channel);
     void CollectComponent(const RDK::UEPtr<RDK::UContainer>& component,
                           const RDK::UEPtr<RDK::UContainer>& root,
                           const QString& parentName,

@@ -142,24 +142,26 @@ void UGuiModelSnapshot::HandleRefresh()
         return;
     RefreshScheduled = true;
 
-    QtConcurrent::run([this]() {
+    const int channel = Core_GetSelectedChannelIndex();
+    QtConcurrent::run([this, channel]() {
         NMSDK::UGuiTelemetryScope scope(QStringLiteral("Snapshot"), QStringLiteral("Refresh"));
-        RefreshSnapshot();
+        RefreshSnapshot(channel);
         scope.Stop();
         QMetaObject::invokeMethod(this, [this]() { RefreshScheduled = false; }, Qt::QueuedConnection);
     });
 }
 
-void UGuiModelSnapshot::RefreshSnapshot()
+void UGuiModelSnapshot::RefreshSnapshot(int channel)
 {
     auto nextSnapshot = std::make_shared<UGuiSnapshot>();
+    nextSnapshot->ChannelIndex = channel;
     nextSnapshot->Timestamp = QDateTime::currentDateTimeUtc();
 
     QStringList added;
     QStringList removed;
     QStringList changed;
 
-    RDK::UELockPtr<RDK::UNet> model = RDK::GetModelLock<RDK::UNet>();
+    RDK::UELockPtr<RDK::UNet> model = RDK::GetModelLock<RDK::UNet>(channel);
     if (model) {
         RDK::UEPtr<RDK::UNet> net(model.Get());
         RDK::UEPtr<RDK::UContainer> root(net);
@@ -182,7 +184,7 @@ void UGuiModelSnapshot::RefreshSnapshot()
 
     {
         QWriteLocker locker(&SnapshotLock);
-        if (SnapshotValue && !SnapshotValue->Components.isEmpty()) {
+        if (SnapshotValue && SnapshotValue->ChannelIndex == channel && !SnapshotValue->Components.isEmpty()) {
             const auto oldList = SnapshotValue->Components.keys();
             const auto newList = nextSnapshot->Components.keys();
             const QSet<QString> oldKeys(oldList.cbegin(), oldList.cend());

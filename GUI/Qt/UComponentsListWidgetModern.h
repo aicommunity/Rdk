@@ -107,6 +107,7 @@ public:
 
     /// Возвращает полное имя выбранного компонента
     QString getSelectedComponentLongName();
+    bool hasSelectedComponent() const;
 
     /// открывает определенную вкладку tabWidgetComponentInfo
     ///
@@ -266,6 +267,7 @@ private:
     QString propertyComponentForItem(QTreeWidgetItem* item) const;
     QString propertyNameForItem(QTreeWidgetItem* item) const;
     QTreeWidget* currentPropertyTree() const;
+    void refreshVisibleScalarProperties();
     QTreeWidgetItem* currentPropertyItem() const;
 
     void updatePropertyItemDisplay(QTreeWidgetItem* item, const QString& rawValue);
