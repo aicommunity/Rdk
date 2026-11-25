@@ -25,6 +25,7 @@ public:
 /// 2 - Завис
 /// 4 - Состояние не определено
 typedef enum { csStopped=0, csRunning=1, csHanging=2, csUnknown=4 } UCalcState;
+enum class ModelStepResult { Advanced, TimeLimitReached, Unavailable };
 
 protected: // Параметры
 /// Режим работы
@@ -167,6 +168,9 @@ virtual void ResetChannel(int channel_index);
 /// Делает шаг расчета выбранного канала, или всех, если channel_index == -1
 virtual void StepChannel(int channel_index);
 
+/// Advances idle channels by one model tick each, regardless of their continuous calculation mode.
+ModelStepResult StepModelChannels(int channel_index);
+
 /// Проверяет состояние расчета по id канала
 virtual UEngineControl::UCalcState CheckCalcState(int channel_id) const;
 
@@ -208,6 +212,7 @@ int getUpdateInterval() const;
 void setUpdateInterval(int value);
 
 private: // Вспомогательные методы
+ModelStepResult stepChannels(int channel_index, bool modelStep);
 // --------------------------
 /// Управление числом каналов
 // --------------------------

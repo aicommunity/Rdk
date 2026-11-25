@@ -336,6 +336,9 @@ virtual bool DestroyStructure(void);
 /// Флаг, выставляемый если достигнут конец расчета (по MaxCalcTime)
 bool IsCalcFinished(void) const;
 
+/// Runs one full-model calculation without the wall-clock step interval.
+bool CalculateModelStep();
+
 // Расчет модели в реальном времени
 virtual void RTCalculate(void);
 

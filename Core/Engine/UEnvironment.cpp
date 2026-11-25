@@ -21,6 +21,10 @@ See file license.txt for more information
 
 namespace RDK {
 
+namespace {
+thread_local const UEnvironment* manuallySteppedEnvironment = nullptr;
+}
+
 // --------------------------
 // Constructors & destructors
 // --------------------------
@@ -828,6 +832,18 @@ bool UEnvironment::IsCalcFinished(void) const
  return CalcFinishedFlag;
 }
 
+bool UEnvironment::CalculateModelStep()
+{
+ struct RestoreManualMode
+ {
+  const UEnvironment* previous;
+  ~RestoreManualMode() { manuallySteppedEnvironment = previous; }
+ } restore{manuallySteppedEnvironment};
+ manuallySteppedEnvironment = this;
+ SetModelCalculationComponent(ULongId());
+ return Calculate();
+}
+
 // Вызов расчета в режиме реального времени
 void UEnvironment::RTCalculate(void)
 {
@@ -1167,7 +1183,8 @@ bool UEnvironment::ACalculate(void)
   return true;
 
  // Проверяет, прошло ли с момента последнего расчета времени больше чем интервал
- if(MinInterstepsInterval>0 && CalcDiffTime(cur_time,LastStepStartTime)<MinInterstepsInterval)
+ if(MinInterstepsInterval>0 && manuallySteppedEnvironment != this &&
+    CalcDiffTime(cur_time,LastStepStartTime)<MinInterstepsInterval)
   return true;
 
  if(IsCalcFinished())

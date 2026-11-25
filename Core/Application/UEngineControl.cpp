@@ -437,32 +437,64 @@ void UEngineControl::ResetChannel(int channel_index)
 /// Делает шаг расчета выбранного канала, или всех, если channel_index == -1
 void UEngineControl::StepChannel(int channel_index)
 {
+ stepChannels(channel_index, false);
+}
+
+UEngineControl::ModelStepResult UEngineControl::StepModelChannels(int channel_index)
+{
+ return stepChannels(channel_index, true);
+}
+
+UEngineControl::ModelStepResult UEngineControl::stepChannels(int channel_index, bool modelStep)
+{
  int num_channels=GetNumChannels();
  if(channel_index>=num_channels)
-  return;
+  return ModelStepResult::Unavailable;
+
+ const int first = channel_index < 0 ? 0 : channel_index;
+ const int end = channel_index < 0 ? num_channels : channel_index + 1;
+ std::vector<int> channels;
+ bool reachedTimeLimit = false;
+ if(modelStep)
+ {
+  for(int i=first; i<end; ++i)
+  {
+   if(CheckCalcState(i) != csStopped || !MCore_IsChannelInit(i) || !MModel_Check(i))
+    continue;
+   const auto environment = GetEnvironmentLock(i);
+   if(!environment)
+    continue;
+   const double limit = environment->GetMaxCalcTime();
+   if(environment->IsCalcFinished() || (limit > 0.0 && environment->GetTime().GetDoubleTime() >= limit))
+    reachedTimeLimit = true;
+   else
+    channels.push_back(i);
+  }
+  if(channels.empty())
+   return reachedTimeLimit ? ModelStepResult::TimeLimitReached : ModelStepResult::Unavailable;
+ }
 
  RDK::UIVisualControllerStorage::BeforeCalculate();
  int use_controllers_mode=UseControllersMode;
  if(use_controllers_mode == 0)
   RDK::UIControllerStorage::BeforeCalculate(channel_index);
 
- if(channel_index <0)
+ bool advanced = false;
+ if(modelStep)
  {
-  for(int i=0;i<num_channels;i++)
-  {
-   if(MCore_IsChannelInit(i) && MModel_Check(i))
-   {
-	EngineControlThreads[i]->EnableCalculation();
-    EngineControlThreads[i]->Calculate();
-   }
-  }
+  for(int i : channels)
+   if(EngineControlThreads[i]->CalculateModelStep())
+    advanced = true;
  }
  else
  {
-  if(MCore_IsChannelInit(channel_index) && MModel_Check(channel_index))
+  for(int i=first; i<end; ++i)
   {
-   EngineControlThreads[channel_index]->EnableCalculation();
-   EngineControlThreads[channel_index]->Calculate();
+   if(MCore_IsChannelInit(i) && MModel_Check(i))
+   {
+    EngineControlThreads[i]->EnableCalculation();
+    EngineControlThreads[i]->Calculate();
+   }
   }
  }
 
@@ -485,7 +517,8 @@ void UEngineControl::StepChannel(int channel_index)
  }
  RDK::UIVisualControllerStorage::AfterCalculate();
  RDK::UIVisualControllerStorage::ResetCalculationStepUpdatedFlag();
- RDK::UIVisualControllerStorage::UpdateInterface();
+ if(!modelStep)
+  RDK::UIVisualControllerStorage::UpdateInterface();
 
  try
  {
@@ -508,6 +541,9 @@ void UEngineControl::StepChannel(int channel_index)
   RLOG(RDK_EX_FATAL, RDK_GLOB_MESSAGE, "glob", "UEngineControl::TimerExecute:Calculate profiler stats - unhandled exception");
   throw;
  }
+ if(modelStep)
+  RDK::UIVisualControllerStorage::UpdateInterface();
+ return advanced ? ModelStepResult::Advanced : ModelStepResult::Unavailable;
 }
 
 

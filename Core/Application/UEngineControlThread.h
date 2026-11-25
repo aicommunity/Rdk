@@ -160,6 +160,9 @@ virtual void AAfterCalculate(void);
 /// действиями
 virtual void Calculate(void);
 
+/// Runs one model tick in an idle channel and reports whether model time advanced.
+bool CalculateModelStep();
+
 /// Метод, вызываемый потоком
 virtual void Execute(void);
 
@@ -197,6 +200,9 @@ virtual void Reset(void);
 /// Устанавливает приоритет потока
 virtual bool SetPriority(int priority_id);
 // -------------------------
+
+private:
+bool calculate(bool modelStep);
 };
 
 }

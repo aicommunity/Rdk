@@ -215,8 +215,6 @@ void UEngineControlThread::AfterCalculate(void)
 
  GetEngineControl()->AddMetadata(EngineIndex, GetEngineControl()->GetEngineThread(EngineIndex)->GetLastCalculationServerTimeStamp());
  AAfterCalculate();
- if(GetEnvironmentLock(EngineIndex)->IsCalcFinished())
-  GetEngineControl()->PauseChannel(EngineIndex);
 }
 
 void UEngineControlThread::AAfterCalculate(void)
@@ -225,28 +223,44 @@ void UEngineControlThread::AAfterCalculate(void)
 
 void UEngineControlThread::Calculate(void)
 {
-  if(CalculateMode == 2)
+  calculate(false);
+}
+
+bool UEngineControlThread::CalculateModelStep()
+{
+  return calculate(true);
+}
+
+bool UEngineControlThread::calculate(bool modelStep)
+{
+  if(!modelStep && CalculateMode == 2)
   {
    if(CalcEnable->wait(30) == false)
-	return;
+	return false;
 
    CalcEnable->reset();
   }
 
   if(CalculationNotInProgress->wait(30) == false)
   {
-   return;
+   return false;
   }
   CalculationNotInProgress->reset();
+  struct Completion
+  {
+   UGenericEvent* event;
+   ~Completion() { if(event) event->set(); }
+   void signal() { event->set(); event = nullptr; }
+  } completion{CalculationNotInProgress};
 
 
   double diff=(RDK::GetVariantLocalTime()-RealLastCalculationTime)*86400*1000.0;
   int wait_diff=(MinInterstepsInterval>1)?MinInterstepsInterval:1;
-  if(diff<wait_diff)
+  if(!modelStep && diff<wait_diff)
   {
-   CalculationNotInProgress->set();
+   completion.signal();
    Sleep(int(static_cast<int>(wait_diff)-diff));
-   return;
+   return false;
   }
 /*
   if(CalculateMode == 3 && MinInterstepsInterval == UTime(0) && diff<1)
@@ -258,6 +272,9 @@ void UEngineControlThread::Calculate(void)
 
   // Взяли блокировку канала т.к. дальше будет много обращений в ядро
   UELockPtr<UContainer> model=GetModelLock(EngineIndex);
+  auto environment = modelStep ? GetEnvironment(EngineIndex) : UEPtr<UEnvironment>();
+  if(modelStep && (!model || !environment || environment->IsCalcFinished()))
+   return false;
 
   int use_controllers_mode=EngineControl->GetUseControllersMode();
   if(use_controllers_mode == 1)
@@ -276,7 +293,14 @@ void UEngineControlThread::Calculate(void)
   CalculationTime=current_time;
   MModel_SetDoubleSourceTime(EngineIndex,current_time);
 
-  if(CalculateMode == 1)
+  bool advanced = false;
+  if(modelStep)
+  {
+   const auto before = environment->GetTime().GetTime();
+   const bool calculated = environment->CalculateModelStep();
+   advanced = calculated && environment->GetTime().GetTime() != before;
+  }
+  else if(CalculateMode == 1)
   {
    MEnv_RTCalculate(EngineIndex);
   }
@@ -290,14 +314,21 @@ void UEngineControlThread::Calculate(void)
    MEnv_Calculate(EngineIndex,0);
   }
   AfterCalculate();
+  const bool finished = !modelStep && GetEnvironmentLock(EngineIndex)->IsCalcFinished();
+  if(finished)
+   Pause();
   LastCalculationServerTimeStamp=ServerTimeStamp; // TODO: Возможно тут current_time?
   RealLastCalculationTime=GetVariantLocalTime();
 //  ServerLastCalculationTime=current_time;
   if(use_controllers_mode == 1)
    RDK::UIControllerStorage::AfterCalculate(EngineIndex);
-  CalculationNotInProgress->set();
+  completion.signal();
+  // The public pause path waits for this event and handles the controller's timer.
+  if(finished)
+   GetEngineControl()->PauseChannel(EngineIndex);
   Profiler->CalculateCore();
   LastFullStepDuration=int(MModel_GetFullStepDuration(EngineIndex,0));
+  return advanced;
 }
 
 void UEngineControlThread::Execute(void)
