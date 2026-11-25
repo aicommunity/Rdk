@@ -1,4 +1,6 @@
 #include "UWatchSeriesWizard.h"
+#include <QDir>
+#include <QFileInfo>
 #include "UWatchSourcePickerWidget.h"
 #include "WatchPresetCatalog.h"
 
@@ -760,11 +762,21 @@ private:
             return;
         }
         m_className = componentClassNameFromModelScope(channelIndex(), longName);
-        const int n = WatchPresetCatalog::instance().presetsForClass(m_className).size();
+        const auto& catalog = WatchPresetCatalog::instance();
+        const int n = catalog.presetsForClass(m_className).size();
+        QString details = tr("Catalogue: %1").arg(QDir::toNativeSeparators(catalog.rootPath()));
+        if (!catalog.rootAvailable())
+            details += tr("\nPreset catalogue is unavailable. Manual mode is available.");
+        else if (n == 0)
+            details += tr("\nNo presets for this class. Manual mode is available.");
+        const QStringList failed = catalog.failedFiles();
+        if (!failed.isEmpty())
+            details += tr("\n%1 preset files failed to load.").arg(failed.size());
         m_classLabel->setText(
-            QObject::tr("Class: %1 · presets: %2")
+            QObject::tr("Class: %1 · presets: %2\n%3")
                 .arg(m_className.isEmpty() ? QObject::tr("(unknown)") : m_className)
-                .arg(n));
+                .arg(n).arg(details));
+        m_classLabel->setToolTip(failed.join(QLatin1Char('\n')));
     }
 
     void notifyComplete()
@@ -925,9 +937,10 @@ UWatchSeriesWizard::UWatchSeriesWizard(UWatchChart* chart, RDK::UApplication* ap
     setOption(QWizard::HaveFinishButtonOnEarlyPages, false);
 
     auto& catalog = WatchPresetCatalog::instance();
-    if (catalog.rootPath().isEmpty())
+    const QString root = QFileInfo(defaultWatchPresetsPath(app)).absoluteFilePath();
+    if (catalog.rootPath() != root || !catalog.rootAvailable() || !catalog.failedFiles().isEmpty())
     {
-        catalog.setRootPath(defaultWatchPresetsPath(app));
+        catalog.setRootPath(root);
         catalog.reload();
     }
 
