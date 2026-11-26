@@ -101,6 +101,13 @@ bool LoadFieldsToNode(USerStorageXML &&node, bool node_clear); // Move-верс�
 
 // Сохраняет xml в строку
 bool Save(std::string &str) const;
+
+// Read-only comparison of the complete serialization trees. Attribute order
+// is immaterial; names, values, mixed-content order and comments remain exact.
+// Only Type/elemType/elemVecType may use the known GCC/MSVC spellings of the
+// same nominal C++ scalar type. Unknown spellings match only themselves.
+// Does not validate a component, convert values, change XML, or move cursors.
+bool SamePortableSerialization(const USerStorageXML &other) const;
 bool Save(std::string &str, bool formatted) const; // formatted=true для форматирования, false для компактного вывода
 bool SaveFromNode(std::string &str);
 bool SaveFromNode(std::string &str, bool formatted); // formatted=true для форматирования, false для компактного вывода
