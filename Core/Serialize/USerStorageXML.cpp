@@ -46,32 +46,8 @@ std::string AsciiXmlText(XMLCSTR value)
  return result;
 }
 
-bool SameSerializedScalarType(XMLCSTR first, XMLCSTR second)
-{
- if(SameXmlText(first, second)) return true;
- // These aliases belong to the general native scalar serialization domain.
- // Keep nominal types distinct (int/long/long long, float/double, char/signed
- // char). Native component loading and typed readback must separately check
- // values and dimensions; an alias does not promise equal ABI layouts.
- static const std::map<std::string, int> names = {
-  {"b",1}, {"bool",1}, {"c",2}, {"char",2},
-  {"a",3}, {"signed char",3}, {"h",4}, {"unsigned char",4},
-  {"s",5}, {"short",5}, {"short int",5},
-  {"t",6}, {"unsigned short",6}, {"unsigned short int",6},
-  {"i",7}, {"int",7}, {"j",8}, {"unsigned int",8},
-  {"l",9}, {"long",9}, {"long int",9},
-  {"m",10}, {"unsigned long",10}, {"unsigned long int",10},
-  {"x",11}, {"long long",11}, {"long long int",11}, {"__int64",11},
-  {"y",12}, {"unsigned long long",12}, {"unsigned long long int",12}, {"unsigned __int64",12},
-  {"f",13}, {"float",13}, {"d",14}, {"double",14},
-  {"e",15}, {"long double",15}
- };
- const auto left = names.find(AsciiXmlText(first));
- const auto right = names.find(AsciiXmlText(second));
- return left != names.end() && right != names.end() && left->second == right->second;
-}
-
-bool SamePortableXmlNode(const XMLNode &first, const XMLNode &second)
+bool SamePortableXmlNode(const XMLNode &first,const XMLNode &second,
+ const USerStorageXML::PortableIntegralFields &fields,std::vector<std::string> &path)
 {
  if(first.isEmpty() || second.isEmpty()) return false;
  if(!SameXmlText(first.getName(),second.getName()) ||
@@ -92,8 +68,13 @@ bool SamePortableXmlNode(const XMLNode &first, const XMLNode &second)
   const auto other=rightAttributes.find(attribute.first);
   if(other==rightAttributes.end()) return false;
   const auto name=AsciiXmlText(attribute.first.c_str());
-  const bool type=name=="Type" || name=="elemType" || name=="elemVecType";
-  if(!(type ? SameSerializedScalarType(attribute.second,other->second) :
+  const bool type=name=="Type" || name=="elemType" || name=="elemVecType" ||
+   name=="elemSVType" || name=="firstType" || name=="secondType" || name=="pointType" || name=="elemPointType";
+  auto domain=UXmlIntegralDomain::Nominal;
+  const auto field=fields.find(path);
+  if(name=="Type" && field!=fields.end())domain=field->second;
+  if(!(type ? SamePortableXmlType(AsciiXmlText(attribute.second),AsciiXmlText(other->second),domain,
+                                 AsciiXmlText(first.getText())) :
               SameXmlText(attribute.second,other->second))) return false;
  }
  // Preserve text/child/clear-field interleaving, including mixed content.
@@ -108,7 +89,10 @@ bool SamePortableXmlNode(const XMLNode &first, const XMLNode &second)
   if(left.etype!=right.etype) return false;
   switch(left.etype)
   {
-   case eNodeChild: if(!SamePortableXmlNode(left.child,right.child)) return false; break;
+   case eNodeChild:
+    path.push_back(AsciiXmlText(left.child.getName()));
+    if(!SamePortableXmlNode(left.child,right.child,fields,path))return false;
+    path.pop_back();break;
    case eNodeText: if(!SameXmlText(left.text,right.text)) return false; break;
    case eNodeClear:
     if(!SameXmlText(left.clear.lpszValue,right.clear.lpszValue) ||
@@ -149,7 +133,13 @@ double ParseXmlFloat(const char *text, double default_value)
 
 bool USerStorageXML::SamePortableSerialization(const USerStorageXML &other) const
 {
- return SamePortableXmlNode(RootNode,other.RootNode);
+ return SamePortableSerialization(other,{});
+}
+
+bool USerStorageXML::SamePortableSerialization(const USerStorageXML &other,const PortableIntegralFields &fields) const
+{
+ std::vector<std::string> path{AsciiXmlText(RootNode.getName())};
+ return SamePortableXmlNode(RootNode,other.RootNode,fields,path);
 }
 
 // Методы

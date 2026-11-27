@@ -17,6 +17,7 @@ See file license.txt for more information
 #include <map>
 #include <vector>
 #include "USerStorage.h"
+#include "UPortableXmlType.h"
 
 #ifndef _UNICODE
 //#define RDK_UNICODE_RUN
@@ -104,10 +105,16 @@ bool Save(std::string &str) const;
 
 // Read-only comparison of the complete serialization trees. Attribute order
 // is immaterial; names, values, mixed-content order and comments remain exact.
-// Only Type/elemType/elemVecType may use the known GCC/MSVC spellings of the
-// same nominal C++ scalar type. Unknown spellings match only themselves.
+// Only native serialization type attributes may use supported GCC/MSVC
+// spellings of the same scalar/container type. Element kinds, rank and array
+// bounds remain significant. Unknown spellings match only themselves.
 // Does not validate a component, convert values, change XML, or move cursors.
 bool SamePortableSerialization(const USerStorageXML &other) const;
+// Optional exact scalar-value contracts, indexed by the complete XML element
+// name path (including the document root). The caller must independently
+// verify the typed field's semantic domain/value. Other nodes stay nominal.
+using PortableIntegralFields=std::map<std::vector<std::string>,UXmlIntegralDomain>;
+bool SamePortableSerialization(const USerStorageXML &other,const PortableIntegralFields &fields) const;
 bool Save(std::string &str, bool formatted) const; // formatted=true для форматирования, false для компактного вывода
 bool SaveFromNode(std::string &str);
 bool SaveFromNode(std::string &str, bool formatted); // formatted=true для форматирования, false для компактного вывода
