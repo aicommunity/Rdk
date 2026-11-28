@@ -17,6 +17,7 @@ See file license.txt for more information
 #include <map>
 #include <vector>
 #include "USerStorage.h"
+#include "UPortableXmlType.h"
 
 #ifndef _UNICODE
 //#define RDK_UNICODE_RUN
@@ -51,7 +52,8 @@ mutable std::string SBuffer;
 mutable std::wstring WBuffer,WBuffer2;
 #endif
 
-// Кэш для оптимизации навигации и работы со строками
+// Кэш текущего курсора. Все изменения узла и переходы сбрасывают его;
+// одинаковые имена узлов не являются идентификатором узла.
 mutable std::string CachedNodeName;
 mutable std::string CachedNodeText;
 mutable XMLNode CachedNode; // Узел, для которого кэшированы данные
@@ -67,6 +69,9 @@ mutable bool PathCached;
 mutable std::map<std::string, std::string> CachedAttributes;
 mutable XMLNode CachedAttributesNode;
 mutable bool AttributesCached;
+
+// Не меняет XML или позицию курсора. Вызывать до мутации/смены узла.
+void InvalidateNodeCache(void);
 
 
 public: // Методы
@@ -97,6 +102,19 @@ bool LoadFieldsToNode(USerStorageXML &&node, bool node_clear); // Move-верс�
 
 // Сохраняет xml в строку
 bool Save(std::string &str) const;
+
+// Read-only comparison of the complete serialization trees. Attribute order
+// is immaterial; names, values, mixed-content order and comments remain exact.
+// Only native serialization type attributes may use supported GCC/MSVC
+// spellings of the same scalar/container type. Element kinds, rank and array
+// bounds remain significant. Unknown spellings match only themselves.
+// Does not validate a component, convert values, change XML, or move cursors.
+bool SamePortableSerialization(const USerStorageXML &other) const;
+// Optional exact scalar-value contracts, indexed by the complete XML element
+// name path (including the document root). The caller must independently
+// verify the typed field's semantic domain/value. Other nodes stay nominal.
+using PortableIntegralFields=std::map<std::vector<std::string>,UXmlIntegralDomain>;
+bool SamePortableSerialization(const USerStorageXML &other,const PortableIntegralFields &fields) const;
 bool Save(std::string &str, bool formatted) const; // formatted=true для форматирования, false для компактного вывода
 bool SaveFromNode(std::string &str);
 bool SaveFromNode(std::string &str, bool formatted); // formatted=true для форматирования, false для компактного вывода
